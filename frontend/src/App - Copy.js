@@ -51,6 +51,9 @@ function App() {
   const [currentWaterSource, setCurrentWaterSource] = useState(null);
   const [currentWaterTest, setCurrentWaterTest] = useState(null);
   const [selectedWaterSource, setSelectedWaterSource] = useState(null);
+  
+  // NEW: Add preselectedFarmId state for field modal
+  const [preselectedFarmId, setPreselectedFarmId] = useState(null);
 
   useEffect(() => {
     loadData();
@@ -128,6 +131,7 @@ function App() {
       await loadData();
       setShowFieldModal(false);
       setCurrentField(null);
+      setPreselectedFarmId(null);
     } catch (err) {
       console.error('Error saving field:', err);
       alert('Failed to save field');
@@ -136,6 +140,7 @@ function App() {
 
   const handleEditField = (field) => {
     setCurrentField(field);
+    setPreselectedFarmId(null);
     setShowFieldModal(true);
   };
 
@@ -166,7 +171,7 @@ function App() {
     } catch (err) {
       console.error('Error saving application:', err);
       console.error('Error response:', err.response?.data);
-      alert(`Failed to save application: ${err.response?.data?.detail || err.message}`);
+      alert('Failed to save application: ' + (err.response?.data?.detail || err.message));
     }
   };
 
@@ -247,7 +252,7 @@ function App() {
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'farms', label: 'Farms & Fields', icon: HomeIcon },
     { id: 'water', label: 'Water Quality', icon: Droplet },
-    { id: 'reports', label: 'Reports', icon: FileText }
+    { id: 'reports', label: 'Reports', icon: FileText },
   ];
 
   const NavItem = ({ item, active }) => {
@@ -256,15 +261,14 @@ function App() {
       <button
         onClick={() => setCurrentView(item.id)}
         className={`
-          w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all
+          w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors
           ${active 
-            ? 'bg-blue-50 text-blue-600 font-medium' 
+            ? 'bg-green-100 text-green-700 font-medium' 
             : 'text-gray-700 hover:bg-gray-100'
           }
-          ${sidebarCollapsed ? 'justify-center' : ''}
         `}
       >
-        <Icon className="w-5 h-5 flex-shrink-0" />
+        <Icon size={20} />
         {!sidebarCollapsed && <span>{item.label}</span>}
       </button>
     );
@@ -272,10 +276,10 @@ function App() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="flex h-screen items-center justify-center bg-gray-50">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading your farm data...</p>
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mb-4"></div>
+          <p className="text-gray-600">Loading farm data...</p>
         </div>
       </div>
     );
@@ -283,7 +287,7 @@ function App() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="flex h-screen items-center justify-center bg-gray-50">
         <div className="text-center">
           <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md">
             <p className="text-red-800 font-medium mb-2">Error Loading Data</p>
@@ -303,11 +307,7 @@ function App() {
   return (
     <div className="flex h-screen bg-gray-50">
       {/* Sidebar */}
-      <aside className={`
-        bg-white border-r border-gray-200 flex flex-col transition-all duration-300
-        ${sidebarCollapsed ? 'w-20' : 'w-64'}
-      `}>
-        {/* Logo/Brand */}
+      <aside className={`bg-white border-r border-gray-200 flex flex-col transition-all duration-300 ${sidebarCollapsed ? 'w-20' : 'w-64'}`}>
         <div className="p-6 border-b border-gray-200">
           <div className="flex items-center justify-between">
             {!sidebarCollapsed && (
@@ -316,27 +316,18 @@ function App() {
                 <p className="text-xs text-gray-500 mt-1">Citrus Management</p>
               </div>
             )}
-            <button
-              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-            >
+            <button onClick={() => setSidebarCollapsed(!sidebarCollapsed)} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
               {sidebarCollapsed ? <Menu className="w-5 h-5" /> : <X className="w-5 h-5" />}
             </button>
           </div>
         </div>
 
-        {/* Navigation */}
         <nav className="flex-1 p-4 space-y-1">
           {navigation.map(item => (
-            <NavItem 
-              key={item.id} 
-              item={item} 
-              active={currentView === item.id}
-            />
+            <NavItem key={item.id} item={item} active={currentView === item.id} />
           ))}
         </nav>
 
-        {/* User Section */}
         <div className="p-4 border-t border-gray-200">
           {!sidebarCollapsed ? (
             <div>
@@ -383,8 +374,9 @@ function App() {
               setCurrentApplication(null);
               setShowAppModal(true);
             }}
-            onNewField={() => {
+            onNewField={(farmId) => {
               setCurrentField(null);
+              setPreselectedFarmId(farmId || null);
               setShowFieldModal(true);
             }}
             onNewWaterTest={() => {
@@ -407,8 +399,9 @@ function App() {
               }}
               onEditFarm={handleEditFarm}
               onDeleteFarm={handleDeleteFarm}
-              onNewField={() => {
+              onNewField={(farmId) => {
                 setCurrentField(null);
+                setPreselectedFarmId(farmId || null);
                 setShowFieldModal(true);
               }}
               onEditField={handleEditField}
@@ -475,10 +468,12 @@ function App() {
         <FieldModal
           field={currentField}
           farms={farms}
+          preselectedFarmId={preselectedFarmId}
           onSave={handleSaveField}
           onClose={() => {
             setShowFieldModal(false);
             setCurrentField(null);
+            setPreselectedFarmId(null);
           }}
         />
       )}

@@ -1,7 +1,9 @@
 import csv
 import io
-from datetime import datetime, timedelta  # ADD THIS
-from django.db.models import Sum, Count 
+from datetime import datetime, timedelta, date
+from decimal import Decimal
+from django.db.models import Sum, Avg, Count, F, Q
+from django.db.models.functions import Coalesce
 from rest_framework import viewsets, filters, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -10,9 +12,20 @@ from .product_import_tool import PesticideProductImporter
 from django.http import HttpResponse
 from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
-from .models import Farm, Field, PesticideProduct, PesticideApplication, WaterSource, WaterTest
-from .serializers import FarmSerializer, FieldSerializer, PesticideProductSerializer, PesticideApplicationSerializer, WaterSourceSerializer, WaterTestSerializer
-
+from .models import ( 
+    Farm, Field, PesticideProduct, PesticideApplication, WaterSource, WaterTest, 
+    Buyer, LaborContractor, Harvest, HarvestLoad, HarvestLabor,
+    PesticideApplication
+)
+from .serializers import ( 
+    FarmSerializer, FieldSerializer, PesticideProductSerializer, PesticideApplicationSerializer, 
+    WaterSourceSerializer, WaterTestSerializer,
+    BuyerSerializer, BuyerListSerializer,
+    LaborContractorSerializer, LaborContractorListSerializer,
+    HarvestSerializer, HarvestListSerializer,
+    HarvestLoadSerializer, HarvestLaborSerializer,
+    PHICheckSerializer, HarvestStatisticsSerializer
+)
 class FarmViewSet(viewsets.ModelViewSet):
     """
     API endpoint for managing farms
@@ -967,3 +980,536 @@ def report_statistics(request):
     ).count()
     
     return Response(stats)
+
+# -----------------------------------------------------------------------------
+# BUYER VIEWSET
+# -----------------------------------------------------------------------------
+
+class BuyerViewSet(viewsets.ModelViewSet):
+    """
+    CRUD operations for Buyers (packing houses, processors, etc.)
+    """
+    queryset = Buyer.objects.all()
+    serializer_class = BuyerSerializer
+    
+    def get_queryset(self):
+        queryset = Buyer.objects.all()
+        
+        # Filter by active status
+        active = self.request.query_params.get('active')
+        if active is not None:
+            queryset = queryset.filter(active=active.lower() == 'true')
+        
+        # Filter by buyer type
+        buyer_type = self.request.query_params.get('buyer_type')
+        if buyer_type:
+            queryset = queryset.filter(buyer_type=buyer_type)
+        
+        # Search by name
+        search = self.request.query_params.get('search')
+        if search:
+            queryset = queryset.filter(name__icontains=search)
+        
+        return queryset.order_by('name')
+    
+    def get_serializer_class(self):
+        if self.action == 'list' and self.request.query_params.get('simple') == 'true':
+            return BuyerListSerializer
+        return BuyerSerializer
+    
+    @action(detail=True, methods=['get'])
+    def load_history(self, request, pk=None):
+        """Get all loads sent to this buyer."""
+        buyer = self.get_object()
+        loads = HarvestLoad.objects.filter(buyer=buyer).select_related(
+            'harvest', 'harvest__field', 'harvest__field__farm'
+        ).order_by('-harvest__harvest_date')
+        
+        serializer = HarvestLoadSerializer(loads, many=True)
+        
+        # Calculate summary stats
+        summary = loads.aggregate(
+            total_loads=Count('id'),
+            total_bins=Sum('bins'),
+            total_revenue=Sum('total_revenue'),
+            pending_revenue=Sum('total_revenue', filter=Q(payment_status='pending'))
+        )
+        
+        return Response({
+            'buyer': BuyerSerializer(buyer).data,
+            'summary': summary,
+            'loads': serializer.data
+        })
+
+
+# -----------------------------------------------------------------------------
+# LABOR CONTRACTOR VIEWSET
+# -----------------------------------------------------------------------------
+
+class LaborContractorViewSet(viewsets.ModelViewSet):
+    """
+    CRUD operations for Labor Contractors.
+    """
+    queryset = LaborContractor.objects.all()
+    serializer_class = LaborContractorSerializer
+    
+    def get_queryset(self):
+        queryset = LaborContractor.objects.all()
+        
+        # Filter by active status
+        active = self.request.query_params.get('active')
+        if active is not None:
+            queryset = queryset.filter(active=active.lower() == 'true')
+        
+        # Filter by valid license
+        valid_license = self.request.query_params.get('valid_license')
+        if valid_license == 'true':
+            queryset = queryset.filter(license_expiration__gte=date.today())
+        
+        # Search
+        search = self.request.query_params.get('search')
+        if search:
+            queryset = queryset.filter(company_name__icontains=search)
+        
+        return queryset.order_by('company_name')
+    
+    def get_serializer_class(self):
+        if self.action == 'list' and self.request.query_params.get('simple') == 'true':
+            return LaborContractorListSerializer
+        return LaborContractorSerializer
+    
+    @action(detail=True, methods=['get'])
+    def job_history(self, request, pk=None):
+        """Get all harvest jobs for this contractor."""
+        contractor = self.get_object()
+        labor_records = HarvestLabor.objects.filter(
+            contractor=contractor
+        ).select_related(
+            'harvest', 'harvest__field', 'harvest__field__farm'
+        ).order_by('-harvest__harvest_date')
+        
+        serializer = HarvestLaborSerializer(labor_records, many=True)
+        
+        # Calculate summary stats
+        summary = labor_records.aggregate(
+            total_jobs=Count('id'),
+            total_bins=Sum('bins_picked'),
+            total_cost=Sum('total_labor_cost'),
+            total_hours=Sum('total_hours')
+        )
+        
+        return Response({
+            'contractor': LaborContractorSerializer(contractor).data,
+            'summary': summary,
+            'jobs': serializer.data
+        })
+    
+    @action(detail=False, methods=['get'])
+    def expiring_soon(self, request):
+        """Get contractors with licenses/insurance expiring in next 30 days."""
+        threshold = date.today() + timedelta(days=30)
+        
+        expiring = LaborContractor.objects.filter(
+            Q(license_expiration__lte=threshold) |
+            Q(insurance_expiration__lte=threshold) |
+            Q(workers_comp_expiration__lte=threshold),
+            active=True
+        )
+        
+        serializer = LaborContractorSerializer(expiring, many=True)
+        return Response(serializer.data)
+
+
+# -----------------------------------------------------------------------------
+# HARVEST VIEWSET
+# -----------------------------------------------------------------------------
+
+class HarvestViewSet(viewsets.ModelViewSet):
+    """
+    CRUD operations for Harvests with PHI checking and statistics.
+    """
+    queryset = Harvest.objects.all()
+    serializer_class = HarvestSerializer
+    
+    def get_queryset(self):
+        queryset = Harvest.objects.select_related(
+            'field', 'field__farm'
+        ).prefetch_related('loads', 'labor_records')
+        
+        # Filter by field
+        field_id = self.request.query_params.get('field')
+        if field_id:
+            queryset = queryset.filter(field_id=field_id)
+        
+        # Filter by farm
+        farm_id = self.request.query_params.get('farm')
+        if farm_id:
+            queryset = queryset.filter(field__farm_id=farm_id)
+        
+        # Filter by date range
+        start_date = self.request.query_params.get('start_date')
+        end_date = self.request.query_params.get('end_date')
+        if start_date:
+            queryset = queryset.filter(harvest_date__gte=start_date)
+        if end_date:
+            queryset = queryset.filter(harvest_date__lte=end_date)
+        
+        # Filter by crop variety
+        crop = self.request.query_params.get('crop_variety')
+        if crop:
+            queryset = queryset.filter(crop_variety=crop)
+        
+        # Filter by status
+        status_filter = self.request.query_params.get('status')
+        if status_filter:
+            queryset = queryset.filter(status=status_filter)
+        
+        # Filter by PHI compliance
+        phi_compliant = self.request.query_params.get('phi_compliant')
+        if phi_compliant == 'true':
+            queryset = queryset.filter(phi_compliant=True)
+        elif phi_compliant == 'false':
+            queryset = queryset.filter(phi_compliant=False)
+        
+        # Season filter (year)
+        season = self.request.query_params.get('season')
+        if season:
+            queryset = queryset.filter(harvest_date__year=season)
+        
+        return queryset.order_by('-harvest_date', '-created_at')
+    
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return HarvestListSerializer
+        return HarvestSerializer
+    
+    @action(detail=False, methods=['post'])
+    def check_phi(self, request):
+        """
+        Check PHI compliance before creating a harvest.
+        POST: { "field_id": 1, "proposed_harvest_date": "2024-12-20" }
+        """
+        field_id = request.data.get('field_id')
+        proposed_date_str = request.data.get('proposed_harvest_date')
+        
+        if not field_id or not proposed_date_str:
+            return Response(
+                {'error': 'field_id and proposed_harvest_date required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            proposed_date = datetime.strptime(proposed_date_str, '%Y-%m-%d').date()
+        except ValueError:
+            return Response(
+                {'error': 'Invalid date format. Use YYYY-MM-DD'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Get most recent application
+        last_app = PesticideApplication.objects.filter(
+            field_id=field_id
+        ).select_related('product').order_by('-application_date').first()
+        
+        if not last_app:
+            return Response({
+                'field_id': field_id,
+                'proposed_harvest_date': proposed_date_str,
+                'last_application_date': None,
+                'last_application_product': None,
+                'phi_required_days': None,
+                'days_since_application': None,
+                'is_compliant': True,
+                'warning_message': 'No pesticide applications found for this field.'
+            })
+        
+        days_since = (proposed_date - last_app.application_date).days
+        phi_required = last_app.product.phi_days if last_app.product else None
+        is_compliant = days_since >= phi_required if phi_required else None
+        
+        warning_message = None
+        if is_compliant is False:
+            warning_message = (
+                f"PHI VIOLATION: Only {days_since} days since application of "
+                f"{last_app.product.product_name}. Required: {phi_required} days. "
+                f"Earliest safe harvest date: {last_app.application_date + timedelta(days=phi_required)}"
+            )
+        elif is_compliant is True:
+            warning_message = f"PHI compliant. {days_since} days since last application (required: {phi_required})."
+        
+        return Response({
+            'field_id': field_id,
+            'proposed_harvest_date': proposed_date_str,
+            'last_application_date': last_app.application_date,
+            'last_application_product': last_app.product.product_name if last_app.product else None,
+            'phi_required_days': phi_required,
+            'days_since_application': days_since,
+            'is_compliant': is_compliant,
+            'warning_message': warning_message
+        })
+    
+    @action(detail=False, methods=['get'])
+    def statistics(self, request):
+        """
+        Get harvest statistics with optional filters.
+        """
+        queryset = self.get_queryset()
+        
+        # Base aggregations
+        stats = queryset.aggregate(
+            total_harvests=Count('id'),
+            total_bins=Coalesce(Sum('total_bins'), 0),
+            total_weight_lbs=Coalesce(Sum('estimated_weight_lbs'), Decimal('0')),
+            total_acres_harvested=Coalesce(Sum('acres_harvested'), Decimal('0')),
+        )
+        
+        # Revenue from loads
+        load_stats = HarvestLoad.objects.filter(
+            harvest__in=queryset
+        ).aggregate(
+            total_revenue=Coalesce(Sum('total_revenue'), Decimal('0')),
+            pending_payments=Coalesce(
+                Sum('total_revenue', filter=Q(payment_status='pending')),
+                Decimal('0')
+            ),
+            avg_price_per_bin=Avg('price_per_unit', filter=Q(price_unit='per_bin'))
+        )
+        
+        # Labor costs
+        labor_stats = HarvestLabor.objects.filter(
+            harvest__in=queryset
+        ).aggregate(
+            total_labor_cost=Coalesce(Sum('total_labor_cost'), Decimal('0'))
+        )
+        
+        # PHI violations
+        phi_violations = queryset.filter(phi_compliant=False).count()
+        
+        # Calculate yield per acre
+        if stats['total_acres_harvested'] and stats['total_acres_harvested'] > 0:
+            avg_yield = float(stats['total_bins']) / float(stats['total_acres_harvested'])
+        else:
+            avg_yield = 0
+        
+        # By crop breakdown
+        by_crop = list(queryset.values('crop_variety').annotate(
+            count=Count('id'),
+            bins=Sum('total_bins'),
+            acres=Sum('acres_harvested')
+        ).order_by('-bins'))
+        
+        # By buyer breakdown
+        by_buyer = list(HarvestLoad.objects.filter(
+            harvest__in=queryset
+        ).values('buyer__name').annotate(
+            loads=Count('id'),
+            bins=Sum('bins'),
+            revenue=Sum('total_revenue')
+        ).order_by('-revenue'))
+        
+        return Response({
+            'total_harvests': stats['total_harvests'],
+            'total_bins': stats['total_bins'],
+            'total_weight_lbs': stats['total_weight_lbs'],
+            'total_acres_harvested': stats['total_acres_harvested'],
+            'total_revenue': load_stats['total_revenue'],
+            'total_labor_cost': labor_stats['total_labor_cost'],
+            'avg_yield_per_acre': round(avg_yield, 1),
+            'avg_price_per_bin': load_stats['avg_price_per_bin'],
+            'pending_payments': load_stats['pending_payments'],
+            'phi_violations': phi_violations,
+            'by_crop': by_crop,
+            'by_buyer': by_buyer
+        })
+    
+    @action(detail=True, methods=['post'])
+    def mark_complete(self, request, pk=None):
+        """Mark harvest as complete."""
+        harvest = self.get_object()
+        harvest.status = 'complete'
+        harvest.save()
+        return Response(HarvestSerializer(harvest).data)
+    
+    @action(detail=True, methods=['post'])
+    def mark_verified(self, request, pk=None):
+        """Mark harvest as verified (for GAP/GHP)."""
+        harvest = self.get_object()
+        
+        # Check GAP/GHP requirements
+        warnings = []
+        if not harvest.phi_verified:
+            warnings.append("PHI verification not checked")
+        if not harvest.equipment_cleaned:
+            warnings.append("Equipment cleaning not verified")
+        if not harvest.no_contamination_observed:
+            warnings.append("Contamination check not verified")
+        
+        harvest.status = 'verified'
+        harvest.save()
+        
+        return Response({
+            'harvest': HarvestSerializer(harvest).data,
+            'warnings': warnings
+        })
+    
+    @action(detail=False, methods=['get'])
+    def by_field(self, request):
+        """Get harvests grouped by field."""
+        queryset = self.get_queryset()
+        
+        fields_data = {}
+        for harvest in queryset:
+            field_id = harvest.field_id
+            if field_id not in fields_data:
+                fields_data[field_id] = {
+                    'field_id': field_id,
+                    'field_name': harvest.field.name,
+                    'farm_name': harvest.field.farm.name if harvest.field.farm else None,
+                    'harvests': []
+                }
+            fields_data[field_id]['harvests'].append(
+                HarvestListSerializer(harvest).data
+            )
+        
+        return Response(list(fields_data.values()))
+
+
+# -----------------------------------------------------------------------------
+# HARVEST LOAD VIEWSET
+# -----------------------------------------------------------------------------
+
+class HarvestLoadViewSet(viewsets.ModelViewSet):
+    """
+    CRUD operations for Harvest Loads.
+    """
+    queryset = HarvestLoad.objects.all()
+    serializer_class = HarvestLoadSerializer
+    
+    def get_queryset(self):
+        queryset = HarvestLoad.objects.select_related(
+            'harvest', 'harvest__field', 'buyer'
+        )
+        
+        # Filter by harvest
+        harvest_id = self.request.query_params.get('harvest')
+        if harvest_id:
+            queryset = queryset.filter(harvest_id=harvest_id)
+        
+        # Filter by buyer
+        buyer_id = self.request.query_params.get('buyer')
+        if buyer_id:
+            queryset = queryset.filter(buyer_id=buyer_id)
+        
+        # Filter by payment status
+        payment_status = self.request.query_params.get('payment_status')
+        if payment_status:
+            queryset = queryset.filter(payment_status=payment_status)
+        
+        # Filter by grade
+        grade = self.request.query_params.get('grade')
+        if grade:
+            queryset = queryset.filter(grade=grade)
+        
+        # Date range (based on harvest date)
+        start_date = self.request.query_params.get('start_date')
+        end_date = self.request.query_params.get('end_date')
+        if start_date:
+            queryset = queryset.filter(harvest__harvest_date__gte=start_date)
+        if end_date:
+            queryset = queryset.filter(harvest__harvest_date__lte=end_date)
+        
+        return queryset.order_by('-harvest__harvest_date', 'load_number')
+    
+    @action(detail=True, methods=['post'])
+    def mark_paid(self, request, pk=None):
+        """Mark load as paid."""
+        load = self.get_object()
+        load.payment_status = 'paid'
+        load.payment_date = request.data.get('payment_date', date.today())
+        load.save()
+        return Response(HarvestLoadSerializer(load).data)
+    
+    @action(detail=False, methods=['get'])
+    def pending_payments(self, request):
+        """Get all loads with pending payments."""
+        loads = self.get_queryset().filter(
+            payment_status__in=['pending', 'invoiced']
+        ).order_by('harvest__harvest_date')
+        
+        total_pending = loads.aggregate(total=Sum('total_revenue'))['total'] or 0
+        
+        return Response({
+            'total_pending': total_pending,
+            'loads': HarvestLoadSerializer(loads, many=True).data
+        })
+
+
+# -----------------------------------------------------------------------------
+# HARVEST LABOR VIEWSET
+# -----------------------------------------------------------------------------
+
+class HarvestLaborViewSet(viewsets.ModelViewSet):
+    """
+    CRUD operations for Harvest Labor records.
+    """
+    queryset = HarvestLabor.objects.all()
+    serializer_class = HarvestLaborSerializer
+    
+    def get_queryset(self):
+        queryset = HarvestLabor.objects.select_related(
+            'harvest', 'harvest__field', 'contractor'
+        )
+        
+        # Filter by harvest
+        harvest_id = self.request.query_params.get('harvest')
+        if harvest_id:
+            queryset = queryset.filter(harvest_id=harvest_id)
+        
+        # Filter by contractor
+        contractor_id = self.request.query_params.get('contractor')
+        if contractor_id:
+            queryset = queryset.filter(contractor_id=contractor_id)
+        
+        # Date range
+        start_date = self.request.query_params.get('start_date')
+        end_date = self.request.query_params.get('end_date')
+        if start_date:
+            queryset = queryset.filter(harvest__harvest_date__gte=start_date)
+        if end_date:
+            queryset = queryset.filter(harvest__harvest_date__lte=end_date)
+        
+        return queryset.order_by('-harvest__harvest_date')
+    
+    @action(detail=False, methods=['get'])
+    def cost_analysis(self, request):
+        """Get labor cost analysis."""
+        queryset = self.get_queryset()
+        
+        analysis = queryset.aggregate(
+            total_cost=Sum('total_labor_cost'),
+            total_hours=Sum('total_hours'),
+            total_bins=Sum('bins_picked'),
+            avg_hourly_rate=Avg('rate', filter=Q(pay_type='hourly')),
+            avg_piece_rate=Avg('rate', filter=Q(pay_type='piece_rate'))
+        )
+        
+        # Calculate cost per bin
+        if analysis['total_bins'] and analysis['total_cost']:
+            analysis['cost_per_bin'] = float(analysis['total_cost']) / analysis['total_bins']
+        else:
+            analysis['cost_per_bin'] = None
+        
+        # By contractor breakdown
+        by_contractor = list(queryset.values(
+            'contractor__company_name'
+        ).annotate(
+            jobs=Count('id'),
+            bins=Sum('bins_picked'),
+            cost=Sum('total_labor_cost'),
+            hours=Sum('total_hours')
+        ).order_by('-cost'))
+        
+        return Response({
+            **analysis,
+            'by_contractor': by_contractor
+        })

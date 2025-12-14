@@ -8,7 +8,8 @@ import {
   Settings,
   LogOut,
   Menu,
-  X
+  X,
+  Wheat
 } from 'lucide-react';
 import Dashboard from './components/Dashboard';
 import Farms from './components/Farms';
@@ -22,6 +23,13 @@ import WaterSourceModal from './components/WaterSourceModal';
 import WaterTestModal from './components/WaterTestModal';
 import Reports from './components/Reports';
 import { farmsAPI, fieldsAPI, applicationsAPI, productsAPI, waterSourcesAPI, waterTestsAPI } from './services/api';
+import Harvests from './components/Harvests';
+import HarvestModal from './components/HarvestModal';
+import HarvestLoadModal from './components/HarvestLoadModal';
+import HarvestLaborModal from './components/HarvestLaborModal';
+import BuyerModal from './components/BuyerModal';
+import LaborContractorModal from './components/LaborContractorModal';
+
 
 function App() {
   // State for data
@@ -54,6 +62,20 @@ function App() {
   
   // NEW: Add preselectedFarmId state for field modal
   const [preselectedFarmId, setPreselectedFarmId] = useState(null);
+
+  // ============================================================================
+  // NEW: HARVEST TRACKING STATE - ADD THESE LINES (around line 64)
+  // ============================================================================
+  const [showHarvestModal, setShowHarvestModal] = useState(false);
+  const [showHarvestLoadModal, setShowHarvestLoadModal] = useState(false);
+  const [showHarvestLaborModal, setShowHarvestLaborModal] = useState(false);
+  const [showBuyerModal, setShowBuyerModal] = useState(false);
+  const [showLaborContractorModal, setShowLaborContractorModal] = useState(false);
+  const [currentHarvest, setCurrentHarvest] = useState(null);
+  const [selectedHarvestId, setSelectedHarvestId] = useState(null);
+  const [preselectedFieldId, setPreselectedFieldId] = useState(null);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+  // ============================================================================
 
   useEffect(() => {
     loadData();
@@ -248,11 +270,42 @@ function App() {
     setCurrentView('water-tests');
   };
 
+  // ============================================================================
+  // NEW: HARVEST HANDLERS - ADD THESE FUNCTIONS (around line 258)
+  // ============================================================================
+  const handleNewHarvest = (fieldId = null) => {
+    setCurrentHarvest(null);
+    setPreselectedFieldId(fieldId);
+    setShowHarvestModal(true);
+  };
+
+  const handleEditHarvest = (harvest) => {
+    setCurrentHarvest(harvest);
+    setShowHarvestModal(true);
+  };
+
+  const handleAddLoad = (harvestId) => {
+    setSelectedHarvestId(harvestId);
+    setShowHarvestLoadModal(true);
+  };
+
+  const handleAddLabor = (harvestId) => {
+    setSelectedHarvestId(harvestId);
+    setShowHarvestLaborModal(true);
+  };
+
+  const handleHarvestSave = () => {
+    setRefreshTrigger(prev => prev + 1);
+    loadData(); // Refresh main data too
+  };
+  // ============================================================================
+
   const navigation = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'farms', label: 'Farms & Fields', icon: HomeIcon },
     { id: 'water', label: 'Water Quality', icon: Droplet },
     { id: 'reports', label: 'Reports', icon: FileText },
+    { id: 'harvests', label: 'Harvests', icon: Wheat },
   ];
 
   const NavItem = ({ item, active }) => {
@@ -450,6 +503,24 @@ function App() {
             applications={applications}
           />
         )}
+
+        {/* ====================================================================== */}
+        {/* NEW: HARVESTS VIEW - ADD THIS BLOCK (after reports view) */}
+        {/* ====================================================================== */}
+        {currentView === 'harvests' && (
+          <div className="p-6">
+            <Harvests
+              fields={fields}
+              farms={farms}
+              onNewHarvest={handleNewHarvest}
+              onEditHarvest={handleEditHarvest}
+              onAddLoad={handleAddLoad}
+              onAddLabor={handleAddLabor}
+              refreshTrigger={refreshTrigger}
+            />
+          </div>
+        )}
+        {/* ====================================================================== */}
       </main>
 
       {/* Modals */}
@@ -516,6 +587,68 @@ function App() {
           }}
         />
       )}
+
+      {/* ====================================================================== */}
+      {/* NEW: HARVEST MODALS - ADD THESE BLOCKS (after WaterTestModal) */}
+      {/* ====================================================================== */}
+      {showHarvestModal && (
+        <HarvestModal
+          isOpen={showHarvestModal}
+          onClose={() => {
+            setShowHarvestModal(false);
+            setCurrentHarvest(null);
+            setPreselectedFieldId(null);
+          }}
+          onSave={handleHarvestSave}
+          harvest={currentHarvest}
+          fields={fields}
+          farms={farms}
+          preselectedFieldId={preselectedFieldId}
+        />
+      )}
+
+      {showHarvestLoadModal && (
+        <HarvestLoadModal
+          isOpen={showHarvestLoadModal}
+          onClose={() => {
+            setShowHarvestLoadModal(false);
+            setSelectedHarvestId(null);
+          }}
+          onSave={handleHarvestSave}
+          harvestId={selectedHarvestId}
+          onAddBuyer={() => setShowBuyerModal(true)}
+        />
+      )}
+
+      {showHarvestLaborModal && (
+        <HarvestLaborModal
+          isOpen={showHarvestLaborModal}
+          onClose={() => {
+            setShowHarvestLaborModal(false);
+            setSelectedHarvestId(null);
+          }}
+          onSave={handleHarvestSave}
+          harvestId={selectedHarvestId}
+          onAddContractor={() => setShowLaborContractorModal(true)}
+        />
+      )}
+
+      {showBuyerModal && (
+        <BuyerModal
+          isOpen={showBuyerModal}
+          onClose={() => setShowBuyerModal(false)}
+          onSave={handleHarvestSave}
+        />
+      )}
+
+      {showLaborContractorModal && (
+        <LaborContractorModal
+          isOpen={showLaborContractorModal}
+          onClose={() => setShowLaborContractorModal(false)}
+          onSave={handleHarvestSave}
+        />
+      )}
+      {/* ====================================================================== */}
     </div>
   );
 }

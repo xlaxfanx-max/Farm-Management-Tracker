@@ -17,13 +17,15 @@ class FarmSerializer(serializers.ModelSerializer):
 
 class FieldSerializer(serializers.ModelSerializer):
     application_count = serializers.SerializerMethodField()
+    farm_name = serializers.CharField(source='farm.name', read_only=True)  # ADDED
     
     class Meta:
         model = Field
         fields = [
-            'id', 'name', 'field_number', 'county', 'section', 'township', 
-            'range_value', 'gps_lat', 'gps_long', 'total_acres', 'current_crop',
-            'planting_date', 'active', 'created_at', 'updated_at', 'application_count'
+            'id', 'name', 'farm', 'farm_name', 'field_number', 'county',  # ADDED 'farm' and 'farm_name'
+            'section', 'township', 'range_value', 'gps_lat', 'gps_long', 
+            'total_acres', 'current_crop', 'planting_date', 'active', 
+            'created_at', 'updated_at', 'application_count'
         ]
     
     def get_application_count(self, obj):
