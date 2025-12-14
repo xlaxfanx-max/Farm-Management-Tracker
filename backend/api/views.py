@@ -1,11 +1,15 @@
 import csv
 import io
+from datetime import datetime, timedelta  # ADD THIS
+from django.db.models import Sum, Count 
 from rest_framework import viewsets, filters, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from .pur_reporting import PURReportGenerator
 from .product_import_tool import PesticideProductImporter
 from django.http import HttpResponse
+from openpyxl import Workbook
+from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
 from .models import Farm, Field, PesticideProduct, PesticideApplication, WaterSource, WaterTest
 from .serializers import FarmSerializer, FieldSerializer, PesticideProductSerializer, PesticideApplicationSerializer, WaterSourceSerializer, WaterTestSerializer
 
@@ -348,6 +352,483 @@ class PesticideApplicationViewSet(viewsets.ModelViewSet):
             'summary': summary,
             'validation': validation
         })
+    
+    @action(detail=False, methods=['get'])
+    def export_pur(self, request):
+        """
+        Enhanced PUR export with multiple format options.
+        
+        Query Parameters:
+        - format: 'csv' (official CA PUR format), 'excel', or 'csv_detailed'
+        - start_date: YYYY-MM-DD
+        - end_date: YYYY-MM-DD
+        - farm_id: Filter by farm
+        - status: Filter by status
+        - county: Filter by county
+        - validate: 'true' to validate before export (default: true)
+        """
+        # Get parameters
+        export_format = request.query_params.get('format', 'csv')
+        start_date = request.query_params.get('start_date')
+        end_date = request.query_params.get('end_date')
+        farm_id = request.query_params.get('farm_id')
+        status_filter = request.query_params.get('status')
+        county = request.query_params.get('county')
+        validate_first = request.query_params.get('validate', 'true').lower() == 'true'
+        
+        # Build query
+        queryset = self.get_queryset()
+        
+        if start_date:
+            queryset = queryset.filter(application_date__gte=start_date)
+        if end_date:
+            queryset = queryset.filter(application_date__lte=end_date)
+        if farm_id:
+            queryset = queryset.filter(field__farm_id=farm_id)
+        if status_filter:
+            queryset = queryset.filter(status=status_filter)
+        if county:
+            queryset = queryset.filter(field__county__icontains=county)
+        
+        # Select related to optimize
+        queryset = queryset.select_related('field', 'field__farm', 'product').order_by('application_date')
+        
+        # Use existing PURReportGenerator for validation and official CSV
+        generator = PURReportGenerator(queryset)
+        
+        # Validate if requested
+        if validate_first:
+            validation = generator.validate_for_pur()
+            if not validation['valid'] and export_format == 'csv':
+                # For official PUR format, enforce validation
+                return Response({
+                    'error': 'Applications contain validation errors. Cannot export official PUR format.',
+                    'validation': validation
+                }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Route to appropriate export method
+        if export_format == 'csv':
+            # Use existing official CA PUR format
+            return self._export_official_pur_csv(generator, start_date, end_date)
+        elif export_format == 'excel':
+            # New Excel format with summary
+            return self._export_pur_excel(queryset, start_date, end_date)
+        elif export_format == 'csv_detailed':
+            # Detailed CSV with all fields
+            return self._export_pur_csv_detailed(queryset, start_date, end_date)
+        else:
+            return Response({'error': 'Invalid format'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+    def _export_official_pur_csv(self, generator, start_date, end_date):
+        """Export using existing official California PUR format"""
+        csv_content = generator.generate_csv()
+        
+        response = HttpResponse(csv_content, content_type='text/csv')
+        filename = f"PUR_Official_{start_date or 'all'}_to_{end_date or 'all'}_{datetime.now().strftime('%Y%m%d')}.csv"
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        
+        return response
+
+
+    def _export_pur_csv_detailed(self, queryset, start_date, end_date):
+        """Export detailed CSV with all available fields"""
+        import csv
+        
+        response = HttpResponse(content_type='text/csv')
+        
+        date_range = ""
+        if start_date and end_date:
+            date_range = f"_{start_date}_to_{end_date}"
+        
+        filename = f"PUR_Detailed{date_range}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        
+        writer = csv.writer(response)
+        
+        # Detailed header
+        writer.writerow([
+            'Application Date',
+            'Farm Name',
+            'Farm Number',
+            'Operator Name',
+            'County',
+            'Field Name',
+            'Field Number',
+            'Section',
+            'Township',
+            'Range',
+            'GPS Latitude',
+            'GPS Longitude',
+            'Acres Treated',
+            'Current Crop',
+            'EPA Registration Number',
+            'Product Name',
+            'Active Ingredients',
+            'Amount Used',
+            'Unit',
+            'Application Method',
+            'Target Pest',
+            'Applicator Name',
+            'Start Time',
+            'End Time',
+            'Temperature (°F)',
+            'Wind Speed (mph)',
+            'Wind Direction',
+            'Restricted Use',
+            'Fumigant',
+            'REI (hours)',
+            'PHI (days)',
+            'Signal Word',
+            'Status',
+            'PUR Submitted',
+            'Submission Date',
+            'Notes'
+        ])
+        
+        # Write data
+        for app in queryset:
+            writer.writerow([
+                app.application_date.strftime('%m/%d/%Y'),
+                app.field.farm.name,
+                app.field.farm.farm_number or '',
+                app.field.farm.operator_name or '',
+                app.field.county,
+                app.field.name,
+                app.field.field_number or '',
+                app.field.section or '',
+                app.field.township or '',
+                app.field.range_value or '',
+                app.field.gps_lat or '',
+                app.field.gps_long or '',
+                app.acres_treated,
+                app.field.current_crop or '',
+                app.product.epa_registration_number,
+                app.product.product_name,
+                app.product.active_ingredients,
+                app.amount_used,
+                app.unit_of_measure,
+                app.application_method,
+                app.target_pest or '',
+                app.applicator_name,
+                app.start_time.strftime('%H:%M') if app.start_time else '',
+                app.end_time.strftime('%H:%M') if app.end_time else '',
+                app.temperature or '',
+                app.wind_speed or '',
+                app.wind_direction or '',
+                'Yes' if app.product.restricted_use else 'No',
+                'Yes' if app.product.is_fumigant else 'No',
+                app.product.rei_hours or '',
+                app.product.phi_days or '',
+                app.product.signal_word or '',
+                app.get_status_display(),
+                'Yes' if app.submitted_to_pur else 'No',
+                app.pur_submission_date.strftime('%m/%d/%Y') if app.pur_submission_date else '',
+                app.notes or ''
+            ])
+        
+        return response
+
+
+    def _export_pur_excel(self, queryset, start_date, end_date):
+        """Export detailed Excel with formatting and summary"""
+        wb = Workbook()
+        
+        # === OFFICIAL PUR FORMAT SHEET ===
+        ws_pur = wb.active
+        ws_pur.title = "Official PUR Format"
+        
+        # Use PURReportGenerator for official format
+        generator = PURReportGenerator(queryset)
+        
+        # Styling
+        header_fill = PatternFill(start_color="366092", end_color="366092", fill_type="solid")
+        header_font = Font(bold=True, color="FFFFFF", size=10)
+        header_alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
+        border_side = Side(style='thin', color='000000')
+        border = Border(left=border_side, right=border_side, top=border_side, bottom=border_side)
+        
+        # Write official PUR headers
+        for col_num, field_name in enumerate(generator.PUR_FIELDS, 1):
+            cell = ws_pur.cell(row=1, column=col_num)
+            cell.value = field_name.replace('_', ' ').title()
+            cell.fill = header_fill
+            cell.font = header_font
+            cell.alignment = header_alignment
+            cell.border = border
+        
+        # Write official PUR data
+        for row_num, app in enumerate(queryset, 2):
+            row_data = generator._application_to_pur_row(app)
+            for col_num, field_name in enumerate(generator.PUR_FIELDS, 1):
+                cell = ws_pur.cell(row=row_num, column=col_num)
+                cell.value = row_data.get(field_name, '')
+                cell.border = border
+        
+        # Auto-size columns for PUR sheet
+        for col in range(1, len(generator.PUR_FIELDS) + 1):
+            ws_pur.column_dimensions[chr(64 + col)].width = 15
+        
+        ws_pur.freeze_panes = 'A2'
+        
+        # === DETAILED DATA SHEET ===
+        ws_detail = wb.create_sheet("Detailed Data")
+        
+        detail_headers = [
+            'Date', 'Farm', 'Farm #', 'County', 'Field', 'Field #',
+            'Acres', 'Crop', 'EPA #', 'Product', 'Active Ingredients',
+            'Amount', 'Unit', 'Method', 'Target Pest', 'Applicator',
+            'Start', 'End', 'Temp', 'Wind Speed', 'Wind Dir',
+            'Restricted', 'REI', 'PHI', 'Status', 'Notes'
+        ]
+        
+        # Write headers
+        for col_num, header in enumerate(detail_headers, 1):
+            cell = ws_detail.cell(row=1, column=col_num)
+            cell.value = header
+            cell.fill = header_fill
+            cell.font = header_font
+            cell.alignment = header_alignment
+            cell.border = border
+        
+        # Write data
+        for row_num, app in enumerate(queryset, 2):
+            data = [
+                app.application_date.strftime('%m/%d/%Y'),
+                app.field.farm.name,
+                app.field.farm.farm_number or '',
+                app.field.county,
+                app.field.name,
+                app.field.field_number or '',
+                float(app.acres_treated),
+                app.field.current_crop or '',
+                app.product.epa_registration_number,
+                app.product.product_name,
+                app.product.active_ingredients,
+                float(app.amount_used),
+                app.unit_of_measure,
+                app.application_method,
+                app.target_pest or '',
+                app.applicator_name,
+                app.start_time.strftime('%H:%M') if app.start_time else '',
+                app.end_time.strftime('%H:%M') if app.end_time else '',
+                app.temperature or '',
+                app.wind_speed or '',
+                app.wind_direction or '',
+                'Yes' if app.product.restricted_use else 'No',
+                app.product.rei_hours or '',
+                app.product.phi_days or '',
+                app.get_status_display(),
+                app.notes or ''
+            ]
+            
+            for col_num, value in enumerate(data, 1):
+                cell = ws_detail.cell(row=row_num, column=col_num)
+                cell.value = value
+                cell.border = border
+        
+        # Auto-size columns
+        for col_num in range(1, len(detail_headers) + 1):
+            col_letter = chr(64 + col_num)
+            ws_detail.column_dimensions[col_letter].width = 12
+        
+        ws_detail.freeze_panes = 'A2'
+        
+        # === SUMMARY SHEET ===
+        ws_summary = wb.create_sheet("Summary & Validation")
+        ws_summary.column_dimensions['A'].width = 30
+        ws_summary.column_dimensions['B'].width = 20
+        
+        # Title
+        ws_summary['A1'] = "PUR Report Summary"
+        ws_summary['A1'].font = Font(bold=True, size=14)
+        
+        row = 3
+        
+        # Report Info
+        ws_summary[f'A{row}'] = "Report Generated:"
+        ws_summary[f'B{row}'] = datetime.now().strftime('%m/%d/%Y %H:%M:%S')
+        row += 1
+        
+        if start_date:
+            ws_summary[f'A{row}'] = "Start Date:"
+            ws_summary[f'B{row}'] = start_date
+            row += 1
+        
+        if end_date:
+            ws_summary[f'A{row}'] = "End Date:"
+            ws_summary[f'B{row}'] = end_date
+            row += 1
+        
+        row += 1
+        
+        # Statistics
+        ws_summary[f'A{row}'] = "STATISTICS"
+        ws_summary[f'A{row}'].font = Font(bold=True, size=12)
+        row += 1
+        
+        ws_summary[f'A{row}'] = "Total Applications:"
+        ws_summary[f'B{row}'] = queryset.count()
+        row += 1
+        
+        ws_summary[f'A{row}'] = "Total Acres Treated:"
+        ws_summary[f'B{row}'] = queryset.aggregate(Sum('acres_treated'))['acres_treated__sum'] or 0
+        row += 1
+        
+        ws_summary[f'A{row}'] = "Unique Farms:"
+        ws_summary[f'B{row}'] = queryset.values('field__farm').distinct().count()
+        row += 1
+        
+        ws_summary[f'A{row}'] = "Unique Fields:"
+        ws_summary[f'B{row}'] = queryset.values('field').distinct().count()
+        row += 1
+        
+        ws_summary[f'A{row}'] = "Unique Products:"
+        ws_summary[f'B{row}'] = queryset.values('product').distinct().count()
+        row += 2
+        
+        # Validation Results
+        validation = generator.validate_for_pur()
+        
+        ws_summary[f'A{row}'] = "VALIDATION RESULTS"
+        ws_summary[f'A{row}'].font = Font(bold=True, size=12)
+        row += 1
+        
+        ws_summary[f'A{row}'] = "Ready for PUR Submission:"
+        ws_summary[f'B{row}'] = "YES" if validation['valid'] else "NO"
+        ws_summary[f'B{row}'].font = Font(
+            color="00FF00" if validation['valid'] else "FF0000",
+            bold=True
+        )
+        row += 2
+        
+        if validation['errors']:
+            ws_summary[f'A{row}'] = "ERRORS (Must Fix):"
+            ws_summary[f'A{row}'].font = Font(bold=True, color="FF0000")
+            row += 1
+            for error in validation['errors']:
+                ws_summary[f'A{row}'] = error
+                ws_summary[f'A{row}'].font = Font(color="FF0000")
+                row += 1
+            row += 1
+        
+        if validation['warnings']:
+            ws_summary[f'A{row}'] = "WARNINGS (Recommended):"
+            ws_summary[f'A{row}'].font = Font(bold=True, color="FFA500")
+            row += 1
+            for warning in validation['warnings']:
+                ws_summary[f'A{row}'] = warning
+                ws_summary[f'A{row}'].font = Font(color="FFA500")
+                row += 1
+        
+        # Status breakdown
+        row += 2
+        ws_summary[f'A{row}'] = "STATUS BREAKDOWN"
+        ws_summary[f'A{row}'].font = Font(bold=True, size=12)
+        row += 1
+        
+        status_counts = queryset.values('status').annotate(count=Count('id'))
+        for status_data in status_counts:
+            ws_summary[f'A{row}'] = status_data['status'].replace('_', ' ').title()
+            ws_summary[f'B{row}'] = status_data['count']
+            row += 1
+        
+        # Save to response
+        output = io.BytesIO()
+        wb.save(output)
+        output.seek(0)
+        
+        date_range = ""
+        if start_date and end_date:
+            date_range = f"_{start_date}_to_{end_date}"
+        
+        filename = f"PUR_Report{date_range}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
+        
+        response = HttpResponse(
+            output.getvalue(),
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        
+        return response
+
+
+    # Also add the validation and summary endpoints from existing file
+    @action(detail=False, methods=['post', 'get'])
+    def validate_pur(self, request):
+        """
+        Validate applications for PUR compliance.
+        
+        Supports both GET and POST methods for flexibility.
+        """
+        # Get parameters from either query params or body
+        if request.method == 'POST':
+            start_date = request.data.get('start_date')
+            end_date = request.data.get('end_date')
+            farm_id = request.data.get('farm_id')
+        else:
+            start_date = request.query_params.get('start_date')
+            end_date = request.query_params.get('end_date')
+            farm_id = request.query_params.get('farm_id')
+        
+        # Filter applications
+        queryset = self.get_queryset()
+        
+        if start_date:
+            queryset = queryset.filter(application_date__gte=start_date)
+        if end_date:
+            queryset = queryset.filter(application_date__lte=end_date)
+        if farm_id:
+            queryset = queryset.filter(field__farm_id=farm_id)
+        
+        queryset = queryset.select_related('field', 'field__farm', 'product')
+        
+        # Generate validation report
+        generator = PURReportGenerator(queryset)
+        validation_result = generator.validate_for_pur()
+        
+        return Response(validation_result)
+
+
+    @action(detail=False, methods=['post', 'get'])
+    def pur_summary(self, request):
+        """
+        Get summary statistics for PUR report period.
+        
+        Supports both GET and POST methods.
+        """
+        # Get parameters
+        if request.method == 'POST':
+            start_date = request.data.get('start_date')
+            end_date = request.data.get('end_date')
+            farm_id = request.data.get('farm_id')
+        else:
+            start_date = request.query_params.get('start_date')
+            end_date = request.query_params.get('end_date')
+            farm_id = request.query_params.get('farm_id')
+        
+        # Filter applications
+        queryset = self.get_queryset()
+        
+        if start_date:
+            queryset = queryset.filter(application_date__gte=start_date)
+        if end_date:
+            queryset = queryset.filter(application_date__lte=end_date)
+        if farm_id:
+            queryset = queryset.filter(field__farm_id=farm_id)
+        
+        queryset = queryset.select_related('field', 'field__farm', 'product')
+        
+        # Generate summary and validation
+        generator = PURReportGenerator(queryset)
+        summary = generator.generate_summary_report()
+        validation = generator.validate_for_pur()
+        
+        return Response({
+            'summary': summary,
+            'validation': validation
+        })
+
 
 class WaterSourceViewSet(viewsets.ModelViewSet):
     """
@@ -406,3 +887,83 @@ class WaterTestViewSet(viewsets.ModelViewSet):
         failed = self.queryset.filter(status='fail')
         serializer = self.get_serializer(failed, many=True)
         return Response(serializer.data)
+    
+from rest_framework.decorators import api_view
+
+@api_view(['GET'])
+def report_statistics(request):
+    """Get statistics for the reports dashboard"""
+    from django.db.models import Sum, Count
+    
+    # Get query parameters
+    start_date = request.query_params.get('start_date')
+    end_date = request.query_params.get('end_date')
+    farm_id = request.query_params.get('farm_id')
+    
+    # Build base queryset
+    queryset = PesticideApplication.objects.all()
+    
+    if start_date:
+        queryset = queryset.filter(application_date__gte=start_date)
+    if end_date:
+        queryset = queryset.filter(application_date__lte=end_date)
+    if farm_id:
+        queryset = queryset.filter(field__farm_id=farm_id)
+    
+    # Calculate statistics
+    stats = {
+        'total_applications': queryset.count(),
+        'total_acres': float(queryset.aggregate(Sum('acres_treated'))['acres_treated__sum'] or 0),
+        'unique_farms': queryset.values('field__farm').distinct().count(),
+        'unique_fields': queryset.values('field').distinct().count(),
+        'unique_products': queryset.values('product').distinct().count(),
+        'status_breakdown': {},
+        'by_county': {},
+        'by_month': {},
+        'restricted_use_count': 0,
+        'submitted_to_pur': queryset.filter(submitted_to_pur=True).count(),
+        'pending_signature': queryset.filter(status='pending_signature').count(),
+    }
+    
+    # Status breakdown
+    status_counts = queryset.values('status').annotate(count=Count('id'))
+    for item in status_counts:
+        stats['status_breakdown'][item['status']] = item['count']
+    
+    # By county
+    county_counts = queryset.values('field__county').annotate(
+        count=Count('id'),
+        acres=Sum('acres_treated')
+    ).order_by('-count')[:10]
+    
+    for item in county_counts:
+        county = item['field__county'] or 'Unknown'
+        stats['by_county'][county] = {
+            'applications': item['count'],
+            'acres': float(item['acres'] or 0)
+        }
+    
+    # By month (last 12 months)
+    twelve_months_ago = datetime.now() - timedelta(days=365)
+    monthly_data = queryset.filter(
+        application_date__gte=twelve_months_ago
+    ).extra(
+        select={'month': "strftime('%%Y-%%m', application_date)"}
+    ).values('month').annotate(
+        count=Count('id'),
+        acres=Sum('acres_treated')
+    ).order_by('month')
+    
+    for item in monthly_data:
+        if item['month']:
+            stats['by_month'][item['month']] = {
+                'applications': item['count'],
+                'acres': float(item['acres'] or 0)
+            }
+    
+    # Restricted use products
+    stats['restricted_use_count'] = queryset.filter(
+        product__restricted_use=True
+    ).count()
+    
+    return Response(stats)

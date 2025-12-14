@@ -73,3 +73,45 @@ export const applicationsAPI = {
 };
 
 export default api;
+
+// Reports API (UPDATED with validation)
+export const reportsAPI = {
+  // Get report statistics
+  getStatistics: (params) => 
+    axios.get(`${API_BASE_URL}/reports/statistics/`, { params }),
+  
+  // Validate applications for PUR compliance
+  validatePUR: (params) =>
+    axios.get(`${API_BASE_URL}/applications/validate_pur/`, { params }),
+  
+  // Get PUR summary with validation
+  getPURSummary: (params) =>
+    axios.get(`${API_BASE_URL}/applications/pur_summary/`, { params }),
+  
+  // Export PUR report (supports multiple formats)
+  exportPUR: async (params) => {
+    const response = await axios.get(`${API_BASE_URL}/applications/export_pur/`, {
+      params,
+      responseType: 'blob'  // Important for file download
+    });
+    return response;
+  },
+  
+  // Generate download URL for PUR export
+  getPURExportURL: (params) => {
+    const queryString = new URLSearchParams(params).toString();
+    return `${API_BASE_URL}/applications/export_pur/?${queryString}`;
+  }
+};
+
+// Helper function to download file from blob
+export const downloadFile = (blob, filename) => {
+  const url = window.URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  window.URL.revokeObjectURL(url);
+};

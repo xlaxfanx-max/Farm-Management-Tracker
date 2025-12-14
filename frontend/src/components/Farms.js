@@ -19,12 +19,20 @@ function Farms({ farms, fields, applications, onNewFarm, onEditFarm, onDeleteFar
     setExpandedFarms(newExpanded);
   };
 
+  // FIX: Convert both to numbers for comparison to handle string/number mismatch
   const getFarmFields = (farmId) => {
-    return fields.filter(field => field.farm === farmId);
+    return fields.filter(field => {
+      const fieldFarmId = parseInt(field.farm);
+      const compareFarmId = parseInt(farmId);
+      return fieldFarmId === compareFarmId;
+    });
   };
 
-  const getFieldApplicationCount = (fieldName) => {
-    return applications.filter(app => app.field_name === fieldName).length;
+  const getFieldApplicationCount = (fieldId, fieldName) => {
+    // Check by field ID first, then by name as fallback
+    return applications.filter(app => 
+      app.field === fieldId || app.field_name === fieldName
+    ).length;
   };
 
   return (
@@ -98,7 +106,7 @@ function Farms({ farms, fields, applications, onNewFarm, onEditFarm, onDeleteFar
 
                     <div className="flex gap-2 ml-4">
                       <button 
-                        onClick={() => onNewField()}
+                        onClick={() => onNewField(farm.id)}
                         className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
                         title="Add Field to this Farm"
                       >
@@ -133,7 +141,7 @@ function Farms({ farms, fields, applications, onNewFarm, onEditFarm, onDeleteFar
                       Fields ({farmFields.length})
                     </h4>
                     <button
-                      onClick={onNewField}
+                      onClick={() => onNewField(farm.id)}
                       className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-sm transition-colors"
                     >
                       <Plus size={16} />
@@ -146,7 +154,7 @@ function Farms({ farms, fields, applications, onNewFarm, onEditFarm, onDeleteFar
                       <MapPin className="w-12 h-12 text-gray-300 mx-auto mb-3" />
                       <p className="text-gray-600 mb-3">No fields yet for this farm</p>
                       <button
-                        onClick={onNewField}
+                        onClick={() => onNewField(farm.id)}
                         className="text-blue-600 hover:text-blue-700 font-medium text-sm"
                       >
                         Add your first field →
@@ -194,7 +202,7 @@ function Farms({ farms, fields, applications, onNewFarm, onEditFarm, onDeleteFar
                             )}
                             <div className="flex justify-between text-sm">
                               <span className="text-gray-600">Applications:</span>
-                              <span className="font-medium text-blue-600">{getFieldApplicationCount(field.name)}</span>
+                              <span className="font-medium text-blue-600">{getFieldApplicationCount(field.id, field.name)}</span>
                             </div>
                           </div>
 

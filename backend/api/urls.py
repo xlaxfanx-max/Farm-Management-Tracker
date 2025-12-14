@@ -2,7 +2,7 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import (
     FarmViewSet, FieldViewSet, PesticideProductViewSet, 
-    PesticideApplicationViewSet, WaterSourceViewSet, WaterTestViewSet
+    PesticideApplicationViewSet, WaterSourceViewSet, WaterTestViewSet, report_statistics
 )
 
 router = DefaultRouter()
@@ -15,4 +15,5 @@ router.register(r'water-tests', WaterTestViewSet, basename='watertest')
 
 urlpatterns = [
     path('', include(router.urls)),
+    path('reports/statistics/', report_statistics, name='report-statistics'),
 ]

@@ -23,7 +23,8 @@ function Dashboard({
   waterSources,
   onNewApplication,
   onNewField,
-  onNewWaterTest 
+  onNewWaterTest, 
+  onNavigateToReports
 }) {
   const [stats, setStats] = useState({
     totalApplications: 0,
@@ -257,7 +258,7 @@ function Dashboard({
             <QuickActionButton
               icon={BarChart3}
               label="Generate Report"
-              onClick={() => alert('Report generation coming soon!')}
+              onClick={onNavigateToReports}
               color="blue"
             />
           </div>

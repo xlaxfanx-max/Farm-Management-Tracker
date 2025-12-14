@@ -424,10 +424,13 @@ function EnhancedApplicationModal({
               >
                 <option value="">Select method...</option>
                 <option value="Ground Spray">Ground Spray</option>
-                <option value="Aerial Application">Aerial Application</option>
+                <option value="Aerial Spray">Aerial Spray</option>
+                <option value="Airblast">Airblast</option>
                 <option value="Chemigation">Chemigation</option>
                 <option value="Soil Injection">Soil Injection</option>
-                <option value="Broadcast">Broadcast Application</option>
+                <option value="Drench">Drench</option>
+                <option value="Fumigation">Fumigation</option>
+                <option value="Other">Other</option>
               </select>
             </div>
 
