@@ -1,232 +1,280 @@
 import React, { useState, useEffect } from 'react';
-import { MapPin, Droplet, BarChart3, AlertCircle, Home, TestTube } from 'lucide-react';
+import { 
+  LayoutDashboard, 
+  Home as HomeIcon, 
+  MapPin, 
+  Droplet, 
+  FileText,
+  Settings,
+  LogOut,
+  Menu,
+  X
+} from 'lucide-react';
 import Dashboard from './components/Dashboard';
-import Fields from './components/Fields';
 import Farms from './components/Farms';
+import Fields from './components/Fields';
 import WaterSources from './components/WaterSources';
 import WaterTests from './components/WaterTests';
-import ApplicationModal from './components/ApplicationModal';
-import FieldModal from './components/FieldModal';
 import FarmModal from './components/FarmModal';
+import FieldModal from './components/FieldModal';
+import ApplicationModal from './components/ApplicationModal';
 import WaterSourceModal from './components/WaterSourceModal';
 import WaterTestModal from './components/WaterTestModal';
-import { farmsAPI, fieldsAPI, productsAPI, applicationsAPI, waterSourcesAPI, waterTestsAPI } from './services/api';
+import { farmsAPI, fieldsAPI, applicationsAPI, productsAPI, waterSourcesAPI, waterTestsAPI } from './services/api';
 
 function App() {
-  const [currentView, setCurrentView] = useState('dashboard');
-  const [applications, setApplications] = useState([]);
+  // State for data
   const [farms, setFarms] = useState([]);
   const [fields, setFields] = useState([]);
+  const [applications, setApplications] = useState([]);
   const [products, setProducts] = useState([]);
   const [waterSources, setWaterSources] = useState([]);
+  const [waterTests, setWaterTests] = useState([]);
+  
+  // UI State
+  const [currentView, setCurrentView] = useState('dashboard');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  const [showAppModal, setShowAppModal] = useState(false);
-  const [showFieldModal, setShowFieldModal] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  
+  // Modal State
   const [showFarmModal, setShowFarmModal] = useState(false);
+  const [showFieldModal, setShowFieldModal] = useState(false);
+  const [showAppModal, setShowAppModal] = useState(false);
   const [showWaterSourceModal, setShowWaterSourceModal] = useState(false);
   const [showWaterTestModal, setShowWaterTestModal] = useState(false);
   
-  const [selectedApp, setSelectedApp] = useState(null);
-  const [editingField, setEditingField] = useState(null);
-  const [editingFarm, setEditingFarm] = useState(null);
-  const [editingWaterSource, setEditingWaterSource] = useState(null);
-  const [editingWaterTest, setEditingWaterTest] = useState(null);
-  
-  // For water tests view
+  const [currentFarm, setCurrentFarm] = useState(null);
+  const [currentField, setCurrentField] = useState(null);
+  const [currentApplication, setCurrentApplication] = useState(null);
+  const [currentWaterSource, setCurrentWaterSource] = useState(null);
+  const [currentWaterTest, setCurrentWaterTest] = useState(null);
   const [selectedWaterSource, setSelectedWaterSource] = useState(null);
-  const [showingTests, setShowingTests] = useState(false);
 
   useEffect(() => {
     loadData();
   }, []);
 
   const loadData = async () => {
+    setLoading(true);
+    setError(null);
     try {
-      setLoading(true);
-      setError(null);
-      
-      const [appsResponse, fieldsResponse, farmsResponse, productsResponse, waterSourcesResponse] = await Promise.all([
-        applicationsAPI.getAll(),
-        fieldsAPI.getAll(),
+      const [farmsRes, fieldsRes, appsRes, productsRes, waterSourcesRes, waterTestsRes] = await Promise.all([
         farmsAPI.getAll(),
+        fieldsAPI.getAll(),
+        applicationsAPI.getAll(),
         productsAPI.getAll(),
         waterSourcesAPI.getAll(),
+        waterTestsAPI.getAll()
       ]);
 
-      setApplications(appsResponse.data.results || appsResponse.data);
-      setFields(fieldsResponse.data.results || fieldsResponse.data);
-      setFarms(farmsResponse.data.results || farmsResponse.data);
-      setProducts(productsResponse.data.results || productsResponse.data);
-      setWaterSources(waterSourcesResponse.data.results || waterSourcesResponse.data);
-      
-      console.log('Data loaded successfully');
+      setFarms(farmsRes.data.results || farmsRes.data);
+      setFields(fieldsRes.data.results || fieldsRes.data);
+      setApplications(appsRes.data.results || appsRes.data);
+      setProducts(productsRes.data.results || productsRes.data);
+      setWaterSources(waterSourcesRes.data.results || waterSourcesRes.data);
+      setWaterTests(waterTestsRes.data.results || waterTestsRes.data);
     } catch (err) {
-      setError('Failed to load data. Make sure the backend is running on http://localhost:8000');
+      setError('Failed to load data. Please check your connection.');
       console.error('Error loading data:', err);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSaveApplication = async (appData) => {
-    try {
-      if (selectedApp) {
-        await applicationsAPI.update(selectedApp.id, appData);
-      } else {
-        await applicationsAPI.create(appData);
-      }
-      await loadData();
-      setShowAppModal(false);
-      setSelectedApp(null);
-    } catch (err) {
-      alert('Failed to save application: ' + err.message);
-      console.error('Error saving application:', err);
-    }
-  };
-
-  const handleDeleteApplication = async (id) => {
-    if (window.confirm('Are you sure you want to delete this application?')) {
-      try {
-        await applicationsAPI.delete(id);
-        await loadData();
-        setShowAppModal(false);
-        setSelectedApp(null);
-      } catch (err) {
-        alert('Failed to delete application: ' + err.message);
-      }
-    }
-  };
-
-  const handleMarkComplete = async (id) => {
-    try {
-      await applicationsAPI.markComplete(id);
-      await loadData();
-      if (selectedApp?.id === id) {
-        const updated = await applicationsAPI.getById(id);
-        setSelectedApp(updated.data);
-      }
-    } catch (err) {
-      alert('Failed to mark complete: ' + err.message);
-    }
-  };
-
-  const handleSaveField = async (fieldData) => {
-    try {
-      if (editingField) {
-        await fieldsAPI.update(editingField.id, fieldData);
-      } else {
-        await fieldsAPI.create(fieldData);
-      }
-      await loadData();
-      setShowFieldModal(false);
-      setEditingField(null);
-    } catch (err) {
-      alert('Failed to save field: ' + err.message);
-      console.error('Error saving field:', err);
-    }
-  };
-
-  const handleDeleteField = async (id) => {
-    if (window.confirm('Are you sure you want to delete this field?')) {
-      try {
-        await fieldsAPI.delete(id);
-        await loadData();
-      } catch (err) {
-        alert('Failed to delete field: ' + err.message);
-      }
-    }
-  };
-
+  // Farm handlers
   const handleSaveFarm = async (farmData) => {
     try {
-      if (editingFarm) {
-        await farmsAPI.update(editingFarm.id, farmData);
+      if (currentFarm) {
+        await farmsAPI.update(currentFarm.id, farmData);
       } else {
         await farmsAPI.create(farmData);
       }
       await loadData();
       setShowFarmModal(false);
-      setEditingFarm(null);
+      setCurrentFarm(null);
     } catch (err) {
-      alert('Failed to save farm: ' + err.message);
       console.error('Error saving farm:', err);
+      alert('Failed to save farm');
     }
   };
 
-  const handleDeleteFarm = async (id) => {
-    if (window.confirm('Are you sure you want to delete this farm? This will NOT delete the fields, but they will be unassigned.')) {
+  const handleEditFarm = (farm) => {
+    setCurrentFarm(farm);
+    setShowFarmModal(true);
+  };
+
+  const handleDeleteFarm = async (farmId) => {
+    if (window.confirm('Are you sure you want to delete this farm?')) {
       try {
-        await farmsAPI.delete(id);
+        await farmsAPI.delete(farmId);
         await loadData();
       } catch (err) {
-        alert('Failed to delete farm: ' + err.message);
+        console.error('Error deleting farm:', err);
+        alert('Failed to delete farm');
       }
     }
   };
 
-  const handleSaveWaterSource = async (sourceData) => {
+  // Field handlers
+  const handleSaveField = async (fieldData) => {
     try {
-      if (editingWaterSource) {
-        await waterSourcesAPI.update(editingWaterSource.id, sourceData);
+      if (currentField) {
+        await fieldsAPI.update(currentField.id, fieldData);
       } else {
-        await waterSourcesAPI.create(sourceData);
+        await fieldsAPI.create(fieldData);
+      }
+      await loadData();
+      setShowFieldModal(false);
+      setCurrentField(null);
+    } catch (err) {
+      console.error('Error saving field:', err);
+      alert('Failed to save field');
+    }
+  };
+
+  const handleEditField = (field) => {
+    setCurrentField(field);
+    setShowFieldModal(true);
+  };
+
+  const handleDeleteField = async (fieldId) => {
+    if (window.confirm('Are you sure you want to delete this field?')) {
+      try {
+        await fieldsAPI.delete(fieldId);
+        await loadData();
+      } catch (err) {
+        console.error('Error deleting field:', err);
+        alert('Failed to delete field');
+      }
+    }
+  };
+
+  // Application handlers
+  const handleSaveApplication = async (appData) => {
+    try {
+      console.log('Saving application data:', appData);
+      if (currentApplication) {
+        await applicationsAPI.update(currentApplication.id, appData);
+      } else {
+        await applicationsAPI.create(appData);
+      }
+      await loadData();
+      setShowAppModal(false);
+      setCurrentApplication(null);
+    } catch (err) {
+      console.error('Error saving application:', err);
+      console.error('Error response:', err.response?.data);
+      alert(`Failed to save application: ${err.response?.data?.detail || err.message}`);
+    }
+  };
+
+  const handleEditApplication = (app) => {
+    setCurrentApplication(app);
+    setShowAppModal(true);
+  };
+
+  const handleDeleteApplication = async (appId) => {
+    if (window.confirm('Are you sure you want to delete this application?')) {
+      try {
+        await applicationsAPI.delete(appId);
+        await loadData();
+      } catch (err) {
+        console.error('Error deleting application:', err);
+        alert('Failed to delete application');
+      }
+    }
+  };
+
+  // Water Source handlers
+  const handleSaveWaterSource = async (waterSourceData) => {
+    try {
+      if (currentWaterSource) {
+        await waterSourcesAPI.update(currentWaterSource.id, waterSourceData);
+      } else {
+        await waterSourcesAPI.create(waterSourceData);
       }
       await loadData();
       setShowWaterSourceModal(false);
-      setEditingWaterSource(null);
+      setCurrentWaterSource(null);
     } catch (err) {
-      alert('Failed to save water source: ' + err.message);
       console.error('Error saving water source:', err);
+      alert('Failed to save water source');
     }
   };
 
-  const handleDeleteWaterSource = async (id) => {
-    if (window.confirm('Are you sure you want to delete this water source? All associated test records will also be deleted.')) {
+  const handleEditWaterSource = (waterSource) => {
+    setCurrentWaterSource(waterSource);
+    setShowWaterSourceModal(true);
+  };
+
+  const handleDeleteWaterSource = async (waterSourceId) => {
+    if (window.confirm('Are you sure you want to delete this water source?')) {
       try {
-        await waterSourcesAPI.delete(id);
+        await waterSourcesAPI.delete(waterSourceId);
         await loadData();
-        setShowingTests(false);
-        setSelectedWaterSource(null);
       } catch (err) {
-        alert('Failed to delete water source: ' + err.message);
+        console.error('Error deleting water source:', err);
+        alert('Failed to delete water source');
       }
     }
   };
 
-  const handleSaveWaterTest = async (testData) => {
+  // Water Test handlers
+  const handleSaveWaterTest = async (waterTestData) => {
     try {
-      if (editingWaterTest) {
-        await waterTestsAPI.update(editingWaterTest.id, testData);
+      if (currentWaterTest) {
+        await waterTestsAPI.update(currentWaterTest.id, waterTestData);
       } else {
-        await waterTestsAPI.create(testData);
+        await waterTestsAPI.create(waterTestData);
       }
-      // Reload is handled by WaterTests component
+      await loadData();
       setShowWaterTestModal(false);
-      setEditingWaterTest(null);
+      setCurrentWaterTest(null);
     } catch (err) {
-      alert('Failed to save water test: ' + err.message);
       console.error('Error saving water test:', err);
+      alert('Failed to save water test');
     }
   };
 
-  const handleViewTests = (source) => {
-    setSelectedWaterSource(source);
-    setShowingTests(true);
+  const handleViewTests = (waterSource) => {
+    setSelectedWaterSource(waterSource);
+    setCurrentView('water-tests');
   };
 
-  const handleBackFromTests = () => {
-    setShowingTests(false);
-    setSelectedWaterSource(null);
+  const navigation = [
+    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { id: 'farms', label: 'Farms & Fields', icon: HomeIcon },
+    { id: 'water', label: 'Water Quality', icon: Droplet },
+    { id: 'reports', label: 'Reports', icon: FileText }
+  ];
+
+  const NavItem = ({ item, active }) => {
+    const Icon = item.icon;
+    return (
+      <button
+        onClick={() => setCurrentView(item.id)}
+        className={`
+          w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all
+          ${active 
+            ? 'bg-blue-50 text-blue-600 font-medium' 
+            : 'text-gray-700 hover:bg-gray-100'
+          }
+          ${sidebarCollapsed ? 'justify-center' : ''}
+        `}
+      >
+        <Icon className="w-5 h-5 flex-shrink-0" />
+        {!sidebarCollapsed && <span>{item.label}</span>}
+      </button>
+    );
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-100 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-slate-600">Loading data...</p>
+          <p className="text-gray-600">Loading your farm data...</p>
         </div>
       </div>
     );
@@ -234,208 +282,248 @@ function App() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-slate-100 flex items-center justify-center p-4">
-        <div className="bg-white rounded-lg shadow-lg p-6 max-w-md">
-          <div className="flex items-center gap-3 mb-4 text-red-600">
-            <AlertCircle size={24} />
-            <h2 className="text-xl font-bold">Connection Error</h2>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md">
+            <p className="text-red-800 font-medium mb-2">Error Loading Data</p>
+            <p className="text-red-600 text-sm mb-4">{error}</p>
+            <button
+              onClick={loadData}
+              className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
+            >
+              Retry
+            </button>
           </div>
-          <p className="text-slate-700 mb-4">{error}</p>
-          <button 
-            onClick={loadData}
-            className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-          >
-            Retry
-          </button>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-100">
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex items-center gap-3">
-            <Droplet className="text-green-600" size={32} />
-            <div>
-              <h1 className="text-xl font-bold text-slate-800">Farm Management System</h1>
-              <p className="text-sm text-slate-600">California Compliance & FSMA Records</p>
-            </div>
+    <div className="flex h-screen bg-gray-50">
+      {/* Sidebar */}
+      <aside className={`
+        bg-white border-r border-gray-200 flex flex-col transition-all duration-300
+        ${sidebarCollapsed ? 'w-20' : 'w-64'}
+      `}>
+        {/* Logo/Brand */}
+        <div className="p-6 border-b border-gray-200">
+          <div className="flex items-center justify-between">
+            {!sidebarCollapsed && (
+              <div>
+                <h1 className="text-xl font-bold text-gray-900">FarmTracker</h1>
+                <p className="text-xs text-gray-500 mt-1">Citrus Management</p>
+              </div>
+            )}
+            <button
+              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              {sidebarCollapsed ? <Menu className="w-5 h-5" /> : <X className="w-5 h-5" />}
+            </button>
           </div>
         </div>
-      </header>
 
-      <nav className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-6 flex gap-1">
-          {[
-            { id: 'dashboard', label: 'Dashboard', icon: BarChart3 },
-            { id: 'farms', label: 'Farms', icon: Home },
-            { id: 'fields', label: 'Fields', icon: MapPin },
-            { id: 'water', label: 'Water Quality', icon: TestTube },
-          ].map(nav => {
-            const Icon = nav.icon;
-            return (
-              <button
-                key={nav.id}
-                onClick={() => {
-                  setCurrentView(nav.id);
-                  setShowingTests(false);
-                  setSelectedWaterSource(null);
-                }}
-                className={`flex items-center gap-2 px-4 py-3 border-b-2 ${
-                  currentView === nav.id ? 'border-blue-600 text-blue-600 bg-blue-50' : 'border-transparent text-slate-600'
-                }`}
-              >
-                <Icon size={18} />
-                <span className="font-medium text-sm">{nav.label}</span>
+        {/* Navigation */}
+        <nav className="flex-1 p-4 space-y-1">
+          {navigation.map(item => (
+            <NavItem 
+              key={item.id} 
+              item={item} 
+              active={currentView === item.id}
+            />
+          ))}
+        </nav>
+
+        {/* User Section */}
+        <div className="p-4 border-t border-gray-200">
+          {!sidebarCollapsed ? (
+            <div>
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                  <span className="text-blue-600 font-semibold text-sm">MC</span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-gray-900 truncate">Michael's Citrus</p>
+                  <p className="text-xs text-gray-500 truncate">Operator</p>
+                </div>
+              </div>
+              <button className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
+                <Settings className="w-4 h-4" />
+                <span>Settings</span>
               </button>
-            );
-          })}
+              <button className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors mt-1">
+                <LogOut className="w-4 h-4" />
+                <span>Logout</span>
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <button className="w-full p-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors flex justify-center">
+                <Settings className="w-5 h-5" />
+              </button>
+              <button className="w-full p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors flex justify-center">
+                <LogOut className="w-5 h-5" />
+              </button>
+            </div>
+          )}
         </div>
-      </nav>
+      </aside>
 
-      <main className="max-w-7xl mx-auto px-6 py-8">
+      {/* Main Content */}
+      <main className="flex-1 overflow-y-auto">
         {currentView === 'dashboard' && (
-          <Dashboard 
+          <Dashboard
             applications={applications}
-            onViewApp={(app) => {
-              setSelectedApp(app);
+            fields={fields}
+            farms={farms}
+            waterSources={waterSources}
+            onNewApplication={() => {
+              setCurrentApplication(null);
               setShowAppModal(true);
             }}
-            onNewApp={() => {
-              setSelectedApp(null);
-              setShowAppModal(true);
+            onNewField={() => {
+              setCurrentField(null);
+              setShowFieldModal(true);
+            }}
+            onNewWaterTest={() => {
+              setCurrentWaterTest(null);
+              setShowWaterTestModal(true);
             }}
           />
         )}
 
         {currentView === 'farms' && (
-          <Farms 
-            farms={farms}
-            fields={fields}
-            onEditFarm={(farm) => {
-              setEditingFarm(farm);
-              setShowFarmModal(true);
-            }}
-            onDeleteFarm={handleDeleteFarm}
-            onNewFarm={() => {
-              setEditingFarm(null);
-              setShowFarmModal(true);
-            }}
-          />
-        )}      
-
-        {currentView === 'fields' && (
-          <Fields 
-            fields={fields}
-            applications={applications}
-            onEditField={(field) => {
-              setEditingField(field);
-              setShowFieldModal(true);
-            }}
-            onDeleteField={handleDeleteField}
-            onNewField={() => {
-              setEditingField(null);
-              setShowFieldModal(true);
-            }}
-          />
+          <div className="p-6">
+            <Farms
+              farms={farms}
+              fields={fields}
+              applications={applications}
+              onNewFarm={() => {
+                setCurrentFarm(null);
+                setShowFarmModal(true);
+              }}
+              onEditFarm={handleEditFarm}
+              onDeleteFarm={handleDeleteFarm}
+              onNewField={() => {
+                setCurrentField(null);
+                setShowFieldModal(true);
+              }}
+              onEditField={handleEditField}
+              onDeleteField={handleDeleteField}
+            />
+          </div>
         )}
 
-        {currentView === 'water' && !showingTests && (
-          <WaterSources
-            waterSources={waterSources}
-            farms={farms}
-            onEditSource={(source) => {
-              setEditingWaterSource(source);
-              setShowWaterSourceModal(true);
-            }}
-            onDeleteSource={handleDeleteWaterSource}
-            onNewSource={() => {
-              setEditingWaterSource(null);
-              setShowWaterSourceModal(true);
-            }}
-            onViewTests={handleViewTests}
-          />
+        {currentView === 'water' && (
+          <div className="p-6">
+            <WaterSources
+              waterSources={waterSources}
+              farms={farms}
+              onNewSource={() => {
+                setCurrentWaterSource(null);
+                setShowWaterSourceModal(true);
+              }}
+              onEditSource={handleEditWaterSource}
+              onDeleteSource={handleDeleteWaterSource}
+              onViewTests={handleViewTests}
+            />
+          </div>
         )}
 
-        {currentView === 'water' && showingTests && selectedWaterSource && (
-          <WaterTests
-            waterSource={selectedWaterSource}
-            onBack={handleBackFromTests}
-            onNewTest={(source) => {
-              setSelectedWaterSource(source);
-              setEditingWaterTest(null);
-              setShowWaterTestModal(true);
-            }}
-            onEditTest={(test) => {
-              setEditingWaterTest(test);
-              setShowWaterTestModal(true);
-            }}
-          />
+        {currentView === 'water-tests' && selectedWaterSource && (
+          <div className="p-6">
+            <WaterTests
+              waterSource={selectedWaterSource}
+              onNewTest={() => {
+                setCurrentWaterTest(null);
+                setShowWaterTestModal(true);
+              }}
+              onEditTest={(test) => {
+                setCurrentWaterTest(test);
+                setShowWaterTestModal(true);
+              }}
+              onBack={() => setCurrentView('water')}
+            />
+          </div>
+        )}
+
+        {currentView === 'reports' && (
+          <div className="p-6">
+            <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
+              <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">Reports Coming Soon</h2>
+              <p className="text-gray-600 mb-6">
+                Generate PUR reports, compliance summaries, and operational analytics.
+              </p>
+              <button className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors">
+                Request Early Access
+              </button>
+            </div>
+          </div>
         )}
       </main>
 
-      {showAppModal && (
-        <ApplicationModal
-          application={selectedApp}
-          fields={fields}
-          products={products}
-          onClose={() => {
-            setShowAppModal(false);
-            setSelectedApp(null);
-          }}
-          onSave={handleSaveApplication}
-          onDelete={handleDeleteApplication}
-          onMarkComplete={handleMarkComplete}
-        />
-      )}
-
+      {/* Modals */}
       {showFarmModal && (
         <FarmModal
-          farm={editingFarm}
+          farm={currentFarm}
+          onSave={handleSaveFarm}
           onClose={() => {
             setShowFarmModal(false);
-            setEditingFarm(null);
+            setCurrentFarm(null);
           }}
-          onSave={handleSaveFarm}
         />
       )}
 
       {showFieldModal && (
         <FieldModal
-          field={editingField}
+          field={currentField}
           farms={farms}
+          onSave={handleSaveField}
           onClose={() => {
             setShowFieldModal(false);
-            setEditingField(null);
+            setCurrentField(null);
           }}
-          onSave={handleSaveField}
+        />
+      )}
+
+      {showAppModal && (
+        <ApplicationModal
+          application={currentApplication}
+          fields={fields}
+          products={products}
+          onSave={handleSaveApplication}
+          onClose={() => {
+            setShowAppModal(false);
+            setCurrentApplication(null);
+          }}
         />
       )}
 
       {showWaterSourceModal && (
         <WaterSourceModal
-          source={editingWaterSource}
+          waterSource={currentWaterSource}
           farms={farms}
           fields={fields}
+          onSave={handleSaveWaterSource}
           onClose={() => {
             setShowWaterSourceModal(false);
-            setEditingWaterSource(null);
+            setCurrentWaterSource(null);
           }}
-          onSave={handleSaveWaterSource}
         />
       )}
 
       {showWaterTestModal && (
         <WaterTestModal
-          test={editingWaterTest}
+          waterTest={currentWaterTest}
           waterSource={selectedWaterSource}
+          waterSources={waterSources}
+          onSave={handleSaveWaterTest}
           onClose={() => {
             setShowWaterTestModal(false);
-            setEditingWaterTest(null);
+            setCurrentWaterTest(null);
           }}
-          onSave={handleSaveWaterTest}
         />
       )}
     </div>

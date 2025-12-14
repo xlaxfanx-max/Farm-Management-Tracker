@@ -31,13 +31,23 @@ class FieldSerializer(serializers.ModelSerializer):
 
 
 class PesticideProductSerializer(serializers.ModelSerializer):
+    rei_display = serializers.SerializerMethodField()
+    requires_license = serializers.BooleanField(read_only=True)
+    is_high_toxicity = serializers.BooleanField(read_only=True)
+    
     class Meta:
         model = PesticideProduct
-        fields = [
-            'id', 'epa_registration_number', 'product_name', 'manufacturer',
-            'active_ingredients', 'formulation_type', 'restricted_use',
-            'created_at', 'updated_at'
-        ]
+        fields = '__all__'
+    
+    def get_rei_display(self, obj):
+        """Get REI formatted for display"""
+        rei_hours = obj.get_rei_display_hours()
+        if rei_hours:
+            if rei_hours >= 24:
+                days = int(rei_hours / 24)
+                return f"{days} day{'s' if days != 1 else ''}"
+            return f"{int(rei_hours)} hour{'s' if rei_hours != 1 else ''}"
+        return None
 
 
 class PesticideApplicationSerializer(serializers.ModelSerializer):

@@ -66,26 +66,303 @@ class Field(models.Model):
 
 
 class PesticideProduct(models.Model):
-    """Pesticide product catalog"""
-    epa_registration_number = models.CharField(max_length=50, unique=True, db_index=True)
-    product_name = models.CharField(max_length=200)
-    manufacturer = models.CharField(max_length=200, blank=True)
+    """
+    Complete pesticide product database for California PUR compliance.
+    Based on California DPR requirements and product label information.
+    """
     
-    # Active ingredients
-    active_ingredients = models.TextField()
-    
-    formulation_type = models.CharField(max_length=100, blank=True)
-    restricted_use = models.BooleanField(default=False)
-    
-    # Timestamps
+    # EXISTING FIELDS (keep these)
+    epa_registration_number = models.CharField(
+        max_length=50, 
+        unique=True,
+        help_text="EPA Registration Number (e.g., 12345-678)"
+    )
+    product_name = models.CharField(
+        max_length=200,
+        help_text="Product trade name"
+    )
+    manufacturer = models.CharField(
+        max_length=200,
+        blank=True,
+        help_text="Manufacturer/registrant name"
+    )
+    active_ingredients = models.TextField(
+        blank=True,
+        help_text="Active ingredient(s) and percentages"
+    )
+    formulation_type = models.CharField(
+        max_length=50,
+        blank=True,
+        help_text="e.g., EC, WP, G, etc."
+    )
+    restricted_use = models.BooleanField(
+        default=False,
+        help_text="Restricted Use Pesticide (RUP)"
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-
+    
+    # NEW FIELDS FOR ENHANCED PUR COMPLIANCE
+    
+    # Product Classification
+    product_type = models.CharField(  # NEW
+        max_length=50,
+        blank=True,
+        choices=[
+            ('insecticide', 'Insecticide'),
+            ('herbicide', 'Herbicide'),
+            ('fungicide', 'Fungicide'),
+            ('fumigant', 'Fumigant'),
+            ('adjuvant', 'Adjuvant'),
+            ('plant_growth_regulator', 'Plant Growth Regulator'),
+            ('rodenticide', 'Rodenticide'),
+            ('other', 'Other'),
+        ],
+        help_text="Primary product type"
+    )
+    
+    is_fumigant = models.BooleanField(  # NEW
+        default=False,
+        help_text="Is this a fumigant product?"
+    )
+    
+    # Signal Word (Toxicity)
+    signal_word = models.CharField(  # NEW
+        max_length=20,
+        blank=True,
+        choices=[
+            ('DANGER', 'Danger'),
+            ('WARNING', 'Warning'),
+            ('CAUTION', 'Caution'),
+            ('NONE', 'None'),
+        ],
+        help_text="Signal word from label"
+    )
+    
+    # Re-Entry Interval (REI)
+    rei_hours = models.DecimalField(  # NEW
+        max_digits=6,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="Re-Entry Interval in hours (e.g., 12, 24, 48)"
+    )
+    
+    rei_days = models.IntegerField(  # NEW
+        null=True,
+        blank=True,
+        help_text="Alternative REI in days (some products use days)"
+    )
+    
+    # Pre-Harvest Interval (PHI)
+    phi_days = models.IntegerField(  # NEW
+        null=True,
+        blank=True,
+        help_text="Pre-Harvest Interval in days"
+    )
+    
+    # Application Restrictions
+    max_applications_per_season = models.IntegerField(  # NEW
+        null=True,
+        blank=True,
+        help_text="Maximum number of applications per season"
+    )
+    
+    max_rate_per_application = models.DecimalField(  # NEW
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="Maximum rate per application"
+    )
+    
+    max_rate_unit = models.CharField(  # NEW
+        max_length=20,
+        blank=True,
+        choices=[
+            ('lbs/acre', 'lbs/acre'),
+            ('gal/acre', 'gal/acre'),
+            ('oz/acre', 'oz/acre'),
+            ('fl oz/acre', 'fl oz/acre'),
+            ('kg/ha', 'kg/ha'),
+            ('L/ha', 'L/ha'),
+        ],
+        help_text="Unit for max rate"
+    )
+    
+    # California Specific
+    california_registration_number = models.CharField(  # NEW
+        max_length=50,
+        blank=True,
+        help_text="California DPR registration number (if different from EPA)"
+    )
+    
+    active_status_california = models.BooleanField(  # NEW
+        default=True,
+        help_text="Currently registered for use in California?"
+    )
+    
+    # Product Details
+    formulation_code = models.CharField(  # NEW
+        max_length=10,
+        blank=True,
+        help_text="EPA formulation code (e.g., EC, WP, G)"
+    )
+    
+    density_specific_gravity = models.DecimalField(  # NEW
+        max_digits=6,
+        decimal_places=4,
+        null=True,
+        blank=True,
+        help_text="Specific gravity or density (for conversions)"
+    )
+    
+    # Approved Crops/Sites
+    approved_crops = models.TextField(  # NEW
+        blank=True,
+        help_text="Comma-separated list of approved crops/sites"
+    )
+    
+    # Environmental/Safety Notes
+    groundwater_advisory = models.BooleanField(  # NEW
+        default=False,
+        help_text="Has groundwater advisory?"
+    )
+    
+    endangered_species_restrictions = models.BooleanField(  # NEW
+        default=False,
+        help_text="Has endangered species restrictions?"
+    )
+    
+    buffer_zone_required = models.BooleanField(  # NEW
+        default=False,
+        help_text="Requires buffer zones?"
+    )
+    
+    buffer_zone_feet = models.IntegerField(  # NEW
+        null=True,
+        blank=True,
+        help_text="Buffer zone distance in feet"
+    )
+    
+    # Product Availability
+    product_status = models.CharField(  # NEW
+        max_length=20,
+        default='active',
+        choices=[
+            ('active', 'Active'),
+            ('discontinued', 'Discontinued'),
+            ('suspended', 'Suspended'),
+            ('cancelled', 'Cancelled'),
+        ],
+        help_text="Current product status"
+    )
+    
+    # Cost Tracking (Optional but useful)
+    unit_size = models.CharField(  # NEW
+        max_length=50,
+        blank=True,
+        help_text="Standard unit size (e.g., '2.5 gallon jug', '50 lb bag')"
+    )
+    
+    cost_per_unit = models.DecimalField(  # NEW
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="Cost per unit (for cost tracking)"
+    )
+    
+    # Additional Information
+    label_url = models.URLField(  # NEW
+        blank=True,
+        help_text="URL to product label PDF"
+    )
+    
+    sds_url = models.URLField(  # NEW
+        blank=True,
+        help_text="URL to Safety Data Sheet"
+    )
+    
+    notes = models.TextField(  # NEW
+        blank=True,
+        help_text="Additional notes or special instructions"
+    )
+    
+    # Metadata for management
+    active = models.BooleanField(  # NEW (if not already present)
+        default=True,
+        help_text="Is this product actively used on your farm?"
+    )
+    
+    # Search optimization
+    search_keywords = models.TextField(  # NEW
+        blank=True,
+        help_text="Additional keywords for searching (auto-populated)"
+    )
+    
     class Meta:
         ordering = ['product_name']
-
+        verbose_name = "Pesticide Product"
+        verbose_name_plural = "Pesticide Products"
+        indexes = [
+            models.Index(fields=['epa_registration_number']),
+            models.Index(fields=['product_name']),
+            models.Index(fields=['product_type']),
+            models.Index(fields=['active']),
+        ]
+    
     def __str__(self):
         return f"{self.product_name} ({self.epa_registration_number})"
+    
+    def save(self, *args, **kwargs):
+        # Auto-populate search keywords
+        keywords = [
+            self.product_name,
+            self.manufacturer,
+            self.epa_registration_number,
+            self.active_ingredients,
+        ]
+        self.search_keywords = ' '.join(filter(None, keywords)).lower()
+        super().save(*args, **kwargs)
+    
+    def get_rei_display_hours(self):
+        """Get REI in hours for display"""
+        if self.rei_hours:
+            return self.rei_hours
+        elif self.rei_days:
+            return self.rei_days * 24
+        return None
+    
+    def is_rei_expired(self, application_date, check_date):
+        """Check if REI has expired for an application"""
+        from datetime import timedelta
+        
+        rei_hours = self.get_rei_display_hours()
+        if not rei_hours:
+            return True  # No REI means safe to enter
+        
+        rei_end = application_date + timedelta(hours=float(rei_hours))
+        return check_date >= rei_end
+    
+    def is_phi_met(self, application_date, harvest_date):
+        """Check if PHI is met for harvest"""
+        if not self.phi_days:
+            return True  # No PHI restriction
+        
+        from datetime import timedelta
+        phi_end = application_date + timedelta(days=self.phi_days)
+        return harvest_date >= phi_end
+    
+    @property
+    def is_high_toxicity(self):
+        """Check if product is high toxicity"""
+        return self.signal_word == 'DANGER'
+    
+    @property
+    def requires_license(self):
+        """Check if product requires licensed applicator"""
+        return self.restricted_use or self.is_fumigant
 
 
 class PesticideApplication(models.Model):
@@ -134,6 +411,13 @@ class PesticideApplication(models.Model):
     
     # Applicator information
     applicator_name = models.CharField(max_length=200)
+
+    # Applicator license number
+    applicator_license_no = models.CharField(
+        max_length=50, 
+        blank=True,
+        help_text="California Department of Pesticide Regulation license number"
+    )
     
     # Weather conditions
     temperature = models.DecimalField(max_digits=5, decimal_places=1, null=True, blank=True)
