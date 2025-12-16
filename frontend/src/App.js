@@ -9,7 +9,11 @@ import {
   LogOut,
   Menu,
   X,
-  Wheat
+  Wheat,
+  Building2,
+  ChevronDown,
+  User,
+  Users
 } from 'lucide-react';
 import Dashboard from './components/Dashboard';
 import Farms from './components/Farms';
@@ -30,9 +34,34 @@ import HarvestLaborModal from './components/HarvestLaborModal';
 import BuyerModal from './components/BuyerModal';
 import LaborContractorModal from './components/LaborContractorModal';
 
+// NEW: Import authentication and team management
+import { useAuth } from './contexts/AuthContext';
+import Login, { Register } from './components/Login';
+import TeamManagement from './components/TeamManagement';
+import AcceptInvitation from './components/AcceptInvitation';
+
 
 function App() {
+  // ============================================================================
+  // AUTHENTICATION - NEW
+  // ============================================================================
+  const { 
+    isAuthenticated, 
+    loading: authLoading, 
+    user, 
+    currentCompany,
+    companies,
+    logout,
+    switchCompany 
+  } = useAuth();
+
+  const [authMode, setAuthMode] = useState('login'); // 'login' or 'register'
+  const [showUserMenu, setShowUserMenu] = useState(false);
+  const [showCompanyMenu, setShowCompanyMenu] = useState(false);
+
+  // ============================================================================
   // State for data
+  // ============================================================================
   const [farms, setFarms] = useState([]);
   const [fields, setFields] = useState([]);
   const [applications, setApplications] = useState([]);
@@ -60,12 +89,10 @@ function App() {
   const [currentWaterTest, setCurrentWaterTest] = useState(null);
   const [selectedWaterSource, setSelectedWaterSource] = useState(null);
   
-  // NEW: Add preselectedFarmId state for field modal
+  // Add preselectedFarmId state for field modal
   const [preselectedFarmId, setPreselectedFarmId] = useState(null);
 
-  // ============================================================================
-  // NEW: HARVEST TRACKING STATE - ADD THESE LINES (around line 64)
-  // ============================================================================
+  // Harvest tracking state
   const [showHarvestModal, setShowHarvestModal] = useState(false);
   const [showHarvestLoadModal, setShowHarvestLoadModal] = useState(false);
   const [showHarvestLaborModal, setShowHarvestLaborModal] = useState(false);
@@ -75,11 +102,15 @@ function App() {
   const [selectedHarvestId, setSelectedHarvestId] = useState(null);
   const [preselectedFieldId, setPreselectedFieldId] = useState(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
-  // ============================================================================
 
+  // ============================================================================
+  // Load data only when authenticated
+  // ============================================================================
   useEffect(() => {
-    loadData();
-  }, []);
+    if (isAuthenticated) {
+      loadData();
+    }
+  }, [isAuthenticated, currentCompany]); // Reload when company changes
 
   const loadData = async () => {
     setLoading(true);
@@ -94,12 +125,12 @@ function App() {
         waterTestsAPI.getAll()
       ]);
 
-      setFarms(farmsRes.data.results || farmsRes.data);
-      setFields(fieldsRes.data.results || fieldsRes.data);
-      setApplications(appsRes.data.results || appsRes.data);
-      setProducts(productsRes.data.results || productsRes.data);
-      setWaterSources(waterSourcesRes.data.results || waterSourcesRes.data);
-      setWaterTests(waterTestsRes.data.results || waterTestsRes.data);
+      setFarms(farmsRes.data.results || farmsRes.data || []);
+      setFields(fieldsRes.data.results || fieldsRes.data || []);
+      setApplications(appsRes.data.results || appsRes.data || []);
+      setProducts(productsRes.data.results || productsRes.data || []);
+      setWaterSources(waterSourcesRes.data.results || waterSourcesRes.data || []);
+      setWaterTests(waterTestsRes.data.results || waterTestsRes.data || []);
     } catch (err) {
       setError('Failed to load data. Please check your connection.');
       console.error('Error loading data:', err);
@@ -108,7 +139,58 @@ function App() {
     }
   };
 
-  // Farm handlers
+  // ============================================================================
+  // AUTHENTICATION HANDLERS - NEW
+  // ============================================================================
+  const handleLogout = async () => {
+    await logout();
+    setShowUserMenu(false);
+  };
+
+  const handleSwitchCompany = async (companyId) => {
+    await switchCompany(companyId);
+    setShowCompanyMenu(false);
+    // Data will reload due to useEffect dependency on currentCompany
+  };
+
+  // ============================================================================
+  // Check for invitation token in URL
+  // ============================================================================
+  const urlParams = new URLSearchParams(window.location.search);
+  const inviteToken = urlParams.get('invite') || 
+    (window.location.pathname.startsWith('/invite/') ? window.location.pathname.split('/invite/')[1] : null);
+  
+  if (inviteToken) {
+    return <AcceptInvitation token={inviteToken} onComplete={() => window.location.href = '/'} />;
+  }
+
+  // ============================================================================
+  // Show loading while checking auth
+  // ============================================================================
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // ============================================================================
+  // Show login/register if not authenticated
+  // ============================================================================
+  if (!isAuthenticated) {
+    if (authMode === 'register') {
+      return <Register onSwitchToLogin={() => setAuthMode('login')} />;
+    }
+    return <Login onSwitchToRegister={() => setAuthMode('register')} />;
+  }
+
+  // ============================================================================
+  // Farm handlers (existing)
+  // ============================================================================
   const handleSaveFarm = async (farmData) => {
     try {
       if (currentFarm) {
@@ -127,7 +209,6 @@ function App() {
 
   const handleEditFarm = async (farm, autoSave = false) => {
     if (autoSave) {
-      // Auto-save (used for GPS coordinate updates from map)
       try {
         await farmsAPI.update(farm.id, farm);
         await loadData();
@@ -139,7 +220,6 @@ function App() {
       setShowFarmModal(true);
     }
   };
-
 
   const handleDeleteFarm = async (farmId) => {
     if (window.confirm('Are you sure you want to delete this farm?')) {
@@ -247,10 +327,10 @@ function App() {
     setShowWaterSourceModal(true);
   };
 
-  const handleDeleteWaterSource = async (waterSourceId) => {
+  const handleDeleteWaterSource = async (sourceId) => {
     if (window.confirm('Are you sure you want to delete this water source?')) {
       try {
-        await waterSourcesAPI.delete(waterSourceId);
+        await waterSourcesAPI.delete(sourceId);
         await loadData();
       } catch (err) {
         console.error('Error deleting water source:', err);
@@ -260,12 +340,17 @@ function App() {
   };
 
   // Water Test handlers
-  const handleSaveWaterTest = async (waterTestData) => {
+  const handleViewTests = (waterSource) => {
+    setSelectedWaterSource(waterSource);
+    setCurrentView('water-tests');
+  };
+
+  const handleSaveWaterTest = async (testData) => {
     try {
       if (currentWaterTest) {
-        await waterTestsAPI.update(currentWaterTest.id, waterTestData);
+        await waterTestsAPI.update(currentWaterTest.id, testData);
       } else {
-        await waterTestsAPI.create(waterTestData);
+        await waterTestsAPI.create(testData);
       }
       await loadData();
       setShowWaterTestModal(false);
@@ -276,14 +361,7 @@ function App() {
     }
   };
 
-  const handleViewTests = (waterSource) => {
-    setSelectedWaterSource(waterSource);
-    setCurrentView('water-tests');
-  };
-
-  // ============================================================================
-  // NEW: HARVEST HANDLERS - ADD THESE FUNCTIONS (around line 258)
-  // ============================================================================
+  // Harvest handlers
   const handleNewHarvest = (fieldId = null) => {
     setCurrentHarvest(null);
     setPreselectedFieldId(fieldId);
@@ -292,6 +370,7 @@ function App() {
 
   const handleEditHarvest = (harvest) => {
     setCurrentHarvest(harvest);
+    setPreselectedFieldId(null);
     setShowHarvestModal(true);
   };
 
@@ -307,118 +386,177 @@ function App() {
 
   const handleHarvestSave = () => {
     setRefreshTrigger(prev => prev + 1);
-    loadData(); // Refresh main data too
   };
-  // ============================================================================
 
-  const navigation = [
+  // Navigation items
+  const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'farms', label: 'Farms & Fields', icon: HomeIcon },
     { id: 'water', label: 'Water Quality', icon: Droplet },
-    { id: 'reports', label: 'Reports', icon: FileText },
     { id: 'harvests', label: 'Harvests', icon: Wheat },
+    { id: 'reports', label: 'Reports', icon: FileText },
+    { id: 'team', label: 'Team', icon: Users },
   ];
 
-  const NavItem = ({ item, active }) => {
-    const Icon = item.icon;
-    return (
-      <button
-        onClick={() => setCurrentView(item.id)}
-        className={`
-          w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors
-          ${active 
-            ? 'bg-green-100 text-green-700 font-medium' 
-            : 'text-gray-700 hover:bg-gray-100'
-          }
-        `}
-      >
-        <Icon size={20} />
-        {!sidebarCollapsed && <span>{item.label}</span>}
-      </button>
-    );
+  // Get user initials
+  const getUserInitials = () => {
+    if (!user) return '?';
+    const first = user.first_name?.[0] || '';
+    const last = user.last_name?.[0] || '';
+    return (first + last).toUpperCase() || user.email[0].toUpperCase();
   };
 
-  if (loading) {
-    return (
-      <div className="flex h-screen items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mb-4"></div>
-          <p className="text-gray-600">Loading farm data...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex h-screen items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md">
-            <p className="text-red-800 font-medium mb-2">Error Loading Data</p>
-            <p className="text-red-600 text-sm mb-4">{error}</p>
-            <button
-              onClick={loadData}
-              className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
-            >
-              Retry
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
+  // ============================================================================
+  // MAIN AUTHENTICATED UI
+  // ============================================================================
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex min-h-screen bg-gray-50">
       {/* Sidebar */}
-      <aside className={`bg-white border-r border-gray-200 flex flex-col transition-all duration-300 ${sidebarCollapsed ? 'w-20' : 'w-64'}`}>
-        <div className="p-6 border-b border-gray-200">
-          <div className="flex items-center justify-between">
-            {!sidebarCollapsed && (
-              <div>
-                <h1 className="text-xl font-bold text-gray-900">FarmTracker</h1>
-                <p className="text-xs text-gray-500 mt-1">Citrus Management</p>
-              </div>
-            )}
-            <button onClick={() => setSidebarCollapsed(!sidebarCollapsed)} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-              {sidebarCollapsed ? <Menu className="w-5 h-5" /> : <X className="w-5 h-5" />}
-            </button>
-          </div>
-        </div>
-
-        <nav className="flex-1 p-4 space-y-1">
-          {navigation.map(item => (
-            <NavItem key={item.id} item={item} active={currentView === item.id} />
-          ))}
-        </nav>
-
-        <div className="p-4 border-t border-gray-200">
-          {!sidebarCollapsed ? (
-            <div>
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-                  <span className="text-blue-600 font-semibold text-sm">MC</span>
+      <aside className={`${sidebarCollapsed ? 'w-16' : 'w-64'} bg-white border-r border-gray-200 transition-all duration-300`}>
+        <div className="flex flex-col h-full">
+          {/* Logo/Header */}
+          <div className="p-4 border-b border-gray-200">
+            <div className="flex items-center justify-between">
+              {!sidebarCollapsed && (
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 bg-green-600 rounded-lg flex items-center justify-center">
+                    <MapPin className="w-5 h-5 text-white" />
+                  </div>
+                  <span className="font-bold text-gray-800">Farm Tracker</span>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 truncate">Michael's Citrus</p>
-                  <p className="text-xs text-gray-500 truncate">Operator</p>
-                </div>
-              </div>
-              <button className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
-                <Settings className="w-4 h-4" />
-                <span>Settings</span>
-              </button>
-              <button className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors mt-1">
-                <LogOut className="w-4 h-4" />
-                <span>Logout</span>
+              )}
+              <button
+                onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+                className="p-1 hover:bg-gray-100 rounded"
+              >
+                {sidebarCollapsed ? <Menu className="w-5 h-5" /> : <X className="w-5 h-5" />}
               </button>
             </div>
-          ) : (
-            <div className="space-y-2">
-              <button className="w-full p-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors flex justify-center">
-                <Settings className="w-5 h-5" />
+          </div>
+
+          {/* Company Selector - NEW */}
+          {!sidebarCollapsed && currentCompany && (
+            <div className="p-3 border-b border-gray-200">
+              <div className="relative">
+                <button
+                  onClick={() => setShowCompanyMenu(!showCompanyMenu)}
+                  className="w-full flex items-center gap-2 px-3 py-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                >
+                  <Building2 className="w-4 h-4 text-gray-500" />
+                  <span className="text-sm font-medium text-gray-700 truncate flex-1 text-left">
+                    {currentCompany.name}
+                  </span>
+                  {companies.length > 1 && (
+                    <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${showCompanyMenu ? 'rotate-180' : ''}`} />
+                  )}
+                </button>
+
+                {showCompanyMenu && companies.length > 1 && (
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 py-1">
+                    {companies.map((company) => (
+                      <button
+                        key={company.id}
+                        onClick={() => handleSwitchCompany(company.id)}
+                        className={`w-full flex items-center gap-2 px-3 py-2 hover:bg-gray-50 text-left ${
+                          company.id === currentCompany.id ? 'bg-green-50' : ''
+                        }`}
+                      >
+                        <span className="text-sm text-gray-700 truncate">{company.name}</span>
+                        {company.id === currentCompany.id && (
+                          <span className="ml-auto text-green-600">✓</span>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <p className="text-xs text-gray-500 mt-1 px-1">
+                {currentCompany.role}
+              </p>
+            </div>
+          )}
+
+          {/* Navigation */}
+          <nav className="flex-1 p-4 space-y-1">
+            {navItems.map((item) => (
+              <button
+                key={item.id}
+                onClick={() => setCurrentView(item.id)}
+                className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
+                  currentView === item.id
+                    ? 'bg-green-100 text-green-700'
+                    : 'text-gray-600 hover:bg-gray-100'
+                }`}
+              >
+                <item.icon className="w-5 h-5" />
+                {!sidebarCollapsed && <span>{item.label}</span>}
               </button>
-              <button className="w-full p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors flex justify-center">
+            ))}
+          </nav>
+
+          {/* User Section at Bottom */}
+          {!sidebarCollapsed && (
+            <div className="p-4 border-t border-gray-200">
+              <div className="relative">
+                <button
+                  onClick={() => setShowUserMenu(!showUserMenu)}
+                  className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors"
+                >
+                  <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center">
+                    <span className="text-sm font-medium text-white">{getUserInitials()}</span>
+                  </div>
+                  <div className="flex-1 text-left">
+                    <p className="text-sm font-medium text-gray-700 truncate">
+                      {user?.first_name || user?.email}
+                    </p>
+                    <p className="text-xs text-gray-500 truncate">{user?.email}</p>
+                  </div>
+                </button>
+
+                {showUserMenu && (
+                  <div className="absolute bottom-full left-0 right-0 mb-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 py-1">
+                    <button
+                      onClick={() => {
+                        setShowUserMenu(false);
+                        // Navigate to profile/settings when implemented
+                      }}
+                      className="w-full flex items-center gap-2 px-3 py-2 hover:bg-gray-50 text-left text-sm text-gray-700"
+                    >
+                      <User className="w-4 h-4" />
+                      Profile
+                    </button>
+                    <button
+                      onClick={() => {
+                        setShowUserMenu(false);
+                        // Navigate to settings when implemented
+                      }}
+                      className="w-full flex items-center gap-2 px-3 py-2 hover:bg-gray-50 text-left text-sm text-gray-700"
+                    >
+                      <Settings className="w-4 h-4" />
+                      Settings
+                    </button>
+                    <hr className="my-1" />
+                    <button
+                      onClick={handleLogout}
+                      className="w-full flex items-center gap-2 px-3 py-2 hover:bg-red-50 text-left text-sm text-red-600"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      Sign Out
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Collapsed sidebar logout */}
+          {sidebarCollapsed && (
+            <div className="p-4 border-t border-gray-200">
+              <button
+                onClick={handleLogout}
+                className="w-full flex justify-center p-2 hover:bg-gray-100 rounded-lg text-gray-600 hover:text-red-600"
+                title="Sign Out"
+              >
                 <LogOut className="w-5 h-5" />
               </button>
             </div>
@@ -428,112 +566,134 @@ function App() {
 
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto">
-        {currentView === 'dashboard' && (
-          <Dashboard
-            applications={applications}
-            fields={fields}
-            farms={farms}
-            waterSources={waterSources}
-            onNewApplication={() => {
-              setCurrentApplication(null);
-              setShowAppModal(true);
-            }}
-            onNewField={(farmId) => {
-              setCurrentField(null);
-              setPreselectedFarmId(farmId || null);
-              setShowFieldModal(true);
-            }}
-            onNewWaterTest={() => {
-              setCurrentWaterTest(null);
-              setShowWaterTestModal(true);
-            }}
-            onNavigateToReports={() => setCurrentView('reports')}
-            onNavigateToHarvests={() => setCurrentView('harvests')}
-          />
-        )}
-
-        {currentView === 'farms' && (
-          <div className="p-6">
-            <Farms
-              farms={farms}
-              fields={fields}
-              applications={applications}
-              onNewFarm={() => {
-                setCurrentFarm(null);
-                setShowFarmModal(true);
-              }}
-              onEditFarm={handleEditFarm}
-              onDeleteFarm={handleDeleteFarm}
-              onNewField={(farmId) => {
-                setCurrentField(null);
-                setPreselectedFarmId(farmId || null);
-                setShowFieldModal(true);
-              }}
-              onEditField={handleEditField}
-              onDeleteField={handleDeleteField}
-              onRefresh={loadData}
-            />
+        {/* Loading State */}
+        {loading && (
+          <div className="flex items-center justify-center h-64">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
           </div>
         )}
 
-        {currentView === 'water' && (
+        {/* Error State */}
+        {error && !loading && (
           <div className="p-6">
-            <WaterSources
-              waterSources={waterSources}
-              farms={farms}
-              onNewSource={() => {
-                setCurrentWaterSource(null);
-                setShowWaterSourceModal(true);
-              }}
-              onEditSource={handleEditWaterSource}
-              onDeleteSource={handleDeleteWaterSource}
-              onViewTests={handleViewTests}
-            />
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700">
+              {error}
+              <button onClick={loadData} className="ml-4 underline">Retry</button>
+            </div>
           </div>
         )}
 
-        {currentView === 'water-tests' && selectedWaterSource && (
-          <div className="p-6">
-            <WaterTests
-              waterSource={selectedWaterSource}
-              onNewTest={() => {
-                setCurrentWaterTest(null);
-                setShowWaterTestModal(true);
-              }}
-              onEditTest={(test) => {
-                setCurrentWaterTest(test);
-                setShowWaterTestModal(true);
-              }}
-              onBack={() => setCurrentView('water')}
-            />
-          </div>
-        )}
+        {/* Content */}
+        {!loading && !error && (
+          <>
+            {currentView === 'dashboard' && (
+              <Dashboard
+                applications={applications}
+                fields={fields}
+                farms={farms}
+                waterSources={waterSources}
+                onNewApplication={() => {
+                  setCurrentApplication(null);
+                  setShowAppModal(true);
+                }}
+                onNewField={(farmId) => {
+                  setCurrentField(null);
+                  setPreselectedFarmId(farmId || null);
+                  setShowFieldModal(true);
+                }}
+                onNewWaterTest={() => {
+                  setCurrentWaterTest(null);
+                  setShowWaterTestModal(true);
+                }}
+                onNavigateToReports={() => setCurrentView('reports')}
+                onNavigateToHarvests={() => setCurrentView('harvests')}
+              />
+            )}
 
-        {currentView === 'reports' && (
-          <Reports
-            farms={farms}
-            fields={fields}
-            applications={applications}
-          />
-        )}
+            {currentView === 'farms' && (
+              <div className="p-6">
+                <Farms
+                  farms={farms}
+                  fields={fields}
+                  applications={applications}
+                  onNewFarm={() => {
+                    setCurrentFarm(null);
+                    setShowFarmModal(true);
+                  }}
+                  onEditFarm={handleEditFarm}
+                  onDeleteFarm={handleDeleteFarm}
+                  onNewField={(farmId) => {
+                    setCurrentField(null);
+                    setPreselectedFarmId(farmId || null);
+                    setShowFieldModal(true);
+                  }}
+                  onEditField={handleEditField}
+                  onDeleteField={handleDeleteField}
+                  onRefresh={loadData}
+                />
+              </div>
+            )}
 
-        {/* ====================================================================== */}
-        {/* NEW: HARVESTS VIEW - ADD THIS BLOCK (after reports view) */}
-        {/* ====================================================================== */}
-        {currentView === 'harvests' && (
-          <div className="p-6">
-            <Harvests
-              fields={fields}
-              farms={farms}
-              onNewHarvest={handleNewHarvest}
-              onEditHarvest={handleEditHarvest}
-              onAddLoad={handleAddLoad}
-              onAddLabor={handleAddLabor}
-              refreshTrigger={refreshTrigger}
-            />
-          </div>
+            {currentView === 'water' && (
+              <div className="p-6">
+                <WaterSources
+                  waterSources={waterSources}
+                  farms={farms}
+                  onNewSource={() => {
+                    setCurrentWaterSource(null);
+                    setShowWaterSourceModal(true);
+                  }}
+                  onEditSource={handleEditWaterSource}
+                  onDeleteSource={handleDeleteWaterSource}
+                  onViewTests={handleViewTests}
+                />
+              </div>
+            )}
+
+            {currentView === 'water-tests' && selectedWaterSource && (
+              <div className="p-6">
+                <WaterTests
+                  waterSource={selectedWaterSource}
+                  onNewTest={() => {
+                    setCurrentWaterTest(null);
+                    setShowWaterTestModal(true);
+                  }}
+                  onEditTest={(test) => {
+                    setCurrentWaterTest(test);
+                    setShowWaterTestModal(true);
+                  }}
+                  onBack={() => setCurrentView('water')}
+                />
+              </div>
+            )}
+
+            {currentView === 'reports' && (
+              <Reports
+                farms={farms}
+                fields={fields}
+                applications={applications}
+              />
+            )}
+
+            {currentView === 'harvests' && (
+              <div className="p-6">
+                <Harvests
+                  fields={fields}
+                  farms={farms}
+                  onNewHarvest={handleNewHarvest}
+                  onEditHarvest={handleEditHarvest}
+                  onAddLoad={handleAddLoad}
+                  onAddLabor={handleAddLabor}
+                  refreshTrigger={refreshTrigger}
+                />
+              </div>
+            )}
+
+            {currentView === 'team' && (
+              <TeamManagement />
+            )}
+          </>
         )}
-        {/* ====================================================================== */}
       </main>
 
       {/* Modals */}
@@ -601,9 +761,6 @@ function App() {
         />
       )}
 
-      {/* ====================================================================== */}
-      {/* NEW: HARVEST MODALS - ADD THESE BLOCKS (after WaterTestModal) */}
-      {/* ====================================================================== */}
       {showHarvestModal && (
         <HarvestModal
           isOpen={showHarvestModal}
@@ -661,7 +818,17 @@ function App() {
           onSave={handleHarvestSave}
         />
       )}
-      {/* ====================================================================== */}
+
+      {/* Click outside to close menus */}
+      {(showUserMenu || showCompanyMenu) && (
+        <div 
+          className="fixed inset-0 z-40" 
+          onClick={() => {
+            setShowUserMenu(false);
+            setShowCompanyMenu(false);
+          }}
+        />
+      )}
     </div>
   );
 }

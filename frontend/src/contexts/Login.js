@@ -1,12 +1,16 @@
+// =============================================================================
+// LOGIN PAGE COMPONENT
+// =============================================================================
+//
+// Create as: frontend/src/components/Login.js
+//
+// =============================================================================
+
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { Eye, EyeOff, Leaf, AlertCircle } from 'lucide-react';
 
-// =============================================================================
-// LOGIN COMPONENT
-// =============================================================================
-
-export default function Login({ onSwitchToRegister }) {
+export default function Login({ onSwitchToRegister, onForgotPassword }) {
   const { login, error } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -93,12 +97,21 @@ export default function Login({ onSwitchToRegister }) {
               </div>
             </div>
 
-            {/* Remember Me */}
+            {/* Remember & Forgot */}
             <div className="flex items-center justify-between">
               <label className="flex items-center">
                 <input type="checkbox" className="rounded border-gray-300 text-green-600 focus:ring-green-500" />
                 <span className="ml-2 text-sm text-gray-600">Remember me</span>
               </label>
+              {onForgotPassword && (
+                <button
+                  type="button"
+                  onClick={onForgotPassword}
+                  className="text-sm text-green-600 hover:text-green-700"
+                >
+                  Forgot password?
+                </button>
+              )}
             </div>
 
             {/* Submit */}
@@ -137,7 +150,7 @@ export default function Login({ onSwitchToRegister }) {
 
         {/* Footer */}
         <p className="mt-6 text-center text-xs text-gray-500">
-          Farm Management & Compliance Tracking
+          By signing in, you agree to our Terms of Service and Privacy Policy.
         </p>
       </div>
     </div>
@@ -146,7 +159,11 @@ export default function Login({ onSwitchToRegister }) {
 
 
 // =============================================================================
-// REGISTER COMPONENT
+// REGISTER PAGE COMPONENT
+// =============================================================================
+//
+// Create as: frontend/src/components/Register.js
+//
 // =============================================================================
 
 export function Register({ onSwitchToLogin }) {
@@ -163,7 +180,7 @@ export function Register({ onSwitchToLogin }) {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [localError, setLocalError] = useState('');
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(1); // 1 = company, 2 = personal
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -197,6 +214,7 @@ export function Register({ onSwitchToLogin }) {
 
     if (!result.success) {
       if (typeof result.error === 'object') {
+        // Handle validation errors object
         const messages = Object.entries(result.error)
           .map(([field, msg]) => `${field}: ${msg}`)
           .join(', ');

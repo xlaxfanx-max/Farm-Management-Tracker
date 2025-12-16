@@ -1,6 +1,16 @@
+// =============================================================================
+// FARM TRACKER API SERVICE
+// =============================================================================
+// Updated with authentication support while preserving all existing functionality
+// =============================================================================
+
 import axios from 'axios';
 
 const API_BASE_URL = 'http://localhost:8000/api';
+
+// =============================================================================
+// AXIOS INSTANCE WITH AUTH INTERCEPTORS
+// =============================================================================
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -9,7 +19,197 @@ const api = axios.create({
   },
 });
 
-// Farms API
+// Token storage keys
+const ACCESS_TOKEN_KEY = 'farm_tracker_access_token';
+const REFRESH_TOKEN_KEY = 'farm_tracker_refresh_token';
+
+// Request interceptor - add auth token to requests
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem(ACCESS_TOKEN_KEY);
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// Response interceptor - handle token refresh
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
+
+    // If 401 and we haven't tried refreshing yet
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+
+      const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
+      if (refreshToken) {
+        try {
+          // Use base axios to avoid infinite loop
+          const response = await axios.post(`${API_BASE_URL}/auth/refresh/`, {
+            refresh: refreshToken,
+          });
+
+          const newAccessToken = response.data.access;
+          localStorage.setItem(ACCESS_TOKEN_KEY, newAccessToken);
+
+          // Retry original request with new token
+          originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+          return api(originalRequest);
+        } catch (refreshError) {
+          // Refresh failed - clear tokens and redirect to login
+          localStorage.removeItem(ACCESS_TOKEN_KEY);
+          localStorage.removeItem(REFRESH_TOKEN_KEY);
+          window.location.href = '/login';
+          return Promise.reject(refreshError);
+        }
+      }
+    }
+
+    return Promise.reject(error);
+  }
+);
+
+// =============================================================================
+// AUTHENTICATION API (NEW)
+// =============================================================================
+
+export const authAPI = {
+  // Register new user and company
+  register: (data) => 
+    axios.post(`${API_BASE_URL}/auth/register/`, data),
+
+  // Login
+  login: (email, password) => 
+    axios.post(`${API_BASE_URL}/auth/login/`, { email, password }),
+
+  // Logout
+  logout: (refreshToken) => 
+    api.post('/auth/logout/', { refresh: refreshToken }),
+
+  // Refresh token
+  refresh: (refreshToken) => 
+    axios.post(`${API_BASE_URL}/auth/refresh/`, { refresh: refreshToken }),
+
+  // Get current user
+  me: () => api.get('/auth/me/'),
+
+  // Update profile
+  updateProfile: (data) => api.put('/auth/profile/', data),
+
+  // Change password
+  changePassword: (currentPassword, newPassword) => 
+    api.post('/auth/change-password/', {
+      current_password: currentPassword,
+      new_password: newPassword,
+    }),
+
+  // Switch company
+  switchCompany: (companyId) => 
+    api.post('/auth/switch-company/', { company_id: companyId }),
+
+  // Invite user
+  invite: (email, role, message = '') => 
+    api.post('/auth/invite/', { email, role, message }),
+
+  // Accept invitation
+  acceptInvitation: (token, password, firstName, lastName) => 
+    axios.post(`${API_BASE_URL}/auth/accept-invitation/`, {
+      token,
+      password,
+      first_name: firstName,
+      last_name: lastName,
+    }),
+
+  // Validate invitation token
+  validateInvitation: (token) => 
+    axios.get(`${API_BASE_URL}/auth/invitation/${token}/`),
+};
+
+// =============================================================================
+// COMPANY API (NEW)
+// =============================================================================
+
+export const companyAPI = {
+  // List user's companies
+  list: () => api.get('/companies/'),
+
+  // Get company details
+  get: (id) => api.get(`/companies/${id}/`),
+
+  // Update company settings
+  update: (id, data) => api.put(`/companies/${id}/`, data),
+
+  // Get company statistics
+  statistics: (id) => api.get(`/companies/${id}/statistics/`),
+
+  // Get company farms
+  farms: (id) => api.get(`/companies/${id}/farms/`),
+
+  // List company members
+  members: (companyId) => api.get(`/companies/${companyId}/members/`),
+
+  // Update member role
+  updateMember: (companyId, memberId, data) => 
+    api.put(`/companies/${companyId}/members/${memberId}/`, data),
+
+  // Remove member
+  removeMember: (companyId, memberId) => 
+    api.delete(`/companies/${companyId}/members/${memberId}/`),
+
+  // Transfer ownership
+  transferOwnership: (companyId, memberId) => 
+    api.post(`/companies/${companyId}/members/${memberId}/transfer_ownership/`),
+};
+
+// =============================================================================
+// ROLES API (NEW)
+// =============================================================================
+
+export const rolesAPI = {
+  // List all roles
+  list: () => api.get('/roles/'),
+
+  // Get available roles (for assignment)
+  available: () => api.get('/roles/available/'),
+
+  // Get role details
+  get: (id) => api.get(`/roles/${id}/`),
+};
+
+// =============================================================================
+// INVITATIONS API (NEW)
+// =============================================================================
+
+export const invitationsAPI = {
+  // List company invitations
+  list: () => api.get('/invitations/'),
+
+  // Resend invitation
+  resend: (id) => api.post(`/invitations/${id}/resend/`),
+
+  // Revoke invitation
+  revoke: (id) => api.post(`/invitations/${id}/revoke/`),
+};
+
+// =============================================================================
+// AUDIT LOG API (NEW)
+// =============================================================================
+
+export const auditAPI = {
+  // List audit logs
+  list: (params = {}) => api.get('/audit-logs/', { params }),
+};
+
+// =============================================================================
+// FARMS API (EXISTING - now uses authenticated api instance)
+// =============================================================================
+
 export const farmsAPI = {
   getAll: () => api.get('/farms/'),
   getById: (id) => api.get(`/farms/${id}/`),
@@ -19,28 +219,10 @@ export const farmsAPI = {
   getFields: (id) => api.get(`/farms/${id}/fields/`),
 };
 
-// Water Quality APIs
-export const waterSourcesAPI = {
-  getAll: () => api.get('/water-sources/'),
-  getById: (id) => api.get(`/water-sources/${id}/`),
-  create: (data) => api.post('/water-sources/', data),
-  update: (id, data) => api.put(`/water-sources/${id}/`, data),
-  delete: (id) => api.delete(`/water-sources/${id}/`),
-  getTests: (id) => api.get(`/water-sources/${id}/tests/`),
-  getOverdue: () => api.get('/water-sources/overdue/'),
-};
+// =============================================================================
+// FIELDS API (EXISTING)
+// =============================================================================
 
-export const waterTestsAPI = {
-  getAll: () => api.get('/water-tests/'),
-  getById: (id) => api.get(`/water-tests/${id}/`),
-  create: (data) => api.post('/water-tests/', data),
-  update: (id, data) => api.put(`/water-tests/${id}/`, data),
-  delete: (id) => api.delete(`/water-tests/${id}/`),
-  getFailed: () => api.get('/water-tests/failed/'),
-  getBySource: (sourceId) => api.get(`/water-tests/?water_source=${sourceId}`), // ADD THIS LINE
-};
-
-// Fields API
 export const fieldsAPI = {
   getAll: () => api.get('/fields/'),
   getById: (id) => api.get(`/fields/${id}/`),
@@ -50,7 +232,10 @@ export const fieldsAPI = {
   getApplications: (id) => api.get(`/fields/${id}/applications/`),
 };
 
-// Products API
+// =============================================================================
+// PRODUCTS API (EXISTING)
+// =============================================================================
+
 export const productsAPI = {
   getAll: () => api.get('/products/'),
   getByEPA: (epaNumber) => api.get(`/products/${epaNumber}/`),
@@ -59,7 +244,10 @@ export const productsAPI = {
   delete: (epaNumber) => api.delete(`/products/${epaNumber}/`),
 };
 
-// Applications API
+// =============================================================================
+// APPLICATIONS API (EXISTING)
+// =============================================================================
+
 export const applicationsAPI = {
   getAll: () => api.get('/applications/'),
   getById: (id) => api.get(`/applications/${id}/`),
@@ -72,27 +260,56 @@ export const applicationsAPI = {
   markSubmitted: (id) => api.post(`/applications/${id}/mark_submitted/`),
 };
 
-export default api;
+// =============================================================================
+// WATER SOURCES API (EXISTING)
+// =============================================================================
 
-// Reports API (UPDATED with validation)
+export const waterSourcesAPI = {
+  getAll: () => api.get('/water-sources/'),
+  getById: (id) => api.get(`/water-sources/${id}/`),
+  create: (data) => api.post('/water-sources/', data),
+  update: (id, data) => api.put(`/water-sources/${id}/`, data),
+  delete: (id) => api.delete(`/water-sources/${id}/`),
+  getTests: (id) => api.get(`/water-sources/${id}/tests/`),
+  getOverdue: () => api.get('/water-sources/overdue/'),
+};
+
+// =============================================================================
+// WATER TESTS API (EXISTING)
+// =============================================================================
+
+export const waterTestsAPI = {
+  getAll: () => api.get('/water-tests/'),
+  getById: (id) => api.get(`/water-tests/${id}/`),
+  create: (data) => api.post('/water-tests/', data),
+  update: (id, data) => api.put(`/water-tests/${id}/`, data),
+  delete: (id) => api.delete(`/water-tests/${id}/`),
+  getFailed: () => api.get('/water-tests/failed/'),
+  getBySource: (sourceId) => api.get(`/water-tests/?water_source=${sourceId}`),
+};
+
+// =============================================================================
+// REPORTS API (EXISTING)
+// =============================================================================
+
 export const reportsAPI = {
   // Get report statistics
   getStatistics: (params) => 
-    axios.get(`${API_BASE_URL}/reports/statistics/`, { params }),
+    api.get('/reports/statistics/', { params }),
   
   // Validate applications for PUR compliance
   validatePUR: (params) =>
-    axios.get(`${API_BASE_URL}/applications/validate_pur/`, { params }),
+    api.get('/applications/validate_pur/', { params }),
   
   // Get PUR summary with validation
   getPURSummary: (params) =>
-    axios.get(`${API_BASE_URL}/applications/pur_summary/`, { params }),
+    api.get('/applications/pur_summary/', { params }),
   
   // Export PUR report (supports multiple formats)
   exportPUR: async (params) => {
-    const response = await axios.get(`${API_BASE_URL}/applications/export_pur/`, {
+    const response = await api.get('/applications/export_pur/', {
       params,
-      responseType: 'blob'  // Important for file download
+      responseType: 'blob'
     });
     return response;
   },
@@ -103,6 +320,176 @@ export const reportsAPI = {
     return `${API_BASE_URL}/applications/export_pur/?${queryString}`;
   }
 };
+
+// =============================================================================
+// BUYERS API (EXISTING)
+// =============================================================================
+
+export const buyersAPI = {
+  getAll: (params = {}) => 
+    api.get('/buyers/', { params }),
+  
+  getSimpleList: () => 
+    api.get('/buyers/', { params: { simple: true, active: true } }),
+  
+  get: (id) => 
+    api.get(`/buyers/${id}/`),
+  
+  create: (data) => 
+    api.post('/buyers/', data),
+  
+  update: (id, data) => 
+    api.put(`/buyers/${id}/`, data),
+  
+  delete: (id) => 
+    api.delete(`/buyers/${id}/`),
+  
+  getLoadHistory: (id) => 
+    api.get(`/buyers/${id}/load_history/`),
+};
+
+// =============================================================================
+// LABOR CONTRACTORS API (EXISTING)
+// =============================================================================
+
+export const laborContractorsAPI = {
+  getAll: (params = {}) => 
+    api.get('/labor-contractors/', { params }),
+  
+  getSimpleList: () => 
+    api.get('/labor-contractors/', { params: { simple: true, active: true } }),
+  
+  get: (id) => 
+    api.get(`/labor-contractors/${id}/`),
+  
+  create: (data) => 
+    api.post('/labor-contractors/', data),
+  
+  update: (id, data) => 
+    api.put(`/labor-contractors/${id}/`, data),
+  
+  delete: (id) => 
+    api.delete(`/labor-contractors/${id}/`),
+  
+  getJobHistory: (id) => 
+    api.get(`/labor-contractors/${id}/job_history/`),
+  
+  getExpiringSoon: () => 
+    api.get('/labor-contractors/expiring_soon/'),
+};
+
+// =============================================================================
+// HARVESTS API (EXISTING)
+// =============================================================================
+
+export const harvestsAPI = {
+  getAll: (params = {}) => 
+    api.get('/harvests/', { params }),
+  
+  get: (id) => 
+    api.get(`/harvests/${id}/`),
+  
+  create: (data) => 
+    api.post('/harvests/', data),
+  
+  update: (id, data) => 
+    api.put(`/harvests/${id}/`, data),
+  
+  delete: (id) => 
+    api.delete(`/harvests/${id}/`),
+  
+  checkPHI: (fieldId, proposedDate) => 
+    api.post('/harvests/check_phi/', {
+      field_id: fieldId,
+      proposed_harvest_date: proposedDate
+    }),
+  
+  getStatistics: (params = {}) => 
+    api.get('/harvests/statistics/', { params }),
+  
+  markComplete: (id) => 
+    api.post(`/harvests/${id}/mark_complete/`),
+  
+  markVerified: (id) => 
+    api.post(`/harvests/${id}/mark_verified/`),
+  
+  getByField: (params = {}) => 
+    api.get('/harvests/by_field/', { params }),
+};
+
+// =============================================================================
+// HARVEST LOADS API (EXISTING)
+// =============================================================================
+
+export const harvestLoadsAPI = {
+  getAll: (params = {}) => 
+    api.get('/harvest-loads/', { params }),
+  
+  get: (id) => 
+    api.get(`/harvest-loads/${id}/`),
+  
+  create: (data) => 
+    api.post('/harvest-loads/', data),
+  
+  update: (id, data) => 
+    api.put(`/harvest-loads/${id}/`, data),
+  
+  delete: (id) => 
+    api.delete(`/harvest-loads/${id}/`),
+  
+  markPaid: (id, paymentDate = null) => 
+    api.post(`/harvest-loads/${id}/mark_paid/`, { 
+      payment_date: paymentDate 
+    }),
+  
+  getPendingPayments: () => 
+    api.get('/harvest-loads/pending_payments/'),
+};
+
+// =============================================================================
+// HARVEST LABOR API (EXISTING)
+// =============================================================================
+
+export const harvestLaborAPI = {
+  getAll: (params = {}) => 
+    api.get('/harvest-labor/', { params }),
+  
+  get: (id) => 
+    api.get(`/harvest-labor/${id}/`),
+  
+  create: (data) => 
+    api.post('/harvest-labor/', data),
+  
+  update: (id, data) => 
+    api.put(`/harvest-labor/${id}/`, data),
+  
+  delete: (id) => 
+    api.delete(`/harvest-labor/${id}/`),
+  
+  getCostAnalysis: (params = {}) => 
+    api.get('/harvest-labor/cost_analysis/', { params }),
+};
+
+// =============================================================================
+// MAP API (EXISTING)
+// =============================================================================
+
+export const mapAPI = {
+  // Geocode an address to GPS coordinates
+  geocode: (address) => 
+    api.post('/geocode/', { address }),
+  
+  // Update field boundary from drawn polygon
+  updateFieldBoundary: (fieldId, boundaryGeojson, calculatedAcres) => 
+    api.post(`/fields/${fieldId}/boundary/`, {
+      boundary_geojson: boundaryGeojson,
+      calculated_acres: calculatedAcres
+    }),
+};
+
+// =============================================================================
+// HELPER FUNCTIONS (EXISTING)
+// =============================================================================
 
 // Helper function to download file from blob
 export const downloadFile = (blob, filename) => {
@@ -116,183 +503,9 @@ export const downloadFile = (blob, filename) => {
   window.URL.revokeObjectURL(url);
 };
 
-// -----------------------------------------------------------------------------
-// BUYERS API
-// -----------------------------------------------------------------------------
-
-export const buyersAPI = {
-  getAll: (params = {}) => 
-    axios.get(`${API_BASE_URL}/buyers/`, { params }),
-  
-  getSimpleList: () => 
-    axios.get(`${API_BASE_URL}/buyers/`, { params: { simple: true, active: true } }),
-  
-  get: (id) => 
-    axios.get(`${API_BASE_URL}/buyers/${id}/`),
-  
-  create: (data) => 
-    axios.post(`${API_BASE_URL}/buyers/`, data),
-  
-  update: (id, data) => 
-    axios.put(`${API_BASE_URL}/buyers/${id}/`, data),
-  
-  delete: (id) => 
-    axios.delete(`${API_BASE_URL}/buyers/${id}/`),
-  
-  getLoadHistory: (id) => 
-    axios.get(`${API_BASE_URL}/buyers/${id}/load_history/`),
-};
-
-
-// -----------------------------------------------------------------------------
-// LABOR CONTRACTORS API
-// -----------------------------------------------------------------------------
-
-export const laborContractorsAPI = {
-  getAll: (params = {}) => 
-    axios.get(`${API_BASE_URL}/labor-contractors/`, { params }),
-  
-  getSimpleList: () => 
-    axios.get(`${API_BASE_URL}/labor-contractors/`, { params: { simple: true, active: true } }),
-  
-  get: (id) => 
-    axios.get(`${API_BASE_URL}/labor-contractors/${id}/`),
-  
-  create: (data) => 
-    axios.post(`${API_BASE_URL}/labor-contractors/`, data),
-  
-  update: (id, data) => 
-    axios.put(`${API_BASE_URL}/labor-contractors/${id}/`, data),
-  
-  delete: (id) => 
-    axios.delete(`${API_BASE_URL}/labor-contractors/${id}/`),
-  
-  getJobHistory: (id) => 
-    axios.get(`${API_BASE_URL}/labor-contractors/${id}/job_history/`),
-  
-  getExpiringSoon: () => 
-    axios.get(`${API_BASE_URL}/labor-contractors/expiring_soon/`),
-};
-
-
-// -----------------------------------------------------------------------------
-// HARVESTS API
-// -----------------------------------------------------------------------------
-
-export const harvestsAPI = {
-  getAll: (params = {}) => 
-    axios.get(`${API_BASE_URL}/harvests/`, { params }),
-  
-  get: (id) => 
-    axios.get(`${API_BASE_URL}/harvests/${id}/`),
-  
-  create: (data) => 
-    axios.post(`${API_BASE_URL}/harvests/`, data),
-  
-  update: (id, data) => 
-    axios.put(`${API_BASE_URL}/harvests/${id}/`, data),
-  
-  delete: (id) => 
-    axios.delete(`${API_BASE_URL}/harvests/${id}/`),
-  
-  // PHI checking before harvest
-  checkPHI: (fieldId, proposedDate) => 
-    axios.post(`${API_BASE_URL}/harvests/check_phi/`, {
-      field_id: fieldId,
-      proposed_harvest_date: proposedDate
-    }),
-  
-  // Statistics
-  getStatistics: (params = {}) => 
-    axios.get(`${API_BASE_URL}/harvests/statistics/`, { params }),
-  
-  // Status updates
-  markComplete: (id) => 
-    axios.post(`${API_BASE_URL}/harvests/${id}/mark_complete/`),
-  
-  markVerified: (id) => 
-    axios.post(`${API_BASE_URL}/harvests/${id}/mark_verified/`),
-  
-  // Grouped by field
-  getByField: (params = {}) => 
-    axios.get(`${API_BASE_URL}/harvests/by_field/`, { params }),
-};
-
-
-// -----------------------------------------------------------------------------
-// HARVEST LOADS API
-// -----------------------------------------------------------------------------
-
-export const harvestLoadsAPI = {
-  getAll: (params = {}) => 
-    axios.get(`${API_BASE_URL}/harvest-loads/`, { params }),
-  
-  get: (id) => 
-    axios.get(`${API_BASE_URL}/harvest-loads/${id}/`),
-  
-  create: (data) => 
-    axios.post(`${API_BASE_URL}/harvest-loads/`, data),
-  
-  update: (id, data) => 
-    axios.put(`${API_BASE_URL}/harvest-loads/${id}/`, data),
-  
-  delete: (id) => 
-    axios.delete(`${API_BASE_URL}/harvest-loads/${id}/`),
-  
-  markPaid: (id, paymentDate = null) => 
-    axios.post(`${API_BASE_URL}/harvest-loads/${id}/mark_paid/`, { 
-      payment_date: paymentDate 
-    }),
-  
-  getPendingPayments: () => 
-    axios.get(`${API_BASE_URL}/harvest-loads/pending_payments/`),
-};
-
-
-// -----------------------------------------------------------------------------
-// HARVEST LABOR API
-// -----------------------------------------------------------------------------
-
-export const harvestLaborAPI = {
-  getAll: (params = {}) => 
-    axios.get(`${API_BASE_URL}/harvest-labor/`, { params }),
-  
-  get: (id) => 
-    axios.get(`${API_BASE_URL}/harvest-labor/${id}/`),
-  
-  create: (data) => 
-    axios.post(`${API_BASE_URL}/harvest-labor/`, data),
-  
-  update: (id, data) => 
-    axios.put(`${API_BASE_URL}/harvest-labor/${id}/`, data),
-  
-  delete: (id) => 
-    axios.delete(`${API_BASE_URL}/harvest-labor/${id}/`),
-  
-  getCostAnalysis: (params = {}) => 
-    axios.get(`${API_BASE_URL}/harvest-labor/cost_analysis/`, { params }),
-};
-
-// -----------------------------------------------------------------------------
-// MAP API
-// -----------------------------------------------------------------------------
-
-export const mapAPI = {
-  // Geocode an address to GPS coordinates
-  geocode: (address) => 
-    axios.post(`${API_BASE_URL}/geocode/`, { address }),
-  
-  // Update field boundary from drawn polygon
-  updateFieldBoundary: (fieldId, boundaryGeojson, calculatedAcres) => 
-    axios.post(`${API_BASE_URL}/fields/${fieldId}/boundary/`, {
-      boundary_geojson: boundaryGeojson,
-      calculated_acres: calculatedAcres
-    }),
-};
-
-// -----------------------------------------------------------------------------
-// CONSTANTS FOR DROPDOWNS
-// -----------------------------------------------------------------------------
+// =============================================================================
+// CONSTANTS FOR DROPDOWNS (EXISTING)
+// =============================================================================
 
 export const HARVEST_CONSTANTS = {
   BUYER_TYPES: [
@@ -324,7 +537,6 @@ export const HARVEST_CONSTANTS = {
     { value: 'other', label: 'Other' },
   ],
   
-  // Default bin weights by crop type
   DEFAULT_BIN_WEIGHTS: {
     'navel_orange': 900,
     'valencia_orange': 900,
@@ -396,3 +608,9 @@ export const HARVEST_CONSTANTS = {
     { value: 'contract', label: 'Contract/Flat Rate' },
   ],
 };
+
+// =============================================================================
+// DEFAULT EXPORT
+// =============================================================================
+
+export default api;
