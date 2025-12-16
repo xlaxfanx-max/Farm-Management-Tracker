@@ -1,3 +1,19 @@
+/* Leaflet CSS - Required for maps */
+@import 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+@import 'https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css';
+
+/* Fix for Leaflet marker icons in React */
+.leaflet-default-icon-path {
+  background-image: url(https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png);
+}
+
+/* Custom farm marker styling */
+.custom-farm-marker,
+.custom-field-marker {
+  background: transparent !important;
+  border: none !important;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

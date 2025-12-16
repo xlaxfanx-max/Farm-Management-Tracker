@@ -1,5 +1,7 @@
 import csv
 import io
+import requests
+import re
 from datetime import datetime, timedelta, date
 from decimal import Decimal
 from django.db.models import Sum, Avg, Count, F, Q
@@ -7,6 +9,7 @@ from django.db.models.functions import Coalesce
 from rest_framework import viewsets, filters, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.decorators import api_view
 from .pur_reporting import PURReportGenerator
 from .product_import_tool import PesticideProductImporter
 from django.http import HttpResponse
@@ -1513,3 +1516,319 @@ class HarvestLaborViewSet(viewsets.ModelViewSet):
             **analysis,
             'by_contractor': by_contractor
         })
+
+# =============================================================================
+# MAP FEATURE ENDPOINTS
+# =============================================================================
+
+def get_plss_from_coordinates(lat, lng):
+    """
+    Get Section, Township, Range from GPS coordinates using BLM PLSS service.
+    Returns dict with section, township, range (or None values if not found).
+    """
+    import requests as req
+    import re
+    
+    result = {
+        'section': None,
+        'township': None,
+        'range': None
+    }
+    
+    try:
+        # Use identify endpoint
+        identify_url = "https://gis.blm.gov/arcgis/rest/services/Cadastral/BLM_Natl_PLSS_CadNSDI/MapServer/identify"
+        
+        buffer = 0.001
+        identify_params = {
+            'geometry': f'{lng},{lat}',
+            'geometryType': 'esriGeometryPoint',
+            'sr': '4326',
+            'layers': 'all',
+            'tolerance': '1',
+            'mapExtent': f'{lng-buffer},{lat-buffer},{lng+buffer},{lat+buffer}',
+            'imageDisplay': '100,100,96',
+            'returnGeometry': 'false',
+            'f': 'json'
+        }
+        
+        response = req.get(identify_url, params=identify_params, timeout=15,
+                          headers={'User-Agent': 'FarmManagementTracker/1.0'})
+        
+        if response.status_code == 200:
+            data = response.json()
+            
+            if 'results' in data:
+                for item in data['results']:
+                    attrs = item.get('attributes', {})
+                    
+                    # Look for section number from multiple possible fields
+                    if result['section'] is None:
+                        # Try FRSTDIVNO first
+                        if 'FRSTDIVNO' in attrs and attrs['FRSTDIVNO']:
+                            result['section'] = str(attrs['FRSTDIVNO'])
+                        # Try SECDIVNO
+                        elif 'SECDIVNO' in attrs and attrs['SECDIVNO']:
+                            result['section'] = str(attrs['SECDIVNO'])
+                        # Try to extract from 'First Division Identifier' (format: CA210140S0200E0SN030)
+                        elif 'First Division Identifier' in attrs and attrs['First Division Identifier']:
+                            fdi = str(attrs['First Division Identifier'])
+                            # Look for SN followed by digits (Section Number)
+                            sec_match = re.search(r'SN0*(\d+)', fdi)
+                            if sec_match:
+                                result['section'] = sec_match.group(1)
+                        # Try FRSTDIVID field
+                        elif 'FRSTDIVID' in attrs and attrs['FRSTDIVID']:
+                            fdi = str(attrs['FRSTDIVID'])
+                            sec_match = re.search(r'SN0*(\d+)', fdi)
+                            if sec_match:
+                                result['section'] = sec_match.group(1)
+                    
+                    # Look for township/range in TWNSHPLAB
+                    # Format can be: "T14S R20E" or "14S 20E" or "T14S-R20E" etc.
+                    if 'TWNSHPLAB' in attrs and attrs['TWNSHPLAB']:
+                        label = str(attrs['TWNSHPLAB'])
+                        
+                        # Try to find township (number followed by N or S)
+                        if result['township'] is None:
+                            twp_match = re.search(r'T?\.?\s*(\d+)\s*([NS])', label, re.IGNORECASE)
+                            if twp_match:
+                                result['township'] = f"{twp_match.group(1)}{twp_match.group(2).upper()}"
+                        
+                        # Try to find range (number followed by E or W)
+                        if result['range'] is None:
+                            rng_match = re.search(r'R?\.?\s*(\d+)\s*([EW])', label, re.IGNORECASE)
+                            if rng_match:
+                                result['range'] = f"{rng_match.group(1)}{rng_match.group(2).upper()}"
+                    
+                    # Also check individual fields as backup
+                    if result['township'] is None and 'TWNSHPNO' in attrs and attrs['TWNSHPNO']:
+                        twp_dir = attrs.get('TWNSHPDIR', 'N')
+                        result['township'] = f"{attrs['TWNSHPNO']}{twp_dir}"
+                    
+                    if result['range'] is None and 'RANGENO' in attrs and attrs['RANGENO']:
+                        rng_dir = attrs.get('RANGEDIR', 'E')
+                        result['range'] = f"{attrs['RANGENO']}{rng_dir}"
+        
+        return result
+        
+    except Exception as e:
+        print(f"PLSS lookup error: {e}")
+        return result
+
+
+@api_view(['POST'])
+def geocode_address(request):
+    """
+    Geocode an address to GPS coordinates using Nominatim (OpenStreetMap).
+    Also returns PLSS data (Section, Township, Range) if available.
+    
+    POST /api/geocode/
+    {
+        "address": "123 Main St, Fresno, CA"
+    }
+    
+    Returns:
+    {
+        "lat": 36.7378,
+        "lng": -119.7871,
+        "display_name": "...",
+        "section": "10",
+        "township": "15S",
+        "range": "22E"
+    }
+    """
+    address = request.data.get('address', '')
+    
+    if not address:
+        return Response({'error': 'Address is required'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    try:
+        response = requests.get(
+            'https://nominatim.openstreetmap.org/search',
+            params={
+                'q': address,
+                'format': 'json',
+                'limit': 1,
+                'countrycodes': 'us'
+            },
+            headers={'User-Agent': 'FarmManagementTracker/1.0'},
+            timeout=10
+        )
+        
+        data = response.json()
+        
+        if data and len(data) > 0:
+            result = data[0]
+            lat = float(result['lat'])
+            lng = float(result['lon'])
+            
+            # Also get PLSS data (Section/Township/Range)
+            plss_data = get_plss_from_coordinates(lat, lng)
+            
+            return Response({
+                'lat': lat,
+                'lng': lng,
+                'display_name': result.get('display_name', ''),
+                'section': plss_data.get('section'),
+                'township': plss_data.get('township'),
+                'range': plss_data.get('range'),
+            })
+        else:
+            return Response({'error': 'Address not found'}, status=status.HTTP_404_NOT_FOUND)
+            
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['POST'])
+def update_field_boundary(request, field_id):
+    """
+    Update a field's boundary from a drawn polygon.
+    Also updates total_acres and fetches PLSS data.
+    
+    POST /api/fields/{id}/boundary/
+    {
+        "boundary_geojson": {...},
+        "calculated_acres": 45.5
+    }
+    """
+    from .models import Field  # Import here to avoid circular imports
+    
+    print(f"[Boundary] update_field_boundary called for field_id: {field_id}")
+    
+    try:
+        field = Field.objects.get(id=field_id)
+        print(f"[Boundary] Found field: {field.name}")
+    except Field.DoesNotExist:
+        return Response({'error': 'Field not found'}, status=status.HTTP_404_NOT_FOUND)
+    
+    boundary = request.data.get('boundary_geojson')
+    acres = request.data.get('calculated_acres')
+    
+    print(f"[Boundary] Received boundary: {boundary is not None}")
+    print(f"[Boundary] Received acres: {acres}")
+    
+    if boundary:
+        field.boundary_geojson = boundary
+        
+        # Calculate centroid of the polygon to get PLSS data
+        try:
+            coords = boundary.get('coordinates', [[]])[0]
+            print(f"[Boundary] Coordinates count: {len(coords) if coords else 0}")
+            if coords:
+                # Calculate centroid
+                lats = [c[1] for c in coords]
+                lngs = [c[0] for c in coords]
+                centroid_lat = sum(lats) / len(lats)
+                centroid_lng = sum(lngs) / len(lngs)
+                
+                print(f"[Boundary] Centroid: {centroid_lat}, {centroid_lng}")
+                
+                # Update field GPS coordinates to centroid
+                field.gps_lat = centroid_lat
+                field.gps_long = centroid_lng
+                
+                # Get PLSS data
+                print(f"[Boundary] Calling get_plss_from_coordinates...")
+                plss_data = get_plss_from_coordinates(centroid_lat, centroid_lng)
+                print(f"[Boundary] PLSS result: {plss_data}")
+                
+                if plss_data.get('section'):
+                    field.section = plss_data['section']
+                    print(f"[Boundary] Set section: {field.section}")
+                if plss_data.get('township'):
+                    field.township = plss_data['township']
+                    print(f"[Boundary] Set township: {field.township}")
+                if plss_data.get('range'):
+                    field.range_value = plss_data['range']
+                    print(f"[Boundary] Set range: {field.range_value}")
+        except Exception as e:
+            print(f"[Boundary] Error calculating centroid/PLSS: {e}")
+            import traceback
+            traceback.print_exc()
+    
+    if acres is not None:
+        field.calculated_acres = acres
+        field.total_acres = acres  # Also update main acres field
+    
+    field.save()
+    
+    return Response({
+        'id': field.id,
+        'name': field.name,
+        'boundary_geojson': field.boundary_geojson,
+        'calculated_acres': str(field.calculated_acres) if field.calculated_acres else None,
+        'total_acres': str(field.total_acres) if field.total_acres else None,
+        'gps_lat': str(field.gps_lat) if field.gps_lat else None,
+        'gps_long': str(field.gps_long) if field.gps_long else None,
+        'section': field.section,
+        'township': field.township,
+        'range': field.range_value,
+        'message': 'Boundary saved successfully'
+    })
+
+
+@api_view(['POST'])
+def get_plss(request):
+    """
+    Get Section, Township, Range from GPS coordinates.
+    """
+    lat = request.data.get('lat')
+    lng = request.data.get('lng')
+    
+    if lat is None or lng is None:
+        return Response({'error': 'lat and lng are required'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    try:
+        plss_data = get_plss_from_coordinates(float(lat), float(lng))
+        return Response({
+            'section': plss_data.get('section'),
+            'township': plss_data.get('township'),
+            'range': plss_data.get('range'),
+        })
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

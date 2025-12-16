@@ -5,7 +5,8 @@ from .views import (
     PesticideApplicationViewSet, WaterSourceViewSet, WaterTestViewSet, 
     report_statistics,
     BuyerViewSet, LaborContractorViewSet, HarvestViewSet, 
-    HarvestLoadViewSet, HarvestLaborViewSet
+    HarvestLoadViewSet, HarvestLaborViewSet,
+    geocode_address, update_field_boundary, get_plss
 )
 
 router = DefaultRouter()
@@ -24,4 +25,7 @@ router.register(r'harvest-labor', HarvestLaborViewSet, basename='harvestlabor')
 urlpatterns = [
     path('', include(router.urls)),
     path('reports/statistics/', report_statistics, name='report-statistics'),
+    path('geocode/', geocode_address, name='geocode-address'),  
+    path('fields/<int:field_id>/boundary/', update_field_boundary, name='update-field-boundary'), 
+    path('plss/', get_plss, name='get-plss'),
 ]

@@ -125,10 +125,21 @@ function App() {
     }
   };
 
-  const handleEditFarm = (farm) => {
-    setCurrentFarm(farm);
-    setShowFarmModal(true);
+  const handleEditFarm = async (farm, autoSave = false) => {
+    if (autoSave) {
+      // Auto-save (used for GPS coordinate updates from map)
+      try {
+        await farmsAPI.update(farm.id, farm);
+        await loadData();
+      } catch (err) {
+        console.error('Error auto-saving farm:', err);
+      }
+    } else {
+      setCurrentFarm(farm);
+      setShowFarmModal(true);
+    }
   };
+
 
   const handleDeleteFarm = async (farmId) => {
     if (window.confirm('Are you sure you want to delete this farm?')) {
@@ -437,6 +448,7 @@ function App() {
               setShowWaterTestModal(true);
             }}
             onNavigateToReports={() => setCurrentView('reports')}
+            onNavigateToHarvests={() => setCurrentView('harvests')}
           />
         )}
 
@@ -459,6 +471,7 @@ function App() {
               }}
               onEditField={handleEditField}
               onDeleteField={handleDeleteField}
+              onRefresh={loadData}
             />
           </div>
         )}

@@ -24,7 +24,8 @@ function Dashboard({
   onNewApplication,
   onNewField,
   onNewWaterTest, 
-  onNavigateToReports
+  onNavigateToReports,
+  onNavigateToHarvests
 }) {
   const [stats, setStats] = useState({
     totalApplications: 0,
@@ -426,11 +427,14 @@ function Dashboard({
             <h3 className="font-medium text-gray-900 mb-1">Analytics</h3>
             <p className="text-xs text-gray-500">Coming Soon</p>
           </div>
-          <div className="bg-white rounded-lg border border-gray-200 border-dashed p-6 text-center">
-            <Sprout className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-            <h3 className="font-medium text-gray-900 mb-1">Harvest Tracking</h3>
-            <p className="text-xs text-gray-500">Coming Soon</p>
-          </div>
+          <button 
+            onClick={onNavigateToHarvests}
+            className="bg-orange-50 hover:bg-orange-100 rounded-lg border border-orange-200 p-6 text-center transition-colors cursor-pointer w-full"
+          >
+            <Sprout className="w-10 h-10 text-orange-500 mx-auto mb-3" />
+            <h3 className="font-medium text-orange-700 mb-1">Harvest Tracking</h3>
+            <p className="text-xs text-orange-500">View Harvests →</p>
+          </button>
           <div className="bg-white rounded-lg border border-gray-200 border-dashed p-6 text-center">
             <Calendar className="w-10 h-10 text-gray-300 mx-auto mb-3" />
             <h3 className="font-medium text-gray-900 mb-1">Schedule Planner</h3>

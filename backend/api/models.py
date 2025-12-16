@@ -14,6 +14,23 @@ class Farm(models.Model):
     # Primary location
     address = models.TextField(blank=True)
     county = models.CharField(max_length=100)
+
+    gps_lat = models.DecimalField(
+        max_digits=10, 
+        decimal_places=7, 
+        null=True, 
+        blank=True,
+        verbose_name="Latitude",
+        help_text="GPS latitude coordinate (e.g., 36.7378)"
+    )
+    gps_long = models.DecimalField(
+        max_digits=10, 
+        decimal_places=7, 
+        null=True, 
+        blank=True,
+        verbose_name="Longitude", 
+        help_text="GPS longitude coordinate (e.g., -119.7871)"
+    )
     
     # Contact info
     phone = models.CharField(max_length=20, blank=True)
@@ -47,6 +64,21 @@ class Field(models.Model):
     # GPS coordinates (optional)
     gps_lat = models.DecimalField(max_digits=10, decimal_places=7, null=True, blank=True)
     gps_long = models.DecimalField(max_digits=10, decimal_places=7, null=True, blank=True)
+
+    boundary_geojson = models.JSONField(
+        null=True,
+        blank=True,
+        verbose_name="Boundary GeoJSON",
+        help_text="Field boundary polygon in GeoJSON format"
+    )
+    calculated_acres = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        verbose_name="Calculated Acres",
+        help_text="Acreage calculated from drawn boundary"
+    )
     
     # Field characteristics
     total_acres = models.DecimalField(max_digits=10, decimal_places=2)

@@ -12,7 +12,8 @@ class FarmSerializer(serializers.ModelSerializer):
         model = Farm
         fields = [
             'id', 'name', 'farm_number', 'owner_name', 'operator_name',
-            'address', 'county', 'phone', 'email', 'active',
+            'address', 'county',  'gps_lat', 'gps_long', 
+            'phone', 'email', 'active',
             'created_at', 'updated_at', 'field_count'
         ]
     
@@ -26,8 +27,9 @@ class FieldSerializer(serializers.ModelSerializer):
     class Meta:
         model = Field
         fields = [
-            'id', 'name', 'farm', 'farm_name', 'field_number', 'county',  # ADDED 'farm' and 'farm_name'
+            'id', 'name', 'farm', 'farm_name', 'field_number', 'county', 
             'section', 'township', 'range_value', 'gps_lat', 'gps_long', 
+            'boundary_geojson', 'calculated_acres',
             'total_acres', 'current_crop', 'planting_date', 'active', 
             'created_at', 'updated_at', 'application_count'
         ]

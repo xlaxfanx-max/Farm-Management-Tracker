@@ -273,6 +273,22 @@ export const harvestLaborAPI = {
     axios.get(`${API_BASE_URL}/harvest-labor/cost_analysis/`, { params }),
 };
 
+// -----------------------------------------------------------------------------
+// MAP API
+// -----------------------------------------------------------------------------
+
+export const mapAPI = {
+  // Geocode an address to GPS coordinates
+  geocode: (address) => 
+    axios.post(`${API_BASE_URL}/geocode/`, { address }),
+  
+  // Update field boundary from drawn polygon
+  updateFieldBoundary: (fieldId, boundaryGeojson, calculatedAcres) => 
+    axios.post(`${API_BASE_URL}/fields/${fieldId}/boundary/`, {
+      boundary_geojson: boundaryGeojson,
+      calculated_acres: calculatedAcres
+    }),
+};
 
 // -----------------------------------------------------------------------------
 // CONSTANTS FOR DROPDOWNS
