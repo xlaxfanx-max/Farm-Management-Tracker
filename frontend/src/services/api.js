@@ -684,6 +684,21 @@ export const HARVEST_CONSTANTS = {
   ],
 };
 
+export const farmParcelsAPI = {
+  // Standard CRUD
+  getAll: (params = {}) => api.get('/farm-parcels/', { params }),
+  get: (id) => api.get(`/farm-parcels/${id}/`),
+  create: (data) => api.post('/farm-parcels/', data),
+  update: (id, data) => api.put(`/farm-parcels/${id}/`, data),
+  delete: (id) => api.delete(`/farm-parcels/${id}/`),
+  
+  // Farm-specific endpoints
+  getForFarm: (farmId) => api.get(`/farms/${farmId}/parcels/`),
+  addToFarm: (farmId, data) => api.post(`/farms/${farmId}/parcels/`, data),
+  bulkAdd: (farmId, parcels, replace = false) => 
+    api.post(`/farms/${farmId}/bulk-parcels/`, { parcels, replace }),
+};
+
 // =============================================================================
 // DEFAULT EXPORT
 // =============================================================================

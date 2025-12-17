@@ -1,14 +1,39 @@
 from rest_framework import serializers
 from .models import (
-    Farm, Field, PesticideProduct, PesticideApplication, WaterSource, WaterTest,
+    Farm, FarmParcel, Field, PesticideProduct, PesticideApplication, WaterSource, WaterTest,
     Buyer, LaborContractor, Harvest, HarvestLoad, HarvestLabor,
     CROP_VARIETY_CHOICES, DEFAULT_BIN_WEIGHTS,
     Well, WellReading, MeterCalibration, WaterAllocation,
     ExtractionReport, IrrigationEvent, WaterSource, Field
 )
 
+class FarmParcelSerializer(serializers.ModelSerializer):
+    """Full serializer for farm parcel/APN data."""
+    
+    class Meta:
+        model = FarmParcel
+        fields = [
+            'id', 'farm', 'apn', 'acreage', 
+            'ownership_type', 'notes', 'created_at', 'updated_at'
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+
+class FarmParcelListSerializer(serializers.ModelSerializer):
+    """Lightweight serializer for parcel listings."""
+    
+    class Meta:
+        model = FarmParcel
+        fields = ['id', 'apn', 'acreage', 'ownership_type']
+
 class FarmSerializer(serializers.ModelSerializer):
     field_count = serializers.SerializerMethodField()
+    parcels = FarmParcelListSerializer(many=True, read_only=True)
+    apn_list = serializers.ReadOnlyField()
+    parcel_count = serializers.ReadOnlyField()
+    total_parcel_acreage = serializers.DecimalField(
+        max_digits=10, decimal_places=2, read_only=True
+    )
     
     class Meta:
         model = Farm
@@ -16,6 +41,7 @@ class FarmSerializer(serializers.ModelSerializer):
             'id', 'name', 'farm_number', 'owner_name', 'operator_name',
             'address', 'county',  'gps_lat', 'gps_long', 
             'phone', 'email', 'active',
+            'parcels', 'apn_list', 'parcel_count', 'total_parcel_acreage',
             'created_at', 'updated_at', 'field_count'
         ]
     
@@ -38,7 +64,6 @@ class FieldSerializer(serializers.ModelSerializer):
     
     def get_application_count(self, obj):
         return obj.applications.count()
-
 
 class PesticideProductSerializer(serializers.ModelSerializer):
     rei_display = serializers.SerializerMethodField()

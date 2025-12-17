@@ -2,6 +2,7 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import (
     FarmViewSet, FieldViewSet, PesticideProductViewSet, 
+    FieldViewSet, FarmParcelViewSet,
     PesticideApplicationViewSet, WaterSourceViewSet, WaterTestViewSet, 
     report_statistics,
     BuyerViewSet, LaborContractorViewSet, HarvestViewSet, 
@@ -28,6 +29,7 @@ from .team_views import (
 router = DefaultRouter()
 router.register(r'farms', FarmViewSet, basename='farm')
 router.register(r'fields', FieldViewSet, basename='field')
+router.register(r'farm-parcels', FarmParcelViewSet, basename='farm-parcel')
 router.register(r'products', PesticideProductViewSet, basename='product')
 router.register(r'applications', PesticideApplicationViewSet, basename='application')
 router.register(r'water-sources', WaterSourceViewSet, basename='watersource')

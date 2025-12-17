@@ -17,13 +17,13 @@ from django.utils import timezone
 from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
 from .models import ( 
-    Farm, Field, PesticideProduct, PesticideApplication, WaterSource, WaterTest, 
+    Farm, Field, FarmParcel, PesticideProduct, PesticideApplication, WaterSource, WaterTest, 
     Buyer, LaborContractor, Harvest, HarvestLoad, HarvestLabor, PesticideApplication,
     Well, WellReading, MeterCalibration, WaterAllocation,
     ExtractionReport, IrrigationEvent, WaterSource, Field
 )
 from .serializers import ( 
-    FarmSerializer, FieldSerializer, PesticideProductSerializer, PesticideApplicationSerializer, 
+    FarmSerializer, FarmParcelSerializer, FarmParcelListSerializer, FieldSerializer, PesticideProductSerializer, PesticideApplicationSerializer, 
     WaterSourceSerializer, WaterTestSerializer,
     BuyerSerializer, BuyerListSerializer,
     LaborContractorSerializer, LaborContractorListSerializer,
@@ -56,6 +56,60 @@ class FarmViewSet(viewsets.ModelViewSet):
         serializer = FieldSerializer(fields, many=True)
         return Response(serializer.data)
     
+    @action(detail=True, methods=['get', 'post'])
+    def parcels(self, request, pk=None):
+        """GET: List parcels, POST: Add parcel"""
+        farm = self.get_object()
+        
+        if request.method == 'GET':
+            serializer = FarmParcelSerializer(farm.parcels.all(), many=True)
+            return Response(serializer.data)
+        
+        elif request.method == 'POST':
+            data = request.data.copy()
+            data['farm'] = farm.id
+            if 'apn' in data:
+                data['apn'] = FarmParcel.format_apn(data['apn'], farm.county)
+            
+            serializer = FarmParcelSerializer(data=data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=['post'], url_path='bulk-parcels')
+    def bulk_parcels(self, request, pk=None):
+        """Bulk add/update parcels"""
+        farm = self.get_object()
+        parcels_data = request.data.get('parcels', [])
+        replace_existing = request.data.get('replace', False)
+        
+        if replace_existing:
+            farm.parcels.all().delete()
+        
+        created, updated, errors = [], [], []
+        
+        for parcel_data in parcels_data:
+            apn = FarmParcel.format_apn(parcel_data.get('apn', ''), farm.county)
+            try:
+                parcel, was_created = FarmParcel.objects.update_or_create(
+                    farm=farm, apn=apn,
+                    defaults={
+                        'acreage': parcel_data.get('acreage'),
+                        'ownership_type': parcel_data.get('ownership_type', 'owned'),
+                        'notes': parcel_data.get('notes', ''),
+                    }
+                )
+                (created if was_created else updated).append(
+                    FarmParcelSerializer(parcel).data
+                )
+            except Exception as e:
+                errors.append({'apn': parcel_data.get('apn'), 'error': str(e)})
+        
+        return Response({
+            'created': created, 'updated': updated, 'errors': errors,
+            'total_parcels': farm.parcels.count()
+        })
+        
 class FieldViewSet(viewsets.ModelViewSet):
     """
     API endpoint for managing fields
@@ -73,6 +127,25 @@ class FieldViewSet(viewsets.ModelViewSet):
         applications = field.applications.all()
         serializer = PesticideApplicationSerializer(applications, many=True)
         return Response(serializer.data)
+    
+class FarmParcelViewSet(viewsets.ModelViewSet):
+    serializer_class = FarmParcelSerializer
+    permission_classes = [IsAuthenticated]
+    
+    def get_queryset(self):
+        user = self.request.user
+        if hasattr(user, 'current_company') and user.current_company:
+            queryset = FarmParcel.objects.filter(
+                farm__company=user.current_company
+            ).select_related('farm')
+        else:
+            queryset = FarmParcel.objects.all().select_related('farm')
+        
+        farm_id = self.request.query_params.get('farm')
+        if farm_id:
+            queryset = queryset.filter(farm_id=farm_id)
+        
+        return queryset
 
 
 class PesticideProductViewSet(viewsets.ModelViewSet):

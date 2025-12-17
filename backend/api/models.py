@@ -525,6 +525,83 @@ class Farm(models.Model):
     def __str__(self):
         return self.name
 
+    @property
+    def apn_list(self):
+        """Returns a comma-separated string of all APNs."""
+        return ', '.join(self.parcels.values_list('apn', flat=True))
+
+    @property
+    def total_parcel_acreage(self):
+        """Sum of all parcel acreages."""
+        result = self.parcels.aggregate(total=models.Sum('acreage'))
+        return result['total'] or Decimal('0')
+
+    @property
+    def parcel_count(self):
+        """Number of parcels."""
+        return self.parcels.count()
+    
+class FarmParcel(models.Model):
+    """
+    Assessor Parcel Numbers (APNs) associated with a farm.
+    A farm can span multiple parcels, each with its own APN.
+    """
+    farm = models.ForeignKey(
+        Farm,
+        on_delete=models.CASCADE,
+        related_name='parcels'
+    )
+    apn = models.CharField(
+        max_length=50,
+        verbose_name="Assessor Parcel Number",
+        help_text="County assessor parcel number (e.g., 123-0-456-789)"
+    )
+    acreage = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="Acreage of this parcel"
+    )
+    ownership_type = models.CharField(
+        max_length=20,
+        choices=[
+            ('owned', 'Owned'),
+            ('leased', 'Leased'),
+            ('managed', 'Managed'),
+        ],
+        default='owned'
+    )
+    notes = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Farm Parcel"
+        verbose_name_plural = "Farm Parcels"
+        unique_together = ['farm', 'apn']
+        ordering = ['apn']
+
+    def __str__(self):
+        return f"{self.farm.name} - APN: {self.apn}"
+
+    @staticmethod
+    def format_apn(apn_string, county=None):
+        """Format APN based on county conventions."""
+        if not apn_string:
+            return ''
+        digits = ''.join(filter(str.isdigit, apn_string))
+        
+        # Ventura County: XXX-X-XXX-XXX (10 digits)
+        if county and county.lower() == 'ventura' and len(digits) == 10:
+            return f"{digits[:3]}-{digits[3]}-{digits[4:7]}-{digits[7:]}"
+        
+        # Standard CA: XXX-XXX-XXX (9 digits)
+        if len(digits) == 9:
+            return f"{digits[:3]}-{digits[3:6]}-{digits[6:]}"
+        
+        return apn_string
+
 class Field(models.Model):
     """Farm field/block information"""
     name = models.CharField(max_length=200)
