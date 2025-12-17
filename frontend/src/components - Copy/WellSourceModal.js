@@ -176,51 +176,65 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
             fields_served: wellSource.fields_served || [],
             test_frequency_days: wellSource.test_frequency_days || 365,
             active: wellSource.active ?? true,
-            
-            // Well-specific fields are now directly on WaterSource
-            well_name: wellSource.well_name || wellSource.name || '',
-            state_well_number: wellSource.state_well_number || '',
-            local_well_id: wellSource.local_well_id || '',
-            gsa_well_id: wellSource.gsa_well_id || '',
-            gsa: wellSource.gsa || 'obgma',
-            gsa_account_number: wellSource.gsa_account_number || '',
-            basin: wellSource.basin || 'ojai_valley',
-            basin_priority: wellSource.basin_priority || 'medium',
-            well_depth_ft: wellSource.well_depth_ft || '',
-            casing_diameter_inches: wellSource.casing_diameter_inches || '',
-            well_construction_date: wellSource.well_construction_date || '',
-            well_permit_number: wellSource.well_permit_number || '',
-            gps_latitude: wellSource.gps_latitude || '',
-            gps_longitude: wellSource.gps_longitude || '',
-            plss_township: wellSource.plss_township || '',
-            plss_range: wellSource.plss_range || '',
-            plss_section: wellSource.plss_section || '',
-            parcel_apn: wellSource.parcel_apn || '',
-            pump_type: wellSource.pump_type || '',
-            pump_horsepower: wellSource.pump_horsepower || '',
-            pump_flow_rate_gpm: wellSource.pump_flow_rate_gpm || '',
-            power_source: wellSource.power_source || '',
-            utility_meter_number: wellSource.utility_meter_number || '',
-            has_flowmeter: wellSource.has_flowmeter ?? true,
-            flowmeter_make: wellSource.flowmeter_make || '',
-            flowmeter_model: wellSource.flowmeter_model || '',
-            flowmeter_serial_number: wellSource.flowmeter_serial_number || '',
-            flowmeter_units: wellSource.flowmeter_units || 'acre_feet',
-            flowmeter_multiplier: wellSource.flowmeter_multiplier || '1.0',
-            flowmeter_installation_date: wellSource.flowmeter_installation_date || '',
-            has_ami: wellSource.has_ami ?? false,
-            ami_vendor: wellSource.ami_vendor || '',
-            ami_device_id: wellSource.ami_device_id || '',
-            status: wellSource.well_status || 'active',
-            is_de_minimis: wellSource.is_de_minimis ?? false,
-            registered_with_gsa: wellSource.registered_with_gsa ?? false,
-            gsa_registration_date: wellSource.gsa_registration_date || '',
-            notes: wellSource.notes || '',
           };
 
-          // Check if location differs from farm
-          if (wellSource.gps_latitude || wellSource.gps_longitude) {
-            setUseCustomLocation(true);
+          // Try to load associated well data
+          try {
+            const wellResponse = await api.get('/wells/', { 
+              params: { water_source: wellSource.id } 
+            });
+            const wells = wellResponse.data.results || wellResponse.data || [];
+            if (wells.length > 0) {
+              const well = wells[0];
+              Object.assign(newFormData, {
+                well_id: well.id, // Store well ID for updates
+                well_name: well.well_name || '',
+                state_well_number: well.state_well_number || '',
+                local_well_id: well.local_well_id || '',
+                gsa_well_id: well.gsa_well_id || '',
+                gsa: well.gsa || 'obgma',
+                gsa_account_number: well.gsa_account_number || '',
+                basin: well.basin || 'ojai_valley',
+                basin_priority: well.basin_priority || 'medium',
+                well_depth_ft: well.well_depth_ft || '',
+                casing_diameter_inches: well.casing_diameter_inches || '',
+                well_construction_date: well.well_construction_date || '',
+                well_permit_number: well.well_permit_number || '',
+                gps_latitude: well.gps_latitude || '',
+                gps_longitude: well.gps_longitude || '',
+                township: well.township || '',
+                range_value: well.range_value || '',
+                section: well.section || '',
+                parcel_apn: well.parcel_apn || '',
+                pump_type: well.pump_type || '',
+                pump_horsepower: well.pump_horsepower || '',
+                pump_flow_rate_gpm: well.pump_flow_rate_gpm || '',
+                power_source: well.power_source || '',
+                utility_meter_number: well.utility_meter_number || '',
+                has_flowmeter: well.has_flowmeter ?? true,
+                flowmeter_make: well.flowmeter_make || '',
+                flowmeter_model: well.flowmeter_model || '',
+                flowmeter_serial_number: well.flowmeter_serial_number || '',
+                flowmeter_units: well.flowmeter_units || 'acre_feet',
+                flowmeter_multiplier: well.flowmeter_multiplier || '1.0',
+                flowmeter_installation_date: well.flowmeter_installation_date || '',
+                has_ami: well.has_ami ?? false,
+                ami_vendor: well.ami_vendor || '',
+                ami_device_id: well.ami_device_id || '',
+                status: well.status || 'active',
+                is_de_minimis: well.is_de_minimis ?? false,
+                registered_with_gsa: well.registered_with_gsa ?? false,
+                gsa_registration_date: well.gsa_registration_date || '',
+                notes: well.notes || '',
+              });
+              
+              // Check if location differs from farm
+              if (well.gps_latitude || well.gps_longitude) {
+                setUseCustomLocation(true);
+              }
+            }
+          } catch (err) {
+            console.log('No existing well record found');
           }
 
           setFormData(newFormData);
@@ -426,7 +440,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
   };
 
   // ---------------------------------------------------------------------------
-  // Submit handler - saves unified WaterSource (includes well data)
+  // Submit handler - saves both WaterSource and Well
   // ---------------------------------------------------------------------------
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -439,9 +453,8 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
     
     setLoading(true);
     try {
-      // Prepare unified water source data (includes all well fields)
+      // 1. Prepare water source data
       const waterSourceData = {
-        // Basic water source fields
         farm: parseInt(formData.farm),
         name: formData.name,
         source_type: 'well',
@@ -451,80 +464,88 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
         used_for_pesticide_mixing: formData.used_for_pesticide_mixing,
         test_frequency_days: parseInt(formData.test_frequency_days) || 365,
         active: formData.active,
-        
-        // Well identification fields
+      };
+      
+      // Only include fields_served if it has values (some backends don't accept empty arrays)
+      if (formData.fields_served && formData.fields_served.length > 0) {
+        waterSourceData.fields_served = formData.fields_served;
+      }
+      
+      console.log('Saving water source data:', waterSourceData);
+      
+      // 2. Save water source
+      let waterSourceId;
+      if (wellSource?.id) {
+        const response = await api.put(`/water-sources/${wellSource.id}/`, waterSourceData);
+        console.log('Water source update response:', response.data);
+        waterSourceId = wellSource.id;
+      } else {
+        const response = await api.post('/water-sources/', waterSourceData);
+        console.log('Water source create response:', response.data);
+        waterSourceId = response.data.id;
+      }
+      
+      // 3. Prepare well data - field names MUST match Django Well model exactly
+      const wellData = {
+        water_source: waterSourceId,
         well_name: formData.well_name || formData.name,
         state_well_number: formData.state_well_number || '',
         local_well_id: formData.local_well_id || '',
         gsa_well_id: formData.gsa_well_id || '',
-        
-        // GSA/Basin fields
         gsa: formData.gsa || 'obgma',
         gsa_account_number: formData.gsa_account_number || '',
         basin: formData.basin || 'ojai_valley',
         basin_priority: formData.basin_priority || 'medium',
-        
-        // Physical characteristics
         well_depth_ft: formData.well_depth_ft ? parseFloat(formData.well_depth_ft) : null,
         casing_diameter_inches: formData.casing_diameter_inches ? parseFloat(formData.casing_diameter_inches) : null,
-        
-        // Location (from LocationMixin)
         gps_latitude: formData.gps_latitude ? parseFloat(formData.gps_latitude) : null,
         gps_longitude: formData.gps_longitude ? parseFloat(formData.gps_longitude) : null,
-        plss_township: formData.township || formData.plss_township || '',
-        plss_range: formData.range_value || formData.plss_range || '',
-        plss_section: formData.section || formData.plss_section || '',
+        township: formData.township || '',
+        range_value: formData.range_value || '',
+        section: formData.section || '',
         parcel_apn: formData.parcel_apn || '',
-        
-        // Pump info
         pump_type: formData.pump_type || '',
         pump_horsepower: formData.pump_horsepower ? parseFloat(formData.pump_horsepower) : null,
         pump_flow_rate_gpm: formData.pump_flow_rate_gpm ? parseFloat(formData.pump_flow_rate_gpm) : null,
         power_source: formData.power_source || '',
         utility_meter_number: formData.utility_meter_number || '',
-        
-        // Flowmeter
         has_flowmeter: formData.has_flowmeter ?? true,
         flowmeter_make: formData.flowmeter_make || '',
         flowmeter_model: formData.flowmeter_model || '',
         flowmeter_serial_number: formData.flowmeter_serial_number || '',
         flowmeter_units: formData.flowmeter_units || 'acre_feet',
         flowmeter_multiplier: formData.flowmeter_multiplier ? parseFloat(formData.flowmeter_multiplier) : 1.0,
-        flowmeter_installation_date: formData.flowmeter_installation_date || null,
-        
-        // AMI telemetry
+        flowmeter_installation_date: formData.flowmeter_installation_date || null, // Correct field name
         has_ami: formData.has_ami ?? false,
         ami_vendor: formData.ami_vendor || '',
         ami_device_id: formData.ami_device_id || '',
-        
-        // Construction/permits
-        well_construction_date: formData.well_construction_date || null,
+        well_construction_date: formData.well_construction_date || null, // Correct field name
         well_permit_number: formData.well_permit_number || '',
-        
-        // Status and compliance
-        well_status: formData.status || 'active',
+        status: formData.status || 'active',
         is_de_minimis: formData.is_de_minimis ?? false,
         registered_with_gsa: formData.registered_with_gsa ?? false,
         gsa_registration_date: formData.gsa_registration_date || null,
-        
-        // Notes
         notes: formData.notes || '',
       };
       
-      // Only include fields_served if it has values
-      if (formData.fields_served && formData.fields_served.length > 0) {
-        waterSourceData.fields_served = formData.fields_served;
-      }
+      console.log('Saving well data:', wellData);
       
-      console.log('Saving unified water source (well) data:', waterSourceData);
-      
-      // Save water source (create or update)
-      if (wellSource?.id) {
-        await api.put(`/water-sources/${wellSource.id}/`, waterSourceData);
-        console.log('Water source (well) updated successfully');
-      } else {
-        const response = await api.post('/water-sources/', waterSourceData);
-        console.log('Water source (well) created successfully:', response.data);
+      // 4. Save well (create or update)
+      try {
+        if (formData.well_id) {
+          await api.put(`/wells/${formData.well_id}/`, wellData);
+          console.log('Well updated successfully');
+        } else {
+          const wellResponse = await api.post('/wells/', wellData);
+          console.log('Well created successfully:', wellResponse.data);
+        }
+      } catch (wellErr) {
+        console.error('Error saving well:', wellErr.response?.data || wellErr);
+        // Don't fail the whole operation - water source was saved
+        // But show what went wrong
+        if (wellErr.response?.data) {
+          console.error('Well validation errors:', wellErr.response.data);
+        }
       }
       
       onSave();

@@ -87,8 +87,8 @@ function Farms({ farms, fields, applications, onNewFarm, onEditFarm, onDeleteFar
         // Update farm with new coordinates via edit
         const updatedFarm = {
           ...farm,
-          gps_latitude: response.data.lat,
-          gps_longitude: response.data.lng
+          gps_lat: response.data.lat,
+          gps_long: response.data.lng
         };
         onEditFarm(updatedFarm, true); // Pass true to indicate auto-save
       }
@@ -101,7 +101,7 @@ function Farms({ farms, fields, applications, onNewFarm, onEditFarm, onDeleteFar
   };
 
   // Stats
-  const farmsWithCoords = farms.filter(f => f.gps_latitude && f.gps_longitude).length;
+  const farmsWithCoords = farms.filter(f => f.gps_lat && f.gps_long).length;
   const fieldsWithBoundaries = fields.filter(f => f.boundary_geojson).length;
 
   return (
@@ -213,7 +213,7 @@ function Farms({ farms, fields, applications, onNewFarm, onEditFarm, onDeleteFar
               const farmFields = getFarmFields(farm.id);
               const isExpanded = expandedFarms.has(farm.id);
               const isSelected = selectedFarmId === farm.id;
-              const hasCoords = farm.gps_latitude && farm.gps_longitude;
+              const hasCoords = farm.gps_lat && farm.gps_long;
               const ExpandIcon = isExpanded ? ChevronDown : ChevronRight;
 
               return (
@@ -402,13 +402,13 @@ function Farms({ farms, fields, applications, onNewFarm, onEditFarm, onDeleteFar
                                     <span className="text-gray-600">County:</span>
                                     <span className="font-medium text-gray-900">{field.county || 'Not set'}</span>
                                   </div>
-                                  {(field.plss_section || field.plss_township || field.plss_range) && (
+                                  {(field.section || field.township || field.range_value) && (
                                     <div className="flex justify-between text-sm">
                                       <span className="text-gray-600">Location:</span>
                                       <span className="font-medium text-gray-900 text-xs">
-                                        {field.plss_section && `S${field.plss_section}`}
-                                        {field.plss_township && ` T${field.plss_township}`}
-                                        {field.plss_range && ` R${field.plss_range}`}
+                                        {field.section && `S${field.section}`}
+                                        {field.township && ` T${field.township}`}
+                                        {field.range_value && ` R${field.range_value}`}
                                       </span>
                                     </div>
                                   )}

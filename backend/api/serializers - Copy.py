@@ -3,8 +3,8 @@ from .models import (
     Farm, FarmParcel, Field, PesticideProduct, PesticideApplication, WaterSource, WaterTest,
     Buyer, LaborContractor, Harvest, HarvestLoad, HarvestLabor,
     CROP_VARIETY_CHOICES, DEFAULT_BIN_WEIGHTS,
-    WellReading, MeterCalibration, WaterAllocation,
-    ExtractionReport, IrrigationEvent
+    Well, WellReading, MeterCalibration, WaterAllocation,
+    ExtractionReport, IrrigationEvent, WaterSource, Field
 )
 
 class FarmParcelSerializer(serializers.ModelSerializer):
@@ -34,18 +34,12 @@ class FarmSerializer(serializers.ModelSerializer):
     total_parcel_acreage = serializers.DecimalField(
         max_digits=10, decimal_places=2, read_only=True
     )
-    # Add properties from LocationMixin
-    has_coordinates = serializers.ReadOnlyField()
-    has_plss = serializers.ReadOnlyField()
-    plss_display = serializers.ReadOnlyField()
     
     class Meta:
         model = Farm
         fields = [
             'id', 'name', 'farm_number', 'owner_name', 'operator_name',
-            'address', 'county', 'gps_latitude', 'gps_longitude',
-            'plss_section', 'plss_township', 'plss_range', 'plss_meridian',
-            'has_coordinates', 'has_plss', 'plss_display',
+            'address', 'county',  'gps_lat', 'gps_long', 
             'phone', 'email', 'active',
             'parcels', 'apn_list', 'parcel_count', 'total_parcel_acreage',
             'created_at', 'updated_at', 'field_count'
@@ -56,19 +50,13 @@ class FarmSerializer(serializers.ModelSerializer):
 
 class FieldSerializer(serializers.ModelSerializer):
     application_count = serializers.SerializerMethodField()
-    farm_name = serializers.CharField(source='farm.name', read_only=True)
-    # Add properties from LocationMixin
-    has_coordinates = serializers.ReadOnlyField()
-    has_plss = serializers.ReadOnlyField()
-    plss_display = serializers.ReadOnlyField()
+    farm_name = serializers.CharField(source='farm.name', read_only=True)  # ADDED
     
     class Meta:
         model = Field
         fields = [
             'id', 'name', 'farm', 'farm_name', 'field_number', 'county', 
-            'plss_section', 'plss_township', 'plss_range', 'plss_meridian',
-            'gps_latitude', 'gps_longitude',
-            'has_coordinates', 'has_plss', 'plss_display',
+            'section', 'township', 'range_value', 'gps_lat', 'gps_long', 
             'boundary_geojson', 'calculated_acres',
             'total_acres', 'current_crop', 'planting_date', 'active', 
             'created_at', 'updated_at', 'application_count'
@@ -118,36 +106,21 @@ class PesticideApplicationSerializer(serializers.ModelSerializer):
         ]
 
 class WaterSourceSerializer(serializers.ModelSerializer):
-    """
-    Full serializer for unified WaterSource model (includes well data).
-    """
     farm_name = serializers.CharField(source='farm.name', read_only=True)
     test_count = serializers.SerializerMethodField()
     next_test_due = serializers.SerializerMethodField()
     is_overdue = serializers.SerializerMethodField()
     latest_test_status = serializers.SerializerMethodField()
     
-    # Well-specific computed fields (only populated for source_type='well')
-    is_well = serializers.ReadOnlyField()
-    gsa_display = serializers.CharField(source='get_gsa_display', read_only=True)
-    basin_display = serializers.CharField(source='get_basin_display', read_only=True)
-    well_status_display = serializers.CharField(source='get_well_status_display', read_only=True)
-    ytd_extraction_af = serializers.SerializerMethodField()
-    current_year_allocation_af = serializers.SerializerMethodField()
-    allocation_remaining_af = serializers.SerializerMethodField()
-    latest_reading = serializers.SerializerMethodField()
-    calibration_status = serializers.SerializerMethodField()
-    
-    # Location fields from LocationMixin
-    has_coordinates = serializers.ReadOnlyField()
-    has_plss = serializers.ReadOnlyField()
-    plss_display = serializers.ReadOnlyField()
-    effective_location = serializers.ReadOnlyField()
-    effective_plss = serializers.ReadOnlyField()
-    
     class Meta:
         model = WaterSource
-        fields = '__all__'
+        fields = [
+            'id', 'farm', 'farm_name', 'name', 'source_type',
+            'location_description', 'used_for_irrigation', 'used_for_washing',
+            'used_for_pesticide_mixing', 'fields_served', 'test_frequency_days',
+            'active', 'created_at', 'updated_at', 'test_count',
+            'next_test_due', 'is_overdue', 'latest_test_status'
+        ]
     
     def get_test_count(self, obj):
         return obj.water_tests.count()
@@ -162,76 +135,6 @@ class WaterSourceSerializer(serializers.ModelSerializer):
     def get_latest_test_status(self, obj):
         latest = obj.water_tests.first()
         return latest.status if latest else None
-    
-    def get_ytd_extraction_af(self, obj):
-        if obj.is_well:
-            return float(obj.get_ytd_extraction_af())
-        return None
-    
-    def get_current_year_allocation_af(self, obj):
-        if obj.is_well:
-            return float(obj.get_allocation_for_year())
-        return None
-    
-    def get_allocation_remaining_af(self, obj):
-        if obj.is_well:
-            allocation = obj.get_allocation_for_year()
-            extraction = obj.get_ytd_extraction_af()
-            return float(allocation - extraction)
-        return None
-    
-    def get_latest_reading(self, obj):
-        if obj.is_well:
-            reading = obj.get_latest_reading()
-            if reading:
-                return {
-                    'date': reading.reading_date,
-                    'meter_reading': float(reading.meter_reading),
-                    'extraction_af': float(reading.extraction_acre_feet) if reading.extraction_acre_feet else None
-                }
-        return None
-    
-    def get_calibration_status(self, obj):
-        if obj.is_well:
-            return {
-                'is_current': obj.meter_calibration_current,
-                'next_due': obj.next_calibration_due,
-                'is_due_soon': obj.is_calibration_due(days_warning=30)
-            }
-        return None
-
-
-class WaterSourceListSerializer(serializers.ModelSerializer):
-    """Lightweight serializer for WaterSource listings."""
-    
-    farm_name = serializers.CharField(source='farm.name', read_only=True)
-    is_well = serializers.ReadOnlyField()
-    gsa_display = serializers.CharField(source='get_gsa_display', read_only=True)
-    basin_display = serializers.CharField(source='get_basin_display', read_only=True)
-    well_status_display = serializers.CharField(source='get_well_status_display', read_only=True)
-    ytd_extraction_af = serializers.SerializerMethodField()
-    calibration_due_soon = serializers.SerializerMethodField()
-    
-    class Meta:
-        model = WaterSource
-        fields = [
-            'id', 'name', 'farm', 'farm_name', 'source_type', 'is_well',
-            'gsa', 'gsa_display', 'basin', 'basin_display', 
-            'well_status', 'well_status_display',
-            'has_flowmeter', 'flowmeter_units', 'meter_calibration_current',
-            'next_calibration_due', 'calibration_due_soon', 'ytd_extraction_af',
-            'registered_with_gsa', 'is_de_minimis', 'active'
-        ]
-    
-    def get_ytd_extraction_af(self, obj):
-        if obj.is_well:
-            return float(obj.get_ytd_extraction_af())
-        return None
-    
-    def get_calibration_due_soon(self, obj):
-        if obj.is_well:
-            return obj.is_calibration_due(days_warning=30)
-        return None
 
 
 class WaterTestSerializer(serializers.ModelSerializer):
@@ -551,16 +454,110 @@ class HarvestStatisticsSerializer(serializers.Serializer):
     # By buyer breakdown
     by_buyer = serializers.ListField(child=serializers.DictField())
 
+class WellSerializer(serializers.ModelSerializer):
+    """Full serializer for Well model."""
+    
+    # Read-only computed fields
+    water_source_name = serializers.CharField(source='water_source.name', read_only=True)
+    farm_name = serializers.CharField(source='water_source.farm.name', read_only=True)
+    farm_id = serializers.IntegerField(source='water_source.farm.id', read_only=True)
+    gsa_display = serializers.CharField(source='get_gsa_display', read_only=True)
+    basin_display = serializers.CharField(source='get_basin_display', read_only=True)
+    status_display = serializers.CharField(source='get_status_display', read_only=True)
+    
+    # Computed extraction/allocation data
+    ytd_extraction_af = serializers.SerializerMethodField()
+    current_year_allocation_af = serializers.SerializerMethodField()
+    allocation_remaining_af = serializers.SerializerMethodField()
+    latest_reading = serializers.SerializerMethodField()
+    calibration_status = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = Well
+        fields = '__all__'
+    
+    def get_ytd_extraction_af(self, obj):
+        return float(obj.get_ytd_extraction_af())
+    
+    def get_current_year_allocation_af(self, obj):
+        return float(obj.get_allocation_for_year())
+    
+    def get_allocation_remaining_af(self, obj):
+        allocation = obj.get_allocation_for_year()
+        extraction = obj.get_ytd_extraction_af()
+        return float(allocation - extraction)
+    
+    def get_latest_reading(self, obj):
+        reading = obj.get_latest_reading()
+        if reading:
+            return {
+                'date': reading.reading_date,
+                'meter_reading': float(reading.meter_reading),
+                'extraction_af': float(reading.extraction_acre_feet) if reading.extraction_acre_feet else None
+            }
+        return None
+    
+    def get_calibration_status(self, obj):
+        return {
+            'is_current': obj.meter_calibration_current,
+            'next_due': obj.next_calibration_due,
+            'is_due_soon': obj.is_calibration_due(days_warning=30)
+        }
+
+
+class WellListSerializer(serializers.ModelSerializer):
+    """Lightweight serializer for Well listings."""
+    
+    water_source_name = serializers.CharField(source='water_source.name', read_only=True)
+    farm_name = serializers.CharField(source='water_source.farm.name', read_only=True)
+    gsa_display = serializers.CharField(source='get_gsa_display', read_only=True)
+    basin_display = serializers.CharField(source='get_basin_display', read_only=True)
+    status_display = serializers.CharField(source='get_status_display', read_only=True)
+    ytd_extraction_af = serializers.SerializerMethodField()
+    calibration_due_soon = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = Well
+        fields = [
+            'id', 'well_name', 'water_source', 'water_source_name', 'farm_name',
+            'gsa', 'gsa_display', 'basin', 'basin_display', 'status', 'status_display',
+            'has_flowmeter', 'flowmeter_units', 'meter_calibration_current',
+            'next_calibration_due', 'calibration_due_soon', 'ytd_extraction_af',
+            'registered_with_gsa', 'is_de_minimis'
+        ]
+    
+    def get_ytd_extraction_af(self, obj):
+        return float(obj.get_ytd_extraction_af())
+    
+    def get_calibration_due_soon(self, obj):
+        return obj.is_calibration_due(days_warning=30)
+
+
+class WellCreateSerializer(serializers.ModelSerializer):
+    """Serializer for creating/updating Wells."""
+    
+    class Meta:
+        model = Well
+        fields = '__all__'
+    
+    def validate_water_source(self, value):
+        if value.source_type != 'well':
+            raise serializers.ValidationError(
+                "Water source must be of type 'well'"
+            )
+        return value
+
+
 # -----------------------------------------------------------------------------
-# WELL READING SERIALIZERS (Now reference WaterSource instead of Well)
+# WELL READING SERIALIZERS
 # -----------------------------------------------------------------------------
 
 class WellReadingSerializer(serializers.ModelSerializer):
     """Full serializer for WellReading model."""
     
-    water_source_name = serializers.CharField(source='water_source.name', read_only=True)
-    farm_name = serializers.CharField(source='water_source.farm.name', read_only=True)
-    flowmeter_units = serializers.CharField(source='water_source.flowmeter_units', read_only=True)
+    well_name = serializers.CharField(source='well.well_name', read_only=True)
+    farm_name = serializers.CharField(source='well.water_source.farm.name', read_only=True)
+    flowmeter_units = serializers.CharField(source='well.flowmeter_units', read_only=True)
     reading_type_display = serializers.CharField(source='get_reading_type_display', read_only=True)
     
     class Meta:
@@ -578,21 +575,21 @@ class WellReadingCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = WellReading
         fields = [
-            'water_source', 'reading_date', 'reading_time', 'meter_reading',
+            'well', 'reading_date', 'reading_time', 'meter_reading',
             'reading_type', 'meter_photo', 'pump_hours', 'water_level_ft',
             'recorded_by', 'notes'
         ]
     
     def validate(self, data):
         """Validate reading is greater than previous."""
-        water_source = data.get('water_source')
+        well = data.get('well')
         meter_reading = data.get('meter_reading')
         reading_date = data.get('reading_date')
         
-        if water_source and meter_reading:
+        if well and meter_reading:
             # Get the previous reading
             prev = WellReading.objects.filter(
-                water_source=water_source,
+                well=well,
                 reading_date__lte=reading_date
             ).exclude(
                 id=self.instance.id if self.instance else None
@@ -612,27 +609,27 @@ class WellReadingCreateSerializer(serializers.ModelSerializer):
 class WellReadingListSerializer(serializers.ModelSerializer):
     """Lightweight serializer for reading listings."""
     
-    water_source_name = serializers.CharField(source='water_source.name', read_only=True)
+    well_name = serializers.CharField(source='well.well_name', read_only=True)
     reading_type_display = serializers.CharField(source='get_reading_type_display', read_only=True)
     
     class Meta:
         model = WellReading
         fields = [
-            'id', 'water_source', 'water_source_name', 'reading_date', 'reading_time',
+            'id', 'well', 'well_name', 'reading_date', 'reading_time',
             'meter_reading', 'extraction_acre_feet', 'extraction_gallons',
             'reading_type', 'reading_type_display', 'recorded_by'
         ]
 
 
 # -----------------------------------------------------------------------------
-# METER CALIBRATION SERIALIZERS (Now reference WaterSource)
+# METER CALIBRATION SERIALIZERS
 # -----------------------------------------------------------------------------
 
 class MeterCalibrationSerializer(serializers.ModelSerializer):
     """Full serializer for MeterCalibration model."""
     
-    water_source_name = serializers.CharField(source='water_source.name', read_only=True)
-    farm_name = serializers.CharField(source='water_source.farm.name', read_only=True)
+    well_name = serializers.CharField(source='well.well_name', read_only=True)
+    farm_name = serializers.CharField(source='well.water_source.farm.name', read_only=True)
     calibration_type_display = serializers.CharField(
         source='get_calibration_type_display', read_only=True
     )
@@ -679,8 +676,8 @@ class MeterCalibrationCreateSerializer(serializers.ModelSerializer):
 class WaterAllocationSerializer(serializers.ModelSerializer):
     """Full serializer for WaterAllocation model."""
     
-    water_source_name = serializers.CharField(source='water_source.name', read_only=True)
-    farm_name = serializers.CharField(source='water_source.farm.name', read_only=True)
+    well_name = serializers.CharField(source='well.well_name', read_only=True)
+    farm_name = serializers.CharField(source='well.water_source.farm.name', read_only=True)
     allocation_type_display = serializers.CharField(
         source='get_allocation_type_display', read_only=True
     )
@@ -695,8 +692,8 @@ class WaterAllocationSummarySerializer(serializers.Serializer):
     """Serializer for allocation summary data."""
     
     water_year = serializers.CharField()
-    water_source_id = serializers.IntegerField()
-    water_source_name = serializers.CharField()
+    well_id = serializers.IntegerField()
+    well_name = serializers.CharField()
     total_allocated_af = serializers.DecimalField(max_digits=10, decimal_places=4)
     total_extracted_af = serializers.DecimalField(max_digits=10, decimal_places=4)
     remaining_af = serializers.DecimalField(max_digits=10, decimal_places=4)
@@ -705,16 +702,16 @@ class WaterAllocationSummarySerializer(serializers.Serializer):
 
 
 # -----------------------------------------------------------------------------
-# EXTRACTION REPORT SERIALIZERS (Now reference WaterSource)
+# EXTRACTION REPORT SERIALIZERS
 # -----------------------------------------------------------------------------
 
 class ExtractionReportSerializer(serializers.ModelSerializer):
     """Full serializer for ExtractionReport model."""
     
-    water_source_name = serializers.CharField(source='water_source.name', read_only=True)
-    farm_name = serializers.CharField(source='water_source.farm.name', read_only=True)
-    gsa = serializers.CharField(source='water_source.gsa', read_only=True)
-    gsa_display = serializers.CharField(source='water_source.get_gsa_display', read_only=True)
+    well_name = serializers.CharField(source='well.well_name', read_only=True)
+    farm_name = serializers.CharField(source='well.water_source.farm.name', read_only=True)
+    gsa = serializers.CharField(source='well.gsa', read_only=True)
+    gsa_display = serializers.CharField(source='well.get_gsa_display', read_only=True)
     period_type_display = serializers.CharField(source='get_period_type_display', read_only=True)
     status_display = serializers.CharField(source='get_status_display', read_only=True)
     payment_status_display = serializers.CharField(
@@ -735,7 +732,7 @@ class ExtractionReportCreateSerializer(serializers.ModelSerializer):
     
     def validate(self, data):
         """Validate period dates and readings."""
-        water_source = data.get('water_source')
+        well = data.get('well')
         period_start = data.get('period_start_date')
         period_end = data.get('period_end_date')
         
@@ -763,8 +760,8 @@ class ExtractionReportCreateSerializer(serializers.ModelSerializer):
 class ExtractionReportListSerializer(serializers.ModelSerializer):
     """Lightweight serializer for report listings."""
     
-    water_source_name = serializers.CharField(source='water_source.name', read_only=True)
-    gsa_display = serializers.CharField(source='water_source.get_gsa_display', read_only=True)
+    well_name = serializers.CharField(source='well.well_name', read_only=True)
+    gsa_display = serializers.CharField(source='well.get_gsa_display', read_only=True)
     status_display = serializers.CharField(source='get_status_display', read_only=True)
     payment_status_display = serializers.CharField(
         source='get_payment_status_display', read_only=True
@@ -773,7 +770,7 @@ class ExtractionReportListSerializer(serializers.ModelSerializer):
     class Meta:
         model = ExtractionReport
         fields = [
-            'id', 'water_source', 'water_source_name', 'gsa_display', 'reporting_period',
+            'id', 'well', 'well_name', 'gsa_display', 'reporting_period',
             'period_type', 'period_start_date', 'period_end_date',
             'total_extraction_af', 'period_allocation_af', 'over_allocation',
             'total_fees_due', 'status', 'status_display',
@@ -782,7 +779,7 @@ class ExtractionReportListSerializer(serializers.ModelSerializer):
 
 
 # -----------------------------------------------------------------------------
-# IRRIGATION EVENT SERIALIZERS (Now only reference WaterSource)
+# IRRIGATION EVENT SERIALIZERS
 # -----------------------------------------------------------------------------
 
 class IrrigationEventSerializer(serializers.ModelSerializer):
@@ -790,6 +787,7 @@ class IrrigationEventSerializer(serializers.ModelSerializer):
     
     field_name = serializers.CharField(source='field.name', read_only=True)
     farm_name = serializers.CharField(source='field.farm.name', read_only=True)
+    well_name = serializers.CharField(source='well.well_name', read_only=True)
     water_source_name = serializers.CharField(source='water_source.name', read_only=True)
     irrigation_method_display = serializers.CharField(
         source='get_irrigation_method_display', read_only=True
@@ -812,10 +810,10 @@ class IrrigationEventCreateSerializer(serializers.ModelSerializer):
         fields = '__all__'
     
     def validate(self, data):
-        """Ensure water_source is provided."""
-        if not data.get('water_source'):
+        """Ensure either well or water_source is provided."""
+        if not data.get('well') and not data.get('water_source'):
             raise serializers.ValidationError(
-                'water_source must be specified'
+                'Either well or water_source must be specified'
             )
         return data
 
@@ -824,7 +822,7 @@ class IrrigationEventListSerializer(serializers.ModelSerializer):
     """Lightweight serializer for irrigation event listings."""
     
     field_name = serializers.CharField(source='field.name', read_only=True)
-    water_source_name = serializers.CharField(source='water_source.name', read_only=True)
+    well_name = serializers.CharField(source='well.well_name', read_only=True)
     irrigation_method_display = serializers.CharField(
         source='get_irrigation_method_display', read_only=True
     )
@@ -832,7 +830,7 @@ class IrrigationEventListSerializer(serializers.ModelSerializer):
     class Meta:
         model = IrrigationEvent
         fields = [
-            'id', 'field', 'field_name', 'water_source', 'water_source_name',
+            'id', 'field', 'field_name', 'well', 'well_name',
             'irrigation_date', 'duration_hours', 'water_applied_af',
             'water_applied_gallons', 'irrigation_method', 'irrigation_method_display',
             'acres_irrigated', 'acre_inches'

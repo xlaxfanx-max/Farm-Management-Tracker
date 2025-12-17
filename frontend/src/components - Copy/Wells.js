@@ -65,11 +65,11 @@ const Wells = ({ onOpenModal }) => {
   const fetchWells = async () => {
     try {
       setLoading(true);
-      const params = { source_type: 'well' };
+      const params = {};
       if (filterGSA) params.gsa = filterGSA;
       if (filterStatus) params.status = filterStatus;
       
-      const response = await api.get('/water-sources/', { params });
+      const response = await api.get('/wells/', { params });
       setWells(response.data.results || response.data || []);
       setError(null);
     } catch (err) {
@@ -83,7 +83,7 @@ const Wells = ({ onOpenModal }) => {
   // Fetch readings for expanded well
   const fetchWellReadings = async (wellId) => {
     try {
-      const response = await api.get(`/well-readings/?water_source=${wellId}`);
+      const response = await api.get(`/wells/${wellId}/readings/`);
       setWellReadings(prev => ({
         ...prev,
         [wellId]: response.data.slice(0, 5) // Last 5 readings
@@ -109,7 +109,7 @@ const Wells = ({ onOpenModal }) => {
       return;
     }
     try {
-      await api.delete(`/water-sources/${wellId}/`);
+      await api.delete(`/wells/${wellId}/`);
       fetchWells();
     } catch (err) {
       alert('Failed to delete well');

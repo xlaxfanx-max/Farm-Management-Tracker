@@ -50,8 +50,8 @@ function Fields({ fields, applications, onEditField, onDeleteField, onNewField }
               <div className="flex justify-between text-sm">
                 <span className="text-slate-600">Location:</span>
                 <span className="font-medium text-xs">
-                  {field.plss_section && field.plss_township && field.plss_range
-                    ? `S${field.plss_section} T${field.plss_township} R${field.plss_range}`
+                  {field.section && field.township && field.range_value
+                    ? `S${field.section} T${field.township} R${field.range_value}`
                     : 'Not set'}
                 </span>
               </div>

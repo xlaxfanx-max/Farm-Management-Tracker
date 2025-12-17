@@ -18,18 +18,19 @@ from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
 from .models import ( 
     Farm, Field, FarmParcel, PesticideProduct, PesticideApplication, WaterSource, WaterTest, 
-    Buyer, LaborContractor, Harvest, HarvestLoad, HarvestLabor,
-    WellReading, MeterCalibration, WaterAllocation,
-    ExtractionReport, IrrigationEvent
+    Buyer, LaborContractor, Harvest, HarvestLoad, HarvestLabor, PesticideApplication,
+    Well, WellReading, MeterCalibration, WaterAllocation,
+    ExtractionReport, IrrigationEvent, WaterSource, Field
 )
 from .serializers import ( 
     FarmSerializer, FarmParcelSerializer, FarmParcelListSerializer, FieldSerializer, PesticideProductSerializer, PesticideApplicationSerializer, 
-    WaterSourceSerializer, WaterSourceListSerializer, WaterTestSerializer,
+    WaterSourceSerializer, WaterTestSerializer,
     BuyerSerializer, BuyerListSerializer,
     LaborContractorSerializer, LaborContractorListSerializer,
     HarvestSerializer, HarvestListSerializer,
     HarvestLoadSerializer, HarvestLaborSerializer,
     PHICheckSerializer, HarvestStatisticsSerializer,
+    WellSerializer, WellListSerializer, WellCreateSerializer,
     WellReadingSerializer, WellReadingCreateSerializer, WellReadingListSerializer,
     MeterCalibrationSerializer, MeterCalibrationCreateSerializer,
     WaterAllocationSerializer, WaterAllocationSummarySerializer,
@@ -1933,7 +1934,7 @@ class WellViewSet(viewsets.ModelViewSet):
     ViewSet for Well model.
     Provides CRUD operations plus custom actions for well management.
     """
-    queryset = WaterSource.objects.filter(source_type="well").select_related(
+    queryset = Well.objects.select_related(
         'water_source', 'water_source__farm'
     ).all()
     permission_classes = [IsAuthenticated]
@@ -1979,7 +1980,7 @@ class WellViewSet(viewsets.ModelViewSet):
     def readings(self, request, pk=None):
         """Get all readings for a specific well."""
         well = self.get_object()
-        readings = water_source.readings.all()
+        readings = well.readings.all()
         
         # Optional date filters
         start_date = request.query_params.get('start_date')
@@ -1997,7 +1998,7 @@ class WellViewSet(viewsets.ModelViewSet):
     def calibrations(self, request, pk=None):
         """Get calibration history for a specific well."""
         well = self.get_object()
-        calibrations = water_source.calibrations.all()
+        calibrations = well.calibrations.all()
         serializer = MeterCalibrationSerializer(calibrations, many=True)
         return Response(serializer.data)
     
@@ -2005,7 +2006,7 @@ class WellViewSet(viewsets.ModelViewSet):
     def allocations(self, request, pk=None):
         """Get allocation history for a specific well."""
         well = self.get_object()
-        allocations = water_source.allocations.all()
+        allocations = well.allocations.all()
         
         water_year = request.query_params.get('water_year')
         if water_year:
@@ -2022,7 +2023,7 @@ class WellViewSet(viewsets.ModelViewSet):
         wy_dates = get_water_year_dates(water_year)
         
         # Get extraction
-        extraction = water_source.readings.filter(
+        extraction = well.readings.filter(
             reading_date__gte=wy_dates['start'],
             reading_date__lte=wy_dates['end']
         ).aggregate(
@@ -2032,7 +2033,7 @@ class WellViewSet(viewsets.ModelViewSet):
         )
         
         # Get allocation
-        allocation = water_source.allocations.filter(
+        allocation = well.allocations.filter(
             water_year=water_year
         ).exclude(
             allocation_type='transferred_out'
@@ -2093,7 +2094,7 @@ class WellReadingViewSet(viewsets.ModelViewSet):
     """ViewSet for WellReading model."""
     
     queryset = WellReading.objects.select_related(
-        'well', 'water_source', 'water_source__farm'
+        'well', 'well__water_source', 'well__water_source__farm'
     ).all()
     permission_classes = [IsAuthenticated]
     
@@ -2111,13 +2112,13 @@ class WellReadingViewSet(viewsets.ModelViewSet):
         user = self.request.user
         if hasattr(user, 'current_company') and user.current_company:
             queryset = queryset.filter(
-                water_source__farm__company=user.current_company
+                well__water_source__farm__company=user.current_company
             )
         
         # Filter by well
         well_id = self.request.query_params.get('well')
         if well_id:
-            queryset = queryset.filter(water_source_id=well_id)
+            queryset = queryset.filter(well_id=well_id)
         
         # Filter by date range
         start_date = self.request.query_params.get('start_date')
@@ -2171,7 +2172,7 @@ class MeterCalibrationViewSet(viewsets.ModelViewSet):
     """ViewSet for MeterCalibration model."""
     
     queryset = MeterCalibration.objects.select_related(
-        'well', 'water_source', 'water_source__farm'
+        'well', 'well__water_source', 'well__water_source__farm'
     ).all()
     permission_classes = [IsAuthenticated]
     
@@ -2186,12 +2187,12 @@ class MeterCalibrationViewSet(viewsets.ModelViewSet):
         user = self.request.user
         if hasattr(user, 'current_company') and user.current_company:
             queryset = queryset.filter(
-                water_source__farm__company=user.current_company
+                well__water_source__farm__company=user.current_company
             )
         
         well_id = self.request.query_params.get('well')
         if well_id:
-            queryset = queryset.filter(water_source_id=well_id)
+            queryset = queryset.filter(well_id=well_id)
         
         return queryset
     
@@ -2218,7 +2219,7 @@ class WaterAllocationViewSet(viewsets.ModelViewSet):
     """ViewSet for WaterAllocation model."""
     
     queryset = WaterAllocation.objects.select_related(
-        'well', 'water_source', 'water_source__farm'
+        'well', 'well__water_source', 'well__water_source__farm'
     ).all()
     serializer_class = WaterAllocationSerializer
     permission_classes = [IsAuthenticated]
@@ -2229,12 +2230,12 @@ class WaterAllocationViewSet(viewsets.ModelViewSet):
         user = self.request.user
         if hasattr(user, 'current_company') and user.current_company:
             queryset = queryset.filter(
-                water_source__farm__company=user.current_company
+                well__water_source__farm__company=user.current_company
             )
         
         well_id = self.request.query_params.get('well')
         if well_id:
-            queryset = queryset.filter(water_source_id=well_id)
+            queryset = queryset.filter(well_id=well_id)
         
         water_year = self.request.query_params.get('water_year')
         if water_year:
@@ -2250,22 +2251,22 @@ class WaterAllocationViewSet(viewsets.ModelViewSet):
         
         user = request.user
         if hasattr(user, 'current_company') and user.current_company:
-            wells = WaterSource.objects.filter(source_type="well").filter(
+            wells = Well.objects.filter(
                 water_source__farm__company=user.current_company,
                 status='active'
             )
         else:
-            wells = WaterSource.objects.filter(source_type="well").filter(status='active')
+            wells = Well.objects.filter(status='active')
         
         summaries = []
         for well in wells:
-            allocation = water_source.allocations.filter(
+            allocation = well.allocations.filter(
                 water_year=water_year
             ).exclude(
                 allocation_type='transferred_out'
             ).aggregate(total=Sum('allocated_acre_feet'))['total'] or Decimal('0')
             
-            extraction = water_source.readings.filter(
+            extraction = well.readings.filter(
                 reading_date__gte=wy_dates['start'],
                 reading_date__lte=wy_dates['end']
             ).aggregate(total=Sum('extraction_acre_feet'))['total'] or Decimal('0')
@@ -2295,7 +2296,7 @@ class ExtractionReportViewSet(viewsets.ModelViewSet):
     """ViewSet for ExtractionReport model."""
     
     queryset = ExtractionReport.objects.select_related(
-        'well', 'water_source', 'water_source__farm'
+        'well', 'well__water_source', 'well__water_source__farm'
     ).all()
     permission_classes = [IsAuthenticated]
     
@@ -2312,12 +2313,12 @@ class ExtractionReportViewSet(viewsets.ModelViewSet):
         user = self.request.user
         if hasattr(user, 'current_company') and user.current_company:
             queryset = queryset.filter(
-                water_source__farm__company=user.current_company
+                well__water_source__farm__company=user.current_company
             )
         
         well_id = self.request.query_params.get('well')
         if well_id:
-            queryset = queryset.filter(water_source_id=well_id)
+            queryset = queryset.filter(well_id=well_id)
         
         status_filter = self.request.query_params.get('status')
         if status_filter:
@@ -2343,7 +2344,7 @@ class ExtractionReportViewSet(viewsets.ModelViewSet):
             )
         
         try:
-            well = WaterSource.objects.filter(source_type="well").get(id=well_id)
+            well = Well.objects.get(id=well_id)
         except Well.DoesNotExist:
             return Response(
                 {'error': 'Well not found'},
@@ -2403,7 +2404,7 @@ class ExtractionReportViewSet(viewsets.ModelViewSet):
         beginning_date = pre_period_reading.reading_date if pre_period_reading else first_reading.reading_date
         
         water_year = f"{period_start.year}-{period_end.year}" if period_start.month >= 10 else f"{period_start.year - 1}-{period_start.year}"
-        allocation = water_source.allocations.filter(
+        allocation = well.allocations.filter(
             water_year=water_year
         ).exclude(
             allocation_type='transferred_out'
@@ -2481,7 +2482,7 @@ class IrrigationEventViewSet(viewsets.ModelViewSet):
         
         well_id = self.request.query_params.get('well')
         if well_id:
-            queryset = queryset.filter(water_source_id=well_id)
+            queryset = queryset.filter(well_id=well_id)
         
         start_date = self.request.query_params.get('start_date')
         end_date = self.request.query_params.get('end_date')
@@ -2532,11 +2533,11 @@ def sgma_dashboard(request):
     user = request.user
     
     if hasattr(user, 'current_company') and user.current_company:
-        wells = WaterSource.objects.filter(source_type="well").filter(
+        wells = Well.objects.filter(
             water_source__farm__company=user.current_company
         )
     else:
-        wells = WaterSource.objects.filter(source_type="well").all()
+        wells = Well.objects.all()
     
     water_year = get_current_water_year()
     wy_dates = get_water_year_dates(water_year)

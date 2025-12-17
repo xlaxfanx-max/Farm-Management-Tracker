@@ -122,17 +122,17 @@ const FarmMap = ({
 
   // Calculate center based on farms/fields with coordinates
   const getMapCenter = () => {
-    const farmsWithCoords = farms.filter(f => f.gps_latitude && f.gps_longitude);
-    const fieldsWithCoords = fields.filter(f => f.gps_latitude && f.gps_longitude);
+    const farmsWithCoords = farms.filter(f => f.gps_lat && f.gps_long);
+    const fieldsWithCoords = fields.filter(f => f.gps_lat && f.gps_long);
     
     if (farmsWithCoords.length > 0) {
-      const lat = farmsWithCoords.reduce((sum, f) => sum + parseFloat(f.gps_latitude), 0) / farmsWithCoords.length;
-      const lng = farmsWithCoords.reduce((sum, f) => sum + parseFloat(f.gps_longitude), 0) / farmsWithCoords.length;
+      const lat = farmsWithCoords.reduce((sum, f) => sum + parseFloat(f.gps_lat), 0) / farmsWithCoords.length;
+      const lng = farmsWithCoords.reduce((sum, f) => sum + parseFloat(f.gps_long), 0) / farmsWithCoords.length;
       return [lat, lng];
     }
     if (fieldsWithCoords.length > 0) {
-      const lat = fieldsWithCoords.reduce((sum, f) => sum + parseFloat(f.gps_latitude), 0) / fieldsWithCoords.length;
-      const lng = fieldsWithCoords.reduce((sum, f) => sum + parseFloat(f.gps_longitude), 0) / fieldsWithCoords.length;
+      const lat = fieldsWithCoords.reduce((sum, f) => sum + parseFloat(f.gps_lat), 0) / fieldsWithCoords.length;
+      const lng = fieldsWithCoords.reduce((sum, f) => sum + parseFloat(f.gps_long), 0) / fieldsWithCoords.length;
       return [lat, lng];
     }
     return defaultCenter;
@@ -359,12 +359,12 @@ const FarmMap = ({
 
         {/* Farm Markers */}
         {farms.map((farm) => {
-          if (!farm.gps_latitude || !farm.gps_longitude) return null;
+          if (!farm.gps_lat || !farm.gps_long) return null;
           const farmFields = fields.filter(f => parseInt(f.farm) === farm.id);
           return (
             <Marker
               key={`farm-${farm.id}`}
-              position={[parseFloat(farm.gps_latitude), parseFloat(farm.gps_longitude)]}
+              position={[parseFloat(farm.gps_lat), parseFloat(farm.gps_long)]}
               icon={createFarmIcon(selectedFarmId === farm.id)}
               eventHandlers={{
                 click: () => onFarmSelect && onFarmSelect(farm.id)
@@ -453,13 +453,13 @@ const FarmMap = ({
         {/* Field Markers (for fields without boundaries) */}
         {fields.map((field) => {
           if (field.boundary_geojson) return null;
-          if (!field.gps_latitude || !field.gps_longitude) return null;
+          if (!field.gps_lat || !field.gps_long) return null;
           
           const colors = getFieldColor(field.current_crop);
           return (
             <Marker
               key={`field-${field.id}`}
-              position={[parseFloat(field.gps_latitude), parseFloat(field.gps_longitude)]}
+              position={[parseFloat(field.gps_lat), parseFloat(field.gps_long)]}
               icon={createFieldIcon(colors.fill)}
               eventHandlers={{
                 click: () => onFieldSelect && onFieldSelect(field.id)

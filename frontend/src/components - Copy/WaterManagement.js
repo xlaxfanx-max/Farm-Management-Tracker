@@ -102,9 +102,9 @@ const WaterManagement = ({
 
   const fetchWells = useCallback(async () => {
     try {
-      const params = { source_type: 'well' };
+      const params = {};
       if (filterGSA) params.gsa = filterGSA;
-      const response = await api.get('/water-sources/', { params });
+      const response = await api.get('/wells/', { params });
       setWells(response.data.results || response.data || []);
     } catch (err) {
       console.error('Error fetching wells:', err);
@@ -194,7 +194,7 @@ const WaterManagement = ({
   const handleDeleteWell = async (wellId) => {
     if (!window.confirm('Are you sure you want to delete this well?')) return;
     try {
-      await api.delete(`/water-sources/${wellId}/`);
+      await api.delete(`/wells/${wellId}/`);
       handleRefresh();
     } catch (err) {
       alert('Failed to delete well');

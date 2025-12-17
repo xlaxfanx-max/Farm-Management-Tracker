@@ -99,23 +99,15 @@ const WellModal = ({ isOpen, onClose, well, waterSources, onSave }) => {
     
     setSaving(true);
     try {
-      // Prepare data with source_type for unified WaterSource model
-      const cleanData = { 
-        ...formData,
-        source_type: 'well',
-        // Map old field names to new PLSS field names
-        plss_section: formData.section || formData.plss_section || '',
-        plss_township: formData.township || formData.plss_township || '',
-        plss_range: formData.range_value || formData.plss_range || '',
-      };
+      const cleanData = { ...formData };
       Object.keys(cleanData).forEach(key => {
         if (cleanData[key] === '') cleanData[key] = null;
       });
       
       if (well?.id) {
-        await api.put(`/water-sources/${well.id}/`, cleanData);
+        await api.put(`/wells/${well.id}/`, cleanData);
       } else {
-        await api.post('/water-sources/', cleanData);
+        await api.post('/wells/', cleanData);
       }
       onSave();
       onClose();

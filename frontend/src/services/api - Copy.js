@@ -471,27 +471,26 @@ export const harvestLaborAPI = {
 };
 
 // =============================================================================
-// WELLS & SGMA API (Updated to use unified water-sources endpoint)
+// WELLS & SGMA API (NEW)
 // =============================================================================
 
-// Wells are now part of the unified WaterSource model with source_type='well'
 export const wellsAPI = {
-  // Wells CRUD - uses water-sources with source_type filter
-  getAll: (params = {}) => api.get('/water-sources/', { params: { ...params, source_type: 'well' } }),
-  get: (id) => api.get(`/water-sources/${id}/`),
-  create: (data) => api.post('/water-sources/', { ...data, source_type: 'well' }),
-  update: (id, data) => api.put(`/water-sources/${id}/`, data),
-  delete: (id) => api.delete(`/water-sources/${id}/`),
+  // Wells CRUD
+  getAll: (params = {}) => api.get('/wells/', { params }),
+  get: (id) => api.get(`/wells/${id}/`),
+  create: (data) => api.post('/wells/', data),
+  update: (id, data) => api.put(`/wells/${id}/`, data),
+  delete: (id) => api.delete(`/wells/${id}/`),
   
-  // Well-specific endpoints - now query by water_source
-  getReadings: (id, params = {}) => api.get('/well-readings/', { params: { ...params, water_source: id } }),
-  getCalibrations: (id) => api.get('/meter-calibrations/', { params: { water_source: id } }),
-  getAllocations: (id, params = {}) => api.get('/water-allocations/', { params: { ...params, water_source: id } }),
-  getExtractionSummary: (id, params = {}) => api.get(`/water-sources/${id}/extraction_summary/`, { params }),
+  // Well-specific endpoints
+  getReadings: (id, params = {}) => api.get(`/wells/${id}/readings/`, { params }),
+  getCalibrations: (id) => api.get(`/wells/${id}/calibrations/`),
+  getAllocations: (id, params = {}) => api.get(`/wells/${id}/allocations/`, { params }),
+  getExtractionSummary: (id, params = {}) => api.get(`/wells/${id}/extraction_summary/`, { params }),
   
   // Filtered lists
-  byGSA: (gsa) => api.get('/water-sources/', { params: { source_type: 'well', gsa } }),
-  calibrationDue: (days = 30) => api.get('/water-sources/', { params: { source_type: 'well', calibration_due: days } }),
+  byGSA: (gsa) => api.get('/wells/by_gsa/', { params: { gsa } }),
+  calibrationDue: (days = 30) => api.get('/wells/calibration_due/', { params: { days } }),
 };
 
 export const wellReadingsAPI = {

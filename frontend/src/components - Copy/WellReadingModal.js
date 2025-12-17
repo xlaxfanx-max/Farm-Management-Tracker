@@ -3,7 +3,6 @@
 // =============================================================================
 // src/components/WellReadingModal.js
 // Modal for entering meter readings
-// Updated to use water_source FK instead of well
 // =============================================================================
 
 import React, { useState, useEffect } from 'react';
@@ -11,9 +10,8 @@ import { X, Gauge, Save, AlertCircle, Camera, Info } from 'lucide-react';
 import api from '../services/api';
 
 const WellReadingModal = ({ isOpen, onClose, reading, wellId, wellName, onSave }) => {
-  // Note: wellId is actually water_source ID now
   const [formData, setFormData] = useState({
-    water_source: wellId || '',
+    well: wellId || '',
     reading_date: new Date().toISOString().split('T')[0],
     reading_time: new Date().toTimeString().slice(0, 5),
     meter_reading: '',
@@ -32,7 +30,7 @@ const WellReadingModal = ({ isOpen, onClose, reading, wellId, wellName, onSave }
 
   useEffect(() => {
     if (wellId) {
-      setFormData(prev => ({ ...prev, water_source: wellId }));
+      setFormData(prev => ({ ...prev, well: wellId }));
       fetchPreviousReading(wellId);
     }
   }, [wellId]);
@@ -40,7 +38,7 @@ const WellReadingModal = ({ isOpen, onClose, reading, wellId, wellName, onSave }
   useEffect(() => {
     if (reading) {
       setFormData({
-        water_source: reading.water_source,
+        well: reading.well,
         reading_date: reading.reading_date,
         reading_time: reading.reading_time || '',
         meter_reading: reading.meter_reading,
@@ -52,7 +50,7 @@ const WellReadingModal = ({ isOpen, onClose, reading, wellId, wellName, onSave }
       });
     } else {
       setFormData({
-        water_source: wellId || '',
+        well: wellId || '',
         reading_date: new Date().toISOString().split('T')[0],
         reading_time: new Date().toTimeString().slice(0, 5),
         meter_reading: '',
@@ -67,10 +65,10 @@ const WellReadingModal = ({ isOpen, onClose, reading, wellId, wellName, onSave }
     setCalculatedExtraction(null);
   }, [reading, isOpen, wellId]);
 
-  const fetchPreviousReading = async (waterSourceId) => {
+  const fetchPreviousReading = async (wId) => {
     try {
       setFetchingPrevious(true);
-      const response = await api.get('/well-readings/', { params: { water_source: waterSourceId } });
+      const response = await api.get(`/wells/${wId}/readings/`);
       if (response.data && response.data.length > 0) {
         setPreviousReading(response.data[0]);
       } else {
@@ -109,8 +107,8 @@ const WellReadingModal = ({ isOpen, onClose, reading, wellId, wellName, onSave }
   const validate = () => {
     const newErrors = {};
     
-    if (!formData.water_source) {
-      newErrors.water_source = 'Water source is required';
+    if (!formData.well) {
+      newErrors.well = 'Well is required';
     }
     if (!formData.reading_date) {
       newErrors.reading_date = 'Reading date is required';

@@ -22,12 +22,12 @@ function FieldModal({ field, farms, preselectedFarmId, onClose, onSave }) {
     total_acres: '',
     current_crop: '',
     county: '',
-    plss_section: '',
-    plss_township: '',
-    plss_range: '',
+    section: '',
+    township: '',
+    range_value: '',
     planting_date: '',
-    gps_latitude: '',
-    gps_longitude: ''
+    gps_lat: '',
+    gps_long: ''
   });
 
   useEffect(() => {
@@ -39,12 +39,12 @@ function FieldModal({ field, farms, preselectedFarmId, onClose, onSave }) {
         total_acres: field.total_acres ? String(field.total_acres) : '',
         current_crop: field.current_crop || '',
         county: field.county || '',
-        plss_section: field.plss_section || '',
-        plss_township: field.plss_township || '',
-        plss_range: field.plss_range || '',
+        section: field.section || '',
+        township: field.township || '',
+        range_value: field.range_value || '',
         planting_date: field.planting_date || '',
-        gps_latitude: field.gps_latitude || '',
-        gps_longitude: field.gps_longitude || ''
+        gps_lat: field.gps_lat || '',
+        gps_long: field.gps_long || ''
       });
     } else if (preselectedFarmId && farms) {
       const selectedFarm = farms.find(f => f.id === preselectedFarmId || f.id === parseInt(preselectedFarmId));
@@ -80,12 +80,12 @@ function FieldModal({ field, farms, preselectedFarmId, onClose, onSave }) {
       total_acres: parseFloat(formData.total_acres),
       current_crop: formData.current_crop,
       county: formData.county,
-      plss_section: formData.plss_section || '',
-      plss_township: formData.plss_township || '',
-      plss_range: formData.plss_range || '',
+      section: formData.section || '',
+      township: formData.township || '',
+      range_value: formData.range_value || '',
       planting_date: formData.planting_date || null,
-      gps_latitude: formData.gps_latitude ? parseFloat(formData.gps_latitude) : null,
-      gps_longitude: formData.gps_longitude ? parseFloat(formData.gps_longitude) : null,
+      gps_lat: formData.gps_lat ? parseFloat(formData.gps_lat) : null,
+      gps_long: formData.gps_long ? parseFloat(formData.gps_long) : null,
       active: true
     };
     console.log('Saving field data:', dataToSend);
@@ -159,15 +159,15 @@ function FieldModal({ field, farms, preselectedFarmId, onClose, onSave }) {
           <div className="grid grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-medium mb-1">Section</label>
-              <input type="text" value={formData.plss_section} onChange={(e) => setFormData({...formData, plss_section: e.target.value})} className="w-full p-2 border rounded-lg" placeholder="e.g., 12" />
+              <input type="text" value={formData.section} onChange={(e) => setFormData({...formData, section: e.target.value})} className="w-full p-2 border rounded-lg" placeholder="e.g., 12" />
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Township</label>
-              <input type="text" value={formData.plss_township} onChange={(e) => setFormData({...formData, plss_township: e.target.value})} className="w-full p-2 border rounded-lg" placeholder="e.g., 15S" />
+              <input type="text" value={formData.township} onChange={(e) => setFormData({...formData, township: e.target.value})} className="w-full p-2 border rounded-lg" placeholder="e.g., 15S" />
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Range</label>
-              <input type="text" value={formData.plss_range} onChange={(e) => setFormData({...formData, plss_range: e.target.value})} className="w-full p-2 border rounded-lg" placeholder="e.g., 18E" />
+              <input type="text" value={formData.range_value} onChange={(e) => setFormData({...formData, range_value: e.target.value})} className="w-full p-2 border rounded-lg" placeholder="e.g., 18E" />
             </div>
           </div>
 
@@ -179,11 +179,11 @@ function FieldModal({ field, farms, preselectedFarmId, onClose, onSave }) {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium mb-1">GPS Latitude</label>
-              <input type="text" value={formData.gps_latitude} onChange={(e) => setFormData({...formData, gps_latitude: e.target.value})} className="w-full p-2 border rounded-lg" placeholder="e.g., 36.7378" />
+              <input type="text" value={formData.gps_lat} onChange={(e) => setFormData({...formData, gps_lat: e.target.value})} className="w-full p-2 border rounded-lg" placeholder="e.g., 36.7378" />
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">GPS Longitude</label>
-              <input type="text" value={formData.gps_longitude} onChange={(e) => setFormData({...formData, gps_longitude: e.target.value})} className="w-full p-2 border rounded-lg" placeholder="e.g., -119.7871" />
+              <input type="text" value={formData.gps_long} onChange={(e) => setFormData({...formData, gps_long: e.target.value})} className="w-full p-2 border rounded-lg" placeholder="e.g., -119.7871" />
             </div>
           </div>
         </div>
