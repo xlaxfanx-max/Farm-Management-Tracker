@@ -4,6 +4,139 @@ from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.utils import timezone
 import uuid
 from decimal import Decimal
+import requests
+
+
+# =============================================================================
+# LOCATION MIXIN (GPS + PLSS Abstract Base Class)
+# =============================================================================
+
+class LocationMixin(models.Model):
+    """
+    Abstract base class providing GPS and PLSS (Public Land Survey System) fields.
+    Used by: Farm, Field, WaterSource
+    """
+    
+    # GPS Coordinates
+    gps_latitude = models.DecimalField(
+        max_digits=10, 
+        decimal_places=7, 
+        null=True, 
+        blank=True,
+        verbose_name="Latitude",
+        help_text="GPS latitude coordinate (e.g., 34.428500)"
+    )
+    gps_longitude = models.DecimalField(
+        max_digits=10, 
+        decimal_places=7, 
+        null=True, 
+        blank=True,
+        verbose_name="Longitude",
+        help_text="GPS longitude coordinate (e.g., -119.229000)"
+    )
+    
+    # PLSS (Public Land Survey System) - Required for California PUR reports
+    plss_section = models.CharField(
+        max_length=10, 
+        blank=True,
+        verbose_name="Section",
+        help_text="Section number (1-36)"
+    )
+    plss_township = models.CharField(
+        max_length=10, 
+        blank=True,
+        verbose_name="Township",
+        help_text="Township (e.g., '4N' for Township 4 North)"
+    )
+    plss_range = models.CharField(
+        max_length=10, 
+        blank=True,
+        verbose_name="Range",
+        help_text="Range (e.g., '22W' for Range 22 West)"
+    )
+    plss_meridian = models.CharField(
+        max_length=50, 
+        blank=True, 
+        default='San Bernardino',
+        verbose_name="Meridian",
+        help_text="Base meridian (San Bernardino for Southern CA)"
+    )
+    
+    class Meta:
+        abstract = True
+    
+    @property
+    def has_coordinates(self):
+        """Check if GPS coordinates are set."""
+        return self.gps_latitude is not None and self.gps_longitude is not None
+    
+    @property
+    def has_plss(self):
+        """Check if PLSS data is complete."""
+        return bool(self.plss_section and self.plss_township and self.plss_range)
+    
+    @property
+    def coordinates_tuple(self):
+        """Return coordinates as (lat, lng) tuple or None."""
+        if self.has_coordinates:
+            return (float(self.gps_latitude), float(self.gps_longitude))
+        return None
+    
+    @property
+    def plss_display(self):
+        """Format PLSS as human-readable string for PUR reports."""
+        if self.has_plss:
+            return f"Sec {self.plss_section}, T{self.plss_township}, R{self.plss_range}, {self.plss_meridian} M"
+        return ""
+    
+    def lookup_plss_from_coordinates(self, save=True):
+        """
+        Call BLM PLSS service to populate PLSS fields from GPS coordinates.
+        """
+        if not self.has_coordinates:
+            return None
+        
+        try:
+            url = "https://gis.blm.gov/arcgis/rest/services/Cadastral/BLM_Natl_PLSS_CadNSDI/MapServer/identify"
+            params = {
+                'geometry': f'{self.gps_longitude},{self.gps_latitude}',
+                'geometryType': 'esriGeometryPoint',
+                'sr': '4326',
+                'layers': 'all',
+                'tolerance': '1',
+                'mapExtent': f'{float(self.gps_longitude)-0.01},{float(self.gps_latitude)-0.01},{float(self.gps_longitude)+0.01},{float(self.gps_latitude)+0.01}',
+                'imageDisplay': '100,100,96',
+                'returnGeometry': 'false',
+                'f': 'json'
+            }
+            
+            response = requests.get(url, params=params, timeout=10)
+            response.raise_for_status()
+            data = response.json()
+            
+            for result in data.get('results', []):
+                attrs = result.get('attributes', {})
+                if 'FRSTDIVNO' in attrs:
+                    self.plss_section = str(attrs.get('FRSTDIVNO', ''))
+                    self.plss_township = str(attrs.get('TWNSHPNO', '')) + attrs.get('TWNSHPDIR', '')
+                    self.plss_range = str(attrs.get('RANGENO', '')) + attrs.get('RANGEDIR', '')
+                    self.plss_meridian = attrs.get('PRINESSION', 'San Bernardino')
+                    
+                    if save:
+                        self.save(update_fields=['plss_section', 'plss_township', 'plss_range', 'plss_meridian'])
+                    
+                    return {
+                        'section': self.plss_section,
+                        'township': self.plss_township,
+                        'range': self.plss_range,
+                        'meridian': self.plss_meridian
+                    }
+            return None
+        except Exception as e:
+            print(f"PLSS lookup failed: {e}")
+            return None
+
+
 # =============================================================================
 # CUSTOM USER MANAGER
 # =============================================================================
@@ -470,8 +603,11 @@ class AuditLog(models.Model):
         return f"{self.user} {self.action} {self.model_name} at {self.timestamp}"
 
 
-class Farm(models.Model):
-    """Farm/Ranch information"""
+class Farm(LocationMixin, models.Model):
+    """
+    Farm/Ranch information.
+    Inherits GPS/PLSS fields from LocationMixin.
+    """
     name = models.CharField(max_length=200)
     farm_number = models.CharField(max_length=50, blank=True, help_text="Internal farm ID or permit number")
     
@@ -479,7 +615,7 @@ class Farm(models.Model):
         Company,
         on_delete=models.CASCADE,
         related_name='farms',
-        null=True,  # Temporarily nullable for migration
+        null=True,
         blank=True
     )
 
@@ -490,23 +626,10 @@ class Farm(models.Model):
     # Primary location
     address = models.TextField(blank=True)
     county = models.CharField(max_length=100)
-
-    gps_lat = models.DecimalField(
-        max_digits=10, 
-        decimal_places=7, 
-        null=True, 
-        blank=True,
-        verbose_name="Latitude",
-        help_text="GPS latitude coordinate (e.g., 36.7378)"
-    )
-    gps_long = models.DecimalField(
-        max_digits=10, 
-        decimal_places=7, 
-        null=True, 
-        blank=True,
-        verbose_name="Longitude", 
-        help_text="GPS longitude coordinate (e.g., -119.7871)"
-    )
+    
+    # NOTE: GPS fields (gps_latitude, gps_longitude) and PLSS fields
+    # (plss_section, plss_township, plss_range, plss_meridian) 
+    # are inherited from LocationMixin
     
     # Contact info
     phone = models.CharField(max_length=20, blank=True)
@@ -602,21 +725,20 @@ class FarmParcel(models.Model):
         
         return apn_string
 
-class Field(models.Model):
-    """Farm field/block information"""
+class Field(LocationMixin, models.Model):
+    """
+    Farm field/block information.
+    Inherits GPS/PLSS fields from LocationMixin.
+    """
     name = models.CharField(max_length=200)
     farm = models.ForeignKey(Farm, on_delete=models.PROTECT, related_name='fields', null=True, blank=True)
-    field_number = models.CharField(max_length=50)
+    field_number = models.CharField(max_length=50, blank=True)
     
-    # Location data (required for PUR)
+    # Location data - county stays separate (often different from farm county)
     county = models.CharField(max_length=100)
-    section = models.CharField(max_length=50, blank=True)
-    township = models.CharField(max_length=50, blank=True)
-    range_value = models.CharField(max_length=50, blank=True)
     
-    # GPS coordinates (optional)
-    gps_lat = models.DecimalField(max_digits=10, decimal_places=7, null=True, blank=True)
-    gps_long = models.DecimalField(max_digits=10, decimal_places=7, null=True, blank=True)
+    # NOTE: PLSS fields (plss_section, plss_township, plss_range, plss_meridian)
+    # and GPS fields (gps_latitude, gps_longitude) are inherited from LocationMixin
 
     boundary_geojson = models.JSONField(
         null=True,
@@ -650,6 +772,28 @@ class Field(models.Model):
 
     def __str__(self):
         return f"{self.name} ({self.field_number})"
+    
+    def calculate_centroid_from_boundary(self):
+        """Calculate the centroid of the boundary polygon."""
+        if not self.boundary_geojson:
+            return None
+        try:
+            coords = self.boundary_geojson.get('coordinates', [[]])[0]
+            if not coords:
+                return None
+            lats = [c[1] for c in coords]
+            lngs = [c[0] for c in coords]
+            self.gps_latitude = Decimal(str(sum(lats) / len(lats)))
+            self.gps_longitude = Decimal(str(sum(lngs) / len(lngs)))
+            return (float(self.gps_latitude), float(self.gps_longitude))
+        except (KeyError, IndexError, TypeError):
+            return None
+    
+    def save(self, *args, **kwargs):
+        """Auto-calculate centroid from boundary on save if no coordinates."""
+        if self.boundary_geojson and not self.has_coordinates:
+            self.calculate_centroid_from_boundary()
+        super().save(*args, **kwargs)
 
 
 class PesticideProduct(models.Model):
@@ -1040,24 +1184,114 @@ class PesticideApplication(models.Model):
     def __str__(self):
         return f"{self.field.name} - {self.product.product_name} on {self.application_date}"
 
-class WaterSource(models.Model):
-    """Water sources used on the farm"""
+
+# =============================================================================
+# SGMA / WELL CHOICE CONSTANTS
+# (Must be defined before WaterSource model)
+# =============================================================================
+
+GSA_CHOICES = [
+    ('obgma', 'Ojai Basin Groundwater Management Agency (OBGMA)'),
+    ('fpbgsa', 'Fillmore and Piru Basins GSA'),
+    ('uvrga', 'Upper Ventura River Groundwater Agency'),
+    ('fcgma', 'Fox Canyon Groundwater Management Agency'),
+    ('other', 'Other'),
+    ('none', 'Not in GSA Jurisdiction'),
+]
+
+GROUNDWATER_BASIN_CHOICES = [
+    ('ojai_valley', 'Ojai Valley (4-002)'),
+    ('upper_ventura_river', 'Upper Ventura River (4-003.01)'),
+    ('lower_ventura_river', 'Lower Ventura River (4-003.02)'),
+    ('fillmore', 'Santa Clara River Valley - Fillmore (4-004.05)'),
+    ('piru', 'Santa Clara River Valley - Piru (4-004.06)'),
+    ('santa_paula', 'Santa Clara River Valley - Santa Paula (4-004.04)'),
+    ('oxnard', 'Santa Clara River Valley - Oxnard (4-004.02)'),
+    ('pleasant_valley', 'Pleasant Valley (4-006)'),
+    ('las_posas', 'Las Posas Valley (4-008)'),
+    ('arroyo_santa_rosa', 'Arroyo Santa Rosa Valley (4-007)'),
+    ('mound', 'Mound (4-004.01)'),
+    ('other', 'Other'),
+]
+
+BASIN_PRIORITY_CHOICES = [
+    ('critical', 'Critically Overdrafted'),
+    ('high', 'High Priority'),
+    ('medium', 'Medium Priority'),
+    ('low', 'Low Priority'),
+    ('very_low', 'Very Low Priority'),
+]
+
+PUMP_TYPE_CHOICES = [
+    ('submersible', 'Submersible'),
+    ('turbine', 'Vertical Turbine'),
+    ('jet', 'Jet Pump'),
+    ('centrifugal', 'Centrifugal'),
+    ('other', 'Other'),
+]
+
+POWER_SOURCE_CHOICES = [
+    ('electric_utility', 'Electric - Utility'),
+    ('electric_solar', 'Electric - Solar'),
+    ('diesel', 'Diesel Engine'),
+    ('natural_gas', 'Natural Gas Engine'),
+    ('propane', 'Propane Engine'),
+    ('other', 'Other'),
+]
+
+FLOWMETER_UNIT_CHOICES = [
+    ('acre_feet', 'Acre-Feet'),
+    ('gallons', 'Gallons'),
+    ('hundred_gallons', 'Hundred Gallons'),
+    ('thousand_gallons', 'Thousand Gallons'),
+    ('cubic_feet', 'Cubic Feet'),
+    ('hundred_cubic_feet', 'Hundred Cubic Feet (CCF)'),
+]
+
+WELL_STATUS_CHOICES = [
+    ('active', 'Active'),
+    ('inactive', 'Inactive'),
+    ('standby', 'Standby/Emergency'),
+    ('destroyed', 'Destroyed/Abandoned'),
+    ('monitoring', 'Monitoring Only'),
+]
+
+
+class WaterSource(LocationMixin, models.Model):
+    """
+    Unified water source model combining WaterSource and Well.
+    
+    For wells (source_type='well'), SGMA compliance fields are populated.
+    For other sources (municipal, surface, other), well-specific fields are null.
+    
+    Inherits GPS/PLSS fields from LocationMixin.
+    """
     
     SOURCE_TYPE_CHOICES = [
-        ('well', 'Well'),
+        ('well', 'Groundwater Well'),
         ('municipal', 'Municipal/Public'),
         ('surface', 'Surface Water (pond, stream, etc.)'),
+        ('recycled', 'Recycled Water'),
         ('other', 'Other'),
     ]
     
+    # -------------------------------------------------------------------------
+    # Base WaterSource Fields
+    # -------------------------------------------------------------------------
     farm = models.ForeignKey(Farm, on_delete=models.PROTECT, related_name='water_sources')
     name = models.CharField(max_length=200, help_text="e.g., 'Well #1', 'North Pond'")
-    source_type = models.CharField(max_length=20, choices=SOURCE_TYPE_CHOICES)
+    source_type = models.CharField(max_length=20, choices=SOURCE_TYPE_CHOICES, default='well')
     
-    # Location
-    location_description = models.TextField(blank=True, help_text="Physical location or GPS coordinates")
+    # Location description (for non-GPS locations)
+    location_description = models.TextField(blank=True, help_text="Physical location description")
     
-    # Usage
+    # Inherit location from farm option
+    inherit_location_from_farm = models.BooleanField(
+        default=True,
+        help_text="If true, use farm's GPS/PLSS; if false, use this record's location"
+    )
+    
+    # Usage flags
     used_for_irrigation = models.BooleanField(default=True)
     used_for_washing = models.BooleanField(default=False)
     used_for_pesticide_mixing = models.BooleanField(default=False)
@@ -1074,18 +1308,134 @@ class WaterSource(models.Model):
     # Status
     active = models.BooleanField(default=True)
     
-    # Timestamps
+    # -------------------------------------------------------------------------
+    # Well-Specific Fields (nullable for non-wells)
+    # -------------------------------------------------------------------------
+    
+    # === WELL IDENTIFICATION ===
+    well_name = models.CharField(max_length=100, blank=True, help_text="Common name for the well")
+    state_well_number = models.CharField(max_length=50, blank=True, help_text="California DWR State Well Number")
+    local_well_id = models.CharField(max_length=50, blank=True, help_text="County well permit number")
+    gsa_well_id = models.CharField(max_length=50, blank=True, help_text="GSA-assigned well identifier")
+    
+    # === GSA / BASIN INFORMATION ===
+    gsa = models.CharField(max_length=20, choices=GSA_CHOICES, blank=True, help_text="Groundwater Sustainability Agency")
+    gsa_account_number = models.CharField(max_length=50, blank=True, help_text="Account number with the GSA")
+    basin = models.CharField(max_length=30, choices=GROUNDWATER_BASIN_CHOICES, blank=True, help_text="DWR Bulletin 118 basin")
+    basin_priority = models.CharField(max_length=20, choices=BASIN_PRIORITY_CHOICES, blank=True)
+    
+    # === WELL PHYSICAL CHARACTERISTICS ===
+    well_depth_ft = models.DecimalField(max_digits=7, decimal_places=2, null=True, blank=True, help_text="Total well depth in feet")
+    casing_diameter_inches = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    screen_interval_top_ft = models.DecimalField(max_digits=7, decimal_places=2, null=True, blank=True)
+    screen_interval_bottom_ft = models.DecimalField(max_digits=7, decimal_places=2, null=True, blank=True)
+    static_water_level_ft = models.DecimalField(max_digits=7, decimal_places=2, null=True, blank=True)
+    static_level_date = models.DateField(null=True, blank=True)
+    aquifer_name = models.CharField(max_length=100, blank=True)
+    
+    # === WELL LOCATION (APN) ===
+    parcel_apn = models.CharField(max_length=20, blank=True, help_text="Assessor's Parcel Number")
+    quarter_quarter = models.CharField(max_length=10, blank=True, help_text="Quarter-quarter section (e.g., NE/SW)")
+    
+    # === PUMP INFORMATION ===
+    pump_type = models.CharField(max_length=20, choices=PUMP_TYPE_CHOICES, blank=True)
+    pump_horsepower = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True)
+    pump_flow_rate_gpm = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True, help_text="GPM")
+    pump_efficiency = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    pump_installation_date = models.DateField(null=True, blank=True)
+    pump_manufacturer = models.CharField(max_length=100, blank=True)
+    pump_model = models.CharField(max_length=100, blank=True)
+    
+    # === POWER SOURCE ===
+    power_source = models.CharField(max_length=20, choices=POWER_SOURCE_CHOICES, blank=True)
+    utility_meter_number = models.CharField(max_length=50, blank=True)
+    
+    # === FLOWMETER INFORMATION ===
+    has_flowmeter = models.BooleanField(default=False)
+    flowmeter_make = models.CharField(max_length=100, blank=True)
+    flowmeter_model = models.CharField(max_length=100, blank=True)
+    flowmeter_serial_number = models.CharField(max_length=100, blank=True)
+    flowmeter_size_inches = models.DecimalField(max_digits=4, decimal_places=2, null=True, blank=True)
+    flowmeter_installation_date = models.DateField(null=True, blank=True)
+    flowmeter_units = models.CharField(max_length=20, choices=FLOWMETER_UNIT_CHOICES, default='acre_feet')
+    flowmeter_multiplier = models.DecimalField(max_digits=10, decimal_places=4, default=1.0)
+    flowmeter_decimal_places = models.IntegerField(default=2)
+    
+    # === AMI (Automated Meter Infrastructure) ===
+    has_ami = models.BooleanField(default=False)
+    ami_vendor = models.CharField(max_length=100, blank=True)
+    ami_device_id = models.CharField(max_length=100, blank=True)
+    ami_installation_date = models.DateField(null=True, blank=True)
+    
+    # === WELL DATES & STATUS ===
+    well_construction_date = models.DateField(null=True, blank=True)
+    well_permit_date = models.DateField(null=True, blank=True)
+    well_permit_number = models.CharField(max_length=50, blank=True)
+    driller_name = models.CharField(max_length=100, blank=True)
+    driller_license = models.CharField(max_length=50, blank=True)
+    well_log_available = models.BooleanField(default=False)
+    well_log_file = models.FileField(upload_to='well_logs/', null=True, blank=True)
+    well_status = models.CharField(max_length=20, choices=WELL_STATUS_CHOICES, default='active')
+    
+    # === DE MINIMIS EXEMPTION ===
+    is_de_minimis = models.BooleanField(default=False, help_text="Domestic well < 2 AF/year")
+    
+    # === COMPLIANCE TRACKING ===
+    registered_with_gsa = models.BooleanField(default=False)
+    gsa_registration_date = models.DateField(null=True, blank=True)
+    meter_calibration_current = models.BooleanField(default=False)
+    next_calibration_due = models.DateField(null=True, blank=True)
+    
+    # === NOTES ===
+    notes = models.TextField(blank=True)
+    
+    # === TIMESTAMPS ===
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         ordering = ['farm', 'name']
+        verbose_name = "Water Source"
+        verbose_name_plural = "Water Sources"
 
     def __str__(self):
         return f"{self.farm.name} - {self.name}"
     
+    @property
+    def is_well(self):
+        """Check if this is a groundwater well."""
+        return self.source_type == 'well'
+    
+    @property
+    def effective_location(self):
+        """Get effective GPS coordinates - from this record or inherited from farm."""
+        if not self.inherit_location_from_farm and self.has_coordinates:
+            return self.coordinates_tuple
+        elif self.farm and self.farm.has_coordinates:
+            return self.farm.coordinates_tuple
+        return None
+    
+    @property
+    def effective_plss(self):
+        """Get effective PLSS data - from this record or inherited from farm."""
+        if not self.inherit_location_from_farm and self.has_plss:
+            return {
+                'section': self.plss_section,
+                'township': self.plss_township,
+                'range': self.plss_range,
+                'meridian': self.plss_meridian
+            }
+        elif self.farm and self.farm.has_plss:
+            return {
+                'section': self.farm.plss_section,
+                'township': self.farm.plss_township,
+                'range': self.farm.plss_range,
+                'meridian': self.farm.plss_meridian
+            }
+        return None
+    
     def next_test_due(self):
-        """Calculate next test due date based on most recent test"""
+        """Calculate next test due date based on most recent test."""
         latest_test = self.water_tests.filter(test_date__isnull=False).order_by('-test_date').first()
         if latest_test:
             from datetime import timedelta
@@ -1093,12 +1443,66 @@ class WaterSource(models.Model):
         return None
     
     def is_test_overdue(self):
-        """Check if test is overdue"""
+        """Check if test is overdue."""
         next_due = self.next_test_due()
         if next_due:
             from django.utils import timezone
             return timezone.now().date() > next_due
-        return True  # No tests = overdue
+        return True
+    
+    def get_latest_reading(self):
+        """Get the most recent meter reading (for wells)."""
+        if not self.is_well:
+            return None
+        return self.readings.order_by('-reading_date', '-reading_time').first()
+    
+    def get_ytd_extraction_af(self):
+        """Get year-to-date extraction in acre-feet for current water year."""
+        if not self.is_well:
+            return Decimal('0')
+        from django.db.models import Sum
+        from datetime import date
+        today = date.today()
+        if today.month >= 10:
+            wy_start = date(today.year, 10, 1)
+        else:
+            wy_start = date(today.year - 1, 10, 1)
+        total = self.readings.filter(reading_date__gte=wy_start).aggregate(Sum('extraction_acre_feet'))['extraction_acre_feet__sum']
+        return total or Decimal('0')
+    
+    def get_allocation_for_year(self, water_year=None):
+        """Get total allocation for a water year."""
+        if not self.is_well:
+            return Decimal('0')
+        from django.db.models import Sum
+        if not water_year:
+            from datetime import date
+            today = date.today()
+            if today.month >= 10:
+                water_year = f"{today.year}-{today.year + 1}"
+            else:
+                water_year = f"{today.year - 1}-{today.year}"
+        total = self.allocations.filter(water_year=water_year).exclude(allocation_type='transferred_out').aggregate(Sum('allocated_acre_feet'))['allocated_acre_feet__sum']
+        return total or Decimal('0')
+    
+    def is_calibration_due(self, days_warning=30):
+        """Check if calibration is due or coming due soon."""
+        if not self.is_well or not self.next_calibration_due:
+            return True
+        from datetime import date, timedelta
+        warning_date = date.today() + timedelta(days=days_warning)
+        return self.next_calibration_due <= warning_date
+    
+    def save(self, *args, **kwargs):
+        """Clear well-specific fields if not a well."""
+        if not self.is_well:
+            self.gsa = ''
+            self.basin = ''
+            self.well_depth_ft = None
+            self.has_flowmeter = False
+            self.registered_with_gsa = False
+            self.is_de_minimis = False
+        super().save(*args, **kwargs)
 
 
 class WaterTest(models.Model):
@@ -2071,350 +2475,20 @@ MEASUREMENT_METHOD_CHOICES = [
 
 
 # -----------------------------------------------------------------------------
-# WELL MODEL
-# -----------------------------------------------------------------------------
-
-class Well(models.Model):
-    """
-    SGMA-specific well information. Links to WaterSource where source_type='well'.
-    Tracks all data needed for GSA reporting and compliance.
-    """
-    
-    # Link to parent WaterSource
-    water_source = models.OneToOneField(
-        'WaterSource',
-        on_delete=models.CASCADE,
-        related_name='well_details',
-        limit_choices_to={'source_type': 'well'}
-    )
-    
-    # === WELL IDENTIFICATION ===
-    well_name = models.CharField(
-        max_length=100,
-        blank=True,
-        help_text="Common name for the well"
-    )
-    state_well_number = models.CharField(
-        max_length=50,
-        blank=True,
-        help_text="California DWR State Well Number (e.g., 04N21W36H001S)"
-    )
-    local_well_id = models.CharField(
-        max_length=50,
-        blank=True,
-        help_text="County well permit number"
-    )
-    gsa_well_id = models.CharField(
-        max_length=50,
-        blank=True,
-        help_text="GSA-assigned well identifier"
-    )
-    
-    # === GSA / BASIN INFORMATION ===
-    gsa = models.CharField(
-        max_length=20,
-        choices=GSA_CHOICES,
-        default='obgma',
-        help_text="Groundwater Sustainability Agency managing this well"
-    )
-    gsa_account_number = models.CharField(
-        max_length=50,
-        blank=True,
-        help_text="Account number with the GSA for billing/reporting"
-    )
-    basin = models.CharField(
-        max_length=30,
-        choices=GROUNDWATER_BASIN_CHOICES,
-        default='ojai_valley',
-        help_text="DWR Bulletin 118 groundwater basin"
-    )
-    basin_priority = models.CharField(
-        max_length=20,
-        choices=BASIN_PRIORITY_CHOICES,
-        default='medium',
-        help_text="DWR basin priority classification"
-    )
-    
-    # === WELL PHYSICAL CHARACTERISTICS ===
-    well_depth_ft = models.DecimalField(
-        max_digits=7,
-        decimal_places=2,
-        null=True,
-        blank=True,
-        help_text="Total well depth in feet"
-    )
-    casing_diameter_inches = models.DecimalField(
-        max_digits=5,
-        decimal_places=2,
-        null=True,
-        blank=True,
-        help_text="Well casing diameter in inches"
-    )
-    screen_interval_top_ft = models.DecimalField(
-        max_digits=7,
-        decimal_places=2,
-        null=True,
-        blank=True,
-        help_text="Top of perforated/screened interval (ft below ground)"
-    )
-    screen_interval_bottom_ft = models.DecimalField(
-        max_digits=7,
-        decimal_places=2,
-        null=True,
-        blank=True,
-        help_text="Bottom of perforated/screened interval (ft below ground)"
-    )
-    static_water_level_ft = models.DecimalField(
-        max_digits=7,
-        decimal_places=2,
-        null=True,
-        blank=True,
-        help_text="Static water level (ft below ground surface)"
-    )
-    static_level_date = models.DateField(
-        null=True,
-        blank=True,
-        help_text="Date static water level was measured"
-    )
-    aquifer_name = models.CharField(
-        max_length=100,
-        blank=True,
-        help_text="Name of aquifer (e.g., Upper Aquifer, San Pedro Formation)"
-    )
-    
-    # === LOCATION ===
-    gps_latitude = models.DecimalField(
-        max_digits=10,
-        decimal_places=7,
-        null=True,
-        blank=True
-    )
-    gps_longitude = models.DecimalField(
-        max_digits=10,
-        decimal_places=7,
-        null=True,
-        blank=True
-    )
-    township = models.CharField(max_length=10, blank=True)
-    range_value = models.CharField(max_length=10, blank=True)
-    section = models.CharField(max_length=10, blank=True)
-    quarter_quarter = models.CharField(
-        max_length=10,
-        blank=True,
-        help_text="Quarter-quarter section (e.g., NE/SW)"
-    )
-    parcel_apn = models.CharField(
-        max_length=20,
-        blank=True,
-        help_text="Assessor's Parcel Number"
-    )
-    
-    # === PUMP INFORMATION ===
-    pump_type = models.CharField(
-        max_length=20,
-        choices=PUMP_TYPE_CHOICES,
-        blank=True
-    )
-    pump_horsepower = models.DecimalField(
-        max_digits=6,
-        decimal_places=2,
-        null=True,
-        blank=True,
-        help_text="Pump motor horsepower"
-    )
-    pump_flow_rate_gpm = models.DecimalField(
-        max_digits=8,
-        decimal_places=2,
-        null=True,
-        blank=True,
-        help_text="Pump flow rate in gallons per minute (GPM)"
-    )
-    pump_efficiency = models.DecimalField(
-        max_digits=5,
-        decimal_places=2,
-        null=True,
-        blank=True,
-        help_text="Pump efficiency percentage"
-    )
-    pump_installation_date = models.DateField(null=True, blank=True)
-    pump_manufacturer = models.CharField(max_length=100, blank=True)
-    pump_model = models.CharField(max_length=100, blank=True)
-    
-    # === POWER SOURCE ===
-    power_source = models.CharField(
-        max_length=20,
-        choices=POWER_SOURCE_CHOICES,
-        blank=True
-    )
-    utility_meter_number = models.CharField(
-        max_length=50,
-        blank=True,
-        help_text="Electric utility meter number"
-    )
-    
-    # === FLOWMETER INFORMATION ===
-    has_flowmeter = models.BooleanField(
-        default=True,
-        help_text="Is a flowmeter installed on this well?"
-    )
-    flowmeter_make = models.CharField(max_length=100, blank=True)
-    flowmeter_model = models.CharField(max_length=100, blank=True)
-    flowmeter_serial_number = models.CharField(max_length=100, blank=True)
-    flowmeter_size_inches = models.DecimalField(
-        max_digits=4,
-        decimal_places=2,
-        null=True,
-        blank=True,
-        help_text="Flowmeter pipe size in inches"
-    )
-    flowmeter_installation_date = models.DateField(null=True, blank=True)
-    flowmeter_units = models.CharField(
-        max_length=20,
-        choices=FLOWMETER_UNIT_CHOICES,
-        default='acre_feet'
-    )
-    flowmeter_multiplier = models.DecimalField(
-        max_digits=10,
-        decimal_places=4,
-        default=1.0,
-        help_text="Multiplier to convert meter reading to actual units"
-    )
-    flowmeter_decimal_places = models.IntegerField(
-        default=2,
-        help_text="Number of decimal places on meter display"
-    )
-    
-    # === ADVANCED METERING INFRASTRUCTURE (AMI) ===
-    has_ami = models.BooleanField(
-        default=False,
-        help_text="Is the well equipped with AMI (automated meter reading)?"
-    )
-    ami_vendor = models.CharField(
-        max_length=100,
-        blank=True,
-        help_text="AMI vendor (e.g., Ranch Systems)"
-    )
-    ami_device_id = models.CharField(max_length=100, blank=True)
-    ami_installation_date = models.DateField(null=True, blank=True)
-    
-    # === WELL DATES & STATUS ===
-    well_construction_date = models.DateField(
-        null=True,
-        blank=True,
-        help_text="Date well was drilled/constructed"
-    )
-    well_permit_date = models.DateField(null=True, blank=True)
-    well_permit_number = models.CharField(max_length=50, blank=True)
-    driller_name = models.CharField(max_length=100, blank=True)
-    driller_license = models.CharField(max_length=50, blank=True)
-    well_log_available = models.BooleanField(
-        default=False,
-        help_text="Is well completion report/log on file?"
-    )
-    well_log_file = models.FileField(
-        upload_to='well_logs/',
-        null=True,
-        blank=True
-    )
-    
-    status = models.CharField(
-        max_length=20,
-        choices=WELL_STATUS_CHOICES,
-        default='active'
-    )
-    
-    # === DE MINIMIS EXEMPTION ===
-    is_de_minimis = models.BooleanField(
-        default=False,
-        help_text="Domestic well extracting < 2 AF/year (exempt from most SGMA reporting)"
-    )
-    
-    # === COMPLIANCE TRACKING ===
-    registered_with_gsa = models.BooleanField(default=False)
-    gsa_registration_date = models.DateField(null=True, blank=True)
-    meter_calibration_current = models.BooleanField(default=False)
-    next_calibration_due = models.DateField(null=True, blank=True)
-    
-    # === NOTES ===
-    notes = models.TextField(blank=True)
-    
-    # === TIMESTAMPS ===
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    
-    class Meta:
-        verbose_name_plural = "Wells"
-        ordering = ['water_source__farm__name', 'well_name']
-    
-    def __str__(self):
-        name = self.well_name or self.water_source.name
-        return f"{name} ({self.get_gsa_display()})"
-    
-    def get_latest_reading(self):
-        """Get the most recent meter reading."""
-        return self.readings.order_by('-reading_date', '-reading_time').first()
-    
-    def get_ytd_extraction_af(self):
-        """Get year-to-date extraction in acre-feet for current water year."""
-        from django.db.models import Sum
-        from datetime import date
-        
-        today = date.today()
-        # Water year starts October 1
-        if today.month >= 10:
-            wy_start = date(today.year, 10, 1)
-        else:
-            wy_start = date(today.year - 1, 10, 1)
-        
-        total = self.readings.filter(
-            reading_date__gte=wy_start
-        ).aggregate(Sum('extraction_acre_feet'))['extraction_acre_feet__sum']
-        
-        return total or Decimal('0')
-    
-    def get_allocation_for_year(self, water_year=None):
-        """Get total allocation for a water year."""
-        from django.db.models import Sum
-        
-        if not water_year:
-            from datetime import date
-            today = date.today()
-            if today.month >= 10:
-                water_year = f"{today.year}-{today.year + 1}"
-            else:
-                water_year = f"{today.year - 1}-{today.year}"
-        
-        total = self.allocations.filter(
-            water_year=water_year
-        ).exclude(
-            allocation_type='transferred_out'
-        ).aggregate(Sum('allocated_acre_feet'))['allocated_acre_feet__sum']
-        
-        return total or Decimal('0')
-    
-    def is_calibration_due(self, days_warning=30):
-        """Check if calibration is due or coming due soon."""
-        if not self.next_calibration_due:
-            return True
-        from datetime import date, timedelta
-        warning_date = date.today() + timedelta(days=days_warning)
-        return self.next_calibration_due <= warning_date
-
-
-# -----------------------------------------------------------------------------
-# WELL READING MODEL
+# WELL READING MODEL (References WaterSource instead of Well)
 # -----------------------------------------------------------------------------
 
 class WellReading(models.Model):
     """
     Individual meter readings for tracking groundwater extraction.
-    Used to calculate total extraction for reporting periods.
+    Now references WaterSource directly (merged Well model).
     """
     
-    well = models.ForeignKey(
-        'Well',
+    water_source = models.ForeignKey(
+        'WaterSource',
         on_delete=models.CASCADE,
-        related_name='readings'
+        related_name='readings',
+        limit_choices_to={'source_type': 'well'}
     )
     
     # === READING DETAILS ===
@@ -2502,18 +2576,17 @@ class WellReading(models.Model):
     class Meta:
         ordering = ['-reading_date', '-reading_time']
         indexes = [
-            models.Index(fields=['well', '-reading_date']),
+            models.Index(fields=['water_source', '-reading_date']),
         ]
     
     def __str__(self):
-        return f"{self.well} - {self.reading_date}: {self.meter_reading}"
+        return f"{self.water_source.name} - {self.reading_date}: {self.meter_reading}"
     
     def save(self, *args, **kwargs):
         """Auto-calculate extraction on save."""
-        # Get previous reading if not set
         if self.previous_reading is None:
             prev = WellReading.objects.filter(
-                well=self.well,
+                water_source=self.water_source,
                 reading_date__lt=self.reading_date
             ).order_by('-reading_date', '-reading_time').first()
             
@@ -2521,15 +2594,11 @@ class WellReading(models.Model):
                 self.previous_reading = prev.meter_reading
                 self.previous_reading_date = prev.reading_date
         
-        # Calculate extraction
         if self.previous_reading is not None and self.meter_reading is not None:
-            multiplier = self.well.flowmeter_multiplier or Decimal('1.0')
+            multiplier = self.water_source.flowmeter_multiplier or Decimal('1.0')
             raw_extraction = (self.meter_reading - self.previous_reading) * multiplier
             self.extraction_native_units = raw_extraction
-            
-            # Convert to acre-feet
             self.extraction_acre_feet = self._convert_to_acre_feet(raw_extraction)
-            # Convert to gallons (1 AF = 325,851 gallons)
             if self.extraction_acre_feet:
                 self.extraction_gallons = self.extraction_acre_feet * Decimal('325851')
         
@@ -2537,7 +2606,7 @@ class WellReading(models.Model):
     
     def _convert_to_acre_feet(self, value):
         """Convert native units to acre-feet."""
-        unit = self.well.flowmeter_units
+        unit = self.water_source.flowmeter_units
         if unit == 'acre_feet':
             return value
         elif unit == 'gallons':
@@ -2561,12 +2630,14 @@ class MeterCalibration(models.Model):
     """
     Flowmeter calibration records. Required every 3 years for most GSAs.
     Accuracy must be within +/- 5%.
+    Now references WaterSource directly (merged Well model).
     """
     
-    well = models.ForeignKey(
-        'Well',
+    water_source = models.ForeignKey(
+        'WaterSource',
         on_delete=models.CASCADE,
-        related_name='calibrations'
+        related_name='calibrations',
+        limit_choices_to={'source_type': 'well'}
     )
     
     # === CALIBRATION DETAILS ===
@@ -2661,26 +2732,24 @@ class MeterCalibration(models.Model):
     
     def __str__(self):
         status = "✓ Passed" if self.passed else "✗ Failed"
-        return f"{self.well} - {self.calibration_date} - {status}"
+        return f"{self.water_source.name} - {self.calibration_date} - {status}"
     
     def save(self, *args, **kwargs):
-        """Update well's calibration status on save."""
+        """Update water source's calibration status on save."""
         super().save(*args, **kwargs)
         
-        # Update well's calibration status
         if self.passed:
-            self.well.meter_calibration_current = True
-            self.well.next_calibration_due = self.next_calibration_due
+            self.water_source.meter_calibration_current = True
+            self.water_source.next_calibration_due = self.next_calibration_due
             
-            # Update meter info if replaced
             if self.meter_replaced and self.new_meter_serial:
-                self.well.flowmeter_serial_number = self.new_meter_serial
+                self.water_source.flowmeter_serial_number = self.new_meter_serial
                 if self.new_meter_make:
-                    self.well.flowmeter_make = self.new_meter_make
+                    self.water_source.flowmeter_make = self.new_meter_make
                 if self.new_meter_model:
-                    self.well.flowmeter_model = self.new_meter_model
+                    self.water_source.flowmeter_model = self.new_meter_model
             
-            self.well.save()
+            self.water_source.save()
 
 
 # -----------------------------------------------------------------------------
@@ -2691,12 +2760,14 @@ class WaterAllocation(models.Model):
     """
     Water extraction allocations assigned by GSA.
     Tracks annual/seasonal limits and allocation sources.
+    Now references WaterSource directly (merged Well model).
     """
     
-    well = models.ForeignKey(
-        'Well',
+    water_source = models.ForeignKey(
+        'WaterSource',
         on_delete=models.CASCADE,
-        related_name='allocations'
+        related_name='allocations',
+        limit_choices_to={'source_type': 'well'}
     )
     
     # === ALLOCATION PERIOD ===
@@ -2763,7 +2834,7 @@ class WaterAllocation(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     
     class Meta:
-        ordering = ['-water_year', 'well']
+        ordering = ['-water_year', 'water_source']
         verbose_name = "Water Allocation"
         verbose_name_plural = "Water Allocations"
     
@@ -2785,12 +2856,14 @@ class ExtractionReport(models.Model):
     """
     Extraction reports for GSA compliance.
     Aggregates well readings for reporting periods.
+    Now references WaterSource directly (merged Well model).
     """
     
-    well = models.ForeignKey(
-        'Well',
+    water_source = models.ForeignKey(
+        'WaterSource',
         on_delete=models.CASCADE,
-        related_name='extraction_reports'
+        related_name='extraction_reports',
+        limit_choices_to={'source_type': 'well'}
     )
     
     # === REPORTING PERIOD ===
@@ -2959,23 +3032,23 @@ class ExtractionReport(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     
     class Meta:
-        ordering = ['-period_start_date', 'well']
-        unique_together = ['well', 'reporting_period']
+        ordering = ['-period_start_date', 'water_source']
+        unique_together = ['water_source', 'reporting_period']
         verbose_name = "Extraction Report"
         verbose_name_plural = "Extraction Reports"
     
     def __str__(self):
-        return f"{self.well} - {self.reporting_period}: {self.total_extraction_af} AF"
+        return f"{self.water_source.name} - {self.reporting_period}: {self.total_extraction_af} AF"
     
     def calculate_extraction(self):
         """Calculate extraction from meter readings."""
         if self.beginning_meter_reading and self.ending_meter_reading:
-            multiplier = self.well.flowmeter_multiplier or Decimal('1.0')
+            multiplier = self.water_source.flowmeter_multiplier or Decimal('1.0')
             raw = (self.ending_meter_reading - self.beginning_meter_reading) * multiplier
             self.total_extraction_native = raw
             
             # Convert based on meter units
-            unit = self.well.flowmeter_units
+            unit = self.water_source.flowmeter_units
             if unit == 'acre_feet':
                 self.total_extraction_af = raw
             elif unit == 'gallons':
@@ -3032,18 +3105,12 @@ class IrrigationEvent(models.Model):
     """
     Optional tracking of irrigation events to link water usage to specific fields.
     Useful for water budgeting and crop water use analysis.
+    Now uses unified WaterSource model (which includes wells).
     """
     
     field = models.ForeignKey(
         'Field',
         on_delete=models.CASCADE,
-        related_name='irrigation_events'
-    )
-    well = models.ForeignKey(
-        'Well',
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
         related_name='irrigation_events'
     )
     water_source = models.ForeignKey(
@@ -3052,7 +3119,7 @@ class IrrigationEvent(models.Model):
         null=True,
         blank=True,
         related_name='irrigation_events',
-        help_text="Use if source is not a well (e.g., surface water)"
+        help_text="Water source used (well, municipal, surface, etc.)"
     )
     
     # === EVENT DETAILS ===
@@ -3140,10 +3207,10 @@ class IrrigationEvent(models.Model):
             delta = end - start
             self.duration_hours = Decimal(str(round(delta.total_seconds() / 3600, 2)))
         
-        # Calculate water applied from flow rate and duration
-        if self.well and self.duration_hours and not self.water_applied_af:
-            if self.well.pump_flow_rate_gpm:
-                gallons = self.well.pump_flow_rate_gpm * self.duration_hours * 60
+        # Calculate water applied from flow rate and duration (for wells)
+        if self.water_source and self.water_source.is_well and self.duration_hours and not self.water_applied_af:
+            if self.water_source.pump_flow_rate_gpm:
+                gallons = self.water_source.pump_flow_rate_gpm * self.duration_hours * 60
                 self.water_applied_gallons = gallons
                 self.water_applied_af = gallons / Decimal('325851')
         

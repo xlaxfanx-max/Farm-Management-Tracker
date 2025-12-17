@@ -696,60 +696,56 @@ function App() {
             {currentView === 'team' && (
               <TeamManagement />
             )}
-
-            {currentView === 'water' && (
-              <div className="p-6">
-                <WaterManagement
-                  farms={farms}
-                  fields={fields}
-                  waterSources={waterSources}
-                  onRefresh={loadData}
-                  onOpenModal={(type, data) => {
-                    if (type === 'wellSource') {
-                      setCurrentWellSource(data);
-                      setShowWellSourceModal(true);
-                    } else if (type === 'waterSource') {
-                      setCurrentWaterSource(data);
-                      setShowWaterSourceModal(true);
-                    } else if (type === 'waterTest') {
-                      setCurrentWaterTest(data);
-                      setSelectedWaterSource(data?.water_source ? waterSources.find(s => s.id === data.water_source) : null);
-                      setShowWaterTestModal(true);
-                    } else if (type === 'well') {
-                      setCurrentWell(data);
-                      setShowWellModal(true);
-                    } else if (type === 'wellReading') {
-                      setSelectedWellForReading(data);
-                      setShowWellReadingModal(true);
-                    }
-                  }}
-                />
-              </div>
-            )}
-
-            {currentView === 'nutrients' && (
-              <div className="p-6">
-                <NutrientManagement
-                  farms={farms}
-                  fields={fields}
-                  waterSources={waterSources}
-                  onRefresh={loadData}
-                  key={nutrientRefreshTrigger}
-                  onOpenModal={(type, data) => {
-                    if (type === 'nutrientApplication') {
-                      setCurrentNutrientApp(data);
-                      setShowNutrientAppModal(true);
-                    } else if (type === 'fertilizerProduct') {
-                      setCurrentFertilizerProduct(data);
-                      setShowFertilizerProductModal(true);
-                    }
-                  }}
-                />
-              </div>
-            )}
           </>
         )}
       </main>
+
+      {currentView === 'water' && (
+        <WaterManagement
+          farms={farms}
+          fields={fields}
+          waterSources={waterSources}
+          onRefresh={loadData}
+          onOpenModal={(type, data) => {
+            if (type === 'wellSource') {
+              setCurrentWellSource(data);
+              setShowWellSourceModal(true);
+            } else if (type === 'waterSource') {
+              setCurrentWaterSource(data);
+              setShowWaterSourceModal(true);
+            } else if (type === 'waterTest') {
+              setCurrentWaterTest(data);
+              setSelectedWaterSource(data?.water_source ? waterSources.find(s => s.id === data.water_source) : null);
+              setShowWaterTestModal(true);
+            } else if (type === 'well') {
+              setCurrentWell(data);
+              setShowWellModal(true);
+            } else if (type === 'wellReading') {
+              setSelectedWellForReading(data);
+              setShowWellReadingModal(true);
+            }
+          }}
+        />
+      )}
+
+      {currentView === 'nutrients' && (
+        <NutrientManagement
+          farms={farms}
+          fields={fields}
+          waterSources={waterSources}
+          onRefresh={loadData}
+          key={nutrientRefreshTrigger}
+          onOpenModal={(type, data) => {
+            if (type === 'nutrientApplication') {
+              setCurrentNutrientApp(data);
+              setShowNutrientAppModal(true);
+            } else if (type === 'fertilizerProduct') {
+              setCurrentFertilizerProduct(data);
+              setShowFertilizerProductModal(true);
+            }
+          }}
+        />
+      )}
 
       {/* Nutrient Management Modals */}
       {showNutrientAppModal && (

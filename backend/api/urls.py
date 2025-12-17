@@ -10,7 +10,9 @@ from .views import (
     geocode_address, update_field_boundary, get_plss,
     WellViewSet, WellReadingViewSet, MeterCalibrationViewSet,
     WaterAllocationViewSet, ExtractionReportViewSet, IrrigationEventViewSet,
-    sgma_dashboard
+    sgma_dashboard,
+    FertilizerProductViewSet, NutrientApplicationViewSet, NutrientPlanViewSet,
+    nitrogen_summary, nitrogen_export,
 )
 
 # Import auth views
@@ -45,6 +47,9 @@ router.register(r'meter-calibrations', MeterCalibrationViewSet, basename='meter-
 router.register(r'water-allocations', WaterAllocationViewSet, basename='water-allocation')
 router.register(r'extraction-reports', ExtractionReportViewSet, basename='extraction-report')
 router.register(r'irrigation-events', IrrigationEventViewSet, basename='irrigation-event')
+router.register(r'fertilizer-products', FertilizerProductViewSet, basename='fertilizer-product')
+router.register(r'nutrient-applications', NutrientApplicationViewSet, basename='nutrient-application')
+router.register(r'nutrient-plans', NutrientPlanViewSet, basename='nutrient-plan')
 
 
 urlpatterns = [
@@ -77,4 +82,7 @@ urlpatterns = [
     path('companies/<int:company_id>/members/<int:member_id>/remove/', remove_company_member, name='remove-company-member'),
 
     path('sgma/dashboard/', sgma_dashboard, name='sgma-dashboard'),
+
+    path('reports/nitrogen-summary/', nitrogen_summary, name='nitrogen-summary'),
+    path('reports/nitrogen-export/', nitrogen_export, name='nitrogen-export'),
 ]
