@@ -732,7 +732,7 @@ class Field(LocationMixin, models.Model):
     """
     name = models.CharField(max_length=200)
     farm = models.ForeignKey(Farm, on_delete=models.PROTECT, related_name='fields', null=True, blank=True)
-    field_number = models.CharField(max_length=50, blank=True)
+    field_number = models.CharField(max_length=50)
     
     # Location data - county stays separate (often different from farm county)
     county = models.CharField(max_length=100)

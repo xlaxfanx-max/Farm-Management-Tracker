@@ -285,11 +285,21 @@ function App() {
   // Application handlers
   const handleSaveApplication = async (appData) => {
     try {
-      console.log('Saving application data:', appData);
+      // Ensure numeric fields are properly typed
+      const cleanedData = {
+        ...appData,
+        field: appData.field ? parseInt(appData.field) : null,
+        product: appData.product ? parseInt(appData.product) : null,
+        acres_treated: appData.acres_treated ? parseFloat(appData.acres_treated) : null,
+        amount_used: appData.amount_used ? parseFloat(appData.amount_used) : null,
+        temperature: appData.temperature ? parseFloat(appData.temperature) : null,
+        wind_speed: appData.wind_speed ? parseFloat(appData.wind_speed) : null,
+      };
+      console.log('Saving application data:', cleanedData);
       if (currentApplication) {
-        await applicationsAPI.update(currentApplication.id, appData);
+        await applicationsAPI.update(currentApplication.id, cleanedData);
       } else {
-        await applicationsAPI.create(appData);
+        await applicationsAPI.create(cleanedData);
       }
       await loadData();
       setShowAppModal(false);
