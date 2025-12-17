@@ -4,6 +4,7 @@ import {
   Home as HomeIcon, 
   MapPin, 
   Droplet, 
+  Droplets,
   FileText,
   Settings,
   LogOut,
@@ -18,10 +19,9 @@ import {
 import Dashboard from './components/Dashboard';
 import Farms from './components/Farms';
 import Fields from './components/Fields';
-import WaterSources from './components/WaterSources';
-import WaterTests from './components/WaterTests';
 import FarmModal from './components/FarmModal';
 import FieldModal from './components/FieldModal';
+import WaterManagement from './components/WaterManagement';
 import ApplicationModal from './components/ApplicationModal';
 import WaterSourceModal from './components/WaterSourceModal';
 import WaterTestModal from './components/WaterTestModal';
@@ -33,6 +33,9 @@ import HarvestLoadModal from './components/HarvestLoadModal';
 import HarvestLaborModal from './components/HarvestLaborModal';
 import BuyerModal from './components/BuyerModal';
 import LaborContractorModal from './components/LaborContractorModal';
+import WellModal from './components/WellModal';
+import WellReadingModal from './components/WellReadingModal';
+import WellSourceModal from './components/WellSourceModal';
 
 // NEW: Import authentication and team management
 import { useAuth } from './contexts/AuthContext';
@@ -88,6 +91,13 @@ function App() {
   const [currentWaterSource, setCurrentWaterSource] = useState(null);
   const [currentWaterTest, setCurrentWaterTest] = useState(null);
   const [selectedWaterSource, setSelectedWaterSource] = useState(null);
+  // Well modal state
+  const [showWellModal, setShowWellModal] = useState(false);
+  const [currentWell, setCurrentWell] = useState(null);
+  const [showWellReadingModal, setShowWellReadingModal] = useState(false);
+  const [selectedWellForReading, setSelectedWellForReading] = useState(null);
+  const [showWellSourceModal, setShowWellSourceModal] = useState(false);
+  const [currentWellSource, setCurrentWellSource] = useState(null);
   
   // Add preselectedFarmId state for field modal
   const [preselectedFarmId, setPreselectedFarmId] = useState(null);
@@ -102,6 +112,9 @@ function App() {
   const [selectedHarvestId, setSelectedHarvestId] = useState(null);
   const [preselectedFieldId, setPreselectedFieldId] = useState(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+
+  // Water Management
+  const [waterModal, setWaterModal] = useState({ type: null, data: null });
 
   // ============================================================================
   // Load data only when authenticated
@@ -392,7 +405,7 @@ function App() {
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'farms', label: 'Farms & Fields', icon: HomeIcon },
-    { id: 'water', label: 'Water Quality', icon: Droplet },
+    { id: 'water', label: 'Water Management', icon: Droplets },
     { id: 'harvests', label: 'Harvests', icon: Wheat },
     { id: 'reports', label: 'Reports', icon: FileText },
     { id: 'team', label: 'Team', icon: Users },
@@ -634,39 +647,6 @@ function App() {
               </div>
             )}
 
-            {currentView === 'water' && (
-              <div className="p-6">
-                <WaterSources
-                  waterSources={waterSources}
-                  farms={farms}
-                  onNewSource={() => {
-                    setCurrentWaterSource(null);
-                    setShowWaterSourceModal(true);
-                  }}
-                  onEditSource={handleEditWaterSource}
-                  onDeleteSource={handleDeleteWaterSource}
-                  onViewTests={handleViewTests}
-                />
-              </div>
-            )}
-
-            {currentView === 'water-tests' && selectedWaterSource && (
-              <div className="p-6">
-                <WaterTests
-                  waterSource={selectedWaterSource}
-                  onNewTest={() => {
-                    setCurrentWaterTest(null);
-                    setShowWaterTestModal(true);
-                  }}
-                  onEditTest={(test) => {
-                    setCurrentWaterTest(test);
-                    setShowWaterTestModal(true);
-                  }}
-                  onBack={() => setCurrentView('water')}
-                />
-              </div>
-            )}
-
             {currentView === 'reports' && (
               <Reports
                 farms={farms}
@@ -695,6 +675,52 @@ function App() {
           </>
         )}
       </main>
+
+      {currentView === 'water' && (
+        <WaterManagement
+          farms={farms}
+          fields={fields}
+          waterSources={waterSources}
+          onRefresh={loadData}
+          onOpenModal={(type, data) => {
+            if (type === 'wellSource') {
+              setCurrentWellSource(data);
+              setShowWellSourceModal(true);
+            } else if (type === 'waterSource') {
+              setCurrentWaterSource(data);
+              setShowWaterSourceModal(true);
+            } else if (type === 'waterTest') {
+              setCurrentWaterTest(data);
+              setSelectedWaterSource(data?.water_source ? waterSources.find(s => s.id === data.water_source) : null);
+              setShowWaterTestModal(true);
+            } else if (type === 'well') {
+              setCurrentWell(data);
+              setShowWellModal(true);
+            } else if (type === 'wellReading') {
+              setSelectedWellForReading(data);
+              setShowWellReadingModal(true);
+            }
+          }}
+        />
+      )}
+
+      {showWellSourceModal && (
+        <WellSourceModal
+          isOpen={showWellSourceModal}
+          wellSource={currentWellSource}
+          farms={farms}
+          fields={fields}
+          onSave={() => {
+            loadData();
+            setShowWellSourceModal(false);
+            setCurrentWellSource(null);
+          }}
+          onClose={() => {
+            setShowWellSourceModal(false);
+            setCurrentWellSource(null);
+          }}
+        />
+      )}
 
       {/* Modals */}
       {showFarmModal && (
@@ -737,7 +763,7 @@ function App() {
 
       {showWaterSourceModal && (
         <WaterSourceModal
-          waterSource={currentWaterSource}
+          source={currentWaterSource}
           farms={farms}
           fields={fields}
           onSave={handleSaveWaterSource}
@@ -816,6 +842,40 @@ function App() {
           isOpen={showLaborContractorModal}
           onClose={() => setShowLaborContractorModal(false)}
           onSave={handleHarvestSave}
+        />
+      )}
+
+      {showWellModal && (
+        <WellModal
+          isOpen={showWellModal}
+          onClose={() => {
+            setShowWellModal(false);
+            setCurrentWell(null);
+          }}
+          well={currentWell}
+          waterSources={waterSources}
+          onSave={() => {
+            loadData();
+            setShowWellModal(false);
+            setCurrentWell(null);
+          }}
+        />
+      )}
+
+      {showWellReadingModal && (
+        <WellReadingModal
+          isOpen={showWellReadingModal}
+          onClose={() => {
+            setShowWellReadingModal(false);
+            setSelectedWellForReading(null);
+          }}
+          wellId={selectedWellForReading?.well_id}
+          wellName={selectedWellForReading?.well_name}
+          onSave={() => {
+            loadData();
+            setShowWellReadingModal(false);
+            setSelectedWellForReading(null);
+          }}
         />
       )}
 

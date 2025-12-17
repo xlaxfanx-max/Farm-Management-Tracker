@@ -6,7 +6,10 @@ from .views import (
     report_statistics,
     BuyerViewSet, LaborContractorViewSet, HarvestViewSet, 
     HarvestLoadViewSet, HarvestLaborViewSet,
-    geocode_address, update_field_boundary, get_plss
+    geocode_address, update_field_boundary, get_plss,
+    WellViewSet, WellReadingViewSet, MeterCalibrationViewSet,
+    WaterAllocationViewSet, ExtractionReportViewSet, IrrigationEventViewSet,
+    sgma_dashboard
 )
 
 # Import auth views
@@ -34,6 +37,13 @@ router.register(r'labor-contractors', LaborContractorViewSet, basename='laborcon
 router.register(r'harvests', HarvestViewSet, basename='harvest')
 router.register(r'harvest-loads', HarvestLoadViewSet, basename='harvestload')
 router.register(r'harvest-labor', HarvestLaborViewSet, basename='harvestlabor')
+router.register(r'wells', WellViewSet, basename='well')
+router.register(r'well-readings', WellReadingViewSet, basename='well-reading')
+router.register(r'meter-calibrations', MeterCalibrationViewSet, basename='meter-calibration')
+router.register(r'water-allocations', WaterAllocationViewSet, basename='water-allocation')
+router.register(r'extraction-reports', ExtractionReportViewSet, basename='extraction-report')
+router.register(r'irrigation-events', IrrigationEventViewSet, basename='irrigation-event')
+
 
 urlpatterns = [
     path('', include(router.urls)),
@@ -63,4 +73,6 @@ urlpatterns = [
     path('companies/<int:company_id>/members/', company_members, name='company-members'),
     path('companies/<int:company_id>/members/<int:member_id>/', update_company_member, name='update-company-member'),
     path('companies/<int:company_id>/members/<int:member_id>/remove/', remove_company_member, name='remove-company-member'),
+
+    path('sgma/dashboard/', sgma_dashboard, name='sgma-dashboard'),
 ]

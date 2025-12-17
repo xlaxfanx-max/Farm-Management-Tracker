@@ -7,18 +7,20 @@ from decimal import Decimal
 from django.db.models import Sum, Avg, Count, F, Q
 from django.db.models.functions import Coalesce
 from rest_framework import viewsets, filters, status
-from rest_framework.decorators import action
+from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
-from rest_framework.decorators import api_view
+from rest_framework.permissions import IsAuthenticated
 from .pur_reporting import PURReportGenerator
 from .product_import_tool import PesticideProductImporter
 from django.http import HttpResponse
+from django.utils import timezone
 from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
 from .models import ( 
     Farm, Field, PesticideProduct, PesticideApplication, WaterSource, WaterTest, 
-    Buyer, LaborContractor, Harvest, HarvestLoad, HarvestLabor,
-    PesticideApplication
+    Buyer, LaborContractor, Harvest, HarvestLoad, HarvestLabor, PesticideApplication,
+    Well, WellReading, MeterCalibration, WaterAllocation,
+    ExtractionReport, IrrigationEvent, WaterSource, Field
 )
 from .serializers import ( 
     FarmSerializer, FieldSerializer, PesticideProductSerializer, PesticideApplicationSerializer, 
@@ -27,7 +29,14 @@ from .serializers import (
     LaborContractorSerializer, LaborContractorListSerializer,
     HarvestSerializer, HarvestListSerializer,
     HarvestLoadSerializer, HarvestLaborSerializer,
-    PHICheckSerializer, HarvestStatisticsSerializer
+    PHICheckSerializer, HarvestStatisticsSerializer,
+    WellSerializer, WellListSerializer, WellCreateSerializer,
+    WellReadingSerializer, WellReadingCreateSerializer, WellReadingListSerializer,
+    MeterCalibrationSerializer, MeterCalibrationCreateSerializer,
+    WaterAllocationSerializer, WaterAllocationSummarySerializer,
+    ExtractionReportSerializer, ExtractionReportCreateSerializer, ExtractionReportListSerializer,
+    IrrigationEventSerializer, IrrigationEventCreateSerializer, IrrigationEventListSerializer,
+    SGMADashboardSerializer
 )
 class FarmViewSet(viewsets.ModelViewSet):
     """
@@ -1790,7 +1799,819 @@ def get_plss(request):
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+# -----------------------------------------------------------------------------
+# HELPER FUNCTIONS
+# -----------------------------------------------------------------------------
 
+def get_current_water_year():
+    """Get the current water year string (e.g., '2024-2025')."""
+    today = date.today()
+    if today.month >= 10:
+        return f"{today.year}-{today.year + 1}"
+    return f"{today.year - 1}-{today.year}"
+
+
+def get_water_year_dates(water_year=None):
+    """Get start and end dates for a water year."""
+    if not water_year:
+        water_year = get_current_water_year()
+    
+    start_year = int(water_year.split('-')[0])
+    return {
+        'start': date(start_year, 10, 1),
+        'end': date(start_year + 1, 9, 30)
+    }
+
+
+def get_current_reporting_period():
+    """Get the current semi-annual reporting period."""
+    today = date.today()
+    if today.month >= 10:
+        # Oct-Mar = Period 1 of next year
+        return {
+            'period': f"{today.year + 1}-1",
+            'type': 'semi_annual_1',
+            'start': date(today.year, 10, 1),
+            'end': date(today.year + 1, 3, 31)
+        }
+    elif today.month >= 4:
+        # Apr-Sep = Period 2
+        return {
+            'period': f"{today.year}-2",
+            'type': 'semi_annual_2',
+            'start': date(today.year, 4, 1),
+            'end': date(today.year, 9, 30)
+        }
+    else:
+        # Jan-Mar = Period 1
+        return {
+            'period': f"{today.year}-1",
+            'type': 'semi_annual_1',
+            'start': date(today.year - 1, 10, 1),
+            'end': date(today.year, 3, 31)
+        }
+
+
+# -----------------------------------------------------------------------------
+# WELL VIEWSET
+# -----------------------------------------------------------------------------
+
+class WellViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for Well model.
+    Provides CRUD operations plus custom actions for well management.
+    """
+    queryset = Well.objects.select_related(
+        'water_source', 'water_source__farm'
+    ).all()
+    permission_classes = [IsAuthenticated]
+    
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return WellListSerializer
+        elif self.action in ['create', 'update', 'partial_update']:
+            return WellCreateSerializer
+        return WellSerializer
+    
+    def get_queryset(self):
+        """Filter wells by user's current company."""
+        queryset = super().get_queryset()
+        
+        # Filter by company
+        user = self.request.user
+        if hasattr(user, 'current_company') and user.current_company:
+            queryset = queryset.filter(
+                water_source__farm__company=user.current_company
+            )
+        
+        # Optional filters
+        gsa = self.request.query_params.get('gsa')
+        if gsa:
+            queryset = queryset.filter(gsa=gsa)
+        
+        basin = self.request.query_params.get('basin')
+        if basin:
+            queryset = queryset.filter(basin=basin)
+        
+        farm_id = self.request.query_params.get('farm')
+        if farm_id:
+            queryset = queryset.filter(water_source__farm_id=farm_id)
+        
+        status_filter = self.request.query_params.get('status')
+        if status_filter:
+            queryset = queryset.filter(status=status_filter)
+        
+        return queryset
+    
+    @action(detail=True, methods=['get'])
+    def readings(self, request, pk=None):
+        """Get all readings for a specific well."""
+        well = self.get_object()
+        readings = well.readings.all()
+        
+        # Optional date filters
+        start_date = request.query_params.get('start_date')
+        end_date = request.query_params.get('end_date')
+        
+        if start_date:
+            readings = readings.filter(reading_date__gte=start_date)
+        if end_date:
+            readings = readings.filter(reading_date__lte=end_date)
+        
+        serializer = WellReadingListSerializer(readings, many=True)
+        return Response(serializer.data)
+    
+    @action(detail=True, methods=['get'])
+    def calibrations(self, request, pk=None):
+        """Get calibration history for a specific well."""
+        well = self.get_object()
+        calibrations = well.calibrations.all()
+        serializer = MeterCalibrationSerializer(calibrations, many=True)
+        return Response(serializer.data)
+    
+    @action(detail=True, methods=['get'])
+    def allocations(self, request, pk=None):
+        """Get allocation history for a specific well."""
+        well = self.get_object()
+        allocations = well.allocations.all()
+        
+        water_year = request.query_params.get('water_year')
+        if water_year:
+            allocations = allocations.filter(water_year=water_year)
+        
+        serializer = WaterAllocationSerializer(allocations, many=True)
+        return Response(serializer.data)
+    
+    @action(detail=True, methods=['get'])
+    def extraction_summary(self, request, pk=None):
+        """Get extraction summary for a well."""
+        well = self.get_object()
+        water_year = request.query_params.get('water_year', get_current_water_year())
+        wy_dates = get_water_year_dates(water_year)
+        
+        # Get extraction
+        extraction = well.readings.filter(
+            reading_date__gte=wy_dates['start'],
+            reading_date__lte=wy_dates['end']
+        ).aggregate(
+            total_af=Sum('extraction_acre_feet'),
+            total_gallons=Sum('extraction_gallons'),
+            reading_count=Count('id')
+        )
+        
+        # Get allocation
+        allocation = well.allocations.filter(
+            water_year=water_year
+        ).exclude(
+            allocation_type='transferred_out'
+        ).aggregate(
+            total_af=Sum('allocated_acre_feet')
+        )
+        
+        total_allocated = allocation['total_af'] or Decimal('0')
+        total_extracted = extraction['total_af'] or Decimal('0')
+        remaining = total_allocated - total_extracted
+        
+        return Response({
+            'water_year': water_year,
+            'well_id': well.id,
+            'well_name': well.well_name or well.water_source.name,
+            'total_allocated_af': float(total_allocated),
+            'total_extracted_af': float(total_extracted),
+            'remaining_af': float(remaining),
+            'percent_used': float((total_extracted / total_allocated * 100) if total_allocated else 0),
+            'is_over_allocation': remaining < 0,
+            'reading_count': extraction['reading_count']
+        })
+    
+    @action(detail=False, methods=['get'])
+    def by_gsa(self, request):
+        """Get wells grouped by GSA."""
+        queryset = self.get_queryset()
+        
+        gsa_data = queryset.values('gsa').annotate(
+            count=Count('id'),
+            active_count=Count('id', filter=Q(status='active'))
+        ).order_by('gsa')
+        
+        return Response(list(gsa_data))
+    
+    @action(detail=False, methods=['get'])
+    def calibration_due(self, request):
+        """Get wells with calibration due or overdue."""
+        days = int(request.query_params.get('days', 30))
+        warning_date = date.today() + timedelta(days=days)
+        
+        queryset = self.get_queryset().filter(
+            Q(next_calibration_due__lte=warning_date) |
+            Q(next_calibration_due__isnull=True),
+            has_flowmeter=True,
+            status='active'
+        )
+        
+        serializer = WellListSerializer(queryset, many=True)
+        return Response(serializer.data)
+
+
+# -----------------------------------------------------------------------------
+# WELL READING VIEWSET
+# -----------------------------------------------------------------------------
+
+class WellReadingViewSet(viewsets.ModelViewSet):
+    """ViewSet for WellReading model."""
+    
+    queryset = WellReading.objects.select_related(
+        'well', 'well__water_source', 'well__water_source__farm'
+    ).all()
+    permission_classes = [IsAuthenticated]
+    
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return WellReadingListSerializer
+        elif self.action in ['create', 'update', 'partial_update']:
+            return WellReadingCreateSerializer
+        return WellReadingSerializer
+    
+    def get_queryset(self):
+        """Filter by company and optional parameters."""
+        queryset = super().get_queryset()
+        
+        user = self.request.user
+        if hasattr(user, 'current_company') and user.current_company:
+            queryset = queryset.filter(
+                well__water_source__farm__company=user.current_company
+            )
+        
+        # Filter by well
+        well_id = self.request.query_params.get('well')
+        if well_id:
+            queryset = queryset.filter(well_id=well_id)
+        
+        # Filter by date range
+        start_date = self.request.query_params.get('start_date')
+        end_date = self.request.query_params.get('end_date')
+        
+        if start_date:
+            queryset = queryset.filter(reading_date__gte=start_date)
+        if end_date:
+            queryset = queryset.filter(reading_date__lte=end_date)
+        
+        return queryset
+    
+    @action(detail=False, methods=['get'])
+    def by_period(self, request):
+        """Get readings for a specific reporting period."""
+        period_type = request.query_params.get('period_type', 'semi_annual_1')
+        water_year = request.query_params.get('water_year', get_current_water_year())
+        
+        wy_dates = get_water_year_dates(water_year)
+        
+        if period_type == 'semi_annual_1':
+            start = wy_dates['start']
+            end = date(wy_dates['start'].year + 1, 3, 31)
+        elif period_type == 'semi_annual_2':
+            start = date(wy_dates['end'].year, 4, 1)
+            end = wy_dates['end']
+        else:
+            start = wy_dates['start']
+            end = wy_dates['end']
+        
+        queryset = self.get_queryset().filter(
+            reading_date__gte=start,
+            reading_date__lte=end
+        )
+        
+        serializer = WellReadingListSerializer(queryset, many=True)
+        return Response({
+            'period_type': period_type,
+            'water_year': water_year,
+            'start_date': start,
+            'end_date': end,
+            'readings': serializer.data
+        })
+
+
+# -----------------------------------------------------------------------------
+# METER CALIBRATION VIEWSET
+# -----------------------------------------------------------------------------
+
+class MeterCalibrationViewSet(viewsets.ModelViewSet):
+    """ViewSet for MeterCalibration model."""
+    
+    queryset = MeterCalibration.objects.select_related(
+        'well', 'well__water_source', 'well__water_source__farm'
+    ).all()
+    permission_classes = [IsAuthenticated]
+    
+    def get_serializer_class(self):
+        if self.action in ['create', 'update', 'partial_update']:
+            return MeterCalibrationCreateSerializer
+        return MeterCalibrationSerializer
+    
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        
+        user = self.request.user
+        if hasattr(user, 'current_company') and user.current_company:
+            queryset = queryset.filter(
+                well__water_source__farm__company=user.current_company
+            )
+        
+        well_id = self.request.query_params.get('well')
+        if well_id:
+            queryset = queryset.filter(well_id=well_id)
+        
+        return queryset
+    
+    @action(detail=False, methods=['get'])
+    def expiring(self, request):
+        """Get calibrations expiring within specified days."""
+        days = int(request.query_params.get('days', 90))
+        expiry_date = date.today() + timedelta(days=days)
+        
+        queryset = self.get_queryset().filter(
+            next_calibration_due__lte=expiry_date,
+            next_calibration_due__gte=date.today()
+        ).order_by('next_calibration_due')
+        
+        serializer = MeterCalibrationSerializer(queryset, many=True)
+        return Response(serializer.data)
+
+
+# -----------------------------------------------------------------------------
+# WATER ALLOCATION VIEWSET
+# -----------------------------------------------------------------------------
+
+class WaterAllocationViewSet(viewsets.ModelViewSet):
+    """ViewSet for WaterAllocation model."""
+    
+    queryset = WaterAllocation.objects.select_related(
+        'well', 'well__water_source', 'well__water_source__farm'
+    ).all()
+    serializer_class = WaterAllocationSerializer
+    permission_classes = [IsAuthenticated]
+    
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        
+        user = self.request.user
+        if hasattr(user, 'current_company') and user.current_company:
+            queryset = queryset.filter(
+                well__water_source__farm__company=user.current_company
+            )
+        
+        well_id = self.request.query_params.get('well')
+        if well_id:
+            queryset = queryset.filter(well_id=well_id)
+        
+        water_year = self.request.query_params.get('water_year')
+        if water_year:
+            queryset = queryset.filter(water_year=water_year)
+        
+        return queryset
+    
+    @action(detail=False, methods=['get'])
+    def summary(self, request):
+        """Get allocation vs extraction summary for all wells."""
+        water_year = request.query_params.get('water_year', get_current_water_year())
+        wy_dates = get_water_year_dates(water_year)
+        
+        user = request.user
+        if hasattr(user, 'current_company') and user.current_company:
+            wells = Well.objects.filter(
+                water_source__farm__company=user.current_company,
+                status='active'
+            )
+        else:
+            wells = Well.objects.filter(status='active')
+        
+        summaries = []
+        for well in wells:
+            allocation = well.allocations.filter(
+                water_year=water_year
+            ).exclude(
+                allocation_type='transferred_out'
+            ).aggregate(total=Sum('allocated_acre_feet'))['total'] or Decimal('0')
+            
+            extraction = well.readings.filter(
+                reading_date__gte=wy_dates['start'],
+                reading_date__lte=wy_dates['end']
+            ).aggregate(total=Sum('extraction_acre_feet'))['total'] or Decimal('0')
+            
+            remaining = allocation - extraction
+            
+            summaries.append({
+                'water_year': water_year,
+                'well_id': well.id,
+                'well_name': well.well_name or well.water_source.name,
+                'gsa': well.gsa,
+                'total_allocated_af': float(allocation),
+                'total_extracted_af': float(extraction),
+                'remaining_af': float(remaining),
+                'percent_used': float((extraction / allocation * 100) if allocation else 0),
+                'is_over_allocation': remaining < 0
+            })
+        
+        return Response(summaries)
+
+
+# -----------------------------------------------------------------------------
+# EXTRACTION REPORT VIEWSET
+# -----------------------------------------------------------------------------
+
+class ExtractionReportViewSet(viewsets.ModelViewSet):
+    """ViewSet for ExtractionReport model."""
+    
+    queryset = ExtractionReport.objects.select_related(
+        'well', 'well__water_source', 'well__water_source__farm'
+    ).all()
+    permission_classes = [IsAuthenticated]
+    
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return ExtractionReportListSerializer
+        elif self.action in ['create', 'update', 'partial_update']:
+            return ExtractionReportCreateSerializer
+        return ExtractionReportSerializer
+    
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        
+        user = self.request.user
+        if hasattr(user, 'current_company') and user.current_company:
+            queryset = queryset.filter(
+                well__water_source__farm__company=user.current_company
+            )
+        
+        well_id = self.request.query_params.get('well')
+        if well_id:
+            queryset = queryset.filter(well_id=well_id)
+        
+        status_filter = self.request.query_params.get('status')
+        if status_filter:
+            queryset = queryset.filter(status=status_filter)
+        
+        gsa = self.request.query_params.get('gsa')
+        if gsa:
+            queryset = queryset.filter(well__gsa=gsa)
+        
+        return queryset
+    
+    @action(detail=False, methods=['post'])
+    def generate(self, request):
+        """Auto-generate extraction report from readings."""
+        well_id = request.data.get('well_id')
+        period_type = request.data.get('period_type', 'semi_annual_1')
+        reporting_period = request.data.get('reporting_period')
+        
+        if not well_id:
+            return Response(
+                {'error': 'well_id is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            well = Well.objects.get(id=well_id)
+        except Well.DoesNotExist:
+            return Response(
+                {'error': 'Well not found'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        # Determine period dates
+        if not reporting_period:
+            period_info = get_current_reporting_period()
+            reporting_period = period_info['period']
+            period_start = period_info['start']
+            period_end = period_info['end']
+        else:
+            parts = reporting_period.split('-')
+            year = int(parts[0])
+            period_num = int(parts[1])
+            
+            if period_num == 1:
+                period_start = date(year - 1, 10, 1)
+                period_end = date(year, 3, 31)
+            else:
+                period_start = date(year, 4, 1)
+                period_end = date(year, 9, 30)
+        
+        # Check if report already exists
+        if ExtractionReport.objects.filter(
+            well=well,
+            reporting_period=reporting_period
+        ).exists():
+            return Response(
+                {'error': f'Report for {reporting_period} already exists'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Get readings for the period
+        readings = WellReading.objects.filter(
+            well=well,
+            reading_date__gte=period_start,
+            reading_date__lte=period_end
+        ).order_by('reading_date', 'reading_time')
+        
+        if not readings.exists():
+            return Response(
+                {'error': 'No readings found for this period'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        first_reading = readings.first()
+        last_reading = readings.last()
+        
+        pre_period_reading = WellReading.objects.filter(
+            well=well,
+            reading_date__lt=period_start
+        ).order_by('-reading_date', '-reading_time').first()
+        
+        beginning_reading = pre_period_reading.meter_reading if pre_period_reading else first_reading.meter_reading
+        beginning_date = pre_period_reading.reading_date if pre_period_reading else first_reading.reading_date
+        
+        water_year = f"{period_start.year}-{period_end.year}" if period_start.month >= 10 else f"{period_start.year - 1}-{period_start.year}"
+        allocation = well.allocations.filter(
+            water_year=water_year
+        ).exclude(
+            allocation_type='transferred_out'
+        ).aggregate(total=Sum('allocated_acre_feet'))['total'] or Decimal('0')
+        
+        period_allocation = allocation / 2 if period_type.startswith('semi_annual') else allocation
+        
+        report = ExtractionReport.objects.create(
+            well=well,
+            period_type=period_type,
+            reporting_period=reporting_period,
+            period_start_date=period_start,
+            period_end_date=period_end,
+            beginning_meter_reading=beginning_reading,
+            beginning_reading_date=beginning_date,
+            ending_meter_reading=last_reading.meter_reading,
+            ending_reading_date=last_reading.reading_date,
+            period_allocation_af=period_allocation,
+            status='draft'
+        )
+        
+        serializer = ExtractionReportSerializer(report)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
+    @action(detail=True, methods=['post'])
+    def submit(self, request, pk=None):
+        """Mark report as submitted."""
+        report = self.get_object()
+        
+        if report.status == 'submitted':
+            return Response(
+                {'error': 'Report already submitted'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        report.status = 'submitted'
+        report.submitted_date = date.today()
+        report.save()
+        
+        serializer = ExtractionReportSerializer(report)
+        return Response(serializer.data)
+
+
+# -----------------------------------------------------------------------------
+# IRRIGATION EVENT VIEWSET
+# -----------------------------------------------------------------------------
+
+class IrrigationEventViewSet(viewsets.ModelViewSet):
+    """ViewSet for IrrigationEvent model."""
+    
+    queryset = IrrigationEvent.objects.select_related(
+        'field', 'field__farm', 'well', 'water_source'
+    ).all()
+    permission_classes = [IsAuthenticated]
+    
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return IrrigationEventListSerializer
+        elif self.action in ['create', 'update', 'partial_update']:
+            return IrrigationEventCreateSerializer
+        return IrrigationEventSerializer
+    
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        
+        user = self.request.user
+        if hasattr(user, 'current_company') and user.current_company:
+            queryset = queryset.filter(
+                field__farm__company=user.current_company
+            )
+        
+        field_id = self.request.query_params.get('field')
+        if field_id:
+            queryset = queryset.filter(field_id=field_id)
+        
+        well_id = self.request.query_params.get('well')
+        if well_id:
+            queryset = queryset.filter(well_id=well_id)
+        
+        start_date = self.request.query_params.get('start_date')
+        end_date = self.request.query_params.get('end_date')
+        
+        if start_date:
+            queryset = queryset.filter(irrigation_date__gte=start_date)
+        if end_date:
+            queryset = queryset.filter(irrigation_date__lte=end_date)
+        
+        return queryset
+    
+    @action(detail=False, methods=['get'])
+    def by_field(self, request):
+        """Get irrigation totals grouped by field."""
+        queryset = self.get_queryset()
+        
+        start_date = request.query_params.get('start_date')
+        end_date = request.query_params.get('end_date')
+        
+        if start_date:
+            queryset = queryset.filter(irrigation_date__gte=start_date)
+        if end_date:
+            queryset = queryset.filter(irrigation_date__lte=end_date)
+        
+        field_data = queryset.values(
+            'field__id', 'field__name', 'field__farm__name'
+        ).annotate(
+            total_af=Sum('water_applied_af'),
+            total_gallons=Sum('water_applied_gallons'),
+            event_count=Count('id'),
+            total_hours=Sum('duration_hours')
+        ).order_by('field__farm__name', 'field__name')
+        
+        return Response(list(field_data))
+
+
+# -----------------------------------------------------------------------------
+# SGMA DASHBOARD VIEW
+# -----------------------------------------------------------------------------
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def sgma_dashboard(request):
+    """
+    Get SGMA compliance dashboard data.
+    Returns summary statistics, alerts, and status for all wells.
+    """
+    user = request.user
+    
+    if hasattr(user, 'current_company') and user.current_company:
+        wells = Well.objects.filter(
+            water_source__farm__company=user.current_company
+        )
+    else:
+        wells = Well.objects.all()
+    
+    water_year = get_current_water_year()
+    wy_dates = get_water_year_dates(water_year)
+    current_period = get_current_reporting_period()
+    
+    # Well counts
+    total_wells = wells.count()
+    active_wells = wells.filter(status='active').count()
+    wells_with_ami = wells.filter(has_ami=True).count()
+    
+    # YTD extraction
+    ytd_extraction = WellReading.objects.filter(
+        well__in=wells,
+        reading_date__gte=wy_dates['start'],
+        reading_date__lte=date.today()
+    ).aggregate(total=Sum('extraction_acre_feet'))['total'] or Decimal('0')
+    
+    # YTD allocation
+    ytd_allocation = WaterAllocation.objects.filter(
+        well__in=wells,
+        water_year=water_year
+    ).exclude(
+        allocation_type='transferred_out'
+    ).aggregate(total=Sum('allocated_acre_feet'))['total'] or Decimal('0')
+    
+    allocation_remaining = ytd_allocation - ytd_extraction
+    percent_used = (ytd_extraction / ytd_allocation * 100) if ytd_allocation else Decimal('0')
+    
+    # Current period extraction
+    current_period_extraction = WellReading.objects.filter(
+        well__in=wells,
+        reading_date__gte=current_period['start'],
+        reading_date__lte=min(current_period['end'], date.today())
+    ).aggregate(total=Sum('extraction_acre_feet'))['total'] or Decimal('0')
+    
+    # Calibration status
+    today = date.today()
+    calibrations_current = wells.filter(
+        meter_calibration_current=True,
+        next_calibration_due__gt=today
+    ).count()
+    
+    calibrations_due_soon = wells.filter(
+        next_calibration_due__lte=today + timedelta(days=90),
+        next_calibration_due__gt=today
+    ).count()
+    
+    calibrations_overdue = wells.filter(
+        Q(next_calibration_due__lte=today) |
+        Q(next_calibration_due__isnull=True, has_flowmeter=True),
+        status='active'
+    ).count()
+    
+    # Next deadlines
+    next_calibration = wells.filter(
+        next_calibration_due__gte=today
+    ).order_by('next_calibration_due').values_list(
+        'next_calibration_due', flat=True
+    ).first()
+    
+    if today.month <= 3:
+        next_report_due = date(today.year, 4, 1)
+    elif today.month <= 9:
+        next_report_due = date(today.year, 10, 1)
+    else:
+        next_report_due = date(today.year + 1, 4, 1)
+    
+    # Generate alerts
+    alerts = []
+    
+    if calibrations_overdue > 0:
+        alerts.append({
+            'type': 'warning',
+            'category': 'calibration',
+            'message': f'{calibrations_overdue} well(s) have overdue meter calibrations',
+            'action': 'Schedule calibration appointments'
+        })
+    
+    if calibrations_due_soon > 0:
+        alerts.append({
+            'type': 'info',
+            'category': 'calibration',
+            'message': f'{calibrations_due_soon} well(s) have calibrations due within 90 days',
+            'action': 'Plan upcoming calibrations'
+        })
+    
+    if allocation_remaining < 0:
+        alerts.append({
+            'type': 'error',
+            'category': 'allocation',
+            'message': f'Over allocation by {abs(float(allocation_remaining)):.2f} AF',
+            'action': 'Review extraction and consider purchasing additional allocation'
+        })
+    elif ytd_allocation > 0 and percent_used > 80:
+        alerts.append({
+            'type': 'warning',
+            'category': 'allocation',
+            'message': f'{float(percent_used):.1f}% of annual allocation used',
+            'action': 'Monitor extraction closely'
+        })
+    
+    # Wells by GSA
+    wells_by_gsa = list(wells.values('gsa').annotate(
+        count=Count('id'),
+        active=Count('id', filter=Q(status='active')),
+        ytd_extraction=Sum(
+            'readings__extraction_acre_feet',
+            filter=Q(readings__reading_date__gte=wy_dates['start'])
+        )
+    ).order_by('gsa'))
+    
+    # Recent readings
+    recent_readings = WellReading.objects.filter(
+        well__in=wells
+    ).select_related('well').order_by('-reading_date', '-reading_time')[:10]
+    
+    recent_readings_data = WellReadingListSerializer(recent_readings, many=True).data
+    
+    return Response({
+        'total_wells': total_wells,
+        'active_wells': active_wells,
+        'wells_with_ami': wells_with_ami,
+        
+        'ytd_extraction_af': float(ytd_extraction),
+        'ytd_allocation_af': float(ytd_allocation),
+        'allocation_remaining_af': float(allocation_remaining),
+        'percent_allocation_used': float(percent_used),
+        
+        'current_period': current_period['period'],
+        'current_period_extraction_af': float(current_period_extraction),
+        'current_period_start': current_period['start'],
+        'current_period_end': current_period['end'],
+        
+        'calibrations_current': calibrations_current,
+        'calibrations_due_soon': calibrations_due_soon,
+        'calibrations_overdue': calibrations_overdue,
+        
+        'next_report_due': next_report_due,
+        'next_calibration_due': next_calibration,
+        
+        'alerts': alerts,
+        'wells_by_gsa': wells_by_gsa,
+        'recent_readings': recent_readings_data,
+        
+        'water_year': water_year,
+        'as_of_date': date.today()
+    })
 
 
 

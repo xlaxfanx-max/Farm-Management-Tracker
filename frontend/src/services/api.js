@@ -471,6 +471,81 @@ export const harvestLaborAPI = {
 };
 
 // =============================================================================
+// WELLS & SGMA API (NEW)
+// =============================================================================
+
+export const wellsAPI = {
+  // Wells CRUD
+  getAll: (params = {}) => api.get('/wells/', { params }),
+  get: (id) => api.get(`/wells/${id}/`),
+  create: (data) => api.post('/wells/', data),
+  update: (id, data) => api.put(`/wells/${id}/`, data),
+  delete: (id) => api.delete(`/wells/${id}/`),
+  
+  // Well-specific endpoints
+  getReadings: (id, params = {}) => api.get(`/wells/${id}/readings/`, { params }),
+  getCalibrations: (id) => api.get(`/wells/${id}/calibrations/`),
+  getAllocations: (id, params = {}) => api.get(`/wells/${id}/allocations/`, { params }),
+  getExtractionSummary: (id, params = {}) => api.get(`/wells/${id}/extraction_summary/`, { params }),
+  
+  // Filtered lists
+  byGSA: (gsa) => api.get('/wells/by_gsa/', { params: { gsa } }),
+  calibrationDue: (days = 30) => api.get('/wells/calibration_due/', { params: { days } }),
+};
+
+export const wellReadingsAPI = {
+  getAll: (params = {}) => api.get('/well-readings/', { params }),
+  get: (id) => api.get(`/well-readings/${id}/`),
+  create: (data) => api.post('/well-readings/', data),
+  update: (id, data) => api.put(`/well-readings/${id}/`, data),
+  delete: (id) => api.delete(`/well-readings/${id}/`),
+  byPeriod: (params = {}) => api.get('/well-readings/by_period/', { params }),
+};
+
+export const meterCalibrationsAPI = {
+  getAll: (params = {}) => api.get('/meter-calibrations/', { params }),
+  get: (id) => api.get(`/meter-calibrations/${id}/`),
+  create: (data) => api.post('/meter-calibrations/', data),
+  update: (id, data) => api.put(`/meter-calibrations/${id}/`, data),
+  delete: (id) => api.delete(`/meter-calibrations/${id}/`),
+  expiring: (days = 90) => api.get('/meter-calibrations/expiring/', { params: { days } }),
+};
+
+export const waterAllocationsAPI = {
+  getAll: (params = {}) => api.get('/water-allocations/', { params }),
+  get: (id) => api.get(`/water-allocations/${id}/`),
+  create: (data) => api.post('/water-allocations/', data),
+  update: (id, data) => api.put(`/water-allocations/${id}/`, data),
+  delete: (id) => api.delete(`/water-allocations/${id}/`),
+  summary: (params = {}) => api.get('/water-allocations/summary/', { params }),
+};
+
+export const extractionReportsAPI = {
+  getAll: (params = {}) => api.get('/extraction-reports/', { params }),
+  get: (id) => api.get(`/extraction-reports/${id}/`),
+  create: (data) => api.post('/extraction-reports/', data),
+  update: (id, data) => api.put(`/extraction-reports/${id}/`, data),
+  delete: (id) => api.delete(`/extraction-reports/${id}/`),
+  generate: (data) => api.post('/extraction-reports/generate/', data),
+  submit: (id) => api.post(`/extraction-reports/${id}/submit/`),
+  confirm: (id, data) => api.post(`/extraction-reports/${id}/confirm/`, data),
+};
+
+export const irrigationEventsAPI = {
+  getAll: (params = {}) => api.get('/irrigation-events/', { params }),
+  get: (id) => api.get(`/irrigation-events/${id}/`),
+  create: (data) => api.post('/irrigation-events/', data),
+  update: (id, data) => api.put(`/irrigation-events/${id}/`, data),
+  delete: (id) => api.delete(`/irrigation-events/${id}/`),
+  byField: (params = {}) => api.get('/irrigation-events/by_field/', { params }),
+  byWell: (params = {}) => api.get('/irrigation-events/by_well/', { params }),
+};
+
+export const sgmaAPI = {
+  dashboard: () => api.get('/sgma/dashboard/'),
+};
+
+// =============================================================================
 // MAP API (EXISTING)
 // =============================================================================
 
