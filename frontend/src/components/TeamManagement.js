@@ -46,6 +46,11 @@ const ROLE_DESCRIPTIONS = {
 export default function TeamManagement() {
   const { currentCompany, user, isOwnerOrAdmin } = useAuth();
   
+  // Debug logging
+  console.log('TeamManagement - currentCompany:', currentCompany);
+  console.log('TeamManagement - isOwnerOrAdmin():', isOwnerOrAdmin());
+  console.log('TeamManagement - role_codename:', currentCompany?.role_codename);
+  
   const [members, setMembers] = useState([]);
   const [invitations, setInvitations] = useState([]);
   const [roles, setRoles] = useState([]);
@@ -59,8 +64,10 @@ export default function TeamManagement() {
   const [activeDropdown, setActiveDropdown] = useState(null);
 
   useEffect(() => {
-    if (currentCompany) {
+    if (currentCompany?.id) {
       loadData();
+    } else {
+      setLoading(false);
     }
   }, [currentCompany]);
 
@@ -68,15 +75,35 @@ export default function TeamManagement() {
     setLoading(true);
     setError(null);
     try {
-      const [membersRes, invitationsRes, rolesRes] = await Promise.all([
-        companyAPI.members(currentCompany.id),
-        invitationsAPI.list(),
-        rolesAPI.available(),
-      ]);
+      // Load each API separately to identify which one fails
+      let membersData = [];
+      let invitationsData = [];
+      let rolesData = [];
       
-      setMembers(membersRes.data.results || membersRes.data || []);
-      setInvitations(invitationsRes.data.results || invitationsRes.data || []);
-      setRoles(rolesRes.data.results || rolesRes.data || []);
+      try {
+        const membersRes = await companyAPI.members(currentCompany.id);
+        membersData = membersRes.data.results || membersRes.data || [];
+      } catch (err) {
+        console.error('Error loading members:', err);
+      }
+      
+      try {
+        const invitationsRes = await invitationsAPI.list();
+        invitationsData = invitationsRes.data.results || invitationsRes.data || [];
+      } catch (err) {
+        console.error('Error loading invitations:', err);
+      }
+      
+      try {
+        const rolesRes = await rolesAPI.available();
+        rolesData = rolesRes.data.results || rolesRes.data || [];
+      } catch (err) {
+        console.error('Error loading roles:', err);
+      }
+      
+      setMembers(membersData);
+      setInvitations(invitationsData);
+      setRoles(rolesData);
     } catch (err) {
       console.error('Error loading team data:', err);
       setError('Failed to load team data');
