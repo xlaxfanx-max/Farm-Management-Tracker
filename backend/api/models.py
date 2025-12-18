@@ -230,6 +230,46 @@ class Company(models.Model):
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    # =========================================================================
+    # ONBOARDING TRACKING (NEW)
+    # =========================================================================
+    ONBOARDING_STEPS = [
+        ('company_info', 'Company Info'),
+        ('boundary', 'Farm Boundary'),
+        ('fields', 'Fields'),
+        ('water', 'Water Sources'),
+        ('complete', 'Complete'),
+        ('skipped', 'Skipped'),
+    ]
+    
+    onboarding_completed = models.BooleanField(
+        default=False,
+        help_text="Whether the company has completed initial setup"
+    )
+    onboarding_step = models.CharField(
+        max_length=50,
+        choices=ONBOARDING_STEPS,
+        default='company_info',
+        help_text="Current step in the onboarding process"
+    )
+    onboarding_completed_at = models.DateTimeField(
+        null=True, 
+        blank=True,
+        help_text="When onboarding was completed"
+    )
+    
+    # Company profile - useful for SaaS tiers
+    primary_crop = models.CharField(
+        max_length=50, 
+        blank=True,
+        help_text="Primary crop type for this company"
+    )
+    estimated_total_acres = models.IntegerField(
+        null=True, 
+        blank=True,
+        help_text="Estimated total acreage across all farms"
+    )
     
     class Meta:
         verbose_name_plural = "Companies"
@@ -253,6 +293,27 @@ class Company(models.Model):
     def can_add_user(self):
         """Check if company can add another user based on subscription."""
         return self.user_count < self.max_users
+    
+    def complete_onboarding(self):
+        """Mark onboarding as complete."""
+        self.onboarding_completed = True
+        self.onboarding_step = 'complete'
+        self.onboarding_completed_at = timezone.now()
+        self.save(update_fields=['onboarding_completed', 'onboarding_step', 'onboarding_completed_at'])
+    
+    def skip_onboarding(self):
+        """Mark onboarding as skipped."""
+        self.onboarding_completed = True
+        self.onboarding_step = 'skipped'
+        self.onboarding_completed_at = timezone.now()
+        self.save(update_fields=['onboarding_completed', 'onboarding_step', 'onboarding_completed_at'])
+    
+    def reset_onboarding(self):
+        """Reset onboarding state."""
+        self.onboarding_completed = False
+        self.onboarding_step = 'company_info'
+        self.onboarding_completed_at = None
+        self.save(update_fields=['onboarding_completed', 'onboarding_step', 'onboarding_completed_at'])
 
 # =============================================================================
 # CUSTOM USER MODEL

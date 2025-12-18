@@ -27,7 +27,7 @@ import ApplicationModal from './components/ApplicationModal';
 import WaterSourceModal from './components/WaterSourceModal';
 import WaterTestModal from './components/WaterTestModal';
 import Reports from './components/Reports';
-import { farmsAPI, fieldsAPI, applicationsAPI, productsAPI, waterSourcesAPI, waterTestsAPI, onboardingAPI } from './services/api';
+import { farmsAPI, fieldsAPI, applicationsAPI, productsAPI, waterSourcesAPI, waterTestsAPI } from './services/api';
 import Harvests from './components/Harvests';
 import HarvestModal from './components/HarvestModal';
 import HarvestLoadModal from './components/HarvestLoadModal';
@@ -49,10 +49,6 @@ import Login, { Register } from './components/Login';
 import TeamManagement from './components/TeamManagement';
 import AcceptInvitation from './components/AcceptInvitation';
 
-// NEW: Import Onboarding Wizard
-import OnboardingWizard from './components/OnboardingWizard';
-import './components/OnboardingWizard.css';
-
 
 function App() {
   // ============================================================================
@@ -71,12 +67,6 @@ function App() {
   const [authMode, setAuthMode] = useState('login'); // 'login' or 'register'
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showCompanyMenu, setShowCompanyMenu] = useState(false);
-
-  // ============================================================================
-  // ONBOARDING STATE (NEW)
-  // ============================================================================
-  const [onboardingStatus, setOnboardingStatus] = useState(null);
-  const [checkingOnboarding, setCheckingOnboarding] = useState(true);
 
   // ============================================================================
   // State for data
@@ -140,66 +130,13 @@ function App() {
   const [nutrientRefreshTrigger, setNutrientRefreshTrigger] = useState(0);
 
   // ============================================================================
-  // CHECK ONBOARDING STATUS (NEW)
+  // Load data only when authenticated
   // ============================================================================
   useEffect(() => {
-    const checkOnboarding = async () => {
-      if (!isAuthenticated || !currentCompany) {
-        setCheckingOnboarding(false);
-        return;
-      }
-
-      try {
-        const response = await onboardingAPI.getStatus();
-        setOnboardingStatus(response.data);
-      } catch (error) {
-        console.error('Error checking onboarding status:', error);
-        // If error (e.g., endpoint doesn't exist yet), assume onboarding is complete
-        setOnboardingStatus({ onboarding_completed: true });
-      } finally {
-        setCheckingOnboarding(false);
-      }
-    };
-
-    if (isAuthenticated && currentCompany) {
-      setCheckingOnboarding(true);
-      checkOnboarding();
-    } else {
-      setCheckingOnboarding(false);
-    }
-  }, [isAuthenticated, currentCompany]);
-
-  // ============================================================================
-  // ONBOARDING HANDLERS (NEW)
-  // ============================================================================
-  const handleOnboardingComplete = async () => {
-    try {
-      await onboardingAPI.complete();
-    } catch (error) {
-      console.error('Error completing onboarding:', error);
-    }
-    setOnboardingStatus({ onboarding_completed: true });
-    // Reload data after onboarding
-    loadData();
-  };
-
-  const handleOnboardingSkip = async () => {
-    try {
-      await onboardingAPI.skip();
-    } catch (error) {
-      console.error('Error skipping onboarding:', error);
-    }
-    setOnboardingStatus({ onboarding_completed: true, skipped: true });
-  };
-
-  // ============================================================================
-  // Load data only when authenticated AND onboarding complete
-  // ============================================================================
-  useEffect(() => {
-    if (isAuthenticated && onboardingStatus?.onboarding_completed) {
+    if (isAuthenticated) {
       loadData();
     }
-  }, [isAuthenticated, currentCompany, onboardingStatus?.onboarding_completed]);
+  }, [isAuthenticated, currentCompany]); // Reload when company changes
 
   const loadData = async () => {
     setLoading(true);
@@ -239,9 +176,7 @@ function App() {
   const handleSwitchCompany = async (companyId) => {
     await switchCompany(companyId);
     setShowCompanyMenu(false);
-    // Reset onboarding check for new company
-    setCheckingOnboarding(true);
-    setOnboardingStatus(null);
+    // Data will reload due to useEffect dependency on currentCompany
   };
 
   // ============================================================================
@@ -256,9 +191,9 @@ function App() {
   }
 
   // ============================================================================
-  // Show loading while checking auth OR onboarding
+  // Show loading while checking auth
   // ============================================================================
-  if (authLoading || checkingOnboarding) {
+  if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
@@ -277,18 +212,6 @@ function App() {
       return <Register onSwitchToLogin={() => setAuthMode('login')} />;
     }
     return <Login onSwitchToRegister={() => setAuthMode('register')} />;
-  }
-
-  // ============================================================================
-  // SHOW ONBOARDING WIZARD IF NOT COMPLETED (NEW)
-  // ============================================================================
-  if (onboardingStatus && !onboardingStatus.onboarding_completed) {
-    return (
-      <OnboardingWizard
-        onComplete={handleOnboardingComplete}
-        onSkip={handleOnboardingSkip}
-      />
-    );
   }
 
   // ============================================================================

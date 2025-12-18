@@ -207,6 +207,38 @@ export const auditAPI = {
 };
 
 // =============================================================================
+// ONBOARDING API (NEW)
+// =============================================================================
+
+export const onboardingAPI = {
+  /**
+   * Get onboarding status for current company
+   */
+  getStatus: () => api.get('/onboarding/status/'),
+  
+  /**
+   * Update current onboarding step
+   * @param {string} step - One of: company_info, boundary, fields, water, complete
+   */
+  updateStep: (step) => api.post('/onboarding/step/', { step }),
+  
+  /**
+   * Mark onboarding as complete
+   */
+  complete: () => api.post('/onboarding/complete/'),
+  
+  /**
+   * Skip onboarding
+   */
+  skip: () => api.post('/onboarding/skip/'),
+  
+  /**
+   * Reset onboarding (for testing)
+   */
+  reset: () => api.post('/onboarding/reset/'),
+};
+
+// =============================================================================
 // FARMS API (EXISTING - now uses authenticated api instance)
 // =============================================================================
 
@@ -217,6 +249,8 @@ export const farmsAPI = {
   update: (id, data) => api.put(`/farms/${id}/`, data),
   delete: (id) => api.delete(`/farms/${id}/`),
   getFields: (id) => api.get(`/farms/${id}/fields/`),
+  bulkAddParcels: (farmId, parcels, replace = false) => 
+   api.post(`/farms/${farmId}/bulk-parcels/`, { parcels, replace }),
 };
 
 // =============================================================================

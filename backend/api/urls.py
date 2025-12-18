@@ -28,6 +28,14 @@ from .team_views import (
     company_members, update_company_member, remove_company_member,
 )
 
+from .onboarding_views import (
+    get_onboarding_status,
+    update_onboarding_step,
+    complete_onboarding,
+    skip_onboarding,
+    reset_onboarding,
+)
+
 router = DefaultRouter()
 router.register(r'farms', FarmViewSet, basename='farm')
 router.register(r'fields', FieldViewSet, basename='field')
@@ -85,4 +93,11 @@ urlpatterns = [
 
     path('reports/nitrogen-summary/', nitrogen_summary, name='nitrogen-summary'),
     path('reports/nitrogen-export/', nitrogen_export, name='nitrogen-export'),
+
+    # Onboarding routes
+    path('onboarding/status/', get_onboarding_status, name='onboarding-status'),
+    path('onboarding/step/', update_onboarding_step, name='onboarding-step'),
+    path('onboarding/complete/', complete_onboarding, name='onboarding-complete'),
+    path('onboarding/skip/', skip_onboarding, name='onboarding-skip'),
+    path('onboarding/reset/', reset_onboarding, name='onboarding-reset'),
 ]
