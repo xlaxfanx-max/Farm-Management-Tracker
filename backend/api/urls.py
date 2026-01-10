@@ -36,6 +36,15 @@ from .onboarding_views import (
     reset_onboarding,
 )
 
+# Import company views (NEW)
+from .company_views import (
+    get_company,
+    update_company,
+    get_company_stats,
+    get_california_counties,
+    get_primary_crop_options,
+)
+
 router = DefaultRouter()
 router.register(r'farms', FarmViewSet, basename='farm')
 router.register(r'fields', FieldViewSet, basename='field')
@@ -88,6 +97,15 @@ urlpatterns = [
     path('companies/<int:company_id>/members/', company_members, name='company-members'),
     path('companies/<int:company_id>/members/<int:member_id>/', update_company_member, name='update-company-member'),
     path('companies/<int:company_id>/members/<int:member_id>/remove/', remove_company_member, name='remove-company-member'),
+
+    # Company Management routes (NEW)
+    path('companies/<int:company_id>/', get_company, name='company-detail'),
+    path('companies/<int:company_id>/update/', update_company, name='company-update'),
+    path('companies/<int:company_id>/stats/', get_company_stats, name='company-stats'),
+    
+    # Reference data routes (NEW)
+    path('reference/california-counties/', get_california_counties, name='california-counties'),
+    path('reference/primary-crops/', get_primary_crop_options, name='primary-crops'),
 
     path('sgma/dashboard/', sgma_dashboard, name='sgma-dashboard'),
 

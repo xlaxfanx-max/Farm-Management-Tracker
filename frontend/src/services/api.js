@@ -132,24 +132,18 @@ export const authAPI = {
 };
 
 // =============================================================================
-// COMPANY API (NEW)
+// COMPANY API (UPDATED - Now includes company settings endpoints)
 // =============================================================================
 
 export const companyAPI = {
-  // List user's companies
-  list: () => api.get('/companies/'),
-
-  // Get company details
+  // Get company details (includes user's role in response)
   get: (id) => api.get(`/companies/${id}/`),
 
-  // Update company settings
-  update: (id, data) => api.put(`/companies/${id}/`, data),
+  // Update company settings (owner only)
+  update: (id, data) => api.put(`/companies/${id}/update/`, data),
 
-  // Get company statistics
-  statistics: (id) => api.get(`/companies/${id}/statistics/`),
-
-  // Get company farms
-  farms: (id) => api.get(`/companies/${id}/farms/`),
+  // Get company statistics (farm count, user count, etc.)
+  getStats: (id) => api.get(`/companies/${id}/stats/`),
 
   // List company members
   members: (companyId) => api.get(`/companies/${companyId}/members/`),
@@ -165,6 +159,18 @@ export const companyAPI = {
   // Transfer ownership
   transferOwnership: (companyId, memberId) => 
     api.post(`/companies/${companyId}/members/${memberId}/transfer_ownership/`),
+};
+
+// =============================================================================
+// REFERENCE DATA API (NEW)
+// =============================================================================
+
+export const referenceAPI = {
+  // Get California counties list
+  getCaliforniaCounties: () => api.get('/reference/california-counties/'),
+  
+  // Get primary crop options
+  getPrimaryCrops: () => api.get('/reference/primary-crops/'),
 };
 
 // =============================================================================

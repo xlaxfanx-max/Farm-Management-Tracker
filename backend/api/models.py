@@ -187,6 +187,31 @@ class Company(models.Model):
         ('enterprise', 'Enterprise'),
     ]
     
+    # California counties list for validation/choices
+    CALIFORNIA_COUNTIES = [
+        ('alameda', 'Alameda'), ('alpine', 'Alpine'), ('amador', 'Amador'),
+        ('butte', 'Butte'), ('calaveras', 'Calaveras'), ('colusa', 'Colusa'),
+        ('contra_costa', 'Contra Costa'), ('del_norte', 'Del Norte'),
+        ('el_dorado', 'El Dorado'), ('fresno', 'Fresno'), ('glenn', 'Glenn'),
+        ('humboldt', 'Humboldt'), ('imperial', 'Imperial'), ('inyo', 'Inyo'),
+        ('kern', 'Kern'), ('kings', 'Kings'), ('lake', 'Lake'), ('lassen', 'Lassen'),
+        ('los_angeles', 'Los Angeles'), ('madera', 'Madera'), ('marin', 'Marin'),
+        ('mariposa', 'Mariposa'), ('mendocino', 'Mendocino'), ('merced', 'Merced'),
+        ('modoc', 'Modoc'), ('mono', 'Mono'), ('monterey', 'Monterey'),
+        ('napa', 'Napa'), ('nevada', 'Nevada'), ('orange', 'Orange'),
+        ('placer', 'Placer'), ('plumas', 'Plumas'), ('riverside', 'Riverside'),
+        ('sacramento', 'Sacramento'), ('san_benito', 'San Benito'),
+        ('san_bernardino', 'San Bernardino'), ('san_diego', 'San Diego'),
+        ('san_francisco', 'San Francisco'), ('san_joaquin', 'San Joaquin'),
+        ('san_luis_obispo', 'San Luis Obispo'), ('san_mateo', 'San Mateo'),
+        ('santa_barbara', 'Santa Barbara'), ('santa_clara', 'Santa Clara'),
+        ('santa_cruz', 'Santa Cruz'), ('shasta', 'Shasta'), ('sierra', 'Sierra'),
+        ('siskiyou', 'Siskiyou'), ('solano', 'Solano'), ('sonoma', 'Sonoma'),
+        ('stanislaus', 'Stanislaus'), ('sutter', 'Sutter'), ('tehama', 'Tehama'),
+        ('trinity', 'Trinity'), ('tulare', 'Tulare'), ('tuolumne', 'Tuolumne'),
+        ('ventura', 'Ventura'), ('yolo', 'Yolo'), ('yuba', 'Yuba'),
+    ]
+    
     # Unique identifier for API/external references
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     
@@ -203,6 +228,11 @@ class Company(models.Model):
     # Address
     address = models.CharField(max_length=200, blank=True)
     city = models.CharField(max_length=100, blank=True)
+    county = models.CharField(
+        max_length=50, 
+        blank=True,
+        help_text="California county - determines County Ag Commissioner for PUR reporting"
+    )
     state = models.CharField(max_length=2, default='CA')
     zip_code = models.CharField(max_length=10, blank=True)
     
@@ -210,6 +240,46 @@ class Company(models.Model):
     operator_id = models.CharField(max_length=50, blank=True,
         help_text="California DPR Operator ID Number")
     business_license = models.CharField(max_length=50, blank=True)
+    
+    # ==========================================================================
+    # NEW: Additional Regulatory IDs for California Compliance
+    # ==========================================================================
+    pca_license = models.CharField(
+        max_length=50, 
+        blank=True,
+        verbose_name="PCA License",
+        help_text="Pest Control Advisor license number"
+    )
+    qal_license = models.CharField(
+        max_length=50, 
+        blank=True,
+        verbose_name="QAL License", 
+        help_text="Qualified Applicator License number"
+    )
+    qac_license = models.CharField(
+        max_length=50,
+        blank=True,
+        verbose_name="QAC License",
+        help_text="Qualified Applicator Certificate number"
+    )
+    
+    # Optional business identifiers
+    federal_tax_id = models.CharField(
+        max_length=20, 
+        blank=True,
+        verbose_name="Federal Tax ID",
+        help_text="EIN/Federal Tax ID (optional, for internal records)"
+    )
+    state_tax_id = models.CharField(
+        max_length=20, 
+        blank=True,
+        verbose_name="State Tax ID",
+        help_text="CA State Tax ID (optional)"
+    )
+    
+    # Website and notes
+    website = models.URLField(blank=True, help_text="Company website URL")
+    notes = models.TextField(blank=True, help_text="Internal notes about the company")
     
     # Subscription/Billing
     subscription_tier = models.CharField(
@@ -232,7 +302,7 @@ class Company(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     # =========================================================================
-    # ONBOARDING TRACKING (NEW)
+    # ONBOARDING TRACKING
     # =========================================================================
     ONBOARDING_STEPS = [
         ('company_info', 'Company Info'),
@@ -285,6 +355,18 @@ class Company(models.Model):
     @property
     def user_count(self):
         return self.memberships.filter(is_active=True).count()
+    
+    @property
+    def county_display(self):
+        """Return formatted county name for display."""
+        if self.county:
+            # Convert stored value to display name
+            for code, name in self.CALIFORNIA_COUNTIES:
+                if code == self.county.lower().replace(' ', '_'):
+                    return name
+            # If not found in choices, return as-is (for legacy data)
+            return self.county
+        return ""
     
     def can_add_farm(self):
         """Check if company can add another farm based on subscription."""

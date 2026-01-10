@@ -18,6 +18,8 @@ import {
   Leaf
 } from 'lucide-react';
 import Dashboard from './components/Dashboard';
+import CompanySettings from './components/CompanySettings';
+import Profile from './components/Profile';
 import Farms from './components/Farms';
 import Fields from './components/Fields';
 import FarmModal from './components/FarmModal';
@@ -510,6 +512,7 @@ function App() {
     { id: 'harvests', label: 'Harvests', icon: Wheat },
     { id: 'reports', label: 'Reports', icon: FileText },
     { id: 'team', label: 'Team', icon: Users },
+    { id: 'company', label: 'Company Settings', icon: Building2 },
   ];
 
   // Get user initials
@@ -553,7 +556,13 @@ function App() {
             <div className="p-3 border-b border-gray-200">
               <div className="relative">
                 <button
-                  onClick={() => setShowCompanyMenu(!showCompanyMenu)}
+                  onClick={() => {
+                    if (companies.length > 1) {
+                      setShowCompanyMenu(!showCompanyMenu);
+                    } else {
+                      setCurrentView('company');  // <-- Navigate to company settings
+                    }
+                  }}
                   className="w-full flex items-center gap-2 px-3 py-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
                 >
                   <Building2 className="w-4 h-4 text-gray-500" />
@@ -632,6 +641,7 @@ function App() {
                     <button
                       onClick={() => {
                         setShowUserMenu(false);
+                        setCurrentView('profile');
                         // Navigate to profile/settings when implemented
                       }}
                       className="w-full flex items-center gap-2 px-3 py-2 hover:bg-gray-50 text-left text-sm text-gray-700"
@@ -642,6 +652,7 @@ function App() {
                     <button
                       onClick={() => {
                         setShowUserMenu(false);
+                        setCurrentView('company');
                         // Navigate to settings when implemented
                       }}
                       className="w-full flex items-center gap-2 px-3 py-2 hover:bg-gray-50 text-left text-sm text-gray-700"
@@ -772,6 +783,20 @@ function App() {
 
             {currentView === 'team' && (
               <TeamManagement />
+            )}
+
+            {currentView === 'company' && (
+              <div className="p-6">
+                <CompanySettings 
+                  onBack={() => setCurrentView('dashboard')}
+                />
+              </div>
+            )}
+
+            {currentView === 'profile' && (
+              <div className="p-6">
+                <Profile onBack={() => setCurrentView('dashboard')} />
+              </div>
             )}
 
             {currentView === 'water' && (
