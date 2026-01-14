@@ -15,6 +15,14 @@ from .views import (
     nitrogen_summary, nitrogen_export,
 )
 
+from .audit_views import (
+    audit_log_list,
+    audit_log_detail,
+    audit_log_filters,
+    audit_log_export,
+    audit_log_statistics,
+)
+
 # Import auth views
 from .auth_views import (
     register, login, logout, refresh_token,
@@ -118,4 +126,10 @@ urlpatterns = [
     path('onboarding/complete/', complete_onboarding, name='onboarding-complete'),
     path('onboarding/skip/', skip_onboarding, name='onboarding-skip'),
     path('onboarding/reset/', reset_onboarding, name='onboarding-reset'),
+
+    path('audit-logs/', audit_log_list, name='audit-log-list'),
+    path('audit-logs/filters/', audit_log_filters, name='audit-log-filters'),
+    path('audit-logs/export/', audit_log_export, name='audit-log-export'),
+    path('audit-logs/statistics/', audit_log_statistics, name='audit-log-statistics'),
+    path('audit-logs/<int:pk>/', audit_log_detail, name='audit-log-detail'),
 ]

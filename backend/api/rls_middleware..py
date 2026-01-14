@@ -3,9 +3,6 @@ Middleware to set the current company ID for Row-Level Security.
 
 This middleware runs on every request and tells PostgreSQL which company
 the current user belongs to. RLS policies then use this to filter data.
-
-NOTE: Uses set_config() function which works in PostgreSQL 9.2+ without
-needing custom_variable_classes configuration.
 """
 
 from django.db import connection
@@ -38,19 +35,17 @@ class RowLevelSecurityMiddleware:
         return response
     
     def _set_company_context(self, company_id):
-        """Set the RLS context variable in PostgreSQL using set_config()."""
+        """Set the RLS context variable in PostgreSQL."""
         with connection.cursor() as cursor:
-            # Use set_config() function - works without custom_variable_classes
-            # Third parameter 'false' means it's session-level (not just current transaction)
             cursor.execute(
-                "SELECT set_config('app.current_company_id', %s, false)",
+                "SET app.current_company_id = %s",
                 [str(company_id)]
             )
     
     def _clear_company_context(self):
         """Clear the RLS context variable."""
         with connection.cursor() as cursor:
-            cursor.execute("SELECT set_config('app.current_company_id', '', false)")
+            cursor.execute("SET app.current_company_id = ''")
 
 
 class RLSContextManager:
@@ -63,7 +58,7 @@ class RLSContextManager:
     - Django shell operations
     
     Usage:
-        from api.rls_middleware import RLSContextManager
+        from api.middleware import RLSContextManager
         
         with RLSContextManager(company_id=123):
             # All queries here are filtered to company 123
@@ -76,14 +71,14 @@ class RLSContextManager:
     def __enter__(self):
         with connection.cursor() as cursor:
             cursor.execute(
-                "SELECT set_config('app.current_company_id', %s, false)",
+                "SET app.current_company_id = %s",
                 [str(self.company_id)]
             )
         return self
     
     def __exit__(self, exc_type, exc_val, exc_tb):
         with connection.cursor() as cursor:
-            cursor.execute("SELECT set_config('app.current_company_id', '', false)")
+            cursor.execute("SET app.current_company_id = ''")
         return False
 
 
@@ -96,7 +91,7 @@ def set_rls_company(company_id):
     """
     with connection.cursor() as cursor:
         cursor.execute(
-            "SELECT set_config('app.current_company_id', %s, false)",
+            "SET app.current_company_id = %s",
             [str(company_id)]
         )
 
@@ -104,4 +99,4 @@ def set_rls_company(company_id):
 def clear_rls_company():
     """Clear the RLS company context."""
     with connection.cursor() as cursor:
-        cursor.execute("SELECT set_config('app.current_company_id', '', false)")
+        cursor.execute("SET app.current_company_id = ''")

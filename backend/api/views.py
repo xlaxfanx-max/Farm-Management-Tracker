@@ -6,7 +6,7 @@ from datetime import datetime, timedelta, date
 from decimal import Decimal
 from django.db.models import Sum, Avg, Count, F, Q
 from django.db.models.functions import Coalesce
-from rest_framework import viewsets, filters, status
+from rest_framework import viewsets, filters, status, serializers
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
@@ -41,15 +41,58 @@ from .serializers import (
     NutrientApplicationSerializer, NutrientApplicationListSerializer,
     NutrientPlanSerializer, NutrientPlanListSerializer,
 )
-class FarmViewSet(viewsets.ModelViewSet):
+
+# Audit logging mixin for automatic activity tracking
+from .audit_utils import AuditLogMixin
+
+
+# =============================================================================
+# HELPER: Company validation for RLS
+# =============================================================================
+
+def get_user_company(user):
+    """Helper to safely get user's current company."""
+    if hasattr(user, 'current_company') and user.current_company:
+        return user.current_company
+    return None
+
+
+def require_company(user):
+    """Raise validation error if user has no company."""
+    company = get_user_company(user)
+    if not company:
+        raise serializers.ValidationError(
+            "You must be associated with a company to perform this action."
+        )
+    return company
+
+
+class FarmViewSet(AuditLogMixin, viewsets.ModelViewSet):
     """
-    API endpoint for managing farms
+    API endpoint for managing farms.
+    
+    RLS NOTES:
+    - get_queryset filters by company (defense in depth with RLS)
+    - perform_create sets company_id (REQUIRED for RLS INSERT)
     """
-    queryset = Farm.objects.filter(active=True)
     serializer_class = FarmSerializer
+    permission_classes = [IsAuthenticated]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['name', 'farm_number', 'owner_name', 'county']
     ordering_fields = ['name', 'created_at']
+    
+    def get_queryset(self):
+        """Filter farms by current user's company."""
+        queryset = Farm.objects.filter(active=True)
+        company = get_user_company(self.request.user)
+        if company:
+            queryset = queryset.filter(company=company)
+        return queryset
+    
+    def perform_create(self, serializer):
+        """Set company when creating a new farm - REQUIRED FOR RLS."""
+        company = require_company(self.request.user)
+        serializer.save(company=company)
     
     @action(detail=True, methods=['get'])
     def fields(self, request, pk=None):
@@ -113,15 +156,27 @@ class FarmViewSet(viewsets.ModelViewSet):
             'total_parcels': farm.parcels.count()
         })
         
-class FieldViewSet(viewsets.ModelViewSet):
+class FieldViewSet(AuditLogMixin, viewsets.ModelViewSet):
     """
-    API endpoint for managing fields
+    API endpoint for managing fields.
+    
+    RLS NOTES:
+    - Fields inherit company from their Farm
+    - get_queryset filters by company through farm relationship
     """
-    queryset = Field.objects.filter(active=True)
     serializer_class = FieldSerializer
+    permission_classes = [IsAuthenticated]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['name', 'field_number', 'current_crop', 'county']
     ordering_fields = ['name', 'total_acres', 'created_at']
+    
+    def get_queryset(self):
+        """Filter fields by current user's company through farm."""
+        queryset = Field.objects.filter(active=True).select_related('farm')
+        company = get_user_company(self.request.user)
+        if company:
+            queryset = queryset.filter(farm__company=company)
+        return queryset
     
     @action(detail=True, methods=['get'])
     def applications(self, request, pk=None):
@@ -131,7 +186,7 @@ class FieldViewSet(viewsets.ModelViewSet):
         serializer = PesticideApplicationSerializer(applications, many=True)
         return Response(serializer.data)
     
-class FarmParcelViewSet(viewsets.ModelViewSet):
+class FarmParcelViewSet(AuditLogMixin, viewsets.ModelViewSet):
     serializer_class = FarmParcelSerializer
     permission_classes = [IsAuthenticated]
     
@@ -151,7 +206,7 @@ class FarmParcelViewSet(viewsets.ModelViewSet):
         return queryset
 
 
-class PesticideProductViewSet(viewsets.ModelViewSet):
+class PesticideProductViewSet(AuditLogMixin, viewsets.ModelViewSet):
     """
     API endpoint for managing pesticide products
     """
@@ -321,27 +376,41 @@ class PesticideProductViewSet(viewsets.ModelViewSet):
         return response
 
 
-class PesticideApplicationViewSet(viewsets.ModelViewSet):
+class PesticideApplicationViewSet(AuditLogMixin, viewsets.ModelViewSet):
     """
-    API endpoint for managing pesticide applications
+    API endpoint for managing pesticide applications.
+    
+    RLS NOTES:
+    - Applications inherit company through field->farm relationship
+    - get_queryset filters by company
     """
-    queryset = PesticideApplication.objects.all()
     serializer_class = PesticideApplicationSerializer
+    permission_classes = [IsAuthenticated]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['field__name', 'product__product_name', 'applicator_name']
     ordering_fields = ['application_date', 'created_at']
     
+    def get_queryset(self):
+        """Filter applications by current user's company through field->farm."""
+        queryset = PesticideApplication.objects.select_related(
+            'field', 'field__farm', 'product'
+        )
+        company = get_user_company(self.request.user)
+        if company:
+            queryset = queryset.filter(field__farm__company=company)
+        return queryset
+    
     @action(detail=False, methods=['get'])
     def pending(self, request):
         """Get all pending applications"""
-        pending = self.queryset.filter(status='pending_signature')
+        pending = self.get_queryset().filter(status='pending_signature')
         serializer = self.get_serializer(pending, many=True)
         return Response(serializer.data)
     
     @action(detail=False, methods=['get'])
     def ready_for_pur(self, request):
         """Get all complete applications ready for PUR submission"""
-        ready = self.queryset.filter(status='complete', submitted_to_pur=False)
+        ready = self.get_queryset().filter(status='complete', submitted_to_pur=False)
         serializer = self.get_serializer(ready, many=True)
         return Response(serializer.data)
     
@@ -931,15 +1000,27 @@ class PesticideApplicationViewSet(viewsets.ModelViewSet):
         })
 
 
-class WaterSourceViewSet(viewsets.ModelViewSet):
+class WaterSourceViewSet(AuditLogMixin, viewsets.ModelViewSet):
     """
-    API endpoint for managing water sources
+    API endpoint for managing water sources.
+    
+    RLS NOTES:
+    - Water sources belong to farms, which have company FK
+    - get_queryset filters by company through farm
     """
-    queryset = WaterSource.objects.filter(active=True)
     serializer_class = WaterSourceSerializer
+    permission_classes = [IsAuthenticated]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['name', 'source_type', 'farm__name']
     ordering_fields = ['name', 'created_at']
+    
+    def get_queryset(self):
+        """Filter water sources by current user's company through farm."""
+        queryset = WaterSource.objects.filter(active=True).select_related('farm')
+        company = get_user_company(self.request.user)
+        if company:
+            queryset = queryset.filter(farm__company=company)
+        return queryset
     
     @action(detail=True, methods=['get'])
     def tests(self, request, pk=None):
@@ -952,24 +1033,31 @@ class WaterSourceViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'])
     def overdue(self, request):
         """Get all water sources with overdue tests"""
-        overdue_sources = [ws for ws in self.queryset if ws.is_test_overdue()]
+        overdue_sources = [ws for ws in self.get_queryset() if ws.is_test_overdue()]
         serializer = self.get_serializer(overdue_sources, many=True)
         return Response(serializer.data)
 
 
-class WaterTestViewSet(viewsets.ModelViewSet):
+class WaterTestViewSet(AuditLogMixin, viewsets.ModelViewSet):
     """
-    API endpoint for managing water tests
+    API endpoint for managing water tests.
+    
+    RLS NOTES:
+    - Water tests inherit company through water_source->farm relationship
     """
-    queryset = WaterTest.objects.all()
     serializer_class = WaterTestSerializer
+    permission_classes = [IsAuthenticated]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['water_source__name', 'lab_name', 'status']
     ordering_fields = ['test_date', 'created_at']
 
     def get_queryset(self):
-        """Allow filtering by water_source"""
-        queryset = super().get_queryset()
+        """Filter water tests by company through water_source->farm."""
+        queryset = WaterTest.objects.select_related('water_source', 'water_source__farm')
+        company = get_user_company(self.request.user)
+        if company:
+            queryset = queryset.filter(water_source__farm__company=company)
+        
         water_source_id = self.request.query_params.get('water_source', None)
         if water_source_id:
             queryset = queryset.filter(water_source_id=water_source_id)
@@ -985,13 +1073,14 @@ class WaterTestViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'])
     def failed(self, request):
         """Get all failed tests"""
-        failed = self.queryset.filter(status='fail')
+        failed = self.get_queryset().filter(status='fail')
         serializer = self.get_serializer(failed, many=True)
         return Response(serializer.data)
     
 from rest_framework.decorators import api_view
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def report_statistics(request):
     """Get statistics for the reports dashboard"""
     from django.db.models import Sum, Count
@@ -1001,8 +1090,11 @@ def report_statistics(request):
     end_date = request.query_params.get('end_date')
     farm_id = request.query_params.get('farm_id')
     
-    # Build base queryset
+    # Build base queryset with company filter
+    company = get_user_company(request.user)
     queryset = PesticideApplication.objects.all()
+    if company:
+        queryset = queryset.filter(field__farm__company=company)
     
     if start_date:
         queryset = queryset.filter(application_date__gte=start_date)
@@ -1073,12 +1165,16 @@ def report_statistics(request):
 # BUYER VIEWSET
 # -----------------------------------------------------------------------------
 
-class BuyerViewSet(viewsets.ModelViewSet):
+class BuyerViewSet(AuditLogMixin, viewsets.ModelViewSet):
     """
     CRUD operations for Buyers (packing houses, processors, etc.)
+    
+    NOTE: Buyer is SHARED data (no company FK per architecture doc).
+    Consider adding company FK in future for multi-tenant isolation.
     """
     queryset = Buyer.objects.all()
     serializer_class = BuyerSerializer
+    permission_classes = [IsAuthenticated]
     
     def get_queryset(self):
         queryset = Buyer.objects.all()
@@ -1134,12 +1230,16 @@ class BuyerViewSet(viewsets.ModelViewSet):
 # LABOR CONTRACTOR VIEWSET
 # -----------------------------------------------------------------------------
 
-class LaborContractorViewSet(viewsets.ModelViewSet):
+class LaborContractorViewSet(AuditLogMixin, viewsets.ModelViewSet):
     """
     CRUD operations for Labor Contractors.
+    
+    NOTE: LaborContractor is SHARED data (no company FK per architecture doc).
+    Consider adding company FK in future for multi-tenant isolation.
     """
     queryset = LaborContractor.objects.all()
     serializer_class = LaborContractorSerializer
+    permission_classes = [IsAuthenticated]
     
     def get_queryset(self):
         queryset = LaborContractor.objects.all()
@@ -1212,17 +1312,26 @@ class LaborContractorViewSet(viewsets.ModelViewSet):
 # HARVEST VIEWSET
 # -----------------------------------------------------------------------------
 
-class HarvestViewSet(viewsets.ModelViewSet):
+class HarvestViewSet(AuditLogMixin, viewsets.ModelViewSet):
     """
     CRUD operations for Harvests with PHI checking and statistics.
+    
+    RLS NOTES:
+    - Harvests inherit company through field->farm relationship
+    - get_queryset filters by company
     """
-    queryset = Harvest.objects.all()
     serializer_class = HarvestSerializer
+    permission_classes = [IsAuthenticated]
     
     def get_queryset(self):
         queryset = Harvest.objects.select_related(
             'field', 'field__farm'
         ).prefetch_related('loads', 'labor_records')
+        
+        # Filter by company
+        company = get_user_company(self.request.user)
+        if company:
+            queryset = queryset.filter(field__farm__company=company)
         
         # Filter by field
         field_id = self.request.query_params.get('field')
@@ -1466,17 +1575,25 @@ class HarvestViewSet(viewsets.ModelViewSet):
 # HARVEST LOAD VIEWSET
 # -----------------------------------------------------------------------------
 
-class HarvestLoadViewSet(viewsets.ModelViewSet):
+class HarvestLoadViewSet(AuditLogMixin, viewsets.ModelViewSet):
     """
     CRUD operations for Harvest Loads.
+    
+    RLS NOTES:
+    - Loads inherit company through harvest->field->farm relationship
     """
-    queryset = HarvestLoad.objects.all()
     serializer_class = HarvestLoadSerializer
+    permission_classes = [IsAuthenticated]
     
     def get_queryset(self):
         queryset = HarvestLoad.objects.select_related(
-            'harvest', 'harvest__field', 'buyer'
+            'harvest', 'harvest__field', 'harvest__field__farm', 'buyer'
         )
+        
+        # Filter by company
+        company = get_user_company(self.request.user)
+        if company:
+            queryset = queryset.filter(harvest__field__farm__company=company)
         
         # Filter by harvest
         harvest_id = self.request.query_params.get('harvest')
@@ -1536,17 +1653,25 @@ class HarvestLoadViewSet(viewsets.ModelViewSet):
 # HARVEST LABOR VIEWSET
 # -----------------------------------------------------------------------------
 
-class HarvestLaborViewSet(viewsets.ModelViewSet):
+class HarvestLaborViewSet(AuditLogMixin, viewsets.ModelViewSet):
     """
     CRUD operations for Harvest Labor records.
+    
+    RLS NOTES:
+    - Labor records inherit company through harvest->field->farm relationship
     """
-    queryset = HarvestLabor.objects.all()
     serializer_class = HarvestLaborSerializer
+    permission_classes = [IsAuthenticated]
     
     def get_queryset(self):
         queryset = HarvestLabor.objects.select_related(
-            'harvest', 'harvest__field', 'contractor'
+            'harvest', 'harvest__field', 'harvest__field__farm', 'contractor'
         )
+        
+        # Filter by company
+        company = get_user_company(self.request.user)
+        if company:
+            queryset = queryset.filter(harvest__field__farm__company=company)
         
         # Filter by harvest
         harvest_id = self.request.query_params.get('harvest')
@@ -1932,7 +2057,7 @@ def get_current_reporting_period():
 # WELL VIEWSET
 # -----------------------------------------------------------------------------
 
-class WellViewSet(viewsets.ModelViewSet):
+class WellViewSet(AuditLogMixin, viewsets.ModelViewSet):
     """
     ViewSet for Well model.
     Provides CRUD operations plus custom actions for well management.
@@ -2093,7 +2218,7 @@ class WellViewSet(viewsets.ModelViewSet):
 # WELL READING VIEWSET
 # -----------------------------------------------------------------------------
 
-class WellReadingViewSet(viewsets.ModelViewSet):
+class WellReadingViewSet(AuditLogMixin, viewsets.ModelViewSet):
     """ViewSet for WellReading model."""
     
     queryset = WellReading.objects.select_related(
@@ -2110,12 +2235,14 @@ class WellReadingViewSet(viewsets.ModelViewSet):
     
     def get_queryset(self):
         """Filter by company and optional parameters."""
-        queryset = super().get_queryset()
+        queryset = WellReading.objects.select_related(
+            'water_source', 'water_source__farm'
+        )
         
-        user = self.request.user
-        if hasattr(user, 'current_company') and user.current_company:
+        company = get_user_company(self.request.user)
+        if company:
             queryset = queryset.filter(
-                water_source__farm__company=user.current_company
+                water_source__farm__company=company
             )
         
         # Filter by well
@@ -2171,11 +2298,11 @@ class WellReadingViewSet(viewsets.ModelViewSet):
 # METER CALIBRATION VIEWSET
 # -----------------------------------------------------------------------------
 
-class MeterCalibrationViewSet(viewsets.ModelViewSet):
+class MeterCalibrationViewSet(AuditLogMixin, viewsets.ModelViewSet):
     """ViewSet for MeterCalibration model."""
     
     queryset = MeterCalibration.objects.select_related(
-        'well', 'water_source', 'water_source__farm'
+        'water_source', 'water_source__farm'
     ).all()
     permission_classes = [IsAuthenticated]
     
@@ -2185,12 +2312,14 @@ class MeterCalibrationViewSet(viewsets.ModelViewSet):
         return MeterCalibrationSerializer
     
     def get_queryset(self):
-        queryset = super().get_queryset()
+        queryset = MeterCalibration.objects.select_related(
+            'water_source', 'water_source__farm'
+        )
         
-        user = self.request.user
-        if hasattr(user, 'current_company') and user.current_company:
+        company = get_user_company(self.request.user)
+        if company:
             queryset = queryset.filter(
-                water_source__farm__company=user.current_company
+                water_source__farm__company=company
             )
         
         well_id = self.request.query_params.get('well')
@@ -2218,7 +2347,7 @@ class MeterCalibrationViewSet(viewsets.ModelViewSet):
 # WATER ALLOCATION VIEWSET
 # -----------------------------------------------------------------------------
 
-class WaterAllocationViewSet(viewsets.ModelViewSet):
+class WaterAllocationViewSet(AuditLogMixin, viewsets.ModelViewSet):
     """ViewSet for WaterAllocation model."""
     
     queryset = WaterAllocation.objects.select_related(
@@ -2295,7 +2424,7 @@ class WaterAllocationViewSet(viewsets.ModelViewSet):
 # EXTRACTION REPORT VIEWSET
 # -----------------------------------------------------------------------------
 
-class ExtractionReportViewSet(viewsets.ModelViewSet):
+class ExtractionReportViewSet(AuditLogMixin, viewsets.ModelViewSet):
     """ViewSet for ExtractionReport model."""
     
     queryset = ExtractionReport.objects.select_related(
@@ -2455,7 +2584,7 @@ class ExtractionReportViewSet(viewsets.ModelViewSet):
 # IRRIGATION EVENT VIEWSET
 # -----------------------------------------------------------------------------
 
-class IrrigationEventViewSet(viewsets.ModelViewSet):
+class IrrigationEventViewSet(AuditLogMixin, viewsets.ModelViewSet):
     """ViewSet for IrrigationEvent model."""
     
     queryset = IrrigationEvent.objects.select_related(
@@ -2693,7 +2822,7 @@ def sgma_dashboard(request):
 # NUTRIENT MANAGEMENT VIEWS
 # =============================================================================
 
-class FertilizerProductViewSet(viewsets.ModelViewSet):
+class FertilizerProductViewSet(AuditLogMixin, viewsets.ModelViewSet):
     """API endpoint for fertilizer products."""
     serializer_class = FertilizerProductSerializer
     permission_classes = [IsAuthenticated]
@@ -2748,7 +2877,7 @@ class FertilizerProductViewSet(viewsets.ModelViewSet):
         return Response({'created': created, 'existing': existing})
 
 
-class NutrientApplicationViewSet(viewsets.ModelViewSet):
+class NutrientApplicationViewSet(AuditLogMixin, viewsets.ModelViewSet):
     """API endpoint for nutrient applications."""
     permission_classes = [IsAuthenticated]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
@@ -2816,7 +2945,7 @@ class NutrientApplicationViewSet(viewsets.ModelViewSet):
         return Response(results)
 
 
-class NutrientPlanViewSet(viewsets.ModelViewSet):
+class NutrientPlanViewSet(AuditLogMixin, viewsets.ModelViewSet):
     """API endpoint for nitrogen management plans."""
     permission_classes = [IsAuthenticated]
     filter_backends = [filters.OrderingFilter]

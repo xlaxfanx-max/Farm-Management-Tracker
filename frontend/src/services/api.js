@@ -208,8 +208,23 @@ export const invitationsAPI = {
 // =============================================================================
 
 export const auditAPI = {
-  // List audit logs
+  // List audit logs with filtering and pagination
   list: (params = {}) => api.get('/audit-logs/', { params }),
+  
+  // Get single audit log entry
+  get: (id) => api.get(`/audit-logs/${id}/`),
+  
+  // Get filter options (users, actions, model names)
+  getFilters: () => api.get('/audit-logs/filters/'),
+  
+  // Export audit logs to Excel
+  export: (params = {}) => api.get('/audit-logs/export/', { 
+    params, 
+    responseType: 'blob' 
+  }),
+  
+  // Get statistics for dashboard
+  getStatistics: (params = {}) => api.get('/audit-logs/statistics/', { params }),
 };
 
 // =============================================================================

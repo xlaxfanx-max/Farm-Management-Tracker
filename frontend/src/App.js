@@ -15,7 +15,8 @@ import {
   ChevronDown,
   User,
   Users,
-  Leaf
+  Leaf,
+  Activity
 } from 'lucide-react';
 import Dashboard from './components/Dashboard';
 import CompanySettings from './components/CompanySettings';
@@ -44,6 +45,8 @@ import WellSourceModal from './components/WellSourceModal';
 import NutrientManagement from './components/NutrientManagement';
 import NutrientApplicationModal from './components/NutrientApplicationModal';
 import FertilizerProductModal from './components/FertilizerProductModal';
+
+import AuditLogViewer from './components/AuditLogViewer';
 
 // NEW: Import authentication and team management
 import { useAuth } from './contexts/AuthContext';
@@ -511,6 +514,7 @@ function App() {
     { id: 'nutrients', label: 'Nutrients', icon: Leaf },
     { id: 'harvests', label: 'Harvests', icon: Wheat },
     { id: 'reports', label: 'Reports', icon: FileText },
+    { id: 'activity', label: 'Activity Log', icon: Activity },
     { id: 'team', label: 'Team', icon: Users },
     { id: 'company', label: 'Company Settings', icon: Building2 },
   ];
@@ -847,6 +851,12 @@ function App() {
                     }
                   }}
                 />
+              </div>
+            )}
+
+            {currentView === 'activity' && (
+              <div className="p-6">
+                <AuditLogViewer />
               </div>
             )}
           </>
