@@ -1,15 +1,17 @@
 // frontend/src/components/Reports.js - PUR + Nitrogen/ILRP Reports
 
 import React, { useState, useEffect } from 'react';
-import { 
-  FileText, Download, Filter, Calendar, MapPin, 
+import {
+  FileText, Download, Filter, Calendar, MapPin,
   TrendingUp, AlertCircle, CheckCircle, Clock,
   BarChart3, FileSpreadsheet, AlertTriangle, Shield,
   Leaf
 } from 'lucide-react';
 import { reportsAPI, nitrogenReportsAPI, downloadFile } from '../services/api';
+import { useData } from '../contexts/DataContext';
 
-const Reports = ({ farms, fields, applications }) => {
+const Reports = () => {
+  const { farms, fields, applications } = useData();
   // Tab state
   const [activeTab, setActiveTab] = useState('pur'); // 'pur' or 'nitrogen'
   

@@ -1,43 +1,43 @@
 /* ==========================================================================
-   Farm Tracker - Onboarding Wizard Styles
-   A refined, professional design with agricultural warmth
+   Grove Master - Onboarding Wizard Styles
+   A refined, professional design with citrus grove warmth
    ========================================================================== */
 
 /* Design Tokens */
 :root {
-  /* Color Palette - Earthy, professional agriculture */
-  --onboard-primary: #1a5f2a;
-  --onboard-primary-light: #2d8a3e;
-  --onboard-primary-dark: #0f3d1a;
-  --onboard-accent: #d97706;
-  --onboard-accent-light: #fbbf24;
-  --onboard-success: #059669;
+  /* Color Palette - Grove Master Brand Colors */
+  --onboard-primary: #2D5016;
+  --onboard-primary-light: #4A7A2A;
+  --onboard-primary-dark: #1E3610;
+  --onboard-accent: #E8791D;
+  --onboard-accent-light: #F4A934;
+  --onboard-success: #4A7A2A;
   --onboard-error: #dc2626;
-  
-  /* Neutrals */
-  --onboard-bg: #fafaf9;
-  --onboard-surface: #ffffff;
-  --onboard-sidebar-bg: linear-gradient(180deg, #1a5f2a 0%, #0f3d1a 100%);
-  --onboard-text: #1c1917;
-  --onboard-text-secondary: #57534e;
+
+  /* Neutrals - Grove Master Brand */
+  --onboard-bg: #FFFEF7;
+  --onboard-surface: #FDFCF8;
+  --onboard-sidebar-bg: linear-gradient(180deg, #2D5016 0%, #1E3610 100%);
+  --onboard-text: #1C1C1C;
+  --onboard-text-secondary: #4A4A4A;
   --onboard-text-muted: #a8a29e;
   --onboard-border: #e7e5e4;
-  --onboard-border-focus: #1a5f2a;
-  
+  --onboard-border-focus: #2D5016;
+
   /* Shadows */
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
   --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  
-  /* Typography */
-  --font-display: 'DM Serif Display', Georgia, serif;
+
+  /* Typography - Grove Master Brand */
+  --font-display: 'Fraunces', Georgia, serif;
   --font-body: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-  
+
   /* Spacing */
   --wizard-sidebar-width: 280px;
   --wizard-max-width: 720px;
-  
+
   /* Transitions */
   --transition-fast: 150ms ease;
   --transition-base: 250ms ease;
@@ -1205,4 +1205,4 @@
    Font Loading
    ========================================================================== */
 
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Serif+Display&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Fraunces:ital,opsz,wght@0,9..144,100..900;1,9..144,100..900&display=swap');

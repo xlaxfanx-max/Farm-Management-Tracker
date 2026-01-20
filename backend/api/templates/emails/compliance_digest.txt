@@ -1,0 +1,55 @@
+Hi {{ user_name }},
+
+Here's your compliance summary. You have {{ total_items }} item{% if total_items != 1 %}s{% endif %} that need your attention.
+
+{% if critical_count > 0 %}
+!!! {{ critical_count }} CRITICAL ALERT{% if critical_count != 1 %}S{% endif %} REQUIRE IMMEDIATE ATTENTION !!!
+
+{% endif %}
+{% if alerts %}
+ACTIVE ALERTS
+-------------
+{% for alert in alerts %}
+[{{ alert.priority|upper }}] {{ alert.title }}
+{{ alert.message }}
+
+{% endfor %}
+{% endif %}
+
+{% if deadlines %}
+UPCOMING DEADLINES
+------------------
+{% for deadline in deadlines %}
+[{% if deadline.status == 'overdue' %}OVERDUE{% else %}DUE SOON{% endif %}] {{ deadline.name }}
+Due: {{ deadline.due_date|date:"F j, Y" }}
+
+{% endfor %}
+{% endif %}
+
+{% if expiring_licenses %}
+EXPIRING LICENSES
+-----------------
+{% for license in expiring_licenses %}
+{{ license.get_license_type_display }}{% if license.user %} - {{ license.user.get_full_name }}{% endif %}
+#{{ license.license_number }} - Expires: {{ license.expiration_date|date:"F j, Y" }}
+
+{% endfor %}
+{% endif %}
+
+{% if expiring_training %}
+EXPIRING TRAINING
+-----------------
+{% for training in expiring_training %}
+{{ training.trainee_name }}{% if training.trainee_user %} ({{ training.trainee_user.get_full_name }}){% endif %}
+{{ training.get_training_type_display }} - Expires: {{ training.expiration_date|date:"F j, Y" }}
+
+{% endfor %}
+{% endif %}
+
+View your compliance dashboard: {{ dashboard_url }}
+
+You're receiving this digest based on your notification preferences.
+Visit your settings to adjust the frequency or disable these emails.
+
+Best regards,
+Grove Master Team

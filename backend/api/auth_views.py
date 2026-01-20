@@ -1,5 +1,5 @@
 # =============================================================================
-# AUTHENTICATION VIEWS FOR FARM TRACKER
+# AUTHENTICATION VIEWS FOR GROVE MASTER
 # =============================================================================
 #
 # This file contains all authentication-related API endpoints.
@@ -594,17 +594,19 @@ def invite_user(request):
         changes={'role': role_codename},
         ip_address=get_client_ip(request),
     )
-    
-    # TODO: Send invitation email
-    # send_invitation_email(invitation)
-    
+
+    # Send invitation email
+    from .email_service import EmailService
+    email_sent = EmailService.send_invitation_email(invitation)
+
     return Response({
         'message': f'Invitation sent to {email}',
+        'email_sent': email_sent,
         'invitation': {
             'id': invitation.id,
             'email': invitation.email,
             'role': role.name,
-            'token': str(invitation.token),  # For testing - remove in production
+            'token': str(invitation.token) if not email_sent else None,  # Only expose token if email failed
             'expires_at': invitation.expires_at,
         }
     }, status=status.HTTP_201_CREATED)
@@ -783,7 +785,135 @@ def get_client_ip(request):
 def available_roles(request):
     """Get list of roles available for assignment"""
     from .models import Role
-    
+
     roles = Role.objects.exclude(codename='owner').order_by('name')
     data = [{'id': r.id, 'name': r.name, 'codename': r.codename} for r in roles]
     return Response(data)
+
+
+# =============================================================================
+# PASSWORD RESET ENDPOINTS
+# =============================================================================
+
+import secrets
+from django.core.cache import cache
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def request_password_reset(request):
+    """
+    Request a password reset email.
+
+    POST /api/auth/forgot-password/
+    {
+        "email": "user@example.com"
+    }
+    """
+    email = request.data.get('email', '').lower().strip()
+
+    if not email:
+        return Response(
+            {'error': 'Email is required'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    # Always return success to prevent email enumeration
+    user = User.objects.filter(email=email).first()
+
+    if user:
+        # Generate secure token
+        reset_token = secrets.token_urlsafe(32)
+
+        # Store token in cache with 24 hour expiry
+        cache_key = f'password_reset_{reset_token}'
+        cache.set(cache_key, user.id, timeout=86400)  # 24 hours
+
+        # Send email
+        from .email_service import EmailService
+        EmailService.send_password_reset_email(user, reset_token)
+
+    return Response({
+        'message': 'If an account exists with this email, you will receive a password reset link.'
+    })
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def reset_password(request):
+    """
+    Reset password using token from email.
+
+    POST /api/auth/reset-password/
+    {
+        "token": "reset-token-from-email",
+        "password": "newpassword"
+    }
+    """
+    token = request.data.get('token')
+    password = request.data.get('password')
+
+    if not token or not password:
+        return Response(
+            {'error': 'Token and password are required'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    if len(password) < 8:
+        return Response(
+            {'error': 'Password must be at least 8 characters'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    # Look up token in cache
+    cache_key = f'password_reset_{token}'
+    user_id = cache.get(cache_key)
+
+    if not user_id:
+        return Response(
+            {'error': 'Invalid or expired reset token'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    try:
+        user = User.objects.get(id=user_id)
+    except User.DoesNotExist:
+        return Response(
+            {'error': 'User not found'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    # Update password
+    user.set_password(password)
+    user.save()
+
+    # Delete used token
+    cache.delete(cache_key)
+
+    # Send confirmation email
+    from .email_service import EmailService
+    EmailService.send_password_changed_email(user)
+
+    return Response({
+        'message': 'Password has been reset successfully. You can now log in with your new password.'
+    })
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def validate_reset_token(request, token):
+    """
+    Validate a password reset token.
+
+    GET /api/auth/reset-password/{token}/
+    """
+    cache_key = f'password_reset_{token}'
+    user_id = cache.get(cache_key)
+
+    if not user_id:
+        return Response(
+            {'valid': False, 'error': 'Invalid or expired reset token'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    return Response({'valid': True})

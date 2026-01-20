@@ -1,0 +1,54 @@
+{% extends "emails/base.html" %}
+
+{% block title %}License Expiration Warning{% endblock %}
+{% block header_title %}License Alert{% endblock %}
+
+{% block content %}
+<p>Hi {{ user_name }},</p>
+
+<p>This is an important notice about a license for <strong>{{ company_name }}</strong>.</p>
+
+{% if urgency == 'critical' %}
+<div style="background-color: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 16px; margin: 20px 0;">
+    <p style="margin: 0; color: #dc2626; font-weight: 600;">
+        {% if days_until_expiry < 0 %}
+        EXPIRED: This license has expired!
+        {% else %}
+        URGENT: This license {{ days_text }}!
+        {% endif %}
+    </p>
+</div>
+{% elif urgency == 'high' %}
+<div style="background-color: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 16px; margin: 20px 0;">
+    <p style="margin: 0; color: #d97706; font-weight: 600;">
+        Important: This license {{ days_text }}
+    </p>
+</div>
+{% endif %}
+
+<div class="info-box">
+    <p><strong>{{ license_type }}</strong></p>
+    <p class="text-muted" style="margin-top: 8px;">
+        <strong>License Holder:</strong> {{ holder_name }}<br>
+        <strong>License Number:</strong> {{ license_number }}<br>
+        <strong>Issuing Authority:</strong> {{ issuing_authority }}<br>
+        <strong>Expiration Date:</strong> {{ expiration_date|date:"F j, Y" }}
+    </p>
+</div>
+
+{% if days_until_expiry >= 0 %}
+<p>
+    Please start the renewal process to ensure continuous compliance. Operating with an expired license may result in violations and fines.
+</p>
+{% else %}
+<p style="color: #dc2626;">
+    <strong>This license has expired.</strong> Please renew immediately. Operating with an expired license is a compliance violation and may result in penalties.
+</p>
+{% endif %}
+
+<div class="btn-container">
+    <a href="{{ license_url }}" class="btn">View License Details</a>
+</div>
+
+<p>Best regards,<br>Grove Master Team</p>
+{% endblock %}

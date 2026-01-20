@@ -18,6 +18,71 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Grove Master Brand Colors */
+:root {
+  --grove-green: #2D5016;
+  --grove-green-light: #4A7A2A;
+  --citrus-orange: #E8791D;
+  --citrus-gold: #F4A934;
+  --cream: #FFFEF7;
+  --warm-white: #FDFCF8;
+  --bark-brown: #3D2914;
+  --text-primary: #1C1C1C;
+  --text-secondary: #4A4A4A;
+
+  /* Status Colors for operational indicators */
+  --status-healthy: #22c55e;
+  --status-attention: #f59e0b;
+  --status-critical: #ef4444;
+  --status-neutral: #6b7280;
+  --status-info: #3b82f6;
+}
+
+/* Grove Master Typography */
+body {
+  font-family: 'DM Sans', sans-serif;
+  background-color: var(--cream);
+  color: var(--text-primary);
+}
+
+h1, h2, h3, h4, h5, h6,
+.font-heading {
+  font-family: 'Fraunces', serif;
+  color: var(--bark-brown);
+}
+
+/* Grove Master Color Utility Classes */
+.bg-grove-green { background-color: var(--grove-green); }
+.bg-grove-green-light { background-color: var(--grove-green-light); }
+.bg-citrus-orange { background-color: var(--citrus-orange); }
+.bg-citrus-gold { background-color: var(--citrus-gold); }
+.bg-cream { background-color: var(--cream); }
+.bg-warm-white { background-color: var(--warm-white); }
+.bg-bark-brown { background-color: var(--bark-brown); }
+
+.text-grove-green { color: var(--grove-green); }
+.text-grove-green-light { color: var(--grove-green-light); }
+.text-citrus-orange { color: var(--citrus-orange); }
+.text-citrus-gold { color: var(--citrus-gold); }
+.text-bark-brown { color: var(--bark-brown); }
+
+.border-grove-green { border-color: var(--grove-green); }
+.border-grove-green-light { border-color: var(--grove-green-light); }
+.border-citrus-orange { border-color: var(--citrus-orange); }
+.border-citrus-gold { border-color: var(--citrus-gold); }
+
+/* Override Tailwind green with Grove Master colors where appropriate */
+.bg-green-600, .bg-green-700 { background-color: var(--grove-green) !important; }
+.bg-green-500 { background-color: var(--grove-green-light) !important; }
+.text-green-600, .text-green-700 { color: var(--grove-green) !important; }
+.text-green-500 { color: var(--grove-green-light) !important; }
+.border-green-600, .border-green-700 { border-color: var(--grove-green) !important; }
+.border-green-500 { border-color: var(--grove-green-light) !important; }
+.ring-green-500 { --tw-ring-color: var(--grove-green-light) !important; }
+.focus\:ring-green-500:focus { --tw-ring-color: var(--grove-green-light) !important; }
+.hover\:bg-green-700:hover { background-color: var(--grove-green) !important; }
+.hover\:bg-green-600:hover { background-color: var(--grove-green-light) !important; }
+
 /* Custom scrollbar styles */
 ::-webkit-scrollbar {
   width: 8px;
@@ -126,8 +191,84 @@ textarea:focus-visible {
   h1 {
     font-size: 1.5rem;
   }
-  
+
   h2 {
     font-size: 1.25rem;
   }
+}
+
+/* Touch-friendly improvements for mobile/field use */
+@media (max-width: 768px) {
+  /* Ensure minimum touch target size of 44px */
+  button,
+  [role="button"],
+  a,
+  input[type="checkbox"],
+  input[type="radio"],
+  select {
+    min-height: 44px;
+  }
+
+  /* Larger tap targets for navigation */
+  nav button,
+  nav a {
+    min-height: 48px;
+    padding: 12px 16px;
+  }
+
+  /* Better spacing for form elements */
+  input,
+  select,
+  textarea {
+    font-size: 16px; /* Prevents iOS zoom on focus */
+    padding: 12px;
+  }
+}
+
+/* Status color utility classes */
+.status-healthy { color: var(--status-healthy); }
+.status-attention { color: var(--status-attention); }
+.status-critical { color: var(--status-critical); }
+.status-neutral { color: var(--status-neutral); }
+.status-info { color: var(--status-info); }
+
+.bg-status-healthy { background-color: var(--status-healthy); }
+.bg-status-attention { background-color: var(--status-attention); }
+.bg-status-critical { background-color: var(--status-critical); }
+.bg-status-neutral { background-color: var(--status-neutral); }
+.bg-status-info { background-color: var(--status-info); }
+
+/* High contrast mode for outdoor readability */
+@media (prefers-contrast: more) {
+  :root {
+    --text-primary: #000000;
+    --text-secondary: #1a1a1a;
+  }
+
+  .border-gray-200 {
+    border-color: #666 !important;
+  }
+
+  .text-gray-500,
+  .text-gray-600 {
+    color: #1a1a1a !important;
+  }
+}
+
+/* Horizontal scrollbar for farm strip */
+.overflow-x-auto::-webkit-scrollbar {
+  height: 6px;
+}
+
+.overflow-x-auto::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.overflow-x-auto::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 3px;
+}
+
+.overflow-x-auto::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
 }

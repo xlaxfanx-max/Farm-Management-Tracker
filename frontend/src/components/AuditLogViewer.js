@@ -272,7 +272,7 @@ const AuditLogViewer = () => {
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Activity Log</h1>
         <p className="text-gray-600 mt-1">
-          Track all changes and actions across your farm management system
+          Track all changes and actions across your grove management system
         </p>
       </div>
 

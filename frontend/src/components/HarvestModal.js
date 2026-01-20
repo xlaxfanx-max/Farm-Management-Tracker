@@ -37,6 +37,7 @@ const HarvestModal = ({
   const [phiLoading, setPhiLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const [saving, setSaving] = useState(false);
+  const [reconciliationStatus, setReconciliationStatus] = useState(null);
 
   // Initialize form when modal opens
   useEffect(() => {
@@ -65,6 +66,10 @@ const HarvestModal = ({
           phi_required_days: harvest.phi_required_days,
           last_application_product: harvest.last_application_product
         });
+        // Set reconciliation status if available
+        if (harvest.bins_reconciliation_status) {
+          setReconciliationStatus(harvest.bins_reconciliation_status);
+        }
       } else {
         // New harvest
         setFormData(prev => ({
@@ -491,6 +496,121 @@ const HarvestModal = ({
               placeholder="Any additional notes..."
             />
           </div>
+
+          {/* Bins Reconciliation Widget - Only show when editing existing harvest */}
+          {harvest && reconciliationStatus && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <Info size={18} className="text-blue-600" />
+                <h3 className="font-medium text-blue-800">Bin Tracking Status</h3>
+              </div>
+
+              <div className="grid grid-cols-3 gap-4 text-sm mb-3">
+                {/* Total Harvest */}
+                <div>
+                  <p className="text-gray-600">Total Harvest</p>
+                  <p className="text-lg font-semibold text-gray-900">
+                    {reconciliationStatus.total_harvest_bins} bins
+                  </p>
+                </div>
+
+                {/* Loads Status */}
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <p className="text-gray-600">In Loads</p>
+                    {reconciliationStatus.loads_status === 'match' && (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                        ✓ Complete
+                      </span>
+                    )}
+                    {reconciliationStatus.loads_status === 'under' && (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
+                        ⚠ Incomplete
+                      </span>
+                    )}
+                    {reconciliationStatus.loads_status === 'over' && (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
+                        ✗ Over
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-lg font-semibold text-gray-900">
+                    {reconciliationStatus.total_load_bins} bins
+                  </p>
+                  {reconciliationStatus.loads_message && (
+                    <p className="text-xs text-gray-600 mt-1">{reconciliationStatus.loads_message}</p>
+                  )}
+                </div>
+
+                {/* Labor Status */}
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <p className="text-gray-600">By Labor</p>
+                    {reconciliationStatus.labor_status === 'match' && (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                        ✓ Complete
+                      </span>
+                    )}
+                    {reconciliationStatus.labor_status === 'under' && (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
+                        ⚠ Incomplete
+                      </span>
+                    )}
+                    {reconciliationStatus.labor_status === 'over' && (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
+                        ✗ Over
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-lg font-semibold text-gray-900">
+                    {reconciliationStatus.total_labor_bins} bins
+                  </p>
+                  {reconciliationStatus.labor_message && (
+                    <p className="text-xs text-gray-600 mt-1">{reconciliationStatus.labor_message}</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Progress Bars */}
+              <div className="space-y-2">
+                {/* Loads Progress */}
+                <div>
+                  <div className="flex justify-between text-xs text-gray-600 mb-1">
+                    <span>Loads Progress</span>
+                    <span>{Math.round((reconciliationStatus.total_load_bins / reconciliationStatus.total_harvest_bins) * 100)}%</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div
+                      className={`h-2 rounded-full transition-all ${
+                        reconciliationStatus.loads_status === 'match' ? 'bg-green-500' :
+                        reconciliationStatus.loads_status === 'over' ? 'bg-red-500' :
+                        'bg-yellow-500'
+                      }`}
+                      style={{width: `${Math.min((reconciliationStatus.total_load_bins / reconciliationStatus.total_harvest_bins) * 100, 100)}%`}}
+                    ></div>
+                  </div>
+                </div>
+
+                {/* Labor Progress */}
+                <div>
+                  <div className="flex justify-between text-xs text-gray-600 mb-1">
+                    <span>Labor Progress</span>
+                    <span>{Math.round((reconciliationStatus.total_labor_bins / reconciliationStatus.total_harvest_bins) * 100)}%</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div
+                      className={`h-2 rounded-full transition-all ${
+                        reconciliationStatus.labor_status === 'match' ? 'bg-green-500' :
+                        reconciliationStatus.labor_status === 'over' ? 'bg-red-500' :
+                        'bg-yellow-500'
+                      }`}
+                      style={{width: `${Math.min((reconciliationStatus.total_labor_bins / reconciliationStatus.total_harvest_bins) * 100, 100)}%`}}
+                    ></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Form Actions */}
           <div className="flex justify-end gap-3 pt-4 border-t">

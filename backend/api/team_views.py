@@ -4,11 +4,12 @@
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from .permissions import HasCompanyAccess
 from rest_framework import status
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, HasCompanyAccess])
 def available_roles(request):
     """Get list of roles available for assignment"""
     from .models import Role
@@ -20,7 +21,7 @@ def available_roles(request):
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, HasCompanyAccess])
 def list_invitations(request):
     """List invitations for current company"""
     from .models import Invitation
@@ -46,7 +47,7 @@ def list_invitations(request):
 
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, HasCompanyAccess])
 def resend_invitation(request, invitation_id):
     """Resend an invitation"""
     from .models import Invitation
@@ -61,14 +62,19 @@ def resend_invitation(request, invitation_id):
     # Extend expiration
     invitation.expires_at = timezone.now() + timedelta(days=7)
     invitation.save()
-    
-    # In production, send email here
-    
-    return Response({'message': 'Invitation resent successfully'})
+
+    # Send invitation email
+    from .email_service import EmailService
+    email_sent = EmailService.send_invitation_email(invitation)
+
+    return Response({
+        'message': 'Invitation resent successfully',
+        'email_sent': email_sent
+    })
 
 
 @api_view(['DELETE'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, HasCompanyAccess])
 def revoke_invitation(request, invitation_id):
     """Revoke/delete an invitation"""
     from .models import Invitation
@@ -83,7 +89,7 @@ def revoke_invitation(request, invitation_id):
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, HasCompanyAccess])
 def company_members(request, company_id):
     """Get members of a company"""
     from .models import CompanyMembership, Company
@@ -116,7 +122,7 @@ def company_members(request, company_id):
 
 
 @api_view(['PUT'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, HasCompanyAccess])
 def update_company_member(request, company_id, member_id):
     """Update a member's role"""
     from .models import CompanyMembership, Company, Role
@@ -149,7 +155,7 @@ def update_company_member(request, company_id, member_id):
 
 
 @api_view(['DELETE'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, HasCompanyAccess])
 def remove_company_member(request, company_id, member_id):
     """Remove a member from company"""
     from .models import CompanyMembership, Company

@@ -7,13 +7,14 @@ import React, { useState, useEffect } from 'react';
 import { X, Plus, Users, AlertTriangle } from 'lucide-react';
 import { harvestLaborAPI, laborContractorsAPI, HARVEST_CONSTANTS } from '../services/api';
 
-const HarvestLaborModal = ({ 
-  isOpen, 
-  onClose, 
-  onSave, 
+const HarvestLaborModal = ({
+  isOpen,
+  onClose,
+  onSave,
   labor = null,
   harvestId,
-  onAddContractor
+  onAddContractor,
+  contractorRefreshTrigger
 }) => {
   const [formData, setFormData] = useState({
     harvest: '',
@@ -39,11 +40,12 @@ const HarvestLaborModal = ({
   const [saving, setSaving] = useState(false);
   const [calculatedCost, setCalculatedCost] = useState(0);
   const [calculatedHours, setCalculatedHours] = useState(0);
+  const [lastLaborForContractor, setLastLaborForContractor] = useState(null);
 
-  // Fetch contractors on mount
+  // Fetch contractors on mount and when contractorRefreshTrigger changes
   useEffect(() => {
     fetchContractors();
-  }, []);
+  }, [contractorRefreshTrigger]);
 
   // Initialize form when modal opens
   useEffect(() => {
@@ -152,10 +154,10 @@ const HarvestLaborModal = ({
   };
 
   // Auto-fill defaults when contractor is selected
-  const handleContractorChange = (e) => {
+  const handleContractorChange = async (e) => {
     const contractorId = e.target.value;
     setFormData(prev => ({ ...prev, contractor: contractorId }));
-    
+
     if (contractorId) {
       const contractor = contractors.find(c => c.id === parseInt(contractorId));
       if (contractor) {
@@ -166,12 +168,24 @@ const HarvestLaborModal = ({
         } else if (formData.pay_type === 'piece_rate' && contractor.default_piece_rate) {
           defaultRate = contractor.default_piece_rate;
         }
-        
+
         setFormData(prev => ({
           ...prev,
           rate: defaultRate || prev.rate,
           training_verified: contractor.food_safety_training_current
         }));
+
+        // Fetch last labor record for this contractor
+        if (!labor) { // Only for new records
+          try {
+            const response = await harvestLaborAPI.getAll({ contractor: contractorId, ordering: '-created_at', limit: 1 });
+            if (response.data.results && response.data.results.length > 0) {
+              setLastLaborForContractor(response.data.results[0]);
+            }
+          } catch (error) {
+            console.error('Error fetching last labor record:', error);
+          }
+        }
       }
     }
   };
@@ -475,6 +489,11 @@ const HarvestLaborModal = ({
                   className="w-full border rounded-lg px-3 py-2"
                   placeholder={formData.pay_type === 'hourly' ? '$/hour' : '$/bin'}
                 />
+                {lastLaborForContractor && formData.rate && !labor && (
+                  <p className="text-xs text-blue-600 mt-1">
+                    💡 Last rate: ${lastLaborForContractor.rate} ({lastLaborForContractor.pay_type_display || lastLaborForContractor.pay_type})
+                  </p>
+                )}
               </div>
 
               <div>

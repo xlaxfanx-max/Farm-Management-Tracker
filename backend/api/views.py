@@ -4,27 +4,33 @@ import requests
 import re
 from datetime import datetime, timedelta, date
 from decimal import Decimal
-from django.db.models import Sum, Avg, Count, F, Q
+from django.db.models import Sum, Avg, Count, F, Q, Min, Max
 from django.db.models.functions import Coalesce
 from rest_framework import viewsets, filters, status, serializers
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from .permissions import HasCompanyAccess
 from .pur_reporting import PURReportGenerator
 from .product_import_tool import PesticideProductImporter
 from django.http import HttpResponse
 from django.utils import timezone
 from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
-from .models import ( 
-    Farm, Field, FarmParcel, PesticideProduct, PesticideApplication, WaterSource, WaterTest, 
+from .models import (
+    Farm, Field, FarmParcel, PesticideProduct, PesticideApplication, WaterSource, WaterTest,
     Buyer, LaborContractor, Harvest, HarvestLoad, HarvestLabor,
     WellReading, MeterCalibration, WaterAllocation,
     ExtractionReport, IrrigationEvent,
-    FertilizerProduct, NutrientApplication, NutrientPlan
+    FertilizerProduct, NutrientApplication, NutrientPlan,
+    QuarantineStatus,
+    IrrigationZone, CropCoefficientProfile, CIMISDataCache,
+    IrrigationRecommendation, SoilMoistureReading,
+    Crop, Rootstock, CropCategory,
+    CROP_VARIETY_CHOICES, GRADE_CHOICES
 )
-from .serializers import ( 
-    FarmSerializer, FarmParcelSerializer, FarmParcelListSerializer, FieldSerializer, PesticideProductSerializer, PesticideApplicationSerializer, 
+from .serializers import (
+    FarmSerializer, FarmParcelSerializer, FarmParcelListSerializer, FieldSerializer, PesticideProductSerializer, PesticideApplicationSerializer,
     WaterSourceSerializer, WaterSourceListSerializer, WaterTestSerializer,
     BuyerSerializer, BuyerListSerializer,
     LaborContractorSerializer, LaborContractorListSerializer,
@@ -40,6 +46,13 @@ from .serializers import (
     FertilizerProductSerializer, FertilizerProductListSerializer,
     NutrientApplicationSerializer, NutrientApplicationListSerializer,
     NutrientPlanSerializer, NutrientPlanListSerializer,
+    QuarantineStatusSerializer,
+    IrrigationZoneSerializer, IrrigationZoneListSerializer, IrrigationZoneDetailSerializer,
+    IrrigationZoneEventSerializer, IrrigationZoneEventCreateSerializer,
+    IrrigationRecommendationSerializer, IrrigationRecommendationListSerializer,
+    CropCoefficientProfileSerializer, CIMISDataSerializer, SoilMoistureReadingSerializer,
+    IrrigationDashboardSerializer,
+    CropSerializer, CropListSerializer, RootstockSerializer, RootstockListSerializer,
 )
 
 # Audit logging mixin for automatic activity tracking
@@ -76,7 +89,7 @@ class FarmViewSet(AuditLogMixin, viewsets.ModelViewSet):
     - perform_create sets company_id (REQUIRED for RLS INSERT)
     """
     serializer_class = FarmSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, HasCompanyAccess]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['name', 'farm_number', 'owner_name', 'county']
     ordering_fields = ['name', 'created_at']
@@ -155,7 +168,37 @@ class FarmViewSet(AuditLogMixin, viewsets.ModelViewSet):
             'created': created, 'updated': updated, 'errors': errors,
             'total_parcels': farm.parcels.count()
         })
-        
+
+    @action(detail=True, methods=['post'], url_path='update-coordinates')
+    def update_coordinates(self, request, pk=None):
+        """Update only GPS coordinates for a farm - bypasses full serializer validation"""
+        farm = self.get_object()
+
+        lat = request.data.get('gps_latitude')
+        lng = request.data.get('gps_longitude')
+
+        if lat is None or lng is None:
+            return Response(
+                {'error': 'Both gps_latitude and gps_longitude are required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            farm.gps_latitude = float(lat)
+            farm.gps_longitude = float(lng)
+            farm.save(update_fields=['gps_latitude', 'gps_longitude'])
+
+            return Response({
+                'success': True,
+                'gps_latitude': farm.gps_latitude,
+                'gps_longitude': farm.gps_longitude
+            })
+        except (ValueError, TypeError) as e:
+            return Response(
+                {'error': f'Invalid coordinate values: {str(e)}'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
 class FieldViewSet(AuditLogMixin, viewsets.ModelViewSet):
     """
     API endpoint for managing fields.
@@ -165,7 +208,7 @@ class FieldViewSet(AuditLogMixin, viewsets.ModelViewSet):
     - get_queryset filters by company through farm relationship
     """
     serializer_class = FieldSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, HasCompanyAccess]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['name', 'field_number', 'current_crop', 'county']
     ordering_fields = ['name', 'total_acres', 'created_at']
@@ -185,10 +228,179 @@ class FieldViewSet(AuditLogMixin, viewsets.ModelViewSet):
         applications = field.applications.all()
         serializer = PesticideApplicationSerializer(applications, many=True)
         return Response(serializer.data)
-    
+
+
+# =============================================================================
+# CROP & ROOTSTOCK VIEWSETS
+# =============================================================================
+
+class CropViewSet(AuditLogMixin, viewsets.ModelViewSet):
+    """
+    API endpoint for managing crops.
+
+    System defaults (company=null) are read-only.
+    Companies can create custom crops.
+    """
+    permission_classes = [IsAuthenticated, HasCompanyAccess]
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ['name', 'variety', 'scientific_name']
+    ordering_fields = ['name', 'category', 'created_at']
+    ordering = ['category', 'name']
+
+    def get_queryset(self):
+        """Return system defaults + company-specific crops."""
+        user = self.request.user
+        company = get_user_company(user)
+        queryset = Crop.objects.filter(active=True)
+
+        if company:
+            # System defaults (company=null) + company's custom crops
+            queryset = queryset.filter(Q(company__isnull=True) | Q(company=company))
+        else:
+            # Only system defaults
+            queryset = queryset.filter(company__isnull=True)
+
+        # Filter by category
+        category = self.request.query_params.get('category')
+        if category:
+            queryset = queryset.filter(category=category)
+
+        # Filter by crop type
+        crop_type = self.request.query_params.get('crop_type')
+        if crop_type:
+            queryset = queryset.filter(crop_type=crop_type)
+
+        return queryset
+
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return CropListSerializer
+        return CropSerializer
+
+    def perform_create(self, serializer):
+        """Assign company to new crops."""
+        company = require_company(self.request.user)
+        serializer.save(company=company)
+
+    def perform_update(self, serializer):
+        """Prevent editing system defaults."""
+        if serializer.instance.company is None:
+            raise serializers.ValidationError(
+                'System default crops cannot be modified. Create a custom crop instead.'
+            )
+        serializer.save()
+
+    def perform_destroy(self, instance):
+        """Prevent deleting system defaults; soft-delete custom crops."""
+        if instance.company is None:
+            raise serializers.ValidationError(
+                'System default crops cannot be deleted.'
+            )
+        # Check if crop is in use
+        if instance.fields.exists():
+            raise serializers.ValidationError(
+                'Cannot delete crop that is assigned to fields.'
+            )
+        instance.active = False
+        instance.save()
+
+    @action(detail=False, methods=['get'])
+    def categories(self, request):
+        """Return list of crop categories."""
+        return Response([
+            {'value': choice.value, 'label': choice.label}
+            for choice in CropCategory
+        ])
+
+    @action(detail=False, methods=['get'])
+    def search(self, request):
+        """Quick search for autocomplete."""
+        q = request.query_params.get('q', '')
+        if len(q) < 2:
+            return Response([])
+        queryset = self.get_queryset().filter(
+            Q(name__icontains=q) | Q(variety__icontains=q)
+        )[:20]
+        return Response(CropListSerializer(queryset, many=True).data)
+
+
+class RootstockViewSet(AuditLogMixin, viewsets.ModelViewSet):
+    """
+    API endpoint for managing rootstocks.
+
+    System defaults (company=null) are read-only.
+    Companies can create custom rootstocks.
+    """
+    permission_classes = [IsAuthenticated, HasCompanyAccess]
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ['name', 'code']
+    ordering_fields = ['name', 'primary_category']
+    ordering = ['primary_category', 'name']
+
+    def get_queryset(self):
+        user = self.request.user
+        company = get_user_company(user)
+        queryset = Rootstock.objects.filter(active=True)
+
+        if company:
+            queryset = queryset.filter(Q(company__isnull=True) | Q(company=company))
+        else:
+            queryset = queryset.filter(company__isnull=True)
+
+        # Filter by category
+        category = self.request.query_params.get('category')
+        if category:
+            queryset = queryset.filter(primary_category=category)
+
+        # Filter by compatible crop
+        crop_id = self.request.query_params.get('crop')
+        if crop_id:
+            queryset = queryset.filter(compatible_crops__id=crop_id)
+
+        return queryset
+
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return RootstockListSerializer
+        return RootstockSerializer
+
+    def perform_create(self, serializer):
+        company = require_company(self.request.user)
+        serializer.save(company=company)
+
+    def perform_update(self, serializer):
+        if serializer.instance.company is None:
+            raise serializers.ValidationError(
+                'System default rootstocks cannot be modified.'
+            )
+        serializer.save()
+
+    def perform_destroy(self, instance):
+        if instance.company is None:
+            raise serializers.ValidationError(
+                'System default rootstocks cannot be deleted.'
+            )
+        if instance.fields.exists():
+            raise serializers.ValidationError(
+                'Cannot delete rootstock that is assigned to fields.'
+            )
+        instance.active = False
+        instance.save()
+
+    @action(detail=False, methods=['get'])
+    def for_crop(self, request):
+        """Get rootstocks compatible with a specific crop."""
+        crop_id = request.query_params.get('crop_id')
+        if not crop_id:
+            return Response({'error': 'crop_id required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        queryset = self.get_queryset().filter(compatible_crops__id=crop_id)
+        return Response(RootstockListSerializer(queryset, many=True).data)
+
+
 class FarmParcelViewSet(AuditLogMixin, viewsets.ModelViewSet):
     serializer_class = FarmParcelSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, HasCompanyAccess]
     
     def get_queryset(self):
         user = self.request.user
@@ -385,7 +597,7 @@ class PesticideApplicationViewSet(AuditLogMixin, viewsets.ModelViewSet):
     - get_queryset filters by company
     """
     serializer_class = PesticideApplicationSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, HasCompanyAccess]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['field__name', 'product__product_name', 'applicator_name']
     ordering_fields = ['application_date', 'created_at']
@@ -1009,7 +1221,7 @@ class WaterSourceViewSet(AuditLogMixin, viewsets.ModelViewSet):
     - get_queryset filters by company through farm
     """
     serializer_class = WaterSourceSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, HasCompanyAccess]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['name', 'source_type', 'farm__name']
     ordering_fields = ['name', 'created_at']
@@ -1046,7 +1258,7 @@ class WaterTestViewSet(AuditLogMixin, viewsets.ModelViewSet):
     - Water tests inherit company through water_source->farm relationship
     """
     serializer_class = WaterTestSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, HasCompanyAccess]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['water_source__name', 'lab_name', 'status']
     ordering_fields = ['test_date', 'created_at']
@@ -1080,7 +1292,7 @@ class WaterTestViewSet(AuditLogMixin, viewsets.ModelViewSet):
 from rest_framework.decorators import api_view
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, HasCompanyAccess])
 def report_statistics(request):
     """Get statistics for the reports dashboard"""
     from django.db.models import Sum, Count
@@ -1168,33 +1380,44 @@ def report_statistics(request):
 class BuyerViewSet(AuditLogMixin, viewsets.ModelViewSet):
     """
     CRUD operations for Buyers (packing houses, processors, etc.)
-    
-    NOTE: Buyer is SHARED data (no company FK per architecture doc).
-    Consider adding company FK in future for multi-tenant isolation.
+
+    RLS NOTES:
+    - Buyers are scoped by company for multi-tenant isolation
+    - Uses RLS policy: buyer_company_isolation
     """
     queryset = Buyer.objects.all()
     serializer_class = BuyerSerializer
-    permission_classes = [IsAuthenticated]
-    
+    permission_classes = [IsAuthenticated, HasCompanyAccess]
+
     def get_queryset(self):
         queryset = Buyer.objects.all()
-        
+
+        # Filter by company (multi-tenancy)
+        company = get_user_company(self.request.user)
+        if company:
+            queryset = queryset.filter(company=company)
+
         # Filter by active status
         active = self.request.query_params.get('active')
         if active is not None:
             queryset = queryset.filter(active=active.lower() == 'true')
-        
+
         # Filter by buyer type
         buyer_type = self.request.query_params.get('buyer_type')
         if buyer_type:
             queryset = queryset.filter(buyer_type=buyer_type)
-        
+
         # Search by name
         search = self.request.query_params.get('search')
         if search:
             queryset = queryset.filter(name__icontains=search)
-        
+
         return queryset.order_by('name')
+
+    def perform_create(self, serializer):
+        """Auto-assign company when creating buyer."""
+        company = get_user_company(self.request.user)
+        serializer.save(company=company)
     
     def get_serializer_class(self):
         if self.action == 'list' and self.request.query_params.get('simple') == 'true':
@@ -1225,6 +1448,106 @@ class BuyerViewSet(AuditLogMixin, viewsets.ModelViewSet):
             'loads': serializer.data
         })
 
+    @action(detail=True, methods=['get'])
+    def performance(self, request, pk=None):
+        """
+        Get performance metrics for this buyer.
+        Returns: historical pricing, payment timeliness, quality grades, volume
+        """
+        from django.db.models import Avg, Count, Sum, Q, F, ExpressionWrapper, DurationField
+        from django.db.models.functions import Coalesce
+        from datetime import date
+
+        buyer = self.get_object()
+
+        # Get all loads for this buyer
+        loads = HarvestLoad.objects.filter(buyer=buyer).select_related(
+            'harvest', 'harvest__field'
+        )
+
+        # Overall statistics
+        overall_stats = loads.aggregate(
+            total_loads=Count('id'),
+            total_bins=Sum('bins'),
+            total_revenue=Sum('total_price'),
+            avg_price_per_bin=Avg(F('total_price') / F('bins'), output_field=DecimalField()),
+            paid_count=Count('id', filter=Q(payment_status='paid')),
+            pending_count=Count('id', filter=Q(payment_status='pending')),
+            late_count=Count('id', filter=Q(payment_status='pending', payment_due_date__lt=date.today())),
+        )
+
+        # Calculate payment timeliness for paid loads
+        paid_loads = loads.filter(payment_status='paid', payment_due_date__isnull=False)
+
+        # This is a simplified calculation - in production you'd track actual payment dates
+        # For now, we'll use the updated_at timestamp as a proxy
+        avg_days_to_pay = None
+        if paid_loads.exists():
+            # Calculate average days between harvest and payment
+            payment_times = []
+            for load in paid_loads:
+                days_diff = (load.updated_at.date() - load.harvest.harvest_date).days
+                payment_times.append(days_diff)
+            avg_days_to_pay = sum(payment_times) / len(payment_times) if payment_times else None
+
+        # Pricing by crop variety
+        pricing_by_crop = []
+        for crop_choice in HARVEST_CONSTANTS['CROP_VARIETIES']:
+            crop_value = crop_choice['value']
+            crop_loads = loads.filter(harvest__crop_variety=crop_value)
+            crop_stats = crop_loads.aggregate(
+                load_count=Count('id'),
+                total_bins=Sum('bins'),
+                avg_price=Avg(F('total_price') / F('bins'), output_field=DecimalField()),
+                min_price=Min(F('total_price') / F('bins'), output_field=DecimalField()),
+                max_price=Max(F('total_price') / F('bins'), output_field=DecimalField()),
+            )
+
+            if crop_stats['load_count'] > 0:
+                pricing_by_crop.append({
+                    'crop_variety': crop_value,
+                    'crop_variety_display': crop_choice['label'],
+                    'load_count': crop_stats['load_count'],
+                    'total_bins': crop_stats['total_bins'] or 0,
+                    'avg_price_per_bin': float(crop_stats['avg_price'] or 0),
+                    'min_price_per_bin': float(crop_stats['min_price'] or 0),
+                    'max_price_per_bin': float(crop_stats['max_price'] or 0),
+                })
+
+        # Quality grade distribution
+        quality_distribution = []
+        for grade_value, grade_label in GRADE_CHOICES:
+            grade_count = loads.filter(grade=grade_value).count()
+            if grade_count > 0:
+                quality_distribution.append({
+                    'grade': grade_value,
+                    'grade_display': grade_label,
+                    'count': grade_count,
+                    'percentage': (grade_count / overall_stats['total_loads']) * 100 if overall_stats['total_loads'] else 0
+                })
+
+        # Recent loads (last 10)
+        recent_loads = loads.order_by('-harvest__harvest_date')[:10]
+        recent_loads_data = HarvestLoadSerializer(recent_loads, many=True).data
+
+        return Response({
+            'buyer': BuyerSerializer(buyer).data,
+            'overall_stats': {
+                'total_loads': overall_stats['total_loads'],
+                'total_bins': overall_stats['total_bins'] or 0,
+                'total_revenue': float(overall_stats['total_revenue'] or 0),
+                'avg_price_per_bin': float(overall_stats['avg_price_per_bin'] or 0),
+                'paid_count': overall_stats['paid_count'],
+                'pending_count': overall_stats['pending_count'],
+                'late_count': overall_stats['late_count'],
+                'payment_rate': (overall_stats['paid_count'] / overall_stats['total_loads'] * 100) if overall_stats['total_loads'] else 0,
+                'avg_days_to_pay': avg_days_to_pay,
+            },
+            'pricing_by_crop': pricing_by_crop,
+            'quality_distribution': quality_distribution,
+            'recent_loads': recent_loads_data
+        })
+
 
 # -----------------------------------------------------------------------------
 # LABOR CONTRACTOR VIEWSET
@@ -1233,33 +1556,44 @@ class BuyerViewSet(AuditLogMixin, viewsets.ModelViewSet):
 class LaborContractorViewSet(AuditLogMixin, viewsets.ModelViewSet):
     """
     CRUD operations for Labor Contractors.
-    
-    NOTE: LaborContractor is SHARED data (no company FK per architecture doc).
-    Consider adding company FK in future for multi-tenant isolation.
+
+    RLS NOTES:
+    - Labor contractors are scoped by company for multi-tenant isolation
+    - Uses RLS policy: laborcontractor_company_isolation
     """
     queryset = LaborContractor.objects.all()
     serializer_class = LaborContractorSerializer
-    permission_classes = [IsAuthenticated]
-    
+    permission_classes = [IsAuthenticated, HasCompanyAccess]
+
     def get_queryset(self):
         queryset = LaborContractor.objects.all()
-        
+
+        # Filter by company (multi-tenancy)
+        company = get_user_company(self.request.user)
+        if company:
+            queryset = queryset.filter(company=company)
+
         # Filter by active status
         active = self.request.query_params.get('active')
         if active is not None:
             queryset = queryset.filter(active=active.lower() == 'true')
-        
+
         # Filter by valid license
         valid_license = self.request.query_params.get('valid_license')
         if valid_license == 'true':
             queryset = queryset.filter(license_expiration__gte=date.today())
-        
+
         # Search
         search = self.request.query_params.get('search')
         if search:
             queryset = queryset.filter(company_name__icontains=search)
-        
+
         return queryset.order_by('company_name')
+
+    def perform_create(self, serializer):
+        """Auto-assign company when creating labor contractor."""
+        company = get_user_company(self.request.user)
+        serializer.save(company=company)
     
     def get_serializer_class(self):
         if self.action == 'list' and self.request.query_params.get('simple') == 'true':
@@ -1296,16 +1630,127 @@ class LaborContractorViewSet(AuditLogMixin, viewsets.ModelViewSet):
     def expiring_soon(self, request):
         """Get contractors with licenses/insurance expiring in next 30 days."""
         threshold = date.today() + timedelta(days=30)
-        
+
         expiring = LaborContractor.objects.filter(
             Q(license_expiration__lte=threshold) |
             Q(insurance_expiration__lte=threshold) |
             Q(workers_comp_expiration__lte=threshold),
             active=True
         )
-        
+
         serializer = LaborContractorSerializer(expiring, many=True)
         return Response(serializer.data)
+
+    @action(detail=True, methods=['get'])
+    def performance(self, request, pk=None):
+        """
+        Get performance metrics for this contractor.
+        Returns: productivity (bins/hour), cost per bin, compliance history, reliability
+        """
+        from django.db.models import DecimalField
+
+        contractor = self.get_object()
+
+        # Get all labor records for this contractor
+        labor_records = HarvestLabor.objects.filter(
+            contractor=contractor
+        ).select_related('harvest', 'harvest__field')
+
+        # Overall statistics
+        overall_stats = labor_records.aggregate(
+            total_jobs=Count('id'),
+            total_harvests=Count('harvest', distinct=True),
+            total_bins=Sum('bins_picked'),
+            total_hours=Sum('hours_worked'),
+            total_cost=Sum('total_cost'),
+            avg_bins_per_hour=Avg(F('bins_picked') / F('hours_worked'), output_field=DecimalField()),
+            avg_cost_per_bin=Avg(F('total_cost') / F('bins_picked'), output_field=DecimalField()),
+            avg_hourly_rate=Avg('rate', filter=Q(pay_type='hourly')),
+            avg_piece_rate=Avg('rate', filter=Q(pay_type='piece_rate')),
+        )
+
+        # Performance by crop variety
+        performance_by_crop = []
+        for crop_value, crop_label in CROP_VARIETY_CHOICES:
+            crop_choice = {'value': crop_value, 'label': crop_label}
+            crop_records = labor_records.filter(harvest__crop_variety=crop_value)
+            crop_stats = crop_records.aggregate(
+                job_count=Count('id'),
+                total_bins=Sum('bins_picked'),
+                total_hours=Sum('hours_worked'),
+                total_cost=Sum('total_cost'),
+                avg_bins_per_hour=Avg(F('bins_picked') / F('hours_worked'), output_field=DecimalField()),
+                avg_cost_per_bin=Avg(F('total_cost') / F('bins_picked'), output_field=DecimalField()),
+            )
+
+            if crop_stats['job_count'] > 0:
+                performance_by_crop.append({
+                    'crop_variety': crop_value,
+                    'crop_variety_display': crop_choice['label'],
+                    'job_count': crop_stats['job_count'],
+                    'total_bins': crop_stats['total_bins'] or 0,
+                    'total_hours': float(crop_stats['total_hours'] or 0),
+                    'total_cost': float(crop_stats['total_cost'] or 0),
+                    'avg_bins_per_hour': float(crop_stats['avg_bins_per_hour'] or 0),
+                    'avg_cost_per_bin': float(crop_stats['avg_cost_per_bin'] or 0),
+                })
+
+        # Compliance status
+        today = date.today()
+        compliance_status = {
+            'license_valid': contractor.license_expiration >= today if contractor.license_expiration else False,
+            'license_expiration': contractor.license_expiration,
+            'insurance_valid': contractor.insurance_expiration >= today if contractor.insurance_expiration else False,
+            'insurance_expiration': contractor.insurance_expiration,
+            'workers_comp_valid': contractor.workers_comp_expiration >= today if contractor.workers_comp_expiration else False,
+            'workers_comp_expiration': contractor.workers_comp_expiration,
+            'food_safety_training_current': contractor.food_safety_training_current,
+            'overall_compliant': all([
+                contractor.license_expiration >= today if contractor.license_expiration else False,
+                contractor.insurance_expiration >= today if contractor.insurance_expiration else False,
+                contractor.workers_comp_expiration >= today if contractor.workers_comp_expiration else False,
+                contractor.food_safety_training_current
+            ])
+        }
+
+        # Recent jobs (last 10)
+        recent_jobs = labor_records.order_by('-harvest__harvest_date')[:10]
+        recent_jobs_data = HarvestLaborSerializer(recent_jobs, many=True).data
+
+        # Reliability metrics
+        # Calculate consistency - standard deviation of bins per hour over recent jobs
+        recent_productivity = []
+        for record in labor_records.order_by('-harvest__harvest_date')[:20]:
+            if record.hours_worked and record.hours_worked > 0:
+                bins_per_hour = record.bins_picked / record.hours_worked
+                recent_productivity.append(bins_per_hour)
+
+        productivity_consistency = None
+        if len(recent_productivity) > 1:
+            import statistics
+            avg = statistics.mean(recent_productivity)
+            std_dev = statistics.stdev(recent_productivity)
+            # Coefficient of variation (lower is more consistent)
+            productivity_consistency = (std_dev / avg * 100) if avg > 0 else None
+
+        return Response({
+            'contractor': LaborContractorSerializer(contractor).data,
+            'overall_stats': {
+                'total_jobs': overall_stats['total_jobs'],
+                'total_harvests': overall_stats['total_harvests'],
+                'total_bins': overall_stats['total_bins'] or 0,
+                'total_hours': float(overall_stats['total_hours'] or 0),
+                'total_cost': float(overall_stats['total_cost'] or 0),
+                'avg_bins_per_hour': float(overall_stats['avg_bins_per_hour'] or 0),
+                'avg_cost_per_bin': float(overall_stats['avg_cost_per_bin'] or 0),
+                'avg_hourly_rate': float(overall_stats['avg_hourly_rate'] or 0),
+                'avg_piece_rate': float(overall_stats['avg_piece_rate'] or 0),
+                'productivity_consistency': productivity_consistency,
+            },
+            'performance_by_crop': performance_by_crop,
+            'compliance_status': compliance_status,
+            'recent_jobs': recent_jobs_data
+        })
 
 
 # -----------------------------------------------------------------------------
@@ -1321,13 +1766,25 @@ class HarvestViewSet(AuditLogMixin, viewsets.ModelViewSet):
     - get_queryset filters by company
     """
     serializer_class = HarvestSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, HasCompanyAccess]
     
     def get_queryset(self):
+        from django.db.models import Prefetch
+
+        # Optimize loads and labor_records prefetch with select_related
+        loads_prefetch = Prefetch(
+            'loads',
+            queryset=HarvestLoad.objects.select_related('buyer').order_by('load_number')
+        )
+        labor_prefetch = Prefetch(
+            'labor_records',
+            queryset=HarvestLabor.objects.select_related('contractor').order_by('-start_time')
+        )
+
         queryset = Harvest.objects.select_related(
             'field', 'field__farm'
-        ).prefetch_related('loads', 'labor_records')
-        
+        ).prefetch_related(loads_prefetch, labor_prefetch)
+
         # Filter by company
         company = get_user_company(self.request.user)
         if company:
@@ -1570,6 +2027,165 @@ class HarvestViewSet(AuditLogMixin, viewsets.ModelViewSet):
         
         return Response(list(fields_data.values()))
 
+    @action(detail=False, methods=['get'])
+    def cost_analysis(self, request):
+        """
+        Get cost analysis metrics for harvests.
+        Returns: cost per acre, cost per bin, revenue per acre, labor efficiency metrics
+        Filters: season, field, crop_variety, start_date, end_date
+        """
+        from django.db.models import Sum, Avg, Count, F, Q, DecimalField
+        from django.db.models.functions import Coalesce
+
+        queryset = self.get_queryset()
+
+        # Apply additional filters from query params
+        season = request.query_params.get('season')
+        if season:
+            queryset = queryset.filter(harvest_date__year=season)
+
+        # Get aggregated metrics
+        harvests_with_metrics = queryset.annotate(
+            total_revenue=Coalesce(Sum('loads__total_price'), 0, output_field=DecimalField()),
+            total_labor_cost=Coalesce(Sum('labor_records__total_cost'), 0, output_field=DecimalField()),
+            total_labor_hours=Coalesce(Sum('labor_records__hours_worked'), 0, output_field=DecimalField()),
+        )
+
+        # Calculate overall metrics
+        total_harvests = harvests_with_metrics.count()
+        if total_harvests == 0:
+            return Response({
+                'total_harvests': 0,
+                'metrics': {},
+                'by_crop': [],
+                'by_field': [],
+                'by_contractor': []
+            })
+
+        aggregates = harvests_with_metrics.aggregate(
+            total_acres=Sum('acres_harvested'),
+            total_bins=Sum('total_bins'),
+            total_revenue=Sum('total_revenue'),
+            total_labor_cost=Sum('total_labor_cost'),
+            total_labor_hours=Sum('total_labor_hours'),
+            avg_cost_per_acre=Avg(F('total_labor_cost') / F('acres_harvested'), output_field=DecimalField()),
+            avg_cost_per_bin=Avg(F('total_labor_cost') / F('total_bins'), output_field=DecimalField()),
+            avg_revenue_per_acre=Avg(F('total_revenue') / F('acres_harvested'), output_field=DecimalField()),
+        )
+
+        # Calculate derived metrics
+        metrics = {
+            'total_acres': float(aggregates['total_acres'] or 0),
+            'total_bins': aggregates['total_bins'] or 0,
+            'total_revenue': float(aggregates['total_revenue'] or 0),
+            'total_labor_cost': float(aggregates['total_labor_cost'] or 0),
+            'total_profit': float((aggregates['total_revenue'] or 0) - (aggregates['total_labor_cost'] or 0)),
+            'total_labor_hours': float(aggregates['total_labor_hours'] or 0),
+            'avg_cost_per_acre': float(aggregates['avg_cost_per_acre'] or 0),
+            'avg_cost_per_bin': float(aggregates['avg_cost_per_bin'] or 0),
+            'avg_revenue_per_acre': float(aggregates['avg_revenue_per_acre'] or 0),
+            'avg_bins_per_hour': float(aggregates['total_bins'] / aggregates['total_labor_hours']) if aggregates['total_labor_hours'] else 0,
+            'profit_margin': float(((aggregates['total_revenue'] or 0) - (aggregates['total_labor_cost'] or 0)) / (aggregates['total_revenue'] or 1)) * 100 if aggregates['total_revenue'] else 0,
+        }
+
+        # Breakdown by crop variety
+        by_crop = []
+        for crop_value, crop_label in CROP_VARIETY_CHOICES:
+            crop_choice = {'value': crop_value, 'label': crop_label}
+            crop_harvests = harvests_with_metrics.filter(crop_variety=crop_value)
+            crop_aggregates = crop_harvests.aggregate(
+                count=Count('id'),
+                total_acres=Sum('acres_harvested'),
+                total_bins=Sum('total_bins'),
+                total_revenue=Sum('total_revenue'),
+                total_labor_cost=Sum('total_labor_cost'),
+                avg_cost_per_bin=Avg(F('total_labor_cost') / F('total_bins'), output_field=DecimalField()),
+            )
+
+            if crop_aggregates['count'] > 0:
+                by_crop.append({
+                    'crop_variety': crop_value,
+                    'crop_variety_display': crop_choice['label'],
+                    'harvest_count': crop_aggregates['count'],
+                    'total_acres': float(crop_aggregates['total_acres'] or 0),
+                    'total_bins': crop_aggregates['total_bins'] or 0,
+                    'total_revenue': float(crop_aggregates['total_revenue'] or 0),
+                    'total_labor_cost': float(crop_aggregates['total_labor_cost'] or 0),
+                    'profit': float((crop_aggregates['total_revenue'] or 0) - (crop_aggregates['total_labor_cost'] or 0)),
+                    'avg_cost_per_bin': float(crop_aggregates['avg_cost_per_bin'] or 0),
+                })
+
+        # Breakdown by field
+        from collections import defaultdict
+        by_field_data = defaultdict(lambda: {
+            'total_revenue': 0,
+            'total_labor_cost': 0,
+            'total_acres': 0,
+            'total_bins': 0,
+            'harvest_count': 0
+        })
+
+        for harvest in harvests_with_metrics:
+            field_id = harvest.field_id
+            by_field_data[field_id]['field_id'] = field_id
+            by_field_data[field_id]['field_name'] = harvest.field.name
+            by_field_data[field_id]['farm_name'] = harvest.field.farm.name if harvest.field.farm else None
+            by_field_data[field_id]['total_revenue'] += float(harvest.total_revenue)
+            by_field_data[field_id]['total_labor_cost'] += float(harvest.total_labor_cost)
+            by_field_data[field_id]['total_acres'] += float(harvest.acres_harvested or 0)
+            by_field_data[field_id]['total_bins'] += harvest.total_bins or 0
+            by_field_data[field_id]['harvest_count'] += 1
+
+        by_field = []
+        for field_data in by_field_data.values():
+            field_data['profit'] = field_data['total_revenue'] - field_data['total_labor_cost']
+            field_data['revenue_per_acre'] = field_data['total_revenue'] / field_data['total_acres'] if field_data['total_acres'] > 0 else 0
+            field_data['cost_per_bin'] = field_data['total_labor_cost'] / field_data['total_bins'] if field_data['total_bins'] > 0 else 0
+            by_field.append(field_data)
+
+        # Sort by profit (descending)
+        by_field.sort(key=lambda x: x['profit'], reverse=True)
+
+        # Breakdown by contractor (labor efficiency)
+        from .models import LaborContractor
+        company = get_user_company(request.user)
+        contractors = LaborContractor.objects.filter(company=company, active=True)
+
+        by_contractor = []
+        for contractor in contractors:
+            contractor_labor = HarvestLabor.objects.filter(
+                contractor=contractor,
+                harvest__in=queryset
+            ).aggregate(
+                total_bins=Sum('bins_picked'),
+                total_hours=Sum('hours_worked'),
+                total_cost=Sum('total_cost'),
+                harvest_count=Count('harvest', distinct=True)
+            )
+
+            if contractor_labor['harvest_count'] and contractor_labor['total_bins']:
+                by_contractor.append({
+                    'contractor_id': contractor.id,
+                    'contractor_name': contractor.name,
+                    'harvest_count': contractor_labor['harvest_count'],
+                    'total_bins': contractor_labor['total_bins'] or 0,
+                    'total_hours': float(contractor_labor['total_hours'] or 0),
+                    'total_cost': float(contractor_labor['total_cost'] or 0),
+                    'bins_per_hour': float(contractor_labor['total_bins'] / contractor_labor['total_hours']) if contractor_labor['total_hours'] else 0,
+                    'cost_per_bin': float(contractor_labor['total_cost'] / contractor_labor['total_bins']) if contractor_labor['total_bins'] else 0,
+                })
+
+        # Sort by bins per hour (descending) - most efficient first
+        by_contractor.sort(key=lambda x: x['bins_per_hour'], reverse=True)
+
+        return Response({
+            'total_harvests': total_harvests,
+            'metrics': metrics,
+            'by_crop': by_crop,
+            'by_field': by_field,
+            'by_contractor': by_contractor
+        })
+
 
 # -----------------------------------------------------------------------------
 # HARVEST LOAD VIEWSET
@@ -1583,7 +2199,7 @@ class HarvestLoadViewSet(AuditLogMixin, viewsets.ModelViewSet):
     - Loads inherit company through harvest->field->farm relationship
     """
     serializer_class = HarvestLoadSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, HasCompanyAccess]
     
     def get_queryset(self):
         queryset = HarvestLoad.objects.select_related(
@@ -1640,11 +2256,30 @@ class HarvestLoadViewSet(AuditLogMixin, viewsets.ModelViewSet):
         loads = self.get_queryset().filter(
             payment_status__in=['pending', 'invoiced']
         ).order_by('harvest__harvest_date')
-        
+
         total_pending = loads.aggregate(total=Sum('total_revenue'))['total'] or 0
-        
+
         return Response({
             'total_pending': total_pending,
+            'loads': HarvestLoadSerializer(loads, many=True).data
+        })
+
+    @action(detail=False, methods=['get'])
+    def overdue(self, request):
+        """Get all loads with overdue payments."""
+        from datetime import date
+
+        loads = self.get_queryset().filter(
+            payment_status__in=['pending', 'invoiced'],
+            payment_due_date__isnull=False,
+            payment_due_date__lt=date.today()
+        ).order_by('payment_due_date')
+
+        total_overdue = loads.aggregate(total=Sum('total_revenue'))['total'] or 0
+
+        return Response({
+            'total_overdue': total_overdue,
+            'count': loads.count(),
             'loads': HarvestLoadSerializer(loads, many=True).data
         })
 
@@ -1661,7 +2296,7 @@ class HarvestLaborViewSet(AuditLogMixin, viewsets.ModelViewSet):
     - Labor records inherit company through harvest->field->farm relationship
     """
     serializer_class = HarvestLaborSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, HasCompanyAccess]
     
     def get_queryset(self):
         queryset = HarvestLabor.objects.select_related(
@@ -1828,67 +2463,171 @@ def get_plss_from_coordinates(lat, lng):
 
 
 @api_view(['POST'])
+@permission_classes([IsAuthenticated, HasCompanyAccess])
 def geocode_address(request):
     """
     Geocode an address to GPS coordinates using Nominatim (OpenStreetMap).
     Also returns PLSS data (Section, Township, Range) if available.
-    
+
+    Tries multiple address formats to improve success rate for rural addresses.
+
     POST /api/geocode/
     {
-        "address": "123 Main St, Fresno, CA"
+        "address": "123 Main St, Fresno, CA",
+        "county": "Fresno",  # Optional - used to try additional search strategies
+        "city": "Fresno"     # Optional - used to try additional search strategies
     }
-    
+
     Returns:
     {
         "lat": 36.7378,
         "lng": -119.7871,
         "display_name": "...",
+        "search_query": "...",  # The query that succeeded
         "section": "10",
         "township": "15S",
-        "range": "22E"
+        "range": "22E",
+        "alternatives": [...]  # Other potential matches if found
     }
     """
     address = request.data.get('address', '')
-    
-    if not address:
-        return Response({'error': 'Address is required'}, status=status.HTTP_400_BAD_REQUEST)
-    
-    try:
-        response = requests.get(
-            'https://nominatim.openstreetmap.org/search',
-            params={
-                'q': address,
-                'format': 'json',
-                'limit': 1,
-                'countrycodes': 'us'
-            },
-            headers={'User-Agent': 'FarmManagementTracker/1.0'},
-            timeout=10
-        )
-        
-        data = response.json()
-        
-        if data and len(data) > 0:
-            result = data[0]
-            lat = float(result['lat'])
-            lng = float(result['lon'])
-            
-            # Also get PLSS data (Section/Township/Range)
-            plss_data = get_plss_from_coordinates(lat, lng)
-            
-            return Response({
-                'lat': lat,
-                'lng': lng,
-                'display_name': result.get('display_name', ''),
-                'section': plss_data.get('section'),
-                'township': plss_data.get('township'),
-                'range': plss_data.get('range'),
+    county = request.data.get('county', '')
+    city = request.data.get('city', '')
+
+    if not address and not county:
+        return Response({'error': 'Address or county is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+    def try_geocode(query):
+        """Try to geocode a single query, return results or empty list."""
+        try:
+            response = requests.get(
+                'https://nominatim.openstreetmap.org/search',
+                params={
+                    'q': query,
+                    'format': 'json',
+                    'limit': 5,  # Get multiple results for comparison
+                    'countrycodes': 'us',
+                    'addressdetails': 1  # Include address breakdown
+                },
+                headers={'User-Agent': 'FarmManagementTracker/1.0'},
+                timeout=10
+            )
+            return response.json() if response.status_code == 200 else []
+        except Exception:
+            return []
+
+    # Build list of address queries to try (in order of preference)
+    queries_to_try = []
+
+    # 1. Full address as provided
+    if address:
+        queries_to_try.append(address)
+
+    # 2. Address with explicit California state
+    if address and 'california' not in address.lower() and ', ca' not in address.lower():
+        queries_to_try.append(f"{address}, California, USA")
+
+    # 3. If county provided, try address + county + state
+    if address and county:
+        queries_to_try.append(f"{address}, {county} County, California, USA")
+        # Also try without "County" suffix
+        queries_to_try.append(f"{address}, {county}, California, USA")
+
+    # 4. If city provided, try address + city + state
+    if address and city:
+        queries_to_try.append(f"{address}, {city}, California, USA")
+
+    # 5. Try just county center (fallback for when address fails)
+    if county:
+        queries_to_try.append(f"{county} County, California, USA")
+
+    # 6. Try structured query with street parsing (for rural addresses)
+    if address:
+        # Try extracting just the road/street name for rural areas
+        import re
+        # Match patterns like "1234 Some Road" or "12345 W Highway 99"
+        road_match = re.search(r'\d+\s+(.+)', address.split(',')[0])
+        if road_match:
+            road_name = road_match.group(1).strip()
+            if county:
+                queries_to_try.append(f"{road_name}, {county} County, California, USA")
+            if city:
+                queries_to_try.append(f"{road_name}, {city}, California, USA")
+
+    # Remove duplicates while preserving order
+    seen = set()
+    unique_queries = []
+    for q in queries_to_try:
+        q_lower = q.lower()
+        if q_lower not in seen:
+            seen.add(q_lower)
+            unique_queries.append(q)
+
+    # Try each query until we get a result
+    best_result = None
+    successful_query = None
+    all_alternatives = []
+
+    for query in unique_queries:
+        results = try_geocode(query)
+
+        if results:
+            # Filter results to prefer California results
+            ca_results = [r for r in results if 'california' in r.get('display_name', '').lower()]
+
+            if ca_results:
+                # Use the first California result as best
+                if not best_result:
+                    best_result = ca_results[0]
+                    successful_query = query
+
+                # Collect alternatives (excluding the best result)
+                for r in ca_results[1:]:
+                    if r not in all_alternatives:
+                        all_alternatives.append(r)
+            elif not best_result and results:
+                # If no CA results, still use what we found
+                best_result = results[0]
+                successful_query = query
+
+        # If we found a good result, don't try more queries
+        if best_result:
+            break
+
+    if best_result:
+        lat = float(best_result['lat'])
+        lng = float(best_result['lon'])
+
+        # Also get PLSS data (Section/Township/Range)
+        plss_data = get_plss_from_coordinates(lat, lng)
+
+        # Format alternatives for response
+        formatted_alternatives = []
+        for alt in all_alternatives[:4]:  # Limit to 4 alternatives
+            formatted_alternatives.append({
+                'lat': float(alt['lat']),
+                'lng': float(alt['lon']),
+                'display_name': alt.get('display_name', ''),
             })
-        else:
-            return Response({'error': 'Address not found'}, status=status.HTTP_404_NOT_FOUND)
-            
-    except Exception as e:
-        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        return Response({
+            'lat': lat,
+            'lng': lng,
+            'display_name': best_result.get('display_name', ''),
+            'search_query': successful_query,
+            'section': plss_data.get('section'),
+            'township': plss_data.get('township'),
+            'range': plss_data.get('range'),
+            'alternatives': formatted_alternatives,
+        })
+    else:
+        # Return helpful error message
+        tried_queries = ', '.join([f'"{q}"' for q in unique_queries[:3]])
+        return Response({
+            'error': 'Address not found',
+            'tried_queries': unique_queries,
+            'suggestion': 'Try entering a more specific address, nearby city name, or use the manual coordinate entry option.'
+        }, status=status.HTTP_404_NOT_FOUND)
 
 
 @api_view(['POST'])
@@ -2065,7 +2804,7 @@ class WellViewSet(AuditLogMixin, viewsets.ModelViewSet):
     queryset = WaterSource.objects.filter(source_type="well").select_related(
         'water_source', 'water_source__farm'
     ).all()
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, HasCompanyAccess]
     
     def get_serializer_class(self):
         if self.action == 'list':
@@ -2224,7 +2963,7 @@ class WellReadingViewSet(AuditLogMixin, viewsets.ModelViewSet):
     queryset = WellReading.objects.select_related(
         'well', 'water_source', 'water_source__farm'
     ).all()
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, HasCompanyAccess]
     
     def get_serializer_class(self):
         if self.action == 'list':
@@ -2304,7 +3043,7 @@ class MeterCalibrationViewSet(AuditLogMixin, viewsets.ModelViewSet):
     queryset = MeterCalibration.objects.select_related(
         'water_source', 'water_source__farm'
     ).all()
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, HasCompanyAccess]
     
     def get_serializer_class(self):
         if self.action in ['create', 'update', 'partial_update']:
@@ -2354,7 +3093,7 @@ class WaterAllocationViewSet(AuditLogMixin, viewsets.ModelViewSet):
         'well', 'water_source', 'water_source__farm'
     ).all()
     serializer_class = WaterAllocationSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, HasCompanyAccess]
     
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -2430,7 +3169,7 @@ class ExtractionReportViewSet(AuditLogMixin, viewsets.ModelViewSet):
     queryset = ExtractionReport.objects.select_related(
         'well', 'water_source', 'water_source__farm'
     ).all()
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, HasCompanyAccess]
     
     def get_serializer_class(self):
         if self.action == 'list':
@@ -2590,7 +3329,7 @@ class IrrigationEventViewSet(AuditLogMixin, viewsets.ModelViewSet):
     queryset = IrrigationEvent.objects.select_related(
         'field', 'field__farm', 'well', 'water_source'
     ).all()
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, HasCompanyAccess]
     
     def get_serializer_class(self):
         if self.action == 'list':
@@ -2656,7 +3395,7 @@ class IrrigationEventViewSet(AuditLogMixin, viewsets.ModelViewSet):
 # -----------------------------------------------------------------------------
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, HasCompanyAccess])
 def sgma_dashboard(request):
     """
     Get SGMA compliance dashboard data.
@@ -2665,11 +3404,12 @@ def sgma_dashboard(request):
     user = request.user
     
     if hasattr(user, 'current_company') and user.current_company:
-        wells = WaterSource.objects.filter(source_type="well").filter(
-            water_source__farm__company=user.current_company
+        wells = WaterSource.objects.filter(
+            source_type="well",
+            farm__company=user.current_company
         )
     else:
-        wells = WaterSource.objects.filter(source_type="well").all()
+        wells = WaterSource.objects.filter(source_type="well")
     
     water_year = get_current_water_year()
     wy_dates = get_water_year_dates(water_year)
@@ -2677,19 +3417,19 @@ def sgma_dashboard(request):
     
     # Well counts
     total_wells = wells.count()
-    active_wells = wells.filter(status='active').count()
+    active_wells = wells.filter(active=True).count()
     wells_with_ami = wells.filter(has_ami=True).count()
     
     # YTD extraction
     ytd_extraction = WellReading.objects.filter(
-        well__in=wells,
+        water_source__in=wells,
         reading_date__gte=wy_dates['start'],
         reading_date__lte=date.today()
     ).aggregate(total=Sum('extraction_acre_feet'))['total'] or Decimal('0')
-    
+
     # YTD allocation
     ytd_allocation = WaterAllocation.objects.filter(
-        well__in=wells,
+        water_source__in=wells,
         water_year=water_year
     ).exclude(
         allocation_type='transferred_out'
@@ -2700,7 +3440,7 @@ def sgma_dashboard(request):
     
     # Current period extraction
     current_period_extraction = WellReading.objects.filter(
-        well__in=wells,
+        water_source__in=wells,
         reading_date__gte=current_period['start'],
         reading_date__lte=min(current_period['end'], date.today())
     ).aggregate(total=Sum('extraction_acre_feet'))['total'] or Decimal('0')
@@ -2720,7 +3460,7 @@ def sgma_dashboard(request):
     calibrations_overdue = wells.filter(
         Q(next_calibration_due__lte=today) |
         Q(next_calibration_due__isnull=True, has_flowmeter=True),
-        status='active'
+        active=True
     ).count()
     
     # Next deadlines
@@ -2772,19 +3512,29 @@ def sgma_dashboard(request):
         })
     
     # Wells by GSA
-    wells_by_gsa = list(wells.values('gsa').annotate(
+    wells_by_gsa_raw = wells.values('gsa').annotate(
         count=Count('id'),
-        active=Count('id', filter=Q(status='active')),
+        active_count=Count('id', filter=Q(active=True)),
         ytd_extraction=Sum(
             'readings__extraction_acre_feet',
             filter=Q(readings__reading_date__gte=wy_dates['start'])
         )
-    ).order_by('gsa'))
+    ).order_by('gsa')
+
+    # Convert Decimal to float for JSON serialization
+    wells_by_gsa = []
+    for item in wells_by_gsa_raw:
+        wells_by_gsa.append({
+            'gsa': item['gsa'],
+            'count': item['count'],
+            'active': item['active_count'],
+            'ytd_extraction': float(item['ytd_extraction'] or 0)
+        })
     
     # Recent readings
     recent_readings = WellReading.objects.filter(
-        well__in=wells
-    ).select_related('well').order_by('-reading_date', '-reading_time')[:10]
+        water_source__in=wells
+    ).select_related('water_source').order_by('-reading_date', '-reading_time')[:10]
     
     recent_readings_data = WellReadingListSerializer(recent_readings, many=True).data
     
@@ -2800,22 +3550,22 @@ def sgma_dashboard(request):
         
         'current_period': current_period['period'],
         'current_period_extraction_af': float(current_period_extraction),
-        'current_period_start': current_period['start'],
-        'current_period_end': current_period['end'],
+        'current_period_start': str(current_period['start']),
+        'current_period_end': str(current_period['end']),
         
         'calibrations_current': calibrations_current,
         'calibrations_due_soon': calibrations_due_soon,
         'calibrations_overdue': calibrations_overdue,
         
-        'next_report_due': next_report_due,
-        'next_calibration_due': next_calibration,
+        'next_report_due': str(next_report_due) if next_report_due else None,
+        'next_calibration_due': str(next_calibration) if next_calibration else None,
         
         'alerts': alerts,
         'wells_by_gsa': wells_by_gsa,
         'recent_readings': recent_readings_data,
         
         'water_year': water_year,
-        'as_of_date': date.today()
+        'as_of_date': str(date.today())
     })
 
 # =============================================================================
@@ -2825,7 +3575,7 @@ def sgma_dashboard(request):
 class FertilizerProductViewSet(AuditLogMixin, viewsets.ModelViewSet):
     """API endpoint for fertilizer products."""
     serializer_class = FertilizerProductSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, HasCompanyAccess]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['name', 'manufacturer', 'product_code']
     ordering_fields = ['name', 'nitrogen_pct', 'created_at']
@@ -2879,7 +3629,7 @@ class FertilizerProductViewSet(AuditLogMixin, viewsets.ModelViewSet):
 
 class NutrientApplicationViewSet(AuditLogMixin, viewsets.ModelViewSet):
     """API endpoint for nutrient applications."""
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, HasCompanyAccess]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['product__name', 'field__name', 'notes']
     ordering_fields = ['application_date', 'created_at', 'total_lbs_nitrogen']
@@ -2947,7 +3697,7 @@ class NutrientApplicationViewSet(AuditLogMixin, viewsets.ModelViewSet):
 
 class NutrientPlanViewSet(AuditLogMixin, viewsets.ModelViewSet):
     """API endpoint for nitrogen management plans."""
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, HasCompanyAccess]
     filter_backends = [filters.OrderingFilter]
     ordering_fields = ['year', 'field__name']
     ordering = ['-year', 'field__name']
@@ -2973,7 +3723,7 @@ class NutrientPlanViewSet(AuditLogMixin, viewsets.ModelViewSet):
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, HasCompanyAccess])
 def nitrogen_summary(request):
     """Annual nitrogen summary by field for ILRP compliance."""
     user = request.user
@@ -3008,7 +3758,7 @@ def nitrogen_summary(request):
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, HasCompanyAccess])
 def nitrogen_export(request):
     """Export nitrogen summary as Excel."""
     user = request.user
@@ -3044,13 +3794,729 @@ def nitrogen_export(request):
     output = io.BytesIO()
     wb.save(output)
     output.seek(0)
-    
+
     response = HttpResponse(
         output.getvalue(),
         content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     )
     response['Content-Disposition'] = f'attachment; filename="nitrogen_report_{year}.xlsx"'
     return response
+
+
+# =============================================================================
+# QUARANTINE STATUS VIEWS
+# =============================================================================
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated, HasCompanyAccess])
+def check_quarantine_status(request):
+    """
+    Check quarantine status for a farm or field.
+
+    Query Parameters:
+        farm_id: ID of the farm to check (mutually exclusive with field_id)
+        field_id: ID of the field to check (mutually exclusive with farm_id)
+        refresh: Set to 'true' to bypass cache and force a fresh check
+        quarantine_type: Type of quarantine to check (default: 'HLB')
+
+    Returns:
+        QuarantineStatus object with in_quarantine, zone_name, last_checked, etc.
+    """
+    from .services.quarantine_service import CDFAQuarantineService
+    from datetime import timedelta
+
+    farm_id = request.query_params.get('farm_id')
+    field_id = request.query_params.get('field_id')
+    refresh = request.query_params.get('refresh', 'false').lower() == 'true'
+    quarantine_type = request.query_params.get('quarantine_type', 'HLB')
+
+    # Validate parameters
+    if farm_id and field_id:
+        return Response(
+            {'error': 'Cannot specify both farm_id and field_id'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    if not farm_id and not field_id:
+        return Response(
+            {'error': 'Must specify either farm_id or field_id'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    # Get the farm or field (with company filtering for tenant isolation)
+    company = get_user_company(request.user)
+    farm = None
+    field = None
+    latitude = None
+    longitude = None
+
+    try:
+        if farm_id:
+            queryset = Farm.objects.filter(active=True)
+            if company:
+                queryset = queryset.filter(company=company)
+            farm = queryset.get(id=farm_id)
+            latitude = farm.gps_latitude
+            longitude = farm.gps_longitude
+        else:
+            queryset = Field.objects.filter(active=True).select_related('farm')
+            if company:
+                queryset = queryset.filter(farm__company=company)
+            field = queryset.get(id=field_id)
+            latitude = field.gps_latitude
+            longitude = field.gps_longitude
+    except (Farm.DoesNotExist, Field.DoesNotExist):
+        return Response(
+            {'error': 'Farm or field not found'},
+            status=status.HTTP_404_NOT_FOUND
+        )
+
+    # Check for missing coordinates
+    if latitude is None or longitude is None:
+        return Response({
+            'in_quarantine': None,
+            'zone_name': None,
+            'last_checked': None,
+            'error': 'No GPS coordinates available for this location',
+            'target_name': farm.name if farm else field.name,
+            'target_type': 'farm' if farm else 'field',
+        })
+
+    # Try to get cached status (wrap in try-except for RLS issues)
+    cache_filter = {
+        'quarantine_type': quarantine_type,
+    }
+    if farm:
+        cache_filter['farm'] = farm
+    else:
+        cache_filter['field'] = field
+
+    try:
+        cached_status = QuarantineStatus.objects.filter(**cache_filter).first()
+    except Exception as db_error:
+        # RLS policy may be blocking - log and continue without cache
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.warning(f"RLS error querying QuarantineStatus: {db_error}")
+        cached_status = None
+
+    # Check if cache is valid (less than 24 hours old) and not forcing refresh
+    if cached_status and not refresh:
+        cache_age = timezone.now() - cached_status.last_checked
+        if cache_age < timedelta(hours=24):
+            serializer = QuarantineStatusSerializer(cached_status)
+            return Response(serializer.data)
+
+    # Query CDFA API
+    service = CDFAQuarantineService()
+    result = service.check_location(latitude, longitude)
+
+    # Determine if status changed
+    previous_status = cached_status.in_quarantine if cached_status else None
+    status_changed = previous_status != result['in_quarantine'] and result['in_quarantine'] is not None
+
+    # Save or update the status record
+    status_data = {
+        'in_quarantine': result['in_quarantine'],
+        'zone_name': result['zone_name'] or '',
+        'check_latitude': latitude,
+        'check_longitude': longitude,
+        'raw_response': result['raw_response'],
+        'error_message': result['error'] or '',
+    }
+
+    if status_changed:
+        status_data['last_changed'] = timezone.now()
+
+    # Try to save status (wrap in try-except for RLS issues)
+    try:
+        if cached_status:
+            for key, value in status_data.items():
+                setattr(cached_status, key, value)
+            cached_status.save()
+            quarantine_status = cached_status
+        else:
+            quarantine_status = QuarantineStatus.objects.create(
+                farm=farm,
+                field=field,
+                quarantine_type=quarantine_type,
+                **status_data
+            )
+        serializer = QuarantineStatusSerializer(quarantine_status)
+        return Response(serializer.data)
+    except Exception as db_error:
+        # RLS policy may be blocking saves - return result without caching
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.warning(f"RLS error saving QuarantineStatus: {db_error}")
+
+        # Return the CDFA result directly without database caching
+        return Response({
+            'in_quarantine': result['in_quarantine'],
+            'zone_name': result['zone_name'] or '',
+            'last_checked': timezone.now().isoformat(),
+            'error_message': result['error'] or '',
+            'target_name': farm.name if farm else field.name,
+            'target_type': 'farm' if farm else 'field',
+            '_cache_error': 'Unable to cache result - please run database migrations',
+        })
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated, HasCompanyAccess])
+def get_quarantine_boundaries(request):
+    """
+    Proxy endpoint for CDFA quarantine boundary GeoJSON.
+
+    Returns GeoJSON FeatureCollection of all active quarantine zones.
+    Caches the response for 1 hour to minimize external API calls.
+
+    Query Parameters:
+        refresh: Set to 'true' to bypass cache and fetch fresh data
+    """
+    from django.core.cache import cache
+
+    CACHE_KEY = 'cdfa_quarantine_boundaries'
+    CACHE_TIMEOUT = 3600  # 1 hour
+
+    refresh = request.query_params.get('refresh', 'false').lower() == 'true'
+
+    # Try to get from cache unless refreshing
+    if not refresh:
+        cached_data = cache.get(CACHE_KEY)
+        if cached_data:
+            return Response(cached_data)
+
+    # Fetch from CDFA FeatureServer
+    try:
+        cdfa_url = (
+            "https://gis2.cdfa.ca.gov/server/rest/services/Plant/ActiveQuarantines/FeatureServer/0/query"
+        )
+        params = {
+            'where': '1=1',
+            'outFields': '*',
+            'returnGeometry': 'true',
+            'outSR': '4326',  # WGS84 for Leaflet
+            'f': 'geojson',
+        }
+
+        response = requests.get(cdfa_url, params=params, timeout=30)
+        response.raise_for_status()
+
+        geojson_data = response.json()
+
+        # Validate it's a valid GeoJSON FeatureCollection
+        if geojson_data.get('type') != 'FeatureCollection':
+            return Response(
+                {'error': 'Invalid response from CDFA API'},
+                status=status.HTTP_502_BAD_GATEWAY
+            )
+
+        # Cache the response
+        cache.set(CACHE_KEY, geojson_data, CACHE_TIMEOUT)
+
+        return Response(geojson_data)
+
+    except requests.exceptions.Timeout:
+        return Response(
+            {'error': 'CDFA API request timed out'},
+            status=status.HTTP_504_GATEWAY_TIMEOUT
+        )
+    except requests.exceptions.RequestException as e:
+        return Response(
+            {'error': f'Failed to fetch quarantine boundaries: {str(e)}'},
+            status=status.HTTP_502_BAD_GATEWAY
+        )
+    except ValueError as e:
+        return Response(
+            {'error': f'Invalid JSON response from CDFA API: {str(e)}'},
+            status=status.HTTP_502_BAD_GATEWAY
+        )
+
+
+# =============================================================================
+# IRRIGATION SCHEDULING VIEWS
+# =============================================================================
+
+class IrrigationZoneViewSet(AuditLogMixin, viewsets.ModelViewSet):
+    """
+    API endpoint for managing irrigation zones.
+
+    RLS NOTES:
+    - Zones inherit company from their Field -> Farm
+    - get_queryset filters by company through field.farm relationship
+    """
+    permission_classes = [IsAuthenticated, HasCompanyAccess]
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ['name', 'crop_type', 'field__name', 'field__farm__name']
+    ordering_fields = ['name', 'acres', 'created_at']
+
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return IrrigationZoneListSerializer
+        if self.action == 'retrieve':
+            return IrrigationZoneDetailSerializer
+        return IrrigationZoneSerializer
+
+    def get_queryset(self):
+        """Filter zones by current user's company through field.farm."""
+        queryset = IrrigationZone.objects.filter(active=True).select_related(
+            'field', 'field__farm', 'water_source'
+        )
+        company = get_user_company(self.request.user)
+        if company:
+            queryset = queryset.filter(field__farm__company=company)
+
+        # Optional filters
+        field_id = self.request.query_params.get('field')
+        if field_id:
+            queryset = queryset.filter(field_id=field_id)
+
+        farm_id = self.request.query_params.get('farm')
+        if farm_id:
+            queryset = queryset.filter(field__farm_id=farm_id)
+
+        return queryset
+
+    @action(detail=True, methods=['get'])
+    def status(self, request, pk=None):
+        """Get current irrigation status and recommendation for a zone."""
+        zone = self.get_object()
+        from .services.irrigation_scheduler import IrrigationScheduler
+
+        try:
+            scheduler = IrrigationScheduler(zone)
+            status_data = scheduler.get_zone_status_summary()
+            return Response(status_data)
+        except Exception as e:
+            return Response(
+                {'error': f'Failed to calculate zone status: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+    @action(detail=True, methods=['post'])
+    def calculate(self, request, pk=None):
+        """Calculate and optionally save a new irrigation recommendation."""
+        zone = self.get_object()
+        from .services.irrigation_scheduler import IrrigationScheduler
+
+        save_recommendation = request.data.get('save', False)
+        as_of_date = request.data.get('as_of_date')
+
+        try:
+            if as_of_date:
+                as_of_date = datetime.strptime(as_of_date, '%Y-%m-%d').date()
+            else:
+                as_of_date = date.today()
+
+            scheduler = IrrigationScheduler(zone)
+            calculation = scheduler.calculate_recommendation(as_of_date)
+
+            result = {
+                'calculation': calculation,
+                'saved': False,
+            }
+
+            if save_recommendation and calculation['recommended']:
+                recommendation = scheduler.create_recommendation_record(calculation)
+                result['recommendation_id'] = recommendation.id
+                result['saved'] = True
+
+            return Response(result)
+        except Exception as e:
+            return Response(
+                {'error': f'Failed to calculate recommendation: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+    @action(detail=True, methods=['get', 'post'])
+    def events(self, request, pk=None):
+        """GET: List irrigation events, POST: Record new event."""
+        zone = self.get_object()
+
+        if request.method == 'GET':
+            events = zone.irrigation_events.order_by('-date')[:20]
+            serializer = IrrigationZoneEventSerializer(events, many=True)
+            return Response(serializer.data)
+
+        elif request.method == 'POST':
+            data = request.data.copy()
+            data['zone'] = zone.id
+            serializer = IrrigationZoneEventCreateSerializer(data=data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=['get'])
+    def recommendations(self, request, pk=None):
+        """Get recommendations history for a zone."""
+        zone = self.get_object()
+        recommendations = zone.recommendations.order_by('-created_at')[:20]
+        serializer = IrrigationRecommendationListSerializer(recommendations, many=True)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=['get'])
+    def weather(self, request, pk=None):
+        """Get recent weather data for the zone's CIMIS target."""
+        zone = self.get_object()
+
+        if not zone.cimis_target:
+            return Response(
+                {'error': 'No CIMIS target configured for this zone'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        days = int(request.query_params.get('days', 7))
+        from .services.cimis_service import CIMISService
+
+        try:
+            cimis = CIMISService()
+            data = cimis.get_recent_data(
+                zone.cimis_target,
+                days=days,
+                target_type=zone.cimis_target_type or 'station'
+            )
+            serializer = CIMISDataSerializer(
+                [CIMISDataCache(**d) for d in data],
+                many=True
+            )
+            return Response(serializer.data)
+        except Exception as e:
+            return Response(
+                {'error': f'Failed to fetch weather data: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+class IrrigationRecommendationViewSet(AuditLogMixin, viewsets.ModelViewSet):
+    """
+    API endpoint for managing irrigation recommendations.
+
+    RLS NOTES:
+    - Recommendations inherit company from Zone -> Field -> Farm
+    """
+    permission_classes = [IsAuthenticated, HasCompanyAccess]
+    filter_backends = [filters.OrderingFilter]
+    ordering_fields = ['recommended_date', 'created_at']
+
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return IrrigationRecommendationListSerializer
+        return IrrigationRecommendationSerializer
+
+    def get_queryset(self):
+        """Filter recommendations by current user's company."""
+        queryset = IrrigationRecommendation.objects.select_related(
+            'zone', 'zone__field', 'zone__field__farm'
+        )
+        company = get_user_company(self.request.user)
+        if company:
+            queryset = queryset.filter(zone__field__farm__company=company)
+
+        # Optional filters
+        zone_id = self.request.query_params.get('zone')
+        if zone_id:
+            queryset = queryset.filter(zone_id=zone_id)
+
+        status_filter = self.request.query_params.get('status')
+        if status_filter:
+            queryset = queryset.filter(status=status_filter)
+
+        return queryset.order_by('-created_at')
+
+    @action(detail=True, methods=['post'])
+    def apply(self, request, pk=None):
+        """Mark recommendation as applied and record the irrigation event."""
+        recommendation = self.get_object()
+
+        if recommendation.status != 'pending':
+            return Response(
+                {'error': 'This recommendation has already been processed'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Create irrigation event
+        event_data = {
+            'zone': recommendation.zone.id,
+            'date': request.data.get('date', date.today().isoformat()),
+            'depth_inches': request.data.get('depth_inches', recommendation.recommended_depth_inches),
+            'duration_hours': request.data.get('duration_hours', recommendation.recommended_duration_hours),
+            'method': request.data.get('method', 'scheduled'),
+            'source': 'recommendation',
+            'notes': request.data.get('notes', f'Applied recommendation #{recommendation.id}'),
+        }
+
+        serializer = IrrigationZoneEventCreateSerializer(data=event_data)
+        serializer.is_valid(raise_exception=True)
+        event = serializer.save()
+
+        # Update recommendation status
+        recommendation.status = 'applied'
+        recommendation.save()
+
+        return Response({
+            'recommendation': IrrigationRecommendationSerializer(recommendation).data,
+            'event': IrrigationZoneEventSerializer(event).data,
+        })
+
+    @action(detail=True, methods=['post'])
+    def skip(self, request, pk=None):
+        """Mark recommendation as skipped."""
+        recommendation = self.get_object()
+
+        if recommendation.status != 'pending':
+            return Response(
+                {'error': 'This recommendation has already been processed'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        recommendation.status = 'skipped'
+        recommendation.save()
+
+        return Response(IrrigationRecommendationSerializer(recommendation).data)
+
+
+class CropCoefficientProfileViewSet(AuditLogMixin, viewsets.ModelViewSet):
+    """
+    API endpoint for managing crop coefficient (Kc) profiles.
+
+    System default profiles (zone=null) are read-only.
+    Zone-specific profiles can be created/edited.
+    """
+    serializer_class = CropCoefficientProfileSerializer
+    permission_classes = [IsAuthenticated, HasCompanyAccess]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['crop_type', 'growth_stage']
+
+    def get_queryset(self):
+        """Get Kc profiles - system defaults and company-specific."""
+        company = get_user_company(self.request.user)
+
+        # Get system defaults (no zone)
+        system_defaults = Q(zone__isnull=True)
+
+        # Get company-specific profiles
+        if company:
+            company_profiles = Q(zone__field__farm__company=company)
+            return CropCoefficientProfile.objects.filter(
+                system_defaults | company_profiles
+            ).select_related('zone', 'zone__field')
+        else:
+            return CropCoefficientProfile.objects.filter(system_defaults)
+
+    def perform_create(self, serializer):
+        """Ensure zone belongs to user's company."""
+        zone = serializer.validated_data.get('zone')
+        if zone:
+            company = require_company(self.request.user)
+            if zone.field.farm.company != company:
+                raise serializers.ValidationError({
+                    'zone': 'You can only create profiles for zones in your company.'
+                })
+        serializer.save()
+
+    def perform_update(self, serializer):
+        """Prevent editing system defaults."""
+        if serializer.instance.zone is None:
+            raise serializers.ValidationError(
+                'System default profiles cannot be modified.'
+            )
+        serializer.save()
+
+    def perform_destroy(self, instance):
+        """Prevent deleting system defaults."""
+        if instance.zone is None:
+            raise serializers.ValidationError(
+                'System default profiles cannot be deleted.'
+            )
+        instance.delete()
+
+
+class SoilMoistureReadingViewSet(AuditLogMixin, viewsets.ModelViewSet):
+    """
+    API endpoint for soil moisture sensor readings.
+    """
+    serializer_class = SoilMoistureReadingSerializer
+    permission_classes = [IsAuthenticated, HasCompanyAccess]
+    filter_backends = [filters.OrderingFilter]
+    ordering_fields = ['reading_datetime']
+
+    def get_queryset(self):
+        """Filter readings by current user's company."""
+        queryset = SoilMoistureReading.objects.select_related(
+            'zone', 'zone__field', 'zone__field__farm'
+        )
+        company = get_user_company(self.request.user)
+        if company:
+            queryset = queryset.filter(zone__field__farm__company=company)
+
+        zone_id = self.request.query_params.get('zone')
+        if zone_id:
+            queryset = queryset.filter(zone_id=zone_id)
+
+        return queryset.order_by('-reading_datetime')
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated, HasCompanyAccess])
+def irrigation_dashboard(request):
+    """
+    Get irrigation dashboard summary data.
+
+    Returns aggregate statistics, zone statuses, and pending recommendations.
+    """
+    company = get_user_company(request.user)
+    if not company:
+        return Response(
+            {'error': 'No company associated with user'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    from .services.irrigation_scheduler import IrrigationScheduler
+
+    # Get active zones
+    zones = IrrigationZone.objects.filter(
+        field__farm__company=company,
+        active=True
+    ).select_related('field', 'field__farm', 'water_source')
+
+    total_zones = zones.count()
+    total_acres = zones.aggregate(total=Sum('acres'))['total'] or Decimal('0')
+
+    # Calculate status for each zone
+    zone_statuses = []
+    zones_needing = 0
+    zones_soon = 0
+    total_depletion = Decimal('0')
+    zones_with_depletion = 0
+
+    for zone in zones:
+        try:
+            scheduler = IrrigationScheduler(zone)
+            zone_status = scheduler.get_zone_status_summary()
+            zone_statuses.append(zone_status)
+
+            if zone_status.get('status') == 'needs_irrigation':
+                zones_needing += 1
+            elif zone_status.get('status') == 'irrigation_soon':
+                zones_soon += 1
+
+            depletion = zone_status.get('depletion_pct')
+            if depletion is not None:
+                total_depletion += Decimal(str(depletion))
+                zones_with_depletion += 1
+        except Exception as e:
+            zone_statuses.append({
+                'zone_id': zone.id,
+                'zone_name': zone.name,
+                'status': 'error',
+                'error': str(e)
+            })
+
+    avg_depletion = (total_depletion / zones_with_depletion) if zones_with_depletion > 0 else Decimal('0')
+
+    # Get pending recommendations
+    pending_recs = IrrigationRecommendation.objects.filter(
+        zone__field__farm__company=company,
+        status='pending'
+    ).select_related('zone').order_by('recommended_date')[:10]
+
+    # Get recent irrigation events
+    recent_events = IrrigationEvent.objects.filter(
+        zone__field__farm__company=company
+    ).select_related('zone', 'zone__field').order_by('-date')[:10]
+
+    # Try to get recent weather data (from first zone with CIMIS target)
+    recent_eto = None
+    recent_rain = None
+    zone_with_cimis = zones.exclude(cimis_target__isnull=True).exclude(cimis_target='').first()
+    if zone_with_cimis:
+        try:
+            from .services.cimis_service import CIMISService
+            cimis = CIMISService()
+            weather_data = cimis.get_recent_data(
+                zone_with_cimis.cimis_target,
+                days=7,
+                target_type=zone_with_cimis.cimis_target_type or 'station'
+            )
+            for d in weather_data:
+                if d.get('eto'):
+                    recent_eto = (recent_eto or Decimal('0')) + d['eto']
+                if d.get('precipitation'):
+                    recent_rain = (recent_rain or Decimal('0')) + d['precipitation']
+        except Exception:
+            pass
+
+    # Organize zones by status
+    zones_by_status = {
+        'needs_irrigation': [z for z in zone_statuses if z.get('status') == 'needs_irrigation'],
+        'irrigation_soon': [z for z in zone_statuses if z.get('status') == 'irrigation_soon'],
+        'ok': [z for z in zone_statuses if z.get('status') == 'ok'],
+        'error': [z for z in zone_statuses if z.get('status') == 'error'],
+    }
+
+    return Response({
+        'total_zones': total_zones,
+        'active_zones': total_zones,  # Already filtered to active
+        'zones_needing_irrigation': zones_needing,
+        'zones_irrigation_soon': zones_soon,
+        'total_acres': float(total_acres),
+        'avg_depletion_pct': float(round(avg_depletion, 1)),
+        'recent_eto_total': float(recent_eto) if recent_eto else None,
+        'recent_rainfall_total': float(recent_rain) if recent_rain else None,
+        'zones': IrrigationZoneListSerializer(zones, many=True).data,
+        'zones_by_status': zones_by_status,
+        'pending_recommendations': IrrigationRecommendationListSerializer(pending_recs, many=True).data,
+        'recent_events': IrrigationZoneEventSerializer(recent_events, many=True).data,
+    })
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated, HasCompanyAccess])
+def cimis_stations(request):
+    """
+    Get list of nearby CIMIS stations.
+
+    Query Parameters:
+        lat: Latitude
+        lng: Longitude
+        limit: Max number of stations (default 5)
+    """
+    lat = request.query_params.get('lat')
+    lng = request.query_params.get('lng')
+    limit = int(request.query_params.get('limit', 5))
+
+    if not lat or not lng:
+        return Response(
+            {'error': 'lat and lng parameters are required'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    # For now, return a static list of common California CIMIS stations
+    # In production, this could query the CIMIS station list API
+    common_stations = [
+        {'id': '2', 'name': 'Five Points', 'county': 'Fresno'},
+        {'id': '5', 'name': 'Shafter', 'county': 'Kern'},
+        {'id': '6', 'name': 'Bishop', 'county': 'Inyo'},
+        {'id': '7', 'name': 'Firebaugh', 'county': 'Fresno'},
+        {'id': '15', 'name': 'Stratford', 'county': 'Kings'},
+        {'id': '39', 'name': 'Parlier', 'county': 'Fresno'},
+        {'id': '54', 'name': 'Arvin/Edison', 'county': 'Kern'},
+        {'id': '56', 'name': 'Castroville', 'county': 'Monterey'},
+        {'id': '80', 'name': 'Fresno State', 'county': 'Fresno'},
+        {'id': '105', 'name': 'Lindcove', 'county': 'Tulare'},
+        {'id': '106', 'name': 'Meloland', 'county': 'Imperial'},
+        {'id': '116', 'name': 'Salinas South', 'county': 'Monterey'},
+        {'id': '125', 'name': 'Twitchell Island', 'county': 'Sacramento'},
+        {'id': '131', 'name': 'Ripon', 'county': 'San Joaquin'},
+        {'id': '170', 'name': 'Goleta Foothills', 'county': 'Santa Barbara'},
+    ]
+
+    return Response({
+        'stations': common_stations[:limit],
+        'note': 'Use station ID as cimis_target with target_type="station"',
+    })
+
 
 
 

@@ -31,14 +31,20 @@ export default function Login({ onSwitchToRegister }) {
   const displayError = localError || error;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-cream flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Logo/Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-green-600 rounded-xl mb-4">
-            <Leaf className="w-8 h-8 text-white" />
+          <div className="inline-flex items-center justify-center w-16 h-16 mb-4">
+            <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-16 h-16">
+              <circle cx="24" cy="24" r="20" fill="#2D5016"/>
+              <circle cx="24" cy="26" r="12" fill="#E8791D"/>
+              <ellipse cx="24" cy="24" rx="8" ry="10" fill="#F4A934"/>
+              <path d="M24 4C24 4 28 10 28 14C28 18 26 20 24 20C22 20 20 18 20 14C20 10 24 4 24 4Z" fill="#4A7A2A"/>
+              <path d="M24 4C24 4 20 8 18 10" stroke="#2D5016" strokeWidth="1.5" strokeLinecap="round"/>
+            </svg>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">Farm Tracker</h1>
+          <h1 className="text-2xl font-bold text-bark-brown font-heading">Grove Master</h1>
           <p className="text-gray-600 mt-1">Sign in to your account</p>
         </div>
 
@@ -93,12 +99,18 @@ export default function Login({ onSwitchToRegister }) {
               </div>
             </div>
 
-            {/* Remember Me */}
+            {/* Remember Me & Forgot Password */}
             <div className="flex items-center justify-between">
               <label className="flex items-center">
                 <input type="checkbox" className="rounded border-gray-300 text-green-600 focus:ring-green-500" />
                 <span className="ml-2 text-sm text-gray-600">Remember me</span>
               </label>
+              <a
+                href="/forgot-password"
+                className="text-sm text-green-600 hover:text-green-700 font-medium"
+              >
+                Forgot password?
+              </a>
             </div>
 
             {/* Submit */}
@@ -137,7 +149,7 @@ export default function Login({ onSwitchToRegister }) {
 
         {/* Footer */}
         <p className="mt-6 text-center text-xs text-gray-500">
-          Farm Management & Compliance Tracking
+          Master your grove. Master your compliance.
         </p>
       </div>
     </div>
@@ -212,15 +224,21 @@ export function Register({ onSwitchToLogin }) {
   const displayError = localError || error;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-cream flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Logo/Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-green-600 rounded-xl mb-4">
-            <Leaf className="w-8 h-8 text-white" />
+          <div className="inline-flex items-center justify-center w-16 h-16 mb-4">
+            <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-16 h-16">
+              <circle cx="24" cy="24" r="20" fill="#2D5016"/>
+              <circle cx="24" cy="26" r="12" fill="#E8791D"/>
+              <ellipse cx="24" cy="24" rx="8" ry="10" fill="#F4A934"/>
+              <path d="M24 4C24 4 28 10 28 14C28 18 26 20 24 20C22 20 20 18 20 14C20 10 24 4 24 4Z" fill="#4A7A2A"/>
+              <path d="M24 4C24 4 20 8 18 10" stroke="#2D5016" strokeWidth="1.5" strokeLinecap="round"/>
+            </svg>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">Create Account</h1>
-          <p className="text-gray-600 mt-1">Start managing your farm operations</p>
+          <h1 className="text-2xl font-bold text-bark-brown font-heading">Create Account</h1>
+          <p className="text-gray-600 mt-1">Start managing your grove operations</p>
         </div>
 
         {/* Progress Steps */}

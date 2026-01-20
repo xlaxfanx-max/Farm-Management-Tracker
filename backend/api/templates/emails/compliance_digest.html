@@ -1,0 +1,102 @@
+{% extends "emails/base.html" %}
+
+{% block title %}Compliance Digest{% endblock %}
+{% block header_title %}Compliance Digest{% endblock %}
+
+{% block content %}
+<p>Hi {{ user_name }},</p>
+
+<p>Here's your compliance summary. You have <strong>{{ total_items }}</strong> item{% if total_items != 1 %}s{% endif %} that need your attention.</p>
+
+{% if critical_count > 0 %}
+<div style="background-color: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 16px; margin: 20px 0;">
+    <p style="margin: 0; color: #dc2626; font-weight: 600;">
+        {{ critical_count }} Critical Alert{% if critical_count != 1 %}s{% endif %} Require Immediate Attention
+    </p>
+</div>
+{% endif %}
+
+{% if alerts %}
+<h3 style="color: #111; border-bottom: 2px solid #e5e5e5; padding-bottom: 8px; margin-top: 30px;">Active Alerts</h3>
+<table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 20px;">
+{% for alert in alerts %}
+    <tr>
+        <td style="padding: 12px; border-bottom: 1px solid #f0f0f0;">
+            <span style="display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; margin-right: 8px;
+                {% if alert.priority == 'critical' %}background-color: #fef2f2; color: #dc2626;
+                {% elif alert.priority == 'high' %}background-color: #fffbeb; color: #d97706;
+                {% elif alert.priority == 'medium' %}background-color: #eff6ff; color: #2563eb;
+                {% else %}background-color: #f3f4f6; color: #6b7280;{% endif %}">
+                {{ alert.priority|upper }}
+            </span>
+            <strong>{{ alert.title }}</strong>
+            <p class="text-muted" style="margin: 4px 0 0; font-size: 13px;">{{ alert.message }}</p>
+        </td>
+    </tr>
+{% endfor %}
+</table>
+{% endif %}
+
+{% if deadlines %}
+<h3 style="color: #111; border-bottom: 2px solid #e5e5e5; padding-bottom: 8px; margin-top: 30px;">Upcoming Deadlines</h3>
+<table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 20px;">
+{% for deadline in deadlines %}
+    <tr>
+        <td style="padding: 12px; border-bottom: 1px solid #f0f0f0;">
+            <span style="display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; margin-right: 8px;
+                {% if deadline.status == 'overdue' %}background-color: #fef2f2; color: #dc2626;
+                {% else %}background-color: #fffbeb; color: #d97706;{% endif %}">
+                {% if deadline.status == 'overdue' %}OVERDUE{% else %}DUE SOON{% endif %}
+            </span>
+            <strong>{{ deadline.name }}</strong>
+            <p class="text-muted" style="margin: 4px 0 0; font-size: 13px;">Due: {{ deadline.due_date|date:"F j, Y" }}</p>
+        </td>
+    </tr>
+{% endfor %}
+</table>
+{% endif %}
+
+{% if expiring_licenses %}
+<h3 style="color: #111; border-bottom: 2px solid #e5e5e5; padding-bottom: 8px; margin-top: 30px;">Expiring Licenses</h3>
+<table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 20px;">
+{% for license in expiring_licenses %}
+    <tr>
+        <td style="padding: 12px; border-bottom: 1px solid #f0f0f0;">
+            <strong>{{ license.get_license_type_display }}</strong>
+            {% if license.user %} - {{ license.user.get_full_name }}{% endif %}
+            <p class="text-muted" style="margin: 4px 0 0; font-size: 13px;">
+                #{{ license.license_number }} - Expires: {{ license.expiration_date|date:"F j, Y" }}
+            </p>
+        </td>
+    </tr>
+{% endfor %}
+</table>
+{% endif %}
+
+{% if expiring_training %}
+<h3 style="color: #111; border-bottom: 2px solid #e5e5e5; padding-bottom: 8px; margin-top: 30px;">Expiring Training</h3>
+<table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 20px;">
+{% for training in expiring_training %}
+    <tr>
+        <td style="padding: 12px; border-bottom: 1px solid #f0f0f0;">
+            <strong>{{ training.trainee_name }}{% if training.trainee_user %} ({{ training.trainee_user.get_full_name }}){% endif %}</strong>
+            <p class="text-muted" style="margin: 4px 0 0; font-size: 13px;">
+                {{ training.get_training_type_display }} - Expires: {{ training.expiration_date|date:"F j, Y" }}
+            </p>
+        </td>
+    </tr>
+{% endfor %}
+</table>
+{% endif %}
+
+<div class="btn-container">
+    <a href="{{ dashboard_url }}" class="btn">View Compliance Dashboard</a>
+</div>
+
+<p class="text-small">
+    You're receiving this digest based on your notification preferences.
+    Visit your settings to adjust the frequency or disable these emails.
+</p>
+
+<p>Best regards,<br>Grove Master Team</p>
+{% endblock %}

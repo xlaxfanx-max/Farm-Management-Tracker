@@ -1,0 +1,43 @@
+{% extends "emails/base.html" %}
+
+{% block title %}Compliance Deadline Reminder{% endblock %}
+{% block header_title %}Compliance Reminder{% endblock %}
+
+{% block content %}
+<p>Hi {{ user_name }},</p>
+
+<p>This is a reminder about an upcoming compliance deadline for <strong>{{ company_name }}</strong>.</p>
+
+{% if urgency == 'critical' %}
+<div style="background-color: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 16px; margin: 20px 0;">
+    <p style="margin: 0; color: #dc2626; font-weight: 600;">
+        URGENT: This deadline is due {% if days_until_due == 0 %}TODAY{% elif days_until_due == 1 %}TOMORROW{% else %}in {{ days_until_due }} days{% endif %}!
+    </p>
+</div>
+{% elif urgency == 'high' %}
+<div style="background-color: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 16px; margin: 20px 0;">
+    <p style="margin: 0; color: #d97706; font-weight: 600;">
+        Reminder: This deadline is due in {{ days_until_due }} days
+    </p>
+</div>
+{% endif %}
+
+<div class="info-box">
+    <p><strong>{{ deadline_name }}</strong></p>
+    <p class="text-muted" style="margin-top: 8px;">{{ deadline_description }}</p>
+    <p class="text-muted" style="margin-top: 8px;">
+        <strong>Category:</strong> {{ deadline_category }}<br>
+        <strong>Due Date:</strong> {{ due_date|date:"F j, Y" }}
+    </p>
+</div>
+
+<div class="btn-container">
+    <a href="{{ deadline_url }}" class="btn">View Deadline</a>
+</div>
+
+<p class="text-muted">
+    Visit your compliance dashboard to see all upcoming deadlines and take action.
+</p>
+
+<p>Best regards,<br>Grove Master Team</p>
+{% endblock %}

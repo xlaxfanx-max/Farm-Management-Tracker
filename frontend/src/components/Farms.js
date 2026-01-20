@@ -1,21 +1,77 @@
-import React, { useState } from 'react';
-import { Home, Plus, Edit, Trash2, MapPin, ChevronDown, ChevronRight, Sprout, Map, Grid3X3, Layers, Locate } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { Home, Plus, MapPin, Locate, Search, X, Mountain } from 'lucide-react';
 import FarmMap from './FarmMap';
-import { mapAPI } from '../services/api';
+import FarmCard from './FarmCard';
+import FarmToolbar from './FarmToolbar';
+import FarmInsightsPanel from './FarmInsightsPanel';
+import GeocodePreviewModal from './GeocodePreviewModal';
+import { TreeSummaryCard, TreeDetectionPanel, SatelliteImageUpload, LiDARSummaryCard, LiDARUploadPanel } from './imagery';
+import { mapAPI, farmsAPI } from '../services/api';
+import { useData } from '../contexts/DataContext';
+import { useModal } from '../contexts/ModalContext';
 
-function Farms({ farms, fields, applications, onNewFarm, onEditFarm, onDeleteFarm, onNewField, onEditField, onDeleteField, onRefresh }) {
+function Farms() {
+  const { farms, fields, applications, updateFarm, deleteFarm, deleteField, loadData } = useData();
+  const { openFarmModal, openFieldModal } = useModal();
   const [expandedFarms, setExpandedFarms] = useState(new Set());
   const [viewMode, setViewMode] = useState('cards'); // 'cards', 'map', 'split'
   const [selectedFarmId, setSelectedFarmId] = useState(null);
   const [selectedFieldId, setSelectedFieldId] = useState(null);
   const [geocodingFarmId, setGeocodingFarmId] = useState(null);
   const [drawingField, setDrawingField] = useState(null); // { id, name } - field to start drawing for
+  const [showImageUpload, setShowImageUpload] = useState(null); // farmId to upload for
+  const [showTreeDetection, setShowTreeDetection] = useState(null); // { imageId, farmId, fields }
+  const [showTreeSummary, setShowTreeSummary] = useState(null); // fieldId to show summary for
+  const [showLiDARSummary, setShowLiDARSummary] = useState(null); // fieldId to show LiDAR summary for
+  const [showLiDARUpload, setShowLiDARUpload] = useState(null); // fieldId to upload LiDAR for
 
-  // Handle empty data
-  if (!farms || !Array.isArray(farms)) farms = [];
-  if (!fields || !Array.isArray(fields)) fields = [];
-  if (!applications || !Array.isArray(applications)) applications = [];
-  
+  // Geocoding preview state
+  const [geocodePreview, setGeocodePreview] = useState({
+    isOpen: false,
+    farm: null,
+    result: null,
+    isLoading: false,
+    error: null
+  });
+
+  // Search and filter state
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterCounty, setFilterCounty] = useState('');
+  const [filterMapped, setFilterMapped] = useState('all'); // 'all' | 'mapped' | 'unmapped'
+
+  // Wrapper functions for modal actions
+  const handleNewFarm = () => openFarmModal();
+  const handleEditFarm = (farm, autoSave = false) => {
+    if (autoSave) {
+      updateFarm(farm.id, farm);
+    } else {
+      openFarmModal(farm);
+    }
+  };
+  const handleDeleteFarm = async (farmId) => {
+    if (window.confirm('Are you sure you want to delete this farm?')) {
+      const result = await deleteFarm(farmId);
+      if (!result.success) {
+        alert(result.error);
+      }
+    }
+  };
+  const handleNewField = (farmId) => openFieldModal(null, farmId);
+  const handleEditField = (field) => openFieldModal(field);
+  const handleDeleteField = async (fieldId) => {
+    if (window.confirm('Are you sure you want to delete this field?')) {
+      const result = await deleteField(fieldId);
+      if (!result.success) {
+        alert(result.error);
+      }
+    }
+  };
+
+  // Handle empty data - memoized to prevent dependency issues
+  const safeFarms = useMemo(() => farms || [], [farms]);
+  const safeFields = useMemo(() => fields || [], [fields]);
+  const safeApplications = useMemo(() => applications || [], [applications]);
+
   const toggleFarm = (farmId) => {
     const newExpanded = new Set(expandedFarms);
     if (newExpanded.has(farmId)) {
@@ -27,7 +83,7 @@ function Farms({ farms, fields, applications, onNewFarm, onEditFarm, onDeleteFar
   };
 
   const getFarmFields = (farmId) => {
-    return fields.filter(field => {
+    return safeFields.filter(field => {
       const fieldFarmId = parseInt(field.farm);
       const compareFarmId = parseInt(farmId);
       return fieldFarmId === compareFarmId;
@@ -35,9 +91,67 @@ function Farms({ farms, fields, applications, onNewFarm, onEditFarm, onDeleteFar
   };
 
   const getFieldApplicationCount = (fieldId, fieldName) => {
-    return applications.filter(app => 
+    return safeApplications.filter(app =>
       app.field === fieldId || app.field_name === fieldName
     ).length;
+  };
+
+  // Get unique counties for filter dropdown
+  const uniqueCounties = useMemo(() => {
+    const counties = safeFarms.map(f => f.county).filter(Boolean);
+    return [...new Set(counties)].sort();
+  }, [safeFarms]);
+
+  // Filter farms based on search and filters
+  const filteredFarms = useMemo(() => {
+    return safeFarms.filter(farm => {
+      // Search filter
+      const matchesSearch = !searchTerm ||
+        farm.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        farm.farm_number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        farm.owner_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        farm.county?.toLowerCase().includes(searchTerm.toLowerCase());
+
+      // County filter
+      const matchesCounty = !filterCounty || farm.county === filterCounty;
+
+      // Mapping status filter
+      const hasCoordsValue = farm.gps_latitude && farm.gps_longitude;
+      const matchesMapped = filterMapped === 'all' ||
+        (filterMapped === 'mapped' && hasCoordsValue) ||
+        (filterMapped === 'unmapped' && !hasCoordsValue);
+
+      return matchesSearch && matchesCounty && matchesMapped;
+    });
+  }, [safeFarms, searchTerm, filterCounty, filterMapped]);
+
+  // Expand all / collapse all helpers
+  const expandAll = () => setExpandedFarms(new Set(filteredFarms.map(f => f.id)));
+  const collapseAll = () => setExpandedFarms(new Set());
+
+  // Calculate farm statistics
+  const getFarmStats = (farmId) => {
+    const farmFields = getFarmFields(farmId);
+    const totalAcres = farmFields.reduce((sum, f) => sum + (parseFloat(f.total_acres) || 0), 0);
+    const mappedFields = farmFields.filter(f => f.boundary_geojson).length;
+    const totalApplications = farmFields.reduce((sum, f) =>
+      sum + getFieldApplicationCount(f.id, f.name), 0);
+
+    // Get crop distribution
+    const cropAcres = {};
+    farmFields.forEach(f => {
+      const crop = f.crop_name || f.current_crop || 'Unknown';
+      cropAcres[crop] = (cropAcres[crop] || 0) + (parseFloat(f.total_acres) || 0);
+    });
+    const topCrop = Object.entries(cropAcres).sort((a, b) => b[1] - a[1])[0];
+
+    return {
+      totalAcres,
+      fieldCount: farmFields.length,
+      mappedFields,
+      totalApplications,
+      topCrop: topCrop ? topCrop[0] : null
+    };
   };
 
   // Handle farm selection from map
@@ -64,40 +178,104 @@ function Farms({ farms, fields, applications, onNewFarm, onEditFarm, onDeleteFar
     try {
       const response = await mapAPI.updateFieldBoundary(fieldId, geojson, acres);
       console.log('[Farms] Boundary update response:', response.data);
-      if (onRefresh) onRefresh();
+      if (loadData) loadData();
     } catch (err) {
       console.error('[Farms] Error saving boundary:', err);
       alert('Failed to save field boundary');
     }
   };
 
-  // Geocode farm address
+  // Geocode farm address - opens preview modal
   const handleGeocodeFarm = async (farm) => {
     if (!farm.address && !farm.county) {
       alert('Farm needs an address or county to get GPS coordinates');
       return;
     }
-    
+
+    // Open preview modal in loading state
+    setGeocodePreview({
+      isOpen: true,
+      farm: farm,
+      result: null,
+      isLoading: true,
+      error: null
+    });
     setGeocodingFarmId(farm.id);
+
     try {
-      const address = `${farm.address || ''}, ${farm.county} County, California`;
-      const response = await mapAPI.geocode(address);
-      
+      // Send address, county, and city for better geocoding
+      const response = await mapAPI.geocode({
+        address: farm.address || '',
+        county: farm.county || '',
+        city: farm.city || ''
+      });
+
       if (response.data && response.data.lat) {
-        // Update farm with new coordinates via edit
-        const updatedFarm = {
-          ...farm,
-          gps_latitude: response.data.lat,
-          gps_longitude: response.data.lng
-        };
-        onEditFarm(updatedFarm, true); // Pass true to indicate auto-save
+        setGeocodePreview(prev => ({
+          ...prev,
+          result: response.data,
+          isLoading: false,
+          error: null
+        }));
       }
     } catch (err) {
       console.error('Geocoding error:', err);
-      alert('Could not find coordinates for this address');
+      const errorData = err.response?.data || {};
+      setGeocodePreview(prev => ({
+        ...prev,
+        isLoading: false,
+        error: {
+          message: errorData.error || 'Could not find coordinates for this address',
+          suggestion: errorData.suggestion,
+          triedQueries: errorData.tried_queries
+        }
+      }));
     } finally {
       setGeocodingFarmId(null);
     }
+  };
+
+  // Handle confirming geocoded location from preview modal
+  const handleConfirmGeocode = async (locationData) => {
+    const farm = geocodePreview.farm;
+    if (!farm) return;
+
+    try {
+      // Use dedicated endpoint for updating only coordinates
+      const response = await farmsAPI.updateCoordinates(
+        farm.id,
+        locationData.lat,
+        locationData.lng
+      );
+
+      if (response.data?.success) {
+        // Refresh data and close the modal on success
+        if (loadData) loadData();
+        setGeocodePreview({
+          isOpen: false,
+          farm: null,
+          result: null,
+          isLoading: false,
+          error: null
+        });
+      } else {
+        alert('Failed to save coordinates. Please try again.');
+      }
+    } catch (err) {
+      console.error('Error saving coordinates:', err);
+      alert('Failed to save coordinates. Please try again.');
+    }
+  };
+
+  // Close geocode preview modal
+  const handleCloseGeocodePreview = () => {
+    setGeocodePreview({
+      isOpen: false,
+      farm: null,
+      result: null,
+      isLoading: false,
+      error: null
+    });
   };
 
   // Stats
@@ -106,63 +284,35 @@ function Farms({ farms, fields, applications, onNewFarm, onEditFarm, onDeleteFar
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900">Farms & Fields</h2>
-          <p className="text-gray-600 mt-1">
-            {farms.length} farms · {fields.length} fields
-            {farmsWithCoords > 0 && ` · ${farmsWithCoords} mapped`}
-          </p>
-        </div>
+      {/* Toolbar with Header, Search, Filters, and View Controls */}
+      <FarmToolbar
+        totalFarms={safeFarms.length}
+        filteredCount={filteredFarms.length}
+        totalFields={safeFields.length}
+        mappedFarms={farmsWithCoords}
+        viewMode={viewMode}
+        onViewModeChange={setViewMode}
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
+        filterCounty={filterCounty}
+        onCountyChange={setFilterCounty}
+        filterMapped={filterMapped}
+        onMappedChange={setFilterMapped}
+        counties={uniqueCounties}
+        onExpandAll={expandAll}
+        onCollapseAll={collapseAll}
+        onAddFarm={handleNewFarm}
+        showExpandCollapse={filteredFarms.length > 0}
+      />
 
-        <div className="flex items-center gap-3">
-          {/* View Mode Toggle */}
-          <div className="flex items-center bg-gray-100 rounded-lg p-1">
-            <button
-              onClick={() => setViewMode('cards')}
-              className={`p-2 rounded-md transition-colors ${
-                viewMode === 'cards' 
-                  ? 'bg-white shadow text-green-600' 
-                  : 'text-gray-500 hover:text-gray-700'
-              }`}
-              title="Card View"
-            >
-              <Grid3X3 className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => setViewMode('map')}
-              className={`p-2 rounded-md transition-colors ${
-                viewMode === 'map' 
-                  ? 'bg-white shadow text-green-600' 
-                  : 'text-gray-500 hover:text-gray-700'
-              }`}
-              title="Map View"
-            >
-              <Map className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => setViewMode('split')}
-              className={`p-2 rounded-md transition-colors ${
-                viewMode === 'split' 
-                  ? 'bg-white shadow text-green-600' 
-                  : 'text-gray-500 hover:text-gray-700'
-              }`}
-              title="Split View"
-            >
-              <Layers className="w-4 h-4" />
-            </button>
-          </div>
-
-          <button 
-            onClick={onNewFarm}
-            className="flex items-center gap-2 bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 shadow-lg transition-colors"
-          >
-            <Plus size={20} />
-            Add Farm
-          </button>
-        </div>
-      </div>
+      {/* Insights Panel */}
+      {(viewMode === 'cards' || viewMode === 'split') && safeFarms.length > 0 && (
+        <FarmInsightsPanel
+          farms={safeFarms}
+          fields={safeFields}
+          applications={safeApplications}
+        />
+      )}
 
       {/* Map Hint */}
       {viewMode === 'cards' && farmsWithCoords === 0 && farms.length > 0 && (
@@ -183,10 +333,10 @@ function Farms({ farms, fields, applications, onNewFarm, onEditFarm, onDeleteFar
         
         {/* Map View */}
         {(viewMode === 'map' || viewMode === 'split') && (
-          <div className={viewMode === 'split' ? 'order-2' : ''}>
+          <div className={`relative ${viewMode === 'split' ? 'order-2' : ''}`}>
             <FarmMap
-              farms={farms}
-              fields={fields}
+              farms={safeFarms}
+              fields={safeFields}
               selectedFarmId={selectedFarmId}
               selectedFieldId={selectedFieldId}
               onFarmSelect={handleFarmSelect}
@@ -196,10 +346,39 @@ function Farms({ farms, fields, applications, onNewFarm, onEditFarm, onDeleteFar
               drawingField={drawingField}
               onDrawingComplete={() => setDrawingField(null)}
             />
-            
-            {fieldsWithBoundaries < fields.length && fields.length > 0 && (
+
+            {/* Drawing Instructions Overlay */}
+            {drawingField && (
+              <div className="absolute top-4 left-4 z-[1000] bg-white rounded-lg shadow-xl border border-gray-200 p-4 max-w-xs">
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="font-semibold text-gray-900 flex items-center gap-2">
+                    <MapPin className="w-4 h-4 text-green-600" />
+                    Drawing: {drawingField.name}
+                  </h4>
+                  <button
+                    onClick={() => setDrawingField(null)}
+                    className="text-gray-400 hover:text-gray-600"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+                <ol className="text-sm text-gray-600 space-y-1.5 list-decimal list-inside">
+                  <li>Click on the map to place boundary points</li>
+                  <li>Click the first point to close the polygon</li>
+                  <li>Click <strong>Save</strong> when finished</li>
+                </ol>
+                <button
+                  onClick={() => setDrawingField(null)}
+                  className="mt-3 w-full px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 rounded transition-colors"
+                >
+                  Cancel Drawing
+                </button>
+              </div>
+            )}
+
+            {fieldsWithBoundaries < fields.length && fields.length > 0 && !drawingField && (
               <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-700">
-                <strong>💡 Tip:</strong> {fields.length - fieldsWithBoundaries} of {fields.length} fields need boundaries drawn. 
+                <strong>Tip:</strong> {fields.length - fieldsWithBoundaries} of {fields.length} fields need boundaries drawn.
                 Click on a field marker to draw its boundary.
               </div>
             )}
@@ -209,263 +388,56 @@ function Farms({ farms, fields, applications, onNewFarm, onEditFarm, onDeleteFar
         {/* Card View */}
         {(viewMode === 'cards' || viewMode === 'split') && (
           <div className={`space-y-4 ${viewMode === 'split' ? 'order-1' : ''}`}>
-            {farms.map(farm => {
+            {filteredFarms.map(farm => {
               const farmFields = getFarmFields(farm.id);
-              const isExpanded = expandedFarms.has(farm.id);
-              const isSelected = selectedFarmId === farm.id;
-              const hasCoords = farm.gps_latitude && farm.gps_longitude;
-              const ExpandIcon = isExpanded ? ChevronDown : ChevronRight;
+              const stats = getFarmStats(farm.id);
 
               return (
-                <div 
-                  key={farm.id} 
-                  className={`bg-white rounded-lg shadow-md border-2 overflow-hidden transition-all ${
-                    isSelected ? 'border-green-500 shadow-lg' : 'border-gray-200'
-                  }`}
-                >
-                  {/* Farm Header */}
-                  <div className="bg-gradient-to-r from-green-50 to-blue-50 border-b border-gray-200">
-                    <div className="p-6">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-3 mb-3">
-                            <button
-                              onClick={() => toggleFarm(farm.id)}
-                              className="p-1 hover:bg-white rounded transition-colors"
-                            >
-                              <ExpandIcon className="w-6 h-6 text-gray-700" />
-                            </button>
-                            <Home className="text-green-600 flex-shrink-0" size={32} />
-                            <div>
-                              <h3 className="font-bold text-2xl text-gray-900">{farm.name}</h3>
-                              {farm.farm_number && (
-                                <p className="text-sm text-gray-600 font-mono mt-1">{farm.farm_number}</p>
-                              )}
-                            </div>
-                            
-                            {/* GPS Status Badge */}
-                            <span className={`ml-2 px-2 py-1 rounded-full text-xs font-medium ${
-                              hasCoords 
-                                ? 'bg-green-100 text-green-700' 
-                                : 'bg-gray-100 text-gray-500'
-                            }`}>
-                              {hasCoords ? '📍 Mapped' : 'No GPS'}
-                            </span>
-                          </div>
-                          
-                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 ml-10">
-                            {farm.owner_name && (
-                              <div>
-                                <p className="text-xs text-gray-500 uppercase tracking-wide">Owner</p>
-                                <p className="font-medium text-gray-900">{farm.owner_name}</p>
-                              </div>
-                            )}
-                            <div>
-                              <p className="text-xs text-gray-500 uppercase tracking-wide">County</p>
-                              <p className="font-medium text-gray-900">{farm.county}</p>
-                            </div>
-                            {farm.phone && (
-                              <div>
-                                <p className="text-xs text-gray-500 uppercase tracking-wide">Phone</p>
-                                <p className="font-medium text-gray-900">{farm.phone}</p>
-                              </div>
-                            )}
-                            <div>
-                              <p className="text-xs text-gray-500 uppercase tracking-wide">Fields</p>
-                              <p className="font-medium text-gray-900">{farmFields.length} field{farmFields.length !== 1 ? 's' : ''}</p>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="flex gap-2 ml-4">
-                          {/* Get GPS Button */}
-                          {!hasCoords && (
-                            <button 
-                              onClick={() => handleGeocodeFarm(farm)}
-                              disabled={geocodingFarmId === farm.id}
-                              className={`flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-lg transition-colors ${
-                                geocodingFarmId === farm.id 
-                                  ? 'bg-gray-100 text-gray-400' 
-                                  : 'bg-white text-gray-700 hover:bg-gray-50'
-                              }`}
-                              title="Get GPS from address"
-                            >
-                              <Locate size={18} className={geocodingFarmId === farm.id ? 'animate-pulse' : ''} />
-                              <span className="hidden sm:inline">
-                                {geocodingFarmId === farm.id ? 'Finding...' : 'Get GPS'}
-                              </span>
-                            </button>
-                          )}
-                          
-                          <button 
-                            onClick={() => onNewField(farm.id)}
-                            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
-                            title="Add Field to this Farm"
-                          >
-                            <Plus size={18} />
-                            <span>Add Field</span>
-                          </button>
-                          <button 
-                            onClick={() => onEditFarm(farm)}
-                            className="p-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-                            title="Edit Farm"
-                          >
-                            <Edit size={18} />
-                          </button>
-                          <button 
-                            onClick={() => onDeleteFarm(farm.id)}
-                            className="p-2 bg-white border border-gray-300 text-red-600 rounded-lg hover:bg-red-50 transition-colors"
-                            title="Delete Farm"
-                          >
-                            <Trash2 size={18} />
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Fields Section (Expandable) */}
-                  {isExpanded && (
-                    <div className="p-6 bg-gray-50">
-                      <div className="flex items-center justify-between mb-4">
-                        <h4 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                          <MapPin className="w-5 h-5 text-blue-600" />
-                          Fields ({farmFields.length})
-                        </h4>
-                        <button
-                          onClick={() => onNewField(farm.id)}
-                          className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-sm transition-colors"
-                        >
-                          <Plus size={16} />
-                          Add Field to {farm.name}
-                        </button>
-                      </div>
-
-                      {farmFields.length === 0 ? (
-                        <div className="text-center py-8 bg-white rounded-lg border-2 border-dashed border-gray-300">
-                          <MapPin className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                          <p className="text-gray-600 mb-3">No fields yet for this farm</p>
-                          <button
-                            onClick={() => onNewField(farm.id)}
-                            className="text-blue-600 hover:text-blue-700 font-medium text-sm"
-                          >
-                            Add your first field →
-                          </button>
-                        </div>
-                      ) : (
-                        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                          {farmFields.map(field => {
-                            const isFieldSelected = selectedFieldId === field.id;
-                            const hasBoundary = !!field.boundary_geojson;
-                            
-                            return (
-                              <div 
-                                key={field.id} 
-                                className={`bg-white rounded-lg shadow border-2 p-4 hover:shadow-md transition-all cursor-pointer ${
-                                  isFieldSelected ? 'border-blue-500' : 'border-gray-200'
-                                }`}
-                                onClick={() => handleFieldSelect(field.id)}
-                              >
-                                <div className="flex items-start justify-between mb-3">
-                                  <div className="flex-1">
-                                    <div className="flex items-center gap-2 mb-1">
-                                      <Sprout className="w-4 h-4 text-green-600" />
-                                      <h5 className="font-bold text-gray-900">{field.name}</h5>
-                                    </div>
-                                    {field.field_number && (
-                                      <p className="text-xs text-gray-500 font-mono">{field.field_number}</p>
-                                    )}
-                                  </div>
-                                  <div className="flex items-center gap-1">
-                                    {hasBoundary ? (
-                                      <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded text-xs">
-                                        Mapped
-                                      </span>
-                                    ) : (
-                                      <span className="px-2 py-0.5 bg-gray-100 text-gray-500 rounded text-xs">
-                                        No boundary
-                                      </span>
-                                    )}
-                                  </div>
-                                </div>
-                                
-                                <div className="space-y-2 mb-4">
-                                  <div className="flex justify-between text-sm">
-                                    <span className="text-gray-600">Crop:</span>
-                                    <span className="font-medium text-gray-900">{field.current_crop || 'Not set'}</span>
-                                  </div>
-                                  <div className="flex justify-between text-sm">
-                                    <span className="text-gray-600">Acres:</span>
-                                    <span className="font-medium text-gray-900">{field.total_acres || '0'}</span>
-                                  </div>
-                                  <div className="flex justify-between text-sm">
-                                    <span className="text-gray-600">County:</span>
-                                    <span className="font-medium text-gray-900">{field.county || 'Not set'}</span>
-                                  </div>
-                                  {(field.plss_section || field.plss_township || field.plss_range) && (
-                                    <div className="flex justify-between text-sm">
-                                      <span className="text-gray-600">Location:</span>
-                                      <span className="font-medium text-gray-900 text-xs">
-                                        {field.plss_section && `S${field.plss_section}`}
-                                        {field.plss_township && ` T${field.plss_township}`}
-                                        {field.plss_range && ` R${field.plss_range}`}
-                                      </span>
-                                    </div>
-                                  )}
-                                  <div className="flex justify-between text-sm">
-                                    <span className="text-gray-600">Applications:</span>
-                                    <span className="font-medium text-blue-600">{getFieldApplicationCount(field.id, field.name)}</span>
-                                  </div>
-                                </div>
-
-                                <div className="flex gap-2 pt-3 border-t border-gray-100" onClick={e => e.stopPropagation()}>
-                                  <button 
-                                    onClick={() => {
-                                      setViewMode('map');
-                                      setSelectedFieldId(field.id);
-                                      // Small delay to let map render, then trigger drawing
-                                      setTimeout(() => {
-                                        setDrawingField({ id: field.id, name: field.name });
-                                      }, 300);
-                                    }}
-                                    className="flex-1 flex items-center justify-center gap-1 px-3 py-1.5 bg-green-50 text-green-600 rounded hover:bg-green-100 text-sm font-medium transition-colors"
-                                  >
-                                    <MapPin size={14} />
-                                    {hasBoundary ? 'Edit Map' : 'Draw Map'}
-                                  </button>
-                                  <button 
-                                    onClick={() => onEditField(field)}
-                                    className="flex-1 flex items-center justify-center gap-1 px-3 py-1.5 bg-blue-50 text-blue-600 rounded hover:bg-blue-100 text-sm font-medium transition-colors"
-                                  >
-                                    <Edit size={14} />
-                                    Edit
-                                  </button>
-                                  <button 
-                                    onClick={() => onDeleteField(field.id)}
-                                    className="flex-1 flex items-center justify-center gap-1 px-3 py-1.5 bg-red-50 text-red-600 rounded hover:bg-red-100 text-sm font-medium transition-colors"
-                                  >
-                                    <Trash2 size={14} />
-                                    Delete
-                                  </button>
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
+                <FarmCard
+                  key={farm.id}
+                  farm={farm}
+                  fields={farmFields}
+                  stats={stats}
+                  isExpanded={expandedFarms.has(farm.id)}
+                  isSelected={selectedFarmId === farm.id}
+                  onToggleExpand={toggleFarm}
+                  onEdit={handleEditFarm}
+                  onDelete={handleDeleteFarm}
+                  onAddField={handleNewField}
+                  onGeocode={handleGeocodeFarm}
+                  onUploadImagery={setShowImageUpload}
+                  isGeocoding={geocodingFarmId === farm.id}
+                  selectedFieldId={selectedFieldId}
+                  onFieldSelect={handleFieldSelect}
+                  onFieldEdit={handleEditField}
+                  onFieldDelete={handleDeleteField}
+                  onFieldDrawBoundary={(field, farmId) => {
+                    // Use split view to keep the card visible while drawing
+                    setViewMode('split');
+                    setSelectedFieldId(field.id);
+                    setSelectedFarmId(farmId);
+                    // Ensure farm is expanded
+                    setExpandedFarms(prev => new Set([...prev, farmId]));
+                    // Small delay to let map render, then trigger drawing
+                    setTimeout(() => {
+                      setDrawingField({ id: field.id, name: field.name });
+                    }, 300);
+                  }}
+                  onFieldTreeSummary={setShowTreeSummary}
+                  onFieldLiDARSummary={setShowLiDARSummary}
+                  getFieldApplicationCount={getFieldApplicationCount}
+                />
               );
             })}
 
-            {farms.length === 0 && (
+            {/* No farms at all */}
+            {safeFarms.length === 0 && (
               <div className="text-center py-12 bg-white rounded-lg shadow">
                 <Home className="mx-auto text-gray-300 mb-4" size={48} />
                 <h3 className="text-lg font-medium text-gray-800 mb-2">No farms yet</h3>
                 <p className="text-gray-600 mb-4">Get started by adding your first farm</p>
-                <button 
-                  onClick={onNewFarm}
+                <button
+                  onClick={handleNewFarm}
                   className="inline-flex items-center gap-2 bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700"
                 >
                   <Plus size={20} />
@@ -473,9 +445,177 @@ function Farms({ farms, fields, applications, onNewFarm, onEditFarm, onDeleteFar
                 </button>
               </div>
             )}
+
+            {/* No results from filters */}
+            {safeFarms.length > 0 && filteredFarms.length === 0 && (
+              <div className="text-center py-12 bg-white rounded-lg shadow">
+                <Search className="mx-auto text-gray-300 mb-4" size={48} />
+                <h3 className="text-lg font-medium text-gray-800 mb-2">No farms match your filters</h3>
+                <p className="text-gray-600 mb-4">Try adjusting your search or filter criteria</p>
+                <button
+                  onClick={() => {
+                    setSearchTerm('');
+                    setFilterCounty('');
+                    setFilterMapped('all');
+                  }}
+                  className="inline-flex items-center gap-2 text-green-600 hover:text-green-700 font-medium"
+                >
+                  <X size={16} />
+                  Clear all filters
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>
+
+      {/* Satellite Image Upload Modal */}
+      {showImageUpload && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-xl w-full max-h-[90vh] overflow-y-auto">
+            <SatelliteImageUpload
+              farms={safeFarms}
+              selectedFarmId={showImageUpload}
+              onUploadComplete={(imageData) => {
+                setShowImageUpload(null);
+                // Always show tree detection panel after upload so user can see status
+                if (imageData && imageData.id) {
+                  const farmFields = getFarmFields(showImageUpload);
+                  setShowTreeDetection({
+                    imageId: imageData.id,
+                    farmId: showImageUpload,
+                    fields: farmFields
+                  });
+                }
+              }}
+              onCancel={() => setShowImageUpload(null)}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Tree Detection Panel Modal */}
+      {showTreeDetection && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-lg w-full max-h-[90vh] overflow-y-auto">
+            <TreeDetectionPanel
+              satelliteImageId={showTreeDetection.imageId}
+              fields={showTreeDetection.fields}
+              onDetectionComplete={(runs) => {
+                console.log('Detection complete:', runs);
+                // Reload data to refresh field tree counts
+                if (loadData) loadData();
+                // Don't close panel - let user see results and close manually
+              }}
+              onClose={() => setShowTreeDetection(null)}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Tree Summary Modal */}
+      {showTreeSummary && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-md w-full">
+            <div className="p-4 border-b flex justify-between items-center">
+              <h3 className="font-semibold">Tree Detection Summary</h3>
+              <button
+                onClick={() => setShowTreeSummary(null)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                &times;
+              </button>
+            </div>
+            <div className="p-4">
+              <TreeSummaryCard
+                fieldId={showTreeSummary}
+                onRunDetection={() => {
+                  // Find the field and its farm to set up detection
+                  const field = fields.find(f => f.id === showTreeSummary);
+                  if (field) {
+                    setShowTreeSummary(null);
+                    setShowImageUpload(parseInt(field.farm));
+                  }
+                }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* LiDAR Summary Modal */}
+      {showLiDARSummary && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-white rounded-lg max-w-md w-full">
+            <div className="p-4 border-b flex justify-between items-center">
+              <h3 className="font-semibold flex items-center">
+                <Mountain className="w-5 h-5 mr-2 text-emerald-600" />
+                LiDAR Analysis Summary
+              </h3>
+              <button
+                onClick={() => setShowLiDARSummary(null)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                &times;
+              </button>
+            </div>
+            <div className="p-4">
+              <LiDARSummaryCard
+                fieldId={showLiDARSummary}
+                onUploadLiDAR={() => {
+                  setShowLiDARSummary(null);
+                  setShowLiDARUpload(showLiDARSummary);
+                }}
+                onViewTrees={() => {
+                  setShowLiDARSummary(null);
+                  setSelectedFieldId(showLiDARSummary);
+                  setViewMode('map');
+                }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* LiDAR Upload Modal */}
+      {showLiDARUpload && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="max-w-lg w-full mx-4">
+            <LiDARUploadPanel
+              fields={fields}
+              selectedFieldId={showLiDARUpload}
+              onUploadComplete={(dataset) => {
+                console.log('LiDAR dataset uploaded:', dataset);
+                loadData();
+              }}
+              onProcessingComplete={(run) => {
+                console.log('LiDAR processing complete:', run);
+                setShowLiDARUpload(null);
+                setShowLiDARSummary(showLiDARUpload);
+                loadData();
+              }}
+              onCancel={() => setShowLiDARUpload(null)}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Geocode Preview Modal */}
+      <GeocodePreviewModal
+        isOpen={geocodePreview.isOpen}
+        onClose={handleCloseGeocodePreview}
+        onConfirm={handleConfirmGeocode}
+        farmName={geocodePreview.farm?.name || ''}
+        initialResult={geocodePreview.result}
+        isLoading={geocodePreview.isLoading}
+        error={geocodePreview.error}
+        onRetry={() => {
+          if (geocodePreview.farm) {
+            openFarmModal(geocodePreview.farm);
+            handleCloseGeocodePreview();
+          }
+        }}
+      />
     </div>
   );
 }

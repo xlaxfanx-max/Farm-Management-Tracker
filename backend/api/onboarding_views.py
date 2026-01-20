@@ -8,12 +8,13 @@ from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from .permissions import HasCompanyAccess
 from django.utils import timezone
 from .models import Farm, Field, WaterSource
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, HasCompanyAccess])
 def get_onboarding_status(request):
     """Get the current onboarding status for the user's company."""
     company = request.user.current_company
@@ -42,7 +43,7 @@ def get_onboarding_status(request):
 
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, HasCompanyAccess])
 def update_onboarding_step(request):
     """Update the current onboarding step."""
     company = request.user.current_company
@@ -72,7 +73,7 @@ def update_onboarding_step(request):
 
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, HasCompanyAccess])
 def complete_onboarding(request):
     """Mark onboarding as complete."""
     company = request.user.current_company
@@ -96,7 +97,7 @@ def complete_onboarding(request):
 
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, HasCompanyAccess])
 def skip_onboarding(request):
     """Allow user to skip onboarding."""
     company = request.user.current_company
@@ -120,7 +121,7 @@ def skip_onboarding(request):
 
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, HasCompanyAccess])
 def reset_onboarding(request):
     """Reset onboarding (for testing or re-doing setup)."""
     company = request.user.current_company

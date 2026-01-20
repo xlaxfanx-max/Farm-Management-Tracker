@@ -1,12 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  LayoutDashboard, 
-  Home as HomeIcon, 
-  MapPin, 
-  Droplet, 
+import {
+  LayoutDashboard,
+  Home as HomeIcon,
   Droplets,
   FileText,
-  Settings,
   LogOut,
   Menu,
   X,
@@ -16,136 +13,76 @@ import {
   User,
   Users,
   Leaf,
-  Activity
+  Activity,
+  Cloud,
+  BarChart3,
+  Shield,
+  Bug,
 } from 'lucide-react';
+
+// Contexts
+import { useAuth } from './contexts/AuthContext';
+import { DataProvider } from './contexts/DataContext';
+import { ModalProvider } from './contexts/ModalContext';
+
+// Components
 import Dashboard from './components/Dashboard';
 import CompanySettings from './components/CompanySettings';
 import Profile from './components/Profile';
 import Farms from './components/Farms';
-import Fields from './components/Fields';
-import FarmModal from './components/FarmModal';
-import FieldModal from './components/FieldModal';
 import WaterManagement from './components/WaterManagement';
-import ApplicationModal from './components/ApplicationModal';
-import WaterSourceModal from './components/WaterSourceModal';
-import WaterTestModal from './components/WaterTestModal';
 import Reports from './components/Reports';
-import { farmsAPI, fieldsAPI, applicationsAPI, productsAPI, waterSourcesAPI, waterTestsAPI, onboardingAPI } from './services/api';
 import Harvests from './components/Harvests';
-import HarvestModal from './components/HarvestModal';
-import HarvestLoadModal from './components/HarvestLoadModal';
-import HarvestLaborModal from './components/HarvestLaborModal';
-import BuyerModal from './components/BuyerModal';
-import LaborContractorModal from './components/LaborContractorModal';
-import WellModal from './components/WellModal';
-import WellReadingModal from './components/WellReadingModal';
-import WellSourceModal from './components/WellSourceModal';
-
-// Nutrient Management
 import NutrientManagement from './components/NutrientManagement';
-import NutrientApplicationModal from './components/NutrientApplicationModal';
-import FertilizerProductModal from './components/FertilizerProductModal';
-
 import AuditLogViewer from './components/AuditLogViewer';
-
-// NEW: Import authentication and team management
-import { useAuth } from './contexts/AuthContext';
-import Login, { Register } from './components/Login';
 import TeamManagement from './components/TeamManagement';
+import Login, { Register } from './components/Login';
 import AcceptInvitation from './components/AcceptInvitation';
-
-// NEW: Import Onboarding Wizard
+import ForgotPassword from './components/ForgotPassword';
+import ResetPassword from './components/ResetPassword';
 import OnboardingWizard from './components/OnboardingWizard';
+import GlobalModals from './components/GlobalModals';
+import WeatherForecast from './components/WeatherForecast';
+import Analytics from './components/Analytics';
+import ComplianceDashboard from './components/compliance/ComplianceDashboard';
+import DeadlineCalendar from './components/compliance/DeadlineCalendar';
+import LicenseManagement from './components/compliance/LicenseManagement';
+import WPSCompliance from './components/compliance/WPSCompliance';
+import ComplianceReports from './components/compliance/ComplianceReports';
+import ComplianceSettings from './components/compliance/ComplianceSettings';
+import { DiseaseDashboard } from './components/disease';
+import Breadcrumbs from './components/navigation/Breadcrumbs';
+
+import { onboardingAPI } from './services/api';
 import './components/OnboardingWizard.css';
 
+// =============================================================================
+// MAIN APP COMPONENT (WRAPPED WITH PROVIDERS)
+// =============================================================================
 
-function App() {
-  // ============================================================================
-  // AUTHENTICATION - NEW
-  // ============================================================================
-  const { 
-    isAuthenticated, 
-    loading: authLoading, 
-    user, 
+function AppContent() {
+  const {
+    isAuthenticated,
+    loading: authLoading,
+    user,
     currentCompany,
     companies,
     logout,
-    switchCompany 
+    switchCompany
   } = useAuth();
 
-  const [authMode, setAuthMode] = useState('login'); // 'login' or 'register'
+  const [authMode, setAuthMode] = useState('login');
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showCompanyMenu, setShowCompanyMenu] = useState(false);
+  const [currentView, setCurrentView] = useState('dashboard');
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
-  // ============================================================================
-  // ONBOARDING STATE (NEW)
-  // ============================================================================
+  // Onboarding state
   const [onboardingStatus, setOnboardingStatus] = useState(null);
   const [checkingOnboarding, setCheckingOnboarding] = useState(true);
 
   // ============================================================================
-  // State for data
-  // ============================================================================
-  const [farms, setFarms] = useState([]);
-  const [fields, setFields] = useState([]);
-  const [applications, setApplications] = useState([]);
-  const [products, setProducts] = useState([]);
-  const [waterSources, setWaterSources] = useState([]);
-  const [waterTests, setWaterTests] = useState([]);
-  
-  // UI State
-  const [currentView, setCurrentView] = useState('dashboard');
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  
-  // Modal State
-  const [showFarmModal, setShowFarmModal] = useState(false);
-  const [showFieldModal, setShowFieldModal] = useState(false);
-  const [showAppModal, setShowAppModal] = useState(false);
-  const [showWaterSourceModal, setShowWaterSourceModal] = useState(false);
-  const [showWaterTestModal, setShowWaterTestModal] = useState(false);
-  
-  const [currentFarm, setCurrentFarm] = useState(null);
-  const [currentField, setCurrentField] = useState(null);
-  const [currentApplication, setCurrentApplication] = useState(null);
-  const [currentWaterSource, setCurrentWaterSource] = useState(null);
-  const [currentWaterTest, setCurrentWaterTest] = useState(null);
-  const [selectedWaterSource, setSelectedWaterSource] = useState(null);
-  // Well modal state
-  const [showWellModal, setShowWellModal] = useState(false);
-  const [currentWell, setCurrentWell] = useState(null);
-  const [showWellReadingModal, setShowWellReadingModal] = useState(false);
-  const [selectedWellForReading, setSelectedWellForReading] = useState(null);
-  const [showWellSourceModal, setShowWellSourceModal] = useState(false);
-  const [currentWellSource, setCurrentWellSource] = useState(null);
-  
-  // Add preselectedFarmId state for field modal
-  const [preselectedFarmId, setPreselectedFarmId] = useState(null);
-
-  // Harvest tracking state
-  const [showHarvestModal, setShowHarvestModal] = useState(false);
-  const [showHarvestLoadModal, setShowHarvestLoadModal] = useState(false);
-  const [showHarvestLaborModal, setShowHarvestLaborModal] = useState(false);
-  const [showBuyerModal, setShowBuyerModal] = useState(false);
-  const [showLaborContractorModal, setShowLaborContractorModal] = useState(false);
-  const [currentHarvest, setCurrentHarvest] = useState(null);
-  const [selectedHarvestId, setSelectedHarvestId] = useState(null);
-  const [preselectedFieldId, setPreselectedFieldId] = useState(null);
-  const [refreshTrigger, setRefreshTrigger] = useState(0);
-
-  // Water Management
-  const [waterModal, setWaterModal] = useState({ type: null, data: null });
-
-  // Nutrient Management
-  const [showNutrientAppModal, setShowNutrientAppModal] = useState(false);
-  const [showFertilizerProductModal, setShowFertilizerProductModal] = useState(false);
-  const [currentNutrientApp, setCurrentNutrientApp] = useState(null);
-  const [currentFertilizerProduct, setCurrentFertilizerProduct] = useState(null);
-  const [nutrientRefreshTrigger, setNutrientRefreshTrigger] = useState(0);
-
-  // ============================================================================
-  // CHECK ONBOARDING STATUS (NEW)
+  // CHECK ONBOARDING STATUS
   // ============================================================================
   useEffect(() => {
     const checkOnboarding = async () => {
@@ -159,7 +96,6 @@ function App() {
         setOnboardingStatus(response.data);
       } catch (error) {
         console.error('Error checking onboarding status:', error);
-        // If error (e.g., endpoint doesn't exist yet), assume onboarding is complete
         setOnboardingStatus({ onboarding_completed: true });
       } finally {
         setCheckingOnboarding(false);
@@ -175,7 +111,7 @@ function App() {
   }, [isAuthenticated, currentCompany]);
 
   // ============================================================================
-  // ONBOARDING HANDLERS (NEW)
+  // ONBOARDING HANDLERS
   // ============================================================================
   const handleOnboardingComplete = async () => {
     try {
@@ -184,8 +120,6 @@ function App() {
       console.error('Error completing onboarding:', error);
     }
     setOnboardingStatus({ onboarding_completed: true });
-    // Reload data after onboarding
-    loadData();
   };
 
   const handleOnboardingSkip = async () => {
@@ -198,43 +132,7 @@ function App() {
   };
 
   // ============================================================================
-  // Load data only when authenticated AND onboarding complete
-  // ============================================================================
-  useEffect(() => {
-    if (isAuthenticated && onboardingStatus?.onboarding_completed) {
-      loadData();
-    }
-  }, [isAuthenticated, currentCompany, onboardingStatus?.onboarding_completed]);
-
-  const loadData = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const [farmsRes, fieldsRes, appsRes, productsRes, waterSourcesRes, waterTestsRes] = await Promise.all([
-        farmsAPI.getAll(),
-        fieldsAPI.getAll(),
-        applicationsAPI.getAll(),
-        productsAPI.getAll(),
-        waterSourcesAPI.getAll(),
-        waterTestsAPI.getAll()
-      ]);
-
-      setFarms(farmsRes.data.results || farmsRes.data || []);
-      setFields(fieldsRes.data.results || fieldsRes.data || []);
-      setApplications(appsRes.data.results || appsRes.data || []);
-      setProducts(productsRes.data.results || productsRes.data || []);
-      setWaterSources(waterSourcesRes.data.results || waterSourcesRes.data || []);
-      setWaterTests(waterTestsRes.data.results || waterTestsRes.data || []);
-    } catch (err) {
-      setError('Failed to load data. Please check your connection.');
-      console.error('Error loading data:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // ============================================================================
-  // AUTHENTICATION HANDLERS - NEW
+  // AUTH HANDLERS
   // ============================================================================
   const handleLogout = async () => {
     await logout();
@@ -244,24 +142,36 @@ function App() {
   const handleSwitchCompany = async (companyId) => {
     await switchCompany(companyId);
     setShowCompanyMenu(false);
-    // Reset onboarding check for new company
     setCheckingOnboarding(true);
     setOnboardingStatus(null);
   };
 
   // ============================================================================
-  // Check for invitation token in URL
+  // CHECK FOR SPECIAL ROUTES (invitation, password reset)
   // ============================================================================
   const urlParams = new URLSearchParams(window.location.search);
-  const inviteToken = urlParams.get('invite') || 
-    (window.location.pathname.startsWith('/invite/') ? window.location.pathname.split('/invite/')[1] : null);
-  
+  const currentPath = window.location.pathname;
+
+  // Check for invitation token
+  const inviteToken = urlParams.get('invite') ||
+    (currentPath.startsWith('/invite/') ? currentPath.split('/invite/')[1] : null);
+
   if (inviteToken) {
     return <AcceptInvitation token={inviteToken} onComplete={() => window.location.href = '/'} />;
   }
 
+  // Check for forgot password route
+  if (currentPath === '/forgot-password') {
+    return <ForgotPassword />;
+  }
+
+  // Check for reset password route
+  if (currentPath === '/reset-password') {
+    return <ResetPassword />;
+  }
+
   // ============================================================================
-  // Show loading while checking auth OR onboarding
+  // LOADING STATE
   // ============================================================================
   if (authLoading || checkingOnboarding) {
     return (
@@ -275,7 +185,7 @@ function App() {
   }
 
   // ============================================================================
-  // Show login/register if not authenticated
+  // LOGIN/REGISTER
   // ============================================================================
   if (!isAuthenticated) {
     if (authMode === 'register') {
@@ -285,7 +195,7 @@ function App() {
   }
 
   // ============================================================================
-  // SHOW ONBOARDING WIZARD IF NOT COMPLETED (NEW)
+  // ONBOARDING WIZARD
   // ============================================================================
   if (onboardingStatus && !onboardingStatus.onboarding_completed) {
     return (
@@ -297,229 +207,27 @@ function App() {
   }
 
   // ============================================================================
-  // Farm handlers (existing)
+  // NAVIGATION ITEMS
   // ============================================================================
-  const handleSaveFarm = async (farmData) => {
-    try {
-      if (currentFarm) {
-        await farmsAPI.update(currentFarm.id, farmData);
-      } else {
-        await farmsAPI.create(farmData);
-      }
-      await loadData();
-      setShowFarmModal(false);
-      setCurrentFarm(null);
-    } catch (err) {
-      console.error('Error saving farm:', err);
-      alert('Failed to save farm');
-    }
-  };
-
-  const handleEditFarm = async (farm, autoSave = false) => {
-    if (autoSave) {
-      try {
-        await farmsAPI.update(farm.id, farm);
-        await loadData();
-      } catch (err) {
-        console.error('Error auto-saving farm:', err);
-      }
-    } else {
-      setCurrentFarm(farm);
-      setShowFarmModal(true);
-    }
-  };
-
-  const handleDeleteFarm = async (farmId) => {
-    if (window.confirm('Are you sure you want to delete this farm?')) {
-      try {
-        await farmsAPI.delete(farmId);
-        await loadData();
-      } catch (err) {
-        console.error('Error deleting farm:', err);
-        alert('Failed to delete farm');
-      }
-    }
-  };
-
-  // Field handlers
-  const handleSaveField = async (fieldData) => {
-    try {
-      if (currentField) {
-        await fieldsAPI.update(currentField.id, fieldData);
-      } else {
-        await fieldsAPI.create(fieldData);
-      }
-      await loadData();
-      setShowFieldModal(false);
-      setCurrentField(null);
-      setPreselectedFarmId(null);
-    } catch (err) {
-      console.error('Error saving field:', err);
-      alert('Failed to save field');
-    }
-  };
-
-  const handleEditField = (field) => {
-    setCurrentField(field);
-    setPreselectedFarmId(null);
-    setShowFieldModal(true);
-  };
-
-  const handleDeleteField = async (fieldId) => {
-    if (window.confirm('Are you sure you want to delete this field?')) {
-      try {
-        await fieldsAPI.delete(fieldId);
-        await loadData();
-      } catch (err) {
-        console.error('Error deleting field:', err);
-        alert('Failed to delete field');
-      }
-    }
-  };
-
-  // Application handlers
-  const handleSaveApplication = async (appData) => {
-    try {
-      // Ensure numeric fields are properly typed
-      const cleanedData = {
-        ...appData,
-        field: appData.field ? parseInt(appData.field) : null,
-        product: appData.product ? parseInt(appData.product) : null,
-        acres_treated: appData.acres_treated ? parseFloat(appData.acres_treated) : null,
-        amount_used: appData.amount_used ? parseFloat(appData.amount_used) : null,
-        temperature: appData.temperature ? parseFloat(appData.temperature) : null,
-        wind_speed: appData.wind_speed ? parseFloat(appData.wind_speed) : null,
-      };
-      console.log('Saving application data:', cleanedData);
-      if (currentApplication) {
-        await applicationsAPI.update(currentApplication.id, cleanedData);
-      } else {
-        await applicationsAPI.create(cleanedData);
-      }
-      await loadData();
-      setShowAppModal(false);
-      setCurrentApplication(null);
-    } catch (err) {
-      console.error('Error saving application:', err);
-      console.error('Error response:', err.response?.data);
-      alert('Failed to save application: ' + (err.response?.data?.detail || err.message));
-    }
-  };
-
-  const handleEditApplication = (app) => {
-    setCurrentApplication(app);
-    setShowAppModal(true);
-  };
-
-  const handleDeleteApplication = async (appId) => {
-    if (window.confirm('Are you sure you want to delete this application?')) {
-      try {
-        await applicationsAPI.delete(appId);
-        await loadData();
-      } catch (err) {
-        console.error('Error deleting application:', err);
-        alert('Failed to delete application');
-      }
-    }
-  };
-
-  // Water Source handlers
-  const handleSaveWaterSource = async (waterSourceData) => {
-    try {
-      if (currentWaterSource) {
-        await waterSourcesAPI.update(currentWaterSource.id, waterSourceData);
-      } else {
-        await waterSourcesAPI.create(waterSourceData);
-      }
-      await loadData();
-      setShowWaterSourceModal(false);
-      setCurrentWaterSource(null);
-    } catch (err) {
-      console.error('Error saving water source:', err);
-      alert('Failed to save water source');
-    }
-  };
-
-  const handleEditWaterSource = (waterSource) => {
-    setCurrentWaterSource(waterSource);
-    setShowWaterSourceModal(true);
-  };
-
-  const handleDeleteWaterSource = async (sourceId) => {
-    if (window.confirm('Are you sure you want to delete this water source?')) {
-      try {
-        await waterSourcesAPI.delete(sourceId);
-        await loadData();
-      } catch (err) {
-        console.error('Error deleting water source:', err);
-        alert('Failed to delete water source');
-      }
-    }
-  };
-
-  // Water Test handlers
-  const handleViewTests = (waterSource) => {
-    setSelectedWaterSource(waterSource);
-    setCurrentView('water-tests');
-  };
-
-  const handleSaveWaterTest = async (testData) => {
-    try {
-      if (currentWaterTest) {
-        await waterTestsAPI.update(currentWaterTest.id, testData);
-      } else {
-        await waterTestsAPI.create(testData);
-      }
-      await loadData();
-      setShowWaterTestModal(false);
-      setCurrentWaterTest(null);
-    } catch (err) {
-      console.error('Error saving water test:', err);
-      alert('Failed to save water test');
-    }
-  };
-
-  // Harvest handlers
-  const handleNewHarvest = (fieldId = null) => {
-    setCurrentHarvest(null);
-    setPreselectedFieldId(fieldId);
-    setShowHarvestModal(true);
-  };
-
-  const handleEditHarvest = (harvest) => {
-    setCurrentHarvest(harvest);
-    setPreselectedFieldId(null);
-    setShowHarvestModal(true);
-  };
-
-  const handleAddLoad = (harvestId) => {
-    setSelectedHarvestId(harvestId);
-    setShowHarvestLoadModal(true);
-  };
-
-  const handleAddLabor = (harvestId) => {
-    setSelectedHarvestId(harvestId);
-    setShowHarvestLaborModal(true);
-  };
-
-  const handleHarvestSave = () => {
-    setRefreshTrigger(prev => prev + 1);
-  };
-
-  // Navigation items
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'farms', label: 'Farms & Fields', icon: HomeIcon },
+    { id: 'weather', label: 'Weather', icon: Cloud },
+    { id: 'analytics', label: 'Analytics', icon: BarChart3 },
     { id: 'water', label: 'Water Management', icon: Droplets },
     { id: 'nutrients', label: 'Nutrients', icon: Leaf },
     { id: 'harvests', label: 'Harvests', icon: Wheat },
+    { id: 'compliance', label: 'Compliance', icon: Shield },
+    { id: 'disease', label: 'Disease Prevention', icon: Bug },
     { id: 'reports', label: 'Reports', icon: FileText },
     { id: 'activity', label: 'Activity Log', icon: Activity },
     { id: 'team', label: 'Team', icon: Users },
     { id: 'company', label: 'Company Settings', icon: Building2 },
   ];
 
-  // Get user initials
+  // ============================================================================
+  // USER INITIALS
+  // ============================================================================
   const getUserInitials = () => {
     if (!user) return '?';
     const first = user.first_name?.[0] || '';
@@ -540,10 +248,14 @@ function App() {
             <div className="flex items-center justify-between">
               {!sidebarCollapsed && (
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 bg-green-600 rounded-lg flex items-center justify-center">
-                    <MapPin className="w-5 h-5 text-white" />
-                  </div>
-                  <span className="font-bold text-gray-800">Farm Tracker</span>
+                  <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-8 h-8">
+                    <circle cx="24" cy="24" r="20" fill="#2D5016"/>
+                    <circle cx="24" cy="26" r="12" fill="#E8791D"/>
+                    <ellipse cx="24" cy="24" rx="8" ry="10" fill="#F4A934"/>
+                    <path d="M24 4C24 4 28 10 28 14C28 18 26 20 24 20C22 20 20 18 20 14C20 10 24 4 24 4Z" fill="#4A7A2A"/>
+                    <path d="M24 4C24 4 20 8 18 10" stroke="#2D5016" strokeWidth="1.5" strokeLinecap="round"/>
+                  </svg>
+                  <span className="font-bold text-bark-brown font-heading">Grove Master</span>
                 </div>
               )}
               <button
@@ -555,7 +267,7 @@ function App() {
             </div>
           </div>
 
-          {/* Company Selector - NEW */}
+          {/* Company Selector */}
           {!sidebarCollapsed && currentCompany && (
             <div className="p-3 border-b border-gray-200">
               <div className="relative">
@@ -564,7 +276,7 @@ function App() {
                     if (companies.length > 1) {
                       setShowCompanyMenu(!showCompanyMenu);
                     } else {
-                      setCurrentView('company');  // <-- Navigate to company settings
+                      setCurrentView('company');
                     }
                   }}
                   className="w-full flex items-center gap-2 px-3 py-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
@@ -646,23 +358,11 @@ function App() {
                       onClick={() => {
                         setShowUserMenu(false);
                         setCurrentView('profile');
-                        // Navigate to profile/settings when implemented
                       }}
                       className="w-full flex items-center gap-2 px-3 py-2 hover:bg-gray-50 text-left text-sm text-gray-700"
                     >
                       <User className="w-4 h-4" />
                       Profile
-                    </button>
-                    <button
-                      onClick={() => {
-                        setShowUserMenu(false);
-                        setCurrentView('company');
-                        // Navigate to settings when implemented
-                      }}
-                      className="w-full flex items-center gap-2 px-3 py-2 hover:bg-gray-50 text-left text-sm text-gray-700"
-                    >
-                      <Settings className="w-4 h-4" />
-                      Settings
                     </button>
                     <hr className="my-1" />
                     <button
@@ -695,389 +395,103 @@ function App() {
 
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto">
-        {/* Loading State */}
-        {loading && (
-          <div className="flex items-center justify-center h-64">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
-          </div>
-        )}
-
-        {/* Error State */}
-        {error && !loading && (
+        {currentView === 'dashboard' && <Dashboard onNavigate={setCurrentView} />}
+        {currentView === 'farms' && (
           <div className="p-6">
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700">
-              {error}
-              <button onClick={loadData} className="ml-4 underline">Retry</button>
-            </div>
+            <Breadcrumbs currentView={currentView} onNavigate={setCurrentView} />
+            <Farms />
           </div>
         )}
-
-        {/* Content */}
-        {!loading && !error && (
-          <>
-            {currentView === 'dashboard' && (
-              <Dashboard
-                applications={applications}
-                fields={fields}
-                farms={farms}
-                waterSources={waterSources}
-                onNewApplication={() => {
-                  setCurrentApplication(null);
-                  setShowAppModal(true);
-                }}
-                onNewField={(farmId) => {
-                  setCurrentField(null);
-                  setPreselectedFarmId(farmId || null);
-                  setShowFieldModal(true);
-                }}
-                onNewWaterTest={() => {
-                  setCurrentWaterTest(null);
-                  setShowWaterTestModal(true);
-                }}
-                onNavigateToReports={() => setCurrentView('reports')}
-                onNavigateToHarvests={() => setCurrentView('harvests')}
-              />
-            )}
-
-            {currentView === 'farms' && (
-              <div className="p-6">
-                <Farms
-                  farms={farms}
-                  fields={fields}
-                  applications={applications}
-                  onNewFarm={() => {
-                    setCurrentFarm(null);
-                    setShowFarmModal(true);
-                  }}
-                  onEditFarm={handleEditFarm}
-                  onDeleteFarm={handleDeleteFarm}
-                  onNewField={(farmId) => {
-                    setCurrentField(null);
-                    setPreselectedFarmId(farmId || null);
-                    setShowFieldModal(true);
-                  }}
-                  onEditField={handleEditField}
-                  onDeleteField={handleDeleteField}
-                  onRefresh={loadData}
-                />
-              </div>
-            )}
-
-            {currentView === 'reports' && (
-              <Reports
-                farms={farms}
-                fields={fields}
-                applications={applications}
-              />
-            )}
-
-            {currentView === 'harvests' && (
-              <div className="p-6">
-                <Harvests
-                  fields={fields}
-                  farms={farms}
-                  onNewHarvest={handleNewHarvest}
-                  onEditHarvest={handleEditHarvest}
-                  onAddLoad={handleAddLoad}
-                  onAddLabor={handleAddLabor}
-                  refreshTrigger={refreshTrigger}
-                />
-              </div>
-            )}
-
-            {currentView === 'team' && (
-              <TeamManagement />
-            )}
-
-            {currentView === 'company' && (
-              <div className="p-6">
-                <CompanySettings 
-                  onBack={() => setCurrentView('dashboard')}
-                />
-              </div>
-            )}
-
-            {currentView === 'profile' && (
-              <div className="p-6">
-                <Profile onBack={() => setCurrentView('dashboard')} />
-              </div>
-            )}
-
-            {currentView === 'water' && (
-              <div className="p-6">
-                <WaterManagement
-                  farms={farms}
-                  fields={fields}
-                  waterSources={waterSources}
-                  onRefresh={loadData}
-                  onOpenModal={(type, data) => {
-                    if (type === 'wellSource') {
-                      setCurrentWellSource(data);
-                      setShowWellSourceModal(true);
-                    } else if (type === 'waterSource') {
-                      setCurrentWaterSource(data);
-                      setShowWaterSourceModal(true);
-                    } else if (type === 'waterTest') {
-                      setCurrentWaterTest(data);
-                      setSelectedWaterSource(data?.water_source ? waterSources.find(s => s.id === data.water_source) : null);
-                      setShowWaterTestModal(true);
-                    } else if (type === 'well') {
-                      setCurrentWell(data);
-                      setShowWellModal(true);
-                    } else if (type === 'wellReading') {
-                      setSelectedWellForReading(data);
-                      setShowWellReadingModal(true);
-                    }
-                  }}
-                />
-              </div>
-            )}
-
-            {currentView === 'nutrients' && (
-              <div className="p-6">
-                <NutrientManagement
-                  farms={farms}
-                  fields={fields}
-                  waterSources={waterSources}
-                  onRefresh={loadData}
-                  key={nutrientRefreshTrigger}
-                  onOpenModal={(type, data) => {
-                    if (type === 'nutrientApplication') {
-                      setCurrentNutrientApp(data);
-                      setShowNutrientAppModal(true);
-                    } else if (type === 'fertilizerProduct') {
-                      setCurrentFertilizerProduct(data);
-                      setShowFertilizerProductModal(true);
-                    }
-                  }}
-                />
-              </div>
-            )}
-
-            {currentView === 'activity' && (
-              <div className="p-6">
-                <AuditLogViewer />
-              </div>
-            )}
-          </>
+        {currentView === 'reports' && (
+          <div className="p-6">
+            <Breadcrumbs currentView={currentView} onNavigate={setCurrentView} />
+            <Reports />
+          </div>
+        )}
+        {currentView === 'harvests' && (
+          <div className="p-6">
+            <Breadcrumbs currentView={currentView} onNavigate={setCurrentView} />
+            <Harvests />
+          </div>
+        )}
+        {currentView === 'team' && (
+          <div className="p-6">
+            <Breadcrumbs currentView={currentView} onNavigate={setCurrentView} />
+            <TeamManagement />
+          </div>
+        )}
+        {currentView === 'company' && (
+          <div className="p-6">
+            <Breadcrumbs currentView={currentView} onNavigate={setCurrentView} />
+            <CompanySettings onBack={() => setCurrentView('dashboard')} />
+          </div>
+        )}
+        {currentView === 'profile' && (
+          <div className="p-6">
+            <Breadcrumbs currentView={currentView} onNavigate={setCurrentView} />
+            <Profile onBack={() => setCurrentView('dashboard')} />
+          </div>
+        )}
+        {currentView === 'water' && (
+          <div className="p-6">
+            <Breadcrumbs currentView={currentView} onNavigate={setCurrentView} />
+            <WaterManagement />
+          </div>
+        )}
+        {currentView === 'weather' && (
+          <div className="p-6">
+            <Breadcrumbs currentView={currentView} onNavigate={setCurrentView} />
+            <WeatherForecast />
+          </div>
+        )}
+        {currentView === 'analytics' && (
+          <div className="p-6">
+            <Breadcrumbs currentView={currentView} onNavigate={setCurrentView} />
+            <Analytics />
+          </div>
+        )}
+        {currentView === 'nutrients' && (
+          <div className="p-6">
+            <Breadcrumbs currentView={currentView} onNavigate={setCurrentView} />
+            <NutrientManagement />
+          </div>
+        )}
+        {currentView === 'activity' && (
+          <div className="p-6">
+            <Breadcrumbs currentView={currentView} onNavigate={setCurrentView} />
+            <AuditLogViewer />
+          </div>
+        )}
+        {currentView === 'compliance' && (
+          <ComplianceDashboard onNavigate={setCurrentView} />
+        )}
+        {currentView === 'compliance-deadlines' && (
+          <DeadlineCalendar onNavigate={setCurrentView} />
+        )}
+        {currentView === 'compliance-licenses' && (
+          <LicenseManagement onNavigate={setCurrentView} />
+        )}
+        {currentView === 'compliance-wps' && (
+          <WPSCompliance onNavigate={setCurrentView} />
+        )}
+        {currentView === 'compliance-reports' && (
+          <ComplianceReports onNavigate={setCurrentView} />
+        )}
+        {currentView === 'compliance-settings' && (
+          <ComplianceSettings onNavigate={setCurrentView} />
+        )}
+        {currentView === 'disease' && (
+          <DiseaseDashboard onNavigate={setCurrentView} />
         )}
       </main>
 
-      {/* Nutrient Management Modals */}
-      {showNutrientAppModal && (
-        <NutrientApplicationModal
-          isOpen={showNutrientAppModal}
-          application={currentNutrientApp}
-          farms={farms}
-          fields={fields}
-          waterSources={waterSources}
-          onSave={() => {
-            setNutrientRefreshTrigger(prev => prev + 1);
-            setShowNutrientAppModal(false);
-            setCurrentNutrientApp(null);
-          }}
-          onClose={() => {
-            setShowNutrientAppModal(false);
-            setCurrentNutrientApp(null);
-          }}
-        />
-      )}
-
-      {showFertilizerProductModal && (
-        <FertilizerProductModal
-          isOpen={showFertilizerProductModal}
-          product={currentFertilizerProduct}
-          onSave={() => {
-            setNutrientRefreshTrigger(prev => prev + 1);
-            setShowFertilizerProductModal(false);
-            setCurrentFertilizerProduct(null);
-          }}
-          onClose={() => {
-            setShowFertilizerProductModal(false);
-            setCurrentFertilizerProduct(null);
-          }}
-        />
-      )}
-
-      {showWellSourceModal && (
-        <WellSourceModal
-          isOpen={showWellSourceModal}
-          wellSource={currentWellSource}
-          farms={farms}
-          fields={fields}
-          onSave={() => {
-            loadData();
-            setShowWellSourceModal(false);
-            setCurrentWellSource(null);
-          }}
-          onClose={() => {
-            setShowWellSourceModal(false);
-            setCurrentWellSource(null);
-          }}
-        />
-      )}
-
-      {/* Modals */}
-      {showFarmModal && (
-        <FarmModal
-          farm={currentFarm}
-          onSave={handleSaveFarm}
-          onClose={() => {
-            setShowFarmModal(false);
-            setCurrentFarm(null);
-          }}
-        />
-      )}
-
-      {showFieldModal && (
-        <FieldModal
-          field={currentField}
-          farms={farms}
-          preselectedFarmId={preselectedFarmId}
-          onSave={handleSaveField}
-          onClose={() => {
-            setShowFieldModal(false);
-            setCurrentField(null);
-            setPreselectedFarmId(null);
-          }}
-        />
-      )}
-
-      {showAppModal && (
-        <ApplicationModal
-          application={currentApplication}
-          fields={fields}
-          products={products}
-          onSave={handleSaveApplication}
-          onClose={() => {
-            setShowAppModal(false);
-            setCurrentApplication(null);
-          }}
-        />
-      )}
-
-      {showWaterSourceModal && (
-        <WaterSourceModal
-          source={currentWaterSource}
-          farms={farms}
-          fields={fields}
-          onSave={handleSaveWaterSource}
-          onClose={() => {
-            setShowWaterSourceModal(false);
-            setCurrentWaterSource(null);
-          }}
-        />
-      )}
-
-      {showWaterTestModal && (
-        <WaterTestModal
-          waterTest={currentWaterTest}
-          waterSource={selectedWaterSource}
-          waterSources={waterSources}
-          onSave={handleSaveWaterTest}
-          onClose={() => {
-            setShowWaterTestModal(false);
-            setCurrentWaterTest(null);
-          }}
-        />
-      )}
-
-      {showHarvestModal && (
-        <HarvestModal
-          isOpen={showHarvestModal}
-          onClose={() => {
-            setShowHarvestModal(false);
-            setCurrentHarvest(null);
-            setPreselectedFieldId(null);
-          }}
-          onSave={handleHarvestSave}
-          harvest={currentHarvest}
-          fields={fields}
-          farms={farms}
-          preselectedFieldId={preselectedFieldId}
-        />
-      )}
-
-      {showHarvestLoadModal && (
-        <HarvestLoadModal
-          isOpen={showHarvestLoadModal}
-          onClose={() => {
-            setShowHarvestLoadModal(false);
-            setSelectedHarvestId(null);
-          }}
-          onSave={handleHarvestSave}
-          harvestId={selectedHarvestId}
-          onAddBuyer={() => setShowBuyerModal(true)}
-        />
-      )}
-
-      {showHarvestLaborModal && (
-        <HarvestLaborModal
-          isOpen={showHarvestLaborModal}
-          onClose={() => {
-            setShowHarvestLaborModal(false);
-            setSelectedHarvestId(null);
-          }}
-          onSave={handleHarvestSave}
-          harvestId={selectedHarvestId}
-          onAddContractor={() => setShowLaborContractorModal(true)}
-        />
-      )}
-
-      {showBuyerModal && (
-        <BuyerModal
-          isOpen={showBuyerModal}
-          onClose={() => setShowBuyerModal(false)}
-          onSave={handleHarvestSave}
-        />
-      )}
-
-      {showLaborContractorModal && (
-        <LaborContractorModal
-          isOpen={showLaborContractorModal}
-          onClose={() => setShowLaborContractorModal(false)}
-          onSave={handleHarvestSave}
-        />
-      )}
-
-      {showWellModal && (
-        <WellModal
-          isOpen={showWellModal}
-          onClose={() => {
-            setShowWellModal(false);
-            setCurrentWell(null);
-          }}
-          well={currentWell}
-          waterSources={waterSources}
-          onSave={() => {
-            loadData();
-            setShowWellModal(false);
-            setCurrentWell(null);
-          }}
-        />
-      )}
-
-      {showWellReadingModal && (
-        <WellReadingModal
-          isOpen={showWellReadingModal}
-          onClose={() => {
-            setShowWellReadingModal(false);
-            setSelectedWellForReading(null);
-          }}
-          wellId={selectedWellForReading?.well_id}
-          wellName={selectedWellForReading?.well_name}
-          onSave={() => {
-            loadData();
-            setShowWellReadingModal(false);
-            setSelectedWellForReading(null);
-          }}
-        />
-      )}
+      {/* Global Modals */}
+      <GlobalModals />
 
       {/* Click outside to close menus */}
       {(showUserMenu || showCompanyMenu) && (
-        <div 
-          className="fixed inset-0 z-40" 
+        <div
+          className="fixed inset-0 z-40"
           onClick={() => {
             setShowUserMenu(false);
             setShowCompanyMenu(false);
@@ -1085,6 +499,20 @@ function App() {
         />
       )}
     </div>
+  );
+}
+
+// =============================================================================
+// APP WRAPPER WITH PROVIDERS
+// =============================================================================
+
+function App() {
+  return (
+    <DataProvider>
+      <ModalProvider>
+        <AppContent />
+      </ModalProvider>
+    </DataProvider>
   );
 }
 

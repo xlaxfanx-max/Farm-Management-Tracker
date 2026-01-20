@@ -8,6 +8,20 @@ import requests
 
 
 # =============================================================================
+# HELPER FUNCTIONS FOR MODEL DEFAULTS
+# =============================================================================
+
+def default_deadline_reminder_days():
+    """Default days before deadline to send reminders."""
+    return [30, 14, 7, 1]
+
+
+def default_license_reminder_days():
+    """Default days before license expiration to send reminders."""
+    return [90, 60, 30, 14]
+
+
+# =============================================================================
 # LOCATION MIXIN (GPS + PLSS Abstract Base Class)
 # =============================================================================
 
@@ -19,9 +33,9 @@ class LocationMixin(models.Model):
     
     # GPS Coordinates
     gps_latitude = models.DecimalField(
-        max_digits=10, 
-        decimal_places=7, 
-        null=True, 
+        max_digits=10,
+        decimal_places=7,
+        null=True,
         blank=True,
         verbose_name="Latitude",
         help_text="GPS latitude coordinate (e.g., 34.428500)"
@@ -868,18 +882,326 @@ class FarmParcel(models.Model):
         
         return apn_string
 
+# =============================================================================
+# CROP AND ROOTSTOCK REFERENCE MODELS
+# =============================================================================
+
+class CropCategory(models.TextChoices):
+    """Categories for organizing crops."""
+    CITRUS = 'citrus', 'Citrus'
+    DECIDUOUS_FRUIT = 'deciduous_fruit', 'Deciduous Fruit'
+    SUBTROPICAL = 'subtropical', 'Subtropical'
+    VINE = 'vine', 'Vine'
+    ROW_CROP = 'row_crop', 'Row Crop'
+    VEGETABLE = 'vegetable', 'Vegetable'
+    NUT = 'nut', 'Nut'
+    BERRY = 'berry', 'Berry'
+    OTHER = 'other', 'Other'
+
+
+class CropType(models.TextChoices):
+    """Plant type classification affecting field management."""
+    TREE = 'tree', 'Tree'
+    VINE = 'vine', 'Vine'
+    BUSH = 'bush', 'Bush'
+    ROW = 'row', 'Row Crop'
+    PERENNIAL = 'perennial', 'Perennial'
+    ANNUAL = 'annual', 'Annual'
+
+
+class Crop(models.Model):
+    """
+    Master reference table for crop varieties.
+    Supports both system defaults (company=null) and company-specific custom crops.
+    """
+
+    # === IDENTIFICATION ===
+    name = models.CharField(
+        max_length=100,
+        help_text="Common name (e.g., 'Navel Orange', 'Hass Avocado')"
+    )
+    scientific_name = models.CharField(
+        max_length=200,
+        blank=True,
+        help_text="Scientific/botanical name"
+    )
+    variety = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text="Specific variety or cultivar"
+    )
+
+    # === CLASSIFICATION ===
+    category = models.CharField(
+        max_length=30,
+        choices=CropCategory.choices,
+        default=CropCategory.OTHER,
+        help_text="Crop category for grouping"
+    )
+    crop_type = models.CharField(
+        max_length=20,
+        choices=CropType.choices,
+        default=CropType.TREE,
+        help_text="Plant type (tree, vine, row crop, etc.)"
+    )
+
+    # === AGRONOMIC CHARACTERISTICS ===
+    typical_spacing_row_ft = models.DecimalField(
+        max_digits=5,
+        decimal_places=1,
+        null=True,
+        blank=True,
+        help_text="Typical row spacing in feet"
+    )
+    typical_spacing_tree_ft = models.DecimalField(
+        max_digits=5,
+        decimal_places=1,
+        null=True,
+        blank=True,
+        help_text="Typical in-row/tree spacing in feet"
+    )
+    typical_root_depth_inches = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="Typical root depth for irrigation calculations"
+    )
+    years_to_maturity = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="Typical years from planting to full production"
+    )
+    productive_lifespan_years = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="Expected productive lifespan"
+    )
+
+    # === WATER/IRRIGATION ===
+    kc_mature = models.DecimalField(
+        max_digits=3,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="Mature crop coefficient (Kc) for ET calculations"
+    )
+    kc_young = models.DecimalField(
+        max_digits=3,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="Young tree/vine crop coefficient"
+    )
+
+    # === HARVEST INFO ===
+    typical_harvest_months = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text="Typical harvest window (e.g., 'Nov-Apr')"
+    )
+    default_bin_weight_lbs = models.IntegerField(
+        default=900,
+        help_text="Default bin weight for harvest calculations"
+    )
+
+    # === OWNERSHIP & STATUS ===
+    company = models.ForeignKey(
+        'Company',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='crops',
+        help_text="Null for system defaults, set for custom company crops"
+    )
+    active = models.BooleanField(default=True)
+    notes = models.TextField(blank=True)
+
+    # Timestamps
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['category', 'name']
+        verbose_name = "Crop"
+        verbose_name_plural = "Crops"
+        indexes = [
+            models.Index(fields=['name']),
+            models.Index(fields=['category']),
+            models.Index(fields=['active']),
+        ]
+
+    def __str__(self):
+        if self.variety:
+            return f"{self.name} ({self.variety})"
+        return self.name
+
+    @classmethod
+    def get_system_defaults(cls):
+        """Get all system default crops (company=null)."""
+        return cls.objects.filter(company__isnull=True, active=True)
+
+
+class Rootstock(models.Model):
+    """
+    Rootstock varieties, linked to compatible crops.
+    Important for tree/vine crops (citrus, grapes, avocados, etc.)
+    """
+
+    VIGOR_CHOICES = [
+        ('dwarf', 'Dwarf'),
+        ('semi_dwarf', 'Semi-Dwarf'),
+        ('standard', 'Standard'),
+        ('vigorous', 'Vigorous'),
+    ]
+
+    DROUGHT_TOLERANCE_CHOICES = [
+        ('low', 'Low'),
+        ('moderate', 'Moderate'),
+        ('high', 'High'),
+    ]
+
+    # === IDENTIFICATION ===
+    name = models.CharField(
+        max_length=100,
+        help_text="Rootstock name (e.g., 'Carrizo Citrange', '1103P')"
+    )
+    code = models.CharField(
+        max_length=50,
+        blank=True,
+        help_text="Common abbreviation or code"
+    )
+
+    # === CROP COMPATIBILITY ===
+    compatible_crops = models.ManyToManyField(
+        Crop,
+        related_name='compatible_rootstocks',
+        blank=True,
+        help_text="Crops this rootstock is typically used with"
+    )
+    primary_category = models.CharField(
+        max_length=30,
+        choices=CropCategory.choices,
+        default=CropCategory.CITRUS,
+        help_text="Primary crop category"
+    )
+
+    # === CHARACTERISTICS ===
+    vigor = models.CharField(
+        max_length=20,
+        choices=VIGOR_CHOICES,
+        blank=True,
+        help_text="Growth vigor classification"
+    )
+    disease_resistance = models.TextField(
+        blank=True,
+        help_text="Known disease resistances"
+    )
+    soil_tolerance = models.TextField(
+        blank=True,
+        help_text="Soil condition tolerances (salinity, pH, drainage)"
+    )
+    cold_hardiness = models.CharField(
+        max_length=50,
+        blank=True,
+        help_text="Cold hardiness rating"
+    )
+    drought_tolerance = models.CharField(
+        max_length=20,
+        choices=DROUGHT_TOLERANCE_CHOICES,
+        blank=True
+    )
+
+    # === OWNERSHIP & STATUS ===
+    company = models.ForeignKey(
+        'Company',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='rootstocks',
+        help_text="Null for system defaults"
+    )
+    active = models.BooleanField(default=True)
+    notes = models.TextField(blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['primary_category', 'name']
+        verbose_name = "Rootstock"
+        verbose_name_plural = "Rootstocks"
+        indexes = [
+            models.Index(fields=['name']),
+            models.Index(fields=['primary_category']),
+        ]
+
+    def __str__(self):
+        if self.code:
+            return f"{self.name} ({self.code})"
+        return self.name
+
+
+# =============================================================================
+# FIELD MODEL
+# =============================================================================
+
 class Field(LocationMixin, models.Model):
     """
-    Farm field/block information.
+    Farm field/block information with detailed agricultural data.
     Inherits GPS/PLSS fields from LocationMixin.
     """
+
+    ROW_ORIENTATION_CHOICES = [
+        ('ns', 'North-South'),
+        ('ew', 'East-West'),
+        ('ne_sw', 'Northeast-Southwest'),
+        ('nw_se', 'Northwest-Southeast'),
+    ]
+
+    TRELLIS_SYSTEM_CHOICES = [
+        ('none', 'None'),
+        ('vertical_shoot', 'Vertical Shoot Position (VSP)'),
+        ('lyre', 'Lyre/U-Shape'),
+        ('geneva_double', 'Geneva Double Curtain'),
+        ('high_wire', 'High Wire'),
+        ('pergola', 'Pergola/Arbor'),
+        ('espalier', 'Espalier'),
+        ('stake', 'Stake'),
+        ('other', 'Other'),
+    ]
+
+    SOIL_TYPE_CHOICES = [
+        ('sandy', 'Sandy'),
+        ('sandy_loam', 'Sandy Loam'),
+        ('loam', 'Loam'),
+        ('clay_loam', 'Clay Loam'),
+        ('clay', 'Clay'),
+        ('silty_loam', 'Silty Loam'),
+        ('silty_clay', 'Silty Clay'),
+    ]
+
+    IRRIGATION_TYPE_CHOICES = [
+        ('drip', 'Drip'),
+        ('micro_sprinkler', 'Micro-Sprinkler'),
+        ('sprinkler', 'Sprinkler'),
+        ('flood', 'Flood'),
+        ('furrow', 'Furrow'),
+        ('none', 'None/Dryland'),
+    ]
+
+    ORGANIC_STATUS_CHOICES = [
+        ('conventional', 'Conventional'),
+        ('transitional', 'Transitional'),
+        ('certified', 'Certified Organic'),
+    ]
+
+    # === BASIC INFO ===
     name = models.CharField(max_length=200)
     farm = models.ForeignKey(Farm, on_delete=models.PROTECT, related_name='fields', null=True, blank=True)
     field_number = models.CharField(max_length=50, blank=True)
-    
+
     # Location data - county stays separate (often different from farm county)
     county = models.CharField(max_length=100)
-    
+
     # NOTE: PLSS fields (plss_section, plss_township, plss_range, plss_meridian)
     # and GPS fields (gps_latitude, gps_longitude) are inherited from LocationMixin
 
@@ -897,15 +1219,230 @@ class Field(LocationMixin, models.Model):
         verbose_name="Calculated Acres",
         help_text="Acreage calculated from drawn boundary"
     )
-    
+
     # Field characteristics
     total_acres = models.DecimalField(max_digits=10, decimal_places=2)
-    current_crop = models.CharField(max_length=100)
+
+    # === LEGACY CROP FIELD (kept for backward compatibility) ===
+    current_crop = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text="Legacy text field - use 'crop' ForeignKey instead"
+    )
+
+    # === NEW CROP FIELDS ===
+    crop = models.ForeignKey(
+        Crop,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='fields',
+        help_text="Primary crop planted in this field"
+    )
+    rootstock = models.ForeignKey(
+        Rootstock,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='fields',
+        help_text="Rootstock variety (for tree/vine crops)"
+    )
+
+    # === PLANTING DATA ===
     planting_date = models.DateField(null=True, blank=True)
-    
-    # Status
+    year_planted = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="Year trees/vines were planted (alternative to planting_date)"
+    )
+
+    # === SPACING & DENSITY ===
+    row_spacing_ft = models.DecimalField(
+        max_digits=5,
+        decimal_places=1,
+        null=True,
+        blank=True,
+        help_text="Row spacing in feet"
+    )
+    tree_spacing_ft = models.DecimalField(
+        max_digits=5,
+        decimal_places=1,
+        null=True,
+        blank=True,
+        help_text="In-row/tree spacing in feet"
+    )
+    tree_count = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        help_text="Total number of trees/plants"
+    )
+    trees_per_acre = models.DecimalField(
+        max_digits=8,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="Tree/plant density (calculated or manual)"
+    )
+
+    # === ORIENTATION & TRELLIS ===
+    row_orientation = models.CharField(
+        max_length=10,
+        choices=ROW_ORIENTATION_CHOICES,
+        blank=True,
+        help_text="Row orientation for sun exposure"
+    )
+    trellis_system = models.CharField(
+        max_length=30,
+        choices=TRELLIS_SYSTEM_CHOICES,
+        default='none',
+        blank=True
+    )
+
+    # === SOIL & IRRIGATION ===
+    soil_type = models.CharField(
+        max_length=30,
+        choices=SOIL_TYPE_CHOICES,
+        blank=True,
+        help_text="Predominant soil type"
+    )
+    irrigation_type = models.CharField(
+        max_length=20,
+        choices=IRRIGATION_TYPE_CHOICES,
+        blank=True,
+        help_text="Primary irrigation method"
+    )
+
+    # === PRODUCTION & YIELD ===
+    expected_yield_per_acre = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="Expected yield per acre (crop-appropriate units)"
+    )
+    yield_unit = models.CharField(
+        max_length=30,
+        blank=True,
+        default='bins',
+        help_text="Unit for yield (bins, lbs, tons, boxes, etc.)"
+    )
+
+    # === CERTIFICATION STATUS ===
+    organic_status = models.CharField(
+        max_length=20,
+        choices=ORGANIC_STATUS_CHOICES,
+        default='conventional'
+    )
+    organic_certifier = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text="Organic certification agency"
+    )
+    organic_cert_number = models.CharField(
+        max_length=50,
+        blank=True
+    )
+    organic_cert_expiration = models.DateField(
+        null=True,
+        blank=True
+    )
+
+    # === SATELLITE TREE DETECTION DATA ===
+    # These fields are populated by tree detection runs
+    latest_satellite_tree_count = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="Tree count from most recent satellite detection"
+    )
+    latest_satellite_trees_per_acre = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="Tree density from satellite detection"
+    )
+    satellite_canopy_coverage_percent = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="Canopy coverage percentage from satellite detection"
+    )
+    latest_detection_date = models.DateField(
+        null=True,
+        blank=True,
+        help_text="Date of imagery used for latest tree detection"
+    )
+    latest_detection_run = models.ForeignKey(
+        'TreeDetectionRun',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='+',
+        help_text="Most recent approved tree detection run"
+    )
+
+    # === LIDAR-DERIVED DATA ===
+    lidar_tree_count = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="Tree count from LiDAR detection"
+    )
+    lidar_trees_per_acre = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="Tree density from LiDAR detection"
+    )
+    lidar_avg_tree_height_m = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="Average tree height from LiDAR (meters)"
+    )
+    lidar_canopy_coverage_percent = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="Canopy coverage percentage from LiDAR"
+    )
+    lidar_detection_date = models.DateField(
+        null=True,
+        blank=True,
+        help_text="Date of LiDAR data used for detection"
+    )
+    latest_lidar_run = models.ForeignKey(
+        'LiDARProcessingRun',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='+',
+        help_text="Most recent approved LiDAR processing run"
+    )
+
+    # === TERRAIN DATA ===
+    avg_slope_degrees = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="Average slope in degrees from LiDAR terrain analysis"
+    )
+    primary_aspect = models.CharField(
+        max_length=20,
+        null=True,
+        blank=True,
+        help_text="Primary slope aspect (N, NE, E, SE, S, SW, W, NW, FLAT)"
+    )
+    frost_risk_level = models.CharField(
+        max_length=20,
+        choices=[
+            ('low', 'Low'),
+            ('medium', 'Medium'),
+            ('high', 'High'),
+        ],
+        null=True,
+        blank=True,
+        help_text="Frost risk level based on terrain analysis"
+    )
+
+    # === NOTES ===
+    notes = models.TextField(blank=True)
+
+    # === STATUS ===
     active = models.BooleanField(default=True)
-    
+
     # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -915,7 +1452,26 @@ class Field(LocationMixin, models.Model):
 
     def __str__(self):
         return f"{self.name} ({self.field_number})"
-    
+
+    @property
+    def crop_age_years(self):
+        """Calculate crop age from planting date or year planted."""
+        from datetime import date
+        if self.planting_date:
+            return (date.today() - self.planting_date).days // 365
+        elif self.year_planted:
+            return date.today().year - self.year_planted
+        return None
+
+    @property
+    def calculated_trees_per_acre(self):
+        """Calculate tree density from spacing."""
+        if self.row_spacing_ft and self.tree_spacing_ft:
+            sq_ft_per_tree = float(self.row_spacing_ft * self.tree_spacing_ft)
+            if sq_ft_per_tree > 0:
+                return round(43560 / sq_ft_per_tree, 2)
+        return None
+
     def calculate_centroid_from_boundary(self):
         """Calculate the centroid of the boundary polygon."""
         if not self.boundary_geojson:
@@ -931,11 +1487,21 @@ class Field(LocationMixin, models.Model):
             return (float(self.gps_latitude), float(self.gps_longitude))
         except (KeyError, IndexError, TypeError):
             return None
-    
+
     def save(self, *args, **kwargs):
-        """Auto-calculate centroid from boundary on save if no coordinates."""
+        """Auto-calculate values on save."""
+        # Auto-calculate trees per acre if not set
+        if not self.trees_per_acre and self.row_spacing_ft and self.tree_spacing_ft:
+            self.trees_per_acre = self.calculated_trees_per_acre
+
+        # Auto-calculate tree count if not set
+        if not self.tree_count and self.trees_per_acre and self.total_acres:
+            self.tree_count = int(float(self.trees_per_acre) * float(self.total_acres))
+
+        # Auto-calculate centroid from boundary
         if self.boundary_geojson and not self.has_coordinates:
             self.calculate_centroid_from_boundary()
+
         super().save(*args, **kwargs)
 
 
@@ -1329,9 +1895,13 @@ class PesticideApplication(models.Model):
 
 
 # =============================================================================
+# WATER & IRRIGATION MANAGEMENT
+# =============================================================================
+
+# -----------------------------------------------------------------------------
 # SGMA / WELL CHOICE CONSTANTS
 # (Must be defined before WaterSource model)
-# =============================================================================
+# -----------------------------------------------------------------------------
 
 GSA_CHOICES = [
     ('obgma', 'Ojai Basin Groundwater Management Agency (OBGMA)'),
@@ -1851,6 +2421,16 @@ class Buyer(models.Model):
     Represents a buyer/destination for harvested crops.
     Packing houses, processors, direct sale contacts, etc.
     """
+    # Multi-tenancy
+    company = models.ForeignKey(
+        'Company',
+        on_delete=models.CASCADE,
+        related_name='buyers',
+        null=True,
+        blank=True,
+        help_text='Company that owns this buyer record'
+    )
+
     name = models.CharField(max_length=200)
     buyer_type = models.CharField(
         max_length=20,
@@ -1891,6 +2471,9 @@ class Buyer(models.Model):
     class Meta:
         ordering = ['name']
         verbose_name_plural = "Buyers"
+        indexes = [
+            models.Index(fields=['company', 'active'], name='idx_buyer_co_active'),
+        ]
     
     def __str__(self):
         return f"{self.name} ({self.get_buyer_type_display()})"
@@ -1904,6 +2487,16 @@ class LaborContractor(models.Model):
     """
     Represents a harvest labor contractor/crew company.
     """
+    # Multi-tenancy
+    company = models.ForeignKey(
+        'Company',
+        on_delete=models.CASCADE,
+        related_name='labor_contractors',
+        null=True,
+        blank=True,
+        help_text='Company that owns this labor contractor record'
+    )
+
     company_name = models.CharField(max_length=200)
     
     # Contact Information
@@ -1964,6 +2557,9 @@ class LaborContractor(models.Model):
         ordering = ['company_name']
         verbose_name = "Labor Contractor"
         verbose_name_plural = "Labor Contractors"
+        indexes = [
+            models.Index(fields=['company', 'active'], name='idx_contr_co_active'),
+        ]
     
     def __str__(self):
         return self.company_name
@@ -2098,6 +2694,11 @@ class Harvest(models.Model):
     class Meta:
         ordering = ['-harvest_date', '-created_at']
         verbose_name_plural = "Harvests"
+        indexes = [
+            models.Index(fields=['crop_variety'], name='idx_harv_crop_var'),
+            models.Index(fields=['harvest_date'], name='idx_harv_date'),
+            models.Index(fields=['field', 'harvest_date'], name='idx_harv_field_date'),
+        ]
     
     def __str__(self):
         return f"{self.field.name} - {self.harvest_date} (Pick #{self.harvest_number})"
@@ -2280,6 +2881,11 @@ class HarvestLoad(models.Model):
         default='pending'
     )
     payment_date = models.DateField(null=True, blank=True)
+    payment_due_date = models.DateField(
+        null=True,
+        blank=True,
+        help_text='Expected payment date based on buyer payment terms'
+    )
     invoice_number = models.CharField(max_length=50, blank=True)
     
     # GAP/GHP Transportation Traceability
@@ -2313,6 +2919,10 @@ class HarvestLoad(models.Model):
         ordering = ['harvest', 'load_number']
         verbose_name = "Harvest Load"
         verbose_name_plural = "Harvest Loads"
+        indexes = [
+            models.Index(fields=['payment_status'], name='idx_load_pay_status'),
+            models.Index(fields=['buyer'], name='idx_load_buyer'),
+        ]
     
     def __str__(self):
         buyer_name = self.buyer.name if self.buyer else "Unknown"
@@ -2334,7 +2944,7 @@ class HarvestLoad(models.Model):
         """Calculate total revenue based on price unit."""
         if not self.price_per_unit:
             return None
-            
+
         if self.price_unit == 'per_bin':
             return self.bins * self.price_per_unit
         elif self.price_unit == 'per_lb' and self.weight_lbs:
@@ -2343,8 +2953,22 @@ class HarvestLoad(models.Model):
             return (self.weight_lbs / 2000) * self.price_per_unit
         elif self.price_unit == 'flat_rate':
             return self.price_per_unit
-        
+
         return None
+
+    @property
+    def days_overdue(self):
+        """Calculate days overdue if payment is past due date."""
+        if not self.payment_due_date:
+            return None
+        if self.payment_status in ['paid', 'cancelled']:
+            return None
+
+        from datetime import date
+        today = date.today()
+        if today > self.payment_due_date:
+            return (today - self.payment_due_date).days
+        return 0
 
 
 # -----------------------------------------------------------------------------
@@ -2437,6 +3061,9 @@ class HarvestLabor(models.Model):
         ordering = ['harvest', '-start_time']
         verbose_name = "Harvest Labor Record"
         verbose_name_plural = "Harvest Labor Records"
+        indexes = [
+            models.Index(fields=['contractor'], name='idx_labor_contractor'),
+        ]
     
     def __str__(self):
         contractor_name = self.contractor.company_name if self.contractor else self.crew_name
@@ -3249,12 +3876,37 @@ class IrrigationEvent(models.Model):
     Optional tracking of irrigation events to link water usage to specific fields.
     Useful for water budgeting and crop water use analysis.
     Now uses unified WaterSource model (which includes wells).
+    Can also link to IrrigationZone for scheduling module.
     """
-    
+
+    METHOD_CHOICES = [
+        ('scheduled', 'Scheduled'),
+        ('manual', 'Manual'),
+        ('rainfall', 'Rainfall (Natural)'),
+    ]
+
+    SOURCE_CHOICES = [
+        ('manual', 'Manual Entry'),
+        ('recommendation', 'From Recommendation'),
+        ('sensor', 'Sensor Triggered'),
+        ('schedule', 'Automated Schedule'),
+    ]
+
     field = models.ForeignKey(
         'Field',
         on_delete=models.CASCADE,
-        related_name='irrigation_events'
+        related_name='irrigation_events',
+        null=True,
+        blank=True,
+        help_text="Field irrigated (optional if zone is set)"
+    )
+    zone = models.ForeignKey(
+        'IrrigationZone',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='irrigation_events',
+        help_text="Irrigation zone (for scheduling module)"
     )
     water_source = models.ForeignKey(
         'WaterSource',
@@ -3263,6 +3915,14 @@ class IrrigationEvent(models.Model):
         blank=True,
         related_name='irrigation_events',
         help_text="Water source used (well, municipal, surface, etc.)"
+    )
+    recommendation = models.ForeignKey(
+        'IrrigationRecommendation',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='events',
+        help_text="Recommendation this event fulfills"
     )
     
     # === EVENT DETAILS ===
@@ -3323,52 +3983,577 @@ class IrrigationEvent(models.Model):
         blank=True,
         help_text="Acres irrigated (may be less than total field acres)"
     )
-    
+
+    # === IRRIGATION SCHEDULING FIELDS ===
+    date = models.DateField(
+        null=True,
+        blank=True,
+        help_text="Alias for irrigation_date (for scheduling module)"
+    )
+    depth_inches = models.DecimalField(
+        max_digits=5,
+        decimal_places=3,
+        null=True,
+        blank=True,
+        help_text="Application depth (inches) for scheduling"
+    )
+    method = models.CharField(
+        max_length=20,
+        choices=METHOD_CHOICES,
+        default='manual',
+        help_text="How irrigation was triggered"
+    )
+    source = models.CharField(
+        max_length=20,
+        choices=SOURCE_CHOICES,
+        default='manual',
+        help_text="Source of irrigation event record"
+    )
+
     # === METADATA ===
     recorded_by = models.CharField(max_length=100, blank=True)
     notes = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    
+
     class Meta:
         ordering = ['-irrigation_date', '-start_time']
         verbose_name = "Irrigation Event"
         verbose_name_plural = "Irrigation Events"
-    
+
     def __str__(self):
+        if self.zone:
+            return f"{self.zone.name} - {self.date or self.irrigation_date}: {self.depth_inches or 0} in"
         return f"{self.field} - {self.irrigation_date}: {self.water_applied_af or 0} AF"
     
     def save(self, *args, **kwargs):
-        """Auto-calculate duration and water conversions."""
+        """Auto-calculate duration, water conversions, and sync date fields."""
+        # Sync date fields (date is alias for irrigation_date for scheduling module)
+        if self.date and not self.irrigation_date:
+            self.irrigation_date = self.date
+        elif self.irrigation_date and not self.date:
+            self.date = self.irrigation_date
+
+        # Auto-set field from zone if zone is set
+        if self.zone and not self.field:
+            self.field = self.zone.field
+
+        # Calculate depth from duration and application rate (for zone-based events)
+        if self.zone and self.duration_hours and not self.depth_inches:
+            if self.zone.application_rate:
+                self.depth_inches = self.duration_hours * self.zone.application_rate
+
         # Calculate duration from times
         if self.start_time and self.end_time and not self.duration_hours:
             from datetime import datetime, timedelta
-            start = datetime.combine(self.irrigation_date, self.start_time)
-            end = datetime.combine(self.irrigation_date, self.end_time)
-            if end < start:  # Crossed midnight
-                end += timedelta(days=1)
-            delta = end - start
-            self.duration_hours = Decimal(str(round(delta.total_seconds() / 3600, 2)))
-        
+            ref_date = self.irrigation_date or self.date
+            if ref_date:
+                start = datetime.combine(ref_date, self.start_time)
+                end = datetime.combine(ref_date, self.end_time)
+                if end < start:  # Crossed midnight
+                    end += timedelta(days=1)
+                delta = end - start
+                self.duration_hours = Decimal(str(round(delta.total_seconds() / 3600, 2)))
+
         # Calculate water applied from flow rate and duration (for wells)
         if self.water_source and self.water_source.is_well and self.duration_hours and not self.water_applied_af:
             if self.water_source.pump_flow_rate_gpm:
                 gallons = self.water_source.pump_flow_rate_gpm * self.duration_hours * 60
                 self.water_applied_gallons = gallons
                 self.water_applied_af = gallons / Decimal('325851')
-        
+
         # Convert between AF and gallons if one is set
         if self.water_applied_af and not self.water_applied_gallons:
             self.water_applied_gallons = self.water_applied_af * Decimal('325851')
         elif self.water_applied_gallons and not self.water_applied_af:
             self.water_applied_af = self.water_applied_gallons / Decimal('325851')
-        
+
         # Calculate acre-inches if acres known
         if self.water_applied_af and self.acres_irrigated:
             # 1 AF over 1 acre = 12 inches
             self.acre_inches = (self.water_applied_af / self.acres_irrigated) * 12
-        
+
         super().save(*args, **kwargs)
+
+
+# -----------------------------------------------------------------------------
+# IRRIGATION SCHEDULING MODELS
+# -----------------------------------------------------------------------------
+
+class IrrigationZone(models.Model):
+    """
+    An irrigation management unit within a field.
+    Contains soil, system, and scheduling configuration for water balance calculations.
+    """
+
+    IRRIGATION_METHOD_CHOICES = [
+        ('drip', 'Drip'),
+        ('micro_sprinkler', 'Micro-Sprinkler'),
+        ('flood', 'Flood'),
+        ('furrow', 'Furrow'),
+        ('sprinkler', 'Sprinkler'),
+    ]
+
+    SOIL_TYPE_CHOICES = [
+        ('sandy', 'Sandy'),
+        ('sandy_loam', 'Sandy Loam'),
+        ('loam', 'Loam'),
+        ('clay_loam', 'Clay Loam'),
+        ('clay', 'Clay'),
+    ]
+
+    CIMIS_TARGET_TYPE_CHOICES = [
+        ('station', 'Station'),
+        ('spatial', 'Spatial (Zip)'),
+    ]
+
+    # Relationship
+    field = models.ForeignKey(
+        Field,
+        on_delete=models.CASCADE,
+        related_name='irrigation_zones'
+    )
+    water_source = models.ForeignKey(
+        WaterSource,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='irrigation_zones'
+    )
+
+    # Basic info
+    name = models.CharField(max_length=200, help_text="Zone name (e.g., 'Block A Drip')")
+    acres = models.DecimalField(
+        max_digits=8,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="Zone acreage"
+    )
+    crop_type = models.CharField(max_length=50, default='citrus', help_text="Primary crop type")
+    tree_age = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="Tree age in years"
+    )
+    tree_spacing_ft = models.DecimalField(
+        max_digits=5,
+        decimal_places=1,
+        null=True,
+        blank=True,
+        help_text="Tree spacing in feet"
+    )
+
+    # Irrigation system
+    irrigation_method = models.CharField(
+        max_length=20,
+        choices=IRRIGATION_METHOD_CHOICES,
+        default='drip'
+    )
+    emitters_per_tree = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="Number of emitters per tree"
+    )
+    emitter_gph = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="Emitter flow rate (GPH)"
+    )
+    application_rate = models.DecimalField(
+        max_digits=5,
+        decimal_places=3,
+        default=Decimal('0.05'),
+        null=True,
+        blank=True,
+        help_text="Water application rate (inches per hour)"
+    )
+    distribution_uniformity = models.IntegerField(
+        default=85,
+        help_text="System efficiency (0-100%)"
+    )
+
+    # Soil characteristics
+    soil_type = models.CharField(
+        max_length=30,
+        choices=SOIL_TYPE_CHOICES,
+        blank=True
+    )
+    soil_water_holding_capacity = models.DecimalField(
+        max_digits=4,
+        decimal_places=2,
+        default=Decimal('1.5'),
+        null=True,
+        blank=True,
+        help_text="Available water (inches per foot)"
+    )
+    root_depth_inches = models.IntegerField(
+        default=36,
+        help_text="Effective root zone depth"
+    )
+
+    # Scheduling parameters
+    management_allowable_depletion = models.IntegerField(
+        default=50,
+        help_text="MAD threshold (0-100%)"
+    )
+
+    # CIMIS data source
+    cimis_target = models.CharField(
+        max_length=20,
+        blank=True,
+        help_text="CIMIS station ID or zip code"
+    )
+    cimis_target_type = models.CharField(
+        max_length=10,
+        choices=CIMIS_TARGET_TYPE_CHOICES,
+        default='station'
+    )
+
+    # Satellite Kc adjustment configuration
+    use_satellite_kc_adjustment = models.BooleanField(
+        default=True,
+        help_text="Use satellite canopy data to adjust crop coefficients"
+    )
+    reference_canopy_coverage = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="Override expected mature canopy coverage for this zone (%). "
+                  "If blank, uses crop-specific defaults based on tree age."
+    )
+
+    # NDVI stress response configuration
+    ndvi_stress_modifier_enabled = models.BooleanField(
+        default=True,
+        help_text="Increase water for stressed vegetation based on NDVI"
+    )
+    ndvi_healthy_threshold = models.DecimalField(
+        max_digits=3,
+        decimal_places=2,
+        default=Decimal('0.75'),
+        help_text="NDVI values above this are considered healthy (no adjustment)"
+    )
+    ndvi_stress_multiplier = models.DecimalField(
+        max_digits=3,
+        decimal_places=2,
+        default=Decimal('1.10'),
+        help_text="Multiply Kc by this factor when vegetation is stressed"
+    )
+
+    # Status
+    active = models.BooleanField(default=True)
+    notes = models.TextField(blank=True)
+
+    # Timestamps
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Irrigation Zone"
+        verbose_name_plural = "Irrigation Zones"
+        ordering = ['field__name', 'name']
+        indexes = [
+            models.Index(fields=['field']),
+            models.Index(fields=['active']),
+        ]
+
+    def __str__(self):
+        return f"{self.name} ({self.field.name})"
+
+    @property
+    def soil_capacity_inches(self):
+        """Calculate total soil water holding capacity in inches."""
+        root_depth_feet = self.root_depth_inches / Decimal('12')
+        return self.soil_water_holding_capacity * root_depth_feet
+
+    @property
+    def mad_depth_inches(self):
+        """Calculate MAD threshold depth in inches."""
+        return self.soil_capacity_inches * Decimal(self.management_allowable_depletion) / Decimal('100')
+
+    def get_company(self):
+        """Get the company that owns this zone (for RLS)."""
+        if self.field and self.field.farm:
+            return self.field.farm.company
+        return None
+
+
+class CropCoefficientProfile(models.Model):
+    """
+    Monthly crop coefficient (Kc) values for ETc calculation.
+    Zone-specific profiles override default profiles.
+    """
+
+    zone = models.ForeignKey(
+        IrrigationZone,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='kc_profiles'
+    )
+    crop_type = models.CharField(
+        max_length=50,
+        help_text="Crop type"
+    )
+    growth_stage = models.CharField(
+        max_length=50,
+        blank=True,
+        help_text="Growth stage (e.g., mature, young)"
+    )
+
+    # Monthly Kc values
+    kc_jan = models.DecimalField(max_digits=3, decimal_places=2, default=Decimal('0.65'))
+    kc_feb = models.DecimalField(max_digits=3, decimal_places=2, default=Decimal('0.65'))
+    kc_mar = models.DecimalField(max_digits=3, decimal_places=2, default=Decimal('0.70'))
+    kc_apr = models.DecimalField(max_digits=3, decimal_places=2, default=Decimal('0.70'))
+    kc_may = models.DecimalField(max_digits=3, decimal_places=2, default=Decimal('0.70'))
+    kc_jun = models.DecimalField(max_digits=3, decimal_places=2, default=Decimal('0.65'))
+    kc_jul = models.DecimalField(max_digits=3, decimal_places=2, default=Decimal('0.65'))
+    kc_aug = models.DecimalField(max_digits=3, decimal_places=2, default=Decimal('0.65'))
+    kc_sep = models.DecimalField(max_digits=3, decimal_places=2, default=Decimal('0.65'))
+    kc_oct = models.DecimalField(max_digits=3, decimal_places=2, default=Decimal('0.65'))
+    kc_nov = models.DecimalField(max_digits=3, decimal_places=2, default=Decimal('0.65'))
+    kc_dec = models.DecimalField(max_digits=3, decimal_places=2, default=Decimal('0.65'))
+    notes = models.TextField(blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Crop Coefficient Profile"
+        verbose_name_plural = "Crop Coefficient Profiles"
+
+    def __str__(self):
+        if self.zone:
+            return f"Kc Profile for {self.zone.name}"
+        return f"Default Kc Profile: {self.crop_type}"
+
+    def get_kc_for_month(self, month: int) -> Decimal:
+        """Get Kc value for a given month (1-12)."""
+        month_fields = {
+            1: self.kc_jan, 2: self.kc_feb, 3: self.kc_mar, 4: self.kc_apr,
+            5: self.kc_may, 6: self.kc_jun, 7: self.kc_jul, 8: self.kc_aug,
+            9: self.kc_sep, 10: self.kc_oct, 11: self.kc_nov, 12: self.kc_dec,
+        }
+        return month_fields.get(month, Decimal('0.65'))
+
+
+class CIMISDataCache(models.Model):
+    """
+    Cache for CIMIS API responses.
+    Stores daily ETo and weather data to minimize API calls.
+    """
+
+    DATA_SOURCE_CHOICES = [
+        ('station', 'Station'),
+        ('spatial', 'Spatial'),
+    ]
+
+    date = models.DateField(help_text="Data date")
+    source_id = models.CharField(
+        max_length=20,
+        help_text="Station ID or zip code"
+    )
+    data_source = models.CharField(
+        max_length=10,
+        choices=DATA_SOURCE_CHOICES,
+        default='station'
+    )
+
+    # Weather data
+    eto = models.DecimalField(
+        max_digits=6,
+        decimal_places=3,
+        null=True,
+        blank=True,
+        help_text="Reference evapotranspiration (inches)"
+    )
+    precipitation = models.DecimalField(
+        max_digits=6,
+        decimal_places=3,
+        null=True,
+        blank=True,
+        help_text="Precipitation (inches)"
+    )
+    air_temp_avg = models.DecimalField(
+        max_digits=5,
+        decimal_places=1,
+        null=True,
+        blank=True
+    )
+    air_temp_max = models.DecimalField(
+        max_digits=5,
+        decimal_places=1,
+        null=True,
+        blank=True
+    )
+    air_temp_min = models.DecimalField(
+        max_digits=5,
+        decimal_places=1,
+        null=True,
+        blank=True
+    )
+
+    # Quality control
+    eto_qc = models.CharField(
+        max_length=5,
+        blank=True,
+        help_text="ETo quality control flag"
+    )
+
+    # Metadata
+    fetched_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "CIMIS Data Cache"
+        verbose_name_plural = "CIMIS Data Cache"
+        ordering = ['-date']
+        unique_together = [['date', 'source_id', 'data_source']]
+
+    def __str__(self):
+        return f"CIMIS {self.source_id} - {self.date}"
+
+
+class IrrigationRecommendation(models.Model):
+    """
+    System-generated irrigation recommendations based on water balance calculations.
+    """
+
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('applied', 'Applied'),
+        ('skipped', 'Skipped'),
+        ('expired', 'Expired'),
+    ]
+
+    zone = models.ForeignKey(
+        IrrigationZone,
+        on_delete=models.CASCADE,
+        related_name='recommendations'
+    )
+
+    # Recommendation
+    recommended_date = models.DateField(help_text="Recommended irrigation date")
+    recommended_depth_inches = models.DecimalField(
+        max_digits=6,
+        decimal_places=3,
+        help_text="Recommended depth (inches)"
+    )
+    recommended_duration_hours = models.DecimalField(
+        max_digits=6,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="Recommended duration (hours)"
+    )
+
+    # Calculation inputs
+    days_since_last_irrigation = models.IntegerField(
+        null=True,
+        blank=True
+    )
+    cumulative_etc = models.DecimalField(
+        max_digits=6,
+        decimal_places=3,
+        null=True,
+        blank=True,
+        help_text="Cumulative ETc since last irrigation"
+    )
+    effective_rainfall = models.DecimalField(
+        max_digits=6,
+        decimal_places=3,
+        null=True,
+        blank=True,
+        help_text="Effective rainfall credit"
+    )
+    soil_moisture_depletion_pct = models.DecimalField(
+        max_digits=5,
+        decimal_places=1,
+        null=True,
+        blank=True,
+        help_text="Current depletion %"
+    )
+
+    # Status tracking
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='pending'
+    )
+
+    # Metadata
+    calculation_details = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text="Detailed calculation breakdown"
+    )
+    generated_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Irrigation Recommendation"
+        verbose_name_plural = "Irrigation Recommendations"
+        ordering = ['-recommended_date', '-generated_at']
+
+    def __str__(self):
+        return f"Recommendation for {self.zone.name} on {self.recommended_date}"
+
+
+class SoilMoistureReading(models.Model):
+    """
+    Manual or sensor-based soil moisture readings.
+    Used to calibrate water balance calculations.
+    """
+
+    zone = models.ForeignKey(
+        IrrigationZone,
+        on_delete=models.CASCADE,
+        related_name='moisture_readings'
+    )
+
+    reading_datetime = models.DateTimeField(help_text="Reading date/time")
+    sensor_id = models.CharField(
+        max_length=50,
+        blank=True,
+        help_text="Sensor identifier"
+    )
+    sensor_depth_inches = models.IntegerField(
+        default=12,
+        help_text="Sensor depth"
+    )
+
+    # Moisture values (one or both may be provided)
+    volumetric_water_content = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="VWC percentage"
+    )
+    soil_tension_cb = models.DecimalField(
+        max_digits=6,
+        decimal_places=1,
+        null=True,
+        blank=True,
+        help_text="Soil tension (centibars)"
+    )
+
+    notes = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Soil Moisture Reading"
+        verbose_name_plural = "Soil Moisture Readings"
+        ordering = ['-reading_datetime']
+
+    def __str__(self):
+        return f"{self.zone.name} - {self.reading_datetime}"
+
 
 # -----------------------------------------------------------------------------
 # FERTILIZER PRODUCT CHOICES
@@ -3718,4 +4903,3924 @@ def get_common_fertilizers():
         {'name': 'Potassium Sulfate (0-0-50)', 'nitrogen_pct': 0, 'phosphorus_pct': 0, 'potassium_pct': 50, 'form': 'granular', 'sulfur_pct': Decimal('17')},
         {'name': 'Blood Meal (12-0-0)', 'nitrogen_pct': 12, 'phosphorus_pct': 0, 'potassium_pct': 0, 'form': 'organic', 'is_organic': True, 'omri_listed': True},
     ]
+
+
+# =============================================================================
+# WEATHER CACHE MODEL
+# =============================================================================
+
+class WeatherCache(models.Model):
+    """
+    Cache weather data to minimize API calls to OpenWeatherMap.
+    Each farm gets its own cached weather data based on GPS coordinates.
+    """
+    farm = models.OneToOneField(
+        Farm,
+        on_delete=models.CASCADE,
+        related_name='weather_cache'
+    )
+    latitude = models.DecimalField(
+        max_digits=10,
+        decimal_places=7,
+        help_text="Cached latitude for weather lookup"
+    )
+    longitude = models.DecimalField(
+        max_digits=10,
+        decimal_places=7,
+        help_text="Cached longitude for weather lookup"
+    )
+    weather_data = models.JSONField(
+        default=dict,
+        help_text="Current weather data from API"
+    )
+    forecast_data = models.JSONField(
+        default=dict,
+        null=True,
+        blank=True,
+        help_text="7-day forecast data from API"
+    )
+    fetched_at = models.DateTimeField(
+        auto_now=True,
+        help_text="When weather data was last fetched"
+    )
+
+    class Meta:
+        verbose_name = "Weather Cache"
+        verbose_name_plural = "Weather Caches"
+
+    def __str__(self):
+        return f"Weather for {self.farm.name}"
+
+    @property
+    def is_current_stale(self):
+        """Check if current weather data is older than 30 minutes."""
+        from datetime import timedelta
+        return timezone.now() - self.fetched_at > timedelta(minutes=30)
+
+    @property
+    def is_forecast_stale(self):
+        """Check if forecast data is older than 3 hours."""
+        from datetime import timedelta
+        return timezone.now() - self.fetched_at > timedelta(hours=3)
+
+
+# =============================================================================
+# QUARANTINE STATUS MODEL
+# =============================================================================
+
+class QuarantineStatus(models.Model):
+    """
+    Caches quarantine status results from CDFA API queries.
+    Used to track whether farms/fields fall within HLB quarantine zones.
+
+    One of farm or field must be set (not both, not neither).
+    """
+
+    QUARANTINE_TYPE_CHOICES = [
+        ('HLB', 'Huanglongbing (Citrus Greening)'),
+        ('ACP_BULK', 'Asian Citrus Psyllid Bulk Citrus'),
+    ]
+
+    # Link to either Farm or Field (one must be set)
+    farm = models.ForeignKey(
+        Farm,
+        on_delete=models.CASCADE,
+        related_name='quarantine_statuses',
+        null=True,
+        blank=True,
+        help_text="Farm being checked for quarantine status"
+    )
+    field = models.ForeignKey(
+        Field,
+        on_delete=models.CASCADE,
+        related_name='quarantine_statuses',
+        null=True,
+        blank=True,
+        help_text="Field being checked for quarantine status"
+    )
+
+    # Quarantine type being checked
+    quarantine_type = models.CharField(
+        max_length=20,
+        choices=QUARANTINE_TYPE_CHOICES,
+        default='HLB',
+        help_text="Type of quarantine check"
+    )
+
+    # Status result
+    in_quarantine = models.BooleanField(
+        null=True,
+        blank=True,
+        help_text="True if in quarantine, False if not, null if unknown/error"
+    )
+    zone_name = models.CharField(
+        max_length=255,
+        blank=True,
+        help_text="Name of the quarantine zone if applicable"
+    )
+
+    # Tracking timestamps
+    last_checked = models.DateTimeField(
+        auto_now=True,
+        help_text="When the status was last checked"
+    )
+    last_changed = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="When the quarantine status actually changed"
+    )
+
+    # Coordinates used for the check (cached for reference)
+    check_latitude = models.DecimalField(
+        max_digits=10,
+        decimal_places=7,
+        null=True,
+        blank=True,
+        help_text="Latitude used for the check"
+    )
+    check_longitude = models.DecimalField(
+        max_digits=10,
+        decimal_places=7,
+        null=True,
+        blank=True,
+        help_text="Longitude used for the check"
+    )
+
+    # Raw API response for debugging
+    raw_response = models.JSONField(
+        null=True,
+        blank=True,
+        help_text="Raw response from CDFA API for debugging"
+    )
+
+    # Error tracking
+    error_message = models.TextField(
+        blank=True,
+        help_text="Error message if the check failed"
+    )
+
+    # Timestamps
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Quarantine Status"
+        verbose_name_plural = "Quarantine Statuses"
+        ordering = ['-last_checked']
+        indexes = [
+            models.Index(fields=['farm', 'quarantine_type']),
+            models.Index(fields=['field', 'quarantine_type']),
+            models.Index(fields=['last_checked']),
+        ]
+        # Ensure only one record per farm+type or field+type combination
+        constraints = [
+            models.UniqueConstraint(
+                fields=['farm', 'quarantine_type'],
+                condition=models.Q(farm__isnull=False),
+                name='unique_farm_quarantine_type'
+            ),
+            models.UniqueConstraint(
+                fields=['field', 'quarantine_type'],
+                condition=models.Q(field__isnull=False),
+                name='unique_field_quarantine_type'
+            ),
+        ]
+
+    def __str__(self):
+        target = self.farm.name if self.farm else (self.field.name if self.field else "Unknown")
+        status = "In Quarantine" if self.in_quarantine else "Clear" if self.in_quarantine is False else "Unknown"
+        return f"{target} - {self.get_quarantine_type_display()}: {status}"
+
+    def clean(self):
+        """Validate that exactly one of farm or field is set."""
+        from django.core.exceptions import ValidationError
+
+        if self.farm and self.field:
+            raise ValidationError("Cannot set both farm and field. Choose one.")
+        if not self.farm and not self.field:
+            raise ValidationError("Must set either farm or field.")
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
+
+    @property
+    def target_name(self):
+        """Get the name of the farm or field being checked."""
+        if self.farm:
+            return self.farm.name
+        elif self.field:
+            return self.field.name
+        return "Unknown"
+
+    @property
+    def target_type(self):
+        """Get whether this is a farm or field check."""
+        if self.farm:
+            return "farm"
+        elif self.field:
+            return "field"
+        return "unknown"
+
+    @property
+    def is_stale(self):
+        """Check if the status is older than 24 hours."""
+        from datetime import timedelta
+        return timezone.now() - self.last_checked > timedelta(hours=24)
+
+    @property
+    def status_display(self):
+        """Human-readable status."""
+        if self.error_message:
+            return "Error"
+        if self.in_quarantine is None:
+            return "Unknown"
+        return "In Quarantine" if self.in_quarantine else "Clear"
+
+    def get_company(self):
+        """Get the company that owns this status (for RLS)."""
+        if self.farm:
+            return self.farm.company
+        elif self.field and self.field.farm:
+            return self.field.farm.company
+        return None
+
+
+# =============================================================================
+# SATELLITE IMAGERY & TREE DETECTION MODELS
+# =============================================================================
+
+class SatelliteImage(models.Model):
+    """
+    Uploaded satellite imagery for tree detection and canopy analysis.
+    Supports multi-band GeoTIFF files (e.g., 4-band BGRN from SkyWatch).
+    """
+
+    company = models.ForeignKey(
+        Company,
+        on_delete=models.CASCADE,
+        related_name='satellite_images',
+        help_text="Company that owns this imagery"
+    )
+    farm = models.ForeignKey(
+        Farm,
+        on_delete=models.CASCADE,
+        related_name='satellite_images',
+        help_text="Farm this imagery covers"
+    )
+
+    # File storage
+    file = models.FileField(
+        upload_to='imagery/%Y/%m/',
+        help_text="Uploaded GeoTIFF file"
+    )
+    file_size_mb = models.FloatField(
+        help_text="File size in megabytes"
+    )
+
+    # Image metadata
+    capture_date = models.DateField(
+        help_text="Date the imagery was captured"
+    )
+    resolution_m = models.FloatField(
+        help_text="Ground sample distance in meters (e.g., 0.38 for 38cm)"
+    )
+    bands = models.IntegerField(
+        default=3,
+        help_text="Number of spectral bands (3 for RGB, 4 for BGRN)"
+    )
+    has_nir = models.BooleanField(
+        default=False,
+        help_text="Has near-infrared band for NDVI calculation"
+    )
+    source = models.CharField(
+        max_length=50,
+        help_text="Imagery provider (e.g., SkyWatch, NAIP, Planet, Maxar)"
+    )
+    source_product_id = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text="Provider's product/order ID for reference"
+    )
+
+    # Coverage bounds (WGS84 / EPSG:4326)
+    bounds_west = models.FloatField(
+        help_text="Western boundary longitude"
+    )
+    bounds_east = models.FloatField(
+        help_text="Eastern boundary longitude"
+    )
+    bounds_south = models.FloatField(
+        help_text="Southern boundary latitude"
+    )
+    bounds_north = models.FloatField(
+        help_text="Northern boundary latitude"
+    )
+
+    # CRS information
+    crs = models.CharField(
+        max_length=50,
+        default='EPSG:4326',
+        help_text="Coordinate Reference System"
+    )
+
+    # Provider metadata
+    metadata_json = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text="Full provider metadata (cloud cover, sun angle, etc.)"
+    )
+
+    # Tracking
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+    uploaded_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='uploaded_satellite_images'
+    )
+
+    class Meta:
+        ordering = ['-capture_date']
+        verbose_name = "Satellite Image"
+        verbose_name_plural = "Satellite Images"
+        indexes = [
+            models.Index(fields=['company', 'farm']),
+            models.Index(fields=['capture_date']),
+        ]
+
+    def __str__(self):
+        return f"{self.farm.name} - {self.capture_date} ({self.source})"
+
+    @property
+    def bounds_geojson(self):
+        """Return bounds as GeoJSON polygon."""
+        return {
+            "type": "Polygon",
+            "coordinates": [[
+                [self.bounds_west, self.bounds_south],
+                [self.bounds_east, self.bounds_south],
+                [self.bounds_east, self.bounds_north],
+                [self.bounds_west, self.bounds_north],
+                [self.bounds_west, self.bounds_south],
+            ]]
+        }
+
+    @property
+    def center_coordinates(self):
+        """Return center point of coverage area."""
+        return {
+            'latitude': (self.bounds_north + self.bounds_south) / 2,
+            'longitude': (self.bounds_east + self.bounds_west) / 2,
+        }
+
+    def covers_field(self, field):
+        """Check if this image covers a given field's boundary or center point."""
+        if field.boundary_geojson:
+            # Check if field boundary is within image bounds
+            coords = field.boundary_geojson.get('coordinates', [[]])[0]
+            if coords:
+                for coord in coords:
+                    lng, lat = coord[0], coord[1]
+                    if not (self.bounds_west <= lng <= self.bounds_east and
+                            self.bounds_south <= lat <= self.bounds_north):
+                        return False
+                return True
+        elif field.gps_latitude and field.gps_longitude:
+            # Check if field center is within bounds
+            lat = float(field.gps_latitude)
+            lng = float(field.gps_longitude)
+            return (self.bounds_west <= lng <= self.bounds_east and
+                    self.bounds_south <= lat <= self.bounds_north)
+        return False
+
+
+class TreeDetectionRun(models.Model):
+    """
+    A single execution of tree detection on satellite imagery for a field.
+    Tracks processing status, parameters used, and results summary.
+    """
+
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('processing', 'Processing'),
+        ('completed', 'Completed'),
+        ('failed', 'Failed'),
+    ]
+
+    satellite_image = models.ForeignKey(
+        SatelliteImage,
+        on_delete=models.CASCADE,
+        related_name='detection_runs',
+        help_text="Source imagery for detection"
+    )
+    field = models.ForeignKey(
+        Field,
+        on_delete=models.CASCADE,
+        related_name='detection_runs',
+        help_text="Field being analyzed"
+    )
+
+    # Processing status
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='pending'
+    )
+    error_message = models.TextField(
+        blank=True,
+        help_text="Error details if detection failed"
+    )
+
+    # Algorithm settings
+    algorithm_version = models.CharField(
+        max_length=20,
+        default='1.0',
+        help_text="Version of detection algorithm used"
+    )
+    vegetation_index = models.CharField(
+        max_length=10,
+        default='NDVI',
+        help_text="Vegetation index used (NDVI or ExG)"
+    )
+    parameters = models.JSONField(
+        default=dict,
+        help_text="Detection parameters: min_canopy_diameter_m, max_canopy_diameter_m, min_tree_spacing_m, vegetation_threshold_percentile"
+    )
+
+    # Results summary
+    tree_count = models.IntegerField(
+        null=True,
+        help_text="Total trees detected"
+    )
+    trees_per_acre = models.FloatField(
+        null=True,
+        help_text="Tree density (trees/acre)"
+    )
+    avg_canopy_diameter_m = models.FloatField(
+        null=True,
+        help_text="Average canopy diameter in meters"
+    )
+    canopy_coverage_percent = models.FloatField(
+        null=True,
+        help_text="Percentage of field covered by canopy"
+    )
+    processing_time_seconds = models.FloatField(
+        null=True,
+        help_text="Time taken to process in seconds"
+    )
+
+    # Tracking
+    created_at = models.DateTimeField(auto_now_add=True)
+    completed_at = models.DateTimeField(
+        null=True,
+        help_text="When processing completed"
+    )
+
+    # User verification
+    reviewed_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='reviewed_detection_runs'
+    )
+    review_notes = models.TextField(
+        blank=True,
+        help_text="Notes from user review"
+    )
+    is_approved = models.BooleanField(
+        default=False,
+        help_text="User verified results are accurate"
+    )
+
+    class Meta:
+        ordering = ['-created_at']
+        get_latest_by = 'created_at'
+        verbose_name = "Tree Detection Run"
+        verbose_name_plural = "Tree Detection Runs"
+        indexes = [
+            models.Index(fields=['field', 'status']),
+            models.Index(fields=['satellite_image']),
+            models.Index(fields=['created_at']),
+        ]
+
+    def __str__(self):
+        return f"{self.field.name} - {self.created_at.strftime('%Y-%m-%d %H:%M')} ({self.status})"
+
+    @property
+    def is_latest_for_field(self):
+        """Check if this is the most recent completed run for the field."""
+        latest = self.field.detection_runs.filter(
+            status='completed',
+            is_approved=True
+        ).order_by('-completed_at').first()
+        return latest and latest.id == self.id
+
+
+class DetectedTree(models.Model):
+    """
+    Individual tree detected from satellite imagery analysis.
+    Stores location, metrics, and status for each tree.
+    """
+
+    STATUS_CHOICES = [
+        ('active', 'Active'),
+        ('dead', 'Dead/Removed'),
+        ('uncertain', 'Uncertain'),
+        ('false_positive', 'False Positive'),
+    ]
+
+    detection_run = models.ForeignKey(
+        TreeDetectionRun,
+        on_delete=models.CASCADE,
+        related_name='trees',
+        help_text="Detection run that identified this tree"
+    )
+    field = models.ForeignKey(
+        Field,
+        on_delete=models.CASCADE,
+        related_name='detected_trees',
+        help_text="Field containing this tree"
+    )
+
+    # Location (WGS84)
+    latitude = models.FloatField(
+        help_text="Tree center latitude"
+    )
+    longitude = models.FloatField(
+        help_text="Tree center longitude"
+    )
+
+    # Pixel location in source image (for reference/debugging)
+    pixel_x = models.IntegerField(
+        help_text="X pixel coordinate in source image"
+    )
+    pixel_y = models.IntegerField(
+        help_text="Y pixel coordinate in source image"
+    )
+
+    # Tree metrics
+    canopy_diameter_m = models.FloatField(
+        null=True,
+        help_text="Estimated canopy diameter in meters"
+    )
+    ndvi_value = models.FloatField(
+        null=True,
+        help_text="NDVI value at tree center (0-1 scale)"
+    )
+    confidence_score = models.FloatField(
+        help_text="Detection confidence score (0-1)"
+    )
+
+    # Status tracking
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='active'
+    )
+    is_verified = models.BooleanField(
+        default=False,
+        help_text="User has manually verified this tree"
+    )
+    notes = models.TextField(
+        blank=True,
+        help_text="User notes about this tree"
+    )
+
+    class Meta:
+        verbose_name = "Detected Tree"
+        verbose_name_plural = "Detected Trees"
+        indexes = [
+            models.Index(fields=['field', 'status']),
+            models.Index(fields=['detection_run']),
+            models.Index(fields=['latitude', 'longitude']),
+        ]
+
+    def __str__(self):
+        return f"Tree at ({self.latitude:.6f}, {self.longitude:.6f}) - {self.status}"
+
+    @property
+    def location_geojson(self):
+        """Return location as GeoJSON Point."""
+        return {
+            "type": "Point",
+            "coordinates": [self.longitude, self.latitude]
+        }
+
+
+# =============================================================================
+# LIDAR MODELS (Point Cloud Processing)
+# =============================================================================
+
+class LiDARDataset(models.Model):
+    """
+    Stores uploaded LiDAR point cloud data (LAZ/LAS files).
+    Contains metadata extracted from the point cloud header.
+    """
+
+    SOURCE_CHOICES = [
+        ('USGS_3DEP', 'USGS 3DEP'),
+        ('NOAA', 'NOAA Digital Coast'),
+        ('CUSTOM_DRONE', 'Custom Drone Flight'),
+        ('COMMERCIAL', 'Commercial Provider'),
+    ]
+
+    STATUS_CHOICES = [
+        ('uploaded', 'Uploaded'),
+        ('validating', 'Validating'),
+        ('ready', 'Ready'),
+        ('error', 'Error'),
+    ]
+
+    # Ownership
+    company = models.ForeignKey(
+        'Company',
+        on_delete=models.CASCADE,
+        related_name='lidar_datasets',
+        help_text="Company that owns this dataset"
+    )
+    farm = models.ForeignKey(
+        'Farm',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='lidar_datasets',
+        help_text="Optional farm association"
+    )
+
+    # File storage
+    file = models.FileField(
+        upload_to='lidar/%Y/%m/',
+        help_text="LAZ or LAS point cloud file"
+    )
+    file_size_mb = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="File size in megabytes"
+    )
+
+    # Metadata
+    name = models.CharField(
+        max_length=255,
+        help_text="User-friendly name for the dataset"
+    )
+    source = models.CharField(
+        max_length=50,
+        choices=SOURCE_CHOICES,
+        help_text="Data source/provider"
+    )
+    capture_date = models.DateField(
+        null=True,
+        blank=True,
+        help_text="Date the LiDAR data was captured"
+    )
+
+    # Point cloud specifications
+    point_count = models.BigIntegerField(
+        null=True,
+        blank=True,
+        help_text="Total number of points in the dataset"
+    )
+    point_density_per_sqm = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="Point density (points per square meter)"
+    )
+
+    # Coordinate system
+    crs = models.CharField(
+        max_length=100,
+        null=True,
+        blank=True,
+        help_text="Coordinate Reference System (e.g., EPSG:6414)"
+    )
+
+    # Bounding box (WGS84)
+    bounds_west = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="Western boundary (longitude)"
+    )
+    bounds_east = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="Eastern boundary (longitude)"
+    )
+    bounds_south = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="Southern boundary (latitude)"
+    )
+    bounds_north = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="Northern boundary (latitude)"
+    )
+
+    # Classification info
+    has_classification = models.BooleanField(
+        default=False,
+        help_text="Whether point cloud has LAS classification codes"
+    )
+
+    # Status tracking
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='uploaded'
+    )
+    error_message = models.TextField(
+        blank=True,
+        help_text="Error message if validation failed"
+    )
+
+    # Timestamps
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+    uploaded_by = models.ForeignKey(
+        'User',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='uploaded_lidar_datasets'
+    )
+
+    # Additional metadata from header
+    metadata_json = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text="Additional metadata extracted from file header"
+    )
+
+    class Meta:
+        db_table = 'api_lidar_dataset'
+        ordering = ['-uploaded_at']
+        verbose_name = "LiDAR Dataset"
+        verbose_name_plural = "LiDAR Datasets"
+
+    def __str__(self):
+        return f"{self.name} ({self.source}) - {self.status}"
+
+    @property
+    def bounds_geojson(self):
+        """Return bounding box as GeoJSON Polygon."""
+        if all([self.bounds_west, self.bounds_east, self.bounds_south, self.bounds_north]):
+            return {
+                "type": "Polygon",
+                "coordinates": [[
+                    [self.bounds_west, self.bounds_south],
+                    [self.bounds_east, self.bounds_south],
+                    [self.bounds_east, self.bounds_north],
+                    [self.bounds_west, self.bounds_north],
+                    [self.bounds_west, self.bounds_south],
+                ]]
+            }
+        return None
+
+    @property
+    def center_coordinates(self):
+        """Return center point of bounding box."""
+        if all([self.bounds_west, self.bounds_east, self.bounds_south, self.bounds_north]):
+            return {
+                'latitude': (self.bounds_north + self.bounds_south) / 2,
+                'longitude': (self.bounds_east + self.bounds_west) / 2
+            }
+        return None
+
+    def covers_field(self, field):
+        """Check if this LiDAR dataset covers a given field."""
+        if not field.boundary_geojson or not all([
+            self.bounds_west, self.bounds_east, self.bounds_south, self.bounds_north
+        ]):
+            return False
+
+        try:
+            coords = field.boundary_geojson.get('coordinates', [[]])[0]
+            if not coords:
+                return False
+
+            # Check if any field vertex is within bounds
+            for lon, lat in coords:
+                if (self.bounds_west <= lon <= self.bounds_east and
+                    self.bounds_south <= lat <= self.bounds_north):
+                    return True
+            return False
+        except (KeyError, IndexError, TypeError):
+            return False
+
+
+class LiDARProcessingRun(models.Model):
+    """
+    A processing run that generates derived products from LiDAR.
+    Creates DTM, DSM, CHM rasters and performs tree/terrain analysis.
+    """
+
+    PROCESSING_TYPE_CHOICES = [
+        ('TREE_DETECTION', 'Tree Detection'),
+        ('TERRAIN_ANALYSIS', 'Terrain Analysis'),
+        ('FULL', 'Full Analysis'),
+    ]
+
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('processing', 'Processing'),
+        ('completed', 'Completed'),
+        ('failed', 'Failed'),
+    ]
+
+    # Source data
+    lidar_dataset = models.ForeignKey(
+        LiDARDataset,
+        on_delete=models.CASCADE,
+        related_name='processing_runs',
+        help_text="Source LiDAR dataset"
+    )
+    field = models.ForeignKey(
+        'Field',
+        on_delete=models.CASCADE,
+        related_name='lidar_runs',
+        help_text="Field being analyzed"
+    )
+
+    # Processing configuration
+    processing_type = models.CharField(
+        max_length=50,
+        choices=PROCESSING_TYPE_CHOICES,
+        default='FULL'
+    )
+    parameters = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text="Processing parameters (resolution, thresholds, etc.)"
+    )
+
+    # Status tracking
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='pending'
+    )
+    error_message = models.TextField(
+        blank=True,
+        help_text="Error message if processing failed"
+    )
+
+    # Tree Detection Results
+    tree_count = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="Number of trees detected"
+    )
+    trees_per_acre = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="Tree density (trees per acre)"
+    )
+    avg_tree_height_m = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="Average tree height in meters"
+    )
+    max_tree_height_m = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="Maximum tree height in meters"
+    )
+    min_tree_height_m = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="Minimum tree height in meters"
+    )
+    avg_canopy_diameter_m = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="Average canopy diameter in meters"
+    )
+    canopy_coverage_percent = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="Percentage of field covered by tree canopy"
+    )
+
+    # Terrain Results
+    avg_slope_degrees = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="Average slope in degrees"
+    )
+    max_slope_degrees = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="Maximum slope in degrees"
+    )
+    elevation_range_m = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="Elevation range (max - min) in meters"
+    )
+
+    # Generated raster files
+    dtm_file = models.FileField(
+        upload_to='lidar_products/%Y/%m/',
+        null=True,
+        blank=True,
+        help_text="Digital Terrain Model (bare ground)"
+    )
+    dsm_file = models.FileField(
+        upload_to='lidar_products/%Y/%m/',
+        null=True,
+        blank=True,
+        help_text="Digital Surface Model (including vegetation)"
+    )
+    chm_file = models.FileField(
+        upload_to='lidar_products/%Y/%m/',
+        null=True,
+        blank=True,
+        help_text="Canopy Height Model (DSM - DTM)"
+    )
+
+    # Approval workflow
+    is_approved = models.BooleanField(
+        default=False,
+        help_text="Whether results have been approved"
+    )
+    approved_by = models.ForeignKey(
+        'User',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='approved_lidar_runs'
+    )
+    approved_at = models.DateTimeField(
+        null=True,
+        blank=True
+    )
+    review_notes = models.TextField(
+        blank=True,
+        help_text="Notes from reviewer"
+    )
+
+    # Timestamps
+    created_at = models.DateTimeField(auto_now_add=True)
+    completed_at = models.DateTimeField(
+        null=True,
+        blank=True
+    )
+    processing_time_seconds = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="Total processing time in seconds"
+    )
+
+    class Meta:
+        db_table = 'api_lidar_processing_run'
+        ordering = ['-created_at']
+        verbose_name = "LiDAR Processing Run"
+        verbose_name_plural = "LiDAR Processing Runs"
+
+    def __str__(self):
+        return f"{self.field.name} - {self.processing_type} ({self.status})"
+
+    @property
+    def is_latest_for_field(self):
+        """Check if this is the most recent completed run for the field."""
+        latest = self.field.lidar_runs.filter(
+            status='completed',
+            is_approved=True
+        ).order_by('-completed_at').first()
+        return latest and latest.id == self.id
+
+
+class LiDARDetectedTree(models.Model):
+    """
+    Individual tree detected from LiDAR CHM analysis.
+    Stores 3D location, height, and canopy metrics.
+    """
+
+    STATUS_CHOICES = [
+        ('active', 'Active'),
+        ('dead', 'Dead/Missing'),
+        ('uncertain', 'Uncertain'),
+        ('false_positive', 'False Positive'),
+    ]
+
+    # Relationships
+    processing_run = models.ForeignKey(
+        LiDARProcessingRun,
+        on_delete=models.CASCADE,
+        related_name='detected_trees',
+        help_text="Processing run that detected this tree"
+    )
+    field = models.ForeignKey(
+        'Field',
+        on_delete=models.CASCADE,
+        related_name='lidar_detected_trees',
+        help_text="Field containing this tree"
+    )
+
+    # Location (WGS84)
+    latitude = models.FloatField(
+        help_text="Tree crown center latitude"
+    )
+    longitude = models.FloatField(
+        help_text="Tree crown center longitude"
+    )
+
+    # Tree metrics from LiDAR
+    height_m = models.FloatField(
+        help_text="Tree height in meters (from CHM)"
+    )
+    canopy_diameter_m = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="Estimated canopy diameter in meters"
+    )
+    canopy_area_sqm = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="Estimated canopy area in square meters"
+    )
+
+    # Ground elevation at tree base
+    ground_elevation_m = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="Ground elevation at tree base (from DTM)"
+    )
+
+    # Status tracking
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='active'
+    )
+    is_verified = models.BooleanField(
+        default=False,
+        help_text="User has manually verified this tree"
+    )
+    notes = models.TextField(
+        blank=True,
+        help_text="User notes about this tree"
+    )
+
+    class Meta:
+        db_table = 'api_lidar_detected_tree'
+        verbose_name = "LiDAR Detected Tree"
+        verbose_name_plural = "LiDAR Detected Trees"
+        indexes = [
+            models.Index(fields=['processing_run', 'field']),
+            models.Index(fields=['field', 'status']),
+            models.Index(fields=['latitude', 'longitude']),
+        ]
+
+    def __str__(self):
+        return f"Tree at ({self.latitude:.6f}, {self.longitude:.6f}) - {self.height_m:.1f}m"
+
+    @property
+    def location_geojson(self):
+        """Return location as GeoJSON Point."""
+        return {
+            "type": "Point",
+            "coordinates": [self.longitude, self.latitude]
+        }
+
+
+class TerrainAnalysis(models.Model):
+    """
+    Terrain analysis results for frost/irrigation planning.
+    Generated from LiDAR DTM data.
+    """
+
+    ASPECT_CHOICES = [
+        ('N', 'North'),
+        ('NE', 'Northeast'),
+        ('E', 'East'),
+        ('SE', 'Southeast'),
+        ('S', 'South'),
+        ('SW', 'Southwest'),
+        ('W', 'West'),
+        ('NW', 'Northwest'),
+        ('FLAT', 'Flat'),
+    ]
+
+    # Relationship
+    processing_run = models.OneToOneField(
+        LiDARProcessingRun,
+        on_delete=models.CASCADE,
+        related_name='terrain_analysis',
+        help_text="Processing run that generated this analysis"
+    )
+    field = models.ForeignKey(
+        'Field',
+        on_delete=models.CASCADE,
+        related_name='terrain_analyses',
+        help_text="Field being analyzed"
+    )
+
+    # Elevation metrics
+    min_elevation_m = models.FloatField(
+        help_text="Minimum ground elevation in meters"
+    )
+    max_elevation_m = models.FloatField(
+        help_text="Maximum ground elevation in meters"
+    )
+    mean_elevation_m = models.FloatField(
+        help_text="Mean ground elevation in meters"
+    )
+
+    # Slope analysis
+    mean_slope_degrees = models.FloatField(
+        help_text="Mean slope in degrees"
+    )
+    max_slope_degrees = models.FloatField(
+        help_text="Maximum slope in degrees"
+    )
+    slope_aspect_dominant = models.CharField(
+        max_length=20,
+        choices=ASPECT_CHOICES,
+        help_text="Dominant slope aspect (direction facing)"
+    )
+
+    # Slope distribution (percentage of field)
+    slope_0_2_percent = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="Percentage of field with 0-2 degree slope"
+    )
+    slope_2_5_percent = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="Percentage of field with 2-5 degree slope"
+    )
+    slope_5_10_percent = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="Percentage of field with 5-10 degree slope"
+    )
+    slope_over_10_percent = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="Percentage of field with >10 degree slope"
+    )
+
+    # Frost risk analysis (cold air pooling)
+    frost_risk_zones = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text="GeoJSON of frost risk zones"
+    )
+    frost_risk_summary = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text="Summary statistics for frost risk"
+    )
+
+    # Drainage analysis
+    drainage_direction = models.CharField(
+        max_length=20,
+        choices=ASPECT_CHOICES,
+        null=True,
+        blank=True,
+        help_text="Primary drainage direction"
+    )
+    low_spot_count = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="Number of low spots that may pool water"
+    )
+
+    class Meta:
+        db_table = 'api_terrain_analysis'
+        verbose_name = "Terrain Analysis"
+        verbose_name_plural = "Terrain Analyses"
+
+    def __str__(self):
+        return f"Terrain: {self.field.name} - Avg slope {self.mean_slope_degrees:.1f}°"
+
+
+# =============================================================================
+# UNIFIED TREE IDENTITY MODELS
+# =============================================================================
+
+class Tree(models.Model):
+    """
+    Master tree identity that persists across detection runs.
+    Correlates satellite and LiDAR observations of the same physical tree.
+    Enables tracking tree health and changes over time.
+    """
+
+    STATUS_CHOICES = [
+        ('active', 'Active'),
+        ('dead', 'Dead/Removed'),
+        ('missing', 'Missing (Not in Recent Detections)'),
+        ('uncertain', 'Uncertain'),
+    ]
+
+    CONFIDENCE_CHOICES = [
+        ('high', 'High'),      # Multiple matching observations
+        ('medium', 'Medium'),  # Single or few observations
+        ('low', 'Low'),        # Only matched via spatial proximity
+    ]
+
+    # Primary key using UUID for external references
+    uuid = models.UUIDField(
+        default=uuid.uuid4,
+        editable=False,
+        unique=True,
+        help_text="Unique identifier for external references"
+    )
+
+    # Ownership
+    field = models.ForeignKey(
+        'Field',
+        on_delete=models.CASCADE,
+        related_name='trees',
+        help_text="Field containing this tree"
+    )
+
+    # Canonical location (weighted average from observations)
+    latitude = models.FloatField(
+        help_text="Best-estimate tree center latitude (WGS84)"
+    )
+    longitude = models.FloatField(
+        help_text="Best-estimate tree center longitude (WGS84)"
+    )
+
+    # Best-known attributes (updated from most recent/reliable source)
+    height_m = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="Best estimate tree height in meters (from LiDAR)"
+    )
+    canopy_diameter_m = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="Best estimate canopy diameter in meters"
+    )
+    canopy_area_sqm = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="Best estimate canopy area in sq meters (from LiDAR)"
+    )
+    latest_ndvi = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="Most recent NDVI value (from satellite)"
+    )
+    ground_elevation_m = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="Ground elevation at tree base in meters"
+    )
+
+    # Status tracking
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='active'
+    )
+    identity_confidence = models.CharField(
+        max_length=10,
+        choices=CONFIDENCE_CHOICES,
+        default='medium',
+        help_text="Confidence in tree identity across observations"
+    )
+
+    # Observation counts
+    satellite_observation_count = models.PositiveIntegerField(
+        default=0,
+        help_text="Number of satellite detection observations"
+    )
+    lidar_observation_count = models.PositiveIntegerField(
+        default=0,
+        help_text="Number of LiDAR detection observations"
+    )
+
+    # First and last observation dates
+    first_observed = models.DateField(
+        help_text="Date tree was first detected"
+    )
+    last_observed = models.DateField(
+        help_text="Date of most recent detection"
+    )
+
+    # User verification
+    is_verified = models.BooleanField(
+        default=False,
+        help_text="User has manually verified this tree identity"
+    )
+    verified_by = models.ForeignKey(
+        'User',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='verified_trees'
+    )
+    verified_at = models.DateTimeField(null=True, blank=True)
+
+    # User notes
+    notes = models.TextField(blank=True)
+
+    # Custom tree ID for field reference
+    tree_label = models.CharField(
+        max_length=50,
+        blank=True,
+        help_text="Optional user-assigned label (e.g., 'Row-3-Tree-15')"
+    )
+
+    # Row/position inference (populated by spatial analysis)
+    inferred_row = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        help_text="Inferred row number in field"
+    )
+    inferred_position = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        help_text="Inferred position within row"
+    )
+
+    # Timestamps
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'api_tree'
+        verbose_name = "Tree"
+        verbose_name_plural = "Trees"
+        indexes = [
+            models.Index(fields=['field', 'status'], name='api_tree_field_status_idx'),
+            models.Index(fields=['latitude', 'longitude'], name='api_tree_lat_lon_idx'),
+            models.Index(fields=['field', 'inferred_row', 'inferred_position'], name='api_tree_row_pos_idx'),
+            models.Index(fields=['last_observed'], name='api_tree_last_obs_idx'),
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=['field', 'tree_label'],
+                name='unique_tree_label_per_field',
+                condition=models.Q(tree_label__gt='')
+            )
+        ]
+
+    def __str__(self):
+        label = self.tree_label or f"Tree-{self.id}"
+        return f"{label} at ({self.latitude:.6f}, {self.longitude:.6f})"
+
+    @property
+    def location_geojson(self):
+        """Return location as GeoJSON Point."""
+        return {
+            "type": "Point",
+            "coordinates": [self.longitude, self.latitude]
+        }
+
+    @property
+    def total_observation_count(self):
+        """Total observations from all sources."""
+        return self.satellite_observation_count + self.lidar_observation_count
+
+
+class TreeObservation(models.Model):
+    """
+    Links a Tree identity to specific detections from satellite or LiDAR runs.
+    Allows tracking the same tree across multiple observation sources and times.
+    """
+
+    SOURCE_CHOICES = [
+        ('satellite', 'Satellite'),
+        ('lidar', 'LiDAR'),
+    ]
+
+    MATCH_METHOD_CHOICES = [
+        ('spatial', 'Spatial Proximity'),
+        ('manual', 'Manual Assignment'),
+        ('algorithm', 'Algorithm Match'),
+    ]
+
+    # Master tree identity
+    tree = models.ForeignKey(
+        Tree,
+        on_delete=models.CASCADE,
+        related_name='observations'
+    )
+
+    # Source identification
+    source_type = models.CharField(
+        max_length=20,
+        choices=SOURCE_CHOICES
+    )
+
+    # Link to original detection (one of these will be set based on source_type)
+    satellite_detection = models.OneToOneField(
+        'DetectedTree',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='tree_observation'
+    )
+    lidar_detection = models.OneToOneField(
+        'LiDARDetectedTree',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='tree_observation'
+    )
+
+    # Matching metadata
+    match_method = models.CharField(
+        max_length=20,
+        choices=MATCH_METHOD_CHOICES,
+        default='spatial'
+    )
+    match_distance_m = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="Distance to tree center when matched (meters)"
+    )
+    match_confidence = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="Match confidence score (0-1)"
+    )
+
+    # Observation date (denormalized for query efficiency)
+    observation_date = models.DateField(
+        help_text="Date of the detection run"
+    )
+
+    # Snapshot of key metrics at observation time
+    observed_latitude = models.FloatField()
+    observed_longitude = models.FloatField()
+    observed_height_m = models.FloatField(null=True, blank=True)
+    observed_canopy_diameter_m = models.FloatField(null=True, blank=True)
+    observed_ndvi = models.FloatField(null=True, blank=True)
+    observed_status = models.CharField(max_length=20)
+
+    # Timestamps
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'api_tree_observation'
+        verbose_name = "Tree Observation"
+        verbose_name_plural = "Tree Observations"
+        indexes = [
+            models.Index(fields=['tree', 'observation_date'], name='api_treeobs_tree_date_idx'),
+            models.Index(fields=['source_type', 'observation_date'], name='api_treeobs_source_date_idx'),
+        ]
+
+    def __str__(self):
+        return f"Observation of Tree {self.tree_id} ({self.source_type}) on {self.observation_date}"
+
+
+class TreeMatchingRun(models.Model):
+    """
+    Records each execution of the tree matching algorithm.
+    Provides audit trail and allows re-running with different parameters.
+    """
+
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('processing', 'Processing'),
+        ('completed', 'Completed'),
+        ('failed', 'Failed'),
+    ]
+
+    # Context
+    field = models.ForeignKey(
+        'Field',
+        on_delete=models.CASCADE,
+        related_name='tree_matching_runs'
+    )
+    triggered_by = models.ForeignKey(
+        'User',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
+    )
+
+    # Source runs being matched
+    satellite_run = models.ForeignKey(
+        'TreeDetectionRun',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='matching_runs'
+    )
+    lidar_run = models.ForeignKey(
+        'LiDARProcessingRun',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='matching_runs'
+    )
+
+    # Parameters used
+    match_distance_threshold_m = models.FloatField(
+        default=3.0,
+        help_text="Maximum distance for tree matching (meters)"
+    )
+    parameters = models.JSONField(
+        default=dict,
+        help_text="Full matching parameters used"
+    )
+
+    # Status
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='pending'
+    )
+    error_message = models.TextField(blank=True)
+
+    # Results summary
+    trees_matched = models.IntegerField(null=True, blank=True)
+    new_trees_created = models.IntegerField(null=True, blank=True)
+    trees_marked_missing = models.IntegerField(null=True, blank=True)
+    observations_created = models.IntegerField(null=True, blank=True)
+
+    # Timing
+    started_at = models.DateTimeField(null=True, blank=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+    processing_time_seconds = models.FloatField(null=True, blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'api_tree_matching_run'
+        verbose_name = "Tree Matching Run"
+        verbose_name_plural = "Tree Matching Runs"
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Matching Run {self.id} for {self.field.name} ({self.status})"
+
+
+class TreeFeedback(models.Model):
+    """
+    User feedback on tree detections for ML training improvement.
+    Tracks flags, corrections, and verifications that can be used to
+    improve detection algorithms over time.
+    """
+
+    FEEDBACK_TYPES = [
+        ('false_positive', 'False Positive - Not a Tree'),
+        ('false_negative', 'False Negative - Missed/Wrong Status'),
+        ('misidentification', 'Misidentification - Wrong Tree Matched'),
+        ('location_error', 'Location Error - Position Incorrect'),
+        ('attribute_error', 'Attribute Error - Measurements Wrong'),
+        ('verified_correct', 'Verified Correct'),
+    ]
+
+    STATUS_CHOICES = [
+        ('pending', 'Pending Review'),
+        ('accepted', 'Accepted'),
+        ('rejected', 'Rejected'),
+    ]
+
+    # Link to tree (required) or specific observation (optional)
+    tree = models.ForeignKey(
+        Tree,
+        on_delete=models.CASCADE,
+        related_name='feedback'
+    )
+    observation = models.ForeignKey(
+        TreeObservation,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='feedback',
+        help_text="Specific observation being flagged (optional)"
+    )
+
+    # Feedback details
+    feedback_type = models.CharField(
+        max_length=30,
+        choices=FEEDBACK_TYPES
+    )
+    notes = models.TextField(
+        blank=True,
+        help_text="Explanation of the issue"
+    )
+
+    # For location corrections
+    suggested_latitude = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="Suggested corrected latitude"
+    )
+    suggested_longitude = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="Suggested corrected longitude"
+    )
+
+    # For attribute corrections
+    suggested_corrections = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text="Key-value pairs of suggested attribute corrections"
+    )
+
+    # Workflow
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='pending'
+    )
+    resolution_notes = models.TextField(
+        blank=True,
+        help_text="Notes from reviewer about resolution"
+    )
+    resolved_by = models.ForeignKey(
+        'User',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='resolved_tree_feedback'
+    )
+    resolved_at = models.DateTimeField(null=True, blank=True)
+
+    # Tracking
+    created_by = models.ForeignKey(
+        'User',
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='tree_feedback_created'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    # ML Export tracking
+    exported_for_training = models.BooleanField(
+        default=False,
+        help_text="Whether this feedback has been exported for ML training"
+    )
+    exported_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        db_table = 'api_tree_feedback'
+        verbose_name = "Tree Feedback"
+        verbose_name_plural = "Tree Feedback"
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['tree', 'feedback_type'], name='api_treefb_tree_type_idx'),
+            models.Index(fields=['status', 'created_at'], name='api_treefb_status_date_idx'),
+            models.Index(fields=['exported_for_training'], name='api_treefb_exported_idx'),
+        ]
+
+    def __str__(self):
+        return f"{self.get_feedback_type_display()} for Tree {self.tree_id} ({self.status})"
+
+
+# =============================================================================
+# COMPLIANCE MODULE MODELS
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# COMPLIANCE PROFILE - Company-level compliance settings
+# -----------------------------------------------------------------------------
+
+class ComplianceProfile(models.Model):
+    """
+    Defines which compliance frameworks apply to a company.
+    Different growers have different requirements based on location,
+    certifications, and buyer requirements.
+
+    Auto-created when a Company is created.
+    """
+
+    US_STATES = [
+        ('AL', 'Alabama'), ('AK', 'Alaska'), ('AZ', 'Arizona'), ('AR', 'Arkansas'),
+        ('CA', 'California'), ('CO', 'Colorado'), ('CT', 'Connecticut'), ('DE', 'Delaware'),
+        ('FL', 'Florida'), ('GA', 'Georgia'), ('HI', 'Hawaii'), ('ID', 'Idaho'),
+        ('IL', 'Illinois'), ('IN', 'Indiana'), ('IA', 'Iowa'), ('KS', 'Kansas'),
+        ('KY', 'Kentucky'), ('LA', 'Louisiana'), ('ME', 'Maine'), ('MD', 'Maryland'),
+        ('MA', 'Massachusetts'), ('MI', 'Michigan'), ('MN', 'Minnesota'), ('MS', 'Mississippi'),
+        ('MO', 'Missouri'), ('MT', 'Montana'), ('NE', 'Nebraska'), ('NV', 'Nevada'),
+        ('NH', 'New Hampshire'), ('NJ', 'New Jersey'), ('NM', 'New Mexico'), ('NY', 'New York'),
+        ('NC', 'North Carolina'), ('ND', 'North Dakota'), ('OH', 'Ohio'), ('OK', 'Oklahoma'),
+        ('OR', 'Oregon'), ('PA', 'Pennsylvania'), ('RI', 'Rhode Island'), ('SC', 'South Carolina'),
+        ('SD', 'South Dakota'), ('TN', 'Tennessee'), ('TX', 'Texas'), ('UT', 'Utah'),
+        ('VT', 'Vermont'), ('VA', 'Virginia'), ('WA', 'Washington'), ('WV', 'West Virginia'),
+        ('WI', 'Wisconsin'), ('WY', 'Wyoming'),
+    ]
+
+    company = models.OneToOneField(
+        Company,
+        on_delete=models.CASCADE,
+        related_name='compliance_profile'
+    )
+
+    # Geographic/Regulatory
+    primary_state = models.CharField(
+        max_length=2,
+        choices=US_STATES,
+        default='CA',
+        help_text="Primary state of operation - determines default regulations"
+    )
+    additional_states = models.JSONField(
+        default=list,
+        blank=True,
+        help_text="Additional states where operations occur (list of state codes)"
+    )
+
+    # Federal & State Regulatory Programs
+    requires_pur_reporting = models.BooleanField(
+        default=True,
+        verbose_name="California PUR Reporting",
+        help_text="Pesticide Use Reports to County Ag Commissioner (CA only)"
+    )
+    requires_wps_compliance = models.BooleanField(
+        default=True,
+        verbose_name="Worker Protection Standard",
+        help_text="EPA WPS training, posting, and recordkeeping"
+    )
+    requires_fsma_compliance = models.BooleanField(
+        default=False,
+        verbose_name="FSMA Produce Safety Rule",
+        help_text="FDA Food Safety Modernization Act requirements"
+    )
+    requires_sgma_reporting = models.BooleanField(
+        default=False,
+        verbose_name="SGMA Groundwater Reporting",
+        help_text="Sustainable Groundwater Management Act (CA)"
+    )
+    requires_ilrp_reporting = models.BooleanField(
+        default=False,
+        verbose_name="ILRP Nitrogen Reporting",
+        help_text="Irrigated Lands Regulatory Program (CA)"
+    )
+
+    # Certifications
+    organic_certified = models.BooleanField(
+        default=False,
+        help_text="USDA NOP Organic Certification"
+    )
+    organic_certifier = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text="Certifying agency (e.g., CCOF, Oregon Tilth)"
+    )
+    globalgap_certified = models.BooleanField(
+        default=False,
+        help_text="GlobalGAP Certification"
+    )
+    primus_certified = models.BooleanField(
+        default=False,
+        help_text="PrimusGFS Certification"
+    )
+    sqf_certified = models.BooleanField(
+        default=False,
+        help_text="Safe Quality Food Certification"
+    )
+
+    # Buyer-specific requirements (flexible JSON storage)
+    buyer_requirements = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text="Custom buyer requirements: {buyer_name: {requirement_key: value}}"
+    )
+
+    # Notification preferences
+    deadline_reminder_days = models.JSONField(
+        default=default_deadline_reminder_days,
+        help_text="Days before deadline to send reminders"
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Compliance Profile"
+        verbose_name_plural = "Compliance Profiles"
+
+    def __str__(self):
+        return f"Compliance Profile for {self.company.name}"
+
+    @property
+    def active_regulations(self):
+        """Return list of active regulatory requirements."""
+        regs = []
+        if self.requires_pur_reporting:
+            regs.append('CA PUR')
+        if self.requires_wps_compliance:
+            regs.append('EPA WPS')
+        if self.requires_fsma_compliance:
+            regs.append('FSMA')
+        if self.requires_sgma_reporting:
+            regs.append('SGMA')
+        if self.requires_ilrp_reporting:
+            regs.append('ILRP')
+        if self.organic_certified:
+            regs.append('USDA Organic')
+        if self.globalgap_certified:
+            regs.append('GlobalGAP')
+        return regs
+
+
+# -----------------------------------------------------------------------------
+# COMPLIANCE DEADLINE - Tracks all compliance deadlines
+# -----------------------------------------------------------------------------
+
+class ComplianceDeadline(models.Model):
+    """
+    Tracks recurring and one-time compliance deadlines.
+    Auto-populated based on ComplianceProfile + custom entries.
+    """
+
+    FREQUENCY_CHOICES = [
+        ('once', 'One-time'),
+        ('daily', 'Daily'),
+        ('weekly', 'Weekly'),
+        ('monthly', 'Monthly'),
+        ('quarterly', 'Quarterly'),
+        ('semi_annual', 'Semi-Annual'),
+        ('annual', 'Annual'),
+    ]
+
+    CATEGORY_CHOICES = [
+        ('reporting', 'Regulatory Reporting'),
+        ('training', 'Training/Certification'),
+        ('testing', 'Testing/Sampling'),
+        ('documentation', 'Documentation'),
+        ('inspection', 'Inspection'),
+        ('renewal', 'License/Certificate Renewal'),
+        ('audit', 'Audit'),
+        ('other', 'Other'),
+    ]
+
+    STATUS_CHOICES = [
+        ('upcoming', 'Upcoming'),
+        ('due_soon', 'Due Soon'),
+        ('overdue', 'Overdue'),
+        ('completed', 'Completed'),
+        ('skipped', 'Skipped/N/A'),
+    ]
+
+    company = models.ForeignKey(
+        Company,
+        on_delete=models.CASCADE,
+        related_name='compliance_deadlines'
+    )
+
+    # Deadline definition
+    name = models.CharField(max_length=200)
+    description = models.TextField(blank=True)
+    category = models.CharField(max_length=50, choices=CATEGORY_CHOICES)
+    regulation = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text="Regulatory framework (e.g., 'CA PUR', 'EPA WPS', 'USDA NOP')"
+    )
+
+    # Timing
+    due_date = models.DateField()
+    frequency = models.CharField(
+        max_length=20,
+        choices=FREQUENCY_CHOICES,
+        default='once'
+    )
+    warning_days = models.IntegerField(
+        default=14,
+        help_text="Days before due date to start showing warnings"
+    )
+
+    # Status tracking
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='upcoming'
+    )
+    completed_at = models.DateTimeField(null=True, blank=True)
+    completed_by = models.ForeignKey(
+        'User',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='completed_deadlines'
+    )
+    completion_notes = models.TextField(blank=True)
+
+    # Automation tracking
+    auto_generated = models.BooleanField(
+        default=False,
+        help_text="Was this deadline auto-generated from compliance profile?"
+    )
+    source_deadline = models.ForeignKey(
+        'self',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='recurring_instances',
+        help_text="Parent deadline for recurring deadlines"
+    )
+
+    # Optional: Link to specific entities
+    related_farm = models.ForeignKey(
+        'Farm',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='compliance_deadlines'
+    )
+    related_field = models.ForeignKey(
+        'Field',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='compliance_deadlines'
+    )
+
+    # Action URL for quick navigation
+    action_url = models.CharField(
+        max_length=200,
+        blank=True,
+        help_text="Frontend route to complete this task (e.g., '/reports/pur')"
+    )
+
+    notes = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['due_date', 'name']
+        verbose_name = "Compliance Deadline"
+        verbose_name_plural = "Compliance Deadlines"
+        indexes = [
+            models.Index(fields=['company', 'status', 'due_date'], name='idx_deadline_company_status'),
+            models.Index(fields=['company', 'category'], name='idx_deadline_company_cat'),
+            models.Index(fields=['due_date', 'status'], name='idx_deadline_due_status'),
+        ]
+
+    def __str__(self):
+        return f"{self.name} - Due {self.due_date} ({self.get_status_display()})"
+
+    def save(self, *args, **kwargs):
+        """Auto-update status based on due date."""
+        self._update_status()
+        super().save(*args, **kwargs)
+
+    def _update_status(self):
+        """Update status based on current date and due date."""
+        if self.status in ['completed', 'skipped']:
+            return  # Don't change completed/skipped items
+
+        from datetime import date
+        today = date.today()
+        days_until_due = (self.due_date - today).days
+
+        if days_until_due < 0:
+            self.status = 'overdue'
+        elif days_until_due <= self.warning_days:
+            self.status = 'due_soon'
+        else:
+            self.status = 'upcoming'
+
+    def mark_complete(self, user=None, notes=''):
+        """Mark this deadline as completed."""
+        self.status = 'completed'
+        self.completed_at = timezone.now()
+        self.completed_by = user
+        if notes:
+            self.completion_notes = notes
+        self.save()
+
+    @property
+    def is_overdue(self):
+        from datetime import date
+        return self.due_date < date.today() and self.status not in ['completed', 'skipped']
+
+    @property
+    def days_until_due(self):
+        from datetime import date
+        return (self.due_date - date.today()).days
+
+
+# -----------------------------------------------------------------------------
+# COMPLIANCE ALERT - System-generated alerts
+# -----------------------------------------------------------------------------
+
+class ComplianceAlert(models.Model):
+    """
+    System-generated alerts for compliance issues.
+    Integrates with existing OperationalAlertsBanner pattern.
+    """
+
+    PRIORITY_CHOICES = [
+        ('critical', 'Critical'),
+        ('high', 'High'),
+        ('medium', 'Medium'),
+        ('low', 'Low'),
+    ]
+
+    ALERT_TYPE_CHOICES = [
+        ('deadline_approaching', 'Deadline Approaching'),
+        ('deadline_overdue', 'Deadline Overdue'),
+        ('license_expiring', 'License/Certificate Expiring'),
+        ('license_expired', 'License/Certificate Expired'),
+        ('training_due', 'Training Due'),
+        ('training_expired', 'Training Expired'),
+        ('phi_violation', 'PHI Violation Risk'),
+        ('rei_violation', 'REI Violation Risk'),
+        ('missing_documentation', 'Missing Documentation'),
+        ('test_overdue', 'Test Overdue'),
+        ('report_ready', 'Report Ready for Submission'),
+        ('audit_upcoming', 'Audit Upcoming'),
+        ('certification_expiring', 'Certification Expiring'),
+    ]
+
+    company = models.ForeignKey(
+        Company,
+        on_delete=models.CASCADE,
+        related_name='compliance_alerts'
+    )
+
+    alert_type = models.CharField(max_length=50, choices=ALERT_TYPE_CHOICES)
+    priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES)
+    title = models.CharField(max_length=200)
+    message = models.TextField()
+
+    # Source tracking - what generated this alert
+    related_deadline = models.ForeignKey(
+        ComplianceDeadline,
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        related_name='alerts'
+    )
+    related_object_type = models.CharField(
+        max_length=50,
+        blank=True,
+        help_text="Model name of related object (e.g., 'License', 'WPSTrainingRecord')"
+    )
+    related_object_id = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="ID of the related object"
+    )
+
+    # Status
+    is_active = models.BooleanField(default=True)
+    is_acknowledged = models.BooleanField(default=False)
+    acknowledged_by = models.ForeignKey(
+        'User',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='acknowledged_alerts'
+    )
+    acknowledged_at = models.DateTimeField(null=True, blank=True)
+
+    # Action for resolution
+    action_url = models.CharField(
+        max_length=200,
+        blank=True,
+        help_text="Frontend route to resolve this alert"
+    )
+    action_label = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text="Button label for action (e.g., 'Submit Report', 'Renew License')"
+    )
+
+    # Auto-expiration
+    expires_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="Auto-dismiss alert after this time"
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-priority', '-created_at']
+        verbose_name = "Compliance Alert"
+        verbose_name_plural = "Compliance Alerts"
+        indexes = [
+            models.Index(fields=['company', 'is_active', 'priority'], name='idx_alert_company_active'),
+            models.Index(fields=['alert_type', 'is_active'], name='idx_alert_type_active'),
+        ]
+
+    def __str__(self):
+        return f"[{self.get_priority_display()}] {self.title}"
+
+    def acknowledge(self, user):
+        """Acknowledge this alert."""
+        self.is_acknowledged = True
+        self.acknowledged_by = user
+        self.acknowledged_at = timezone.now()
+        self.save()
+
+    def dismiss(self):
+        """Dismiss/deactivate this alert."""
+        self.is_active = False
+        self.save()
+
+    @classmethod
+    def create_deadline_alert(cls, deadline, alert_type='deadline_approaching'):
+        """Factory method to create alert from a deadline."""
+        priority_map = {
+            'deadline_overdue': 'critical',
+            'deadline_approaching': 'high' if deadline.days_until_due <= 7 else 'medium',
+        }
+
+        message_map = {
+            'deadline_overdue': f"'{deadline.name}' was due on {deadline.due_date}. Please complete immediately.",
+            'deadline_approaching': f"'{deadline.name}' is due in {deadline.days_until_due} days on {deadline.due_date}.",
+        }
+
+        return cls.objects.create(
+            company=deadline.company,
+            alert_type=alert_type,
+            priority=priority_map.get(alert_type, 'medium'),
+            title=f"{deadline.name} - {deadline.get_status_display()}",
+            message=message_map.get(alert_type, ''),
+            related_deadline=deadline,
+            action_url=deadline.action_url or '/compliance/deadlines',
+            action_label='View Deadline',
+        )
+
+
+# -----------------------------------------------------------------------------
+# LICENSE - Tracks all licenses and certificates
+# -----------------------------------------------------------------------------
+
+class License(models.Model):
+    """
+    Tracks all types of licenses, certificates, and credentials.
+    Can be company-level (e.g., PCA license) or user-level (e.g., applicator cert).
+    """
+
+    LICENSE_TYPE_CHOICES = [
+        ('qal', 'Qualified Applicator License (QAL)'),
+        ('qac', 'Qualified Applicator Certificate (QAC)'),
+        ('pca', 'Pest Control Advisor (PCA)'),
+        ('pilots_license', "Pilot's License (Aerial Application)"),
+        ('structural', 'Structural Pest Control'),
+        ('cdl', "Commercial Driver's License (CDL)"),
+        ('organic_handler', 'Organic Handler Certificate'),
+        ('food_safety', 'Food Safety Certificate'),
+        ('wps_trainer', 'WPS Trainer Certification'),
+        ('haccp', 'HACCP Certification'),
+        ('gap_auditor', 'GAP Auditor Certification'),
+        ('other', 'Other'),
+    ]
+
+    STATUS_CHOICES = [
+        ('active', 'Active'),
+        ('expiring_soon', 'Expiring Soon'),
+        ('expired', 'Expired'),
+        ('suspended', 'Suspended'),
+        ('pending_renewal', 'Pending Renewal'),
+    ]
+
+    company = models.ForeignKey(
+        Company,
+        on_delete=models.CASCADE,
+        related_name='licenses'
+    )
+    user = models.ForeignKey(
+        'User',
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        related_name='licenses',
+        help_text="Leave blank for company-level licenses"
+    )
+
+    # License details
+    license_type = models.CharField(max_length=50, choices=LICENSE_TYPE_CHOICES)
+    license_number = models.CharField(max_length=100)
+    name_on_license = models.CharField(
+        max_length=200,
+        blank=True,
+        help_text="Name as it appears on the license"
+    )
+    issuing_authority = models.CharField(
+        max_length=200,
+        help_text="Issuing agency (e.g., 'CA DPR', 'CDFA', 'USDA')"
+    )
+    issuing_state = models.CharField(
+        max_length=2,
+        blank=True,
+        help_text="State that issued the license"
+    )
+
+    # Validity period
+    issue_date = models.DateField()
+    expiration_date = models.DateField()
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='active'
+    )
+
+    # Categories/endorsements (flexible JSON for different license types)
+    categories = models.JSONField(
+        default=list,
+        blank=True,
+        help_text="License categories (e.g., ['A', 'B', 'C'] for applicator)"
+    )
+    endorsements = models.JSONField(
+        default=list,
+        blank=True,
+        help_text="Special endorsements"
+    )
+
+    # Renewal tracking
+    renewal_reminder_days = models.IntegerField(
+        default=90,
+        help_text="Days before expiration to start reminding"
+    )
+    renewal_in_progress = models.BooleanField(default=False)
+    renewal_submitted_date = models.DateField(null=True, blank=True)
+    renewal_notes = models.TextField(blank=True)
+
+    # Continuing education (for licenses that require it)
+    ce_credits_required = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="CE credits required per renewal period"
+    )
+    ce_credits_earned = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="CE credits earned toward next renewal"
+    )
+
+    # Documentation
+    document = models.FileField(
+        upload_to='licenses/%Y/%m/',
+        null=True,
+        blank=True,
+        help_text="Scanned copy of license"
+    )
+
+    notes = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['expiration_date']
+        verbose_name = "License"
+        verbose_name_plural = "Licenses"
+        indexes = [
+            models.Index(fields=['company', 'status'], name='idx_license_company_status'),
+            models.Index(fields=['user', 'license_type'], name='idx_license_user_type'),
+            models.Index(fields=['expiration_date', 'status'], name='idx_license_exp_status'),
+        ]
+
+    def __str__(self):
+        holder = self.user.get_full_name() if self.user else self.company.name
+        return f"{self.get_license_type_display()} - {holder} (Exp: {self.expiration_date})"
+
+    def save(self, *args, **kwargs):
+        """Auto-update status based on expiration date."""
+        self._update_status()
+        super().save(*args, **kwargs)
+
+    def _update_status(self):
+        """Update status based on expiration date."""
+        if self.status in ['suspended']:
+            return  # Don't auto-change suspended licenses
+
+        from datetime import date
+        today = date.today()
+        days_until_exp = (self.expiration_date - today).days
+
+        if days_until_exp < 0:
+            self.status = 'expired'
+        elif days_until_exp <= self.renewal_reminder_days:
+            if self.renewal_in_progress:
+                self.status = 'pending_renewal'
+            else:
+                self.status = 'expiring_soon'
+        else:
+            self.status = 'active'
+
+    @property
+    def is_valid(self):
+        """Check if license is currently valid for use."""
+        return self.status in ['active', 'expiring_soon', 'pending_renewal']
+
+    @property
+    def days_until_expiration(self):
+        from datetime import date
+        return (self.expiration_date - date.today()).days
+
+    @property
+    def holder_name(self):
+        """Get the license holder's name."""
+        if self.name_on_license:
+            return self.name_on_license
+        if self.user:
+            return self.user.get_full_name() or self.user.email
+        return self.company.name
+
+
+# -----------------------------------------------------------------------------
+# WPS TRAINING RECORD - Worker Protection Standard training tracking
+# -----------------------------------------------------------------------------
+
+class WPSTrainingRecord(models.Model):
+    """
+    Tracks WPS training for workers and handlers.
+    Training valid for 12 months (pesticide safety) and 36 months (handler-specific).
+    """
+
+    TRAINING_TYPE_CHOICES = [
+        ('pesticide_safety', 'Pesticide Safety Training (Workers)'),
+        ('handler', 'Handler Training'),
+        ('early_entry', 'Early Entry Training'),
+        ('respirator', 'Respirator Fit Test'),
+        ('heat_illness', 'Heat Illness Prevention'),
+        ('emergency_response', 'Emergency Response'),
+        ('ppe', 'Personal Protective Equipment'),
+        ('first_aid', 'First Aid/CPR'),
+    ]
+
+    VALIDITY_PERIODS = {
+        'pesticide_safety': 365,  # 12 months
+        'handler': 365,           # 12 months
+        'early_entry': 365,       # 12 months
+        'respirator': 365,        # 12 months (annual fit test)
+        'heat_illness': 365,      # Annual refresh recommended
+        'emergency_response': 365,
+        'ppe': 365,
+        'first_aid': 730,         # 2 years typical
+    }
+
+    company = models.ForeignKey(
+        Company,
+        on_delete=models.CASCADE,
+        related_name='wps_training_records'
+    )
+
+    # Trainee information
+    trainee_name = models.CharField(max_length=200)
+    trainee_employee_id = models.CharField(
+        max_length=50,
+        blank=True,
+        help_text="Internal employee ID if applicable"
+    )
+    trainee_user = models.ForeignKey(
+        'User',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='wps_training_received',
+        help_text="Link to user account if trainee is a system user"
+    )
+
+    # Training details
+    training_type = models.CharField(max_length=50, choices=TRAINING_TYPE_CHOICES)
+    training_date = models.DateField()
+    expiration_date = models.DateField()
+
+    # Training program details
+    training_program = models.CharField(
+        max_length=200,
+        blank=True,
+        help_text="Name of training program/curriculum used"
+    )
+    training_language = models.CharField(
+        max_length=50,
+        default='English',
+        help_text="Language training was conducted in"
+    )
+
+    # Trainer information
+    trainer_name = models.CharField(max_length=200)
+    trainer_certification = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text="Trainer's certification number"
+    )
+    trainer_user = models.ForeignKey(
+        'User',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='wps_training_given',
+        help_text="Link to trainer's user account if internal"
+    )
+
+    # Verification
+    verified = models.BooleanField(
+        default=False,
+        help_text="Trainee comprehension verified"
+    )
+    verification_method = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text="How comprehension was verified (e.g., 'Quiz - 85%', 'Verbal')"
+    )
+    quiz_score = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="Quiz score if applicable (percentage)"
+    )
+
+    # Documentation
+    certificate_document = models.FileField(
+        upload_to='wps_training/%Y/%m/',
+        null=True,
+        blank=True,
+        help_text="Scanned training certificate"
+    )
+
+    # Location tracking (for WPS records must show where training occurred)
+    training_location = models.CharField(
+        max_length=200,
+        blank=True,
+        help_text="Where training was conducted"
+    )
+    farm = models.ForeignKey(
+        'Farm',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='wps_training_records',
+        help_text="Farm where training was conducted if applicable"
+    )
+
+    notes = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-training_date']
+        verbose_name = "WPS Training Record"
+        verbose_name_plural = "WPS Training Records"
+        indexes = [
+            models.Index(fields=['company', 'training_type'], name='idx_wps_company_type'),
+            models.Index(fields=['trainee_name', 'training_type'], name='idx_wps_trainee_type'),
+            models.Index(fields=['expiration_date'], name='idx_wps_expiration'),
+        ]
+
+    def __str__(self):
+        return f"{self.trainee_name} - {self.get_training_type_display()} ({self.training_date})"
+
+    def save(self, *args, **kwargs):
+        """Auto-calculate expiration date if not set."""
+        if not self.expiration_date:
+            from datetime import timedelta
+            days = self.VALIDITY_PERIODS.get(self.training_type, 365)
+            self.expiration_date = self.training_date + timedelta(days=days)
+        super().save(*args, **kwargs)
+
+    @property
+    def is_valid(self):
+        """Check if training is still valid."""
+        from datetime import date
+        return self.expiration_date >= date.today()
+
+    @property
+    def days_until_expiration(self):
+        from datetime import date
+        return (self.expiration_date - date.today()).days
+
+    @property
+    def status(self):
+        """Return status string based on expiration."""
+        days = self.days_until_expiration
+        if days < 0:
+            return 'expired'
+        elif days <= 90:
+            return 'expiring_soon'
+        return 'valid'
+
+
+# -----------------------------------------------------------------------------
+# CENTRAL POSTING LOCATION - WPS posting requirements
+# -----------------------------------------------------------------------------
+
+class CentralPostingLocation(models.Model):
+    """
+    WPS requires posting at a central location accessible to workers.
+    Tracks posting locations and their compliance status.
+    """
+
+    company = models.ForeignKey(
+        Company,
+        on_delete=models.CASCADE,
+        related_name='central_posting_locations'
+    )
+    farm = models.ForeignKey(
+        'Farm',
+        on_delete=models.CASCADE,
+        related_name='central_posting_locations'
+    )
+
+    location_name = models.CharField(
+        max_length=200,
+        help_text="Name of posting location (e.g., 'Main Break Room')"
+    )
+    location_description = models.TextField(
+        blank=True,
+        help_text="Detailed description of location"
+    )
+
+    # WPS requirements checklist
+    has_wps_poster = models.BooleanField(
+        default=False,
+        verbose_name="WPS Safety Poster",
+        help_text="EPA WPS safety poster displayed"
+    )
+    has_emergency_info = models.BooleanField(
+        default=False,
+        verbose_name="Emergency Information",
+        help_text="Emergency medical facility location and phone number posted"
+    )
+    has_sds_available = models.BooleanField(
+        default=False,
+        verbose_name="Safety Data Sheets",
+        help_text="SDSs for all pesticides used in last 30 days accessible"
+    )
+    has_application_info = models.BooleanField(
+        default=False,
+        verbose_name="Application Information",
+        help_text="Recent application information posted (within 30 days)"
+    )
+    has_decontamination_supplies = models.BooleanField(
+        default=False,
+        verbose_name="Decontamination Supplies",
+        help_text="Emergency eye wash and water available"
+    )
+
+    # Verification tracking
+    last_verified_date = models.DateField(null=True, blank=True)
+    last_verified_by = models.ForeignKey(
+        'User',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='verified_posting_locations'
+    )
+    verification_notes = models.TextField(blank=True)
+
+    # Photo documentation
+    photo = models.ImageField(
+        upload_to='posting_locations/%Y/%m/',
+        null=True,
+        blank=True,
+        help_text="Photo of posting location for documentation"
+    )
+
+    active = models.BooleanField(default=True)
+    notes = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['farm__name', 'location_name']
+        verbose_name = "Central Posting Location"
+        verbose_name_plural = "Central Posting Locations"
+
+    def __str__(self):
+        return f"{self.location_name} at {self.farm.name}"
+
+    @property
+    def is_compliant(self):
+        """Check if all WPS posting requirements are met."""
+        return all([
+            self.has_wps_poster,
+            self.has_emergency_info,
+            self.has_sds_available,
+            self.has_application_info,
+        ])
+
+    @property
+    def compliance_score(self):
+        """Return compliance percentage."""
+        checks = [
+            self.has_wps_poster,
+            self.has_emergency_info,
+            self.has_sds_available,
+            self.has_application_info,
+            self.has_decontamination_supplies,
+        ]
+        return int(sum(checks) / len(checks) * 100)
+
+    def verify(self, user, notes=''):
+        """Mark location as verified."""
+        from datetime import date
+        self.last_verified_date = date.today()
+        self.last_verified_by = user
+        if notes:
+            self.verification_notes = notes
+        self.save()
+
+
+# -----------------------------------------------------------------------------
+# REI POSTING RECORD - Restricted Entry Interval posting
+# -----------------------------------------------------------------------------
+
+class REIPostingRecord(models.Model):
+    """
+    Tracks REI posting for each pesticide application.
+    Auto-generated from PesticideApplication with REI requirements.
+    """
+
+    application = models.OneToOneField(
+        'PesticideApplication',
+        on_delete=models.CASCADE,
+        related_name='rei_posting'
+    )
+
+    # REI details (cached from product at time of application)
+    rei_hours = models.PositiveIntegerField(
+        help_text="Restricted Entry Interval in hours"
+    )
+    rei_end_datetime = models.DateTimeField(
+        help_text="When REI expires and field can be re-entered"
+    )
+
+    # Posting workflow
+    posted_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="When warning signs were posted"
+    )
+    posted_by = models.ForeignKey(
+        'User',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='rei_postings'
+    )
+
+    # Removal workflow
+    removed_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="When warning signs were removed"
+    )
+    removed_by = models.ForeignKey(
+        'User',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='rei_removals'
+    )
+
+    # Compliance tracking
+    posting_compliant = models.BooleanField(
+        default=False,
+        help_text="Signs posted before/during application"
+    )
+    removal_compliant = models.BooleanField(
+        default=False,
+        help_text="Signs removed only after REI expired"
+    )
+
+    # Early entry tracking (requires special training)
+    early_entry_occurred = models.BooleanField(
+        default=False,
+        help_text="Workers entered during REI"
+    )
+    early_entry_reason = models.TextField(
+        blank=True,
+        help_text="Reason for early entry if applicable"
+    )
+    early_entry_ppe = models.TextField(
+        blank=True,
+        help_text="PPE worn during early entry"
+    )
+
+    notes = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-rei_end_datetime']
+        verbose_name = "REI Posting Record"
+        verbose_name_plural = "REI Posting Records"
+        indexes = [
+            models.Index(fields=['rei_end_datetime'], name='idx_rei_end_datetime'),
+        ]
+
+    def __str__(self):
+        return f"REI for {self.application} - Ends {self.rei_end_datetime}"
+
+    @property
+    def is_active(self):
+        """Check if REI is currently active."""
+        return timezone.now() < self.rei_end_datetime
+
+    @property
+    def time_remaining(self):
+        """Return time remaining in REI."""
+        if self.is_active:
+            return self.rei_end_datetime - timezone.now()
+        return None
+
+    def mark_posted(self, user):
+        """Mark signs as posted."""
+        self.posted_at = timezone.now()
+        self.posted_by = user
+        # Check if posted before/at time of application
+        if self.application.start_time:
+            from datetime import datetime, date
+            app_datetime = datetime.combine(
+                self.application.application_date,
+                self.application.start_time
+            )
+            app_datetime = timezone.make_aware(app_datetime)
+            self.posting_compliant = self.posted_at <= app_datetime
+        self.save()
+
+    def mark_removed(self, user):
+        """Mark signs as removed."""
+        self.removed_at = timezone.now()
+        self.removed_by = user
+        # Check if removed after REI expired
+        self.removal_compliant = self.removed_at >= self.rei_end_datetime
+        self.save()
+
+
+# -----------------------------------------------------------------------------
+# COMPLIANCE REPORT - Tracks generated compliance reports
+# -----------------------------------------------------------------------------
+
+class ComplianceReport(models.Model):
+    """
+    Tracks generated compliance reports and their submission status.
+    Supports auto-generation and validation before submission.
+    """
+
+    REPORT_TYPE_CHOICES = [
+        ('pur_monthly', 'PUR Monthly Report'),
+        ('pur_annual', 'PUR Annual Summary'),
+        ('sgma_semi_annual', 'SGMA Semi-Annual Report'),
+        ('ilrp_annual', 'ILRP Annual Report'),
+        ('wps_annual', 'WPS Training Summary'),
+        ('organic_annual', 'Organic Certification Report'),
+        ('globalgap_audit', 'GlobalGAP Audit Package'),
+        ('custom', 'Custom Report'),
+    ]
+
+    STATUS_CHOICES = [
+        ('draft', 'Draft'),
+        ('pending_review', 'Pending Review'),
+        ('ready', 'Ready for Submission'),
+        ('submitted', 'Submitted'),
+        ('accepted', 'Accepted'),
+        ('rejected', 'Rejected - Needs Correction'),
+    ]
+
+    company = models.ForeignKey(
+        Company,
+        on_delete=models.CASCADE,
+        related_name='compliance_reports'
+    )
+
+    # Report identification
+    report_type = models.CharField(max_length=50, choices=REPORT_TYPE_CHOICES)
+    title = models.CharField(max_length=200)
+    reporting_period_start = models.DateField()
+    reporting_period_end = models.DateField()
+
+    # Status tracking
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='draft'
+    )
+
+    # Generated data
+    report_data = models.JSONField(
+        default=dict,
+        help_text="Pre-computed report data in JSON format"
+    )
+    record_count = models.IntegerField(
+        default=0,
+        help_text="Number of records included in report"
+    )
+
+    # Generated files
+    report_file = models.FileField(
+        upload_to='compliance_reports/%Y/%m/',
+        null=True,
+        blank=True,
+        help_text="Generated report file (PDF/Excel/CSV)"
+    )
+
+    # Validation
+    validation_run_at = models.DateTimeField(null=True, blank=True)
+    validation_errors = models.JSONField(
+        default=list,
+        help_text="List of validation errors"
+    )
+    validation_warnings = models.JSONField(
+        default=list,
+        help_text="List of validation warnings"
+    )
+    is_valid = models.BooleanField(
+        default=False,
+        help_text="Passed validation with no errors"
+    )
+
+    # Submission tracking
+    submitted_at = models.DateTimeField(null=True, blank=True)
+    submitted_by = models.ForeignKey(
+        'User',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='submitted_reports'
+    )
+    submission_method = models.CharField(
+        max_length=50,
+        blank=True,
+        help_text="How submitted (e.g., 'CalAgPermits', 'Email', 'Mail')"
+    )
+    submission_reference = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text="Confirmation number or reference"
+    )
+
+    # Response tracking
+    response_received_at = models.DateTimeField(null=True, blank=True)
+    response_notes = models.TextField(blank=True)
+
+    # Related deadline (if applicable)
+    related_deadline = models.ForeignKey(
+        ComplianceDeadline,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='reports'
+    )
+
+    notes = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    created_by = models.ForeignKey(
+        'User',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='created_reports'
+    )
+
+    class Meta:
+        ordering = ['-reporting_period_end', '-created_at']
+        verbose_name = "Compliance Report"
+        verbose_name_plural = "Compliance Reports"
+        indexes = [
+            models.Index(fields=['company', 'report_type', 'status'], name='idx_report_company_type'),
+            models.Index(fields=['reporting_period_end'], name='idx_report_period_end'),
+        ]
+
+    def __str__(self):
+        return f"{self.title} ({self.reporting_period_start} to {self.reporting_period_end})"
+
+    @property
+    def can_submit(self):
+        """Check if report is ready for submission."""
+        return self.is_valid and self.status in ['ready', 'pending_review']
+
+    @property
+    def period_display(self):
+        """Return formatted period string."""
+        return f"{self.reporting_period_start.strftime('%b %d, %Y')} - {self.reporting_period_end.strftime('%b %d, %Y')}"
+
+
+# -----------------------------------------------------------------------------
+# INCIDENT REPORT - Safety incidents and near-misses
+# -----------------------------------------------------------------------------
+
+class IncidentReport(models.Model):
+    """
+    Tracks safety incidents, spills, exposures, and near-misses.
+    Required for WPS compliance and internal safety programs.
+    """
+
+    INCIDENT_TYPE_CHOICES = [
+        ('exposure', 'Pesticide Exposure'),
+        ('spill', 'Chemical Spill'),
+        ('equipment', 'Equipment Failure'),
+        ('injury', 'Injury'),
+        ('near_miss', 'Near Miss'),
+        ('environmental', 'Environmental Release'),
+        ('property', 'Property Damage'),
+        ('drift', 'Pesticide Drift'),
+        ('other', 'Other'),
+    ]
+
+    SEVERITY_CHOICES = [
+        ('minor', 'Minor'),
+        ('moderate', 'Moderate'),
+        ('serious', 'Serious'),
+        ('critical', 'Critical'),
+    ]
+
+    STATUS_CHOICES = [
+        ('reported', 'Reported'),
+        ('investigating', 'Under Investigation'),
+        ('corrective_action', 'Corrective Action in Progress'),
+        ('resolved', 'Resolved'),
+        ('closed', 'Closed'),
+    ]
+
+    company = models.ForeignKey(
+        Company,
+        on_delete=models.CASCADE,
+        related_name='incident_reports'
+    )
+
+    # Incident details
+    incident_type = models.CharField(max_length=50, choices=INCIDENT_TYPE_CHOICES)
+    severity = models.CharField(max_length=20, choices=SEVERITY_CHOICES)
+    incident_date = models.DateTimeField()
+    reported_date = models.DateTimeField(auto_now_add=True)
+
+    # Location
+    farm = models.ForeignKey(
+        'Farm',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='incident_reports'
+    )
+    field = models.ForeignKey(
+        'Field',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='incident_reports'
+    )
+    location_description = models.CharField(
+        max_length=200,
+        blank=True,
+        help_text="Specific location description"
+    )
+
+    # People involved
+    reported_by = models.ForeignKey(
+        'User',
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='incidents_reported'
+    )
+    affected_persons = models.JSONField(
+        default=list,
+        help_text="List of affected persons: [{name, role, injuries}]"
+    )
+    witnesses = models.JSONField(
+        default=list,
+        help_text="List of witnesses: [{name, contact}]"
+    )
+
+    # Description
+    title = models.CharField(max_length=200)
+    description = models.TextField()
+    immediate_actions = models.TextField(
+        blank=True,
+        help_text="Actions taken immediately after incident"
+    )
+
+    # Related application (for exposure/spill)
+    related_application = models.ForeignKey(
+        'PesticideApplication',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='incident_reports'
+    )
+    products_involved = models.JSONField(
+        default=list,
+        help_text="List of products involved: [{name, epa_reg, amount}]"
+    )
+
+    # Investigation
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='reported'
+    )
+    investigator = models.ForeignKey(
+        'User',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='incidents_investigating'
+    )
+    root_cause = models.TextField(blank=True)
+    contributing_factors = models.JSONField(
+        default=list,
+        help_text="List of contributing factors"
+    )
+
+    # Corrective actions
+    corrective_actions = models.TextField(blank=True)
+    preventive_measures = models.TextField(blank=True)
+
+    # Regulatory reporting
+    reported_to_authorities = models.BooleanField(default=False)
+    authority_name = models.CharField(
+        max_length=200,
+        blank=True,
+        help_text="Agency reported to"
+    )
+    authority_report_date = models.DateField(null=True, blank=True)
+    authority_report_reference = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text="Report/case number"
+    )
+
+    # Resolution
+    resolved_date = models.DateField(null=True, blank=True)
+    resolved_by = models.ForeignKey(
+        'User',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='incidents_resolved'
+    )
+    resolution_summary = models.TextField(blank=True)
+
+    # Documentation
+    documents = models.JSONField(
+        default=list,
+        help_text="List of attached document paths"
+    )
+
+    notes = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-incident_date']
+        verbose_name = "Incident Report"
+        verbose_name_plural = "Incident Reports"
+        indexes = [
+            models.Index(fields=['company', 'status'], name='idx_incident_company_status'),
+            models.Index(fields=['incident_type', 'severity'], name='idx_incident_type_severity'),
+            models.Index(fields=['incident_date'], name='idx_incident_date'),
+        ]
+
+    def __str__(self):
+        return f"{self.title} - {self.get_severity_display()} ({self.incident_date.date()})"
+
+    @property
+    def days_since_incident(self):
+        """Days since incident occurred."""
+        from datetime import datetime
+        delta = timezone.now() - self.incident_date
+        return delta.days
+
+    @property
+    def requires_authority_report(self):
+        """Check if this type/severity requires reporting to authorities."""
+        # Serious/critical exposures and spills typically require reporting
+        if self.severity in ['serious', 'critical']:
+            if self.incident_type in ['exposure', 'spill', 'environmental', 'drift']:
+                return True
+        return False
+
+
+# -----------------------------------------------------------------------------
+# NOTIFICATION PREFERENCE - User notification settings
+# -----------------------------------------------------------------------------
+
+class NotificationPreference(models.Model):
+    """
+    User-specific notification preferences for compliance alerts.
+    """
+
+    DIGEST_FREQUENCY_CHOICES = [
+        ('instant', 'Instant (As they occur)'),
+        ('daily', 'Daily Digest'),
+        ('weekly', 'Weekly Digest'),
+        ('none', 'No Email (In-app only)'),
+    ]
+
+    user = models.OneToOneField(
+        'User',
+        on_delete=models.CASCADE,
+        related_name='notification_preferences'
+    )
+
+    # Email settings
+    email_enabled = models.BooleanField(
+        default=True,
+        help_text="Receive email notifications"
+    )
+    email_digest_frequency = models.CharField(
+        max_length=20,
+        choices=DIGEST_FREQUENCY_CHOICES,
+        default='instant'
+    )
+
+    # Category preferences
+    notify_deadlines = models.BooleanField(
+        default=True,
+        help_text="Compliance deadline reminders"
+    )
+    notify_licenses = models.BooleanField(
+        default=True,
+        help_text="License expiration warnings"
+    )
+    notify_training = models.BooleanField(
+        default=True,
+        help_text="Training renewal reminders"
+    )
+    notify_reports = models.BooleanField(
+        default=True,
+        help_text="Report generation and submission notifications"
+    )
+    notify_incidents = models.BooleanField(
+        default=True,
+        help_text="Incident report notifications"
+    )
+    notify_rei = models.BooleanField(
+        default=True,
+        help_text="REI posting and expiration reminders"
+    )
+
+    # Reminder timing
+    deadline_reminder_days = models.JSONField(
+        default=default_deadline_reminder_days,
+        help_text="Days before deadline to send reminders"
+    )
+    license_reminder_days = models.JSONField(
+        default=default_license_reminder_days,
+        help_text="Days before license expiration to send reminders"
+    )
+
+    # Quiet hours (don't send notifications during these times)
+    quiet_hours_enabled = models.BooleanField(default=False)
+    quiet_hours_start = models.TimeField(
+        null=True,
+        blank=True,
+        help_text="Start of quiet hours (e.g., 21:00)"
+    )
+    quiet_hours_end = models.TimeField(
+        null=True,
+        blank=True,
+        help_text="End of quiet hours (e.g., 07:00)"
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Notification Preference"
+        verbose_name_plural = "Notification Preferences"
+
+    def __str__(self):
+        return f"Notification Preferences for {self.user.email}"
+
+    def should_notify(self, category):
+        """Check if user wants notifications for a category."""
+        category_map = {
+            'deadline': self.notify_deadlines,
+            'license': self.notify_licenses,
+            'training': self.notify_training,
+            'report': self.notify_reports,
+            'incident': self.notify_incidents,
+            'rei': self.notify_rei,
+        }
+        return category_map.get(category, True)
+
+
+# -----------------------------------------------------------------------------
+# NOTIFICATION LOG - Tracks sent notifications
+# -----------------------------------------------------------------------------
+
+class NotificationLog(models.Model):
+    """
+    Tracks all sent notifications for auditing and debugging.
+    """
+
+    CHANNEL_CHOICES = [
+        ('email', 'Email'),
+        ('in_app', 'In-App'),
+        ('sms', 'SMS'),
+    ]
+
+    company = models.ForeignKey(
+        Company,
+        on_delete=models.CASCADE,
+        related_name='notification_logs'
+    )
+    user = models.ForeignKey(
+        'User',
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        related_name='notification_logs'
+    )
+
+    # Notification details
+    notification_type = models.CharField(
+        max_length=50,
+        help_text="Type of notification (e.g., 'deadline_reminder', 'license_expiring')"
+    )
+    channel = models.CharField(max_length=20, choices=CHANNEL_CHOICES)
+
+    subject = models.CharField(max_length=200)
+    message = models.TextField()
+
+    # Delivery status
+    sent_at = models.DateTimeField(auto_now_add=True)
+    delivered = models.BooleanField(default=False)
+    delivery_error = models.TextField(blank=True)
+
+    # Read tracking (for in-app)
+    read_at = models.DateTimeField(null=True, blank=True)
+
+    # Related object
+    related_object_type = models.CharField(max_length=50, blank=True)
+    related_object_id = models.IntegerField(null=True, blank=True)
+
+    class Meta:
+        ordering = ['-sent_at']
+        verbose_name = "Notification Log"
+        verbose_name_plural = "Notification Logs"
+        indexes = [
+            models.Index(fields=['user', 'sent_at'], name='idx_notif_user_sent'),
+            models.Index(fields=['notification_type', 'sent_at'], name='idx_notif_type_sent'),
+        ]
+
+    def __str__(self):
+        return f"{self.notification_type} to {self.user.email if self.user else 'N/A'} at {self.sent_at}"
+
+    def mark_read(self):
+        """Mark notification as read."""
+        if not self.read_at:
+            self.read_at = timezone.now()
+            self.save()
+
+
+# =============================================================================
+# DISEASE PREVENTION PLATFORM MODELS
+# =============================================================================
+
+class ExternalDetection(models.Model):
+    """
+    Stores official disease detections from CDFA, USDA, or other authorities.
+    Used for proximity alerting to warn growers of nearby threats.
+    """
+
+    SOURCE_CHOICES = [
+        ('cdfa', 'California Dept of Food & Agriculture'),
+        ('usda', 'USDA APHIS'),
+        ('county_ag', 'County Agricultural Commissioner'),
+        ('uc_anr', 'UC Agriculture & Natural Resources'),
+        ('manual', 'Manual Entry'),
+    ]
+
+    DISEASE_TYPE_CHOICES = [
+        ('hlb', 'Huanglongbing (Citrus Greening)'),
+        ('acp', 'Asian Citrus Psyllid'),
+        ('ctvd', 'Citrus Tristeza Virus'),
+        ('cyvcv', 'Citrus Yellow Vein Clearing Virus'),
+        ('canker', 'Citrus Canker'),
+        ('phytophthora', 'Phytophthora Root Rot'),
+        ('laurel_wilt', 'Laurel Wilt'),
+        ('other', 'Other'),
+    ]
+
+    LOCATION_TYPE_CHOICES = [
+        ('residential', 'Residential/Backyard'),
+        ('commercial', 'Commercial Grove'),
+        ('nursery', 'Nursery'),
+        ('unknown', 'Unknown'),
+    ]
+
+    # Source tracking
+    source = models.CharField(max_length=50, choices=SOURCE_CHOICES)
+    source_id = models.CharField(max_length=100, blank=True)
+
+    # Disease info
+    disease_type = models.CharField(max_length=50, choices=DISEASE_TYPE_CHOICES)
+    disease_name = models.CharField(max_length=200)
+
+    # Location
+    latitude = models.DecimalField(max_digits=10, decimal_places=7)
+    longitude = models.DecimalField(max_digits=10, decimal_places=7)
+    county = models.CharField(max_length=100)
+    city = models.CharField(max_length=100, blank=True)
+    location_type = models.CharField(
+        max_length=50,
+        choices=LOCATION_TYPE_CHOICES,
+        default='unknown'
+    )
+
+    # Dates
+    detection_date = models.DateField()
+    reported_date = models.DateField()
+    fetched_at = models.DateTimeField(auto_now_add=True)
+
+    # Status
+    is_active = models.BooleanField(default=True)
+    eradication_date = models.DateField(null=True, blank=True)
+
+    # Metadata
+    notes = models.TextField(blank=True)
+    raw_data = models.JSONField(default=dict)
+
+    class Meta:
+        ordering = ['-detection_date']
+        verbose_name = "External Detection"
+        verbose_name_plural = "External Detections"
+        indexes = [
+            models.Index(fields=['disease_type', 'is_active'], name='idx_extdet_disease_active'),
+            models.Index(fields=['latitude', 'longitude'], name='idx_extdet_coords'),
+            models.Index(fields=['county'], name='idx_extdet_county'),
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=['source', 'source_id'],
+                name='unique_external_detection_source',
+                condition=models.Q(source_id__gt=''),
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.disease_name} - {self.county} ({self.detection_date})"
+
+
+class QuarantineZone(models.Model):
+    """
+    CDFA quarantine boundary polygons.
+
+    Stores geographic boundaries of quarantine zones for HLB, ACP, and other
+    diseases/pests. Used for visualization on threat maps and compliance checking.
+    """
+
+    ZONE_TYPE_CHOICES = [
+        ('hlb', 'HLB Quarantine'),
+        ('acp', 'ACP Quarantine'),
+        ('eradication', 'Eradication Area'),
+        ('buffer', 'Buffer Zone'),
+        ('other', 'Other'),
+    ]
+
+    zone_type = models.CharField(max_length=50, choices=ZONE_TYPE_CHOICES)
+    name = models.CharField(max_length=200)
+    description = models.TextField(blank=True)
+
+    # GeoJSON Polygon boundary
+    boundary = models.JSONField(
+        help_text="GeoJSON Polygon geometry for the quarantine boundary"
+    )
+
+    # Source tracking
+    source = models.CharField(max_length=100, default='cdfa')
+    source_url = models.URLField(blank=True)
+    source_id = models.CharField(max_length=100, blank=True)
+
+    # Dates
+    established_date = models.DateField()
+    last_updated = models.DateField(auto_now=True)
+    expires_date = models.DateField(null=True, blank=True)
+
+    # Status
+    is_active = models.BooleanField(default=True)
+
+    # Geographic info
+    county = models.CharField(max_length=100, blank=True)
+    state = models.CharField(max_length=50, default='California')
+
+    # Timestamps
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-established_date']
+        verbose_name = "Quarantine Zone"
+        verbose_name_plural = "Quarantine Zones"
+        indexes = [
+            models.Index(fields=['zone_type', 'is_active'], name='idx_qzone_type_active'),
+            models.Index(fields=['county'], name='idx_qzone_county'),
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=['source', 'source_id'],
+                name='unique_quarantine_zone_source',
+                condition=models.Q(source_id__gt=''),
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.name} ({self.zone_type.upper()})"
+
+
+class DiseaseAlertRule(models.Model):
+    """
+    Configurable rules for generating disease alerts.
+    Allows per-company customization of alert thresholds.
+    """
+
+    RULE_TYPE_CHOICES = [
+        ('proximity', 'Proximity Alert'),
+        ('ndvi_threshold', 'NDVI Threshold'),
+        ('ndvi_change', 'NDVI Change Rate'),
+        ('canopy_loss', 'Canopy Loss'),
+        ('tree_count_change', 'Tree Count Change'),
+        ('regional_trend', 'Regional Trend'),
+    ]
+
+    PRIORITY_CHOICES = [
+        ('critical', 'Critical'),
+        ('high', 'High'),
+        ('medium', 'Medium'),
+        ('low', 'Low'),
+    ]
+
+    company = models.ForeignKey(
+        Company,
+        on_delete=models.CASCADE,
+        related_name='disease_alert_rules'
+    )
+
+    name = models.CharField(max_length=100)
+    description = models.TextField(blank=True)
+    rule_type = models.CharField(max_length=50, choices=RULE_TYPE_CHOICES)
+    conditions = models.JSONField(default=dict)
+    alert_priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES)
+
+    send_email = models.BooleanField(default=True)
+    send_sms = models.BooleanField(default=False)
+    send_immediately = models.BooleanField(default=False)
+
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(
+        'User',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='created_disease_rules'
+    )
+
+    class Meta:
+        ordering = ['name']
+        verbose_name = "Disease Alert Rule"
+        verbose_name_plural = "Disease Alert Rules"
+
+    def __str__(self):
+        return f"{self.name} ({self.get_rule_type_display()})"
+
+
+class DiseaseAnalysisRun(models.Model):
+    """
+    Tracks a disease/health analysis run for a field.
+    Parallel to TreeDetectionRun but focused on health trends.
+    """
+
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('processing', 'Processing'),
+        ('completed', 'Completed'),
+        ('failed', 'Failed'),
+    ]
+
+    ANALYSIS_TYPE_CHOICES = [
+        ('ndvi_trend', 'NDVI Trend Analysis'),
+        ('anomaly_detection', 'Anomaly Detection'),
+        ('full', 'Full Health Analysis'),
+    ]
+
+    RISK_LEVEL_CHOICES = [
+        ('low', 'Low'),
+        ('moderate', 'Moderate'),
+        ('high', 'High'),
+        ('critical', 'Critical'),
+    ]
+
+    company = models.ForeignKey(
+        Company,
+        on_delete=models.CASCADE,
+        related_name='disease_analyses'
+    )
+    field = models.ForeignKey(
+        Field,
+        on_delete=models.CASCADE,
+        related_name='disease_analyses'
+    )
+
+    satellite_image = models.ForeignKey(
+        'SatelliteImage',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='disease_analyses'
+    )
+    tree_detection_run = models.ForeignKey(
+        'TreeDetectionRun',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='disease_analyses'
+    )
+
+    # Processing status
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    error_message = models.TextField(blank=True)
+
+    # Analysis parameters
+    analysis_type = models.CharField(
+        max_length=50,
+        choices=ANALYSIS_TYPE_CHOICES,
+        default='full'
+    )
+    parameters = models.JSONField(default=dict)
+
+    # Results - Field Level
+    avg_ndvi = models.DecimalField(max_digits=4, decimal_places=3, null=True)
+    ndvi_change_30d = models.DecimalField(max_digits=5, decimal_places=3, null=True)
+    ndvi_change_90d = models.DecimalField(max_digits=5, decimal_places=3, null=True)
+    canopy_coverage_percent = models.DecimalField(max_digits=5, decimal_places=2, null=True)
+    canopy_change_30d = models.DecimalField(max_digits=5, decimal_places=2, null=True)
+
+    # Results - Tree Level Aggregates
+    total_trees_analyzed = models.IntegerField(default=0)
+    trees_healthy = models.IntegerField(default=0)
+    trees_mild_stress = models.IntegerField(default=0)
+    trees_moderate_stress = models.IntegerField(default=0)
+    trees_severe_stress = models.IntegerField(default=0)
+    trees_declining = models.IntegerField(default=0)
+
+    # Risk Assessment
+    health_score = models.IntegerField(null=True)
+    risk_level = models.CharField(
+        max_length=20,
+        choices=RISK_LEVEL_CHOICES,
+        null=True,
+        blank=True
+    )
+    risk_factors = models.JSONField(default=list)
+
+    # Anomaly Detection
+    anomaly_zones = models.JSONField(default=list)
+    anomaly_count = models.IntegerField(default=0)
+
+    # Recommendations
+    recommendations = models.JSONField(default=list)
+
+    # Timestamps
+    created_at = models.DateTimeField(auto_now_add=True)
+    completed_at = models.DateTimeField(null=True)
+
+    # Review
+    reviewed_by = models.ForeignKey(
+        'User',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='reviewed_disease_analyses'
+    )
+    review_notes = models.TextField(blank=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = "Disease Analysis Run"
+        verbose_name_plural = "Disease Analysis Runs"
+        indexes = [
+            models.Index(fields=['company', 'status'], name='idx_disanalysis_co_status'),
+            models.Index(fields=['field', '-created_at'], name='idx_disanalysis_field_date'),
+        ]
+
+    def __str__(self):
+        return f"{self.field.name} - {self.created_at.strftime('%Y-%m-%d')} ({self.status})"
+
+
+class DiseaseAlert(models.Model):
+    """
+    Disease-specific alerts for users.
+    Follows ComplianceAlert pattern but with disease-specific fields.
+    """
+
+    ALERT_TYPE_CHOICES = [
+        ('proximity_hlb', 'HLB Detected Nearby'),
+        ('proximity_acp', 'ACP Activity Nearby'),
+        ('proximity_other', 'Other Disease Nearby'),
+        ('ndvi_anomaly', 'NDVI Anomaly Detected'),
+        ('tree_decline', 'Tree Decline Detected'),
+        ('canopy_loss', 'Canopy Loss Detected'),
+        ('regional_trend', 'Regional Health Trend'),
+        ('scouting_verified', 'Verified Scouting Report'),
+    ]
+
+    PRIORITY_CHOICES = [
+        ('critical', 'Critical'),
+        ('high', 'High'),
+        ('medium', 'Medium'),
+        ('low', 'Low'),
+    ]
+
+    company = models.ForeignKey(
+        Company,
+        on_delete=models.CASCADE,
+        related_name='disease_alerts'
+    )
+    farm = models.ForeignKey(
+        Farm,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='disease_alerts'
+    )
+    field = models.ForeignKey(
+        Field,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='disease_alerts'
+    )
+
+    alert_type = models.CharField(max_length=50, choices=ALERT_TYPE_CHOICES)
+    priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES)
+    title = models.CharField(max_length=200)
+    message = models.TextField()
+
+    # Context
+    distance_miles = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True)
+    related_detection = models.ForeignKey(
+        ExternalDetection,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='alerts'
+    )
+    related_analysis = models.ForeignKey(
+        DiseaseAnalysisRun,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='alerts'
+    )
+
+    # Actions
+    recommended_actions = models.JSONField(default=list)
+    action_url = models.CharField(max_length=500, blank=True)
+    action_label = models.CharField(max_length=100, blank=True)
+
+    # Status
+    is_active = models.BooleanField(default=True)
+    is_acknowledged = models.BooleanField(default=False)
+    acknowledged_by = models.ForeignKey(
+        'User',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='acknowledged_disease_alerts'
+    )
+    acknowledged_at = models.DateTimeField(null=True, blank=True)
+
+    # Notifications sent
+    email_sent = models.BooleanField(default=False)
+    email_sent_at = models.DateTimeField(null=True, blank=True)
+    sms_sent = models.BooleanField(default=False)
+    sms_sent_at = models.DateTimeField(null=True, blank=True)
+
+    # Timestamps
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = "Disease Alert"
+        verbose_name_plural = "Disease Alerts"
+        indexes = [
+            models.Index(fields=['company', 'is_active', 'priority'], name='idx_disalert_co_active_pri'),
+            models.Index(fields=['alert_type', 'created_at'], name='idx_disalert_type_created'),
+        ]
+
+    def __str__(self):
+        return f"[{self.get_priority_display()}] {self.title}"
+
+    def acknowledge(self, user):
+        """Acknowledge this alert."""
+        self.is_acknowledged = True
+        self.acknowledged_by = user
+        self.acknowledged_at = timezone.now()
+        self.save()
+
+    def dismiss(self):
+        """Dismiss/deactivate this alert."""
+        self.is_active = False
+        self.save()
+
+
+class ScoutingReport(models.Model):
+    """
+    User-submitted disease/pest observations for crowdsourced monitoring.
+    """
+
+    REPORT_TYPE_CHOICES = [
+        ('disease_symptom', 'Disease Symptom'),
+        ('pest_sighting', 'Pest Sighting'),
+        ('tree_decline', 'Tree Decline'),
+        ('tree_death', 'Tree Death'),
+        ('acp_sighting', 'Asian Citrus Psyllid'),
+        ('other', 'Other'),
+    ]
+
+    SEVERITY_CHOICES = [
+        ('low', 'Low - Minor/Isolated'),
+        ('medium', 'Medium - Several Trees'),
+        ('high', 'High - Significant Area'),
+    ]
+
+    AI_STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('processing', 'Processing'),
+        ('completed', 'Completed'),
+        ('skipped', 'Skipped'),
+    ]
+
+    STATUS_CHOICES = [
+        ('submitted', 'Submitted'),
+        ('under_review', 'Under Review'),
+        ('verified', 'Verified'),
+        ('false_alarm', 'False Alarm'),
+        ('inconclusive', 'Inconclusive'),
+    ]
+
+    company = models.ForeignKey(
+        Company,
+        on_delete=models.CASCADE,
+        related_name='scouting_reports'
+    )
+    reported_by = models.ForeignKey(
+        'User',
+        on_delete=models.CASCADE,
+        related_name='scouting_reports'
+    )
+    farm = models.ForeignKey(
+        Farm,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='scouting_reports'
+    )
+    field = models.ForeignKey(
+        Field,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='scouting_reports'
+    )
+
+    # Location
+    latitude = models.DecimalField(max_digits=10, decimal_places=7)
+    longitude = models.DecimalField(max_digits=10, decimal_places=7)
+
+    # Report details
+    report_type = models.CharField(max_length=50, choices=REPORT_TYPE_CHOICES)
+    symptoms = models.JSONField(default=dict)
+    severity = models.CharField(max_length=20, choices=SEVERITY_CHOICES)
+    affected_tree_count = models.IntegerField(null=True, blank=True)
+    notes = models.TextField(blank=True)
+
+    # AI Analysis
+    ai_analysis_status = models.CharField(
+        max_length=20,
+        choices=AI_STATUS_CHOICES,
+        default='pending'
+    )
+    ai_diagnosis = models.JSONField(default=dict)
+
+    # Verification
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='submitted')
+    verified_by = models.ForeignKey(
+        'User',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='verified_scouting_reports'
+    )
+    verification_notes = models.TextField(blank=True)
+
+    # Sharing
+    share_anonymously = models.BooleanField(default=True)
+    is_public = models.BooleanField(default=False)
+
+    # Timestamps
+    observed_date = models.DateField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = "Scouting Report"
+        verbose_name_plural = "Scouting Reports"
+
+    def __str__(self):
+        return f"{self.get_report_type_display()} - {self.observed_date}"
+
+
+class ScoutingPhoto(models.Model):
+    """Photos attached to scouting reports."""
+
+    report = models.ForeignKey(
+        ScoutingReport,
+        on_delete=models.CASCADE,
+        related_name='photos'
+    )
+    image = models.ImageField(upload_to='scouting/%Y/%m/')
+    caption = models.CharField(max_length=200, blank=True)
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Scouting Photo"
+        verbose_name_plural = "Scouting Photos"
+
+    def __str__(self):
+        return f"Photo for {self.report}"
+
+
+class TreeHealthRecord(models.Model):
+    """
+    Tracks health metrics for individual trees over time.
+    Links DetectedTree records across multiple detection runs.
+    """
+
+    TREND_CHOICES = [
+        ('improving', 'Improving'),
+        ('stable', 'Stable'),
+        ('declining', 'Declining'),
+        ('rapid_decline', 'Rapid Decline'),
+    ]
+
+    HEALTH_STATUS_CHOICES = [
+        ('healthy', 'Healthy'),
+        ('mild_stress', 'Mild Stress'),
+        ('moderate_stress', 'Moderate Stress'),
+        ('severe_stress', 'Severe Stress'),
+        ('dead', 'Dead/Removed'),
+    ]
+
+    company = models.ForeignKey(
+        Company,
+        on_delete=models.CASCADE,
+        related_name='tree_health_records'
+    )
+    field = models.ForeignKey(
+        Field,
+        on_delete=models.CASCADE,
+        related_name='tree_health_records'
+    )
+
+    # Tree identification
+    tree_id = models.CharField(max_length=50)
+    latitude = models.DecimalField(max_digits=10, decimal_places=7)
+    longitude = models.DecimalField(max_digits=10, decimal_places=7)
+
+    # Current state
+    current_ndvi = models.DecimalField(max_digits=4, decimal_places=3, null=True)
+    current_canopy_diameter_m = models.DecimalField(max_digits=4, decimal_places=2, null=True)
+    last_detection_run = models.ForeignKey(
+        'TreeDetectionRun',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='+'
+    )
+    last_updated = models.DateTimeField(auto_now=True)
+
+    # Trend data
+    ndvi_history = models.JSONField(default=list)
+    canopy_history = models.JSONField(default=list)
+    ndvi_trend = models.CharField(max_length=20, choices=TREND_CHOICES, default='stable')
+
+    # Health status
+    health_status = models.CharField(
+        max_length=20,
+        choices=HEALTH_STATUS_CHOICES,
+        default='healthy'
+    )
+
+    # Flags
+    flagged_for_inspection = models.BooleanField(default=False)
+    flag_reason = models.TextField(blank=True)
+    inspected = models.BooleanField(default=False)
+    inspection_date = models.DateField(null=True, blank=True)
+    inspection_notes = models.TextField(blank=True)
+
+    class Meta:
+        verbose_name = "Tree Health Record"
+        verbose_name_plural = "Tree Health Records"
+        constraints = [
+            models.UniqueConstraint(
+                fields=['field', 'tree_id'],
+                name='unique_tree_health_field_treeid'
+            ),
+        ]
+        indexes = [
+            models.Index(fields=['field', 'health_status'], name='idx_treehealth_field_status'),
+            models.Index(fields=['flagged_for_inspection'], name='idx_treehealth_flagged'),
+        ]
+
+    def __str__(self):
+        return f"Tree {self.tree_id} - {self.field.name}"
 

@@ -1,0 +1,60 @@
+{% extends "emails/base.html" %}
+
+{% block title %}WPS Training Reminder{% endblock %}
+{% block header_title %}Training Alert{% endblock %}
+
+{% block content %}
+<p>Hi {{ user_name }},</p>
+
+<p>This is a reminder about Worker Protection Standard (WPS) training for <strong>{{ company_name }}</strong>.</p>
+
+{% if urgency == 'critical' %}
+<div style="background-color: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 16px; margin: 20px 0;">
+    <p style="margin: 0; color: #dc2626; font-weight: 600;">
+        {% if days_until_expiry <= 0 %}
+        EXPIRED: Training certification has expired!
+        {% else %}
+        URGENT: Training expires in {{ days_until_expiry }} day{% if days_until_expiry != 1 %}s{% endif %}!
+        {% endif %}
+    </p>
+</div>
+{% elif urgency == 'high' %}
+<div style="background-color: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 16px; margin: 20px 0;">
+    <p style="margin: 0; color: #d97706; font-weight: 600;">
+        Action Required: Training expires in {{ days_until_expiry }} days
+    </p>
+</div>
+{% else %}
+<div class="info-box">
+    <p style="margin: 0;">
+        Training expires in {{ days_until_expiry }} days
+    </p>
+</div>
+{% endif %}
+
+<div class="info-box">
+    <p><strong>Training Record</strong></p>
+    <p class="text-muted" style="margin-top: 8px;">
+        <strong>Employee:</strong> {{ trainee_name }}<br>
+        <strong>Training Type:</strong> {{ training_type }}<br>
+        <strong>Training Date:</strong> {{ training_date|date:"F j, Y" }}<br>
+        <strong>Expiration Date:</strong> {{ expiration_date|date:"F j, Y" }}
+    </p>
+</div>
+
+{% if days_until_expiry <= 0 %}
+<p style="color: #dc2626;">
+    <strong>This training has expired.</strong> {{ trainee_name }} must complete new WPS training before performing covered activities. Workers with expired training may not work in pesticide-treated areas.
+</p>
+{% else %}
+<p>
+    Please schedule refresher training for {{ trainee_name }} before the expiration date. WPS training is required annually for all workers and handlers.
+</p>
+{% endif %}
+
+<div class="btn-container">
+    <a href="{{ training_url }}" class="btn">View Training Records</a>
+</div>
+
+<p>Best regards,<br>Grove Master Team</p>
+{% endblock %}

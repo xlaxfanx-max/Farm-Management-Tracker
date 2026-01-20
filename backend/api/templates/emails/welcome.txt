@@ -1,0 +1,19 @@
+Welcome to {{ company_name }}!
+==============================
+
+Hi {{ user_name }},
+
+Welcome to {{ company_name }} on Grove Master! Your account has been set up and you're ready to get started.
+
+What you can do with Grove Master:
+- Track pesticide applications and compliance
+- Monitor water usage and quality
+- Record harvests and labor
+- Generate reports for regulatory compliance
+
+Log in to get started: {{ login_url }}
+
+If you have any questions, reach out to your team administrator or contact us at {{ support_email }}.
+
+---
+Grove Master

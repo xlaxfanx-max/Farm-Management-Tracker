@@ -3,7 +3,7 @@
 // Save as: frontend/src/components/Harvests.js
 // =============================================================================
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Wheat,
   Plus,
@@ -20,19 +20,26 @@ import {
   Edit,
   Trash2,
   Filter,
-  RefreshCw
+  RefreshCw,
+  Zap,
+  BarChart3
 } from 'lucide-react';
 import { harvestsAPI, HARVEST_CONSTANTS } from '../services/api';
+import { useData } from '../contexts/DataContext';
+import { useModal } from '../contexts/ModalContext';
+import HarvestAnalytics from './HarvestAnalytics';
 
-const Harvests = ({ 
-  fields, 
-  farms,
-  onNewHarvest, 
-  onEditHarvest,
-  onAddLoad,
-  onAddLabor,
-  refreshTrigger 
-}) => {
+const Harvests = () => {
+  const { fields, farms } = useData();
+  const {
+    openHarvestModal,
+    openHarvestLoadModal,
+    openHarvestLaborModal,
+    openQuickHarvestModal,
+    registerRefreshCallback,
+    unregisterRefreshCallback
+  } = useModal();
+  const [showAnalytics, setShowAnalytics] = useState(false);
   const [harvests, setHarvests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [expandedHarvests, setExpandedHarvests] = useState({});
@@ -46,10 +53,22 @@ const Harvests = ({
   });
   const [showFilters, setShowFilters] = useState(false);
 
+  // Memoize refresh function for the callback registry
+  const refreshData = useCallback(() => {
+    fetchHarvests();
+    fetchStatistics();
+  }, []);
+
+  // Register refresh callback with context
+  useEffect(() => {
+    registerRefreshCallback('harvests', refreshData);
+    return () => unregisterRefreshCallback('harvests');
+  }, [registerRefreshCallback, unregisterRefreshCallback, refreshData]);
+
   useEffect(() => {
     fetchHarvests();
     fetchStatistics();
-  }, [refreshTrigger, filters]);
+  }, [filters]);
 
   const fetchHarvests = async () => {
     try {
@@ -179,6 +198,17 @@ const Harvests = ({
         </div>
         <div className="flex gap-2">
           <button
+            onClick={() => setShowAnalytics(!showAnalytics)}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg ${
+              showAnalytics
+                ? 'bg-blue-600 text-white hover:bg-blue-700'
+                : 'border hover:bg-gray-50'
+            }`}
+          >
+            <BarChart3 size={18} />
+            Analytics
+          </button>
+          <button
             onClick={() => setShowFilters(!showFilters)}
             className="flex items-center gap-2 px-4 py-2 border rounded-lg hover:bg-gray-50"
           >
@@ -192,7 +222,14 @@ const Harvests = ({
             <RefreshCw size={18} />
           </button>
           <button
-            onClick={() => onNewHarvest()}
+            onClick={openQuickHarvestModal}
+            className="flex items-center gap-2 px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600"
+          >
+            <Zap size={18} />
+            Quick Entry
+          </button>
+          <button
+            onClick={() => openHarvestModal(null,)}
             className="flex items-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700"
           >
             <Plus size={18} />
@@ -347,16 +384,24 @@ const Harvests = ({
         </div>
       )}
 
+      {/* Analytics Panel */}
+      {showAnalytics && (
+        <div className="bg-white rounded-lg shadow p-6">
+          <HarvestAnalytics />
+        </div>
+      )}
+
       {/* Harvests List */}
-      <div className="bg-white rounded-lg shadow">
-        {loading ? (
-          <div className="p-8 text-center text-gray-500">Loading harvests...</div>
-        ) : harvests.length === 0 ? (
+      {!showAnalytics && (
+        <div className="bg-white rounded-lg shadow">
+          {loading ? (
+            <div className="p-8 text-center text-gray-500">Loading harvests...</div>
+          ) : harvests.length === 0 ? (
           <div className="p-8 text-center text-gray-500">
             <Wheat size={48} className="mx-auto mb-4 text-gray-300" />
             <p>No harvests found</p>
             <button
-              onClick={() => onNewHarvest()}
+              onClick={() => openHarvestModal(null,)}
               className="mt-4 text-orange-600 hover:text-orange-700"
             >
               Record your first harvest
@@ -427,9 +472,129 @@ const Harvests = ({
                         <div>
                           <p className="font-medium text-red-800">PHI Compliance Warning</p>
                           <p className="text-sm text-red-600">
-                            Only {harvest.days_since_last_application} days since last application 
+                            Only {harvest.days_since_last_application} days since last application
                             of {harvest.last_application_product}. Required: {harvest.phi_required_days} days.
                           </p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Bins Reconciliation Widget */}
+                    {harvest.bins_reconciliation_status && (
+                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                        <p className="font-medium text-blue-800 mb-2">Bin Tracking</p>
+                        <div className="grid grid-cols-3 gap-4 text-sm">
+                          {/* Harvest Total */}
+                          <div>
+                            <p className="text-gray-600">Total Harvest</p>
+                            <p className="text-lg font-semibold text-gray-900">
+                              {harvest.bins_reconciliation_status.total_harvest_bins} bins
+                            </p>
+                          </div>
+
+                          {/* Loads Status */}
+                          <div>
+                            <div className="flex items-center gap-2 mb-1">
+                              <p className="text-gray-600">In Loads</p>
+                              {harvest.bins_reconciliation_status.loads_status === 'match' && (
+                                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                                  ✓ Complete
+                                </span>
+                              )}
+                              {harvest.bins_reconciliation_status.loads_status === 'under' && (
+                                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
+                                  Partial
+                                </span>
+                              )}
+                              {harvest.bins_reconciliation_status.loads_status === 'over' && (
+                                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
+                                  Over
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-lg font-semibold text-gray-900">
+                              {harvest.bins_reconciliation_status.total_load_bins} bins
+                            </p>
+                            {harvest.bins_reconciliation_status.loads_message && (
+                              <p className="text-xs text-gray-500 mt-1">
+                                {harvest.bins_reconciliation_status.loads_message}
+                              </p>
+                            )}
+                          </div>
+
+                          {/* Labor Status */}
+                          <div>
+                            <div className="flex items-center gap-2 mb-1">
+                              <p className="text-gray-600">In Labor</p>
+                              {harvest.bins_reconciliation_status.labor_status === 'match' && (
+                                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                                  ✓ Complete
+                                </span>
+                              )}
+                              {harvest.bins_reconciliation_status.labor_status === 'under' && (
+                                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
+                                  Partial
+                                </span>
+                              )}
+                              {harvest.bins_reconciliation_status.labor_status === 'over' && (
+                                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
+                                  Over
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-lg font-semibold text-gray-900">
+                              {harvest.bins_reconciliation_status.total_labor_bins} bins
+                            </p>
+                            {harvest.bins_reconciliation_status.labor_message && (
+                              <p className="text-xs text-gray-500 mt-1">
+                                {harvest.bins_reconciliation_status.labor_message}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Progress Bar */}
+                        <div className="mt-3 space-y-2">
+                          <div>
+                            <div className="flex justify-between text-xs text-gray-600 mb-1">
+                              <span>Loads Progress</span>
+                              <span>
+                                {Math.round((harvest.bins_reconciliation_status.total_load_bins / harvest.bins_reconciliation_status.total_harvest_bins) * 100)}%
+                              </span>
+                            </div>
+                            <div className="w-full bg-gray-200 rounded-full h-2">
+                              <div
+                                className={`h-2 rounded-full ${
+                                  harvest.bins_reconciliation_status.loads_status === 'match' ? 'bg-green-500' :
+                                  harvest.bins_reconciliation_status.loads_status === 'over' ? 'bg-red-500' :
+                                  'bg-yellow-500'
+                                }`}
+                                style={{
+                                  width: `${Math.min((harvest.bins_reconciliation_status.total_load_bins / harvest.bins_reconciliation_status.total_harvest_bins) * 100, 100)}%`
+                                }}
+                              ></div>
+                            </div>
+                          </div>
+                          <div>
+                            <div className="flex justify-between text-xs text-gray-600 mb-1">
+                              <span>Labor Progress</span>
+                              <span>
+                                {Math.round((harvest.bins_reconciliation_status.total_labor_bins / harvest.bins_reconciliation_status.total_harvest_bins) * 100)}%
+                              </span>
+                            </div>
+                            <div className="w-full bg-gray-200 rounded-full h-2">
+                              <div
+                                className={`h-2 rounded-full ${
+                                  harvest.bins_reconciliation_status.labor_status === 'match' ? 'bg-green-500' :
+                                  harvest.bins_reconciliation_status.labor_status === 'over' ? 'bg-red-500' :
+                                  'bg-yellow-500'
+                                }`}
+                                style={{
+                                  width: `${Math.min((harvest.bins_reconciliation_status.total_labor_bins / harvest.bins_reconciliation_status.total_harvest_bins) * 100, 100)}%`
+                                }}
+                              ></div>
+                            </div>
+                          </div>
                         </div>
                       </div>
                     )}
@@ -437,13 +602,13 @@ const Harvests = ({
                     {/* Action Buttons */}
                     <div className="flex gap-2">
                       <button
-                        onClick={(e) => { e.stopPropagation(); onAddLoad(harvest.id); }}
+                        onClick={(e) => { e.stopPropagation(); openHarvestLoadModal(harvest.id); }}
                         className="flex items-center gap-1 px-3 py-1.5 text-sm border rounded-lg hover:bg-gray-50"
                       >
                         <Truck size={16} /> Add Load
                       </button>
                       <button
-                        onClick={(e) => { e.stopPropagation(); onAddLabor(harvest.id); }}
+                        onClick={(e) => { e.stopPropagation(); openHarvestLaborModal(harvest.id); }}
                         className="flex items-center gap-1 px-3 py-1.5 text-sm border rounded-lg hover:bg-gray-50"
                       >
                         <Users size={16} /> Add Labor
@@ -465,7 +630,7 @@ const Harvests = ({
                         </button>
                       )}
                       <button
-                        onClick={(e) => { e.stopPropagation(); onEditHarvest(harvest); }}
+                        onClick={(e) => { e.stopPropagation(); openHarvestModal(harvest); }}
                         className="flex items-center gap-1 px-3 py-1.5 text-sm border rounded-lg hover:bg-gray-50"
                       >
                         <Edit size={16} /> Edit
@@ -532,6 +697,7 @@ const Harvests = ({
                                 <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Revenue</th>
                                 <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Payment</th>
                                 <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Truck</th>
+                                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Actions</th>
                               </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-200">
@@ -552,6 +718,15 @@ const Harvests = ({
                                     </span>
                                   </td>
                                   <td className="px-3 py-2 text-sm text-gray-500">{load.truck_id || '-'}</td>
+                                  <td className="px-3 py-2 text-sm">
+                                    <button
+                                      onClick={() => openHarvestLoadModal(harvest.id, load)}
+                                      className="text-blue-600 hover:text-blue-800"
+                                      title="Edit load"
+                                    >
+                                      <Edit size={16} />
+                                    </button>
+                                  </td>
                                 </tr>
                               ))}
                             </tbody>
@@ -574,6 +749,7 @@ const Harvests = ({
                                 <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Bins Picked</th>
                                 <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Cost</th>
                                 <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Training</th>
+                                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Actions</th>
                               </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-200">
@@ -591,6 +767,15 @@ const Harvests = ({
                                       <Clock size={16} className="text-gray-400" />
                                     )}
                                   </td>
+                                  <td className="px-3 py-2 text-sm">
+                                    <button
+                                      onClick={() => openHarvestLaborModal(harvest.id, labor)}
+                                      className="text-blue-600 hover:text-blue-800"
+                                      title="Edit labor record"
+                                    >
+                                      <Edit size={16} />
+                                    </button>
+                                  </td>
                                 </tr>
                               ))}
                             </tbody>
@@ -604,7 +789,8 @@ const Harvests = ({
             ))}
           </div>
         )}
-      </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -1,5 +1,5 @@
 """
-Audit Log Views for Farm Management Tracker
+Audit Log Views for Grove Master
 
 Add this file to: backend/api/audit_views.py
 
@@ -17,6 +17,7 @@ from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from .permissions import HasCompanyAccess
 
 import openpyxl
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
@@ -25,7 +26,7 @@ from .models import AuditLog, User
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, HasCompanyAccess])
 def audit_log_list(request):
     """
     List audit logs with filtering and pagination.
@@ -155,7 +156,7 @@ def audit_log_list(request):
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, HasCompanyAccess])
 def audit_log_detail(request, pk):
     """
     Get detailed information about a specific audit log entry.
@@ -198,7 +199,7 @@ def audit_log_detail(request, pk):
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, HasCompanyAccess])
 def audit_log_filters(request):
     """
     Get available filter options for the audit log viewer.
@@ -247,7 +248,7 @@ def audit_log_filters(request):
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, HasCompanyAccess])
 def audit_log_export(request):
     """
     Export audit logs to Excel format.
@@ -442,7 +443,7 @@ def audit_log_export(request):
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, HasCompanyAccess])
 def audit_log_statistics(request):
     """
     Get statistics about audit log entries.

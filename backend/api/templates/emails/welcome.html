@@ -1,0 +1,28 @@
+{% extends "emails/base.html" %}
+
+{% block title %}Welcome to {{ company_name }}{% endblock %}
+{% block header_title %}Welcome to the Team!{% endblock %}
+
+{% block content %}
+<p>Hi {{ user_name }},</p>
+
+<p>Welcome to <strong>{{ company_name }}</strong> on Grove Master! Your account has been set up and you're ready to get started.</p>
+
+<div class="info-box">
+    <p><strong>What you can do with Grove Master:</strong></p>
+    <ul style="margin: 10px 0 0 20px; padding: 0;">
+        <li>Track pesticide applications and compliance</li>
+        <li>Monitor water usage and quality</li>
+        <li>Record harvests and labor</li>
+        <li>Generate reports for regulatory compliance</li>
+    </ul>
+</div>
+
+<div class="btn-container">
+    <a href="{{ login_url }}" class="btn">Log In to Get Started</a>
+</div>
+
+<p class="text-muted">
+    If you have any questions, reach out to your team administrator or contact us at {{ support_email }}.
+</p>
+{% endblock %}

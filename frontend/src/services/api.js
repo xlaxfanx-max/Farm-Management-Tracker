@@ -1,5 +1,5 @@
 // =============================================================================
-// FARM TRACKER API SERVICE
+// GROVE MASTER API SERVICE
 // =============================================================================
 // Updated with authentication support while preserving all existing functionality
 // =============================================================================
@@ -127,8 +127,20 @@ export const authAPI = {
     }),
 
   // Validate invitation token
-  validateInvitation: (token) => 
+  validateInvitation: (token) =>
     axios.get(`${API_BASE_URL}/auth/invitation/${token}/`),
+
+  // Password reset - request reset email
+  forgotPassword: (email) =>
+    axios.post(`${API_BASE_URL}/auth/forgot-password/`, { email }),
+
+  // Password reset - validate token
+  validateResetToken: (token) =>
+    axios.get(`${API_BASE_URL}/auth/reset-password/${token}/`),
+
+  // Password reset - set new password
+  resetPassword: (token, password) =>
+    axios.post(`${API_BASE_URL}/auth/reset-password/`, { token, password }),
 };
 
 // =============================================================================
@@ -260,6 +272,64 @@ export const onboardingAPI = {
 };
 
 // =============================================================================
+// WEATHER API (NEW)
+// =============================================================================
+
+export const weatherAPI = {
+  /**
+   * Get current weather for a farm
+   * @param {number} farmId - Farm ID
+   * @returns Current weather with spray conditions assessment
+   */
+  getCurrentWeather: (farmId) => api.get(`/weather/current/${farmId}/`),
+
+  /**
+   * Get 7-day weather forecast for a farm
+   * @param {number} farmId - Farm ID
+   * @returns Daily forecast with spray ratings
+   */
+  getForecast: (farmId) => api.get(`/weather/forecast/${farmId}/`),
+
+  /**
+   * Get detailed spray conditions assessment
+   * @param {number} farmId - Farm ID
+   * @returns Spray conditions with factor breakdown
+   */
+  getSprayConditions: (farmId) => api.get(`/weather/spray-conditions/${farmId}/`),
+
+  /**
+   * Get spray condition thresholds
+   * @returns Threshold values and descriptions
+   */
+  getThresholds: () => api.get('/weather/thresholds/'),
+
+  /**
+   * Get weather summary for all farms
+   * @returns Weather overview for all company farms
+   */
+  getAllFarmsWeather: () => api.get('/weather/farms/'),
+};
+
+// =============================================================================
+// ANALYTICS API (NEW)
+// =============================================================================
+
+export const analyticsAPI = {
+  /**
+   * Get full analytics dashboard data
+   * @param {Object} params - Query parameters (year, start_date, end_date, farm_id)
+   * @returns Comprehensive analytics data
+   */
+  getDashboard: (params = {}) => api.get('/analytics/dashboard/', { params }),
+
+  /**
+   * Get quick analytics summary for widget
+   * @returns Key metrics summary
+   */
+  getSummary: () => api.get('/analytics/summary/'),
+};
+
+// =============================================================================
 // FARMS API (EXISTING - now uses authenticated api instance)
 // =============================================================================
 
@@ -268,10 +338,13 @@ export const farmsAPI = {
   getById: (id) => api.get(`/farms/${id}/`),
   create: (data) => api.post('/farms/', data),
   update: (id, data) => api.put(`/farms/${id}/`, data),
+  patch: (id, data) => api.patch(`/farms/${id}/`, data),
   delete: (id) => api.delete(`/farms/${id}/`),
   getFields: (id) => api.get(`/farms/${id}/fields/`),
-  bulkAddParcels: (farmId, parcels, replace = false) => 
-   api.post(`/farms/${farmId}/bulk-parcels/`, { parcels, replace }),
+  bulkAddParcels: (farmId, parcels, replace = false) =>
+    api.post(`/farms/${farmId}/bulk-parcels/`, { parcels, replace }),
+  updateCoordinates: (id, lat, lng) =>
+    api.post(`/farms/${id}/update-coordinates/`, { gps_latitude: lat, gps_longitude: lng }),
 };
 
 // =============================================================================
@@ -396,11 +469,14 @@ export const buyersAPI = {
   update: (id, data) => 
     api.put(`/buyers/${id}/`, data),
   
-  delete: (id) => 
+  delete: (id) =>
     api.delete(`/buyers/${id}/`),
-  
-  getLoadHistory: (id) => 
+
+  getLoadHistory: (id) =>
     api.get(`/buyers/${id}/load_history/`),
+
+  getPerformance: (id) =>
+    api.get(`/buyers/${id}/performance/`),
 };
 
 // =============================================================================
@@ -426,11 +502,14 @@ export const laborContractorsAPI = {
   delete: (id) => 
     api.delete(`/labor-contractors/${id}/`),
   
-  getJobHistory: (id) => 
+  getJobHistory: (id) =>
     api.get(`/labor-contractors/${id}/job_history/`),
-  
-  getExpiringSoon: () => 
+
+  getExpiringSoon: () =>
     api.get('/labor-contractors/expiring_soon/'),
+
+  getPerformance: (id) =>
+    api.get(`/labor-contractors/${id}/performance/`),
 };
 
 // =============================================================================
@@ -465,11 +544,14 @@ export const harvestsAPI = {
   markComplete: (id) => 
     api.post(`/harvests/${id}/mark_complete/`),
   
-  markVerified: (id) => 
+  markVerified: (id) =>
     api.post(`/harvests/${id}/mark_verified/`),
-  
-  getByField: (params = {}) => 
+
+  getByField: (params = {}) =>
     api.get('/harvests/by_field/', { params }),
+
+  getCostAnalysis: (params = {}) =>
+    api.get('/harvests/cost_analysis/', { params }),
 };
 
 // =============================================================================
@@ -688,8 +770,13 @@ export const NUTRIENT_CONSTANTS = {
 
 export const mapAPI = {
   // Geocode an address to GPS coordinates
-  geocode: (address) => 
-    api.post('/geocode/', { address }),
+  // Accepts string or object { address, county, city }
+  geocode: (addressOrParams) => {
+    if (typeof addressOrParams === 'string') {
+      return api.post('/geocode/', { address: addressOrParams });
+    }
+    return api.post('/geocode/', addressOrParams);
+  },
   
   // Update field boundary from drawn polygon
   updateFieldBoundary: (fieldId, boundaryGeojson, calculatedAcres) => 
@@ -828,12 +915,1427 @@ export const farmParcelsAPI = {
   create: (data) => api.post('/farm-parcels/', data),
   update: (id, data) => api.put(`/farm-parcels/${id}/`, data),
   delete: (id) => api.delete(`/farm-parcels/${id}/`),
-  
+
   // Farm-specific endpoints
   getForFarm: (farmId) => api.get(`/farms/${farmId}/parcels/`),
   addToFarm: (farmId, data) => api.post(`/farms/${farmId}/parcels/`, data),
-  bulkAdd: (farmId, parcels, replace = false) => 
+  bulkAdd: (farmId, parcels, replace = false) =>
     api.post(`/farms/${farmId}/bulk-parcels/`, { parcels, replace }),
+};
+
+// =============================================================================
+// QUARANTINE API
+// =============================================================================
+
+export const quarantineAPI = {
+  // Check quarantine status for a farm
+  checkFarm: (farmId, refresh = false) =>
+    api.get('/quarantine/check/', {
+      params: { farm_id: farmId, refresh: refresh ? 'true' : 'false' }
+    }),
+
+  // Check quarantine status for a field
+  checkField: (fieldId, refresh = false) =>
+    api.get('/quarantine/check/', {
+      params: { field_id: fieldId, refresh: refresh ? 'true' : 'false' }
+    }),
+
+  // Get quarantine boundary GeoJSON for map overlay
+  getBoundaries: (refresh = false) =>
+    api.get('/quarantine/boundaries/', {
+      params: { refresh: refresh ? 'true' : 'false' }
+    }),
+};
+
+// =============================================================================
+// IRRIGATION SCHEDULING API
+// =============================================================================
+
+export const irrigationZonesAPI = {
+  // Standard CRUD
+  getAll: (params = {}) => api.get('/irrigation-zones/', { params }),
+  get: (id) => api.get(`/irrigation-zones/${id}/`),
+  create: (data) => api.post('/irrigation-zones/', data),
+  update: (id, data) => api.put(`/irrigation-zones/${id}/`, data),
+  delete: (id) => api.delete(`/irrigation-zones/${id}/`),
+
+  // Zone actions
+  getStatus: (id) => api.get(`/irrigation-zones/${id}/status/`),
+  calculate: (id, data = {}) => api.post(`/irrigation-zones/${id}/calculate/`, data),
+  getEvents: (id) => api.get(`/irrigation-zones/${id}/events/`),
+  recordEvent: (id, data) => api.post(`/irrigation-zones/${id}/events/`, data),
+  getRecommendations: (id) => api.get(`/irrigation-zones/${id}/recommendations/`),
+  getWeather: (id, days = 7) => api.get(`/irrigation-zones/${id}/weather/`, { params: { days } }),
+
+  // Filtered lists
+  byField: (fieldId) => api.get('/irrigation-zones/', { params: { field: fieldId } }),
+  byFarm: (farmId) => api.get('/irrigation-zones/', { params: { farm: farmId } }),
+};
+
+export const irrigationRecommendationsAPI = {
+  // Standard CRUD
+  getAll: (params = {}) => api.get('/irrigation-recommendations/', { params }),
+  get: (id) => api.get(`/irrigation-recommendations/${id}/`),
+
+  // Actions
+  apply: (id, data = {}) => api.post(`/irrigation-recommendations/${id}/apply/`, data),
+  skip: (id) => api.post(`/irrigation-recommendations/${id}/skip/`),
+
+  // Filtered lists
+  pending: () => api.get('/irrigation-recommendations/', { params: { status: 'pending' } }),
+  byZone: (zoneId) => api.get('/irrigation-recommendations/', { params: { zone: zoneId } }),
+};
+
+export const kcProfilesAPI = {
+  // Standard CRUD
+  getAll: (params = {}) => api.get('/kc-profiles/', { params }),
+  get: (id) => api.get(`/kc-profiles/${id}/`),
+  create: (data) => api.post('/kc-profiles/', data),
+  update: (id, data) => api.put(`/kc-profiles/${id}/`, data),
+  delete: (id) => api.delete(`/kc-profiles/${id}/`),
+
+  // Get system defaults
+  defaults: () => api.get('/kc-profiles/', { params: { zone__isnull: true } }),
+};
+
+export const soilMoistureReadingsAPI = {
+  // Standard CRUD
+  getAll: (params = {}) => api.get('/soil-moisture-readings/', { params }),
+  get: (id) => api.get(`/soil-moisture-readings/${id}/`),
+  create: (data) => api.post('/soil-moisture-readings/', data),
+  update: (id, data) => api.put(`/soil-moisture-readings/${id}/`, data),
+  delete: (id) => api.delete(`/soil-moisture-readings/${id}/`),
+
+  // Filtered lists
+  byZone: (zoneId) => api.get('/soil-moisture-readings/', { params: { zone: zoneId } }),
+};
+
+export const irrigationDashboardAPI = {
+  // Get full dashboard data
+  get: () => api.get('/irrigation/dashboard/'),
+
+  // Get CIMIS station list (for zone setup)
+  getCIMISStations: (lat, lng, limit = 5) =>
+    api.get('/irrigation/cimis-stations/', { params: { lat, lng, limit } }),
+};
+
+// =============================================================================
+// CROP & ROOTSTOCK MANAGEMENT
+// =============================================================================
+
+export const cropsAPI = {
+  getAll: (params = {}) => api.get('/crops/', { params }),
+  getById: (id) => api.get(`/crops/${id}/`),
+  create: (data) => api.post('/crops/', data),
+  update: (id, data) => api.put(`/crops/${id}/`, data),
+  delete: (id) => api.delete(`/crops/${id}/`),
+  getCategories: () => api.get('/crops/categories/'),
+  search: (q) => api.get('/crops/search/', { params: { q } }),
+};
+
+export const rootstocksAPI = {
+  getAll: (params = {}) => api.get('/rootstocks/', { params }),
+  getById: (id) => api.get(`/rootstocks/${id}/`),
+  create: (data) => api.post('/rootstocks/', data),
+  update: (id, data) => api.put(`/rootstocks/${id}/`, data),
+  delete: (id) => api.delete(`/rootstocks/${id}/`),
+  forCrop: (cropId) => api.get('/rootstocks/for_crop/', { params: { crop_id: cropId } }),
+};
+
+// Constants for Irrigation Scheduling dropdowns
+export const IRRIGATION_CONSTANTS = {
+  IRRIGATION_METHODS: [
+    { value: 'drip', label: 'Drip' },
+    { value: 'micro_sprinkler', label: 'Micro-Sprinkler' },
+    { value: 'flood', label: 'Flood' },
+    { value: 'furrow', label: 'Furrow' },
+    { value: 'sprinkler', label: 'Sprinkler' },
+  ],
+
+  SOIL_TYPES: [
+    { value: 'sandy', label: 'Sandy' },
+    { value: 'sandy_loam', label: 'Sandy Loam' },
+    { value: 'loam', label: 'Loam' },
+    { value: 'clay_loam', label: 'Clay Loam' },
+    { value: 'clay', label: 'Clay' },
+  ],
+
+  // Typical water holding capacities by soil type (inches per foot)
+  SOIL_WHC: {
+    sandy: 0.75,
+    sandy_loam: 1.25,
+    loam: 1.75,
+    clay_loam: 2.0,
+    clay: 2.25,
+  },
+
+  CROP_TYPES: [
+    { value: 'citrus', label: 'Citrus' },
+    { value: 'avocado', label: 'Avocado' },
+    { value: 'grapes', label: 'Grapes' },
+    { value: 'almonds', label: 'Almonds' },
+    { value: 'walnuts', label: 'Walnuts' },
+    { value: 'pistachios', label: 'Pistachios' },
+    { value: 'olives', label: 'Olives' },
+    { value: 'stone_fruit', label: 'Stone Fruit' },
+    { value: 'vegetables', label: 'Vegetables' },
+    { value: 'other', label: 'Other' },
+  ],
+
+  CIMIS_TARGET_TYPES: [
+    { value: 'station', label: 'CIMIS Station' },
+    { value: 'spatial', label: 'Spatial CIMIS (Zip Code)' },
+  ],
+
+  RECOMMENDATION_STATUSES: [
+    { value: 'pending', label: 'Pending' },
+    { value: 'applied', label: 'Applied' },
+    { value: 'skipped', label: 'Skipped' },
+    { value: 'expired', label: 'Expired' },
+  ],
+
+  EVENT_METHODS: [
+    { value: 'scheduled', label: 'Scheduled' },
+    { value: 'manual', label: 'Manual' },
+    { value: 'rainfall', label: 'Rainfall' },
+  ],
+
+  // Default MAD values by crop type
+  DEFAULT_MAD: {
+    citrus: 50,
+    avocado: 40,
+    grapes: 45,
+    almonds: 55,
+    walnuts: 50,
+    pistachios: 60,
+    olives: 65,
+    stone_fruit: 50,
+    vegetables: 40,
+    other: 50,
+  },
+
+  // Default root depths by crop type (inches)
+  DEFAULT_ROOT_DEPTH: {
+    citrus: 36,
+    avocado: 24,
+    grapes: 36,
+    almonds: 48,
+    walnuts: 60,
+    pistachios: 48,
+    olives: 48,
+    stone_fruit: 36,
+    vegetables: 18,
+    other: 36,
+  },
+};
+
+// Constants for Field agricultural data
+export const FIELD_CONSTANTS = {
+  ROW_ORIENTATIONS: [
+    { value: 'ns', label: 'North-South' },
+    { value: 'ew', label: 'East-West' },
+    { value: 'ne_sw', label: 'Northeast-Southwest' },
+    { value: 'nw_se', label: 'Northwest-Southeast' },
+  ],
+
+  TRELLIS_SYSTEMS: [
+    { value: 'none', label: 'None' },
+    { value: 'vertical_shoot', label: 'Vertical Shoot Position (VSP)' },
+    { value: 'lyre', label: 'Lyre/U-Shape' },
+    { value: 'geneva_double', label: 'Geneva Double Curtain' },
+    { value: 'high_wire', label: 'High Wire' },
+    { value: 'pergola', label: 'Pergola/Arbor' },
+    { value: 'espalier', label: 'Espalier' },
+    { value: 'stake', label: 'Stake' },
+    { value: 'other', label: 'Other' },
+  ],
+
+  SOIL_TYPES: [
+    { value: 'sandy', label: 'Sandy' },
+    { value: 'sandy_loam', label: 'Sandy Loam' },
+    { value: 'loam', label: 'Loam' },
+    { value: 'clay_loam', label: 'Clay Loam' },
+    { value: 'clay', label: 'Clay' },
+    { value: 'silty_loam', label: 'Silty Loam' },
+    { value: 'silty_clay', label: 'Silty Clay' },
+  ],
+
+  IRRIGATION_TYPES: [
+    { value: 'drip', label: 'Drip' },
+    { value: 'micro_sprinkler', label: 'Micro-Sprinkler' },
+    { value: 'sprinkler', label: 'Sprinkler' },
+    { value: 'flood', label: 'Flood' },
+    { value: 'furrow', label: 'Furrow' },
+    { value: 'none', label: 'None/Dryland' },
+  ],
+
+  ORGANIC_STATUSES: [
+    { value: 'conventional', label: 'Conventional' },
+    { value: 'transitional', label: 'Transitional' },
+    { value: 'certified', label: 'Certified Organic' },
+  ],
+};
+
+// =============================================================================
+// SATELLITE IMAGERY & TREE DETECTION API
+// =============================================================================
+
+export const satelliteImagesAPI = {
+  /**
+   * Get all satellite images for a farm
+   * @param {number} farmId - Optional farm ID to filter by
+   * @returns List of satellite images
+   */
+  getAll: (params = {}) => api.get('/satellite-images/', { params }),
+
+  /**
+   * Get satellite image details
+   * @param {number} id - Satellite image ID
+   */
+  get: (id) => api.get(`/satellite-images/${id}/`),
+
+  /**
+   * Upload a new satellite image
+   * @param {File} file - GeoTIFF file
+   * @param {number} farmId - Farm this image belongs to
+   * @param {string} captureDate - Date image was captured (YYYY-MM-DD)
+   * @param {string} source - Imagery provider (e.g., 'SkyWatch', 'NAIP')
+   * @param {string} sourceProductId - Optional provider product ID
+   */
+  upload: (file, farmId, captureDate, source, sourceProductId = '') => {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('farm', farmId);
+    formData.append('capture_date', captureDate);
+    formData.append('source', source);
+    if (sourceProductId) {
+      formData.append('source_product_id', sourceProductId);
+    }
+    return api.post('/satellite-images/', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+      onUploadProgress: (progressEvent) => {
+        const percentCompleted = Math.round(
+          (progressEvent.loaded * 100) / progressEvent.total
+        );
+        console.log(`Upload progress: ${percentCompleted}%`);
+      },
+    });
+  },
+
+  /**
+   * Delete a satellite image
+   * @param {number} id - Satellite image ID
+   */
+  delete: (id) => api.delete(`/satellite-images/${id}/`),
+
+  /**
+   * Start tree detection for specified fields
+   * @param {number} imageId - Satellite image ID
+   * @param {number[]} fieldIds - Array of field IDs to analyze
+   * @param {Object} parameters - Optional detection parameters
+   */
+  detectTrees: (imageId, fieldIds, parameters = {}) =>
+    api.post(`/satellite-images/${imageId}/detect-trees/`, {
+      field_ids: fieldIds,
+      parameters,
+    }),
+};
+
+export const detectionRunsAPI = {
+  /**
+   * Get all detection runs
+   * @param {Object} params - Optional filters: status, field, satellite_image
+   */
+  getAll: (params = {}) => api.get('/detection-runs/', { params }),
+
+  /**
+   * Get detection run details
+   * @param {number} id - Detection run ID
+   */
+  get: (id) => api.get(`/detection-runs/${id}/`),
+
+  /**
+   * Get detected trees for a run
+   * @param {number} id - Detection run ID
+   * @param {Object} params - Optional: format='geojson', status='active'
+   */
+  getTrees: (id, params = {}) => api.get(`/detection-runs/${id}/trees/`, { params }),
+
+  /**
+   * Get trees as GeoJSON for map display
+   * @param {number} id - Detection run ID
+   */
+  getTreesGeoJSON: (id) => api.get(`/detection-runs/${id}/trees/`, {
+    params: { format: 'geojson' },
+  }),
+
+  /**
+   * Approve detection run and update field counts
+   * @param {number} id - Detection run ID
+   * @param {string} reviewNotes - Optional notes
+   */
+  approve: (id, reviewNotes = '') =>
+    api.post(`/detection-runs/${id}/approve/`, { review_notes: reviewNotes }),
+};
+
+export const fieldTreesAPI = {
+  /**
+   * Get trees for a field (from latest approved run)
+   * @param {number} fieldId - Field ID
+   * @param {Object} params - Optional: format='geojson', status='active', run_id
+   */
+  getTrees: (fieldId, params = {}) =>
+    api.get(`/fields/${fieldId}/trees/`, { params }),
+
+  /**
+   * Get trees as GeoJSON for map display
+   * @param {number} fieldId - Field ID
+   */
+  getTreesGeoJSON: (fieldId) =>
+    api.get(`/fields/${fieldId}/trees/`, { params: { format: 'geojson' } }),
+
+  /**
+   * Get tree count summary for a field
+   * @param {number} fieldId - Field ID
+   */
+  getSummary: (fieldId) => api.get(`/fields/${fieldId}/tree-summary/`),
+
+  /**
+   * Get detection history for a field
+   * @param {number} fieldId - Field ID
+   */
+  getDetectionHistory: (fieldId) =>
+    api.get(`/fields/${fieldId}/detection-history/`),
+
+  /**
+   * Export trees as GeoJSON file
+   * @param {number} fieldId - Field ID
+   */
+  exportGeoJSON: (fieldId) =>
+    api.get(`/fields/${fieldId}/trees/export/`, { responseType: 'blob' }),
+};
+
+export const detectedTreesAPI = {
+  /**
+   * Update a detected tree (status, notes, verification)
+   * @param {number} id - Tree ID
+   * @param {Object} data - Fields to update: status, is_verified, notes
+   */
+  update: (id, data) => api.put(`/detected-trees/${id}/`, data),
+
+  /**
+   * Mark tree as false positive
+   * @param {number} id - Tree ID
+   */
+  markFalsePositive: (id) =>
+    api.put(`/detected-trees/${id}/`, { status: 'false_positive' }),
+
+  /**
+   * Mark tree as verified
+   * @param {number} id - Tree ID
+   */
+  verify: (id) =>
+    api.put(`/detected-trees/${id}/`, { is_verified: true }),
+};
+
+// Constants for Tree Detection
+export const TREE_DETECTION_CONSTANTS = {
+  DEFAULT_PARAMETERS: {
+    min_canopy_diameter_m: 3.0,
+    max_canopy_diameter_m: 8.0,
+    min_tree_spacing_m: 4.5,
+    vegetation_threshold_percentile: 50.0,
+  },
+
+  TREE_STATUSES: [
+    { value: 'active', label: 'Active', color: '#22c55e' },
+    { value: 'dead', label: 'Dead/Removed', color: '#6b7280' },
+    { value: 'uncertain', label: 'Uncertain', color: '#f59e0b' },
+    { value: 'false_positive', label: 'False Positive', color: '#ef4444' },
+  ],
+
+  RUN_STATUSES: [
+    { value: 'pending', label: 'Pending', color: '#6b7280' },
+    { value: 'processing', label: 'Processing', color: '#3b82f6' },
+    { value: 'completed', label: 'Completed', color: '#22c55e' },
+    { value: 'failed', label: 'Failed', color: '#ef4444' },
+  ],
+
+  IMAGERY_SOURCES: [
+    { value: 'SkyWatch', label: 'SkyWatch' },
+    { value: 'NAIP', label: 'NAIP (USDA)' },
+    { value: 'Planet', label: 'Planet Labs' },
+    { value: 'Maxar', label: 'Maxar' },
+    { value: 'Nearmap', label: 'Nearmap' },
+    { value: 'Other', label: 'Other' },
+  ],
+};
+
+// =============================================================================
+// LIDAR API
+// =============================================================================
+
+export const lidarDatasetsAPI = {
+  /**
+   * Get all LiDAR datasets
+   */
+  getAll: () => api.get('/lidar-datasets/'),
+
+  /**
+   * Get a specific LiDAR dataset
+   * @param {number} id - Dataset ID
+   */
+  getById: (id) => api.get(`/lidar-datasets/${id}/`),
+
+  /**
+   * Upload a new LiDAR dataset (LAZ/LAS file)
+   * @param {FormData} formData - Contains: file, field (id), name, source, capture_date
+   */
+  upload: (formData) =>
+    api.post('/lidar-datasets/', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }),
+
+  /**
+   * Delete a LiDAR dataset
+   * @param {number} id - Dataset ID
+   */
+  delete: (id) => api.delete(`/lidar-datasets/${id}/`),
+
+  /**
+   * Get fields covered by this dataset
+   * @param {number} id - Dataset ID
+   */
+  getCoverage: (id) => api.get(`/lidar-datasets/${id}/coverage/`),
+
+  /**
+   * Trigger processing for a dataset
+   * @param {number} id - Dataset ID
+   * @param {Object} data - { field_id, processing_type, parameters }
+   */
+  process: (id, data) => api.post(`/lidar-datasets/${id}/process/`, data),
+
+  /**
+   * Revalidate/extract metadata from dataset
+   * @param {number} id - Dataset ID
+   */
+  revalidate: (id) => api.post(`/lidar-datasets/${id}/revalidate/`),
+};
+
+export const lidarRunsAPI = {
+  /**
+   * Get all LiDAR processing runs
+   */
+  getAll: () => api.get('/lidar-runs/'),
+
+  /**
+   * Get a specific processing run
+   * @param {number} id - Run ID
+   */
+  getById: (id) => api.get(`/lidar-runs/${id}/`),
+
+  /**
+   * Get detected trees from a processing run
+   * @param {number} id - Run ID
+   */
+  getTrees: (id) => api.get(`/lidar-runs/${id}/trees/`),
+
+  /**
+   * Get terrain analysis from a processing run
+   * @param {number} id - Run ID
+   */
+  getTerrain: (id) => api.get(`/lidar-runs/${id}/terrain/`),
+
+  /**
+   * Approve a processing run and update field stats
+   * @param {number} id - Run ID
+   * @param {Object} data - { review_notes }
+   */
+  approve: (id, data = {}) => api.post(`/lidar-runs/${id}/approve/`, data),
+};
+
+export const lidarTreesAPI = {
+  /**
+   * Get all LiDAR-detected trees
+   */
+  getAll: () => api.get('/lidar-trees/'),
+
+  /**
+   * Get a specific LiDAR tree
+   * @param {number} id - Tree ID
+   */
+  getById: (id) => api.get(`/lidar-trees/${id}/`),
+
+  /**
+   * Update a LiDAR tree (status, verification, notes)
+   * @param {number} id - Tree ID
+   * @param {Object} data - Fields to update
+   */
+  update: (id, data) => api.patch(`/lidar-trees/${id}/`, data),
+};
+
+export const fieldLidarAPI = {
+  /**
+   * Get LiDAR-detected trees for a field
+   * @param {number} fieldId - Field ID
+   */
+  getTrees: (fieldId) => api.get(`/fields/${fieldId}/lidar-trees/`),
+
+  /**
+   * Get LiDAR summary for a field
+   * @param {number} fieldId - Field ID
+   */
+  getSummary: (fieldId) => api.get(`/fields/${fieldId}/lidar-summary/`),
+
+  /**
+   * Get terrain analysis for a field
+   * @param {number} fieldId - Field ID
+   */
+  getTerrain: (fieldId) => api.get(`/fields/${fieldId}/terrain/`),
+
+  /**
+   * Get frost risk zones for a field
+   * @param {number} fieldId - Field ID
+   */
+  getFrostRisk: (fieldId) => api.get(`/fields/${fieldId}/frost-risk/`),
+
+  /**
+   * Get LiDAR processing history for a field
+   * @param {number} fieldId - Field ID
+   */
+  getHistory: (fieldId) => api.get(`/fields/${fieldId}/lidar-history/`),
+
+  /**
+   * Export LiDAR trees as GeoJSON
+   * @param {number} fieldId - Field ID
+   */
+  exportGeoJSON: (fieldId) =>
+    api.get(`/fields/${fieldId}/lidar-trees/export/`, { responseType: 'blob' }),
+};
+
+// Constants for LiDAR Processing
+export const LIDAR_CONSTANTS = {
+  SOURCES: [
+    { value: 'NOAA', label: 'NOAA Digital Coast' },
+    { value: 'USGS', label: 'USGS 3DEP' },
+    { value: 'STATE', label: 'State Agency' },
+    { value: 'COMMERCIAL', label: 'Commercial Provider' },
+    { value: 'DRONE', label: 'Drone/UAV Capture' },
+    { value: 'OTHER', label: 'Other' },
+  ],
+
+  PROCESSING_TYPES: [
+    { value: 'TREE_DETECTION', label: 'Tree Detection Only' },
+    { value: 'TERRAIN_ANALYSIS', label: 'Terrain Analysis Only' },
+    { value: 'FULL', label: 'Full Analysis' },
+  ],
+
+  RUN_STATUSES: [
+    { value: 'pending', label: 'Pending', color: '#6b7280' },
+    { value: 'processing', label: 'Processing', color: '#3b82f6' },
+    { value: 'completed', label: 'Completed', color: '#22c55e' },
+    { value: 'failed', label: 'Failed', color: '#ef4444' },
+    { value: 'approved', label: 'Approved', color: '#10b981' },
+  ],
+
+  TREE_STATUSES: [
+    { value: 'active', label: 'Active', color: '#22c55e' },
+    { value: 'removed', label: 'Removed', color: '#6b7280' },
+    { value: 'unhealthy', label: 'Unhealthy', color: '#f59e0b' },
+  ],
+
+  FROST_RISK_LEVELS: [
+    { value: 'LOW', label: 'Low Risk', color: '#22c55e' },
+    { value: 'MODERATE', label: 'Moderate Risk', color: '#f59e0b' },
+    { value: 'HIGH', label: 'High Risk', color: '#ef4444' },
+  ],
+};
+
+// =============================================================================
+// UNIFIED TREE IDENTITY API
+// =============================================================================
+
+/**
+ * API endpoints for unified tree identity system
+ * Trees correlated across satellite and LiDAR detections
+ */
+export const unifiedTreesAPI = {
+  /**
+   * Get unified trees for a field
+   * @param {number} fieldId - Field ID
+   * @param {object} params - Query params (status, confidence, format)
+   */
+  getForField: (fieldId, params = {}) =>
+    api.get(`/fields/${fieldId}/unified-trees/`, { params }),
+
+  /**
+   * Get unified tree summary for a field
+   * @param {number} fieldId - Field ID
+   */
+  getSummary: (fieldId) => api.get(`/fields/${fieldId}/tree-summary/`),
+
+  /**
+   * Get observation timeline for a field
+   * @param {number} fieldId - Field ID
+   */
+  getTimeline: (fieldId) => api.get(`/fields/${fieldId}/tree-timeline/`),
+
+  /**
+   * Get tree detail
+   * @param {number} treeId - Tree ID
+   */
+  get: (treeId) => api.get(`/trees/${treeId}/`),
+
+  /**
+   * Get all observations for a tree
+   * @param {number} treeId - Tree ID
+   */
+  getObservations: (treeId) => api.get(`/trees/${treeId}/observations/`),
+
+  /**
+   * Verify a tree identity
+   * @param {number} treeId - Tree ID
+   * @param {object} data - Verification data
+   */
+  verify: (treeId, data) => api.post(`/trees/${treeId}/verify/`, data),
+
+  /**
+   * Merge trees
+   * @param {number} targetTreeId - Target tree ID
+   * @param {object} data - Source tree IDs to merge
+   */
+  merge: (targetTreeId, data) => api.post(`/trees/${targetTreeId}/merge/`, data),
+
+  /**
+   * Submit feedback for a tree
+   * @param {number} treeId - Tree ID
+   * @param {object} data - Feedback data
+   */
+  submitFeedback: (treeId, data) => api.post(`/trees/${treeId}/feedback/`, data),
+
+  /**
+   * Get feedback for a tree
+   * @param {number} treeId - Tree ID
+   */
+  getFeedback: (treeId) => api.get(`/trees/${treeId}/feedback/`),
+
+  /**
+   * Trigger tree matching for a field
+   * @param {number} fieldId - Field ID
+   * @param {object} data - Matching parameters
+   */
+  triggerMatching: (fieldId, data = {}) =>
+    api.post(`/fields/${fieldId}/match-trees/`, data),
+};
+
+/**
+ * API endpoints for tree feedback management (admin)
+ */
+export const treeFeedbackAPI = {
+  /**
+   * Get all feedback
+   * @param {object} params - Filter params (status, field, feedback_type)
+   */
+  getAll: (params = {}) => api.get('/tree-feedback/', { params }),
+
+  /**
+   * Get feedback detail
+   * @param {number} feedbackId - Feedback ID
+   */
+  get: (feedbackId) => api.get(`/tree-feedback/${feedbackId}/`),
+
+  /**
+   * Update feedback status
+   * @param {number} feedbackId - Feedback ID
+   * @param {object} data - Status update data
+   */
+  update: (feedbackId, data) => api.patch(`/tree-feedback/${feedbackId}/`, data),
+
+  /**
+   * Export feedback for ML training
+   * @param {object} params - Export params
+   */
+  export: (params = {}) =>
+    api.get('/tree-feedback/export/', { params }),
+
+  /**
+   * Get feedback statistics
+   * @param {object} params - Filter params
+   */
+  getStatistics: (params = {}) =>
+    api.get('/tree-feedback/statistics/', { params }),
+};
+
+// Constants for Unified Tree Identity
+export const UNIFIED_TREE_CONSTANTS = {
+  CONFIDENCE_LEVELS: [
+    { value: 'high', label: 'High Confidence', color: '#22c55e' },
+    { value: 'medium', label: 'Medium Confidence', color: '#f59e0b' },
+    { value: 'low', label: 'Low Confidence', color: '#ef4444' },
+  ],
+
+  DATA_SOURCES: [
+    { value: 'satellite', label: 'Satellite Only', color: '#3b82f6' },
+    { value: 'lidar', label: 'LiDAR Only', color: '#10b981' },
+    { value: 'both', label: 'Both Sources', color: '#8b5cf6' },
+  ],
+
+  TREE_STATUSES: [
+    { value: 'active', label: 'Active', color: '#22c55e' },
+    { value: 'dead', label: 'Dead', color: '#6b7280' },
+    { value: 'missing', label: 'Missing', color: '#f59e0b' },
+    { value: 'uncertain', label: 'Uncertain', color: '#eab308' },
+    { value: 'removed', label: 'Removed', color: '#9ca3af' },
+  ],
+
+  FEEDBACK_TYPES: [
+    { value: 'false_positive', label: 'False Positive', description: 'Not actually a tree', color: '#ef4444' },
+    { value: 'false_negative', label: 'False Negative', description: 'Tree missed or wrong status', color: '#f59e0b' },
+    { value: 'misidentification', label: 'Misidentification', description: 'Wrong tree matched', color: '#8b5cf6' },
+    { value: 'location_error', label: 'Location Error', description: 'Position is incorrect', color: '#3b82f6' },
+    { value: 'attribute_error', label: 'Attribute Error', description: 'Measurements are wrong', color: '#6b7280' },
+    { value: 'verified_correct', label: 'Verified Correct', description: 'Confirm detection is accurate', color: '#22c55e' },
+  ],
+
+  FEEDBACK_STATUSES: [
+    { value: 'pending', label: 'Pending Review', color: '#f59e0b' },
+    { value: 'accepted', label: 'Accepted', color: '#22c55e' },
+    { value: 'rejected', label: 'Rejected', color: '#ef4444' },
+  ],
+};
+
+// =============================================================================
+// COMPLIANCE MANAGEMENT API
+// =============================================================================
+
+/**
+ * Compliance Profile - Company-level compliance configuration
+ */
+export const complianceProfileAPI = {
+  /** Get compliance profile for current company */
+  get: () => api.get('/compliance/profile/'),
+
+  /** Update compliance profile */
+  update: (data) => api.put('/compliance/profile/', data),
+
+  /** Generate recurring deadlines from profile */
+  generateDeadlines: () => api.post('/compliance/profile/generate_deadlines/'),
+};
+
+/**
+ * Compliance Deadlines - Track regulatory deadlines
+ */
+export const complianceDeadlinesAPI = {
+  /** Get all deadlines with optional filters */
+  getAll: (params = {}) => api.get('/compliance/deadlines/', { params }),
+
+  /** Get a specific deadline */
+  get: (id) => api.get(`/compliance/deadlines/${id}/`),
+
+  /** Create a new deadline */
+  create: (data) => api.post('/compliance/deadlines/', data),
+
+  /** Update a deadline */
+  update: (id, data) => api.put(`/compliance/deadlines/${id}/`, data),
+
+  /** Delete a deadline */
+  delete: (id) => api.delete(`/compliance/deadlines/${id}/`),
+
+  /** Mark deadline as completed */
+  complete: (id, data = {}) => api.post(`/compliance/deadlines/${id}/complete/`, data),
+
+  /** Skip a deadline */
+  skip: (id, reason = '') => api.post(`/compliance/deadlines/${id}/skip/`, { reason }),
+
+  /** Get upcoming deadlines */
+  upcoming: (days = 30) => api.get('/compliance/deadlines/upcoming/', { params: { days } }),
+
+  /** Get overdue deadlines */
+  overdue: () => api.get('/compliance/deadlines/overdue/'),
+};
+
+/**
+ * Compliance Alerts - System-generated compliance alerts
+ */
+export const complianceAlertsAPI = {
+  /** Get all active alerts */
+  getAll: (params = {}) => api.get('/compliance/alerts/', { params }),
+
+  /** Get a specific alert */
+  get: (id) => api.get(`/compliance/alerts/${id}/`),
+
+  /** Acknowledge an alert */
+  acknowledge: (id) => api.post(`/compliance/alerts/${id}/acknowledge/`),
+
+  /** Dismiss an alert */
+  dismiss: (id) => api.post(`/compliance/alerts/${id}/dismiss/`),
+
+  /** Get alert summary counts */
+  summary: () => api.get('/compliance/alerts/summary/'),
+};
+
+/**
+ * Licenses - Track applicator licenses, certifications, etc.
+ */
+export const licensesAPI = {
+  /** Get all licenses */
+  getAll: (params = {}) => api.get('/compliance/licenses/', { params }),
+
+  /** Get a specific license */
+  get: (id) => api.get(`/compliance/licenses/${id}/`),
+
+  /** Create a new license */
+  create: (data) => api.post('/compliance/licenses/', data),
+
+  /** Update a license */
+  update: (id, data) => api.put(`/compliance/licenses/${id}/`, data),
+
+  /** Delete a license */
+  delete: (id) => api.delete(`/compliance/licenses/${id}/`),
+
+  /** Get expiring licenses */
+  expiring: (days = 90) => api.get('/compliance/licenses/expiring/', { params: { days } }),
+
+  /** Start renewal process */
+  startRenewal: (id) => api.post(`/compliance/licenses/${id}/start_renewal/`),
+};
+
+/**
+ * WPS Training Records - Worker Protection Standard training tracking
+ */
+export const wpsTrainingAPI = {
+  /** Get all training records */
+  getAll: (params = {}) => api.get('/compliance/wps-training/', { params }),
+
+  /** Get a specific training record */
+  get: (id) => api.get(`/compliance/wps-training/${id}/`),
+
+  /** Create a new training record */
+  create: (data) => api.post('/compliance/wps-training/', data),
+
+  /** Update a training record */
+  update: (id, data) => api.put(`/compliance/wps-training/${id}/`, data),
+
+  /** Delete a training record */
+  delete: (id) => api.delete(`/compliance/wps-training/${id}/`),
+
+  /** Get expiring training */
+  expiring: (days = 90) => api.get('/compliance/wps-training/expiring/', { params: { days } }),
+
+  /** Get training by worker */
+  byWorker: (workerId) => api.get('/compliance/wps-training/by_worker/', { params: { worker_id: workerId } }),
+
+  /** Get WPS dashboard data */
+  dashboard: () => api.get('/compliance/wps-training/dashboard/'),
+};
+
+/**
+ * Central Posting Locations - WPS poster/SDS display locations
+ */
+export const postingLocationsAPI = {
+  /** Get all posting locations */
+  getAll: (params = {}) => api.get('/compliance/posting-locations/', { params }),
+
+  /** Get a specific posting location */
+  get: (id) => api.get(`/compliance/posting-locations/${id}/`),
+
+  /** Create a new posting location */
+  create: (data) => api.post('/compliance/posting-locations/', data),
+
+  /** Update a posting location */
+  update: (id, data) => api.put(`/compliance/posting-locations/${id}/`, data),
+
+  /** Delete a posting location */
+  delete: (id) => api.delete(`/compliance/posting-locations/${id}/`),
+
+  /** Verify posting location requirements */
+  verify: (id, data = {}) => api.post(`/compliance/posting-locations/${id}/verify/`, data),
+};
+
+/**
+ * REI Posting Records - Restricted Entry Interval tracking
+ */
+export const reiPostingsAPI = {
+  /** Get all REI postings */
+  getAll: (params = {}) => api.get('/compliance/rei-postings/', { params }),
+
+  /** Get active REI postings */
+  active: () => api.get('/compliance/rei-postings/active/'),
+
+  /** Mark posting as displayed */
+  markPosted: (id, data = {}) => api.post(`/compliance/rei-postings/${id}/mark_posted/`, data),
+
+  /** Mark posting as removed */
+  markRemoved: (id, data = {}) => api.post(`/compliance/rei-postings/${id}/mark_removed/`, data),
+};
+
+/**
+ * Compliance Reports - Generated regulatory reports (PUR, SGMA, etc.)
+ */
+export const complianceReportsAPI = {
+  /** Get all compliance reports */
+  getAll: (params = {}) => api.get('/compliance/reports/', { params }),
+
+  /** Get a specific report */
+  get: (id) => api.get(`/compliance/reports/${id}/`),
+
+  /** Create a new report */
+  create: (data) => api.post('/compliance/reports/', data),
+
+  /** Update a report */
+  update: (id, data) => api.put(`/compliance/reports/${id}/`, data),
+
+  /** Delete a report */
+  delete: (id) => api.delete(`/compliance/reports/${id}/`),
+
+  /** Generate a new report */
+  generate: (data) => api.post('/compliance/reports/generate/', data),
+
+  /** Validate report data */
+  validate: (id) => api.post(`/compliance/reports/${id}/validate/`),
+
+  /** Submit report */
+  submit: (id, data = {}) => api.post(`/compliance/reports/${id}/submit/`, data),
+};
+
+/**
+ * Incident Reports - Safety incidents, spills, exposures
+ */
+export const incidentReportsAPI = {
+  /** Get all incident reports */
+  getAll: (params = {}) => api.get('/compliance/incidents/', { params }),
+
+  /** Get a specific incident */
+  get: (id) => api.get(`/compliance/incidents/${id}/`),
+
+  /** Create a new incident report */
+  create: (data) => api.post('/compliance/incidents/', data),
+
+  /** Update an incident report */
+  update: (id, data) => api.put(`/compliance/incidents/${id}/`, data),
+
+  /** Delete an incident report */
+  delete: (id) => api.delete(`/compliance/incidents/${id}/`),
+
+  /** Start investigation */
+  startInvestigation: (id) => api.post(`/compliance/incidents/${id}/start_investigation/`),
+
+  /** Resolve incident */
+  resolve: (id, data) => api.post(`/compliance/incidents/${id}/resolve/`, data),
+};
+
+/**
+ * Notification Preferences - User notification settings
+ */
+export const notificationPreferencesAPI = {
+  /** Get current user's notification preferences */
+  get: () => api.get('/compliance/notification-preferences/'),
+
+  /** Update notification preferences */
+  update: (data) => api.put('/compliance/notification-preferences/', data),
+};
+
+/**
+ * Compliance Dashboard - Unified compliance overview
+ */
+export const complianceDashboardAPI = {
+  /** Get dashboard data */
+  get: () => api.get('/compliance/dashboard/'),
+
+  /** Get calendar data */
+  calendar: (params = {}) => api.get('/compliance/dashboard/calendar/', { params }),
+};
+
+// Constants for Compliance Management
+export const COMPLIANCE_CONSTANTS = {
+  DEADLINE_CATEGORIES: [
+    { value: 'reporting', label: 'Reporting' },
+    { value: 'training', label: 'Training' },
+    { value: 'testing', label: 'Testing' },
+    { value: 'renewal', label: 'Renewal' },
+    { value: 'inspection', label: 'Inspection' },
+    { value: 'other', label: 'Other' },
+  ],
+
+  DEADLINE_FREQUENCIES: [
+    { value: 'once', label: 'One-time' },
+    { value: 'monthly', label: 'Monthly' },
+    { value: 'quarterly', label: 'Quarterly' },
+    { value: 'semi_annual', label: 'Semi-Annual' },
+    { value: 'annual', label: 'Annual' },
+  ],
+
+  DEADLINE_STATUSES: [
+    { value: 'upcoming', label: 'Upcoming', color: '#6b7280' },
+    { value: 'due_soon', label: 'Due Soon', color: '#f59e0b' },
+    { value: 'overdue', label: 'Overdue', color: '#ef4444' },
+    { value: 'completed', label: 'Completed', color: '#22c55e' },
+    { value: 'skipped', label: 'Skipped', color: '#9ca3af' },
+  ],
+
+  ALERT_PRIORITIES: [
+    { value: 'critical', label: 'Critical', color: '#dc2626' },
+    { value: 'high', label: 'High', color: '#f59e0b' },
+    { value: 'medium', label: 'Medium', color: '#3b82f6' },
+    { value: 'low', label: 'Low', color: '#6b7280' },
+  ],
+
+  LICENSE_TYPES: [
+    { value: 'applicator_qal', label: 'Qualified Applicator License (QAL)' },
+    { value: 'applicator_qac', label: 'Qualified Applicator Certificate (QAC)' },
+    { value: 'pca', label: 'Pest Control Advisor (PCA)' },
+    { value: 'pilot', label: 'Agricultural Aircraft Pilot' },
+    { value: 'organic_handler', label: 'Organic Handler Certificate' },
+    { value: 'food_safety', label: 'Food Safety Certification' },
+    { value: 'wps_trainer', label: 'WPS Trainer Certification' },
+    { value: 'other', label: 'Other' },
+  ],
+
+  LICENSE_STATUSES: [
+    { value: 'active', label: 'Active', color: '#22c55e' },
+    { value: 'expiring_soon', label: 'Expiring Soon', color: '#f59e0b' },
+    { value: 'expired', label: 'Expired', color: '#ef4444' },
+    { value: 'suspended', label: 'Suspended', color: '#dc2626' },
+    { value: 'pending_renewal', label: 'Pending Renewal', color: '#3b82f6' },
+  ],
+
+  WPS_TRAINING_TYPES: [
+    { value: 'pesticide_safety', label: 'Pesticide Safety Training (Worker)' },
+    { value: 'handler', label: 'Handler Training' },
+    { value: 'early_entry', label: 'Early Entry Training' },
+    { value: 'respirator', label: 'Respirator Fit/Training' },
+    { value: 'annual_refresher', label: 'Annual Refresher' },
+  ],
+
+  REPORT_TYPES: [
+    { value: 'pur_monthly', label: 'PUR Monthly Report' },
+    { value: 'sgma_semi_annual', label: 'SGMA Semi-Annual Report' },
+    { value: 'ilrp_annual', label: 'ILRP Annual Report' },
+    { value: 'wps_annual', label: 'WPS Annual Summary' },
+    { value: 'organic_annual', label: 'Organic Certification Report' },
+    { value: 'buyer_audit', label: 'Buyer Audit Report' },
+  ],
+
+  REPORT_STATUSES: [
+    { value: 'draft', label: 'Draft', color: '#6b7280' },
+    { value: 'pending_review', label: 'Pending Review', color: '#f59e0b' },
+    { value: 'ready', label: 'Ready to Submit', color: '#3b82f6' },
+    { value: 'submitted', label: 'Submitted', color: '#22c55e' },
+    { value: 'accepted', label: 'Accepted', color: '#059669' },
+    { value: 'rejected', label: 'Rejected', color: '#ef4444' },
+  ],
+
+  INCIDENT_TYPES: [
+    { value: 'exposure', label: 'Pesticide Exposure' },
+    { value: 'spill', label: 'Chemical Spill' },
+    { value: 'equipment', label: 'Equipment Failure' },
+    { value: 'injury', label: 'Work Injury' },
+    { value: 'near_miss', label: 'Near Miss' },
+    { value: 'environmental', label: 'Environmental Release' },
+  ],
+
+  INCIDENT_SEVERITIES: [
+    { value: 'minor', label: 'Minor', color: '#6b7280' },
+    { value: 'moderate', label: 'Moderate', color: '#f59e0b' },
+    { value: 'serious', label: 'Serious', color: '#ef4444' },
+    { value: 'critical', label: 'Critical', color: '#dc2626' },
+  ],
+
+  US_STATES: [
+    { value: 'CA', label: 'California' },
+    { value: 'AZ', label: 'Arizona' },
+    { value: 'TX', label: 'Texas' },
+    { value: 'FL', label: 'Florida' },
+    { value: 'WA', label: 'Washington' },
+    { value: 'OR', label: 'Oregon' },
+    { value: 'ID', label: 'Idaho' },
+    { value: 'NV', label: 'Nevada' },
+    // Add more states as needed
+  ],
+};
+
+// =============================================================================
+// DISEASE PREVENTION API
+// =============================================================================
+
+/**
+ * External Detections - Official disease detections from CDFA, USDA, etc.
+ */
+export const externalDetectionsAPI = {
+  /** Get all external detections with optional filters */
+  getAll: (params = {}) => api.get('/disease/external-detections/', { params }),
+
+  /** Get a specific detection */
+  get: (id) => api.get(`/disease/external-detections/${id}/`),
+
+  /** Create a new detection (admin only) */
+  create: (data) => api.post('/disease/external-detections/', data),
+
+  /** Update a detection */
+  update: (id, data) => api.put(`/disease/external-detections/${id}/`, data),
+
+  /** Delete a detection */
+  delete: (id) => api.delete(`/disease/external-detections/${id}/`),
+
+  /** Trigger sync with external data sources */
+  sync: () => api.post('/disease/external-detections/sync/'),
+
+  /** Get detections near a point */
+  nearPoint: (lat, lng, radiusMiles = 15) =>
+    api.get('/disease/external-detections/near_point/', {
+      params: { latitude: lat, longitude: lng, radius_miles: radiusMiles },
+    }),
+};
+
+/**
+ * Disease Alerts - User-facing disease notifications
+ */
+export const diseaseAlertsAPI = {
+  /** Get all alerts with optional filters */
+  getAll: (params = {}) => api.get('/disease/alerts/', { params }),
+
+  /** Get active alerts only */
+  active: () => api.get('/disease/alerts/active/'),
+
+  /** Get a specific alert */
+  get: (id) => api.get(`/disease/alerts/${id}/`),
+
+  /** Acknowledge an alert */
+  acknowledge: (id) => api.post(`/disease/alerts/${id}/acknowledge/`),
+
+  /** Dismiss an alert */
+  dismiss: (id) => api.post(`/disease/alerts/${id}/dismiss/`),
+
+  /** Get alert summary counts */
+  summary: () => api.get('/disease/alerts/summary/'),
+
+  /** Get alerts for a specific farm */
+  byFarm: (farmId) => api.get('/disease/alerts/', { params: { farm: farmId } }),
+};
+
+/**
+ * Disease Alert Rules - Configurable alert triggers
+ */
+export const diseaseAlertRulesAPI = {
+  /** Get all alert rules */
+  getAll: () => api.get('/disease/alert-rules/'),
+
+  /** Get a specific rule */
+  get: (id) => api.get(`/disease/alert-rules/${id}/`),
+
+  /** Create a new rule */
+  create: (data) => api.post('/disease/alert-rules/', data),
+
+  /** Update a rule */
+  update: (id, data) => api.put(`/disease/alert-rules/${id}/`, data),
+
+  /** Delete a rule */
+  delete: (id) => api.delete(`/disease/alert-rules/${id}/`),
+
+  /** Toggle rule active status */
+  toggle: (id, isActive) => api.patch(`/disease/alert-rules/${id}/`, { is_active: isActive }),
+};
+
+/**
+ * Disease Analysis Runs - Field health analysis
+ */
+export const diseaseAnalysesAPI = {
+  /** Get all analysis runs */
+  getAll: (params = {}) => api.get('/disease/analyses/', { params }),
+
+  /** Get a specific analysis run */
+  get: (id) => api.get(`/disease/analyses/${id}/`),
+
+  /** Get trees with health data for an analysis */
+  getTrees: (id, params = {}) => api.get(`/disease/analyses/${id}/trees/`, { params }),
+
+  /** Trigger analysis for a field */
+  analyzeField: (fieldId, params = {}) =>
+    api.post(`/disease/analyses/analyze_field/`, { field_id: fieldId, ...params }),
+};
+
+/**
+ * Scouting Reports - Crowdsourced disease observations
+ */
+export const scoutingReportsAPI = {
+  /** Get all scouting reports */
+  getAll: (params = {}) => api.get('/disease/scouting/', { params }),
+
+  /** Get a specific report */
+  get: (id) => api.get(`/disease/scouting/${id}/`),
+
+  /** Create a new scouting report */
+  create: (data) => api.post('/disease/scouting/', data),
+
+  /** Update a report */
+  update: (id, data) => api.put(`/disease/scouting/${id}/`, data),
+
+  /** Delete a report */
+  delete: (id) => api.delete(`/disease/scouting/${id}/`),
+
+  /** Verify a report (admin) */
+  verify: (id, data) => api.post(`/disease/scouting/${id}/verify/`, data),
+
+  /** Add photos to a report */
+  addPhoto: (id, formData) =>
+    api.post(`/disease/scouting/${id}/photos/`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }),
+
+  /** Get reports for a specific field */
+  byField: (fieldId) => api.get('/disease/scouting/', { params: { field: fieldId } }),
+};
+
+/**
+ * Disease Dashboard - Unified disease prevention overview
+ */
+export const diseaseDashboardAPI = {
+  /** Get dashboard data */
+  get: () => api.get('/disease/dashboard/'),
+
+  /** Get proximity risks for company */
+  getProximityRisks: () => api.get('/disease/dashboard/proximity_risks/'),
+
+  /** Get company risk score */
+  getRiskScore: () => api.get('/disease/dashboard/risk_score/'),
+
+  /** Get regional threat map data */
+  getRegionalData: (params = {}) => api.get('/disease/dashboard/regional/', { params }),
+
+  /** Get threat map data (farms, detections, quarantine zones) */
+  getMapData: () => api.get('/disease/dashboard/map_data/'),
+};
+
+/**
+ * Combined Disease API - alias for backward compatibility and convenience
+ */
+export const diseaseAPI = {
+  ...diseaseDashboardAPI,
+  getMapData: () => api.get('/disease/dashboard/map_data/'),
+};
+
+/**
+ * Field Health API - Field-specific health endpoints
+ */
+export const fieldHealthAPI = {
+  /** Get health summary for a field */
+  getSummary: (fieldId) => api.get(`/fields/${fieldId}/health/`),
+
+  /** Get health history for a field */
+  getHistory: (fieldId, params = {}) =>
+    api.get(`/fields/${fieldId}/health/history/`, { params }),
+
+  /** Trigger health analysis for a field */
+  analyze: (fieldId) => api.post(`/fields/${fieldId}/health/analyze/`),
+
+  /** Get trees with health data for a field */
+  getTrees: (fieldId, params = {}) =>
+    api.get(`/fields/${fieldId}/health/trees/`, { params }),
+};
+
+// Constants for Disease Prevention
+export const DISEASE_CONSTANTS = {
+  DISEASE_TYPES: [
+    { value: 'hlb', label: 'Huanglongbing (Citrus Greening)', color: '#dc2626' },
+    { value: 'acp', label: 'Asian Citrus Psyllid', color: '#f97316' },
+    { value: 'ctvd', label: 'Citrus Tristeza Virus', color: '#eab308' },
+    { value: 'cyvcv', label: 'Citrus Yellow Vein Clearing Virus', color: '#84cc16' },
+    { value: 'canker', label: 'Citrus Canker', color: '#ef4444' },
+    { value: 'phytophthora', label: 'Phytophthora Root Rot', color: '#8b5cf6' },
+    { value: 'laurel_wilt', label: 'Laurel Wilt', color: '#6366f1' },
+    { value: 'other', label: 'Other', color: '#6b7280' },
+  ],
+
+  HEALTH_STATUSES: [
+    { value: 'healthy', label: 'Healthy', color: '#22c55e' },
+    { value: 'mild_stress', label: 'Mild Stress', color: '#84cc16' },
+    { value: 'moderate_stress', label: 'Moderate Stress', color: '#eab308' },
+    { value: 'severe_stress', label: 'Severe Stress', color: '#f97316' },
+  ],
+
+  RISK_LEVELS: [
+    { value: 'low', label: 'Low', color: '#22c55e' },
+    { value: 'moderate', label: 'Moderate', color: '#eab308' },
+    { value: 'high', label: 'High', color: '#f97316' },
+    { value: 'critical', label: 'Critical', color: '#dc2626' },
+  ],
+
+  ALERT_TYPES: [
+    { value: 'proximity_hlb', label: 'HLB Detected Nearby', icon: '🔴' },
+    { value: 'proximity_acp', label: 'ACP Activity Nearby', icon: '🟠' },
+    { value: 'proximity_other', label: 'Other Disease Nearby', icon: '🟡' },
+    { value: 'ndvi_anomaly', label: 'NDVI Anomaly Detected', icon: '📉' },
+    { value: 'tree_decline', label: 'Tree Decline Detected', icon: '🌳' },
+    { value: 'canopy_loss', label: 'Canopy Loss Detected', icon: '🍂' },
+    { value: 'regional_trend', label: 'Regional Health Trend', icon: '📊' },
+    { value: 'scouting_verified', label: 'Verified Scouting Report', icon: '✅' },
+  ],
+
+  ALERT_PRIORITIES: [
+    { value: 'critical', label: 'Critical', color: '#dc2626' },
+    { value: 'high', label: 'High', color: '#f97316' },
+    { value: 'medium', label: 'Medium', color: '#eab308' },
+    { value: 'low', label: 'Low', color: '#3b82f6' },
+  ],
+
+  SCOUTING_REPORT_TYPES: [
+    { value: 'disease_symptom', label: 'Disease Symptom' },
+    { value: 'pest_sighting', label: 'Pest Sighting' },
+    { value: 'tree_decline', label: 'Tree Decline' },
+    { value: 'tree_death', label: 'Tree Death' },
+    { value: 'acp_sighting', label: 'Asian Citrus Psyllid' },
+    { value: 'other', label: 'Other' },
+  ],
+
+  SCOUTING_SEVERITIES: [
+    { value: 'low', label: 'Low - Minor/Isolated', color: '#22c55e' },
+    { value: 'medium', label: 'Medium - Several Trees', color: '#eab308' },
+    { value: 'high', label: 'High - Significant Area', color: '#ef4444' },
+  ],
+
+  SCOUTING_STATUSES: [
+    { value: 'submitted', label: 'Submitted', color: '#6b7280' },
+    { value: 'under_review', label: 'Under Review', color: '#3b82f6' },
+    { value: 'verified', label: 'Verified', color: '#22c55e' },
+    { value: 'false_alarm', label: 'False Alarm', color: '#ef4444' },
+    { value: 'inconclusive', label: 'Inconclusive', color: '#f59e0b' },
+  ],
+
+  // HLB Symptom Checklist
+  SYMPTOM_CHECKLIST: [
+    { key: 'yellowing_asymmetric', label: 'Yellowing of leaves (asymmetric/blotchy)' },
+    { key: 'green_islands', label: 'Green islands on yellow leaves' },
+    { key: 'fruit_lopsided', label: 'Lopsided or misshapen fruit' },
+    { key: 'fruit_drop', label: 'Premature fruit drop' },
+    { key: 'twig_dieback', label: 'Twig dieback' },
+    { key: 'overall_decline', label: 'Tree in overall decline' },
+    { key: 'acp_adult', label: 'Spotted Asian citrus psyllid (adult)' },
+    { key: 'acp_nymph', label: 'Waxy psyllid nymphs on new growth' },
+  ],
+
+  DETECTION_SOURCES: [
+    { value: 'cdfa', label: 'California Dept of Food & Agriculture' },
+    { value: 'usda', label: 'USDA APHIS' },
+    { value: 'county_ag', label: 'County Agricultural Commissioner' },
+    { value: 'uc_anr', label: 'UC Agriculture & Natural Resources' },
+    { value: 'manual', label: 'Manual Entry' },
+  ],
+
+  LOCATION_TYPES: [
+    { value: 'residential', label: 'Residential/Backyard' },
+    { value: 'commercial', label: 'Commercial Grove' },
+    { value: 'nursery', label: 'Nursery' },
+    { value: 'unknown', label: 'Unknown' },
+  ],
+
+  RULE_TYPES: [
+    { value: 'proximity', label: 'Proximity Alert' },
+    { value: 'ndvi_threshold', label: 'NDVI Threshold' },
+    { value: 'ndvi_change', label: 'NDVI Change Rate' },
+    { value: 'canopy_loss', label: 'Canopy Loss' },
+    { value: 'tree_count_change', label: 'Tree Count Change' },
+    { value: 'regional_trend', label: 'Regional Trend' },
+  ],
 };
 
 // =============================================================================

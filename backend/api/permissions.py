@@ -272,13 +272,9 @@ class FarmFilterMixin:
 class CompanyMiddleware:
     """
     Middleware that adds company context to the request.
-    Also handles company switching via header.
     
     Add to settings.py MIDDLEWARE:
         'api.permissions.CompanyMiddleware',
-    
-    Frontend can switch companies by sending header:
-        X-Company-ID: 123
     """
     
     def __init__(self, get_response):
@@ -289,24 +285,8 @@ class CompanyMiddleware:
         request.company = None
         
         if hasattr(request, 'user') and request.user.is_authenticated:
-            # Check for company switch header
-            company_id = request.headers.get('X-Company-ID')
-            
-            if company_id:
-                try:
-                    # Verify user has access to this company
-                    from .models import CompanyMembership
-                    membership = request.user.company_memberships.get(
-                        company_id=int(company_id),
-                        is_active=True
-                    )
-                    request.company = membership.company
-                except (CompanyMembership.DoesNotExist, ValueError):
-                    pass
-            
-            # Fall back to user's current company
-            if not request.company:
-                request.company = request.user.current_company
+            # Single source of truth: user's current_company
+            request.company = request.user.current_company
         
         response = self.get_response(request)
         return response

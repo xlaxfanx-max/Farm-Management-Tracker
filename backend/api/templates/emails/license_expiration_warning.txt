@@ -1,0 +1,27 @@
+Hi {{ user_name }},
+
+This is an important notice about a license for {{ company_name }}.
+
+{% if days_until_expiry < 0 %}
+EXPIRED: This license has expired!
+{% else %}
+{% if urgency == 'critical' %}URGENT: {% endif %}This license {{ days_text }}.
+{% endif %}
+
+LICENSE DETAILS:
+- Type: {{ license_type }}
+- License Holder: {{ holder_name }}
+- License Number: {{ license_number }}
+- Issuing Authority: {{ issuing_authority }}
+- Expiration Date: {{ expiration_date|date:"F j, Y" }}
+
+{% if days_until_expiry >= 0 %}
+Please start the renewal process to ensure continuous compliance. Operating with an expired license may result in violations and fines.
+{% else %}
+This license has expired. Please renew immediately. Operating with an expired license is a compliance violation and may result in penalties.
+{% endif %}
+
+View license details: {{ license_url }}
+
+Best regards,
+Grove Master Team

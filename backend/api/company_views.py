@@ -14,6 +14,7 @@ from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from .models import Company, CompanyMembership, Farm, Field, WaterSource, PesticideApplication
 from .serializers import CompanySerializer
+from .permissions import HasCompanyAccess
 
 
 def is_company_owner(user, company):
@@ -44,7 +45,7 @@ def is_company_member(user, company):
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, HasCompanyAccess])
 def get_company(request, company_id):
     """
     Get company details.
@@ -92,7 +93,7 @@ def get_company(request, company_id):
 
 
 @api_view(['PUT', 'PATCH'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, HasCompanyAccess])
 def update_company(request, company_id):
     """
     Update company information.
@@ -140,7 +141,7 @@ def update_company(request, company_id):
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, HasCompanyAccess])
 def get_company_stats(request, company_id):
     """
     Get company usage statistics.
@@ -219,7 +220,7 @@ CALIFORNIA_COUNTIES = [
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, HasCompanyAccess])
 def get_california_counties(request):
     """
     Get list of California counties.
@@ -254,7 +255,7 @@ PRIMARY_CROP_OPTIONS = [
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, HasCompanyAccess])
 def get_primary_crop_options(request):
     """
     Get list of primary crop options.

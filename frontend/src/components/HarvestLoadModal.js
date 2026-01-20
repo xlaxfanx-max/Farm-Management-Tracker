@@ -7,13 +7,14 @@ import React, { useState, useEffect } from 'react';
 import { X, Plus, Truck } from 'lucide-react';
 import { harvestLoadsAPI, buyersAPI, HARVEST_CONSTANTS } from '../services/api';
 
-const HarvestLoadModal = ({ 
-  isOpen, 
-  onClose, 
-  onSave, 
+const HarvestLoadModal = ({
+  isOpen,
+  onClose,
+  onSave,
   load = null,
   harvestId,
-  onAddBuyer
+  onAddBuyer,
+  buyerRefreshTrigger
 }) => {
   const [formData, setFormData] = useState({
     harvest: '',
@@ -31,6 +32,7 @@ const HarvestLoadModal = ({
     total_revenue: '',
     payment_status: 'pending',
     payment_date: '',
+    payment_due_date: '',
     invoice_number: '',
     truck_id: '',
     trailer_id: '',
@@ -46,11 +48,71 @@ const HarvestLoadModal = ({
   const [errors, setErrors] = useState({});
   const [saving, setSaving] = useState(false);
   const [calculatedRevenue, setCalculatedRevenue] = useState(0);
+  const [lastLoadForBuyer, setLastLoadForBuyer] = useState(null);
+  const [pricingStats, setPricingStats] = useState(null);
 
-  // Fetch buyers on mount
+  // Fetch buyers on mount and when buyerRefreshTrigger changes
   useEffect(() => {
     fetchBuyers();
-  }, []);
+  }, [buyerRefreshTrigger]);
+
+  // Fetch last load for selected buyer to pre-fill pricing and show historical comparison
+  useEffect(() => {
+    const fetchPricingData = async () => {
+      if (formData.buyer && !load) { // Only for new loads
+        try {
+          // Fetch last load for this buyer
+          const lastLoadResponse = await harvestLoadsAPI.getAll({ buyer: formData.buyer, ordering: '-created_at', limit: 1 });
+          if (lastLoadResponse.data.results && lastLoadResponse.data.results.length > 0) {
+            const lastLoad = lastLoadResponse.data.results[0];
+            setLastLoadForBuyer(lastLoad);
+
+            // Auto-fill pricing if not already set
+            if (!formData.price_per_unit && lastLoad.price_per_unit) {
+              setFormData(prev => ({
+                ...prev,
+                price_per_unit: lastLoad.price_per_unit,
+                price_unit: lastLoad.price_unit
+              }));
+            }
+          }
+
+          // Fetch all loads for this buyer this season to calculate statistics
+          const currentYear = new Date().getFullYear();
+          const seasonResponse = await harvestLoadsAPI.getAll({
+            buyer: formData.buyer,
+            harvest__harvest_date__year: currentYear
+          });
+
+          if (seasonResponse.data.results && seasonResponse.data.results.length > 0) {
+            const loads = seasonResponse.data.results;
+
+            // Calculate price per unit for each load
+            const prices = loads
+              .map(l => l.bins > 0 ? l.total_price / l.bins : 0)
+              .filter(p => p > 0);
+
+            if (prices.length > 0) {
+              const avgPrice = prices.reduce((sum, p) => sum + p, 0) / prices.length;
+              const minPrice = Math.min(...prices);
+              const maxPrice = Math.max(...prices);
+
+              setPricingStats({
+                avgPrice,
+                minPrice,
+                maxPrice,
+                sampleSize: prices.length
+              });
+            }
+          }
+        } catch (error) {
+          console.error('Error fetching pricing data:', error);
+        }
+      }
+    };
+
+    fetchPricingData();
+  }, [formData.buyer, load]);
 
   // Initialize form when modal opens
   useEffect(() => {
@@ -83,6 +145,7 @@ const HarvestLoadModal = ({
           total_revenue: '',
           payment_status: 'pending',
           payment_date: '',
+          payment_due_date: '',
           invoice_number: '',
           truck_id: '',
           trailer_id: '',
@@ -140,6 +203,14 @@ const HarvestLoadModal = ({
     }
 
     setCalculatedRevenue(revenue);
+
+    // Auto-update total_revenue field when calculated value changes
+    if (revenue > 0) {
+      setFormData(prev => ({
+        ...prev,
+        total_revenue: revenue.toFixed(2)
+      }));
+    }
   };
 
   const handleChange = (e) => {
@@ -198,7 +269,8 @@ const HarvestLoadModal = ({
         temperature_at_loading: formData.temperature_at_loading ? parseFloat(formData.temperature_at_loading) : null,
         departure_time: formData.departure_time || null,
         arrival_time: formData.arrival_time || null,
-        payment_date: formData.payment_date || null
+        payment_date: formData.payment_date || null,
+        payment_due_date: formData.payment_due_date || null
       };
 
       if (load) {
@@ -429,6 +501,32 @@ const HarvestLoadModal = ({
                   className="w-full border rounded-lg px-3 py-2"
                   placeholder="0.00"
                 />
+                {lastLoadForBuyer && formData.price_per_unit && !load && (
+                  <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded text-xs">
+                    <p className="font-medium text-blue-800 mb-1">Historical Pricing</p>
+                    <div className="space-y-1 text-blue-700">
+                      <p>Last paid: ${lastLoadForBuyer.price_per_unit.toFixed(2)} {lastLoadForBuyer.price_unit_display}</p>
+                      {pricingStats && (
+                        <>
+                          <p>
+                            Season avg: ${pricingStats.avgPrice.toFixed(2)}
+                            {formData.price_per_unit && (
+                              <span className={`ml-2 font-medium ${
+                                parseFloat(formData.price_per_unit) >= pricingStats.avgPrice
+                                  ? 'text-green-600'
+                                  : 'text-red-600'
+                              }`}>
+                                {parseFloat(formData.price_per_unit) >= pricingStats.avgPrice ? '↑ Above avg' : '↓ Below avg'}
+                              </span>
+                            )}
+                          </p>
+                          <p>Price range: ${pricingStats.minPrice.toFixed(2)} - ${pricingStats.maxPrice.toFixed(2)}</p>
+                          <p className="text-gray-600">Based on {pricingStats.sampleSize} loads this season</p>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div>
@@ -508,6 +606,20 @@ const HarvestLoadModal = ({
                   onChange={handleChange}
                   className="w-full border rounded-lg px-3 py-2"
                 />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Payment Due Date
+                </label>
+                <input
+                  type="date"
+                  name="payment_due_date"
+                  value={formData.payment_due_date}
+                  onChange={handleChange}
+                  className="w-full border rounded-lg px-3 py-2"
+                  placeholder="Expected payment date"
+                />
+                <p className="text-xs text-gray-500 mt-1">Based on buyer payment terms</p>
               </div>
             </div>
           </div>

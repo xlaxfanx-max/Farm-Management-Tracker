@@ -1068,8 +1068,14 @@ const OnboardingWizard = ({ onComplete, onSkip }) => {
     <div className="onboarding-wizard">
       <div className="wizard-sidebar">
         <div className="sidebar-brand">
-          <Leaf size={32} />
-          <span>Farm Tracker</span>
+          <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" width="32" height="32">
+            <circle cx="24" cy="24" r="20" fill="#2D5016"/>
+            <circle cx="24" cy="26" r="12" fill="#E8791D"/>
+            <ellipse cx="24" cy="24" rx="8" ry="10" fill="#F4A934"/>
+            <path d="M24 4C24 4 28 10 28 14C28 18 26 20 24 20C22 20 20 18 20 14C20 10 24 4 24 4Z" fill="#4A7A2A"/>
+            <path d="M24 4C24 4 20 8 18 10" stroke="#2D5016" strokeWidth="1.5" strokeLinecap="round"/>
+          </svg>
+          <span>Grove Master</span>
         </div>
         
         <StepIndicator 

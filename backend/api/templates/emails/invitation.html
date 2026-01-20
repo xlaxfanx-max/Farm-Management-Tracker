@@ -1,0 +1,32 @@
+{% extends "emails/base.html" %}
+
+{% block title %}You're Invited to {{ company_name }}{% endblock %}
+{% block header_title %}You're Invited!{% endblock %}
+
+{% block content %}
+<p>Hi there,</p>
+
+<p><strong>{{ inviter_name }}</strong> has invited you to join <strong>{{ company_name }}</strong> on Grove Master as a <strong>{{ role_name }}</strong>.</p>
+
+{% if personal_message %}
+<div class="info-box">
+    <p style="font-style: italic;">"{{ personal_message }}"</p>
+    <p style="margin-top: 10px; font-size: 14px;">&mdash; {{ inviter_name }}</p>
+</div>
+{% endif %}
+
+<p>Grove Master helps grove operations manage pesticide applications, water usage, harvests, and compliance reporting all in one place.</p>
+
+<div class="btn-container">
+    <a href="{{ invite_url }}" class="btn">Accept Invitation</a>
+</div>
+
+<p class="text-muted">
+    This invitation expires on {{ expires_at|date:"F j, Y" }} at {{ expires_at|time:"g:i A" }}.
+</p>
+
+<p class="text-small">
+    If the button doesn't work, copy and paste this link into your browser:<br>
+    <a href="{{ invite_url }}" class="link-fallback">{{ invite_url }}</a>
+</p>
+{% endblock %}

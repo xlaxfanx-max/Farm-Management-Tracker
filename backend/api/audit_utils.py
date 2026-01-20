@@ -1,5 +1,5 @@
 """
-Audit Logging Utilities for Farm Management Tracker
+Audit Logging Utilities for Grove Master
 
 Add this file to: backend/api/audit_utils.py
 
@@ -163,15 +163,57 @@ class AuditLogMixin:
         if hasattr(instance, 'name'):
             return instance.name
         return str(instance)
+
+    def _serialize_for_audit(self, data):
+        """
+        Convert data to a JSON-serializable format for audit logging.
+        Handles model instances, querysets, and other non-serializable types.
+        """
+        if data is None:
+            return None
+
+        if isinstance(data, dict):
+            return {key: self._serialize_for_audit(value) for key, value in data.items()}
+
+        if isinstance(data, (list, tuple)):
+            return [self._serialize_for_audit(item) for item in data]
+
+        # Handle Django model instances (ForeignKey, OneToOne)
+        if hasattr(data, 'pk'):
+            return data.pk
+
+        # Handle datetime/date objects
+        if hasattr(data, 'isoformat'):
+            return data.isoformat()
+
+        # Handle Decimal
+        if hasattr(data, '__float__'):
+            try:
+                return float(data)
+            except (TypeError, ValueError):
+                pass
+
+        # Handle primitive types (str, int, float, bool)
+        if isinstance(data, (str, int, float, bool, type(None))):
+            return data
+
+        # Fallback: convert to string
+        try:
+            return str(data)
+        except:
+            return repr(data)
     
     def perform_create(self, serializer):
         """Log creation after saving."""
         instance = serializer.save()
-        
+
         user = self.request.user
         company = getattr(user, 'current_company', None)
-        
+
         if company:
+            # Serialize validated_data to make it JSON serializable
+            changes = self._serialize_for_audit(serializer.validated_data)
+
             log_action(
                 user=user,
                 company=company,
@@ -179,10 +221,10 @@ class AuditLogMixin:
                 model_name=self.get_audit_model_name(),
                 object_id=instance.pk,
                 object_repr=self.get_object_repr(instance),
-                changes=serializer.validated_data,
+                changes=changes,
                 request=self.request
             )
-        
+
         return instance
     
     def perform_update(self, serializer):

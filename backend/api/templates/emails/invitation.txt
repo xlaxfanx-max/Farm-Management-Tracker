@@ -1,0 +1,23 @@
+You're Invited to {{ company_name }}!
+=====================================
+
+Hi there,
+
+{{ inviter_name }} has invited you to join {{ company_name }} on Grove Master as a {{ role_name }}.
+
+{% if personal_message %}
+Message from {{ inviter_name }}:
+"{{ personal_message }}"
+
+{% endif %}
+Grove Master helps grove operations manage pesticide applications, water usage, harvests, and compliance reporting all in one place.
+
+To accept this invitation, visit:
+{{ invite_url }}
+
+This invitation expires on {{ expires_at|date:"F j, Y" }} at {{ expires_at|time:"g:i A" }}.
+
+---
+If you didn't expect this invitation, you can safely ignore this email.
+
+Grove Master

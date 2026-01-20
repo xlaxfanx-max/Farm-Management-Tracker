@@ -7,14 +7,16 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import {
-  Leaf, Plus, Search, Filter, Calendar, Edit, Trash2, 
+  Leaf, Plus, Search, Filter, Calendar, Edit, Trash2,
   Download, RefreshCw, Package, BarChart3, FileText,
   ChevronDown, ChevronRight, AlertTriangle, CheckCircle,
   TrendingUp, TrendingDown, Minus
 } from 'lucide-react';
-import { 
-  fertilizerProductsAPI, 
-  nutrientApplicationsAPI, 
+import { useData } from '../contexts/DataContext';
+import { useModal } from '../contexts/ModalContext';
+import {
+  fertilizerProductsAPI,
+  nutrientApplicationsAPI,
   nutrientPlansAPI,
   nitrogenReportsAPI,
   NUTRIENT_CONSTANTS,
@@ -51,13 +53,9 @@ const FORM_LABELS = {
 // MAIN COMPONENT
 // =============================================================================
 
-const NutrientManagement = ({ 
-  farms = [], 
-  fields = [], 
-  waterSources = [],
-  onOpenModal,
-  onRefresh 
-}) => {
+const NutrientManagement = () => {
+  const { farms = [], fields = [], waterSources = [], loadData } = useData();
+  const { openNutrientAppModal, openFertilizerProductModal, registerRefreshCallback, unregisterRefreshCallback } = useModal();
   // Active tab state
   const [activeTab, setActiveTab] = useState('applications');
   
@@ -150,8 +148,8 @@ const NutrientManagement = ({
   useEffect(() => {
     setLoading(true);
     setError(null);
-    
-    const loadData = async () => {
+
+    const loadTabData = async () => {
       try {
         if (activeTab === 'applications') {
           await Promise.all([fetchApplications(), fetchProducts()]);
@@ -168,9 +166,19 @@ const NutrientManagement = ({
         setLoading(false);
       }
     };
-    
-    loadData();
+
+    loadTabData();
   }, [activeTab, fetchApplications, fetchProducts, fetchSummary, fetchPlans]);
+
+  // Register refresh callback with context for modal saves
+  const refreshAllData = useCallback(async () => {
+    await Promise.all([fetchApplications(), fetchProducts(), fetchSummary(), fetchPlans()]);
+  }, [fetchApplications, fetchProducts, fetchSummary, fetchPlans]);
+
+  useEffect(() => {
+    registerRefreshCallback('nutrients', refreshAllData);
+    return () => unregisterRefreshCallback('nutrients');
+  }, [registerRefreshCallback, unregisterRefreshCallback, refreshAllData]);
 
   // =============================================================================
   // HANDLERS
@@ -183,7 +191,6 @@ const NutrientManagement = ({
       else if (activeTab === 'products') await fetchProducts();
       else if (activeTab === 'summary') await fetchSummary();
       else if (activeTab === 'plans') await fetchPlans();
-      if (onRefresh) onRefresh();
     } finally {
       setLoading(false);
     }
@@ -459,7 +466,7 @@ const NutrientManagement = ({
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap text-right text-sm">
                       <button
-                        onClick={() => onOpenModal && onOpenModal('nutrientApplication', app)}
+                        onClick={() => openNutrientAppModal( app)}
                         className="text-blue-600 hover:text-blue-800 mr-3"
                         title="Edit"
                       >
@@ -530,7 +537,7 @@ const NutrientManagement = ({
                 </div>
                 <div className="flex gap-2">
                   <button
-                    onClick={() => onOpenModal && onOpenModal('fertilizerProduct', product)}
+                    onClick={() => openFertilizerProductModal( product)}
                     className="text-blue-600 hover:text-blue-800"
                     title="Edit"
                   >
@@ -809,9 +816,10 @@ const NutrientManagement = ({
                   </td>
                   <td className="px-4 py-3 text-right">
                     <button
-                      onClick={() => onOpenModal && onOpenModal('nutrientPlan', plan)}
+                      onClick={() => console.log('Nutrient plan modal not yet implemented')}
                       className="text-blue-600 hover:text-blue-800"
                       title="Edit"
+                      disabled
                     >
                       <Edit className="w-4 h-4" />
                     </button>
@@ -848,7 +856,7 @@ const NutrientManagement = ({
           
           {activeTab === 'applications' && (
             <button
-              onClick={() => onOpenModal && onOpenModal('nutrientApplication', null)}
+              onClick={() => openNutrientAppModal( null)}
               className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
             >
               <Plus className="w-4 h-4" />
@@ -858,7 +866,7 @@ const NutrientManagement = ({
           
           {activeTab === 'products' && (
             <button
-              onClick={() => onOpenModal && onOpenModal('fertilizerProduct', null)}
+              onClick={() => openFertilizerProductModal( null)}
               className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
             >
               <Plus className="w-4 h-4" />
@@ -868,8 +876,9 @@ const NutrientManagement = ({
           
           {activeTab === 'plans' && (
             <button
-              onClick={() => onOpenModal && onOpenModal('nutrientPlan', null)}
-              className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+              onClick={() => console.log('Nutrient plan modal not yet implemented')}
+              className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 opacity-50 cursor-not-allowed"
+              disabled
             >
               <Plus className="w-4 h-4" />
               Add Plan

@@ -1,0 +1,20 @@
+Hi {{ user_name }},
+
+This is a reminder about an upcoming compliance deadline for {{ company_name }}.
+
+{% if urgency == 'critical' %}
+URGENT: This deadline is due {% if days_until_due == 0 %}TODAY{% elif days_until_due == 1 %}TOMORROW{% else %}in {{ days_until_due }} days{% endif %}!
+
+{% endif %}
+DEADLINE: {{ deadline_name }}
+{{ deadline_description }}
+
+Category: {{ deadline_category }}
+Due Date: {{ due_date|date:"F j, Y" }}
+
+View this deadline: {{ deadline_url }}
+
+Visit your compliance dashboard to see all upcoming deadlines and take action.
+
+Best regards,
+Grove Master Team
