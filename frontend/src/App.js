@@ -18,12 +18,16 @@ import {
   BarChart3,
   Shield,
   Bug,
+  Sun,
+  Moon,
+  Boxes,
 } from 'lucide-react';
 
 // Contexts
 import { useAuth } from './contexts/AuthContext';
 import { DataProvider } from './contexts/DataContext';
 import { ModalProvider } from './contexts/ModalContext';
+import { ThemeProvider, useTheme } from './contexts/ThemeContext';
 
 // Components
 import Dashboard from './components/Dashboard';
@@ -51,6 +55,7 @@ import WPSCompliance from './components/compliance/WPSCompliance';
 import ComplianceReports from './components/compliance/ComplianceReports';
 import ComplianceSettings from './components/compliance/ComplianceSettings';
 import { DiseaseDashboard } from './components/disease';
+import PackinghouseDashboard from './components/packinghouse/PackinghouseDashboard';
 import Breadcrumbs from './components/navigation/Breadcrumbs';
 
 import { onboardingAPI } from './services/api';
@@ -70,6 +75,8 @@ function AppContent() {
     logout,
     switchCompany
   } = useAuth();
+
+  const { isDarkMode, toggleTheme } = useTheme();
 
   const [authMode, setAuthMode] = useState('login');
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -175,10 +182,10 @@ function AppContent() {
   // ============================================================================
   if (authLoading || checkingOnboarding) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading...</p>
+          <p className="mt-4 text-gray-600 dark:text-gray-400">Loading...</p>
         </div>
       </div>
     );
@@ -216,7 +223,8 @@ function AppContent() {
     { id: 'analytics', label: 'Analytics', icon: BarChart3 },
     { id: 'water', label: 'Water Management', icon: Droplets },
     { id: 'nutrients', label: 'Nutrients', icon: Leaf },
-    { id: 'harvests', label: 'Harvests', icon: Wheat },
+    { id: 'harvests', label: 'Harvest & Packing', icon: Wheat },
+    { id: 'packinghouse', label: 'Packinghouse', icon: Boxes },
     { id: 'compliance', label: 'Compliance', icon: Shield },
     { id: 'disease', label: 'Disease Prevention', icon: Bug },
     { id: 'reports', label: 'Reports', icon: FileText },
@@ -239,12 +247,12 @@ function AppContent() {
   // MAIN AUTHENTICATED UI
   // ============================================================================
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
       {/* Sidebar */}
-      <aside className={`${sidebarCollapsed ? 'w-16' : 'w-64'} bg-white border-r border-gray-200 transition-all duration-300`}>
+      <aside className={`${sidebarCollapsed ? 'w-16' : 'w-64'} bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 transition-all duration-300`}>
         <div className="flex flex-col h-full">
           {/* Logo/Header */}
-          <div className="p-4 border-b border-gray-200">
+          <div className="p-4 border-b border-gray-200 dark:border-gray-700">
             <div className="flex items-center justify-between">
               {!sidebarCollapsed && (
                 <div className="flex items-center gap-2">
@@ -258,18 +266,27 @@ function AppContent() {
                   <span className="font-bold text-bark-brown font-heading">Grove Master</span>
                 </div>
               )}
-              <button
-                onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-                className="p-1 hover:bg-gray-100 rounded"
-              >
-                {sidebarCollapsed ? <Menu className="w-5 h-5" /> : <X className="w-5 h-5" />}
-              </button>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={toggleTheme}
+                  className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+                  title={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+                >
+                  {isDarkMode ? <Sun className="w-5 h-5 text-yellow-500" /> : <Moon className="w-5 h-5 text-gray-600" />}
+                </button>
+                <button
+                  onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+                  className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
+                >
+                  {sidebarCollapsed ? <Menu className="w-5 h-5" /> : <X className="w-5 h-5" />}
+                </button>
+              </div>
             </div>
           </div>
 
           {/* Company Selector */}
           {!sidebarCollapsed && currentCompany && (
-            <div className="p-3 border-b border-gray-200">
+            <div className="p-3 border-b border-gray-200 dark:border-gray-700">
               <div className="relative">
                 <button
                   onClick={() => {
@@ -279,10 +296,10 @@ function AppContent() {
                       setCurrentView('company');
                     }
                   }}
-                  className="w-full flex items-center gap-2 px-3 py-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                  className="w-full flex items-center gap-2 px-3 py-2 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
                 >
-                  <Building2 className="w-4 h-4 text-gray-500" />
-                  <span className="text-sm font-medium text-gray-700 truncate flex-1 text-left">
+                  <Building2 className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-200 truncate flex-1 text-left">
                     {currentCompany.name}
                   </span>
                   {companies.length > 1 && (
@@ -291,25 +308,25 @@ function AppContent() {
                 </button>
 
                 {showCompanyMenu && companies.length > 1 && (
-                  <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 py-1">
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg z-50 py-1">
                     {companies.map((company) => (
                       <button
                         key={company.id}
                         onClick={() => handleSwitchCompany(company.id)}
-                        className={`w-full flex items-center gap-2 px-3 py-2 hover:bg-gray-50 text-left ${
-                          company.id === currentCompany.id ? 'bg-green-50' : ''
+                        className={`w-full flex items-center gap-2 px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-600 text-left ${
+                          company.id === currentCompany.id ? 'bg-green-50 dark:bg-green-900/30' : ''
                         }`}
                       >
-                        <span className="text-sm text-gray-700 truncate">{company.name}</span>
+                        <span className="text-sm text-gray-700 dark:text-gray-200 truncate">{company.name}</span>
                         {company.id === currentCompany.id && (
-                          <span className="ml-auto text-green-600">✓</span>
+                          <span className="ml-auto text-green-600 dark:text-green-400">✓</span>
                         )}
                       </button>
                     ))}
                   </div>
                 )}
               </div>
-              <p className="text-xs text-gray-500 mt-1 px-1">
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 px-1">
                 {currentCompany.role}
               </p>
             </div>
@@ -323,8 +340,8 @@ function AppContent() {
                 onClick={() => setCurrentView(item.id)}
                 className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
                   currentView === item.id
-                    ? 'bg-green-100 text-green-700'
-                    : 'text-gray-600 hover:bg-gray-100'
+                    ? 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-400'
+                    : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                 }`}
               >
                 <item.icon className="w-5 h-5" />
@@ -335,39 +352,39 @@ function AppContent() {
 
           {/* User Section at Bottom */}
           {!sidebarCollapsed && (
-            <div className="p-4 border-t border-gray-200">
+            <div className="p-4 border-t border-gray-200 dark:border-gray-700">
               <div className="relative">
                 <button
                   onClick={() => setShowUserMenu(!showUserMenu)}
-                  className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors"
+                  className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                 >
                   <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center">
                     <span className="text-sm font-medium text-white">{getUserInitials()}</span>
                   </div>
                   <div className="flex-1 text-left">
-                    <p className="text-sm font-medium text-gray-700 truncate">
+                    <p className="text-sm font-medium text-gray-700 dark:text-gray-200 truncate">
                       {user?.first_name || user?.email}
                     </p>
-                    <p className="text-xs text-gray-500 truncate">{user?.email}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{user?.email}</p>
                   </div>
                 </button>
 
                 {showUserMenu && (
-                  <div className="absolute bottom-full left-0 right-0 mb-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 py-1">
+                  <div className="absolute bottom-full left-0 right-0 mb-1 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg z-50 py-1">
                     <button
                       onClick={() => {
                         setShowUserMenu(false);
                         setCurrentView('profile');
                       }}
-                      className="w-full flex items-center gap-2 px-3 py-2 hover:bg-gray-50 text-left text-sm text-gray-700"
+                      className="w-full flex items-center gap-2 px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-600 text-left text-sm text-gray-700 dark:text-gray-200"
                     >
                       <User className="w-4 h-4" />
                       Profile
                     </button>
-                    <hr className="my-1" />
+                    <hr className="my-1 border-gray-200 dark:border-gray-600" />
                     <button
                       onClick={handleLogout}
-                      className="w-full flex items-center gap-2 px-3 py-2 hover:bg-red-50 text-left text-sm text-red-600"
+                      className="w-full flex items-center gap-2 px-3 py-2 hover:bg-red-50 dark:hover:bg-red-900/30 text-left text-sm text-red-600 dark:text-red-400"
                     >
                       <LogOut className="w-4 h-4" />
                       Sign Out
@@ -380,10 +397,17 @@ function AppContent() {
 
           {/* Collapsed sidebar logout */}
           {sidebarCollapsed && (
-            <div className="p-4 border-t border-gray-200">
+            <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+              <button
+                onClick={toggleTheme}
+                className="w-full flex justify-center p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg text-gray-600 dark:text-gray-300 mb-2"
+                title={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+              >
+                {isDarkMode ? <Sun className="w-5 h-5 text-yellow-500" /> : <Moon className="w-5 h-5" />}
+              </button>
               <button
                 onClick={handleLogout}
-                className="w-full flex justify-center p-2 hover:bg-gray-100 rounded-lg text-gray-600 hover:text-red-600"
+                className="w-full flex justify-center p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg text-gray-600 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400"
                 title="Sign Out"
               >
                 <LogOut className="w-5 h-5" />
@@ -483,6 +507,9 @@ function AppContent() {
         {currentView === 'disease' && (
           <DiseaseDashboard onNavigate={setCurrentView} />
         )}
+        {currentView === 'packinghouse' && (
+          <PackinghouseDashboard />
+        )}
       </main>
 
       {/* Global Modals */}
@@ -508,11 +535,13 @@ function AppContent() {
 
 function App() {
   return (
-    <DataProvider>
-      <ModalProvider>
-        <AppContent />
-      </ModalProvider>
-    </DataProvider>
+    <ThemeProvider>
+      <DataProvider>
+        <ModalProvider>
+          <AppContent />
+        </ModalProvider>
+      </DataProvider>
+    </ThemeProvider>
   );
 }
 

@@ -56,7 +56,11 @@ api.interceptors.response.use(
           });
 
           const newAccessToken = response.data.access;
+          const newRefreshToken = response.data.refresh;
           localStorage.setItem(ACCESS_TOKEN_KEY, newAccessToken);
+          if (newRefreshToken) {
+            localStorage.setItem(REFRESH_TOKEN_KEY, newRefreshToken);
+          }
 
           // Retry original request with new token
           originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
@@ -125,6 +129,10 @@ export const authAPI = {
       first_name: firstName,
       last_name: lastName,
     }),
+
+  // Accept invitation for existing user (authenticated)
+  acceptInvitationExisting: (token) =>
+    api.post('/auth/accept-invitation-existing/', { token }),
 
   // Validate invitation token
   validateInvitation: (token) =>
@@ -2336,6 +2344,253 @@ export const DISEASE_CONSTANTS = {
     { value: 'tree_count_change', label: 'Tree Count Change' },
     { value: 'regional_trend', label: 'Regional Trend' },
   ],
+};
+
+// =============================================================================
+// PACKINGHOUSE POOL TRACKING API
+// =============================================================================
+
+export const packinghousesAPI = {
+  getAll: (params = {}) =>
+    api.get('/packinghouses/', { params }),
+
+  get: (id) =>
+    api.get(`/packinghouses/${id}/`),
+
+  create: (data) =>
+    api.post('/packinghouses/', data),
+
+  update: (id, data) =>
+    api.put(`/packinghouses/${id}/`, data),
+
+  delete: (id) =>
+    api.delete(`/packinghouses/${id}/`),
+
+  getPools: (id, params = {}) =>
+    api.get(`/packinghouses/${id}/pools/`, { params }),
+
+  getLedger: (id, params = {}) =>
+    api.get(`/packinghouses/${id}/ledger/`, { params }),
+};
+
+export const poolsAPI = {
+  getAll: (params = {}) =>
+    api.get('/pools/', { params }),
+
+  get: (id) =>
+    api.get(`/pools/${id}/`),
+
+  create: (data) =>
+    api.post('/pools/', data),
+
+  update: (id, data) =>
+    api.put(`/pools/${id}/`, data),
+
+  delete: (id) =>
+    api.delete(`/pools/${id}/`),
+
+  getDeliveries: (id, params = {}) =>
+    api.get(`/pools/${id}/deliveries/`, { params }),
+
+  getPackoutReports: (id, params = {}) =>
+    api.get(`/pools/${id}/packout-reports/`, { params }),
+
+  getSettlements: (id, params = {}) =>
+    api.get(`/pools/${id}/settlements/`, { params }),
+
+  getSummary: (id) =>
+    api.get(`/pools/${id}/summary/`),
+};
+
+export const packinghouseDeliveriesAPI = {
+  getAll: (params = {}) =>
+    api.get('/packinghouse-deliveries/', { params }),
+
+  get: (id) =>
+    api.get(`/packinghouse-deliveries/${id}/`),
+
+  create: (data) =>
+    api.post('/packinghouse-deliveries/', data),
+
+  update: (id, data) =>
+    api.put(`/packinghouse-deliveries/${id}/`, data),
+
+  delete: (id) =>
+    api.delete(`/packinghouse-deliveries/${id}/`),
+};
+
+export const packoutReportsAPI = {
+  getAll: (params = {}) =>
+    api.get('/packout-reports/', { params }),
+
+  get: (id) =>
+    api.get(`/packout-reports/${id}/`),
+
+  create: (data) =>
+    api.post('/packout-reports/', data),
+
+  update: (id, data) =>
+    api.put(`/packout-reports/${id}/`, data),
+
+  delete: (id) =>
+    api.delete(`/packout-reports/${id}/`),
+
+  addGradeLines: (id, gradeLines) =>
+    api.post(`/packout-reports/${id}/grade-lines/`, gradeLines),
+};
+
+export const poolSettlementsAPI = {
+  getAll: (params = {}) =>
+    api.get('/pool-settlements/', { params }),
+
+  get: (id) =>
+    api.get(`/pool-settlements/${id}/`),
+
+  create: (data) =>
+    api.post('/pool-settlements/', data),
+
+  update: (id, data) =>
+    api.put(`/pool-settlements/${id}/`, data),
+
+  delete: (id) =>
+    api.delete(`/pool-settlements/${id}/`),
+
+  addGradeLines: (id, gradeLines) =>
+    api.post(`/pool-settlements/${id}/grade-lines/`, gradeLines),
+
+  addDeductions: (id, deductions) =>
+    api.post(`/pool-settlements/${id}/deductions/`, deductions),
+};
+
+export const growerLedgerAPI = {
+  getAll: (params = {}) =>
+    api.get('/grower-ledger/', { params }),
+
+  get: (id) =>
+    api.get(`/grower-ledger/${id}/`),
+
+  create: (data) =>
+    api.post('/grower-ledger/', data),
+
+  update: (id, data) =>
+    api.put(`/grower-ledger/${id}/`, data),
+
+  delete: (id) =>
+    api.delete(`/grower-ledger/${id}/`),
+};
+
+export const packinghouseAnalyticsAPI = {
+  getBlockPerformance: (params = {}) =>
+    api.get('/packinghouse-analytics/block-performance/', { params }),
+
+  getPackoutTrends: (params = {}) =>
+    api.get('/packinghouse-analytics/packout-trends/', { params }),
+
+  getSettlementComparison: (params = {}) =>
+    api.get('/packinghouse-analytics/settlement-comparison/', { params }),
+
+  getDashboard: () =>
+    api.get('/packinghouse-analytics/dashboard/'),
+};
+
+// =============================================================================
+// PACKINGHOUSE STATEMENT UPLOAD API (PDF Extraction)
+// =============================================================================
+
+export const packinghouseStatementsAPI = {
+  // List statements with optional filters
+  getAll: (params = {}) =>
+    api.get('/packinghouse-statements/', { params }),
+
+  // Get single statement
+  get: (id) =>
+    api.get(`/packinghouse-statements/${id}/`),
+
+  // Upload PDF and extract data
+  // formData should contain: pdf_file, packinghouse, packinghouse_format (optional)
+  upload: (formData) =>
+    api.post('/packinghouse-statements/', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    }),
+
+  // Delete statement (only if not processed)
+  delete: (id) =>
+    api.delete(`/packinghouse-statements/${id}/`),
+
+  // Get extracted data for preview
+  getExtractedData: (id) =>
+    api.get(`/packinghouse-statements/${id}/extracted-data/`),
+
+  // Confirm and create PackoutReport or PoolSettlement
+  // data should contain: pool_id, field_id (optional), edited_data (optional)
+  confirm: (id, data) =>
+    api.post(`/packinghouse-statements/${id}/confirm/`, data),
+
+  // Reprocess PDF extraction
+  // data can contain: packinghouse_format (optional hint)
+  reprocess: (id, data = {}) =>
+    api.post(`/packinghouse-statements/${id}/reprocess/`, data),
+};
+
+export const PACKINGHOUSE_CONSTANTS = {
+  poolTypes: [
+    { value: 'fresh', label: 'Fresh Market' },
+    { value: 'juice', label: 'Juice/Processing' },
+    { value: 'mixed', label: 'Mixed' },
+  ],
+  poolStatuses: [
+    { value: 'active', label: 'Active' },
+    { value: 'closed', label: 'Closed' },
+    { value: 'settled', label: 'Settled' },
+  ],
+  commodities: [
+    { value: 'LEMONS', label: 'Lemons' },
+    { value: 'NAVELS', label: 'Navels' },
+    { value: 'VALENCIAS', label: 'Valencias' },
+    { value: 'TANGERINES', label: 'Tangerines' },
+    { value: 'MANDARINS', label: 'Mandarins' },
+    { value: 'GRAPEFRUIT', label: 'Grapefruit' },
+    { value: 'AVOCADOS', label: 'Avocados' },
+    { value: 'OTHER', label: 'Other' },
+  ],
+  gradeTypes: [
+    { value: 'SUNKIST', label: 'Sunkist' },
+    { value: 'CHOICE', label: 'Choice' },
+    { value: 'STANDARD', label: 'Standard' },
+    { value: 'JUICE', label: 'Juice' },
+    { value: 'CULL', label: 'Cull' },
+  ],
+  deductionCategories: [
+    { value: 'packing', label: 'Packing Charges' },
+    { value: 'assessment', label: 'Assessments' },
+    { value: 'pick_haul', label: 'Pick & Haul' },
+    { value: 'capital', label: 'Capital Funds' },
+    { value: 'marketing', label: 'Marketing' },
+    { value: 'other', label: 'Other' },
+  ],
+  ledgerEntryTypes: [
+    { value: 'advance', label: 'Advance' },
+    { value: 'pool_close', label: 'Pool Close' },
+    { value: 'adjustment', label: 'Adjustment' },
+    { value: 'refund', label: 'Refund' },
+    { value: 'payment', label: 'Payment' },
+    { value: 'capital_equity', label: 'Capital/Equity' },
+  ],
+  // Common California citrus sizes
+  sizes: [
+    '032', '036', '040', '048', '056', '063', '072', '075', '088',
+    '095', '113', '138', '163', '180', '200', '235', '285'
+  ],
+  getCurrentSeason: () => {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = today.getMonth();
+    // California citrus season typically starts in October
+    if (month >= 9) {
+      return `${year}-${year + 1}`;
+    }
+    return `${year - 1}-${year}`;
+  },
 };
 
 // =============================================================================
