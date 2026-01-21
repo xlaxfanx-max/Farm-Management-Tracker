@@ -32,7 +32,7 @@ from .audit_views import (
 from .auth_views import (
     register, login, logout, refresh_token,
     me, update_profile, change_password, switch_company,
-    invite_user, accept_invitation, validate_invitation,
+    invite_user, accept_invitation, accept_invitation_existing, validate_invitation,
     request_password_reset, reset_password, validate_reset_token,
 )
 
@@ -131,6 +131,21 @@ from .disease_views import (
     DiseaseDashboardViewSet,
 )
 
+# Import packinghouse pool tracking views
+from .packinghouse_views import (
+    PackinghouseViewSet,
+    PoolViewSet,
+    PackinghouseDeliveryViewSet,
+    PackoutReportViewSet,
+    PoolSettlementViewSet,
+    GrowerLedgerEntryViewSet,
+    PackinghouseStatementViewSet,
+    block_performance,
+    packout_trends,
+    settlement_comparison,
+    packinghouse_dashboard,
+)
+
 router = DefaultRouter()
 router.register(r'farms', FarmViewSet, basename='farm')
 router.register(r'fields', FieldViewSet, basename='field')
@@ -196,6 +211,15 @@ router.register(r'disease/analyses', DiseaseAnalysisRunViewSet, basename='diseas
 router.register(r'disease/scouting', ScoutingReportViewSet, basename='scouting-report')
 router.register(r'disease/dashboard', DiseaseDashboardViewSet, basename='disease-dashboard')
 
+# Packinghouse Pool Tracking
+router.register(r'packinghouses', PackinghouseViewSet, basename='packinghouse')
+router.register(r'pools', PoolViewSet, basename='pool')
+router.register(r'packinghouse-deliveries', PackinghouseDeliveryViewSet, basename='packinghouse-delivery')
+router.register(r'packout-reports', PackoutReportViewSet, basename='packout-report')
+router.register(r'pool-settlements', PoolSettlementViewSet, basename='pool-settlement')
+router.register(r'grower-ledger', GrowerLedgerEntryViewSet, basename='grower-ledger')
+router.register(r'packinghouse-statements', PackinghouseStatementViewSet, basename='packinghouse-statement')
+
 
 urlpatterns = [
     path('', include(router.urls)),
@@ -215,6 +239,7 @@ urlpatterns = [
     path('auth/switch-company/', switch_company, name='auth-switch-company'),
     path('auth/invite/', invite_user, name='auth-invite'),
     path('auth/accept-invitation/', accept_invitation, name='auth-accept-invitation'),
+    path('auth/accept-invitation-existing/', accept_invitation_existing, name='auth-accept-invitation-existing'),
     path('auth/invitation/<uuid:token>/', validate_invitation, name='auth-validate-invitation'),
 
     # Password reset routes
@@ -296,4 +321,10 @@ urlpatterns = [
     path('fields/<int:pk>/tree-summary/', FieldTreeViewSet.as_view({'get': 'tree_summary'}), name='field-tree-summary-unified'),
     path('fields/<int:pk>/tree-timeline/', FieldTreeViewSet.as_view({'get': 'tree_timeline'}), name='field-tree-timeline'),
     path('fields/<int:pk>/match-trees/', FieldTreeViewSet.as_view({'post': 'match_trees'}), name='field-match-trees'),
+
+    # Packinghouse Pool Tracking analytics routes
+    path('packinghouse-analytics/block-performance/', block_performance, name='packinghouse-block-performance'),
+    path('packinghouse-analytics/packout-trends/', packout_trends, name='packinghouse-packout-trends'),
+    path('packinghouse-analytics/settlement-comparison/', settlement_comparison, name='packinghouse-settlement-comparison'),
+    path('packinghouse-analytics/dashboard/', packinghouse_dashboard, name='packinghouse-dashboard'),
 ]

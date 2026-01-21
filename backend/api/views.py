@@ -1211,6 +1211,372 @@ class PesticideApplicationViewSet(AuditLogMixin, viewsets.ModelViewSet):
             'validation': validation
         })
 
+    # =========================================================================
+    # SERVICE-BASED ENDPOINTS
+    # These endpoints use the new services layer for business logic
+    # =========================================================================
+
+    @action(detail=False, methods=['post'])
+    def validate_proposed(self, request):
+        """
+        Validate a proposed pesticide application before creating it.
+
+        Uses the PesticideComplianceService for comprehensive validation
+        including PHI, REI, rate limits, NOI requirements, and weather.
+
+        POST body:
+        {
+            "field_id": 1,
+            "product_id": 5,
+            "application_date": "2024-12-20",
+            "rate_per_acre": 2.5,
+            "application_method": "Ground Spray",
+            "acres_treated": 10.0,
+            "applicator_name": "John Smith",  // optional but needed for restricted
+            "applicator_license": "12345",    // optional
+            "check_weather": true,            // optional, default true
+            "check_quarantine": true          // optional, default true
+        }
+
+        Returns comprehensive validation result with issues, warnings,
+        NOI requirements, and recommended actions.
+        """
+        from api.services.compliance import PesticideComplianceService
+        from datetime import datetime
+
+        # Extract parameters
+        field_id = request.data.get('field_id')
+        product_id = request.data.get('product_id')
+        application_date_str = request.data.get('application_date')
+        rate_per_acre = request.data.get('rate_per_acre')
+        application_method = request.data.get('application_method')
+        acres_treated = request.data.get('acres_treated')
+        applicator_name = request.data.get('applicator_name')
+        applicator_license = request.data.get('applicator_license')
+        check_weather = request.data.get('check_weather', True)
+        check_quarantine = request.data.get('check_quarantine', True)
+
+        # Validate required fields
+        if not all([field_id, product_id, application_date_str, rate_per_acre,
+                   application_method, acres_treated]):
+            return Response({
+                'error': 'Missing required fields',
+                'required': ['field_id', 'product_id', 'application_date',
+                           'rate_per_acre', 'application_method', 'acres_treated']
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        # Parse date
+        try:
+            application_date = datetime.strptime(application_date_str, '%Y-%m-%d').date()
+        except ValueError:
+            return Response({
+                'error': 'Invalid date format. Use YYYY-MM-DD'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        # Get company for RLS
+        company = get_user_company(request.user)
+        company_id = company.id if company else None
+
+        # Use compliance service
+        service = PesticideComplianceService(company_id=company_id)
+        result = service.validate_proposed_application(
+            field_id=int(field_id),
+            product_id=int(product_id),
+            application_date=application_date,
+            rate_per_acre=float(rate_per_acre),
+            application_method=application_method,
+            acres_treated=float(acres_treated),
+            applicator_name=applicator_name,
+            applicator_license=applicator_license,
+            check_weather=check_weather,
+            check_quarantine=check_quarantine,
+        )
+
+        return Response(result.to_dict())
+
+    @action(detail=False, methods=['get', 'post'])
+    def phi_clearance(self, request):
+        """
+        Check PHI clearance status for fields.
+
+        GET: Check a single field
+            Query params: field_id, proposed_harvest_date (optional)
+
+        POST: Check multiple fields or a farm
+            Body: {"farm_id": 1, "proposed_harvest_date": "2024-12-20"}
+            Or: {"field_ids": [1, 2, 3], "proposed_harvest_date": "2024-12-20"}
+
+        Returns PHI clearance status including earliest harvest date.
+        """
+        from api.services.compliance import PesticideComplianceService
+        from datetime import datetime
+
+        company = get_user_company(request.user)
+        company_id = company.id if company else None
+        service = PesticideComplianceService(company_id=company_id)
+
+        if request.method == 'GET':
+            field_id = request.query_params.get('field_id')
+            proposed_date_str = request.query_params.get('proposed_harvest_date')
+
+            if not field_id:
+                return Response({
+                    'error': 'field_id is required'
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+            proposed_date = None
+            if proposed_date_str:
+                try:
+                    proposed_date = datetime.strptime(proposed_date_str, '%Y-%m-%d').date()
+                except ValueError:
+                    return Response({
+                        'error': 'Invalid date format. Use YYYY-MM-DD'
+                    }, status=status.HTTP_400_BAD_REQUEST)
+
+            result = service.calculate_phi_clearance(
+                field_id=int(field_id),
+                proposed_harvest_date=proposed_date
+            )
+            return Response(result.to_dict())
+
+        else:  # POST
+            farm_id = request.data.get('farm_id')
+            field_ids = request.data.get('field_ids')
+            proposed_date_str = request.data.get('proposed_harvest_date')
+
+            proposed_date = None
+            if proposed_date_str:
+                try:
+                    proposed_date = datetime.strptime(proposed_date_str, '%Y-%m-%d').date()
+                except ValueError:
+                    return Response({
+                        'error': 'Invalid date format. Use YYYY-MM-DD'
+                    }, status=status.HTTP_400_BAD_REQUEST)
+
+            if farm_id:
+                results = service.calculate_phi_for_all_fields(
+                    farm_id=int(farm_id),
+                    proposed_harvest_date=proposed_date
+                )
+            elif field_ids:
+                results = [
+                    service.calculate_phi_clearance(
+                        field_id=int(fid),
+                        proposed_harvest_date=proposed_date
+                    )
+                    for fid in field_ids
+                ]
+            else:
+                return Response({
+                    'error': 'Either farm_id or field_ids is required'
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+            return Response({
+                'fields': [r.to_dict() for r in results],
+                'summary': {
+                    'total_fields': len(results),
+                    'clear_for_harvest': len([r for r in results if r.is_clear]),
+                    'blocked': len([r for r in results if not r.is_clear]),
+                }
+            })
+
+    @action(detail=False, methods=['get'])
+    def rei_status(self, request):
+        """
+        Get REI (Restricted Entry Interval) status for a field.
+
+        Query params:
+            field_id: Required
+            check_datetime: Optional ISO datetime (default: now)
+
+        Returns whether field is safe for worker entry.
+        """
+        from api.services.compliance import PesticideComplianceService
+        from datetime import datetime
+
+        field_id = request.query_params.get('field_id')
+        check_datetime_str = request.query_params.get('check_datetime')
+
+        if not field_id:
+            return Response({
+                'error': 'field_id is required'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        check_datetime = None
+        if check_datetime_str:
+            try:
+                check_datetime = datetime.fromisoformat(check_datetime_str)
+            except ValueError:
+                return Response({
+                    'error': 'Invalid datetime format. Use ISO format.'
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+        company = get_user_company(request.user)
+        company_id = company.id if company else None
+
+        service = PesticideComplianceService(company_id=company_id)
+        result = service.get_rei_status(
+            field_id=int(field_id),
+            check_datetime=check_datetime
+        )
+
+        return Response(result.to_dict())
+
+    @action(detail=False, methods=['get', 'post'])
+    def noi_requirements(self, request):
+        """
+        Get Notice of Intent requirements for a product application.
+
+        GET params or POST body:
+            product_id: Required
+            application_date: Required (YYYY-MM-DD)
+            county: Required
+
+        Returns NOI requirements including deadline and submission info.
+        """
+        from api.services.compliance import PesticideComplianceService
+        from datetime import datetime
+
+        if request.method == 'POST':
+            product_id = request.data.get('product_id')
+            application_date_str = request.data.get('application_date')
+            county = request.data.get('county')
+        else:
+            product_id = request.query_params.get('product_id')
+            application_date_str = request.query_params.get('application_date')
+            county = request.query_params.get('county')
+
+        if not all([product_id, application_date_str, county]):
+            return Response({
+                'error': 'product_id, application_date, and county are required'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            application_date = datetime.strptime(application_date_str, '%Y-%m-%d').date()
+        except ValueError:
+            return Response({
+                'error': 'Invalid date format. Use YYYY-MM-DD'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        service = PesticideComplianceService()
+        result = service.get_noi_requirements(
+            product_id=int(product_id),
+            application_date=application_date,
+            county=county
+        )
+
+        return Response(result)
+
+    @action(detail=False, methods=['get'])
+    def spray_windows(self, request):
+        """
+        Find suitable spray windows based on weather forecast.
+
+        Query params:
+            farm_id: Required
+            days_ahead: Optional (default: 7, max: 7)
+            application_method: Optional ('ground' or 'aerial', default: 'ground')
+
+        Returns list of optimal spray windows.
+        """
+        from api.services.operations import SprayPlanningService
+
+        farm_id = request.query_params.get('farm_id')
+        days_ahead = request.query_params.get('days_ahead', '7')
+        application_method = request.query_params.get('application_method', 'ground')
+
+        if not farm_id:
+            return Response({
+                'error': 'farm_id is required'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        company = get_user_company(request.user)
+        company_id = company.id if company else None
+
+        service = SprayPlanningService(company_id=company_id)
+        windows = service.find_spray_windows(
+            farm_id=int(farm_id),
+            days_ahead=min(int(days_ahead), 7),
+            application_method=application_method
+        )
+
+        return Response({
+            'farm_id': int(farm_id),
+            'windows': [w.to_dict() for w in windows],
+            'summary': {
+                'total_windows': len(windows),
+                'good_windows': len([w for w in windows if w.rating == 'good']),
+                'fair_windows': len([w for w in windows if w.rating == 'fair']),
+            }
+        })
+
+    @action(detail=False, methods=['get'])
+    def spray_conditions(self, request):
+        """
+        Evaluate current spray conditions for a farm.
+
+        Query params:
+            farm_id: Required
+
+        Returns current conditions assessment and recommendations.
+        """
+        from api.services.operations import SprayPlanningService
+
+        farm_id = request.query_params.get('farm_id')
+
+        if not farm_id:
+            return Response({
+                'error': 'farm_id is required'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        company = get_user_company(request.user)
+        company_id = company.id if company else None
+
+        service = SprayPlanningService(company_id=company_id)
+        result = service.evaluate_spray_conditions(farm_id=int(farm_id))
+
+        return Response(result.to_dict())
+
+    @action(detail=False, methods=['post'])
+    def recommend_timing(self, request):
+        """
+        Get recommended application timing for a product on a field.
+
+        POST body:
+        {
+            "field_id": 1,
+            "product_id": 5,
+            "urgency": "normal"  // 'urgent', 'normal', or 'flexible'
+        }
+
+        Returns timing recommendation considering weather, PHI, and REI.
+        """
+        from api.services.operations import SprayPlanningService
+
+        field_id = request.data.get('field_id')
+        product_id = request.data.get('product_id')
+        urgency = request.data.get('urgency', 'normal')
+
+        if not all([field_id, product_id]):
+            return Response({
+                'error': 'field_id and product_id are required'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        if urgency not in ('urgent', 'normal', 'flexible'):
+            urgency = 'normal'
+
+        company = get_user_company(request.user)
+        company_id = company.id if company else None
+
+        service = SprayPlanningService(company_id=company_id)
+        result = service.recommend_application_timing(
+            field_id=int(field_id),
+            product_id=int(product_id),
+            urgency=urgency
+        )
+
+        return Response(result.to_dict())
+
 
 class WaterSourceViewSet(AuditLogMixin, viewsets.ModelViewSet):
     """

@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "farm-management": {
+      "command": "python",
+      "args": ["C:\\Users\\James\\Farm-Management-Tracker\\backend\\run_mcp_server.py"],
+      "env": {
+        "MCP_COMPANY_ID": "1",
+        "OPENWEATHERMAP_API_KEY": "your-api-key-here"
+      }
+    }
+  }
+}

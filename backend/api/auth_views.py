@@ -13,6 +13,7 @@
 # =============================================================================
 
 from django.contrib.auth import authenticate, get_user_model
+from django.conf import settings
 from django.utils import timezone
 from django.db import transaction
 from rest_framework import status
@@ -302,9 +303,17 @@ def refresh_token(request):
     
     try:
         refresh = RefreshToken(refresh_token)
-        return Response({
-            'access': str(refresh.access_token),
-        })
+        access_token = refresh.access_token
+
+        response_payload = {'access': str(access_token)}
+
+        if settings.SIMPLE_JWT.get('ROTATE_REFRESH_TOKENS'):
+            if settings.SIMPLE_JWT.get('BLACKLIST_AFTER_ROTATION'):
+                refresh.blacklist()
+            new_refresh = RefreshToken.for_user(refresh.user)
+            response_payload['refresh'] = str(new_refresh)
+
+        return Response(response_payload)
     except Exception as e:
         return Response(
             {'error': 'Invalid or expired refresh token'},
@@ -660,22 +669,24 @@ def accept_invitation(request):
             user = User.objects.filter(email=invitation.email).first()
             
             if user:
-                # Existing user - just add to company
-                pass
-            else:
-                # New user - create account
-                if not password or len(password) < 8:
-                    return Response(
-                        {'error': 'Password must be at least 8 characters'},
-                        status=status.HTTP_400_BAD_REQUEST
-                    )
-                
-                user = User.objects.create_user(
-                    email=invitation.email,
-                    password=password,
-                    first_name=first_name,
-                    last_name=last_name,
+                return Response(
+                    {'error': 'An account with this email already exists. Please log in to accept the invitation.'},
+                    status=status.HTTP_400_BAD_REQUEST
                 )
+
+            # New user - create account
+            if not password or len(password) < 8:
+                return Response(
+                    {'error': 'Password must be at least 8 characters'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            user = User.objects.create_user(
+                email=invitation.email,
+                password=password,
+                first_name=first_name,
+                last_name=last_name,
+            )
             
             # Create membership
             membership = CompanyMembership.objects.create(
@@ -692,10 +703,9 @@ def accept_invitation(request):
             invitation.accepted_at = timezone.now()
             invitation.save()
             
-            # Set current company if not set
-            if not user.current_company:
-                user.current_company = invitation.company
-                user.save(update_fields=['current_company'])
+            # Switch current company to the invited company
+            user.current_company = invitation.company
+            user.save(update_fields=['current_company'])
             
             # Generate tokens
             refresh = RefreshToken.for_user(user)
@@ -725,6 +735,107 @@ def accept_invitation(request):
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
 
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def accept_invitation_existing(request):
+    """
+    Accept an invitation for an existing, authenticated user.
+
+    POST /api/auth/accept-invitation-existing/
+    {
+        "token": "invitation-uuid-token"
+    }
+    """
+    token = request.data.get('token')
+
+    if not token:
+        return Response(
+            {'error': 'Invitation token is required'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    try:
+        invitation = Invitation.objects.get(token=token, status='pending')
+    except Invitation.DoesNotExist:
+        return Response(
+            {'error': 'Invalid or expired invitation'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    if invitation.is_expired:
+        invitation.status = 'expired'
+        invitation.save()
+        return Response(
+            {'error': 'This invitation has expired'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    user = request.user
+    if user.email.lower() != invitation.email.lower():
+        return Response(
+            {'error': 'Please sign in with the invited email to accept this invitation.'},
+            status=status.HTTP_403_FORBIDDEN
+        )
+
+    if CompanyMembership.objects.filter(
+        user=user,
+        company=invitation.company,
+        is_active=True
+    ).exists():
+        return Response(
+            {'error': 'You are already a member of this company'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    try:
+        with transaction.atomic():
+            membership = CompanyMembership.objects.create(
+                user=user,
+                company=invitation.company,
+                role=invitation.role,
+                invited_by=invitation.invited_by,
+                invited_at=invitation.created_at,
+                accepted_at=timezone.now(),
+            )
+
+            invitation.status = 'accepted'
+            invitation.accepted_at = timezone.now()
+            invitation.save()
+
+            user.current_company = invitation.company
+            user.save(update_fields=['current_company'])
+
+            AuditLog.objects.create(
+                user=user,
+                company=invitation.company,
+                action='invite_accept',
+                model_name='Invitation',
+                object_id=str(invitation.id),
+                object_repr=invitation.email,
+                ip_address=get_client_ip(request),
+                user_agent=request.META.get('HTTP_USER_AGENT', '')[:500],
+                changes={'role': invitation.role.codename},
+            )
+
+        permissions = list(membership.role.permissions.values_list('codename', flat=True))
+
+        return Response({
+            'message': f'Joined {invitation.company.name}',
+            'company': {
+                'id': invitation.company.id,
+                'uuid': str(invitation.company.uuid),
+                'name': invitation.company.name,
+                'role': invitation.role.name,
+                'role_codename': invitation.role.codename,
+            },
+            'permissions': permissions,
+        })
+    except Exception as e:
+        return Response(
+            {'error': f'Failed to accept invitation: {str(e)}'},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
