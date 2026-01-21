@@ -4,7 +4,7 @@ import { authAPI } from '../services/api';
 import { Leaf, AlertCircle, CheckCircle, Eye, EyeOff, XCircle } from 'lucide-react';
 
 export default function AcceptInvitation({ token, onComplete }) {
-  const { login } = useAuth();
+  const { login, logout, isAuthenticated, user } = useAuth();
   
   const [invitation, setInvitation] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -19,6 +19,8 @@ export default function AcceptInvitation({ token, onComplete }) {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [existingPassword, setExistingPassword] = useState('');
+  const [existingSubmitting, setExistingSubmitting] = useState(false);
 
   useEffect(() => {
     validateInvitation();
@@ -85,6 +87,53 @@ export default function AcceptInvitation({ token, onComplete }) {
     }
   };
 
+  const acceptExistingInvitation = async () => {
+    setExistingSubmitting(true);
+    setError('');
+
+    try {
+      await authAPI.acceptInvitationExisting(token);
+      setSuccess(true);
+      setTimeout(() => {
+        onComplete?.();
+      }, 1500);
+    } catch (err) {
+      setError(err.response?.data?.error || 'Failed to accept invitation');
+    } finally {
+      setExistingSubmitting(false);
+    }
+  };
+
+  const handleExistingLogin = async (e) => {
+    e.preventDefault();
+    setError('');
+
+    if (!existingPassword) {
+      setError('Password is required');
+      return;
+    }
+
+    setExistingSubmitting(true);
+    const loginResult = await login(invitation.email, existingPassword);
+
+    if (!loginResult.success) {
+      setExistingSubmitting(false);
+      return;
+    }
+
+    try {
+      await authAPI.acceptInvitationExisting(token);
+      setSuccess(true);
+      setTimeout(() => {
+        onComplete?.();
+      }, 1500);
+    } catch (err) {
+      setError(err.response?.data?.error || 'Failed to accept invitation');
+    } finally {
+      setExistingSubmitting(false);
+    }
+  };
+
   // Loading state
   if (loading) {
     return (
@@ -138,6 +187,109 @@ export default function AcceptInvitation({ token, onComplete }) {
     );
   }
 
+  if (invitation?.existing_user) {
+    const invitedEmail = invitation.email?.toLowerCase();
+    const currentEmail = user?.email?.toLowerCase();
+    const isInvitedUser = isAuthenticated && invitedEmail && invitedEmail === currentEmail;
+
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center p-4">
+        <div className="w-full max-w-md">
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-green-600 rounded-xl mb-4">
+              <Leaf className="w-8 h-8 text-white" />
+            </div>
+            <h1 className="text-2xl font-bold text-gray-900">Join {invitation.company_name}</h1>
+            <p className="text-gray-600 mt-1">
+              You've been invited to join as <strong>{invitation.role_name || invitation.role}</strong>
+            </p>
+          </div>
+
+          <div className="bg-white rounded-xl shadow-lg p-8">
+            {error && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
+                <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                <span className="text-red-700 text-sm">{error}</span>
+              </div>
+            )}
+
+            <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+              <p className="text-sm text-gray-600">
+                <strong>Email:</strong> {invitation.email}
+              </p>
+              <p className="text-sm text-gray-600 mt-1">
+                <strong>Invited by:</strong> {invitation.invited_by}
+              </p>
+            </div>
+
+            {!isAuthenticated && (
+              <form onSubmit={handleExistingLogin} className="space-y-5">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Password
+                  </label>
+                  <input
+                    type="password"
+                    name="existingPassword"
+                    value={existingPassword}
+                    onChange={(e) => setExistingPassword(e.target.value)}
+                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    placeholder="********"
+                    required
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={existingSubmitting}
+                  className="w-full bg-green-600 text-white py-2.5 px-4 rounded-lg font-medium hover:bg-green-700 focus:ring-4 focus:ring-green-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {existingSubmitting ? 'Signing In...' : 'Sign In & Accept Invitation'}
+                </button>
+              </form>
+            )}
+
+            {isAuthenticated && !isInvitedUser && (
+              <div className="space-y-4">
+                <p className="text-sm text-gray-600">
+                  You're signed in as {user?.email}. Please sign in with {invitation.email} to accept.
+                </p>
+                <button
+                  type="button"
+                  onClick={logout}
+                  className="w-full bg-gray-100 text-gray-700 py-2.5 px-4 rounded-lg font-medium hover:bg-gray-200"
+                >
+                  Sign Out
+                </button>
+              </div>
+            )}
+
+            {isInvitedUser && (
+              <button
+                type="button"
+                onClick={acceptExistingInvitation}
+                disabled={existingSubmitting}
+                className="w-full bg-green-600 text-white py-2.5 px-4 rounded-lg font-medium hover:bg-green-700 focus:ring-4 focus:ring-green-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {existingSubmitting ? 'Accepting...' : 'Accept Invitation'}
+              </button>
+            )}
+
+            <p className="mt-6 text-center text-sm text-gray-600">
+              Need to create a new account instead?{' '}
+              <button
+                onClick={() => window.location.href = '/'}
+                className="text-green-600 hover:text-green-700 font-medium"
+              >
+                Go to sign in
+              </button>
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // Invitation form
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center p-4">
@@ -149,7 +301,7 @@ export default function AcceptInvitation({ token, onComplete }) {
           </div>
           <h1 className="text-2xl font-bold text-gray-900">Join {invitation.company_name}</h1>
           <p className="text-gray-600 mt-1">
-            You've been invited to join as <strong>{invitation.role_name}</strong>
+            You've been invited to join as <strong>{invitation.role_name || invitation.role}</strong>
           </p>
         </div>
 

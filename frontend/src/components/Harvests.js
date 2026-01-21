@@ -1,6 +1,6 @@
 // =============================================================================
-// HARVESTS COMPONENT
-// Save as: frontend/src/components/Harvests.js
+// HARVESTS & PACKINGHOUSE COMPONENT
+// Unified view for harvest tracking and packinghouse pool management
 // =============================================================================
 
 import React, { useState, useEffect, useCallback } from 'react';
@@ -22,12 +22,20 @@ import {
   Filter,
   RefreshCw,
   Zap,
-  BarChart3
+  BarChart3,
+  Boxes,
+  Building2,
+  Layers
 } from 'lucide-react';
 import { harvestsAPI, HARVEST_CONSTANTS } from '../services/api';
 import { useData } from '../contexts/DataContext';
 import { useModal } from '../contexts/ModalContext';
 import HarvestAnalytics from './HarvestAnalytics';
+import {
+  PackinghouseList,
+  PoolList,
+  PackinghouseAnalytics
+} from './packinghouse';
 
 const Harvests = () => {
   const { fields, farms } = useData();
@@ -39,6 +47,9 @@ const Harvests = () => {
     registerRefreshCallback,
     unregisterRefreshCallback
   } = useModal();
+
+  // Main tab state: harvests, packinghouses, pools, analytics
+  const [activeTab, setActiveTab] = useState('harvests');
   const [showAnalytics, setShowAnalytics] = useState(false);
   const [harvests, setHarvests] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -52,6 +63,14 @@ const Harvests = () => {
     crop_variety: ''
   });
   const [showFilters, setShowFilters] = useState(false);
+
+  // Tab definitions
+  const tabs = [
+    { id: 'harvests', label: 'Harvests', icon: Wheat },
+    { id: 'packinghouses', label: 'Packinghouses', icon: Building2 },
+    { id: 'pools', label: 'Pools', icon: Layers },
+    { id: 'analytics', label: 'Analytics', icon: BarChart3 },
+  ];
 
   // Memoize refresh function for the callback registry
   const refreshData = useCallback(() => {
@@ -193,51 +212,109 @@ const Harvests = () => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Harvest Tracking</h1>
-          <p className="text-gray-600">Record and manage your citrus harvests</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Harvest & Packing</h1>
+          <p className="text-gray-600 dark:text-gray-400">Track harvests from field to packinghouse</p>
         </div>
-        <div className="flex gap-2">
-          <button
-            onClick={() => setShowAnalytics(!showAnalytics)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg ${
-              showAnalytics
-                ? 'bg-blue-600 text-white hover:bg-blue-700'
-                : 'border hover:bg-gray-50'
-            }`}
-          >
-            <BarChart3 size={18} />
-            Analytics
-          </button>
-          <button
-            onClick={() => setShowFilters(!showFilters)}
-            className="flex items-center gap-2 px-4 py-2 border rounded-lg hover:bg-gray-50"
-          >
-            <Filter size={18} />
-            Filters
-          </button>
-          <button
-            onClick={() => { fetchHarvests(); fetchStatistics(); }}
-            className="flex items-center gap-2 px-4 py-2 border rounded-lg hover:bg-gray-50"
-          >
-            <RefreshCw size={18} />
-          </button>
-          <button
-            onClick={openQuickHarvestModal}
-            className="flex items-center gap-2 px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600"
-          >
-            <Zap size={18} />
-            Quick Entry
-          </button>
-          <button
-            onClick={() => openHarvestModal(null,)}
-            className="flex items-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700"
-          >
-            <Plus size={18} />
-            Record Harvest
-          </button>
-        </div>
+        {activeTab === 'harvests' && (
+          <div className="flex gap-2">
+            <button
+              onClick={() => setShowAnalytics(!showAnalytics)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg ${
+                showAnalytics
+                  ? 'bg-blue-600 text-white hover:bg-blue-700'
+                  : 'border dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
+              }`}
+            >
+              <BarChart3 size={18} />
+              Analytics
+            </button>
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              className="flex items-center gap-2 px-4 py-2 border dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+            >
+              <Filter size={18} />
+              Filters
+            </button>
+            <button
+              onClick={() => { fetchHarvests(); fetchStatistics(); }}
+              className="flex items-center gap-2 px-4 py-2 border dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+            >
+              <RefreshCw size={18} />
+            </button>
+            <button
+              onClick={openQuickHarvestModal}
+              className="flex items-center gap-2 px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600"
+            >
+              <Zap size={18} />
+              Quick Entry
+            </button>
+            <button
+              onClick={() => openHarvestModal(null,)}
+              className="flex items-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700"
+            >
+              <Plus size={18} />
+              Record Harvest
+            </button>
+          </div>
+        )}
       </div>
 
+      {/* Tab Navigation */}
+      <div className="border-b border-gray-200 dark:border-gray-700">
+        <nav className="flex space-x-4">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => {
+                setActiveTab(tab.id);
+                if (tab.id !== 'harvests') setShowAnalytics(false);
+              }}
+              className={`flex items-center gap-2 px-4 py-3 border-b-2 font-medium text-sm transition-colors ${
+                activeTab === tab.id
+                  ? 'border-orange-500 text-orange-600 dark:text-orange-400'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
+              }`}
+            >
+              <tab.icon size={18} />
+              {tab.label}
+            </button>
+          ))}
+        </nav>
+      </div>
+
+      {/* Packinghouses Tab */}
+      {activeTab === 'packinghouses' && (
+        <PackinghouseList />
+      )}
+
+      {/* Pools Tab */}
+      {activeTab === 'pools' && (
+        <PoolList />
+      )}
+
+      {/* Analytics Tab (Combined) */}
+      {activeTab === 'analytics' && (
+        <div className="space-y-6">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4 flex items-center gap-2">
+              <Wheat className="text-orange-600" size={20} />
+              Harvest Analytics
+            </h3>
+            <HarvestAnalytics />
+          </div>
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4 flex items-center gap-2">
+              <Boxes className="text-green-600" size={20} />
+              Packinghouse Analytics
+            </h3>
+            <PackinghouseAnalytics />
+          </div>
+        </div>
+      )}
+
+      {/* Harvests Tab Content */}
+      {activeTab === 'harvests' && (
+        <>
       {/* Filters Panel */}
       {showFilters && (
         <div className="bg-white rounded-lg shadow p-4">
@@ -790,6 +867,8 @@ const Harvests = () => {
           </div>
         )}
         </div>
+      )}
+        </>
       )}
     </div>
   );

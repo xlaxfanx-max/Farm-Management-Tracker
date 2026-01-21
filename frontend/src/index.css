@@ -18,7 +18,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Grove Master Brand Colors */
+/* Grove Master Brand Colors - Light Mode (Default) */
 :root {
   --grove-green: #2D5016;
   --grove-green-light: #4A7A2A;
@@ -36,19 +36,110 @@
   --status-critical: #ef4444;
   --status-neutral: #6b7280;
   --status-info: #3b82f6;
+
+  /* Background colors */
+  --bg-primary: #FFFEF7;
+  --bg-secondary: #FDFCF8;
+  --bg-tertiary: #f3f4f6;
+  --bg-card: #ffffff;
+  --bg-sidebar: #ffffff;
+  --bg-input: #ffffff;
+
+  /* Border colors */
+  --border-primary: #e5e7eb;
+  --border-secondary: #d1d5db;
+  --border-focus: #3b82f6;
+
+  /* Shadow colors */
+  --shadow-color: rgba(0, 0, 0, 0.1);
+  --shadow-color-strong: rgba(0, 0, 0, 0.15);
+}
+
+/* Grove Master Brand Colors - Dark Mode */
+.dark {
+  --grove-green: #4A7A2A;
+  --grove-green-light: #5C9432;
+  --citrus-orange: #F08A3B;
+  --citrus-gold: #F5B54D;
+  --cream: #1a1a1a;
+  --warm-white: #242424;
+  --bark-brown: #D4C4B0;
+  --text-primary: #f3f4f6;
+  --text-secondary: #d1d5db;
+
+  /* Status Colors - slightly brighter for dark mode */
+  --status-healthy: #34d399;
+  --status-attention: #fbbf24;
+  --status-critical: #f87171;
+  --status-neutral: #9ca3af;
+  --status-info: #60a5fa;
+
+  /* Background colors */
+  --bg-primary: #121212;
+  --bg-secondary: #1a1a1a;
+  --bg-tertiary: #242424;
+  --bg-card: #1e1e1e;
+  --bg-sidebar: #161616;
+  --bg-input: #2a2a2a;
+
+  /* Border colors */
+  --border-primary: #374151;
+  --border-secondary: #4b5563;
+  --border-focus: #60a5fa;
+
+  /* Shadow colors */
+  --shadow-color: rgba(0, 0, 0, 0.3);
+  --shadow-color-strong: rgba(0, 0, 0, 0.5);
 }
 
 /* Grove Master Typography */
 body {
   font-family: 'DM Sans', sans-serif;
-  background-color: var(--cream);
+  background-color: var(--bg-primary);
   color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 h1, h2, h3, h4, h5, h6,
 .font-heading {
   font-family: 'Fraunces', serif;
   color: var(--bark-brown);
+}
+
+/* Dark mode utility classes */
+.dark .bg-white { background-color: var(--bg-card) !important; }
+.dark .bg-gray-50 { background-color: var(--bg-secondary) !important; }
+.dark .bg-gray-100 { background-color: var(--bg-tertiary) !important; }
+.dark .bg-gray-200 { background-color: #374151 !important; }
+
+.dark .text-gray-900 { color: var(--text-primary) !important; }
+.dark .text-gray-800 { color: var(--text-primary) !important; }
+.dark .text-gray-700 { color: #d1d5db !important; }
+.dark .text-gray-600 { color: #9ca3af !important; }
+.dark .text-gray-500 { color: #9ca3af !important; }
+.dark .text-gray-400 { color: #6b7280 !important; }
+
+.dark .border-gray-100 { border-color: #374151 !important; }
+.dark .border-gray-200 { border-color: #374151 !important; }
+.dark .border-gray-300 { border-color: #4b5563 !important; }
+
+.dark input,
+.dark select,
+.dark textarea {
+  background-color: var(--bg-input);
+  border-color: var(--border-primary);
+  color: var(--text-primary);
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: var(--text-secondary);
+}
+
+.dark input:focus,
+.dark select:focus,
+.dark textarea:focus {
+  border-color: var(--border-focus);
 }
 
 /* Grove Master Color Utility Classes */
@@ -100,6 +191,19 @@ h1, h2, h3, h4, h5, h6,
 
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
+}
+
+/* Dark mode scrollbar */
+.dark ::-webkit-scrollbar-track {
+  background: #1f2937;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #4b5563;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #6b7280;
 }
 
 /* Smooth transitions */
@@ -271,4 +375,62 @@ textarea:focus-visible {
 
 .overflow-x-auto::-webkit-scrollbar-thumb:hover {
   background: #9ca3af;
+}
+
+/* Dark mode horizontal scrollbar */
+.dark .overflow-x-auto::-webkit-scrollbar-thumb {
+  background: #4b5563;
+}
+
+.dark .overflow-x-auto::-webkit-scrollbar-thumb:hover {
+  background: #6b7280;
+}
+
+/* Dark mode modal backdrop */
+.dark .modal-backdrop {
+  background-color: rgba(0, 0, 0, 0.7);
+}
+
+/* Dark mode card styles */
+.dark .card-hover:hover {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -4px rgba(0, 0, 0, 0.4);
+}
+
+.dark .shadow-soft {
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 1px 2px -1px rgba(0, 0, 0, 0.3);
+}
+
+.dark .shadow-strong {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -4px rgba(0, 0, 0, 0.4);
+}
+
+/* Dark mode table styles */
+.dark table {
+  background-color: var(--bg-card);
+}
+
+.dark thead {
+  background-color: var(--bg-tertiary);
+}
+
+.dark th {
+  color: var(--text-primary);
+  border-color: var(--border-primary);
+}
+
+.dark td {
+  border-color: var(--border-primary);
+}
+
+.dark tbody tr:hover {
+  background-color: var(--bg-tertiary);
+}
+
+/* Dark mode for specific component backgrounds */
+.dark .bg-cream {
+  background-color: var(--bg-primary) !important;
+}
+
+.dark .bg-warm-white {
+  background-color: var(--bg-secondary) !important;
 }

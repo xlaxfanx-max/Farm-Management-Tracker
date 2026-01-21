@@ -118,7 +118,7 @@ export function AuthProvider({ children }) {
 
     try {
       const response = await authAPI.refresh(refreshToken);
-      setTokens(response.data.access, null);
+      setTokens(response.data.access, response.data.refresh);
       return true;
     } catch (err) {
       clearAuthState();

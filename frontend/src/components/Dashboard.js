@@ -157,17 +157,17 @@ function Dashboard({ onNavigate }) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
       {/* Header Section */}
-      <div className="bg-white border-b border-gray-200">
+      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-6 py-5">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900 font-heading">Operations Dashboard</h1>
-              <p className="text-gray-500 text-sm mt-1">{getCurrentDate()}</p>
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white font-heading">Operations Dashboard</h1>
+              <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">{getCurrentDate()}</p>
             </div>
             <div className="flex items-center gap-3">
-              <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors relative">
+              <button className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors relative">
                 <Bell className="w-5 h-5" />
                 {moduleStats.applications.pending > 0 && (
                   <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
@@ -178,7 +178,7 @@ function Dashboard({ onNavigate }) {
                 <input
                   type="text"
                   placeholder="Search farms, fields..."
-                  className="pl-9 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm w-64"
+                  className="pl-9 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm w-64 bg-white dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
                 />
               </div>
             </div>
@@ -207,7 +207,7 @@ function Dashboard({ onNavigate }) {
 
         {/* Quick Actions */}
         <div>
-          <h2 className="text-sm font-semibold text-gray-700 mb-3">Quick Actions</h2>
+          <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Quick Actions</h2>
           <QuickActionsGrid onNavigate={handleNavigate} />
         </div>
 
@@ -239,7 +239,7 @@ function Dashboard({ onNavigate }) {
 
         {/* Module Status Cards Grid */}
         <div>
-          <h2 className="text-sm font-semibold text-gray-700 mb-3">Module Status</h2>
+          <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Module Status</h2>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
             {/* Water Management */}
             <ModuleStatusCard
