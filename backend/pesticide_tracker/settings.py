@@ -8,13 +8,22 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # override=True ensures .env values take precedence over any existing env vars
 load_dotenv(BASE_DIR / '.env', override=True)
 
-SECRET_KEY = 'django-insecure-change-this-in-production-abc123xyz'
+# =============================================================================
+# CORE SETTINGS - Configure via environment variables for production
+# =============================================================================
 
-DEBUG = True
+# SECURITY WARNING: Generate a new secret key for production!
+# Generate with: python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-change-this-in-production-abc123xyz')
+
+# SECURITY WARNING: Don't run with debug turned on in production!
+DEBUG = os.environ.get('DEBUG', 'True').lower() in ('true', '1', 'yes')
 
 AUTH_USER_MODEL = 'api.User'
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+# Hosts/domain names that are valid for this site
+# In production, set ALLOWED_HOSTS env var to your domain (comma-separated)
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -34,6 +43,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # Serve static files in production
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -74,16 +84,43 @@ WSGI_APPLICATION = 'pesticide_tracker.wsgi.application'
 #    }
 #}
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get('DB_NAME', 'farm_tracker'),
-        'USER': os.environ.get('DB_USER', 'farm_tracker_user'),
-        'PASSWORD': os.environ.get('DB_PASSWORD', ''),
-        'HOST': os.environ.get('DB_HOST', 'localhost'),
-        'PORT': os.environ.get('DB_PORT', '5432'),
+# Database configuration with connection pooling for production
+# Supports DATABASE_URL (Railway, Render, Heroku) or individual env vars
+DATABASE_URL = os.environ.get('DATABASE_URL', '')
+
+if DATABASE_URL:
+    # Parse DATABASE_URL for cloud deployments (Railway, Render, Heroku)
+    import urllib.parse
+    url = urllib.parse.urlparse(DATABASE_URL)
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': url.path[1:],  # Remove leading slash
+            'USER': url.username,
+            'PASSWORD': url.password,
+            'HOST': url.hostname,
+            'PORT': url.port or '5432',
+            'CONN_MAX_AGE': 60,  # Connection pooling: keep connections for 60 seconds
+            'CONN_HEALTH_CHECKS': True,  # Check connection health before reuse
+            'OPTIONS': {
+                'connect_timeout': 10,
+                'sslmode': 'require',  # Required for cloud databases
+            },
+        }
     }
-}
+else:
+    # Local development with individual env vars
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.environ.get('DB_NAME', 'farm_tracker'),
+            'USER': os.environ.get('DB_USER', 'farm_tracker_user'),
+            'PASSWORD': os.environ.get('DB_PASSWORD', ''),
+            'HOST': os.environ.get('DB_HOST', 'localhost'),
+            'PORT': os.environ.get('DB_PORT', '5432'),
+            'CONN_MAX_AGE': 60 if not DEBUG else 0,  # Pool in production only
+        }
+    }
 
 CACHE_URL = os.environ.get('CACHE_URL', '')
 CACHES = {
@@ -118,11 +155,18 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-CORS_ALLOWED_ORIGINS = [
+# CORS configuration - add production frontend URL via environment variable
+_cors_origins = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
 ]
+# Add production frontend URL if set
+if os.environ.get('FRONTEND_URL'):
+    _cors_origins.append(os.environ.get('FRONTEND_URL'))
+if os.environ.get('CORS_ALLOWED_ORIGINS'):
+    _cors_origins.extend(os.environ.get('CORS_ALLOWED_ORIGINS').split(','))
 
+CORS_ALLOWED_ORIGINS = list(set(_cors_origins))  # Remove duplicates
 CORS_ALLOW_CREDENTIALS = True
 
 REST_FRAMEWORK = {
@@ -323,5 +367,84 @@ CELERY_BEAT_SCHEDULE = {
     'send-disease-alert-digest': {
         'task': 'api.tasks.disease_tasks.send_disease_alert_digest',
         'schedule': crontab(hour=7, minute=0),
+    },
+}
+
+# =============================================================================
+# PRODUCTION SECURITY SETTINGS
+# =============================================================================
+# These settings are automatically enabled when DEBUG=False
+
+if not DEBUG:
+    # HTTPS/SSL settings
+    SECURE_SSL_REDIRECT = True
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+    # Cookie security
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+
+    # HSTS (HTTP Strict Transport Security)
+    SECURE_HSTS_SECONDS = 31536000  # 1 year
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+
+    # Content security
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    SECURE_BROWSER_XSS_FILTER = True
+    X_FRAME_OPTIONS = 'DENY'
+
+    # CSRF trusted origins (required for Django 4.0+ with HTTPS)
+    CSRF_TRUSTED_ORIGINS = [
+        origin for origin in CORS_ALLOWED_ORIGINS
+        if origin.startswith('https://')
+    ]
+
+# =============================================================================
+# STATIC FILES (for production with whitenoise)
+# =============================================================================
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+# Add whitenoise for serving static files in production (optional)
+# Install with: pip install whitenoise
+# Then add 'whitenoise.middleware.WhiteNoiseMiddleware' after SecurityMiddleware
+
+# =============================================================================
+# LOGGING CONFIGURATION
+# =============================================================================
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {asctime} {module} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO' if not DEBUG else 'DEBUG',
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'api': {
+            'handlers': ['console'],
+            'level': 'DEBUG' if DEBUG else 'INFO',
+            'propagate': False,
+        },
     },
 }

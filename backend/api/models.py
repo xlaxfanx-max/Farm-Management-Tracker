@@ -3104,74 +3104,11 @@ class HarvestLabor(models.Model):
         return None
 
 # -----------------------------------------------------------------------------
-# SGMA CHOICES
+# ADDITIONAL SGMA/WELL CHOICES (extending earlier definitions)
+# Note: GSA_CHOICES, GROUNDWATER_BASIN_CHOICES, BASIN_PRIORITY_CHOICES,
+# PUMP_TYPE_CHOICES, POWER_SOURCE_CHOICES, FLOWMETER_UNIT_CHOICES, and
+# WELL_STATUS_CHOICES are defined above in the SGMA / WELL CHOICE CONSTANTS section
 # -----------------------------------------------------------------------------
-
-GSA_CHOICES = [
-    ('obgma', 'Ojai Basin Groundwater Management Agency (OBGMA)'),
-    ('fpbgsa', 'Fillmore and Piru Basins GSA'),
-    ('uvrga', 'Upper Ventura River Groundwater Agency'),
-    ('fcgma', 'Fox Canyon Groundwater Management Agency'),
-    ('other', 'Other'),
-    ('none', 'Not in GSA Jurisdiction'),
-]
-
-GROUNDWATER_BASIN_CHOICES = [
-    ('ojai_valley', 'Ojai Valley (4-002)'),
-    ('upper_ventura_river', 'Upper Ventura River (4-003.01)'),
-    ('lower_ventura_river', 'Lower Ventura River (4-003.02)'),
-    ('fillmore', 'Santa Clara River Valley - Fillmore (4-004.05)'),
-    ('piru', 'Santa Clara River Valley - Piru (4-004.06)'),
-    ('santa_paula', 'Santa Clara River Valley - Santa Paula (4-004.04)'),
-    ('oxnard', 'Santa Clara River Valley - Oxnard (4-004.02)'),
-    ('pleasant_valley', 'Pleasant Valley (4-006)'),
-    ('las_posas', 'Las Posas Valley (4-008)'),
-    ('arroyo_santa_rosa', 'Arroyo Santa Rosa Valley (4-007)'),
-    ('mound', 'Mound (4-004.01)'),
-    ('other', 'Other'),
-]
-
-BASIN_PRIORITY_CHOICES = [
-    ('critical', 'Critically Overdrafted'),
-    ('high', 'High Priority'),
-    ('medium', 'Medium Priority'),
-    ('low', 'Low Priority'),
-    ('very_low', 'Very Low Priority'),
-]
-
-PUMP_TYPE_CHOICES = [
-    ('submersible', 'Submersible'),
-    ('turbine', 'Vertical Turbine'),
-    ('jet', 'Jet Pump'),
-    ('centrifugal', 'Centrifugal'),
-    ('other', 'Other'),
-]
-
-POWER_SOURCE_CHOICES = [
-    ('electric_utility', 'Electric - Utility'),
-    ('electric_solar', 'Electric - Solar'),
-    ('diesel', 'Diesel Engine'),
-    ('natural_gas', 'Natural Gas Engine'),
-    ('propane', 'Propane Engine'),
-    ('other', 'Other'),
-]
-
-FLOWMETER_UNIT_CHOICES = [
-    ('acre_feet', 'Acre-Feet'),
-    ('gallons', 'Gallons'),
-    ('hundred_gallons', 'Hundred Gallons'),
-    ('thousand_gallons', 'Thousand Gallons'),
-    ('cubic_feet', 'Cubic Feet'),
-    ('hundred_cubic_feet', 'Hundred Cubic Feet (CCF)'),
-]
-
-WELL_STATUS_CHOICES = [
-    ('active', 'Active'),
-    ('inactive', 'Inactive'),
-    ('standby', 'Standby/Emergency'),
-    ('destroyed', 'Destroyed/Abandoned'),
-    ('monitoring', 'Monitoring Only'),
-]
 
 READING_TYPE_CHOICES = [
     ('manual', 'Manual Reading'),
