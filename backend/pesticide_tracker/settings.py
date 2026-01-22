@@ -95,14 +95,11 @@ DATABASE_URL = os.environ.get('DATABASE_URL', '')
 
 if DATABASE_URL:
     # Parse DATABASE_URL for cloud deployments (Railway, Render, Heroku)
-    # Don't require SSL for Railway internal network (.railway.internal)
-    use_ssl = 'railway.internal' not in DATABASE_URL
     DATABASES = {
-        'default': dj_database_url.config(
-            default=DATABASE_URL,
+        'default': dj_database_url.parse(
+            DATABASE_URL,
             conn_max_age=60,
             conn_health_checks=True,
-            ssl_require=use_ssl,
         )
     }
 else:
