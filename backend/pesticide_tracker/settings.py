@@ -23,7 +23,10 @@ AUTH_USER_MODEL = 'api.User'
 
 # Hosts/domain names that are valid for this site
 # In production, set ALLOWED_HOSTS env var to your domain (comma-separated)
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+_allowed_hosts = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+# Always allow Railway's healthcheck
+_allowed_hosts.extend(['healthcheck.railway.app', '.railway.app'])
+ALLOWED_HOSTS = [h.strip() for h in _allowed_hosts if h.strip()]
 
 INSTALLED_APPS = [
     'django.contrib.admin',
