@@ -153,6 +153,8 @@ function FieldModal({ field, farms, crops = [], rootstocks = [], preselectedFarm
     if (!formData.county) { alert('Please select a county - required for PUR compliance'); return; }
 
     const dataToSend = {
+      // Include ID for updates
+      ...(field?.id && { id: field.id }),
       // Basic info
       name: formData.name,
       field_number: formData.field_number || '',

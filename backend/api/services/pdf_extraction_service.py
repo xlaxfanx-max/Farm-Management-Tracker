@@ -15,7 +15,7 @@ from decimal import Decimal
 from datetime import date
 
 import anthropic
-from pdf2image import convert_from_path, convert_from_bytes
+import fitz  # PyMuPDF - no external dependencies needed
 from django.conf import settings
 
 logger = logging.getLogger(__name__)
@@ -53,8 +53,13 @@ class PDFExtractionService:
         """Initialize the extraction service."""
         self.client = None
         api_key = os.environ.get('ANTHROPIC_API_KEY') or getattr(settings, 'ANTHROPIC_API_KEY', None)
+        logger.info(f"PDFExtractionService init - API key present: {bool(api_key)}")
+        if not api_key:
+            logger.error("ANTHROPIC_API_KEY not found in environment or settings!")
+            logger.error(f"os.environ keys: {[k for k in os.environ.keys() if 'ANTHROPIC' in k.upper()]}")
         if api_key:
             self.client = anthropic.Anthropic(api_key=api_key)
+            logger.info("Anthropic client initialized successfully")
 
     def extract_from_pdf(
         self,
@@ -74,10 +79,17 @@ class PDFExtractionService:
             ExtractionResult with extracted data or error
         """
         if not self.client:
-            return ExtractionResult(
-                success=False,
-                error="Anthropic API key not configured. Set ANTHROPIC_API_KEY environment variable."
-            )
+            # Re-check environment in case it was loaded after service was imported
+            api_key = os.environ.get('ANTHROPIC_API_KEY') or getattr(settings, 'ANTHROPIC_API_KEY', None)
+            if api_key:
+                self.client = anthropic.Anthropic(api_key=api_key)
+                logger.info("Late-initialized Anthropic client")
+            else:
+                logger.error(f"API key still not found. Env has ANTHROPIC keys: {[k for k in os.environ.keys() if 'ANTHROP' in k.upper()]}")
+                return ExtractionResult(
+                    success=False,
+                    error="Anthropic API key not configured. Set ANTHROPIC_API_KEY environment variable. Please restart the Django server after adding the key to your .env file."
+                )
 
         try:
             # Convert PDF pages to images
@@ -111,43 +123,36 @@ class PDFExtractionService:
         pdf_bytes: bytes = None
     ) -> List[str]:
         """
-        Convert PDF pages to base64-encoded PNG images.
+        Convert PDF pages to base64-encoded PNG images using PyMuPDF.
 
         Returns:
             List of base64 encoded image strings
         """
         try:
-            # Convert PDF to PIL Images
+            # Open PDF with PyMuPDF
             if pdf_path:
-                pages = convert_from_path(
-                    pdf_path,
-                    dpi=200,  # Good balance of quality and size
-                    first_page=1,
-                    last_page=self.MAX_PAGES
-                )
+                doc = fitz.open(pdf_path)
             elif pdf_bytes:
-                pages = convert_from_bytes(
-                    pdf_bytes,
-                    dpi=200,
-                    first_page=1,
-                    last_page=self.MAX_PAGES
-                )
+                doc = fitz.open(stream=pdf_bytes, filetype="pdf")
             else:
                 raise ValueError("Either pdf_path or pdf_bytes must be provided")
 
             # Convert each page to base64
             base64_images = []
-            for i, page in enumerate(pages):
-                # Save to temporary PNG
-                with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as tmp:
-                    page.save(tmp.name, 'PNG', optimize=True)
-                    with open(tmp.name, 'rb') as f:
-                        img_data = f.read()
-                    os.unlink(tmp.name)
+            num_pages = min(len(doc), self.MAX_PAGES)
+
+            for i in range(num_pages):
+                page = doc[i]
+                # Render at 200 DPI (default is 72, so scale by 200/72)
+                zoom = 200 / 72
+                mat = fitz.Matrix(zoom, zoom)
+                pix = page.get_pixmap(matrix=mat)
+                img_data = pix.tobytes("png")
 
                 base64_images.append(base64.standard_b64encode(img_data).decode('utf-8'))
                 logger.debug(f"Converted page {i+1} to image ({len(img_data)} bytes)")
 
+            doc.close()
             return base64_images
 
         except Exception as e:
@@ -401,14 +406,14 @@ Return ONLY the JSON object, no additional text."""
             'report_date': parse_date(header.get('report_date')) or date.today(),
             'period_start': parse_date(header.get('period_start')) or date.today(),
             'period_end': parse_date(header.get('period_end')) or date.today(),
-            'run_numbers': header.get('run_numbers', ''),
+            'run_numbers': header.get('run_numbers') or '',
             'bins_this_period': Decimal(str(summary.get('total_bins', 0) or 0)),
             'bins_cumulative': Decimal(str(summary.get('total_bins', 0) or 0)),
             'total_packed_percent': self._to_decimal(summary.get('total_packed_percent')),
             'house_avg_packed_percent': self._to_decimal(summary.get('house_avg_packed_percent')),
             'juice_percent': self._to_decimal(summary.get('juice_percent')),
             'cull_percent': self._to_decimal(summary.get('cull_percent')),
-            'quality_notes': extracted_data.get('quality_notes', ''),
+            'quality_notes': extracted_data.get('quality_notes') or '',
             'grade_data_json': extracted_data,
         }
 
@@ -487,9 +492,9 @@ Return ONLY the JSON object, no additional text."""
 
         for line in grade_lines:
             line_data = {
-                'grade': line.get('grade', 'UNKNOWN'),
-                'size': line.get('size', ''),
-                'unit_of_measure': line.get('unit', 'CARTON'),
+                'grade': line.get('grade') or 'UNKNOWN',
+                'size': line.get('size') or '',  # Handle None values
+                'unit_of_measure': line.get('unit') or 'CARTON',
             }
 
             if for_settlement:

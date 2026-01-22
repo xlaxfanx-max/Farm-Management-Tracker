@@ -2489,8 +2489,42 @@ export const packinghouseAnalyticsAPI = {
   getSettlementComparison: (params = {}) =>
     api.get('/packinghouse-analytics/settlement-comparison/', { params }),
 
-  getDashboard: () =>
-    api.get('/packinghouse-analytics/dashboard/'),
+  getDashboard: (params = {}) =>
+    api.get('/packinghouse-analytics/dashboard/', { params }),
+
+  // Unified harvest-to-packing pipeline overview
+  getPipeline: (params = {}) =>
+    api.get('/harvest-packing/pipeline/', { params }),
+};
+
+// =============================================================================
+// HARVEST PROFITABILITY ANALYTICS API
+// =============================================================================
+
+export const harvestAnalyticsAPI = {
+  /**
+   * Get true profitability analysis - settlement returns minus harvest costs
+   * @param {Object} params - { season, field_id, packinghouse }
+   * @returns Profitability breakdown by field
+   */
+  getProfitability: (params = {}) =>
+    api.get('/harvest-analytics/profitability/', { params }),
+
+  /**
+   * Get detailed breakdown of packinghouse deductions
+   * @param {Object} params - { season, field_id, packinghouse }
+   * @returns Deductions grouped by category
+   */
+  getDeductionBreakdown: (params = {}) =>
+    api.get('/harvest-analytics/deductions/', { params }),
+
+  /**
+   * Get year-over-year season comparison
+   * @param {Object} params - { field_id, packinghouse }
+   * @returns Metrics across seasons with YoY changes
+   */
+  getSeasonComparison: (params = {}) =>
+    api.get('/harvest-analytics/seasons/', { params }),
 };
 
 // =============================================================================

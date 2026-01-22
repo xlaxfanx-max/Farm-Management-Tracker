@@ -30,25 +30,35 @@ const PackinghouseDashboard = () => {
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [selectedSeason, setSelectedSeason] = useState('');
 
   useEffect(() => {
     if (activeTab === 'dashboard') {
       fetchDashboard();
     }
-  }, [activeTab]);
+  }, [activeTab, selectedSeason]);
 
   const fetchDashboard = async () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await packinghouseAnalyticsAPI.getDashboard();
+      const params = selectedSeason ? { season: selectedSeason } : {};
+      const response = await packinghouseAnalyticsAPI.getDashboard(params);
       setDashboardData(response.data);
+      // Set selected season from response if not already set
+      if (!selectedSeason && response.data.selected_season) {
+        setSelectedSeason(response.data.selected_season);
+      }
     } catch (err) {
       console.error('Error fetching dashboard:', err);
       setError('Failed to load dashboard data');
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSeasonChange = (e) => {
+    setSelectedSeason(e.target.value);
   };
 
   const formatCurrency = (value) => {
@@ -105,11 +115,25 @@ const PackinghouseDashboard = () => {
 
     return (
       <div className="space-y-6">
-        {/* Season Header */}
+        {/* Season Header with Selector */}
         <div className="flex justify-between items-center">
-          <h2 className="text-lg font-semibold text-gray-800">
-            Season: {dashboardData.current_season}
-          </h2>
+          <div className="flex items-center space-x-3">
+            <label className="text-lg font-semibold text-gray-800 flex items-center">
+              <Calendar className="w-5 h-5 mr-2 text-green-600" />
+              Season:
+            </label>
+            <select
+              value={selectedSeason || dashboardData.selected_season}
+              onChange={handleSeasonChange}
+              className="px-3 py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-gray-800 font-medium"
+            >
+              {dashboardData.available_seasons?.map((season) => (
+                <option key={season} value={season}>
+                  {season}
+                </option>
+              ))}
+            </select>
+          </div>
           <button
             onClick={fetchDashboard}
             className="flex items-center text-gray-600 hover:text-gray-800"
@@ -124,15 +148,16 @@ const PackinghouseDashboard = () => {
           <div className="bg-white rounded-lg border border-gray-200 p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500">Active Pools</p>
+                <p className="text-sm text-gray-500">Total Pools</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {dashboardData.active_pools}
+                  {dashboardData.total_pools || 0}
                 </p>
               </div>
               <div className="p-3 bg-green-100 rounded-lg">
                 <Boxes className="w-6 h-6 text-green-600" />
               </div>
             </div>
+            <p className="text-xs text-gray-400 mt-1">{dashboardData.active_pools || 0} active</p>
           </div>
 
           <div className="bg-white rounded-lg border border-gray-200 p-4">
@@ -147,7 +172,6 @@ const PackinghouseDashboard = () => {
                 <Truck className="w-6 h-6 text-blue-600" />
               </div>
             </div>
-            <p className="text-xs text-gray-400 mt-1">This season</p>
           </div>
 
           <div className="bg-white rounded-lg border border-gray-200 p-4">
@@ -197,12 +221,16 @@ const PackinghouseDashboard = () => {
                   </div>
                   <div className="flex items-center space-x-8 text-sm">
                     <div className="text-center">
-                      <p className="text-gray-500">Active Pools</p>
-                      <p className="font-semibold">{ph.active_pools}</p>
+                      <p className="text-gray-500">Pools</p>
+                      <p className="font-semibold">{ph.total_pools || 0}</p>
                     </div>
                     <div className="text-center">
                       <p className="text-gray-500">Bins</p>
                       <p className="font-semibold">{formatNumber(ph.season_bins)}</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-gray-500">Settlements</p>
+                      <p className="font-semibold text-green-600">{formatCurrency(ph.total_settlements)}</p>
                     </div>
                     <ChevronRight className="w-5 h-5 text-gray-400" />
                   </div>

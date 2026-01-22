@@ -65,12 +65,17 @@ const StatementList = ({ packinghouseId = null }) => {
     }
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this statement?')) return;
+  const handleDelete = async (statement) => {
+    const isProcessed = statement.status === 'completed';
+    const warningMessage = isProcessed
+      ? `Are you sure you want to delete "${statement.original_filename}"?\n\nWARNING: This will also delete the associated settlement/packout report and all related data (grade lines, deductions). This action cannot be undone.`
+      : `Are you sure you want to delete "${statement.original_filename}"?`;
+
+    if (!window.confirm(warningMessage)) return;
 
     try {
-      await packinghouseStatementsAPI.delete(id);
-      setStatements(prev => prev.filter(s => s.id !== id));
+      await packinghouseStatementsAPI.delete(statement.id);
+      setStatements(prev => prev.filter(s => s.id !== statement.id));
     } catch (err) {
       console.error('Error deleting statement:', err);
       alert('Failed to delete statement');
@@ -297,15 +302,13 @@ const StatementList = ({ packinghouseId = null }) => {
                             <RefreshCw className="w-4 h-4" />
                           </button>
                         )}
-                        {!statement.is_processed && (
-                          <button
-                            onClick={() => handleDelete(statement.id)}
-                            className="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded"
-                            title="Delete"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        )}
+                        <button
+                          onClick={() => handleDelete(statement)}
+                          className="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded"
+                          title={statement.status === 'completed' ? "Delete (includes settlement/packout data)" : "Delete"}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -334,6 +337,7 @@ const StatementList = ({ packinghouseId = null }) => {
             fetchStatements();
           }}
           defaultPackinghouse={selectedStatement.packinghouse}
+          existingStatement={selectedStatement}
         />
       )}
     </div>

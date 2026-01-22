@@ -246,6 +246,71 @@ const FarmMap = ({
     }
   }, [drawingField]);
 
+  // Track when map is ready for useEffect dependencies
+  const [mapReady, setMapReady] = useState(false);
+
+  // Fix for map not rendering correctly when container size changes or becomes visible
+  // This handles tabs, modals, or any situation where the map container isn't visible on initial render
+  useEffect(() => {
+    if (mapRef.current) {
+      // Invalidate size after a short delay to ensure container has proper dimensions
+      const timer = setTimeout(() => {
+        if (mapRef.current) {
+          mapRef.current.invalidateSize();
+        }
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [isExpanded, height, mapReady]);
+
+  // Use ResizeObserver and IntersectionObserver to handle container resize and visibility
+  useEffect(() => {
+    if (!mapRef.current || !mapReady) return;
+
+    const mapContainer = mapRef.current.getContainer();
+    if (!mapContainer) return;
+
+    // ResizeObserver for container size changes
+    const resizeObserver = new ResizeObserver(() => {
+      if (mapRef.current) {
+        mapRef.current.invalidateSize();
+      }
+    });
+    resizeObserver.observe(mapContainer);
+
+    // IntersectionObserver for visibility changes (e.g., tab switching)
+    const intersectionObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && mapRef.current) {
+            // Map became visible - invalidate size
+            setTimeout(() => {
+              if (mapRef.current) {
+                mapRef.current.invalidateSize();
+              }
+            }, 100);
+          }
+        });
+      },
+      { threshold: 0.1 }
+    );
+    intersectionObserver.observe(mapContainer);
+
+    // Also invalidate on window resize
+    const handleResize = () => {
+      if (mapRef.current) {
+        mapRef.current.invalidateSize();
+      }
+    };
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      resizeObserver.disconnect();
+      intersectionObserver.disconnect();
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [mapReady]);
+
   return (
     <div 
       className={`relative rounded-xl overflow-hidden shadow-lg border border-gray-200 ${
@@ -346,17 +411,41 @@ const FarmMap = ({
         </div>
       </div>
 
-      {/* Drawing Controls */}
+      {/* Drawing Controls - positioned at bottom-left to avoid Leaflet controls */}
       {isDrawing && (
-        <div className="absolute top-4 left-4 z-[1000] bg-white rounded-lg shadow-xl border border-gray-200 p-4 max-w-xs">
-          <div className="flex items-center gap-2 mb-3">
-            <Pencil className="w-5 h-5 text-amber-500" />
-            <span className="font-semibold text-gray-800">Drawing: {drawingFieldName}</span>
+        <div className="absolute bottom-4 left-4 z-[1000] bg-white rounded-lg shadow-xl border-2 border-blue-400 p-4 max-w-sm">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <div className="p-1.5 bg-blue-100 rounded-lg">
+                <Pencil className="w-5 h-5 text-blue-600" />
+              </div>
+              <span className="font-semibold text-gray-800">Drawing: {drawingFieldName}</span>
+            </div>
+            <button
+              onClick={cancelDrawing}
+              className="p-1 hover:bg-gray-100 rounded"
+            >
+              <X className="w-4 h-4 text-gray-500" />
+            </button>
           </div>
-          <p className="text-sm text-gray-600 mb-3">
-            Click on the map to draw field boundaries. Click the first point again to close the polygon.
-          </p>
-          
+
+          {!pendingBoundary && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-3">
+              <p className="text-sm text-blue-800 font-medium mb-1">
+                <span className="inline-block w-5 h-5 bg-blue-600 text-white text-xs rounded mr-2 text-center leading-5">1</span>
+                Click the polygon tool in the top-left corner
+              </p>
+              <p className="text-sm text-blue-800 font-medium mb-1">
+                <span className="inline-block w-5 h-5 bg-blue-600 text-white text-xs rounded mr-2 text-center leading-5">2</span>
+                Click on the map to place boundary points
+              </p>
+              <p className="text-sm text-blue-800 font-medium">
+                <span className="inline-block w-5 h-5 bg-blue-600 text-white text-xs rounded mr-2 text-center leading-5">3</span>
+                Click the first point to close the polygon
+              </p>
+            </div>
+          )}
+
           {pendingBoundary && (
             <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-3">
               <div className="text-sm font-medium text-green-800">Boundary Drawn!</div>
@@ -365,20 +454,20 @@ const FarmMap = ({
               </div>
             </div>
           )}
-          
+
           <div className="flex gap-2">
             {pendingBoundary && (
               <button
                 onClick={saveBoundary}
-                className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm font-medium"
+                className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm font-semibold shadow-md"
               >
                 <Save className="w-4 h-4" />
-                Save
+                Save Boundary
               </button>
             )}
             <button
               onClick={cancelDrawing}
-              className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-sm font-medium"
+              className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2.5 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 text-sm font-medium border border-red-200"
             >
               <X className="w-4 h-4" />
               Cancel
@@ -456,6 +545,12 @@ const FarmMap = ({
         zoomControl={true}
         whenReady={(mapInstance) => {
           mapRef.current = mapInstance.target;
+          setMapReady(true);
+          // Invalidate size after map is ready to fix grey areas
+          // Use multiple delays to handle various rendering scenarios
+          setTimeout(() => mapInstance.target.invalidateSize(), 0);
+          setTimeout(() => mapInstance.target.invalidateSize(), 100);
+          setTimeout(() => mapInstance.target.invalidateSize(), 300);
         }}
       >
         <TileLayer
@@ -521,13 +616,14 @@ const FarmMap = ({
                                 e.preventDefault();
                                 startDrawing(field.id, field.name);
                               }}
-                              className={`ml-2 px-2 py-1 rounded text-xs whitespace-nowrap ${
-                                field.boundary_geojson 
-                                  ? 'bg-amber-100 text-amber-700 hover:bg-amber-200' 
-                                  : 'bg-blue-600 text-white hover:bg-blue-700'
+                              className={`ml-2 px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap flex items-center gap-1.5 transition-all ${
+                                field.boundary_geojson
+                                  ? 'bg-amber-100 text-amber-700 hover:bg-amber-200 border border-amber-300'
+                                  : 'bg-blue-600 text-white hover:bg-blue-700 shadow-md hover:shadow-lg animate-pulse hover:animate-none'
                               }`}
                             >
-                              {field.boundary_geojson ? 'Redraw' : 'Draw'}
+                              <Pencil className="w-3 h-3" />
+                              {field.boundary_geojson ? 'Redraw' : 'Draw Boundary'}
                             </button>
                           </div>
                         ))}
@@ -563,15 +659,15 @@ const FarmMap = ({
               }}
             >
               <Popup>
-                <div className="min-w-[200px]">
+                <div className="min-w-[220px]">
                   <h3 className="font-bold text-lg text-gray-800">{field.name}</h3>
                   <p className="text-sm text-gray-600">{field.current_crop || 'No crop'}</p>
                   <p className="text-sm text-gray-500">{field.total_acres} acres</p>
                   <button
                     onClick={() => startDrawing(field.id, field.name)}
-                    className="mt-2 w-full flex items-center justify-center gap-1.5 px-3 py-1.5 bg-amber-100 text-amber-700 rounded hover:bg-amber-200 text-sm font-medium"
+                    className="mt-3 w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-amber-500 text-white rounded-lg hover:bg-amber-600 text-sm font-semibold shadow-md hover:shadow-lg transition-all border border-amber-600"
                   >
-                    <Pencil className="w-3.5 h-3.5" />
+                    <Pencil className="w-4 h-4" />
                     Redraw Boundary
                   </button>
                 </div>
@@ -596,15 +692,15 @@ const FarmMap = ({
               }}
             >
               <Popup>
-                <div className="min-w-[200px]">
+                <div className="min-w-[220px]">
                   <h3 className="font-bold text-lg text-gray-800">{field.name}</h3>
                   <p className="text-sm text-gray-600">{field.current_crop || 'No crop'}</p>
                   <p className="text-sm text-gray-500">{field.total_acres} acres</p>
                   <button
                     onClick={() => startDrawing(field.id, field.name)}
-                    className="mt-2 w-full flex items-center justify-center gap-1.5 px-3 py-1.5 bg-green-100 text-green-700 rounded hover:bg-green-200 text-sm font-medium"
+                    className="mt-3 w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-semibold shadow-md hover:shadow-lg transition-all animate-pulse hover:animate-none"
                   >
-                    <Pencil className="w-3.5 h-3.5" />
+                    <Pencil className="w-4 h-4" />
                     Draw Boundary
                   </button>
                 </div>

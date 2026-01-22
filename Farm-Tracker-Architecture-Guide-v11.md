@@ -1,5 +1,5 @@
 # Farm Management Tracker - System Architecture Guide
-## Version 12.0 | January 20, 2026
+## Version 12.2 | January 21, 2026
 
 ---
 
@@ -40,8 +40,36 @@ The **Farm Management Tracker** is a comprehensive full-stack web application de
 | **Harvest Operations** | Yield tracking, revenue, labor costs, PHI compliance |
 | **Quarantine Compliance** | Plant quarantine status checking with zone management |
 | **Analytics Dashboard** | Farm performance metrics and visualizations |
+| **Packinghouse Management** | Packinghouses, pools, deliveries, packout tracking (NEW) |
+| **Harvest-to-Packing Pipeline** | End-to-end traceability from harvest to packout (NEW) |
+| **PDF Statement Extraction** | AI-powered extraction from packinghouse PDF statements (NEW) |
 | **Compliance Reporting** | PUR exports, SGMA semi-annual reports, Nitrogen/ILRP reports |
 | **Audit Logging** | Comprehensive activity tracking for compliance |
+
+### What's New in v12.2
+
+| Feature | Description |
+|---------|-------------|
+| **Harvest Analytics Module** | Profitability analysis, deduction breakdown, and season comparison dashboards |
+| **PoolSettlement Model** | Detailed settlement tracking with credits, deductions, and net returns |
+| **ProfitabilityDashboard Component** | Multi-tab analytics with profitability, deductions, and YoY comparisons |
+| **Settlement Structure** | Pick & haul costs included in deductions; Net Settlement = grower's actual return |
+| **3 New Analytics Endpoints** | `/harvest-analytics/profitability/`, `/deductions/`, `/seasons/` |
+| **SettlementDetail Component** | Detailed view of pool settlement breakdowns |
+| **PackinghouseDashboard Component** | Unified packinghouse management dashboard |
+
+### What's New in v12.1
+
+| Feature | Description |
+|---------|-------------|
+| **Packinghouse Module** | Complete packinghouse management with pools, deliveries, and packout tracking |
+| **Harvest-to-Packing Pipeline** | Unified workflow from field harvest to packinghouse settlement |
+| **PDF Statement AI Extraction** | Anthropic Claude-powered extraction from packinghouse PDF statements |
+| **Harvest Linking** | Link packinghouse deliveries to harvest records for full traceability |
+| **Pipeline Overview** | Visual pipeline showing harvest → delivery → packout → settlement flow |
+| **7 Packinghouse Models** | Packinghouse, Pool, PackinghouseDelivery, PackoutReport, PackoutGrade, PoolSettlement, PackinghouseStatement |
+| **Dark Mode Support** | Application-wide dark mode toggle |
+| **PyMuPDF Integration** | PDF-to-image conversion for AI extraction (replacing pdf2image/poppler) |
 
 ### What's New in v12.0
 
@@ -277,6 +305,8 @@ The **Farm Management Tracker** is a comprehensive full-stack web application de
 | **laspy[lazrs]** | **>=2.4.0** | **LiDAR point cloud file format (NEW)** |
 | **pyproj** | **>=3.5.0** | **Geospatial coordinate transformations (NEW)** |
 | **mcp** | **>=1.25.0** | **MCP Server for AI Agent Integration (NEW)** |
+| **anthropic** | **>=0.18.0** | **Anthropic Claude API for PDF extraction (NEW)** |
+| **PyMuPDF** | **>=1.23.0** | **PDF to image conversion (fitz library) (NEW)** |
 
 ### Database
 
@@ -387,7 +417,7 @@ Farm-Management-Tracker/
 |       +-- weather_service.py            # Weather API client
 |       +-- email_service.py              # Email configuration
 |       |
-|       +-- migrations/                   # 29 migration files
+|       +-- migrations/                   # 34 migration files
 |       |   +-- 0001_initial.py
 |       |   +-- ...
 |       |   +-- 0018_lidar_integration.py
@@ -414,7 +444,7 @@ Farm-Management-Tracker/
 |
 +-- frontend/                             # React Frontend
     +-- src/
-    |   +-- components/                   # 83+ UI components
+    |   +-- components/                   # 100+ UI components
     |   |   +-- Dashboard.js
     |   |   +-- Farms.js                  # Refactored - uses FarmCard, FarmToolbar
     |   |   +-- FarmCard.js               # Extracted farm card component
@@ -427,7 +457,9 @@ Farm-Management-Tracker/
     |   |   +-- Analytics.js
     |   |   +-- AnalyticsWidget.js
     |   |   +-- Reports.js, PURReports.js
-    |   |   +-- Harvests.js, HarvestAnalytics.js
+    |   |   +-- Harvests.js               # Unified Harvest & Packing module
+    |   |   +-- HarvestAnalytics.js
+    |   |   +-- ProfitabilityDashboard.js # Settlement profitability analytics
     |   |   +-- NutrientManagement.js
     |   |   +-- WaterManagement.js
     |   |   +-- Wells.js
@@ -472,6 +504,23 @@ Farm-Management-Tracker/
     |   |   |   +-- WPSCompliance.js
     |   |   |   +-- ComplianceReports.js
     |   |   |   +-- ComplianceSettings.js
+    |   |   |
+    |   |   +-- packinghouse/             # Packinghouse management (15)
+    |   |   |   +-- index.js
+    |   |   |   +-- PackinghouseList.js       # Packinghouse directory
+    |   |   |   +-- PackinghouseModal.js      # Add/edit packinghouse
+    |   |   |   +-- PackinghouseDashboard.js  # Unified packinghouse dashboard
+    |   |   |   +-- PoolList.js               # Pool management
+    |   |   |   +-- PoolModal.js              # Add/edit pool
+    |   |   |   +-- PoolDetail.js             # Pool detail with deliveries/packouts
+    |   |   |   +-- DeliveryModal.js          # Record deliveries with harvest linking
+    |   |   |   +-- PackoutReportModal.js     # Enter packout data
+    |   |   |   +-- PDFUploadModal.js         # Upload & AI extract statements
+    |   |   |   +-- ExtractedDataPreview.js   # Review extracted PDF data
+    |   |   |   +-- StatementList.js          # List uploaded statements
+    |   |   |   +-- SettlementDetail.js       # Pool settlement details
+    |   |   |   +-- PipelineOverview.js       # Harvest-to-packing pipeline viz
+    |   |   |   +-- PackinghouseAnalytics.js  # Packinghouse analytics
     |   |   |
     |   |   +-- disease/                  # Disease prevention (5) (NEW)
     |   |   |   +-- index.js
@@ -519,7 +568,7 @@ Farm-Management-Tracker/
 
 ## DATABASE MODELS
 
-### Model Count: 66 Models
+### Model Count: 73 Models
 
 Organized by domain:
 
@@ -578,11 +627,25 @@ Organized by domain:
 
 | Model | Purpose | Key Fields |
 |-------|---------|------------|
-| `Harvest` | Harvest events | field, harvest_date, total_bins, price_per_bin |
+| `Harvest` | Harvest events | field, harvest_date, total_bins, price_per_bin, harvest_number, lot_number |
 | `HarvestLoad` | Load tracking | harvest, load_number, bins, weight_lbs, buyer |
 | `HarvestLabor` | Labor records | harvest, contractor, workers, hours, cost |
 | `Buyer` | Buyer companies | name, contact_*, payment_terms |
 | `LaborContractor` | Contractors | name, license_number, contact_* |
+
+### Packinghouse Management (7 models)
+
+| Model | Purpose | Key Fields |
+|-------|---------|------------|
+| `Packinghouse` | Packinghouse facilities | company, name, short_code, address, contact_info, is_active |
+| `Pool` | Grower pools | packinghouse, pool_number, pool_name, crop_variety, season, status (open/closed/settled) |
+| `PackinghouseDelivery` | Fruit deliveries | pool, field, harvest (FK), delivery_date, ticket_number, bins, weight_lbs |
+| `PackoutReport` | Packout summaries | pool, packout_date, total_bins_packed, cull_percent, grades (via PackoutGrade) |
+| `PackoutGrade` | Grade breakdown | packout_report, grade_name (Fancy/Choice/etc), cartons, weight_lbs, price_per_carton |
+| `PoolSettlement` | Settlement records | pool, field, statement_date, total_bins, total_credits, total_deductions, net_return, net_per_bin |
+| `PackinghouseStatement` | PDF statements | packinghouse, pool, original_filename, pdf_file, status, extracted_data (JSON), statement_type |
+
+**Settlement Structure Note:** Pick & haul costs are included as line items in settlement deductions. Therefore, `net_return` represents the grower's actual return after all packinghouse-related costs.
 
 ### Nutrient Management (3 models)
 
@@ -732,6 +795,35 @@ Organized by domain:
 | Harvest Labor | `/api/harvest-labor/` | Labor records |
 | Buyers | `/api/buyers/` | Buyer companies |
 | Labor Contractors | `/api/labor-contractors/` | Contractors |
+
+### Packinghouse Management (NEW)
+
+| Resource | Endpoint | Notes |
+|----------|----------|-------|
+| Packinghouses | `/api/packinghouses/` | Packinghouse CRUD |
+| Pools | `/api/pools/` | Pool management |
+| Pools by Packinghouse | `/api/pools/?packinghouse=<id>` | Filter by packinghouse |
+| Pool Summary | `/api/pools/<id>/summary/` | Deliveries, packout stats |
+| Deliveries | `/api/packinghouse-deliveries/` | Delivery records |
+| Packout Reports | `/api/packout-reports/` | Packout summaries |
+| Packout Grades | `/api/packout-grades/` | Grade breakdown |
+| Statements | `/api/packinghouse-statements/` | PDF statement upload |
+| Extract Statement | `/api/packinghouse-statements/<id>/extract/` | Trigger AI extraction |
+| Confirm Statement | `/api/packinghouse-statements/<id>/confirm/` | Confirm extracted data |
+| Pipeline Overview | `/api/harvest-packing/pipeline/` | Harvest-to-packing pipeline stats |
+
+### Harvest Analytics
+
+| Endpoint | Method | Purpose |
+|----------|--------|---------|
+| `/api/harvest-analytics/profitability/` | GET | Profitability analysis by field/pool with margins |
+| `/api/harvest-analytics/deductions/` | GET | Deduction breakdown by category |
+| `/api/harvest-analytics/seasons/` | GET | Year-over-year season comparison |
+
+**Query Parameters (all endpoints):**
+- `season`: Filter by season (e.g., "2024-2025")
+- `packinghouse`: Filter by packinghouse ID
+- `field_id`: Filter by specific field
 
 ### Nutrients
 
@@ -1078,6 +1170,8 @@ backend/api/services/
 ├── cdfa_data_sync.py         # CDFA data synchronization (NEW)
 ├── proximity_calculator.py   # Disease proximity calculations (NEW)
 │
+├── pdf_extraction_service.py # AI-powered PDF data extraction (NEW)
+│
 ├── compliance/               # Compliance services (NEW)
 │   ├── __init__.py
 │   ├── pesticide_compliance.py
@@ -1228,6 +1322,7 @@ EMAIL_HOST_PASSWORD=your_api_key
 # External APIs
 OPENWEATHERMAP_API_KEY=your_key
 CIMIS_API_KEY=your_key
+ANTHROPIC_API_KEY=your_key  # For PDF extraction (NEW)
 
 # Celery/Redis
 CELERY_BROKER_URL=redis://localhost:6379/0
@@ -1285,6 +1380,7 @@ CELERY_BROKER_URL=redis://localhost:6379/0
 | Tree views | `backend/api/tree_views.py` |
 | Disease views | `backend/api/disease_views.py` |
 | Compliance views | `backend/api/compliance_views.py` |
+| Packinghouse views | `backend/api/packinghouse_views.py` |
 | Tree detection service | `backend/api/services/tree_detection.py` |
 | LiDAR processing service | `backend/api/services/lidar_processing.py` |
 | Tree matching service | `backend/api/services/tree_matching.py` |
@@ -1298,10 +1394,14 @@ CELERY_BROKER_URL=redis://localhost:6379/0
 | Data context | `frontend/src/contexts/DataContext.js` |
 | API service | `frontend/src/services/api.js` |
 | Farms page | `frontend/src/components/Farms.js` |
+| Harvests page | `frontend/src/components/Harvests.js` |
+| Profitability dashboard | `frontend/src/components/ProfitabilityDashboard.js` |
 | Imagery components | `frontend/src/components/imagery/` |
 | Compliance components | `frontend/src/components/compliance/` |
 | Disease components | `frontend/src/components/disease/` |
 | Dashboard components | `frontend/src/components/dashboard/` |
+| Packinghouse components | `frontend/src/components/packinghouse/` |
+| PDF extraction service | `backend/api/services/pdf_extraction_service.py` |
 
 ---
 
@@ -1340,6 +1440,23 @@ celery -A pesticide_tracker beat --loglevel=info
 ---
 
 ## ROADMAP
+
+### Completed (v12.2)
+
+- [x] **Harvest Analytics Module** - Profitability, deductions, and season comparison dashboards
+- [x] **PoolSettlement Model** - Detailed settlement tracking with credits, deductions, net returns
+- [x] **ProfitabilityDashboard** - Multi-tab analytics with field/pool breakdowns
+- [x] **Settlement Structure Clarification** - Net Settlement = grower's actual return (all costs deducted)
+
+### Completed (v12.1)
+
+- [x] **Packinghouse Module** - Complete packinghouse management (7 models)
+- [x] **Harvest-to-Packing Pipeline** - End-to-end traceability with linking
+- [x] **PDF Statement AI Extraction** - Anthropic Claude-powered PDF data extraction
+- [x] **Harvest Linking** - Link deliveries to harvest records for traceability
+- [x] **Pipeline Overview** - Visual pipeline from harvest to settlement
+- [x] **Dark Mode** - Application-wide dark mode support
+- [x] **PyMuPDF Integration** - Replaced pdf2image/poppler with PyMuPDF
 
 ### Completed (v12.0)
 
@@ -1404,7 +1521,32 @@ celery -A pesticide_tracker beat --loglevel=info
 
 ---
 
-*Document Version: 12.0 | Last Updated: January 20, 2026*
+*Document Version: 12.2 | Last Updated: January 21, 2026*
+
+*Changes in v12.2:*
+- *Added Harvest Analytics Module with profitability analysis, deduction breakdown, and season comparison*
+- *Added PoolSettlement model for detailed settlement tracking with credits, deductions, and net returns*
+- *Added ProfitabilityDashboard.js component with multi-tab analytics views*
+- *Added SettlementDetail.js and PackinghouseDashboard.js components*
+- *Added 3 new harvest analytics API endpoints: /api/harvest-analytics/profitability/, /deductions/, /seasons/*
+- *Clarified settlement structure: pick & haul costs are included in deductions, Net Settlement = grower's actual return*
+- *Updated model count from 72 to 73*
+- *Updated component count to 100+*
+- *Updated migration count from 29 to 34*
+- *Updated packinghouse component count from 12 to 15*
+
+*Changes in v12.1:*
+- *Added Packinghouse Management Module (7 models: Packinghouse, Pool, PackinghouseDelivery, PackoutReport, PackoutGrade, PoolSettlement, PackinghouseStatement)*
+- *Added Harvest-to-Packing Pipeline with visual overview component*
+- *Added PDF Statement AI Extraction using Anthropic Claude API*
+- *Added Harvest Linking - deliveries can link to harvest records for traceability*
+- *Added packinghouse frontend components in components/packinghouse/*
+- *Merged Harvest and Packinghouse sections into unified "Harvest & Packing" module*
+- *Added dark mode support across the application*
+- *Added PyMuPDF (fitz) for PDF-to-image conversion (replaced pdf2image/poppler)*
+- *Added anthropic>=0.18.0 dependency for PDF extraction*
+- *New backend service: pdf_extraction_service.py*
+- *New API endpoints: /api/packinghouses/, /api/pools/, /api/packinghouse-deliveries/, /api/packout-reports/, /api/packinghouse-statements/, /api/harvest-packing/pipeline/*
 
 *Changes in v12.0:*
 - *Added LiDAR Integration System (4 new models: LiDARDataset, LiDARProcessingRun, LiDARDetectedTree, TerrainAnalysis)*

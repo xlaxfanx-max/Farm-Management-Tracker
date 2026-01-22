@@ -2,9 +2,11 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 
-load_dotenv()
-
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Load .env file from the backend directory
+# override=True ensures .env values take precedence over any existing env vars
+load_dotenv(BASE_DIR / '.env', override=True)
 
 SECRET_KEY = 'django-insecure-change-this-in-production-abc123xyz'
 
@@ -195,6 +197,11 @@ FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:3000')
 
 # Password reset token validity (in seconds) - 24 hours
 PASSWORD_RESET_TIMEOUT = 86400
+
+# =============================================================================
+# ANTHROPIC API CONFIGURATION (for PDF extraction)
+# =============================================================================
+ANTHROPIC_API_KEY = os.environ.get('ANTHROPIC_API_KEY', '')
 
 # =============================================================================
 # CIMIS (California Irrigation Management Information System) Configuration

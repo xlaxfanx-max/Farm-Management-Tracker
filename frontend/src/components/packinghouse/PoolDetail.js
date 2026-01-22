@@ -15,11 +15,15 @@ import {
   RefreshCw,
   Calendar,
   TrendingUp,
-  Building2
+  Building2,
+  Link2,
+  Wheat,
+  Eye
 } from 'lucide-react';
 import { poolsAPI } from '../../services/api';
 import DeliveryModal from './DeliveryModal';
 import PackoutReportModal from './PackoutReportModal';
+import SettlementDetail from './SettlementDetail';
 
 const PoolDetail = ({ pool, onBack, onEdit, onRefresh }) => {
   const [activeTab, setActiveTab] = useState('deliveries');
@@ -30,6 +34,7 @@ const PoolDetail = ({ pool, onBack, onEdit, onRefresh }) => {
   const [loading, setLoading] = useState(true);
   const [showDeliveryModal, setShowDeliveryModal] = useState(false);
   const [showPackoutModal, setShowPackoutModal] = useState(false);
+  const [selectedSettlementId, setSelectedSettlementId] = useState(null);
 
   useEffect(() => {
     fetchPoolData();
@@ -253,6 +258,7 @@ const PoolDetail = ({ pool, onBack, onEdit, onRefresh }) => {
                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ticket #</th>
                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Field</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Harvest</th>
                         <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Bins</th>
                         <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Weight</th>
                       </tr>
@@ -267,6 +273,16 @@ const PoolDetail = ({ pool, onBack, onEdit, onRefresh }) => {
                             {d.ticket_number}
                           </td>
                           <td className="px-4 py-3 text-sm">{d.field_name}</td>
+                          <td className="px-4 py-3 text-sm">
+                            {d.harvest ? (
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-orange-100 text-orange-800 rounded text-xs">
+                                <Wheat className="w-3 h-3" />
+                                {d.harvest_lot || d.harvest_date}
+                              </span>
+                            ) : (
+                              <span className="text-gray-400 text-xs">Not linked</span>
+                            )}
+                          </td>
                           <td className="px-4 py-3 text-sm text-right font-semibold">
                             {formatNumber(d.bins, 2)}
                           </td>
@@ -360,11 +376,16 @@ const PoolDetail = ({ pool, onBack, onEdit, onRefresh }) => {
                         <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Net Return</th>
                         <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">$/Bin</th>
                         <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Amount Due</th>
+                        <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Details</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200">
                       {settlements.map((s) => (
-                        <tr key={s.id} className="hover:bg-gray-50">
+                        <tr
+                          key={s.id}
+                          className="hover:bg-green-50 cursor-pointer transition-colors"
+                          onClick={() => setSelectedSettlementId(s.id)}
+                        >
                           <td className="px-4 py-3 text-sm">
                             {new Date(s.statement_date).toLocaleDateString()}
                           </td>
@@ -389,6 +410,18 @@ const PoolDetail = ({ pool, onBack, onEdit, onRefresh }) => {
                           </td>
                           <td className="px-4 py-3 text-sm text-right font-semibold text-green-600">
                             {formatCurrency(s.amount_due)}
+                          </td>
+                          <td className="px-4 py-3 text-center">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedSettlementId(s.id);
+                              }}
+                              className="p-1.5 text-green-600 hover:bg-green-100 rounded-lg transition-colors"
+                              title="View Details"
+                            >
+                              <Eye className="w-4 h-4" />
+                            </button>
                           </td>
                         </tr>
                       ))}
@@ -423,6 +456,14 @@ const PoolDetail = ({ pool, onBack, onEdit, onRefresh }) => {
             fetchPoolData();
             onRefresh();
           }}
+        />
+      )}
+
+      {/* Settlement Detail Modal */}
+      {selectedSettlementId && (
+        <SettlementDetail
+          settlementId={selectedSettlementId}
+          onClose={() => setSelectedSettlementId(null)}
         />
       )}
     </div>

@@ -144,6 +144,10 @@ from .packinghouse_views import (
     packout_trends,
     settlement_comparison,
     packinghouse_dashboard,
+    harvest_packing_pipeline,
+    profitability_analysis,
+    deduction_breakdown,
+    season_comparison,
 )
 
 router = DefaultRouter()
@@ -327,4 +331,10 @@ urlpatterns = [
     path('packinghouse-analytics/packout-trends/', packout_trends, name='packinghouse-packout-trends'),
     path('packinghouse-analytics/settlement-comparison/', settlement_comparison, name='packinghouse-settlement-comparison'),
     path('packinghouse-analytics/dashboard/', packinghouse_dashboard, name='packinghouse-dashboard'),
+    path('harvest-packing/pipeline/', harvest_packing_pipeline, name='harvest-packing-pipeline'),
+
+    # Profitability Analytics routes
+    path('harvest-analytics/profitability/', profitability_analysis, name='harvest-profitability'),
+    path('harvest-analytics/deductions/', deduction_breakdown, name='harvest-deductions'),
+    path('harvest-analytics/seasons/', season_comparison, name='harvest-season-comparison'),
 ]

@@ -12,3 +12,25 @@ Thumbs.db
 # IDE
 .vscode/
 .idea/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.so
+
+# Django
+*.log
+local_settings.py
+db.sqlite3
+media/
+
+# Build
+*.egg-info/
+dist/
+build/
+
+# Misc
+backend/nul

@@ -6,7 +6,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   X, Upload, FileText, Loader2, AlertCircle,
-  CheckCircle, RefreshCw, Eye
+  CheckCircle, RefreshCw, Eye, PanelLeftClose, PanelLeft,
+  ExternalLink, Download, FileIcon
 } from 'lucide-react';
 import {
   packinghouseStatementsAPI,
@@ -16,7 +17,7 @@ import {
 } from '../../services/api';
 import ExtractedDataPreview from './ExtractedDataPreview';
 
-const PDFUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null }) => {
+const PDFUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, existingStatement = null }) => {
   // State for upload
   const [file, setFile] = useState(null);
   const [packinghouses, setPackinghouses] = useState([]);
@@ -27,22 +28,71 @@ const PDFUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null }) => {
   // State for extraction
   const [uploading, setUploading] = useState(false);
   const [extracting, setExtracting] = useState(false);
-  const [statement, setStatement] = useState(null);
+  const [statement, setStatement] = useState(existingStatement);
   const [error, setError] = useState('');
 
-  // State for confirmation
-  const [showPreview, setShowPreview] = useState(false);
+  // State for confirmation - if existingStatement is provided, go directly to preview
+  const [showPreview, setShowPreview] = useState(!!existingStatement);
   const [pools, setPools] = useState([]);
   const [fields, setFields] = useState([]);
   const [selectedPool, setSelectedPool] = useState('');
   const [selectedField, setSelectedField] = useState('');
-  const [editedData, setEditedData] = useState(null);
+  const [editedData, setEditedData] = useState(existingStatement?.extracted_data || null);
   const [confirming, setConfirming] = useState(false);
+
+  // State for PDF side-by-side view
+  const [showPdf, setShowPdf] = useState(true);
+  const [pdfBlobUrl, setPdfBlobUrl] = useState(null);
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   useEffect(() => {
     fetchPackinghouses();
     fetchFields();
   }, []);
+
+  // Fetch PDF as blob when in preview mode
+  useEffect(() => {
+    if (showPreview && statement?.pdf_url && showPdf && !pdfBlobUrl) {
+      fetchPdfBlob();
+    }
+    // Cleanup blob URL on unmount
+    return () => {
+      if (pdfBlobUrl) {
+        URL.revokeObjectURL(pdfBlobUrl);
+      }
+    };
+  }, [showPreview, statement?.pdf_url, showPdf]);
+
+  const fetchPdfBlob = async () => {
+    if (!statement?.pdf_url) return;
+
+    try {
+      setPdfLoading(true);
+      const token = localStorage.getItem('farm_tracker_access_token');
+      const response = await fetch(statement.pdf_url, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) throw new Error('Failed to fetch PDF');
+
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      setPdfBlobUrl(url);
+    } catch (err) {
+      console.error('Error fetching PDF:', err);
+    } finally {
+      setPdfLoading(false);
+    }
+  };
+
+  // If existingStatement is provided, set up the packinghouse for pool fetching
+  useEffect(() => {
+    if (existingStatement?.packinghouse) {
+      setSelectedPackinghouse(existingStatement.packinghouse);
+    }
+  }, [existingStatement]);
 
   useEffect(() => {
     if (selectedPackinghouse) {
@@ -179,8 +229,8 @@ const PDFUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null }) => {
   };
 
   const handleConfirm = async () => {
-    if (!statement || !selectedPool) {
-      setError('Please select a pool');
+    if (!statement) {
+      setError('No statement to confirm');
       return;
     }
 
@@ -197,7 +247,7 @@ const PDFUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null }) => {
 
     try {
       const response = await packinghouseStatementsAPI.confirm(statement.id, {
-        pool_id: selectedPool,
+        pool_id: selectedPool || null,  // null triggers auto-create
         field_id: selectedField || null,
         edited_data: editedData
       });
@@ -226,25 +276,142 @@ const PDFUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null }) => {
     return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
   };
 
+  const hasPdf = !!statement?.pdf_url;
+  const showPdfPanel = showPreview && showPdf && hasPdf;
+
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-5xl max-h-[95vh] overflow-hidden flex flex-col">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className={`bg-white rounded-lg shadow-xl max-h-[95vh] overflow-hidden flex flex-col transition-all duration-300 ${
+        showPdfPanel ? 'w-full max-w-[95vw]' : 'w-full max-w-5xl'
+      }`}>
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200">
           <h2 className="text-lg font-semibold text-gray-900 flex items-center">
-            <Upload className="w-5 h-5 mr-2 text-green-600" />
-            {showPreview ? 'Review Extracted Data' : 'Upload Statement PDF'}
+            {showPreview ? (
+              <>
+                <Eye className="w-5 h-5 mr-2 text-green-600" />
+                Review Extracted Data
+              </>
+            ) : (
+              <>
+                <Upload className="w-5 h-5 mr-2 text-green-600" />
+                Upload Statement PDF
+              </>
+            )}
           </h2>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-          >
-            <X className="w-5 h-5 text-gray-500" />
-          </button>
+          <div className="flex items-center space-x-2">
+            {/* PDF Toggle - only show in preview mode with PDF */}
+            {showPreview && hasPdf && (
+              <>
+                <button
+                  onClick={() => setShowPdf(!showPdf)}
+                  className={`flex items-center px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                    showPdf
+                      ? 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
+                  title={showPdf ? 'Hide PDF' : 'Show PDF'}
+                >
+                  {showPdf ? (
+                    <>
+                      <PanelLeftClose className="w-4 h-4 mr-1.5" />
+                      Hide PDF
+                    </>
+                  ) : (
+                    <>
+                      <PanelLeft className="w-4 h-4 mr-1.5" />
+                      Show PDF
+                    </>
+                  )}
+                </button>
+                <a
+                  href={statement.pdf_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg"
+                  title="Open PDF in new tab"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                </a>
+              </>
+            )}
+            <button
+              onClick={onClose}
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              <X className="w-5 h-5 text-gray-500" />
+            </button>
+          </div>
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-4">
+        <div className="flex-1 flex overflow-hidden">
+          {/* PDF Panel - only in preview mode */}
+          {showPdfPanel && (
+            <div className="w-1/2 border-r border-gray-200 bg-gray-100 flex flex-col">
+              <div className="p-2 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
+                <div className="flex items-center text-sm text-gray-600">
+                  <FileIcon className="w-4 h-4 mr-2 text-red-500" />
+                  <span className="truncate max-w-xs" title={statement?.original_filename}>
+                    {statement?.original_filename || 'Source PDF'}
+                  </span>
+                </div>
+                <a
+                  href={statement?.pdf_url}
+                  download
+                  className="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded"
+                  title="Download PDF"
+                >
+                  <Download className="w-4 h-4" />
+                </a>
+              </div>
+              <div className="flex-1 bg-gray-200">
+                {pdfLoading ? (
+                  <div className="flex flex-col items-center justify-center h-full">
+                    <Loader2 className="w-8 h-8 animate-spin text-gray-500 mb-3" />
+                    <p className="text-gray-500">Loading PDF...</p>
+                  </div>
+                ) : pdfBlobUrl ? (
+                  <object
+                    data={pdfBlobUrl}
+                    type="application/pdf"
+                    className="w-full h-full"
+                  >
+                    <div className="flex flex-col items-center justify-center h-full p-8 text-center">
+                      <FileIcon className="w-16 h-16 text-gray-400 mb-4" />
+                      <p className="text-gray-600 mb-4">PDF preview not available.</p>
+                      <a
+                        href={statement?.pdf_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center"
+                      >
+                        <ExternalLink className="w-4 h-4 mr-2" />
+                        Open in New Tab
+                      </a>
+                    </div>
+                  </object>
+                ) : (
+                  <div className="flex flex-col items-center justify-center h-full p-8 text-center">
+                    <FileIcon className="w-16 h-16 text-gray-400 mb-4" />
+                    <p className="text-gray-600 mb-4">Unable to load PDF.</p>
+                    <a
+                      href={statement?.pdf_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center"
+                    >
+                      <ExternalLink className="w-4 h-4 mr-2" />
+                      Open in New Tab
+                    </a>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Main Content Panel */}
+          <div className={`flex-1 overflow-y-auto p-4 ${showPdfPanel ? 'w-1/2' : 'w-full'}`}>
           {!showPreview ? (
             // Upload View
             <div className="space-y-4">
@@ -377,20 +544,25 @@ const PDFUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null }) => {
               <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Pool *
+                    Pool
                   </label>
                   <select
                     value={selectedPool}
                     onChange={(e) => setSelectedPool(e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
                   >
-                    <option value="">Select Pool</option>
+                    <option value="">Auto-create from PDF</option>
                     {pools.map(p => (
                       <option key={p.id} value={p.id}>
                         {p.name} ({p.commodity})
                       </option>
                     ))}
                   </select>
+                  {!selectedPool && (
+                    <p className="text-xs text-gray-500 mt-1">
+                      A new pool will be created using info extracted from the PDF
+                    </p>
+                  )}
                 </div>
 
                 <div>
@@ -447,18 +619,26 @@ const PDFUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null }) => {
               )}
             </div>
           )}
+          </div>
+          {/* End Main Content Panel */}
         </div>
+        {/* End Content Flex Container */}
 
         {/* Footer */}
         <div className="flex justify-between items-center p-4 border-t border-gray-200 bg-gray-50">
           {showPreview ? (
             <>
-              <button
-                onClick={() => setShowPreview(false)}
-                className="px-4 py-2 text-gray-700 hover:bg-gray-200 rounded-lg transition-colors"
-              >
-                Back
-              </button>
+              {/* Only show Back button if we came from upload flow, not direct review */}
+              {!existingStatement ? (
+                <button
+                  onClick={() => setShowPreview(false)}
+                  className="px-4 py-2 text-gray-700 hover:bg-gray-200 rounded-lg transition-colors"
+                >
+                  Back
+                </button>
+              ) : (
+                <div />
+              )}
               <div className="flex space-x-3">
                 <button
                   onClick={onClose}
@@ -468,7 +648,7 @@ const PDFUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null }) => {
                 </button>
                 <button
                   onClick={handleConfirm}
-                  disabled={confirming || !selectedPool}
+                  disabled={confirming}
                   className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
                 >
                   {confirming ? (

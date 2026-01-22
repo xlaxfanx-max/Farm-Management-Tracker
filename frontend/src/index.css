@@ -24,11 +24,11 @@
   --grove-green-light: #4A7A2A;
   --citrus-orange: #E8791D;
   --citrus-gold: #F4A934;
-  --cream: #FFFEF7;
-  --warm-white: #FDFCF8;
+  --cream: #fafafa;
+  --warm-white: #f9fafb;
   --bark-brown: #3D2914;
-  --text-primary: #1C1C1C;
-  --text-secondary: #4A4A4A;
+  --text-primary: #111827;
+  --text-secondary: #4b5563;
 
   /* Status Colors for operational indicators */
   --status-healthy: #22c55e;
@@ -37,10 +37,10 @@
   --status-neutral: #6b7280;
   --status-info: #3b82f6;
 
-  /* Background colors */
-  --bg-primary: #FFFEF7;
-  --bg-secondary: #FDFCF8;
-  --bg-tertiary: #f3f4f6;
+  /* Background colors - Clean light grays */
+  --bg-primary: #f9fafb;
+  --bg-secondary: #f3f4f6;
+  --bg-tertiary: #e5e7eb;
   --bg-card: #ffffff;
   --bg-sidebar: #ffffff;
   --bg-input: #ffffff;
@@ -94,24 +94,52 @@
 
 /* Grove Master Typography */
 body {
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   background-color: var(--bg-primary);
   color: var(--text-primary);
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
+/* Dark mode body */
+.dark body,
+body.dark,
+html.dark body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
 h1, h2, h3, h4, h5, h6,
 .font-heading {
-  font-family: 'Fraunces', serif;
+  font-family: 'Fraunces', Georgia, serif;
   color: var(--bark-brown);
 }
 
-/* Dark mode utility classes */
+/* Ensure dark mode headings are readable */
+.dark h1, .dark h2, .dark h3, .dark h4, .dark h5, .dark h6,
+.dark .font-heading {
+  color: var(--text-primary);
+}
+
+/* =============================================================================
+   DARK MODE UTILITY CLASSES - Comprehensive Overrides
+   ============================================================================= */
+
+/* Background overrides */
 .dark .bg-white { background-color: var(--bg-card) !important; }
 .dark .bg-gray-50 { background-color: var(--bg-secondary) !important; }
 .dark .bg-gray-100 { background-color: var(--bg-tertiary) !important; }
 .dark .bg-gray-200 { background-color: #374151 !important; }
 
+/* White with opacity - common in cards */
+.dark .bg-white\/50,
+.dark .bg-white\/60,
+.dark .bg-white\/70,
+.dark .bg-white\/80,
+.dark .bg-white\/90 {
+  background-color: rgba(31, 41, 55, 0.8) !important;
+}
+
+/* Text color overrides */
 .dark .text-gray-900 { color: var(--text-primary) !important; }
 .dark .text-gray-800 { color: var(--text-primary) !important; }
 .dark .text-gray-700 { color: #d1d5db !important; }
@@ -119,10 +147,70 @@ h1, h2, h3, h4, h5, h6,
 .dark .text-gray-500 { color: #9ca3af !important; }
 .dark .text-gray-400 { color: #6b7280 !important; }
 
+/* Border color overrides */
 .dark .border-gray-100 { border-color: #374151 !important; }
 .dark .border-gray-200 { border-color: #374151 !important; }
 .dark .border-gray-300 { border-color: #4b5563 !important; }
 
+/* Hover state overrides - CRITICAL for interactive elements */
+.dark .hover\:bg-gray-50:hover { background-color: #374151 !important; }
+.dark .hover\:bg-gray-100:hover { background-color: #374151 !important; }
+.dark .hover\:bg-gray-200:hover { background-color: #4b5563 !important; }
+.dark .hover\:bg-white:hover { background-color: #374151 !important; }
+
+/* Colored hover states in dark mode */
+.dark .hover\:bg-green-50:hover { background-color: rgba(22, 163, 74, 0.2) !important; }
+.dark .hover\:bg-blue-50:hover { background-color: rgba(59, 130, 246, 0.2) !important; }
+.dark .hover\:bg-red-50:hover { background-color: rgba(239, 68, 68, 0.2) !important; }
+.dark .hover\:bg-yellow-50:hover { background-color: rgba(234, 179, 8, 0.2) !important; }
+.dark .hover\:bg-amber-50:hover { background-color: rgba(245, 158, 11, 0.2) !important; }
+.dark .hover\:bg-orange-50:hover { background-color: rgba(249, 115, 22, 0.2) !important; }
+.dark .hover\:bg-purple-50:hover { background-color: rgba(168, 85, 247, 0.2) !important; }
+
+/* Light colored backgrounds in dark mode */
+.dark .bg-green-50 { background-color: rgba(22, 163, 74, 0.15) !important; }
+.dark .bg-green-100 { background-color: rgba(22, 163, 74, 0.25) !important; }
+.dark .bg-blue-50 { background-color: rgba(59, 130, 246, 0.15) !important; }
+.dark .bg-blue-100 { background-color: rgba(59, 130, 246, 0.25) !important; }
+.dark .bg-red-50 { background-color: rgba(239, 68, 68, 0.15) !important; }
+.dark .bg-red-100 { background-color: rgba(239, 68, 68, 0.25) !important; }
+.dark .bg-yellow-50 { background-color: rgba(234, 179, 8, 0.15) !important; }
+.dark .bg-yellow-100 { background-color: rgba(234, 179, 8, 0.25) !important; }
+.dark .bg-amber-50 { background-color: rgba(245, 158, 11, 0.15) !important; }
+.dark .bg-amber-100 { background-color: rgba(245, 158, 11, 0.25) !important; }
+.dark .bg-orange-50 { background-color: rgba(249, 115, 22, 0.15) !important; }
+.dark .bg-orange-100 { background-color: rgba(249, 115, 22, 0.25) !important; }
+.dark .bg-purple-50 { background-color: rgba(168, 85, 247, 0.15) !important; }
+.dark .bg-purple-100 { background-color: rgba(168, 85, 247, 0.25) !important; }
+.dark .bg-cyan-50 { background-color: rgba(6, 182, 212, 0.15) !important; }
+.dark .bg-cyan-100 { background-color: rgba(6, 182, 212, 0.25) !important; }
+
+/* Light colored borders in dark mode */
+.dark .border-green-100 { border-color: rgba(22, 163, 74, 0.3) !important; }
+.dark .border-green-200 { border-color: rgba(22, 163, 74, 0.4) !important; }
+.dark .border-blue-100 { border-color: rgba(59, 130, 246, 0.3) !important; }
+.dark .border-blue-200 { border-color: rgba(59, 130, 246, 0.4) !important; }
+.dark .border-red-100 { border-color: rgba(239, 68, 68, 0.3) !important; }
+.dark .border-red-200 { border-color: rgba(239, 68, 68, 0.4) !important; }
+.dark .border-yellow-100 { border-color: rgba(234, 179, 8, 0.3) !important; }
+.dark .border-yellow-200 { border-color: rgba(234, 179, 8, 0.4) !important; }
+.dark .border-amber-100 { border-color: rgba(245, 158, 11, 0.3) !important; }
+.dark .border-amber-200 { border-color: rgba(245, 158, 11, 0.4) !important; }
+
+/* Divide colors */
+.dark .divide-gray-100 > * + * { border-color: #374151 !important; }
+.dark .divide-gray-200 > * + * { border-color: #374151 !important; }
+
+/* Shadow overrides */
+.dark .shadow,
+.dark .shadow-sm,
+.dark .shadow-md,
+.dark .shadow-lg,
+.dark .shadow-xl {
+  --tw-shadow-color: rgba(0, 0, 0, 0.5);
+}
+
+/* Form elements */
 .dark input,
 .dark select,
 .dark textarea {
@@ -141,6 +229,10 @@ h1, h2, h3, h4, h5, h6,
 .dark textarea:focus {
   border-color: var(--border-focus);
 }
+
+/* Ring/Focus colors in dark mode */
+.dark .ring-gray-200 { --tw-ring-color: #374151 !important; }
+.dark .focus\:ring-gray-200:focus { --tw-ring-color: #374151 !important; }
 
 /* Grove Master Color Utility Classes */
 .bg-grove-green { background-color: var(--grove-green); }
@@ -162,17 +254,17 @@ h1, h2, h3, h4, h5, h6,
 .border-citrus-orange { border-color: var(--citrus-orange); }
 .border-citrus-gold { border-color: var(--citrus-gold); }
 
-/* Override Tailwind green with Grove Master colors where appropriate */
-.bg-green-600, .bg-green-700 { background-color: var(--grove-green) !important; }
-.bg-green-500 { background-color: var(--grove-green-light) !important; }
-.text-green-600, .text-green-700 { color: var(--grove-green) !important; }
-.text-green-500 { color: var(--grove-green-light) !important; }
-.border-green-600, .border-green-700 { border-color: var(--grove-green) !important; }
-.border-green-500 { border-color: var(--grove-green-light) !important; }
-.ring-green-500 { --tw-ring-color: var(--grove-green-light) !important; }
-.focus\:ring-green-500:focus { --tw-ring-color: var(--grove-green-light) !important; }
-.hover\:bg-green-700:hover { background-color: var(--grove-green) !important; }
-.hover\:bg-green-600:hover { background-color: var(--grove-green-light) !important; }
+/* Override Tailwind green with Grove Master colors - buttons and accents only */
+/* Note: Only override specific button/accent colors, not all greens */
+.bg-green-600 { background-color: #16a34a !important; } /* Keep Tailwind's green-600 */
+.bg-green-700 { background-color: #15803d !important; } /* Keep Tailwind's green-700 */
+.hover\:bg-green-700:hover { background-color: #15803d !important; }
+.hover\:bg-green-600:hover { background-color: #16a34a !important; }
+
+/* Grove-specific green classes (use these for brand elements) */
+.bg-grove-green { background-color: var(--grove-green) !important; }
+.text-grove-green { color: var(--grove-green) !important; }
+.border-grove-green { border-color: var(--grove-green) !important; }
 
 /* Custom scrollbar styles */
 ::-webkit-scrollbar {

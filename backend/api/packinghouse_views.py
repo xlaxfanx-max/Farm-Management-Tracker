@@ -19,7 +19,8 @@ from .models import (
     Packinghouse, Pool, PackinghouseDelivery,
     PackoutReport, PackoutGradeLine,
     PoolSettlement, SettlementGradeLine, SettlementDeduction,
-    GrowerLedgerEntry, Field, PackinghouseStatement
+    GrowerLedgerEntry, Field, PackinghouseStatement,
+    Harvest
 )
 
 logger = logging.getLogger(__name__)
@@ -444,7 +445,7 @@ class PoolSettlementViewSet(viewsets.ModelViewSet):
         queryset = PoolSettlement.objects.filter(
             pool__packinghouse__company=user.current_company
         ).select_related(
-            'pool', 'pool__packinghouse', 'field', 'field__farm'
+            'pool', 'pool__packinghouse', 'field', 'field__farm', 'source_statement'
         ).prefetch_related('grade_lines', 'deductions')
 
         # Filter by pool
@@ -570,6 +571,571 @@ class GrowerLedgerEntryViewSet(viewsets.ModelViewSet):
 # =============================================================================
 # ANALYTICS VIEWS
 # =============================================================================
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def profitability_analysis(request):
+    """
+    Profitability analysis from packinghouse settlements.
+
+    Shows the breakdown of revenue and costs from packinghouse statements.
+    Note: Pick & haul costs are already included in settlement deductions,
+    so Net Settlement represents the grower's actual return after all
+    packinghouse-related costs.
+
+    Strategy: Since settlements may be at pool level (field=None), we allocate
+    settlement returns to fields proportionally based on their delivery bins.
+
+    Query params:
+    - season: Filter by season (e.g., "2024-2025")
+    - field_id: Filter by specific field
+    - packinghouse: Filter by packinghouse ID
+
+    Returns per-field breakdown:
+    - gross_revenue: Total credits from packinghouse (fruit sales)
+    - total_deductions: All packinghouse charges (packing, pick/haul, assessments, etc.)
+    - net_settlement: Grower's actual return (gross - deductions)
+    - net_per_bin: Return per bin delivered
+    """
+    from django.db.models import Sum, Avg, Count
+    from django.db.models.functions import Coalesce
+    from .models import HarvestLabor, Harvest, PoolSettlement, Field, PackinghouseDelivery
+    from datetime import date
+    from decimal import Decimal
+    from collections import defaultdict
+
+    user = request.user
+    if not user.current_company:
+        return Response({'error': 'No company selected'}, status=400)
+
+    company = user.current_company
+
+    # Get available seasons (only those with settlement data)
+    seasons_with_settlements = PoolSettlement.objects.filter(
+        pool__packinghouse__company=company,
+        field__isnull=True  # Grower summary settlements
+    ).values_list('pool__season', flat=True).distinct()
+    seasons_with_settlements = set(seasons_with_settlements)
+
+    # Get all seasons from pools
+    all_seasons = Pool.objects.filter(
+        packinghouse__company=company
+    ).values_list('season', flat=True).distinct().order_by('-season')
+    available_seasons = list(all_seasons)
+
+    # Get current/default season
+    today = date.today()
+    if today.month >= 10:
+        default_season = f"{today.year}-{today.year + 1}"
+    else:
+        default_season = f"{today.year - 1}-{today.year}"
+
+    selected_season = request.query_params.get('season') or ''
+
+    # If no season specified or empty, prefer seasons with settlement data
+    if not selected_season:
+        # First, try to find a season with settlement data
+        for season in available_seasons:
+            if season in seasons_with_settlements:
+                selected_season = season
+                break
+        # If none found, fall back to default
+        if not selected_season:
+            selected_season = default_season
+
+    # If selected season not in available seasons and we have data, use the most recent with settlements
+    if selected_season not in available_seasons and available_seasons:
+        for season in available_seasons:
+            if season in seasons_with_settlements:
+                selected_season = season
+                break
+        if selected_season not in available_seasons:
+            selected_season = available_seasons[0]
+
+    # Calculate season date range for harvest filtering
+    try:
+        season_year = int(selected_season.split('-')[0])
+        season_start = date(season_year, 10, 1)
+        season_end = date(season_year + 1, 9, 30)
+    except (ValueError, IndexError):
+        season_start = date(today.year - 1, 10, 1)
+        season_end = date(today.year, 9, 30)
+
+    # Base filters
+    packinghouse_id = request.query_params.get('packinghouse')
+    field_id = request.query_params.get('field_id')
+
+    # =========================================================================
+    # STEP 1: Get all pools with settlements for this season
+    # =========================================================================
+    pool_filters = Q(
+        packinghouse__company=company,
+        season=selected_season
+    )
+    if packinghouse_id:
+        pool_filters &= Q(packinghouse_id=packinghouse_id)
+
+    pools = Pool.objects.filter(pool_filters).select_related('packinghouse')
+
+    # Get pool-level settlements (grower summaries where field=None)
+    pool_settlement_data = {}
+    for pool in pools:
+        settlement = PoolSettlement.objects.filter(
+            pool=pool,
+            field__isnull=True  # Grower summary level
+        ).first()
+
+        if settlement:
+            pool_settlement_data[pool.id] = {
+                'pool': pool,
+                'total_bins': settlement.total_bins or Decimal('0'),
+                'total_credits': settlement.total_credits or Decimal('0'),
+                'total_deductions': settlement.total_deductions or Decimal('0'),
+                'net_return': settlement.net_return or Decimal('0'),
+                'net_per_bin': settlement.net_per_bin or Decimal('0'),
+            }
+
+    # =========================================================================
+    # STEP 2: Get deliveries grouped by field and pool
+    # =========================================================================
+    delivery_filters = Q(
+        pool__packinghouse__company=company,
+        pool__season=selected_season
+    )
+    if packinghouse_id:
+        delivery_filters &= Q(pool__packinghouse_id=packinghouse_id)
+    if field_id:
+        delivery_filters &= Q(field_id=field_id)
+
+    deliveries = PackinghouseDelivery.objects.filter(
+        delivery_filters
+    ).select_related('field', 'field__farm', 'pool', 'pool__packinghouse')
+
+    # Aggregate deliveries by field
+    field_deliveries = defaultdict(lambda: {
+        'field': None,
+        'bins_delivered': Decimal('0'),
+        'delivery_count': 0,
+        'pools': set(),
+        'pool_bins': defaultdict(lambda: Decimal('0')),  # bins per pool
+    })
+
+    for delivery in deliveries:
+        if delivery.field:
+            fd = field_deliveries[delivery.field_id]
+            fd['field'] = delivery.field
+            fd['bins_delivered'] += delivery.bins or Decimal('0')
+            fd['delivery_count'] += 1
+            fd['pools'].add(delivery.pool_id)
+            fd['pool_bins'][delivery.pool_id] += delivery.bins or Decimal('0')
+
+    # =========================================================================
+    # STEP 3: Calculate profitability per field
+    # =========================================================================
+    results = []
+    totals = {
+        'total_bins': Decimal('0'),
+        'gross_revenue': Decimal('0'),
+        'total_deductions': Decimal('0'),
+        'net_settlement': Decimal('0'),
+    }
+
+    for field_id_key, fd in field_deliveries.items():
+        field = fd['field']
+        if not field:
+            continue
+
+        bins_delivered = fd['bins_delivered']
+        if bins_delivered <= 0:
+            continue
+
+        # Allocate settlement returns from each pool based on delivery proportion
+        allocated_credits = Decimal('0')
+        allocated_deductions = Decimal('0')
+        allocated_net = Decimal('0')
+        packinghouse_names = set()
+        pool_names = set()
+
+        for pool_id in fd['pools']:
+            if pool_id in pool_settlement_data:
+                psd = pool_settlement_data[pool_id]
+                pool_total_bins = psd['total_bins']
+
+                if pool_total_bins > 0:
+                    # Calculate this field's share of the pool
+                    field_pool_bins = fd['pool_bins'][pool_id]
+                    share_ratio = field_pool_bins / pool_total_bins
+
+                    allocated_credits += psd['total_credits'] * share_ratio
+                    allocated_deductions += psd['total_deductions'] * share_ratio
+                    allocated_net += psd['net_return'] * share_ratio
+
+                packinghouse_names.add(psd['pool'].packinghouse.name)
+                pool_names.add(psd['pool'].name)
+
+        # Calculate per-bin metrics
+        gross_per_bin = (allocated_credits / bins_delivered) if bins_delivered > 0 else Decimal('0')
+        deductions_per_bin = (allocated_deductions / bins_delivered) if bins_delivered > 0 else Decimal('0')
+        net_per_bin = (allocated_net / bins_delivered) if bins_delivered > 0 else Decimal('0')
+
+        # Calculate margin (net as % of gross)
+        margin_percent = round((float(allocated_net) / float(allocated_credits) * 100), 1) if allocated_credits > 0 else 0
+
+        field_data = {
+            'field_id': field.id,
+            'field_name': field.name,
+            'farm_id': field.farm.id if field.farm else None,
+            'farm_name': field.farm.name if field.farm else '',
+            'packinghouse_name': ', '.join(packinghouse_names) if packinghouse_names else '',
+            'pool_name': ', '.join(pool_names) if pool_names else '',
+
+            # Quantities
+            'total_bins': float(bins_delivered),
+            'bins_delivered': float(bins_delivered),
+            'delivery_count': fd['delivery_count'],
+
+            # Revenue breakdown (allocated from pool settlements)
+            # Note: Deductions already include pick & haul, so net_settlement is the true return
+            'gross_revenue': float(allocated_credits),
+            'total_deductions': float(allocated_deductions),
+            'net_settlement': float(allocated_net),
+
+            # Per-bin metrics
+            'gross_per_bin': round(float(gross_per_bin), 2),
+            'deductions_per_bin': round(float(deductions_per_bin), 2),
+            'net_per_bin': round(float(net_per_bin), 2),
+
+            # Return metrics
+            'return_margin': margin_percent,  # Net as % of gross
+        }
+
+        results.append(field_data)
+
+        # Update totals
+        totals['total_bins'] += bins_delivered
+        totals['gross_revenue'] += allocated_credits
+        totals['total_deductions'] += allocated_deductions
+        totals['net_settlement'] += allocated_net
+
+    # Sort by net settlement descending (highest returns first)
+    results.sort(key=lambda x: x['net_settlement'], reverse=True)
+
+    # =========================================================================
+    # STEP 4: If no field-level results, show pool-level summary
+    # =========================================================================
+    pool_results = []
+    if not results and pool_settlement_data:
+        # No deliveries to allocate, show pool-level data
+        for pool_id, psd in pool_settlement_data.items():
+            pool = psd['pool']
+
+            pool_bins = psd['total_bins']
+            pool_gross = psd['total_credits']
+            pool_deductions = psd['total_deductions']
+            pool_net = psd['net_return']
+
+            # Calculate margin (net as % of gross)
+            margin_percent = round((float(pool_net) / float(pool_gross) * 100), 1) if pool_gross > 0 else 0
+
+            pool_results.append({
+                'pool_id': pool.id,
+                'pool_name': pool.name,
+                'packinghouse_name': pool.packinghouse.name,
+                'commodity': pool.commodity,
+
+                'total_bins': float(pool_bins),
+                'gross_revenue': float(pool_gross),
+                'total_deductions': float(pool_deductions),
+                'net_settlement': float(pool_net),
+
+                'gross_per_bin': round(float(pool_gross / pool_bins), 2) if pool_bins > 0 else 0,
+                'deductions_per_bin': round(float(pool_deductions / pool_bins), 2) if pool_bins > 0 else 0,
+                'net_per_bin': float(psd['net_per_bin']),
+                'return_margin': margin_percent,
+            })
+
+            # Update totals
+            totals['total_bins'] += pool_bins
+            totals['gross_revenue'] += pool_gross
+            totals['total_deductions'] += pool_deductions
+            totals['net_settlement'] += pool_net
+
+    # Calculate summary metrics
+    # Note: net_settlement is the grower's return after all deductions (including pick & haul)
+    return_margin = round((float(totals['net_settlement']) / float(totals['gross_revenue']) * 100), 1) if totals['gross_revenue'] > 0 else 0
+
+    summary = {
+        'total_fields': len(results),
+        'total_pools': len(pool_results),
+        'total_bins': float(totals['total_bins']),
+        'gross_revenue': float(totals['gross_revenue']),
+        'total_deductions': float(totals['total_deductions']),
+        'net_settlement': float(totals['net_settlement']),
+        'avg_net_per_bin': round(float(totals['net_settlement'] / totals['total_bins']), 2) if totals['total_bins'] > 0 else 0,
+        'return_margin': return_margin,  # Net as % of gross
+    }
+
+    # Note if showing pool-level vs field-level
+    data_level = 'field' if results else ('pool' if pool_results else 'none')
+
+    return Response({
+        'season': selected_season,
+        'available_seasons': available_seasons,
+        'data_level': data_level,
+        'summary': summary,
+        'by_field': results,
+        'by_pool': pool_results,
+        'message': 'Showing pool-level data. Add delivery records to see field-level profitability.' if data_level == 'pool' else None,
+    })
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def deduction_breakdown(request):
+    """
+    Detailed breakdown of packinghouse deductions by category.
+
+    Shows all charges grouped by category with per-bin rates
+    to help identify cost drivers.
+
+    Query params:
+    - season: Filter by season (e.g., "2024-2025")
+    - field_id: Filter by specific field
+    - packinghouse: Filter by packinghouse ID
+    """
+    from .models import SettlementDeduction, PoolSettlement
+    from datetime import date
+    from decimal import Decimal
+    from collections import defaultdict
+
+    user = request.user
+    if not user.current_company:
+        return Response({'error': 'No company selected'}, status=400)
+
+    company = user.current_company
+
+    # Get seasons with settlement data
+    seasons_with_settlements = PoolSettlement.objects.filter(
+        pool__packinghouse__company=company
+    ).values_list('pool__season', flat=True).distinct()
+    seasons_with_settlements = list(set(seasons_with_settlements))
+    seasons_with_settlements.sort(reverse=True)
+
+    # Get current/default season
+    today = date.today()
+    if today.month >= 10:
+        default_season = f"{today.year}-{today.year + 1}"
+    else:
+        default_season = f"{today.year - 1}-{today.year}"
+
+    selected_season = request.query_params.get('season') or ''
+
+    # If no season specified, use the most recent with settlement data
+    if not selected_season:
+        if seasons_with_settlements:
+            selected_season = seasons_with_settlements[0]
+        else:
+            selected_season = default_season
+
+    packinghouse_id = request.query_params.get('packinghouse')
+    field_id = request.query_params.get('field_id')
+
+    # Build settlement filter
+    settlement_filters = Q(
+        pool__packinghouse__company=company,
+        pool__season=selected_season
+    )
+    if packinghouse_id:
+        settlement_filters &= Q(pool__packinghouse_id=packinghouse_id)
+    if field_id:
+        settlement_filters &= Q(field_id=field_id)
+
+    settlements = PoolSettlement.objects.filter(settlement_filters)
+    settlement_ids = settlements.values_list('id', flat=True)
+
+    # Get total bins for percentage calculations
+    total_bins = settlements.aggregate(
+        total=Coalesce(Sum('total_bins'), Decimal('0'))
+    )['total']
+
+    # Get all deductions
+    deductions = SettlementDeduction.objects.filter(
+        settlement_id__in=settlement_ids
+    )
+
+    # Group by category
+    category_totals = defaultdict(lambda: {
+        'total_amount': Decimal('0'),
+        'items': defaultdict(lambda: {'amount': Decimal('0'), 'count': 0})
+    })
+
+    for ded in deductions:
+        category = ded.category
+        description = ded.description
+        amount = ded.amount or Decimal('0')
+
+        category_totals[category]['total_amount'] += amount
+        category_totals[category]['items'][description]['amount'] += amount
+        category_totals[category]['items'][description]['count'] += 1
+
+    # Format response
+    by_category = []
+    grand_total = Decimal('0')
+
+    category_order = ['packing', 'assessment', 'pick_haul', 'capital', 'marketing', 'other']
+    category_labels = {
+        'packing': 'Packing Charges',
+        'assessment': 'Assessments',
+        'pick_haul': 'Pick & Haul',
+        'capital': 'Capital Funds',
+        'marketing': 'Marketing',
+        'other': 'Other',
+    }
+
+    for category in category_order:
+        if category in category_totals:
+            cat_data = category_totals[category]
+            cat_total = cat_data['total_amount']
+            grand_total += cat_total
+
+            items = []
+            for desc, item_data in cat_data['items'].items():
+                items.append({
+                    'description': desc,
+                    'amount': float(item_data['amount']),
+                    'per_bin': round(float(item_data['amount'] / total_bins), 4) if total_bins > 0 else 0,
+                    'count': item_data['count'],
+                })
+
+            # Sort items by amount descending
+            items.sort(key=lambda x: x['amount'], reverse=True)
+
+            by_category.append({
+                'category': category,
+                'label': category_labels.get(category, category),
+                'total_amount': float(cat_total),
+                'per_bin': round(float(cat_total / total_bins), 2) if total_bins > 0 else 0,
+                'percent_of_total': round((float(cat_total) / float(grand_total) * 100), 1) if grand_total > 0 else 0,
+                'items': items,
+            })
+
+    # Recalculate percent_of_total now that we have grand_total
+    for cat in by_category:
+        if grand_total > 0:
+            cat['percent_of_total'] = round((cat['total_amount'] / float(grand_total) * 100), 1)
+
+    return Response({
+        'season': selected_season,
+        'total_bins': float(total_bins),
+        'grand_total': float(grand_total),
+        'grand_total_per_bin': round(float(grand_total / total_bins), 2) if total_bins > 0 else 0,
+        'by_category': by_category,
+    })
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def season_comparison(request):
+    """
+    Year-over-year comparison of profitability metrics.
+
+    Shows trends across seasons for revenue, deductions, and net returns.
+    Note: Pick & haul costs are already included in settlement deductions,
+    so Net Settlement represents the grower's actual return.
+
+    Query params:
+    - field_id: Filter by specific field (optional)
+    - packinghouse: Filter by packinghouse ID (optional)
+    """
+    from .models import PoolSettlement
+    from decimal import Decimal
+
+    user = request.user
+    if not user.current_company:
+        return Response({'error': 'No company selected'}, status=400)
+
+    company = user.current_company
+
+    packinghouse_id = request.query_params.get('packinghouse')
+    field_id = request.query_params.get('field_id')
+
+    # Get all available seasons
+    available_seasons = Pool.objects.filter(
+        packinghouse__company=company
+    ).values_list('season', flat=True).distinct().order_by('-season')
+    available_seasons = list(available_seasons)
+
+    results = []
+
+    for season in available_seasons:
+        # Settlement filters
+        settlement_filters = Q(
+            pool__packinghouse__company=company,
+            pool__season=season
+        )
+        if packinghouse_id:
+            settlement_filters &= Q(pool__packinghouse_id=packinghouse_id)
+        if field_id:
+            settlement_filters &= Q(field_id=field_id)
+
+        # Get settlement data
+        settlements = PoolSettlement.objects.filter(settlement_filters)
+        settlement_agg = settlements.aggregate(
+            total_bins=Coalesce(Sum('total_bins'), Decimal('0')),
+            gross_revenue=Coalesce(Sum('total_credits'), Decimal('0')),
+            total_deductions=Coalesce(Sum('total_deductions'), Decimal('0')),
+            net_settlement=Coalesce(Sum('net_return'), Decimal('0')),
+        )
+
+        # Calculate metrics
+        total_bins = settlement_agg['total_bins'] or Decimal('0')
+        gross_revenue = settlement_agg['gross_revenue'] or Decimal('0')
+        total_deductions = settlement_agg['total_deductions'] or Decimal('0')
+        net_settlement = settlement_agg['net_settlement'] or Decimal('0')
+
+        if total_bins > 0:
+            # Calculate return margin (net as % of gross)
+            return_margin = round((float(net_settlement) / float(gross_revenue) * 100), 1) if gross_revenue > 0 else 0
+
+            results.append({
+                'season': season,
+                'total_bins': float(total_bins),
+                'gross_revenue': float(gross_revenue),
+                'total_deductions': float(total_deductions),
+                'net_settlement': float(net_settlement),
+
+                # Per-bin metrics
+                'gross_per_bin': round(float(gross_revenue / total_bins), 2),
+                'deductions_per_bin': round(float(total_deductions / total_bins), 2),
+                'net_per_bin': round(float(net_settlement / total_bins), 2),
+
+                # Return margin (net as % of gross)
+                'return_margin': return_margin,
+            })
+
+    # Calculate year-over-year changes
+    for i in range(len(results) - 1):
+        current = results[i]
+        previous = results[i + 1]
+
+        if previous['net_per_bin'] != 0:
+            current['net_per_bin_change'] = round(
+                ((current['net_per_bin'] - previous['net_per_bin']) / abs(previous['net_per_bin'])) * 100, 1
+            )
+        else:
+            current['net_per_bin_change'] = None
+
+        if previous['total_bins'] != 0:
+            current['volume_change'] = round(
+                ((current['total_bins'] - previous['total_bins']) / previous['total_bins']) * 100, 1
+            )
+        else:
+            current['volume_change'] = None
+
+    return Response({
+        'seasons': results,
+    })
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -760,12 +1326,16 @@ def packinghouse_dashboard(request):
     """
     Get dashboard summary for packinghouse module.
 
+    Query params:
+    - season: Optional season filter (e.g., "2024-2025"). Defaults to current season.
+
     Returns:
     - Active pools count
     - Total bins delivered this season
     - Pending settlements count
     - Recent deliveries
     - Recent packout reports
+    - Available seasons for dropdown
     """
     user = request.user
     if not user.current_company:
@@ -773,64 +1343,335 @@ def packinghouse_dashboard(request):
 
     company = user.current_company
 
-    # Active pools
-    active_pools = Pool.objects.filter(
-        packinghouse__company=company,
-        status='active'
-    ).count()
+    # Get available seasons from pools
+    available_seasons = Pool.objects.filter(
+        packinghouse__company=company
+    ).values_list('season', flat=True).distinct().order_by('-season')
+    available_seasons = list(available_seasons)
 
-    # Get current season (assume format "2024-2025")
+    # Get selected season from query params or default to current
     from datetime import date
     today = date.today()
     if today.month >= 10:
-        current_season = f"{today.year}-{today.year + 1}"
+        default_season = f"{today.year}-{today.year + 1}"
     else:
-        current_season = f"{today.year - 1}-{today.year}"
+        default_season = f"{today.year - 1}-{today.year}"
+
+    selected_season = request.query_params.get('season', default_season)
+
+    # If selected season not in available seasons and we have data, use the most recent
+    if selected_season not in available_seasons and available_seasons:
+        selected_season = available_seasons[0]
+
+    # Active pools for selected season
+    active_pools = Pool.objects.filter(
+        packinghouse__company=company,
+        status='active',
+        season=selected_season
+    ).count()
+
+    # Total pools for selected season
+    total_pools = Pool.objects.filter(
+        packinghouse__company=company,
+        season=selected_season
+    ).count()
 
     # Total bins this season
     total_bins = PackinghouseDelivery.objects.filter(
         pool__packinghouse__company=company,
-        pool__season=current_season
+        pool__season=selected_season
     ).aggregate(total=Coalesce(Sum('bins'), Decimal('0')))['total']
 
-    # Pools pending settlement
+    # Pools pending settlement for selected season
     pending_settlement = Pool.objects.filter(
         packinghouse__company=company,
-        status='closed'
+        status='closed',
+        season=selected_season
     ).exclude(
         settlements__isnull=False
     ).count()
 
-    # Recent deliveries (last 5)
+    # Recent deliveries for selected season (last 5)
     recent_deliveries = PackinghouseDelivery.objects.filter(
-        pool__packinghouse__company=company
+        pool__packinghouse__company=company,
+        pool__season=selected_season
     ).select_related('pool', 'field').order_by('-delivery_date', '-created_at')[:5]
 
-    # Recent packout reports (last 5)
+    # Recent packout reports for selected season (last 5)
     recent_packouts = PackoutReport.objects.filter(
-        pool__packinghouse__company=company
+        pool__packinghouse__company=company,
+        pool__season=selected_season
     ).select_related('pool', 'field').order_by('-report_date')[:5]
 
-    # Packinghouse breakdown
+    # Packinghouse breakdown for selected season
     packinghouse_summary = Packinghouse.objects.filter(
         company=company,
         is_active=True
     ).annotate(
-        active_pools=Count('pools', filter=Q(pools__status='active')),
+        active_pools=Count('pools', filter=Q(pools__status='active', pools__season=selected_season)),
+        total_pools=Count('pools', filter=Q(pools__season=selected_season)),
         season_bins=Coalesce(
-            Sum('pools__deliveries__bins', filter=Q(pools__season=current_season)),
+            Sum('pools__deliveries__bins', filter=Q(pools__season=selected_season)),
+            Decimal('0')
+        ),
+        total_settlements=Coalesce(
+            Sum('pools__settlements__net_return', filter=Q(pools__season=selected_season)),
             Decimal('0')
         )
-    ).values('id', 'name', 'short_code', 'active_pools', 'season_bins')
+    ).values('id', 'name', 'short_code', 'active_pools', 'total_pools', 'season_bins', 'total_settlements')
 
     return Response({
-        'current_season': current_season,
+        'selected_season': selected_season,
+        'available_seasons': available_seasons,
         'active_pools': active_pools,
+        'total_pools': total_pools,
         'total_bins_this_season': total_bins,
         'pending_settlement': pending_settlement,
         'recent_deliveries': PackinghouseDeliveryListSerializer(recent_deliveries, many=True).data,
         'recent_packouts': PackoutReportListSerializer(recent_packouts, many=True).data,
         'packinghouse_summary': list(packinghouse_summary),
+    })
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def harvest_packing_pipeline(request):
+    """
+    Get unified pipeline overview: Harvest → Delivery → Packout → Settlement.
+
+    Query params:
+    - season: Optional season filter (e.g., "2024-2025"). Defaults to current season.
+
+    Shows the complete flow of fruit from field to payment.
+    """
+    user = request.user
+    if not user.current_company:
+        return Response({'error': 'No company selected'}, status=400)
+
+    company = user.current_company
+
+    # Get available seasons from pools
+    available_seasons = Pool.objects.filter(
+        packinghouse__company=company
+    ).values_list('season', flat=True).distinct().order_by('-season')
+    available_seasons = list(available_seasons)
+
+    # Get current/default season
+    from datetime import date, timedelta
+    today = date.today()
+    if today.month >= 10:
+        default_season = f"{today.year}-{today.year + 1}"
+    else:
+        default_season = f"{today.year - 1}-{today.year}"
+
+    # Get selected season from query params
+    selected_season = request.query_params.get('season', default_season)
+
+    # If selected season not in available seasons and we have data, use the most recent
+    if selected_season not in available_seasons and available_seasons:
+        selected_season = available_seasons[0]
+
+    # Calculate season start date for harvest filtering
+    try:
+        season_year = int(selected_season.split('-')[0])
+        season_start = date(season_year, 10, 1)
+        season_end = date(season_year + 1, 9, 30)
+    except (ValueError, IndexError):
+        season_start = date(today.year - 1, 10, 1)
+        season_end = date(today.year, 9, 30)
+
+    # Pipeline Stage 1: Harvests
+    harvest_stats = Harvest.objects.filter(
+        field__farm__company=company,
+        harvest_date__gte=season_start,
+        harvest_date__lte=season_end
+    ).aggregate(
+        total_harvests=Count('id'),
+        total_bins_harvested=Coalesce(Sum('total_bins'), 0),
+        in_progress=Count('id', filter=Q(status='in_progress')),
+        complete=Count('id', filter=Q(status='complete')),
+        verified=Count('id', filter=Q(status='verified'))
+    )
+
+    # Pipeline Stage 2: Deliveries to Packinghouse
+    delivery_stats = PackinghouseDelivery.objects.filter(
+        pool__packinghouse__company=company,
+        pool__season=selected_season
+    ).aggregate(
+        total_deliveries=Count('id'),
+        total_bins_delivered=Coalesce(Sum('bins'), Decimal('0')),
+        linked_to_harvest=Count('id', filter=Q(harvest__isnull=False)),
+        unlinked=Count('id', filter=Q(harvest__isnull=True))
+    )
+
+    # Pipeline Stage 3: Packout Reports
+    packout_stats = PackoutReport.objects.filter(
+        pool__packinghouse__company=company,
+        pool__season=selected_season
+    ).aggregate(
+        total_reports=Count('id'),
+        total_bins_packed=Coalesce(Sum('bins_cumulative'), Decimal('0')),
+        avg_pack_percent=Avg('total_packed_percent'),
+        avg_house_percent=Avg('house_avg_packed_percent')
+    )
+
+    # Pipeline Stage 4: Settlements
+    settlement_stats = PoolSettlement.objects.filter(
+        pool__packinghouse__company=company,
+        pool__season=selected_season
+    ).aggregate(
+        total_settlements=Count('id'),
+        total_revenue=Coalesce(Sum('net_return'), Decimal('0')),
+        total_bins_settled=Coalesce(Sum('total_bins'), Decimal('0')),
+        avg_per_bin=Avg('net_per_bin')
+    )
+
+    # Pool status breakdown
+    pool_status = Pool.objects.filter(
+        packinghouse__company=company,
+        season=selected_season
+    ).values('status').annotate(count=Count('id'))
+    pool_by_status = {item['status']: item['count'] for item in pool_status}
+
+    # Recent activity (last 10 items across all stages)
+    recent_harvests = Harvest.objects.filter(
+        field__farm__company=company,
+        harvest_date__gte=season_start,
+        harvest_date__lte=season_end
+    ).select_related('field', 'field__farm').order_by('-harvest_date')[:5]
+
+    recent_deliveries = PackinghouseDelivery.objects.filter(
+        pool__packinghouse__company=company,
+        pool__season=selected_season
+    ).select_related('pool', 'pool__packinghouse', 'field', 'harvest').order_by('-delivery_date')[:5]
+
+    recent_packouts = PackoutReport.objects.filter(
+        pool__packinghouse__company=company,
+        pool__season=selected_season
+    ).select_related('pool', 'field').order_by('-report_date')[:5]
+
+    recent_settlements = PoolSettlement.objects.filter(
+        pool__packinghouse__company=company,
+        pool__season=selected_season
+    ).select_related('pool', 'field').order_by('-statement_date')[:5]
+
+    # Calculate pipeline efficiency metrics
+    bins_harvested = harvest_stats['total_bins_harvested'] or 0
+    bins_delivered = float(delivery_stats['total_bins_delivered'] or 0)
+    bins_packed = float(packout_stats['total_bins_packed'] or 0)
+    bins_settled = float(settlement_stats['total_bins_settled'] or 0)
+
+    pipeline_efficiency = {
+        'harvest_to_delivery': round((bins_delivered / bins_harvested * 100), 1) if bins_harvested > 0 else 0,
+        'delivery_to_packout': round((bins_packed / bins_delivered * 100), 1) if bins_delivered > 0 else 0,
+        'packout_to_settlement': round((bins_settled / bins_packed * 100), 1) if bins_packed > 0 else 0,
+        'overall': round((bins_settled / bins_harvested * 100), 1) if bins_harvested > 0 else 0,
+    }
+
+    # Format recent activity for response
+    recent_activity = []
+
+    for h in recent_harvests:
+        recent_activity.append({
+            'type': 'harvest',
+            'date': h.harvest_date.isoformat(),
+            'description': f"Harvested {h.total_bins} bins from {h.field.name}",
+            'field': h.field.name,
+            'farm': h.field.farm.name,
+            'bins': h.total_bins,
+            'status': h.status,
+            'id': h.id
+        })
+
+    for d in recent_deliveries:
+        recent_activity.append({
+            'type': 'delivery',
+            'date': d.delivery_date.isoformat(),
+            'description': f"Delivered {d.bins} bins to {d.pool.packinghouse.name}",
+            'packinghouse': d.pool.packinghouse.name,
+            'pool': d.pool.name,
+            'field': d.field.name if d.field else None,
+            'bins': d.bins,
+            'ticket': d.ticket_number,
+            'linked_harvest': d.harvest_id,
+            'id': d.id
+        })
+
+    for p in recent_packouts:
+        recent_activity.append({
+            'type': 'packout',
+            'date': p.report_date.isoformat(),
+            'description': f"Packout report: {p.total_packed_percent}% packed" if p.total_packed_percent else "Packout report received",
+            'packinghouse': p.pool.packinghouse.name,
+            'pool': p.pool.name,
+            'field': p.field.name if p.field else 'Grower Summary',
+            'pack_percent': float(p.total_packed_percent) if p.total_packed_percent else None,
+            'house_avg': float(p.house_avg_packed_percent) if p.house_avg_packed_percent else None,
+            'id': p.id
+        })
+
+    for s in recent_settlements:
+        recent_activity.append({
+            'type': 'settlement',
+            'date': s.statement_date.isoformat(),
+            'description': f"Settlement: ${s.net_return:,.2f}" if s.net_return else "Settlement received",
+            'packinghouse': s.pool.packinghouse.name,
+            'pool': s.pool.name,
+            'field': s.field.name if s.field else 'Grower Summary',
+            'net_return': float(s.net_return) if s.net_return else None,
+            'per_bin': float(s.net_per_bin) if s.net_per_bin else None,
+            'id': s.id
+        })
+
+    # Sort by date descending
+    recent_activity.sort(key=lambda x: x['date'], reverse=True)
+
+    return Response({
+        'current_season': selected_season,
+        'selected_season': selected_season,
+        'available_seasons': available_seasons,
+        'pipeline_stages': {
+            'harvest': {
+                'label': 'Harvested',
+                'total_count': harvest_stats['total_harvests'],
+                'total_bins': bins_harvested,
+                'breakdown': {
+                    'in_progress': harvest_stats['in_progress'],
+                    'complete': harvest_stats['complete'],
+                    'verified': harvest_stats['verified']
+                }
+            },
+            'delivery': {
+                'label': 'Delivered',
+                'total_count': delivery_stats['total_deliveries'],
+                'total_bins': bins_delivered,
+                'breakdown': {
+                    'linked': delivery_stats['linked_to_harvest'],
+                    'unlinked': delivery_stats['unlinked']
+                }
+            },
+            'packout': {
+                'label': 'Packed',
+                'total_count': packout_stats['total_reports'],
+                'total_bins': bins_packed,
+                'avg_pack_percent': round(float(packout_stats['avg_pack_percent'] or 0), 1),
+                'avg_house_percent': round(float(packout_stats['avg_house_percent'] or 0), 1)
+            },
+            'settlement': {
+                'label': 'Settled',
+                'total_count': settlement_stats['total_settlements'],
+                'total_bins': bins_settled,
+                'total_revenue': float(settlement_stats['total_revenue'] or 0),
+                'avg_per_bin': round(float(settlement_stats['avg_per_bin'] or 0), 2)
+            }
+        },
+        'pool_status': {
+            'active': pool_by_status.get('active', 0),
+            'closed': pool_by_status.get('closed', 0),
+            'settled': pool_by_status.get('settled', 0)
+        },
+        'pipeline_efficiency': pipeline_efficiency,
+        'recent_activity': recent_activity[:15]
     })
 
 
@@ -892,6 +1733,46 @@ class PackinghouseStatementViewSet(viewsets.ModelViewSet):
         if self.action == 'create':
             return PackinghouseStatementUploadSerializer
         return PackinghouseStatementSerializer
+
+    def destroy(self, request, *args, **kwargs):
+        """
+        Delete a statement and all associated data (settlements, packout reports, grade lines, deductions).
+        """
+        statement = self.get_object()
+
+        # Delete associated PoolSettlement and its related data
+        try:
+            settlement = PoolSettlement.objects.get(source_statement=statement)
+            # Delete grade lines and deductions first (cascade should handle this, but be explicit)
+            SettlementGradeLine.objects.filter(settlement=settlement).delete()
+            SettlementDeduction.objects.filter(settlement=settlement).delete()
+            settlement.delete()
+            logger.info(f"Deleted settlement {settlement.id} for statement {statement.id}")
+        except PoolSettlement.DoesNotExist:
+            pass
+
+        # Delete associated PackoutReport and its related data
+        try:
+            packout = PackoutReport.objects.get(source_statement=statement)
+            # Delete grade lines first
+            PackoutGradeLine.objects.filter(packout_report=packout).delete()
+            packout.delete()
+            logger.info(f"Deleted packout report {packout.id} for statement {statement.id}")
+        except PackoutReport.DoesNotExist:
+            pass
+
+        # Delete the PDF file if it exists
+        if statement.pdf_file:
+            try:
+                statement.pdf_file.delete(save=False)
+            except Exception as e:
+                logger.warning(f"Failed to delete PDF file for statement {statement.id}: {e}")
+
+        # Delete the statement
+        statement.delete()
+        logger.info(f"Deleted statement {statement.id}")
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     def create(self, request, *args, **kwargs):
         """
@@ -981,7 +1862,7 @@ class PackinghouseStatementViewSet(viewsets.ModelViewSet):
         Confirm extracted data and create PackoutReport or PoolSettlement.
 
         Expected data:
-        - pool_id: Pool to associate with
+        - pool_id: Pool to associate with (optional - will auto-create from PDF data if not provided)
         - field_id: Field to associate with (optional for settlements)
         - edited_data: Optional edited version of extracted_data
         """
@@ -997,23 +1878,93 @@ class PackinghouseStatementViewSet(viewsets.ModelViewSet):
         field_id = request.data.get('field_id')
         edited_data = request.data.get('edited_data')
 
-        if not pool_id:
-            return Response(
-                {'error': 'pool_id is required'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+        # Use edited data if provided, otherwise use original extracted data
+        data_to_use = edited_data if edited_data else statement.extracted_data
 
-        # Get pool and field
-        try:
-            pool = Pool.objects.get(
-                id=pool_id,
-                packinghouse__company=request.user.current_company
-            )
-        except Pool.DoesNotExist:
-            return Response(
-                {'error': 'Pool not found'},
-                status=status.HTTP_404_NOT_FOUND
-            )
+        # Get or create pool
+        pool = None
+        if pool_id:
+            # Use existing pool
+            try:
+                pool = Pool.objects.get(
+                    id=pool_id,
+                    packinghouse__company=request.user.current_company
+                )
+            except Pool.DoesNotExist:
+                return Response(
+                    {'error': 'Pool not found'},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+        else:
+            # Auto-create pool from extracted data
+            header = data_to_use.get('header', {})
+
+            # Extract pool info from PDF data
+            extracted_pool_id = header.get('pool_id') or ''
+            pool_name = header.get('pool_name') or extracted_pool_id or 'Imported Pool'
+            commodity = header.get('commodity', 'CITRUS')
+            season = header.get('season', '')
+
+            # If no season, try to derive from report date
+            if not season:
+                report_date_str = header.get('report_date')
+                if report_date_str:
+                    try:
+                        from datetime import datetime
+                        report_date = datetime.strptime(report_date_str, '%Y-%m-%d').date()
+                        # Season typically runs Oct-Sep
+                        if report_date.month >= 10:
+                            season = f"{report_date.year}-{report_date.year + 1}"
+                        else:
+                            season = f"{report_date.year - 1}-{report_date.year}"
+                    except (ValueError, TypeError):
+                        pass
+
+            # Default season if still empty
+            if not season:
+                from datetime import date
+                today = date.today()
+                if today.month >= 10:
+                    season = f"{today.year}-{today.year + 1}"
+                else:
+                    season = f"{today.year - 1}-{today.year}"
+
+            # Check if a similar pool already exists
+            # First try by pool_id if we have one (most specific)
+            existing_pool = None
+            if extracted_pool_id:
+                existing_pool = Pool.objects.filter(
+                    packinghouse=statement.packinghouse,
+                    pool_id=extracted_pool_id
+                ).first()
+
+            # If not found by pool_id, try by commodity and season
+            if not existing_pool:
+                existing_pool = Pool.objects.filter(
+                    packinghouse=statement.packinghouse,
+                    commodity__iexact=commodity,
+                    season=season
+                ).first()
+
+            if existing_pool:
+                pool = existing_pool
+                logger.info(f"Using existing pool {pool.id} for statement {statement.id}")
+            else:
+                # Generate a unique pool_id if not provided
+                if not extracted_pool_id:
+                    import uuid
+                    extracted_pool_id = f"IMP-{uuid.uuid4().hex[:8].upper()}"
+
+                # Create new pool
+                pool = Pool.objects.create(
+                    packinghouse=statement.packinghouse,
+                    pool_id=extracted_pool_id,
+                    name=pool_name,
+                    commodity=commodity,
+                    season=season,
+                    status='active'
+                )
+                logger.info(f"Created new pool {pool.id} ({pool.name}) for statement {statement.id}")
 
         field = None
         if field_id:
@@ -1028,13 +1979,36 @@ class PackinghouseStatementViewSet(viewsets.ModelViewSet):
                     status=status.HTTP_404_NOT_FOUND
                 )
 
-        # Use edited data if provided, otherwise use original extracted data
-        data_to_use = edited_data if edited_data else statement.extracted_data
-
         # Update statement with edited data if provided
         if edited_data:
             statement.extracted_data = edited_data
             statement.save()
+
+        # Check if records were already created for this statement
+        existing_packout = PackoutReport.objects.filter(source_statement=statement).first()
+        existing_settlement = PoolSettlement.objects.filter(source_statement=statement).first()
+
+        if existing_packout or existing_settlement:
+            # Already processed - update statement status and return success
+            statement.pool = pool
+            statement.field = field
+            statement.status = 'completed'
+            statement.save()
+
+            if existing_packout:
+                return Response({
+                    'success': True,
+                    'message': 'Statement was already processed. Packout report exists.',
+                    'packout_report_id': existing_packout.id,
+                    'statement_id': statement.id
+                })
+            else:
+                return Response({
+                    'success': True,
+                    'message': 'Statement was already processed. Settlement exists.',
+                    'settlement_id': existing_settlement.id,
+                    'statement_id': statement.id
+                })
 
         # Create the appropriate record based on statement type
         extraction_service = PDFExtractionService()

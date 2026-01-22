@@ -33,7 +33,7 @@ const PoolList = () => {
   const [filters, setFilters] = useState({
     packinghouse: '',
     status: '',
-    season: PACKINGHOUSE_CONSTANTS.getCurrentSeason(),
+    season: '',  // Show all seasons by default
     commodity: '',
   });
   const [showFilters, setShowFilters] = useState(false);
@@ -289,10 +289,14 @@ const PoolList = () => {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {pools.map((pool) => (
-                <tr key={pool.id} className="hover:bg-gray-50">
+                <tr
+                  key={pool.id}
+                  className="hover:bg-gray-50 cursor-pointer"
+                  onClick={() => handleView(pool)}
+                >
                   <td className="px-4 py-3">
                     <div>
-                      <p className="font-medium text-gray-900">{pool.name}</p>
+                      <p className="font-medium text-gray-900 text-green-700 hover:text-green-800">{pool.name}</p>
                       <p className="text-xs text-gray-500">{pool.pool_id}</p>
                     </div>
                   </td>
@@ -320,7 +324,7 @@ const PoolList = () => {
                   <td className="px-4 py-3 text-center">
                     {getStatusBadge(pool.status)}
                   </td>
-                  <td className="px-4 py-3 text-right">
+                  <td className="px-4 py-3 text-right" onClick={(e) => e.stopPropagation()}>
                     <div className="flex justify-end space-x-1">
                       <button
                         onClick={() => handleView(pool)}

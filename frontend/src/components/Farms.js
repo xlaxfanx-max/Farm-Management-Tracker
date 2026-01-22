@@ -347,35 +347,7 @@ function Farms() {
               onDrawingComplete={() => setDrawingField(null)}
             />
 
-            {/* Drawing Instructions Overlay */}
-            {drawingField && (
-              <div className="absolute top-4 left-4 z-[1000] bg-white rounded-lg shadow-xl border border-gray-200 p-4 max-w-xs">
-                <div className="flex items-center justify-between mb-2">
-                  <h4 className="font-semibold text-gray-900 flex items-center gap-2">
-                    <MapPin className="w-4 h-4 text-green-600" />
-                    Drawing: {drawingField.name}
-                  </h4>
-                  <button
-                    onClick={() => setDrawingField(null)}
-                    className="text-gray-400 hover:text-gray-600"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-                <ol className="text-sm text-gray-600 space-y-1.5 list-decimal list-inside">
-                  <li>Click on the map to place boundary points</li>
-                  <li>Click the first point to close the polygon</li>
-                  <li>Click <strong>Save</strong> when finished</li>
-                </ol>
-                <button
-                  onClick={() => setDrawingField(null)}
-                  className="mt-3 w-full px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 rounded transition-colors"
-                >
-                  Cancel Drawing
-                </button>
-              </div>
-            )}
-
+            {/* Tip for fields without boundaries - only show when not drawing */}
             {fieldsWithBoundaries < fields.length && fields.length > 0 && !drawingField && (
               <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-700">
                 <strong>Tip:</strong> {fields.length - fieldsWithBoundaries} of {fields.length} fields need boundaries drawn.

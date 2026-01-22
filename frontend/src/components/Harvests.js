@@ -25,16 +25,22 @@ import {
   BarChart3,
   Boxes,
   Building2,
-  Layers
+  Layers,
+  Upload,
+  FileText,
+  TrendingUp
 } from 'lucide-react';
 import { harvestsAPI, HARVEST_CONSTANTS } from '../services/api';
 import { useData } from '../contexts/DataContext';
 import { useModal } from '../contexts/ModalContext';
 import HarvestAnalytics from './HarvestAnalytics';
+import ProfitabilityDashboard from './ProfitabilityDashboard';
 import {
   PackinghouseList,
   PoolList,
-  PackinghouseAnalytics
+  PackinghouseAnalytics,
+  StatementList,
+  PipelineOverview
 } from './packinghouse';
 
 const Harvests = () => {
@@ -48,8 +54,8 @@ const Harvests = () => {
     unregisterRefreshCallback
   } = useModal();
 
-  // Main tab state: harvests, packinghouses, pools, analytics
-  const [activeTab, setActiveTab] = useState('harvests');
+  // Main tab state: overview, harvests, packinghouses, pools, analytics
+  const [activeTab, setActiveTab] = useState('overview');
   const [showAnalytics, setShowAnalytics] = useState(false);
   const [harvests, setHarvests] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -64,11 +70,13 @@ const Harvests = () => {
   });
   const [showFilters, setShowFilters] = useState(false);
 
-  // Tab definitions
+  // Tab definitions - unified harvest to packing pipeline
   const tabs = [
+    { id: 'overview', label: 'Overview', icon: TrendingUp },
     { id: 'harvests', label: 'Harvests', icon: Wheat },
     { id: 'packinghouses', label: 'Packinghouses', icon: Building2 },
     { id: 'pools', label: 'Pools', icon: Layers },
+    { id: 'statements', label: 'Statements', icon: FileText },
     { id: 'analytics', label: 'Analytics', icon: BarChart3 },
   ];
 
@@ -282,6 +290,11 @@ const Harvests = () => {
         </nav>
       </div>
 
+      {/* Overview Tab - Pipeline Visualization */}
+      {activeTab === 'overview' && (
+        <PipelineOverview />
+      )}
+
       {/* Packinghouses Tab */}
       {activeTab === 'packinghouses' && (
         <PackinghouseList />
@@ -292,16 +305,33 @@ const Harvests = () => {
         <PoolList />
       )}
 
+      {/* Statements Tab */}
+      {activeTab === 'statements' && (
+        <StatementList />
+      )}
+
       {/* Analytics Tab (Combined) */}
       {activeTab === 'analytics' && (
         <div className="space-y-6">
+          {/* Profitability Dashboard - Primary Analytics */}
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4 flex items-center gap-2">
+              <DollarSign className="text-green-600" size={20} />
+              Profitability Analysis
+            </h3>
+            <ProfitabilityDashboard />
+          </div>
+
+          {/* Cost Analysis */}
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
             <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4 flex items-center gap-2">
               <Wheat className="text-orange-600" size={20} />
-              Harvest Analytics
+              Harvest Cost Analysis
             </h3>
             <HarvestAnalytics />
           </div>
+
+          {/* Packinghouse Analytics */}
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
             <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4 flex items-center gap-2">
               <Boxes className="text-green-600" size={20} />

@@ -148,7 +148,27 @@ export function DataProvider({ children }) {
       return { success: true };
     } catch (err) {
       console.error('Error saving field:', err);
-      return { success: false, error: 'Failed to save field' };
+      // Extract actual error message from backend response
+      let errorMessage = 'Failed to save field';
+      if (err.response?.data) {
+        const data = err.response.data;
+        if (typeof data === 'string') {
+          errorMessage = data;
+        } else if (data.detail) {
+          errorMessage = data.detail;
+        } else if (data.error) {
+          errorMessage = data.error;
+        } else {
+          // Handle field-level validation errors
+          const fieldErrors = Object.entries(data)
+            .map(([field, errors]) => `${field}: ${Array.isArray(errors) ? errors.join(', ') : errors}`)
+            .join('\n');
+          if (fieldErrors) {
+            errorMessage = fieldErrors;
+          }
+        }
+      }
+      return { success: false, error: errorMessage };
     }
   }, [loadData]);
 

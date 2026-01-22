@@ -3581,12 +3581,15 @@ class PackinghouseDeliveryListSerializer(serializers.ModelSerializer):
     """Lightweight serializer for delivery listings."""
     pool_name = serializers.CharField(source='pool.name', read_only=True)
     field_name = serializers.CharField(source='field.name', read_only=True)
+    harvest_date = serializers.DateField(source='harvest.harvest_date', read_only=True)
+    harvest_lot = serializers.CharField(source='harvest.lot_number', read_only=True)
 
     class Meta:
         model = PackinghouseDelivery
         fields = [
             'id', 'pool', 'pool_name', 'field', 'field_name',
-            'ticket_number', 'delivery_date', 'bins', 'weight_lbs'
+            'ticket_number', 'delivery_date', 'bins', 'weight_lbs',
+            'harvest', 'harvest_date', 'harvest_lot'
         ]
 
 
@@ -3743,6 +3746,8 @@ class PoolSettlementSerializer(serializers.ModelSerializer):
     grade_lines = SettlementGradeLineSerializer(many=True, read_only=True)
     deductions = SettlementDeductionSerializer(many=True, read_only=True)
     variance_vs_house_per_bin = serializers.ReadOnlyField()
+    source_pdf_url = serializers.SerializerMethodField()
+    source_pdf_filename = serializers.SerializerMethodField()
 
     class Meta:
         model = PoolSettlement
@@ -3758,6 +3763,7 @@ class PoolSettlementSerializer(serializers.ModelSerializer):
             'fresh_fruit_percent', 'products_percent',
             'settlement_data_json',
             'grade_lines', 'deductions',
+            'source_pdf_url', 'source_pdf_filename',
             'created_at', 'updated_at'
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']
@@ -3765,6 +3771,19 @@ class PoolSettlementSerializer(serializers.ModelSerializer):
     def get_farm_name(self, obj):
         if obj.field:
             return obj.field.farm.name
+        return None
+
+    def get_source_pdf_url(self, obj):
+        if obj.source_statement and obj.source_statement.pdf_file:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.source_statement.pdf_file.url)
+            return obj.source_statement.pdf_file.url
+        return None
+
+    def get_source_pdf_filename(self, obj):
+        if obj.source_statement:
+            return obj.source_statement.original_filename
         return None
 
 

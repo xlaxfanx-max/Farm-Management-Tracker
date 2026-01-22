@@ -20,7 +20,6 @@ import {
   Bug,
   Sun,
   Moon,
-  Boxes,
 } from 'lucide-react';
 
 // Contexts
@@ -55,7 +54,6 @@ import WPSCompliance from './components/compliance/WPSCompliance';
 import ComplianceReports from './components/compliance/ComplianceReports';
 import ComplianceSettings from './components/compliance/ComplianceSettings';
 import { DiseaseDashboard } from './components/disease';
-import PackinghouseDashboard from './components/packinghouse/PackinghouseDashboard';
 import Breadcrumbs from './components/navigation/Breadcrumbs';
 
 import { onboardingAPI } from './services/api';
@@ -224,7 +222,6 @@ function AppContent() {
     { id: 'water', label: 'Water Management', icon: Droplets },
     { id: 'nutrients', label: 'Nutrients', icon: Leaf },
     { id: 'harvests', label: 'Harvest & Packing', icon: Wheat },
-    { id: 'packinghouse', label: 'Packinghouse', icon: Boxes },
     { id: 'compliance', label: 'Compliance', icon: Shield },
     { id: 'disease', label: 'Disease Prevention', icon: Bug },
     { id: 'reports', label: 'Reports', icon: FileText },
@@ -506,9 +503,6 @@ function AppContent() {
         )}
         {currentView === 'disease' && (
           <DiseaseDashboard onNavigate={setCurrentView} />
-        )}
-        {currentView === 'packinghouse' && (
-          <PackinghouseDashboard />
         )}
       </main>
 
