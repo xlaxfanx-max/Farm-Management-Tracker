@@ -154,11 +154,26 @@ _cors_origins = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
 ]
+
+def _normalize_origin(origin):
+    """Ensure origin has a scheme (https:// by default if missing)."""
+    origin = origin.strip()
+    if not origin:
+        return None
+    if not origin.startswith(('http://', 'https://')):
+        return f'https://{origin}'
+    return origin
+
 # Add production frontend URL if set
 if os.environ.get('FRONTEND_URL'):
-    _cors_origins.append(os.environ.get('FRONTEND_URL'))
+    normalized = _normalize_origin(os.environ.get('FRONTEND_URL'))
+    if normalized:
+        _cors_origins.append(normalized)
 if os.environ.get('CORS_ALLOWED_ORIGINS'):
-    _cors_origins.extend(os.environ.get('CORS_ALLOWED_ORIGINS').split(','))
+    for origin in os.environ.get('CORS_ALLOWED_ORIGINS').split(','):
+        normalized = _normalize_origin(origin)
+        if normalized:
+            _cors_origins.append(normalized)
 
 CORS_ALLOWED_ORIGINS = list(set(_cors_origins))  # Remove duplicates
 CORS_ALLOW_CREDENTIALS = True
