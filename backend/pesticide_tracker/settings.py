@@ -89,27 +89,19 @@ WSGI_APPLICATION = 'pesticide_tracker.wsgi.application'
 
 # Database configuration with connection pooling for production
 # Supports DATABASE_URL (Railway, Render, Heroku) or individual env vars
+import dj_database_url
+
 DATABASE_URL = os.environ.get('DATABASE_URL', '')
 
 if DATABASE_URL:
     # Parse DATABASE_URL for cloud deployments (Railway, Render, Heroku)
-    import urllib.parse
-    url = urllib.parse.urlparse(DATABASE_URL)
     DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': url.path[1:],  # Remove leading slash
-            'USER': url.username,
-            'PASSWORD': url.password,
-            'HOST': url.hostname,
-            'PORT': url.port or '5432',
-            'CONN_MAX_AGE': 60,  # Connection pooling: keep connections for 60 seconds
-            'CONN_HEALTH_CHECKS': True,  # Check connection health before reuse
-            'OPTIONS': {
-                'connect_timeout': 10,
-                'sslmode': 'require',  # Required for cloud databases
-            },
-        }
+        'default': dj_database_url.config(
+            default=DATABASE_URL,
+            conn_max_age=60,
+            conn_health_checks=True,
+            ssl_require=True,
+        )
     }
 else:
     # Local development with individual env vars
