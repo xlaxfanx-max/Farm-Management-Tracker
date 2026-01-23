@@ -59,4 +59,5 @@ EXPOSE 8000
 # Railway handles healthchecks via /api/health/ - no Docker HEALTHCHECK needed
 
 # Run with gunicorn (use shell form so $PORT expands)
-CMD gunicorn --bind 0.0.0.0:${PORT:-8000} --workers 2 --threads 4 --worker-class gthread --timeout 120 pesticide_tracker.wsgi:application
+# Added access and error logging to debug startup issues
+CMD gunicorn --bind 0.0.0.0:${PORT:-8000} --workers 2 --threads 4 --worker-class gthread --timeout 120 --access-logfile - --error-logfile - --capture-output pesticide_tracker.wsgi:application
