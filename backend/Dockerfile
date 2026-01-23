@@ -56,9 +56,7 @@ RUN python manage.py collectstatic --noinput
 # Expose port
 EXPOSE 8000
 
-# Health check - uses PORT env var which Railway sets
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD python -c "import os; import urllib.request; urllib.request.urlopen(f'http://localhost:{os.environ.get(\"PORT\", 8000)}/api/health/')" || exit 1
+# Railway handles healthchecks via /api/health/ - no Docker HEALTHCHECK needed
 
 # Run with gunicorn (use shell form so $PORT expands)
 CMD gunicorn --bind 0.0.0.0:${PORT:-8000} --workers 2 --threads 4 --worker-class gthread --timeout 120 pesticide_tracker.wsgi:application
