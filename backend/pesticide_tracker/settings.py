@@ -386,7 +386,8 @@ CELERY_BEAT_SCHEDULE = {
 
 if not DEBUG:
     # HTTPS/SSL settings
-    SECURE_SSL_REDIRECT = True
+    # Railway handles SSL at load balancer level, so disable redirect to avoid healthcheck issues
+    SECURE_SSL_REDIRECT = os.environ.get('SECURE_SSL_REDIRECT', 'False').lower() in ('true', '1', 'yes')
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
     # Cookie security
