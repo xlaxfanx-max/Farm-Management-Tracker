@@ -225,23 +225,7 @@ router.register(r'grower-ledger', GrowerLedgerEntryViewSet, basename='grower-led
 router.register(r'packinghouse-statements', PackinghouseStatementViewSet, basename='packinghouse-statement')
 
 
-from django.http import JsonResponse
-from django.db import connection
-
-def health_check(request):
-    """Health check endpoint for container orchestration."""
-    try:
-        # Check database connection
-        with connection.cursor() as cursor:
-            cursor.execute("SELECT 1")
-        return JsonResponse({"status": "healthy", "database": "connected"})
-    except Exception as e:
-        return JsonResponse({"status": "unhealthy", "error": str(e)}, status=503)
-
 urlpatterns = [
-    # Health check (no auth required)
-    path('health/', health_check, name='health-check'),
-
     path('', include(router.urls)),
     path('reports/statistics/', report_statistics, name='report-statistics'),
     path('geocode/', geocode_address, name='geocode-address'),  

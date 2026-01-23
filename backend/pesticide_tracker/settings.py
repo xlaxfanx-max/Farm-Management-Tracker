@@ -8,25 +8,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # override=True ensures .env values take precedence over any existing env vars
 load_dotenv(BASE_DIR / '.env', override=True)
 
-# =============================================================================
-# CORE SETTINGS - Configure via environment variables for production
-# =============================================================================
+SECRET_KEY = 'django-insecure-change-this-in-production-abc123xyz'
 
-# SECURITY WARNING: Generate a new secret key for production!
-# Generate with: python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"
-SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-change-this-in-production-abc123xyz')
-
-# SECURITY WARNING: Don't run with debug turned on in production!
-DEBUG = os.environ.get('DEBUG', 'True').lower() in ('true', '1', 'yes')
+DEBUG = True
 
 AUTH_USER_MODEL = 'api.User'
 
-# Hosts/domain names that are valid for this site
-# In production, set ALLOWED_HOSTS env var to your domain (comma-separated)
-_allowed_hosts = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
-# Always allow Railway's healthcheck
-_allowed_hosts.extend(['healthcheck.railway.app', '.railway.app'])
-ALLOWED_HOSTS = [h.strip() for h in _allowed_hosts if h.strip()]
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -46,7 +34,6 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',  # Serve static files in production
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -87,34 +74,16 @@ WSGI_APPLICATION = 'pesticide_tracker.wsgi.application'
 #    }
 #}
 
-# Database configuration with connection pooling for production
-# Supports DATABASE_URL (Railway, Render, Heroku) or individual env vars
-import dj_database_url
-
-DATABASE_URL = os.environ.get('DATABASE_URL', '')
-
-if DATABASE_URL:
-    # Parse DATABASE_URL for cloud deployments (Railway, Render, Heroku)
-    DATABASES = {
-        'default': dj_database_url.parse(
-            DATABASE_URL,
-            conn_max_age=60,
-            conn_health_checks=True,
-        )
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.environ.get('DB_NAME', 'farm_tracker'),
+        'USER': os.environ.get('DB_USER', 'farm_tracker_user'),
+        'PASSWORD': os.environ.get('DB_PASSWORD', ''),
+        'HOST': os.environ.get('DB_HOST', 'localhost'),
+        'PORT': os.environ.get('DB_PORT', '5432'),
     }
-else:
-    # Local development with individual env vars
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': os.environ.get('DB_NAME', 'farm_tracker'),
-            'USER': os.environ.get('DB_USER', 'farm_tracker_user'),
-            'PASSWORD': os.environ.get('DB_PASSWORD', ''),
-            'HOST': os.environ.get('DB_HOST', 'localhost'),
-            'PORT': os.environ.get('DB_PORT', '5432'),
-            'CONN_MAX_AGE': 60 if not DEBUG else 0,  # Pool in production only
-        }
-    }
+}
 
 CACHE_URL = os.environ.get('CACHE_URL', '')
 CACHES = {
@@ -149,33 +118,11 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# CORS configuration - add production frontend URL via environment variable
-_cors_origins = [
+CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
 ]
 
-def _normalize_origin(origin):
-    """Ensure origin has a scheme (https:// by default if missing)."""
-    origin = origin.strip()
-    if not origin:
-        return None
-    if not origin.startswith(('http://', 'https://')):
-        return f'https://{origin}'
-    return origin
-
-# Add production frontend URL if set
-if os.environ.get('FRONTEND_URL'):
-    normalized = _normalize_origin(os.environ.get('FRONTEND_URL'))
-    if normalized:
-        _cors_origins.append(normalized)
-if os.environ.get('CORS_ALLOWED_ORIGINS'):
-    for origin in os.environ.get('CORS_ALLOWED_ORIGINS').split(','):
-        normalized = _normalize_origin(origin)
-        if normalized:
-            _cors_origins.append(normalized)
-
-CORS_ALLOWED_ORIGINS = list(set(_cors_origins))  # Remove duplicates
 CORS_ALLOW_CREDENTIALS = True
 
 REST_FRAMEWORK = {
@@ -376,85 +323,5 @@ CELERY_BEAT_SCHEDULE = {
     'send-disease-alert-digest': {
         'task': 'api.tasks.disease_tasks.send_disease_alert_digest',
         'schedule': crontab(hour=7, minute=0),
-    },
-}
-
-# =============================================================================
-# PRODUCTION SECURITY SETTINGS
-# =============================================================================
-# These settings are automatically enabled when DEBUG=False
-
-if not DEBUG:
-    # HTTPS/SSL settings
-    # Railway handles SSL at load balancer level, so disable redirect to avoid healthcheck issues
-    SECURE_SSL_REDIRECT = os.environ.get('SECURE_SSL_REDIRECT', 'False').lower() in ('true', '1', 'yes')
-    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-
-    # Cookie security
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
-
-    # HSTS (HTTP Strict Transport Security)
-    SECURE_HSTS_SECONDS = 31536000  # 1 year
-    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-    SECURE_HSTS_PRELOAD = True
-
-    # Content security
-    SECURE_CONTENT_TYPE_NOSNIFF = True
-    SECURE_BROWSER_XSS_FILTER = True
-    X_FRAME_OPTIONS = 'DENY'
-
-    # CSRF trusted origins (required for Django 4.0+ with HTTPS)
-    CSRF_TRUSTED_ORIGINS = [
-        origin for origin in CORS_ALLOWED_ORIGINS
-        if origin.startswith('https://')
-    ]
-
-# =============================================================================
-# STATIC FILES (for production with whitenoise)
-# =============================================================================
-STATIC_ROOT = BASE_DIR / 'staticfiles'
-
-# Add whitenoise for serving static files in production (optional)
-# Install with: pip install whitenoise
-# Then add 'whitenoise.middleware.WhiteNoiseMiddleware' after SecurityMiddleware
-
-# =============================================================================
-# LOGGING CONFIGURATION
-# =============================================================================
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters': {
-        'verbose': {
-            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
-            'style': '{',
-        },
-        'simple': {
-            'format': '{levelname} {asctime} {module} {message}',
-            'style': '{',
-        },
-    },
-    'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
-            'formatter': 'simple',
-        },
-    },
-    'root': {
-        'handlers': ['console'],
-        'level': 'INFO' if not DEBUG else 'DEBUG',
-    },
-    'loggers': {
-        'django': {
-            'handlers': ['console'],
-            'level': 'INFO',
-            'propagate': False,
-        },
-        'api': {
-            'handlers': ['console'],
-            'level': 'DEBUG' if DEBUG else 'INFO',
-            'propagate': False,
-        },
     },
 }
