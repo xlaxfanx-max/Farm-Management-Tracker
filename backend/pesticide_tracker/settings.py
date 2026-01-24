@@ -324,4 +324,50 @@ CELERY_BEAT_SCHEDULE = {
         'task': 'api.tasks.disease_tasks.send_disease_alert_digest',
         'schedule': crontab(hour=7, minute=0),
     },
+
+    # ==========================================================================
+    # FSMA COMPLIANCE TASKS
+    # ==========================================================================
+
+    # Check facility cleaning compliance daily at 7 AM
+    'check-cleaning-compliance': {
+        'task': 'api.tasks.fsma_tasks.check_cleaning_compliance',
+        'schedule': crontab(hour=7, minute=0),
+    },
+
+    # Check quarterly FSMA meeting compliance on 1st of each month at 8 AM
+    'check-quarterly-meeting-compliance': {
+        'task': 'api.tasks.fsma_tasks.check_quarterly_meeting_compliance',
+        'schedule': crontab(day_of_month=1, hour=8, minute=0),
+    },
+
+    # Generate monthly inventory snapshot on 1st of each month at 1 AM
+    'generate-monthly-inventory-snapshot': {
+        'task': 'api.tasks.fsma_tasks.generate_monthly_inventory_snapshot',
+        'schedule': crontab(day_of_month=1, hour=1, minute=0),
+    },
+
+    # Check low inventory alerts daily at 8 AM
+    'check-low-inventory-alerts': {
+        'task': 'api.tasks.fsma_tasks.check_low_inventory_alerts',
+        'schedule': crontab(hour=8, minute=0),
+    },
+
+    # Check PHI compliance for upcoming harvests daily at 6 AM
+    'check-phi-upcoming-harvests': {
+        'task': 'api.tasks.fsma_tasks.check_phi_compliance_for_upcoming_harvests',
+        'schedule': crontab(hour=6, minute=0),
+    },
+
+    # Send FSMA daily reminders at 7:15 AM
+    'send-fsma-daily-reminder': {
+        'task': 'api.tasks.fsma_tasks.send_fsma_daily_reminder',
+        'schedule': crontab(hour=7, minute=15),
+    },
+
+    # Cleanup old FSMA data monthly on the 1st at 3 AM
+    'cleanup-old-fsma-data': {
+        'task': 'api.tasks.fsma_tasks.cleanup_old_fsma_data',
+        'schedule': crontab(day_of_month=1, hour=3, minute=0),
+    },
 }

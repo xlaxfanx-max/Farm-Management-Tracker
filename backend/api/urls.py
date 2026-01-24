@@ -150,6 +150,22 @@ from .packinghouse_views import (
     season_comparison,
 )
 
+# Import FSMA compliance views
+from .fsma_views import (
+    UserSignatureViewSet,
+    FacilityLocationViewSet,
+    FacilityCleaningLogViewSet,
+    VisitorLogViewSet,
+    SafetyMeetingViewSet,
+    SafetyMeetingAttendeeViewSet,
+    FertilizerInventoryViewSet,
+    FertilizerInventoryTransactionViewSet,
+    MonthlyInventorySnapshotViewSet,
+    PHIComplianceCheckViewSet,
+    AuditBinderViewSet,
+    FSMADashboardViewSet,
+)
+
 router = DefaultRouter()
 router.register(r'farms', FarmViewSet, basename='farm')
 router.register(r'fields', FieldViewSet, basename='field')
@@ -223,6 +239,20 @@ router.register(r'packout-reports', PackoutReportViewSet, basename='packout-repo
 router.register(r'pool-settlements', PoolSettlementViewSet, basename='pool-settlement')
 router.register(r'grower-ledger', GrowerLedgerEntryViewSet, basename='grower-ledger')
 router.register(r'packinghouse-statements', PackinghouseStatementViewSet, basename='packinghouse-statement')
+
+# FSMA Compliance Module
+router.register(r'fsma/user-signature', UserSignatureViewSet, basename='fsma-user-signature')
+router.register(r'fsma/facilities', FacilityLocationViewSet, basename='fsma-facility')
+router.register(r'fsma/cleaning-logs', FacilityCleaningLogViewSet, basename='fsma-cleaning-log')
+router.register(r'fsma/visitor-logs', VisitorLogViewSet, basename='fsma-visitor-log')
+router.register(r'fsma/safety-meetings', SafetyMeetingViewSet, basename='fsma-safety-meeting')
+router.register(r'fsma/meeting-attendees', SafetyMeetingAttendeeViewSet, basename='fsma-meeting-attendee')
+router.register(r'fsma/fertilizer-inventory', FertilizerInventoryViewSet, basename='fsma-fertilizer-inventory')
+router.register(r'fsma/inventory-transactions', FertilizerInventoryTransactionViewSet, basename='fsma-inventory-transaction')
+router.register(r'fsma/inventory-snapshots', MonthlyInventorySnapshotViewSet, basename='fsma-inventory-snapshot')
+router.register(r'fsma/phi-checks', PHIComplianceCheckViewSet, basename='fsma-phi-check')
+router.register(r'fsma/audit-binders', AuditBinderViewSet, basename='fsma-audit-binder')
+router.register(r'fsma/dashboard', FSMADashboardViewSet, basename='fsma-dashboard')
 
 
 urlpatterns = [

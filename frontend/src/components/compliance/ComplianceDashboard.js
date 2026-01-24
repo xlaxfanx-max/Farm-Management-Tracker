@@ -12,10 +12,13 @@ import {
   Bell,
   RefreshCw,
   Settings,
-  Plus,
-  Filter,
   X,
   Info,
+  Leaf,
+  ClipboardCheck,
+  Package,
+  Truck,
+  SprayCanIcon as Spray,
 } from 'lucide-react';
 import {
   complianceDashboardAPI,
@@ -23,7 +26,7 @@ import {
   complianceAlertsAPI,
   licensesAPI,
   wpsTrainingAPI,
-  COMPLIANCE_CONSTANTS,
+  fsmaAPI,
 } from '../../services/api';
 
 // Utility function to format dates
@@ -43,9 +46,9 @@ const getDaysUntil = (dateString) => {
   return Math.ceil((date - today) / (1000 * 60 * 60 * 24));
 };
 
-// Score Circle Component
-const ScoreCircle = ({ score, size = 120 }) => {
-  const strokeWidth = 8;
+// Mini Score Circle Component
+const MiniScoreCircle = ({ score, size = 48 }) => {
+  const strokeWidth = 4;
   const radius = (size - strokeWidth) / 2;
   const circumference = radius * 2 * Math.PI;
   const offset = circumference - (score / 100) * circumference;
@@ -64,6 +67,7 @@ const ScoreCircle = ({ score, size = 120 }) => {
           fill="none"
           stroke="#e5e7eb"
           strokeWidth={strokeWidth}
+          className="dark:stroke-gray-700"
         />
         <circle
           cx={size / 2}
@@ -78,180 +82,130 @@ const ScoreCircle = ({ score, size = 120 }) => {
           className="transition-all duration-500"
         />
       </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-3xl font-bold" style={{ color }}>{score}</span>
-        <span className="text-xs text-gray-500">Score</span>
+      <div className="absolute inset-0 flex items-center justify-center">
+        <span className="text-sm font-bold" style={{ color }}>{score}</span>
       </div>
     </div>
   );
 };
 
-// Alert Card Component
-const AlertCard = ({ alert, onAcknowledge, onDismiss }) => {
-  const priorityConfig = {
-    critical: { bg: 'bg-red-50', border: 'border-red-200', icon: 'text-red-600' },
-    high: { bg: 'bg-amber-50', border: 'border-amber-200', icon: 'text-amber-600' },
-    medium: { bg: 'bg-blue-50', border: 'border-blue-200', icon: 'text-blue-600' },
-    low: { bg: 'bg-gray-50', border: 'border-gray-200', icon: 'text-gray-600' },
+// Category Card Component
+const CategoryCard = ({
+  title,
+  description,
+  icon: Icon,
+  score,
+  metrics = [],
+  status = 'good', // 'good', 'warning', 'critical'
+  onClick,
+  color = 'green'
+}) => {
+  const colorClasses = {
+    green: {
+      bg: 'bg-green-50 dark:bg-green-900/20',
+      icon: 'bg-green-100 dark:bg-green-900/40 text-green-600 dark:text-green-400',
+      border: 'border-green-200 dark:border-green-800',
+      hover: 'hover:border-green-400 dark:hover:border-green-600',
+    },
+    blue: {
+      bg: 'bg-blue-50 dark:bg-blue-900/20',
+      icon: 'bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400',
+      border: 'border-blue-200 dark:border-blue-800',
+      hover: 'hover:border-blue-400 dark:hover:border-blue-600',
+    },
+    purple: {
+      bg: 'bg-purple-50 dark:bg-purple-900/20',
+      icon: 'bg-purple-100 dark:bg-purple-900/40 text-purple-600 dark:text-purple-400',
+      border: 'border-purple-200 dark:border-purple-800',
+      hover: 'hover:border-purple-400 dark:hover:border-purple-600',
+    },
+    amber: {
+      bg: 'bg-amber-50 dark:bg-amber-900/20',
+      icon: 'bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400',
+      border: 'border-amber-200 dark:border-amber-800',
+      hover: 'hover:border-amber-400 dark:hover:border-amber-600',
+    },
   };
 
-  const config = priorityConfig[alert.priority] || priorityConfig.low;
+  const c = colorClasses[color] || colorClasses.green;
 
-  return (
-    <div className={`${config.bg} ${config.border} border rounded-lg p-4`}>
-      <div className="flex items-start gap-3">
-        <AlertTriangle className={`w-5 h-5 ${config.icon} flex-shrink-0 mt-0.5`} />
-        <div className="flex-1 min-w-0">
-          <h4 className="font-medium text-gray-900 text-sm">{alert.title}</h4>
-          <p className="text-sm text-gray-600 mt-1">{alert.message}</p>
-          <div className="flex items-center gap-2 mt-3">
-            <button
-              onClick={() => onAcknowledge(alert.id)}
-              className="text-xs px-2 py-1 bg-white border border-gray-300 rounded hover:bg-gray-50"
-            >
-              Acknowledge
-            </button>
-            <button
-              onClick={() => onDismiss(alert.id)}
-              className="text-xs px-2 py-1 text-gray-500 hover:text-gray-700"
-            >
-              Dismiss
-            </button>
-          </div>
-        </div>
-        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-          alert.priority === 'critical' ? 'bg-red-100 text-red-700' :
-          alert.priority === 'high' ? 'bg-amber-100 text-amber-700' :
-          alert.priority === 'medium' ? 'bg-blue-100 text-blue-700' :
-          'bg-gray-100 text-gray-700'
-        }`}>
-          {alert.priority.toUpperCase()}
-        </span>
-      </div>
-    </div>
-  );
-};
-
-// Deadline Row Component
-const DeadlineRow = ({ deadline, onComplete }) => {
-  const days = getDaysUntil(deadline.due_date);
-
-  let statusColor = 'text-gray-600 bg-gray-100';
-  if (deadline.status === 'overdue') statusColor = 'text-red-600 bg-red-100';
-  else if (deadline.status === 'due_soon') statusColor = 'text-amber-600 bg-amber-100';
-  else if (deadline.status === 'completed') statusColor = 'text-green-600 bg-green-100';
-
-  const categoryLabels = {
-    reporting: 'Reporting',
-    training: 'Training',
-    testing: 'Testing',
-    renewal: 'Renewal',
-    inspection: 'Inspection',
-    other: 'Other',
+  const statusColors = {
+    good: 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400',
+    warning: 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400',
+    critical: 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400',
   };
 
   return (
-    <div className="flex items-center justify-between py-3 border-b border-gray-100 last:border-0 hover:bg-gray-50 px-2 -mx-2 rounded">
-      <div className="flex items-center gap-3">
-        <div className={`w-2 h-2 rounded-full ${
-          deadline.status === 'overdue' ? 'bg-red-500' :
-          deadline.status === 'due_soon' ? 'bg-amber-500' :
-          deadline.status === 'completed' ? 'bg-green-500' : 'bg-gray-400'
-        }`} />
-        <div>
-          <p className="font-medium text-gray-900 text-sm">{deadline.name}</p>
-          <div className="flex items-center gap-2 mt-0.5">
-            <span className="text-xs text-gray-500">{categoryLabels[deadline.category] || deadline.category}</span>
-            <span className="text-xs text-gray-400">•</span>
-            <span className="text-xs text-gray-500">Due {formatDate(deadline.due_date)}</span>
-          </div>
+    <button
+      onClick={onClick}
+      className={`w-full text-left bg-white dark:bg-gray-800 border-2 ${c.border} ${c.hover} rounded-xl p-5 transition-all hover:shadow-lg group`}
+    >
+      <div className="flex items-start justify-between mb-4">
+        <div className={`w-12 h-12 ${c.icon} rounded-xl flex items-center justify-center`}>
+          <Icon className="w-6 h-6" />
+        </div>
+        <div className="flex items-center gap-2">
+          {score !== undefined && <MiniScoreCircle score={score} />}
+          {status && !score && (
+            <span className={`text-xs px-2 py-1 rounded-full font-medium ${statusColors[status]}`}>
+              {status === 'good' ? 'On Track' : status === 'warning' ? 'Attention' : 'Action Needed'}
+            </span>
+          )}
+          <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors" />
         </div>
       </div>
-      <div className="flex items-center gap-2">
-        {deadline.status !== 'completed' && days !== null && (
-          <span className={`text-xs px-2 py-0.5 rounded-full ${statusColor}`}>
-            {days < 0 ? `${Math.abs(days)}d overdue` : days === 0 ? 'Today' : `${days}d left`}
-          </span>
-        )}
-        {deadline.status !== 'completed' && (
-          <button
-            onClick={() => onComplete(deadline.id)}
-            className="p-1 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded"
-            title="Mark complete"
-          >
-            <CheckCircle2 className="w-4 h-4" />
-          </button>
-        )}
-      </div>
-    </div>
-  );
-};
 
-// License Card Component
-const LicenseCard = ({ license }) => {
-  const days = getDaysUntil(license.expiration_date);
+      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">{title}</h3>
+      <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">{description}</p>
 
-  return (
-    <div className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-sm transition-shadow">
-      <div className="flex items-start justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-            <Award className="w-5 h-5 text-green-600" />
-          </div>
-          <div>
-            <p className="font-medium text-gray-900 text-sm">{license.license_type_display}</p>
-            <p className="text-xs text-gray-500">{license.holder_name || 'Company'}</p>
-          </div>
-        </div>
-        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-          license.status === 'active' ? 'bg-green-100 text-green-700' :
-          license.status === 'expiring_soon' ? 'bg-amber-100 text-amber-700' :
-          license.status === 'expired' ? 'bg-red-100 text-red-700' :
-          'bg-gray-100 text-gray-700'
-        }`}>
-          {license.status === 'active' ? 'Active' :
-           license.status === 'expiring_soon' ? 'Expiring Soon' :
-           license.status === 'expired' ? 'Expired' : license.status}
-        </span>
-      </div>
-      <div className="mt-3 flex items-center justify-between text-xs text-gray-500">
-        <span>#{license.license_number}</span>
-        <span>Expires: {formatDate(license.expiration_date)}</span>
-      </div>
-      {days !== null && days <= 90 && days > 0 && (
-        <div className="mt-2 text-xs text-amber-600">
-          {days} days until expiration
+      {metrics.length > 0 && (
+        <div className="grid grid-cols-2 gap-3">
+          {metrics.map((metric, idx) => (
+            <div key={idx} className={`${c.bg} rounded-lg p-2`}>
+              <p className={`text-lg font-bold ${
+                metric.status === 'critical' ? 'text-red-600 dark:text-red-400' :
+                metric.status === 'warning' ? 'text-amber-600 dark:text-amber-400' :
+                'text-gray-900 dark:text-white'
+              }`}>
+                {metric.value}
+              </p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">{metric.label}</p>
+            </div>
+          ))}
         </div>
       )}
-    </div>
+    </button>
   );
 };
 
-// Summary Card Component
-const SummaryCard = ({ title, value, subtitle, icon: Icon, color = 'green', onClick }) => {
-  const colorClasses = {
-    green: 'bg-green-100 text-green-600',
-    red: 'bg-red-100 text-red-600',
-    amber: 'bg-amber-100 text-amber-600',
-    blue: 'bg-blue-100 text-blue-600',
-    gray: 'bg-gray-100 text-gray-600',
-  };
+// Alert Banner Component
+const AlertBanner = ({ alerts, onDismiss }) => {
+  const criticalAlerts = alerts.filter(a => a.priority === 'critical' || a.priority === 'high');
+
+  if (criticalAlerts.length === 0) return null;
 
   return (
-    <div
-      onClick={onClick}
-      className={`bg-white border border-gray-200 rounded-lg p-4 ${onClick ? 'cursor-pointer hover:shadow-md transition-shadow' : ''}`}
-    >
-      <div className="flex items-center justify-between">
-        <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${colorClasses[color]}`}>
-          <Icon className="w-5 h-5" />
+    <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 mb-6">
+      <div className="flex items-start gap-3">
+        <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
+        <div className="flex-1">
+          <h3 className="font-medium text-red-800 dark:text-red-200">
+            {criticalAlerts.length} urgent compliance {criticalAlerts.length === 1 ? 'alert' : 'alerts'}
+          </h3>
+          <ul className="mt-2 space-y-1">
+            {criticalAlerts.slice(0, 3).map(alert => (
+              <li key={alert.id} className="text-sm text-red-700 dark:text-red-300">
+                • {alert.title}
+              </li>
+            ))}
+          </ul>
         </div>
-        {onClick && <ChevronRight className="w-5 h-5 text-gray-400" />}
-      </div>
-      <div className="mt-3">
-        <p className="text-2xl font-bold text-gray-900">{value}</p>
-        <p className="text-sm font-medium text-gray-700">{title}</p>
-        {subtitle && <p className="text-xs text-gray-500 mt-0.5">{subtitle}</p>}
+        <button
+          onClick={() => onDismiss()}
+          className="text-red-400 hover:text-red-600 dark:hover:text-red-300"
+        >
+          <X className="w-4 h-4" />
+        </button>
       </div>
     </div>
   );
@@ -260,33 +214,28 @@ const SummaryCard = ({ title, value, subtitle, icon: Icon, color = 'green', onCl
 // Main ComplianceDashboard Component
 export default function ComplianceDashboard({ onNavigate }) {
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
   const [notification, setNotification] = useState(null);
+  const [showAlerts, setShowAlerts] = useState(true);
 
-  // Dashboard data state
+  // Data state
   const [dashboardData, setDashboardData] = useState(null);
   const [alerts, setAlerts] = useState([]);
   const [deadlines, setDeadlines] = useState([]);
   const [licenses, setLicenses] = useState([]);
   const [trainingRecords, setTrainingRecords] = useState([]);
+  const [fsmaData, setFsmaData] = useState(null);
 
-  // Show coming soon notification
-  const showComingSoon = (featureName) => {
-    setNotification(`${featureName} - Coming soon! This feature is currently under development.`);
-    setTimeout(() => setNotification(null), 4000);
-  };
-
-  // Fetch dashboard data
+  // Fetch all data
   const fetchData = useCallback(async () => {
     try {
-      setError(null);
-      const [dashRes, alertsRes, deadlinesRes, licensesRes, trainingRes] = await Promise.all([
+      const [dashRes, alertsRes, deadlinesRes, licensesRes, trainingRes, fsmaRes] = await Promise.all([
         complianceDashboardAPI.get().catch(() => ({ data: null })),
         complianceAlertsAPI.getAll({ is_active: true, limit: 10 }).catch(() => ({ data: { results: [] } })),
-        complianceDeadlinesAPI.getAll({ status__in: 'upcoming,due_soon,overdue', limit: 10 }).catch(() => ({ data: { results: [] } })),
-        licensesAPI.getAll({ limit: 5 }).catch(() => ({ data: { results: [] } })),
-        wpsTrainingAPI.getAll({ limit: 5 }).catch(() => ({ data: { results: [] } })),
+        complianceDeadlinesAPI.getAll({ status__in: 'upcoming,due_soon,overdue', limit: 20 }).catch(() => ({ data: { results: [] } })),
+        licensesAPI.getAll({ limit: 20 }).catch(() => ({ data: { results: [] } })),
+        wpsTrainingAPI.getAll({ limit: 20 }).catch(() => ({ data: { results: [] } })),
+        fsmaAPI.getDashboard().catch(() => ({ data: null })),
       ]);
 
       setDashboardData(dashRes.data);
@@ -294,9 +243,9 @@ export default function ComplianceDashboard({ onNavigate }) {
       setDeadlines(deadlinesRes.data?.results || deadlinesRes.data || []);
       setLicenses(licensesRes.data?.results || licensesRes.data || []);
       setTrainingRecords(trainingRes.data?.results || trainingRes.data || []);
+      setFsmaData(fsmaRes.data);
     } catch (err) {
       console.error('Error fetching compliance data:', err);
-      setError('Failed to load compliance data');
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -312,84 +261,119 @@ export default function ComplianceDashboard({ onNavigate }) {
     fetchData();
   };
 
-  const handleAcknowledgeAlert = async (alertId) => {
-    try {
-      await complianceAlertsAPI.acknowledge(alertId);
-      setAlerts(alerts.filter(a => a.id !== alertId));
-    } catch (err) {
-      console.error('Error acknowledging alert:', err);
-    }
+  // Calculate metrics for each category
+  const pesticideMetrics = {
+    overdueDeadlines: deadlines.filter(d => d.status === 'overdue').length,
+    dueSoon: deadlines.filter(d => d.status === 'due_soon').length,
+    activeREIs: dashboardData?.active_reis || 0,
+    upcomingReports: deadlines.filter(d => d.category === 'reporting').length,
   };
 
-  const handleDismissAlert = async (alertId) => {
-    try {
-      await complianceAlertsAPI.dismiss(alertId);
-      setAlerts(alerts.filter(a => a.id !== alertId));
-    } catch (err) {
-      console.error('Error dismissing alert:', err);
-    }
+  const licenseMetrics = {
+    total: licenses.length,
+    active: licenses.filter(l => l.status === 'active').length,
+    expiringSoon: licenses.filter(l => l.status === 'expiring_soon').length,
+    expired: licenses.filter(l => l.status === 'expired').length,
   };
 
-  const handleCompleteDeadline = async (deadlineId) => {
-    try {
-      await complianceDeadlinesAPI.complete(deadlineId);
-      fetchData(); // Refresh to get updated data
-    } catch (err) {
-      console.error('Error completing deadline:', err);
-    }
+  const wpsMetrics = {
+    totalWorkers: trainingRecords.length,
+    currentTraining: trainingRecords.filter(t => getDaysUntil(t.expiration_date) > 0).length,
+    expiringSoon: trainingRecords.filter(t => {
+      const days = getDaysUntil(t.expiration_date);
+      return days !== null && days > 0 && days <= 30;
+    }).length,
+    expired: trainingRecords.filter(t => getDaysUntil(t.expiration_date) < 0).length,
   };
 
-  // Calculate summary stats from data
-  const summary = dashboardData?.summary || {
-    deadlines_this_month: deadlines.length,
-    overdue_items: deadlines.filter(d => d.status === 'overdue').length,
-    expiring_licenses: licenses.filter(l => l.status === 'expiring_soon').length,
-    active_alerts: alerts.length,
+  const fsmaMetrics = {
+    visitorsToday: fsmaData?.visitors_today || 0,
+    facilitiesCleaned: fsmaData?.facilities_cleaned_today || 0,
+    facilitiesTotal: fsmaData?.facilities_total || 0,
+    phiIssues: fsmaData?.phi_issues || 0,
+    meetingsThisQuarter: fsmaData?.meetings_this_quarter || 0,
+    lowInventory: fsmaData?.low_inventory_count || 0,
   };
 
-  const score = dashboardData?.score || 85;
+  // Calculate overall compliance score
+  const overallScore = dashboardData?.score || 85;
+
+  // Determine status for each category
+  const getPesticideStatus = () => {
+    if (pesticideMetrics.overdueDeadlines > 0) return 'critical';
+    if (pesticideMetrics.dueSoon > 2) return 'warning';
+    return 'good';
+  };
+
+  const getLicenseStatus = () => {
+    if (licenseMetrics.expired > 0) return 'critical';
+    if (licenseMetrics.expiringSoon > 0) return 'warning';
+    return 'good';
+  };
+
+  const getWPSStatus = () => {
+    if (wpsMetrics.expired > 0) return 'critical';
+    if (wpsMetrics.expiringSoon > 2) return 'warning';
+    return 'good';
+  };
+
+  const getFSMAStatus = () => {
+    if (fsmaMetrics.phiIssues > 0) return 'critical';
+    if (fsmaMetrics.lowInventory > 2 || fsmaMetrics.facilitiesCleaned < fsmaMetrics.facilitiesTotal) return 'warning';
+    return 'good';
+  };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center">
           <RefreshCw className="w-8 h-8 text-green-600 animate-spin mx-auto" />
-          <p className="text-gray-600 mt-2">Loading compliance data...</p>
+          <p className="text-gray-600 dark:text-gray-400 mt-2">Loading compliance data...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200">
+      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-6 py-5">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                <Shield className="w-5 h-5 text-green-600" />
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-green-100 dark:bg-green-900/40 rounded-xl flex items-center justify-center">
+                <Shield className="w-6 h-6 text-green-600 dark:text-green-400" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">Compliance Dashboard</h1>
-                <p className="text-gray-500 text-sm">Manage regulatory compliance and deadlines</p>
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Compliance Hub</h1>
+                <p className="text-gray-500 dark:text-gray-400 text-sm">
+                  Manage all regulatory and food safety compliance
+                </p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
+              {/* Overall Score */}
+              <div className="hidden md:flex items-center gap-3 px-4 py-2 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                <MiniScoreCircle score={overallScore} />
+                <div>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Overall Score</p>
+                  <p className="text-sm font-medium text-gray-900 dark:text-white">
+                    {overallScore >= 85 ? 'Excellent' : overallScore >= 70 ? 'Good' : 'Needs Work'}
+                  </p>
+                </div>
+              </div>
               <button
                 onClick={handleRefresh}
                 disabled={refreshing}
-                className="flex items-center gap-2 px-3 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                className="p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
               >
-                <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
-                Refresh
+                <RefreshCw className={`w-5 h-5 ${refreshing ? 'animate-spin' : ''}`} />
               </button>
               <button
                 onClick={() => onNavigate?.('compliance-settings')}
-                className="flex items-center gap-2 px-3 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                className="p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
               >
-                <Settings className="w-4 h-4" />
-                Settings
+                <Settings className="w-5 h-5" />
               </button>
             </div>
           </div>
@@ -397,268 +381,224 @@ export default function ComplianceDashboard({ onNavigate }) {
       </div>
 
       <div className="max-w-7xl mx-auto px-6 py-6">
-        {error && (
-          <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4 flex items-center gap-3">
-            <AlertTriangle className="w-5 h-5 text-red-600" />
-            <p className="text-red-700">{error}</p>
-          </div>
-        )}
+        {/* Alert Banner */}
+        {showAlerts && <AlertBanner alerts={alerts} onDismiss={() => setShowAlerts(false)} />}
 
-        {/* Compliance Score and Summary */}
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-6">
-          {/* Score Card */}
-          <div className="bg-white border border-gray-200 rounded-lg p-6">
-            <h3 className="text-sm font-medium text-gray-500 mb-4">Compliance Score</h3>
-            <div className="flex justify-center">
-              <ScoreCircle score={score} />
-            </div>
-            <div className="mt-4 text-center">
-              <p className="text-sm text-gray-500">
-                {score >= 85 ? 'Great job! Keep it up.' :
-                 score >= 70 ? 'Some items need attention.' :
-                 'Action required on multiple items.'}
-              </p>
-            </div>
-          </div>
+        {/* Category Cards Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Pesticide Compliance */}
+          <CategoryCard
+            title="Pesticide Compliance"
+            description="Deadlines, PUR reports, REI tracking, and application records"
+            icon={Leaf}
+            color="green"
+            status={getPesticideStatus()}
+            onClick={() => onNavigate?.('compliance-pesticide')}
+            metrics={[
+              {
+                value: pesticideMetrics.overdueDeadlines,
+                label: 'Overdue',
+                status: pesticideMetrics.overdueDeadlines > 0 ? 'critical' : 'good'
+              },
+              {
+                value: pesticideMetrics.dueSoon,
+                label: 'Due Soon',
+                status: pesticideMetrics.dueSoon > 2 ? 'warning' : 'good'
+              },
+              {
+                value: pesticideMetrics.activeREIs,
+                label: 'Active REIs',
+                status: pesticideMetrics.activeREIs > 0 ? 'warning' : 'good'
+              },
+              {
+                value: pesticideMetrics.upcomingReports,
+                label: 'Reports Due'
+              },
+            ]}
+          />
 
-          {/* Summary Cards */}
-          <div className="lg:col-span-3 grid grid-cols-2 md:grid-cols-4 gap-4">
-            <SummaryCard
-              title="Active Alerts"
-              value={summary.active_alerts || 0}
-              subtitle="Requires attention"
-              icon={Bell}
-              color={summary.active_alerts > 0 ? 'red' : 'green'}
-              onClick={() => showComingSoon('Alerts Management')}
-            />
-            <SummaryCard
-              title="Due This Month"
-              value={summary.deadlines_this_month || 0}
-              subtitle="Deadlines"
-              icon={Calendar}
-              color="blue"
+          {/* Food Safety (FSMA) */}
+          <CategoryCard
+            title="Food Safety (FSMA)"
+            description="Visitor logs, facility cleaning, safety meetings, and PHI compliance"
+            icon={ClipboardCheck}
+            color="blue"
+            status={getFSMAStatus()}
+            onClick={() => onNavigate?.('compliance-fsma')}
+            metrics={[
+              {
+                value: fsmaMetrics.visitorsToday,
+                label: 'Visitors Today'
+              },
+              {
+                value: `${fsmaMetrics.facilitiesCleaned}/${fsmaMetrics.facilitiesTotal}`,
+                label: 'Cleaned Today',
+                status: fsmaMetrics.facilitiesCleaned < fsmaMetrics.facilitiesTotal ? 'warning' : 'good'
+              },
+              {
+                value: fsmaMetrics.phiIssues,
+                label: 'PHI Issues',
+                status: fsmaMetrics.phiIssues > 0 ? 'critical' : 'good'
+              },
+              {
+                value: fsmaMetrics.meetingsThisQuarter,
+                label: 'Meetings (Q)'
+              },
+            ]}
+          />
+
+          {/* Worker Protection (WPS) */}
+          <CategoryCard
+            title="Worker Protection"
+            description="WPS training records, safety certifications, and handler requirements"
+            icon={Users}
+            color="purple"
+            status={getWPSStatus()}
+            onClick={() => onNavigate?.('compliance-wps')}
+            metrics={[
+              {
+                value: wpsMetrics.currentTraining,
+                label: 'Trained Workers'
+              },
+              {
+                value: wpsMetrics.expiringSoon,
+                label: 'Expiring Soon',
+                status: wpsMetrics.expiringSoon > 2 ? 'warning' : 'good'
+              },
+              {
+                value: wpsMetrics.expired,
+                label: 'Expired',
+                status: wpsMetrics.expired > 0 ? 'critical' : 'good'
+              },
+              {
+                value: wpsMetrics.totalWorkers,
+                label: 'Total Records'
+              },
+            ]}
+          />
+
+          {/* Licenses & Certifications */}
+          <CategoryCard
+            title="Licenses & Certifications"
+            description="Applicator licenses, business permits, and professional certifications"
+            icon={Award}
+            color="amber"
+            status={getLicenseStatus()}
+            onClick={() => onNavigate?.('compliance-licenses')}
+            metrics={[
+              {
+                value: licenseMetrics.active,
+                label: 'Active'
+              },
+              {
+                value: licenseMetrics.expiringSoon,
+                label: 'Expiring Soon',
+                status: licenseMetrics.expiringSoon > 0 ? 'warning' : 'good'
+              },
+              {
+                value: licenseMetrics.expired,
+                label: 'Expired',
+                status: licenseMetrics.expired > 0 ? 'critical' : 'good'
+              },
+              {
+                value: licenseMetrics.total,
+                label: 'Total'
+              },
+            ]}
+          />
+        </div>
+
+        {/* Quick Actions */}
+        <div className="mt-8">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Quick Actions</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+            <button
               onClick={() => onNavigate?.('compliance-deadlines')}
-            />
-            <SummaryCard
-              title="Overdue Items"
-              value={summary.overdue_items || 0}
-              subtitle="Past due date"
-              icon={Clock}
-              color={summary.overdue_items > 0 ? 'red' : 'green'}
-              onClick={() => onNavigate?.('compliance-deadlines')}
-            />
-            <SummaryCard
-              title="Expiring Licenses"
-              value={summary.expiring_licenses || 0}
-              subtitle="Within 90 days"
-              icon={Award}
-              color={summary.expiring_licenses > 0 ? 'amber' : 'green'}
-              onClick={() => onNavigate?.('compliance-licenses')}
-            />
+              className="flex flex-col items-center gap-2 p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-green-400 dark:hover:border-green-600 hover:shadow transition-all"
+            >
+              <Calendar className="w-6 h-6 text-green-600 dark:text-green-400" />
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Deadlines</span>
+            </button>
+
+            <button
+              onClick={() => onNavigate?.('compliance-reports')}
+              className="flex flex-col items-center gap-2 p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-green-400 dark:hover:border-green-600 hover:shadow transition-all"
+            >
+              <FileText className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Reports</span>
+            </button>
+
+            <button
+              onClick={() => onNavigate?.('compliance-fsma-visitors')}
+              className="flex flex-col items-center gap-2 p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-green-400 dark:hover:border-green-600 hover:shadow transition-all"
+            >
+              <Truck className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Log Visitor</span>
+            </button>
+
+            <button
+              onClick={() => onNavigate?.('compliance-fsma-cleaning')}
+              className="flex flex-col items-center gap-2 p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-green-400 dark:hover:border-green-600 hover:shadow transition-all"
+            >
+              <Spray className="w-6 h-6 text-cyan-600 dark:text-cyan-400" />
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Log Cleaning</span>
+            </button>
+
+            <button
+              onClick={() => onNavigate?.('compliance-fsma-phi')}
+              className="flex flex-col items-center gap-2 p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-green-400 dark:hover:border-green-600 hover:shadow transition-all"
+            >
+              <Clock className="w-6 h-6 text-amber-600 dark:text-amber-400" />
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">PHI Check</span>
+            </button>
+
+            <button
+              onClick={() => onNavigate?.('compliance-fsma-audit')}
+              className="flex flex-col items-center gap-2 p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-green-400 dark:hover:border-green-600 hover:shadow transition-all"
+            >
+              <FileText className="w-6 h-6 text-red-600 dark:text-red-400" />
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Audit Binder</span>
+            </button>
           </div>
         </div>
 
-        {/* Active Alerts */}
-        {alerts.length > 0 && (
-          <div className="mb-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-gray-900">Active Alerts</h2>
+        {/* Recent Activity Summary */}
+        <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Upcoming Deadlines */}
+          <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
+            <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+              <h3 className="font-semibold text-gray-900 dark:text-white">Upcoming Deadlines</h3>
               <button
-                onClick={() => showComingSoon('Alerts Management')}
-                className="text-sm text-green-600 hover:text-green-700 flex items-center gap-1"
+                onClick={() => onNavigate?.('compliance-deadlines')}
+                className="text-sm text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 flex items-center gap-1"
               >
                 View all <ChevronRight className="w-4 h-4" />
               </button>
-            </div>
-            <div className="space-y-3">
-              {alerts.slice(0, 5).map(alert => (
-                <AlertCard
-                  key={alert.id}
-                  alert={alert}
-                  onAcknowledge={handleAcknowledgeAlert}
-                  onDismiss={handleDismissAlert}
-                />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Upcoming Deadlines */}
-          <div className="bg-white border border-gray-200 rounded-lg">
-            <div className="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
-              <h2 className="font-semibold text-gray-900">Upcoming Deadlines</h2>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => onNavigate?.('compliance-deadlines')}
-                  className="p-1.5 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded"
-                  title="Add deadline"
-                >
-                  <Plus className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => onNavigate?.('compliance-deadlines')}
-                  className="text-sm text-green-600 hover:text-green-700 flex items-center gap-1"
-                >
-                  View all <ChevronRight className="w-4 h-4" />
-                </button>
-              </div>
             </div>
             <div className="p-4">
               {deadlines.length > 0 ? (
-                deadlines.slice(0, 8).map(deadline => (
-                  <DeadlineRow
-                    key={deadline.id}
-                    deadline={deadline}
-                    onComplete={handleCompleteDeadline}
-                  />
-                ))
-              ) : (
-                <div className="text-center py-8 text-gray-500">
-                  <Calendar className="w-8 h-8 mx-auto mb-2 text-gray-400" />
-                  <p>No upcoming deadlines</p>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Licenses & Certifications */}
-          <div className="bg-white border border-gray-200 rounded-lg">
-            <div className="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
-              <h2 className="font-semibold text-gray-900">Licenses & Certifications</h2>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => onNavigate?.('compliance-licenses')}
-                  className="p-1.5 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded"
-                  title="Add license"
-                >
-                  <Plus className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => onNavigate?.('compliance-licenses')}
-                  className="text-sm text-green-600 hover:text-green-700 flex items-center gap-1"
-                >
-                  View all <ChevronRight className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-            <div className="p-4">
-              {licenses.length > 0 ? (
                 <div className="space-y-3">
-                  {licenses.slice(0, 4).map(license => (
-                    <LicenseCard key={license.id} license={license} />
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-8 text-gray-500">
-                  <Award className="w-8 h-8 mx-auto mb-2 text-gray-400" />
-                  <p>No licenses recorded</p>
-                  <button
-                    onClick={() => onNavigate?.('compliance-licenses')}
-                    className="mt-2 text-sm text-green-600 hover:text-green-700"
-                  >
-                    Add your first license
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Quick Links */}
-          <div className="bg-white border border-gray-200 rounded-lg">
-            <div className="px-4 py-3 border-b border-gray-200">
-              <h2 className="font-semibold text-gray-900">Quick Actions</h2>
-            </div>
-            <div className="p-4 grid grid-cols-2 gap-3">
-              <button
-                onClick={() => onNavigate?.('compliance-wps')}
-                className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 hover:border-green-200 transition-colors text-left"
-              >
-                <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                  <Users className="w-5 h-5 text-blue-600" />
-                </div>
-                <div>
-                  <p className="font-medium text-gray-900 text-sm">WPS Training</p>
-                  <p className="text-xs text-gray-500">Worker protection</p>
-                </div>
-              </button>
-
-              <button
-                onClick={() => onNavigate?.('compliance-reports')}
-                className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 hover:border-green-200 transition-colors text-left"
-              >
-                <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                  <FileText className="w-5 h-5 text-purple-600" />
-                </div>
-                <div>
-                  <p className="font-medium text-gray-900 text-sm">Reports</p>
-                  <p className="text-xs text-gray-500">PUR, SGMA, etc.</p>
-                </div>
-              </button>
-
-              <button
-                onClick={() => onNavigate?.('compliance-wps')}
-                className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 hover:border-green-200 transition-colors text-left"
-              >
-                <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center">
-                  <Clock className="w-5 h-5 text-amber-600" />
-                </div>
-                <div>
-                  <p className="font-medium text-gray-900 text-sm">REI Tracker</p>
-                  <p className="text-xs text-gray-500">Entry intervals</p>
-                </div>
-              </button>
-
-              <button
-                onClick={() => showComingSoon('Incident Reporting')}
-                className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 hover:border-green-200 transition-colors text-left"
-              >
-                <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
-                  <AlertTriangle className="w-5 h-5 text-red-600" />
-                </div>
-                <div>
-                  <p className="font-medium text-gray-900 text-sm">Incidents</p>
-                  <p className="text-xs text-gray-500">Report & track</p>
-                </div>
-              </button>
-            </div>
-          </div>
-
-          {/* WPS Training Summary */}
-          <div className="bg-white border border-gray-200 rounded-lg">
-            <div className="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
-              <h2 className="font-semibold text-gray-900">WPS Training</h2>
-              <button
-                onClick={() => onNavigate?.('compliance-wps')}
-                className="text-sm text-green-600 hover:text-green-700 flex items-center gap-1"
-              >
-                View all <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
-            <div className="p-4">
-              {trainingRecords.length > 0 ? (
-                <div className="space-y-3">
-                  {trainingRecords.slice(0, 4).map(record => {
-                    const days = getDaysUntil(record.expiration_date);
+                  {deadlines.slice(0, 5).map(deadline => {
+                    const days = getDaysUntil(deadline.due_date);
                     return (
-                      <div key={record.id} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
+                      <div key={deadline.id} className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
-                            <Users className="w-4 h-4 text-gray-600" />
-                          </div>
+                          <div className={`w-2 h-2 rounded-full ${
+                            deadline.status === 'overdue' ? 'bg-red-500' :
+                            deadline.status === 'due_soon' ? 'bg-amber-500' : 'bg-gray-400'
+                          }`} />
                           <div>
-                            <p className="font-medium text-gray-900 text-sm">{record.trainee_name}</p>
-                            <p className="text-xs text-gray-500">{record.training_type_display}</p>
+                            <p className="text-sm font-medium text-gray-900 dark:text-white">{deadline.name}</p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">{formatDate(deadline.due_date)}</p>
                           </div>
                         </div>
                         {days !== null && (
                           <span className={`text-xs px-2 py-0.5 rounded-full ${
-                            days < 0 ? 'bg-red-100 text-red-700' :
-                            days <= 30 ? 'bg-amber-100 text-amber-700' :
-                            'bg-green-100 text-green-700'
+                            days < 0 ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400' :
+                            days <= 7 ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400' :
+                            'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
                           }`}>
-                            {days < 0 ? 'Expired' : days <= 30 ? `${days}d left` : 'Current'}
+                            {days < 0 ? `${Math.abs(days)}d overdue` : days === 0 ? 'Today' : `${days}d`}
                           </span>
                         )}
                       </div>
@@ -666,15 +606,39 @@ export default function ComplianceDashboard({ onNavigate }) {
                   })}
                 </div>
               ) : (
-                <div className="text-center py-8 text-gray-500">
-                  <Users className="w-8 h-8 mx-auto mb-2 text-gray-400" />
-                  <p>No training records</p>
-                  <button
-                    onClick={() => onNavigate?.('compliance-wps')}
-                    className="mt-2 text-sm text-green-600 hover:text-green-700"
-                  >
-                    Add training record
-                  </button>
+                <p className="text-center text-gray-500 dark:text-gray-400 py-4">No upcoming deadlines</p>
+              )}
+            </div>
+          </div>
+
+          {/* Active Alerts */}
+          <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
+            <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+              <h3 className="font-semibold text-gray-900 dark:text-white">Active Alerts</h3>
+              <span className="text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 px-2 py-1 rounded-full">
+                {alerts.length} active
+              </span>
+            </div>
+            <div className="p-4">
+              {alerts.length > 0 ? (
+                <div className="space-y-3">
+                  {alerts.slice(0, 5).map(alert => (
+                    <div key={alert.id} className="flex items-start gap-3">
+                      <AlertTriangle className={`w-4 h-4 mt-0.5 flex-shrink-0 ${
+                        alert.priority === 'critical' ? 'text-red-500' :
+                        alert.priority === 'high' ? 'text-amber-500' : 'text-blue-500'
+                      }`} />
+                      <div>
+                        <p className="text-sm font-medium text-gray-900 dark:text-white">{alert.title}</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">{alert.message?.slice(0, 60)}...</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-4">
+                  <CheckCircle2 className="w-8 h-8 text-green-500 mx-auto mb-2" />
+                  <p className="text-gray-500 dark:text-gray-400">No active alerts</p>
                 </div>
               )}
             </div>
@@ -684,7 +648,7 @@ export default function ComplianceDashboard({ onNavigate }) {
 
       {/* Notification Toast */}
       {notification && (
-        <div className="fixed bottom-4 right-4 z-50 animate-in slide-in-from-bottom-4 duration-300">
+        <div className="fixed bottom-4 right-4 z-50">
           <div className="bg-gray-800 text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-3 max-w-md">
             <Info className="w-5 h-5 text-blue-400 flex-shrink-0" />
             <p className="text-sm">{notification}</p>

@@ -54,6 +54,7 @@ import WPSCompliance from './components/compliance/WPSCompliance';
 import ComplianceReports from './components/compliance/ComplianceReports';
 import ComplianceSettings from './components/compliance/ComplianceSettings';
 import { DiseaseDashboard } from './components/disease';
+import { FSMADashboard } from './components/fsma';
 import Breadcrumbs from './components/navigation/Breadcrumbs';
 
 import { onboardingAPI } from './services/api';
@@ -503,6 +504,30 @@ function AppContent() {
         )}
         {currentView === 'disease' && (
           <DiseaseDashboard onNavigate={setCurrentView} />
+        )}
+        {currentView === 'compliance-fsma' && (
+          <FSMADashboard onNavigate={setCurrentView} />
+        )}
+        {currentView === 'compliance-fsma-visitors' && (
+          <FSMADashboard onNavigate={setCurrentView} initialTab="visitors" />
+        )}
+        {currentView === 'compliance-fsma-cleaning' && (
+          <FSMADashboard onNavigate={setCurrentView} initialTab="cleaning" />
+        )}
+        {currentView === 'compliance-fsma-meetings' && (
+          <FSMADashboard onNavigate={setCurrentView} initialTab="meetings" />
+        )}
+        {currentView === 'compliance-fsma-inventory' && (
+          <FSMADashboard onNavigate={setCurrentView} initialTab="inventory" />
+        )}
+        {currentView === 'compliance-fsma-phi' && (
+          <FSMADashboard onNavigate={setCurrentView} initialTab="phi" />
+        )}
+        {currentView === 'compliance-fsma-audit' && (
+          <FSMADashboard onNavigate={setCurrentView} initialTab="audit" />
+        )}
+        {currentView === 'compliance-pesticide' && (
+          <DeadlineCalendar onNavigate={setCurrentView} />
         )}
       </main>
 
