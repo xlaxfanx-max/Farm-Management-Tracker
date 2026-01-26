@@ -9752,6 +9752,23 @@ class PackinghouseStatement(models.Model):
         help_text='Field this statement is for (set during confirmation)'
     )
 
+    # Batch upload tracking (set when uploaded as part of batch)
+    batch_upload = models.ForeignKey(
+        'StatementBatchUpload',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='statements',
+        help_text='Batch this statement belongs to (if uploaded via batch)'
+    )
+
+    # Auto-match result (populated during batch upload)
+    auto_match_result = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text='Auto-matching result with confidence scores'
+    )
+
     # Audit fields
     uploaded_by = models.ForeignKey(
         'User',
@@ -9789,6 +9806,203 @@ class PackinghouseStatement(models.Model):
     def is_processed(self):
         """Check if statement has been processed into a report/settlement."""
         return self.has_packout_report or self.has_pool_settlement
+
+
+class PackinghouseGrowerMapping(models.Model):
+    """
+    Learned mappings from grower names/IDs in PDF statements to farms/fields.
+    Created when users confirm statement matches, used for auto-matching future uploads.
+    """
+    packinghouse = models.ForeignKey(
+        Packinghouse,
+        on_delete=models.CASCADE,
+        related_name='grower_mappings',
+        help_text='Packinghouse this mapping applies to'
+    )
+
+    # Pattern matching fields (from PDF data)
+    grower_name_pattern = models.CharField(
+        max_length=255,
+        help_text='Grower name as it appears in statements (e.g., "THACKER FARMS")'
+    )
+    grower_id_pattern = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text='Grower ID as it appears in statements (e.g., "THACR641")'
+    )
+    block_name_pattern = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text='Block/ranch name pattern for field-level matching'
+    )
+
+    # Target entities
+    farm = models.ForeignKey(
+        Farm,
+        on_delete=models.CASCADE,
+        related_name='packinghouse_mappings',
+        help_text='Farm this grower name maps to'
+    )
+    field = models.ForeignKey(
+        Field,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='packinghouse_mappings',
+        help_text='Optional specific field this block name maps to'
+    )
+
+    # Usage tracking
+    use_count = models.PositiveIntegerField(
+        default=1,
+        help_text='Number of times this mapping has been used'
+    )
+    last_used_at = models.DateTimeField(
+        auto_now=True,
+        help_text='When this mapping was last used'
+    )
+
+    # Source tracking
+    created_from_statement = models.ForeignKey(
+        PackinghouseStatement,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='created_mappings',
+        help_text='Statement that created this mapping'
+    )
+
+    # Audit fields
+    created_by = models.ForeignKey(
+        'User',
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='created_grower_mappings'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Packinghouse Grower Mapping"
+        verbose_name_plural = "Packinghouse Grower Mappings"
+        # Unique constraint on packinghouse + grower pattern + optional block
+        unique_together = ['packinghouse', 'grower_name_pattern', 'block_name_pattern']
+        indexes = [
+            models.Index(fields=['packinghouse', 'grower_name_pattern'], name='idx_mapping_grower'),
+            models.Index(fields=['packinghouse', 'grower_id_pattern'], name='idx_mapping_grower_id'),
+            models.Index(fields=['farm'], name='idx_mapping_farm'),
+        ]
+        ordering = ['-use_count', '-last_used_at']
+
+    def __str__(self):
+        target = f"{self.farm.name}"
+        if self.field:
+            target += f" / {self.field.name}"
+        return f"{self.grower_name_pattern} -> {target}"
+
+    def increment_use_count(self):
+        """Increment the use count when mapping is used."""
+        self.use_count += 1
+        self.save(update_fields=['use_count', 'last_used_at'])
+
+
+class StatementBatchUpload(models.Model):
+    """
+    Tracks batch upload progress for multiple PDF statements.
+    """
+    BATCH_STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('processing', 'Processing'),
+        ('completed', 'Completed'),
+        ('partial', 'Partial Success'),
+        ('failed', 'Failed'),
+    ]
+
+    batch_id = models.UUIDField(
+        unique=True,
+        editable=False,
+        help_text='Unique identifier for this batch'
+    )
+    packinghouse = models.ForeignKey(
+        Packinghouse,
+        on_delete=models.CASCADE,
+        related_name='batch_uploads',
+        help_text='Packinghouse these statements are from'
+    )
+
+    # Status tracking
+    status = models.CharField(
+        max_length=20,
+        choices=BATCH_STATUS_CHOICES,
+        default='pending'
+    )
+
+    # Progress counters
+    total_files = models.PositiveIntegerField(
+        default=0,
+        help_text='Total number of files in batch'
+    )
+    processed_count = models.PositiveIntegerField(
+        default=0,
+        help_text='Number of files processed'
+    )
+    success_count = models.PositiveIntegerField(
+        default=0,
+        help_text='Number of successfully extracted files'
+    )
+    failed_count = models.PositiveIntegerField(
+        default=0,
+        help_text='Number of failed extractions'
+    )
+
+    # Error tracking
+    error_message = models.TextField(
+        blank=True,
+        help_text='Error message if batch failed'
+    )
+
+    # Audit fields
+    uploaded_by = models.ForeignKey(
+        'User',
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='batch_uploads'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    completed_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text='When processing completed'
+    )
+
+    class Meta:
+        verbose_name = "Statement Batch Upload"
+        verbose_name_plural = "Statement Batch Uploads"
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['batch_id'], name='idx_batch_id'),
+            models.Index(fields=['packinghouse', '-created_at'], name='idx_batch_pkghs'),
+            models.Index(fields=['status'], name='idx_batch_status'),
+        ]
+
+    def __str__(self):
+        return f"Batch {self.batch_id} ({self.status})"
+
+    @property
+    def progress_percent(self):
+        """Calculate progress percentage."""
+        if self.total_files == 0:
+            return 0
+        return round((self.processed_count / self.total_files) * 100, 1)
+
+    @property
+    def is_complete(self):
+        """Check if batch processing is complete."""
+        return self.status in ['completed', 'partial', 'failed']
+
+
+# Add FK from PackinghouseStatement to StatementBatchUpload
+# This needs to be added via migration since the model is already defined
+# We'll add it as a nullable field
 
 
 # =============================================================================

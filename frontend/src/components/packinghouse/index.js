@@ -15,6 +15,7 @@ export { default as PackinghouseAnalytics } from './PackinghouseAnalytics';
 
 // PDF Statement Upload
 export { default as PDFUploadModal } from './PDFUploadModal';
+export { default as UnifiedUploadModal } from './BatchUploadModal';
 export { default as ExtractedDataPreview } from './ExtractedDataPreview';
 export { default as StatementList } from './StatementList';
 

@@ -2,6 +2,7 @@
 from .quarantine_service import CDFAQuarantineService
 from .irrigation_scheduler import IrrigationScheduler
 from .pdf_extraction_service import PDFExtractionService, ExtractionResult
+from .statement_matcher import StatementMatcher, MatchResult
 
 # Import compliance services
 from .compliance import (
@@ -28,6 +29,8 @@ __all__ = [
     'IrrigationScheduler',
     'PDFExtractionService',
     'ExtractionResult',
+    'StatementMatcher',
+    'MatchResult',
 
     # Compliance services
     'PesticideComplianceService',

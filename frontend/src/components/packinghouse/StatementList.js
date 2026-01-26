@@ -10,7 +10,7 @@ import {
   Download, ExternalLink
 } from 'lucide-react';
 import { packinghouseStatementsAPI } from '../../services/api';
-import PDFUploadModal from './PDFUploadModal';
+import UnifiedUploadModal from './BatchUploadModal';
 
 const STATUS_BADGES = {
   uploaded: { bg: 'bg-gray-100', text: 'text-gray-700', label: 'Uploaded' },
@@ -136,7 +136,7 @@ const StatementList = ({ packinghouseId = null }) => {
             className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
           >
             <Upload className="w-4 h-4 mr-2" />
-            Upload PDF
+            Upload PDFs
           </button>
         </div>
 
@@ -319,18 +319,18 @@ const StatementList = ({ packinghouseId = null }) => {
         )}
       </div>
 
-      {/* Upload Modal */}
+      {/* Upload Modal (handles 1 or multiple files) */}
       {showUploadModal && (
-        <PDFUploadModal
+        <UnifiedUploadModal
           onClose={() => setShowUploadModal(false)}
           onSuccess={handleUploadSuccess}
           defaultPackinghouse={packinghouseId}
         />
       )}
 
-      {/* Review Modal - Using same upload modal in review mode */}
+      {/* Review Modal - same modal in review mode */}
       {selectedStatement && (
-        <PDFUploadModal
+        <UnifiedUploadModal
           onClose={() => setSelectedStatement(null)}
           onSuccess={() => {
             setSelectedStatement(null);

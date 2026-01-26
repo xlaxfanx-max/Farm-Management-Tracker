@@ -4044,6 +4044,138 @@ class PackinghouseStatementUploadSerializer(serializers.Serializer):
 
 
 # =============================================================================
+# BATCH UPLOAD SERIALIZERS
+# =============================================================================
+
+class BatchUploadSerializer(serializers.Serializer):
+    """Serializer for batch PDF upload request."""
+    packinghouse = serializers.PrimaryKeyRelatedField(
+        queryset=Packinghouse.objects.all(),
+        help_text='Packinghouse ID these statements are from'
+    )
+    packinghouse_format = serializers.ChoiceField(
+        choices=[('', 'Auto-detect'), ('vpoa', 'VPOA'), ('sla', 'SLA'), ('generic', 'Generic')],
+        required=False,
+        allow_blank=True,
+        default='',
+        help_text='Format hint (optional, will auto-detect if not specified)'
+    )
+
+    def validate_packinghouse(self, value):
+        request = self.context.get('request')
+        if request and request.user.current_company:
+            if value.company != request.user.current_company:
+                raise serializers.ValidationError('Invalid packinghouse')
+        return value
+
+
+class BatchStatementResultSerializer(serializers.Serializer):
+    """Serializer for individual statement result in batch upload response."""
+    id = serializers.IntegerField()
+    filename = serializers.CharField()
+    status = serializers.CharField()
+    statement_type = serializers.CharField(allow_null=True)
+    extraction_confidence = serializers.DecimalField(
+        max_digits=3, decimal_places=2, allow_null=True
+    )
+    extraction_error = serializers.CharField(allow_blank=True, allow_null=True)
+    auto_match = serializers.DictField(allow_null=True)
+    needs_review = serializers.BooleanField()
+
+
+class BatchUploadResponseSerializer(serializers.Serializer):
+    """Serializer for batch upload response."""
+    batch_id = serializers.UUIDField()
+    total = serializers.IntegerField()
+    success_count = serializers.IntegerField()
+    failed_count = serializers.IntegerField()
+    statements = BatchStatementResultSerializer(many=True)
+
+
+class BatchConfirmItemSerializer(serializers.Serializer):
+    """Serializer for individual statement in batch confirm request."""
+    id = serializers.IntegerField(help_text='Statement ID')
+    farm_id = serializers.IntegerField(
+        required=False,
+        allow_null=True,
+        help_text='Override farm ID (uses auto-matched if not provided)'
+    )
+    field_id = serializers.IntegerField(
+        required=False,
+        allow_null=True,
+        help_text='Override field ID (uses auto-matched if not provided)'
+    )
+    pool_id = serializers.IntegerField(
+        required=False,
+        allow_null=True,
+        help_text='Override pool ID'
+    )
+    skip = serializers.BooleanField(
+        default=False,
+        help_text='Skip this statement (do not confirm)'
+    )
+
+
+class BatchConfirmSerializer(serializers.Serializer):
+    """Serializer for batch confirm request."""
+    statements = BatchConfirmItemSerializer(many=True)
+    save_mappings = serializers.BooleanField(
+        default=True,
+        help_text='Save confirmed matches as learned mappings for future uploads'
+    )
+
+
+class BatchConfirmResultSerializer(serializers.Serializer):
+    """Serializer for individual statement result in batch confirm response."""
+    id = serializers.IntegerField()
+    filename = serializers.CharField()
+    success = serializers.BooleanField()
+    message = serializers.CharField()
+    settlement_id = serializers.IntegerField(allow_null=True)
+    packout_report_id = serializers.IntegerField(allow_null=True)
+    mapping_saved = serializers.BooleanField()
+
+
+class BatchConfirmResponseSerializer(serializers.Serializer):
+    """Serializer for batch confirm response."""
+    total = serializers.IntegerField()
+    confirmed = serializers.IntegerField()
+    skipped = serializers.IntegerField()
+    failed = serializers.IntegerField()
+    mappings_created = serializers.IntegerField()
+    results = BatchConfirmResultSerializer(many=True)
+
+
+class BatchStatusSerializer(serializers.Serializer):
+    """Serializer for batch status response."""
+    batch_id = serializers.UUIDField()
+    status = serializers.CharField()
+    total_files = serializers.IntegerField()
+    processed_count = serializers.IntegerField()
+    success_count = serializers.IntegerField()
+    failed_count = serializers.IntegerField()
+    progress_percent = serializers.FloatField()
+    is_complete = serializers.BooleanField()
+    created_at = serializers.DateTimeField()
+    completed_at = serializers.DateTimeField(allow_null=True)
+
+
+class GrowerMappingSerializer(serializers.Serializer):
+    """Serializer for PackinghouseGrowerMapping."""
+    id = serializers.IntegerField(read_only=True)
+    packinghouse_id = serializers.IntegerField()
+    grower_name_pattern = serializers.CharField()
+    grower_id_pattern = serializers.CharField(allow_blank=True)
+    block_name_pattern = serializers.CharField(allow_blank=True)
+    farm_id = serializers.IntegerField()
+    farm_name = serializers.CharField(source='farm.name', read_only=True)
+    field_id = serializers.IntegerField(allow_null=True)
+    field_name = serializers.CharField(source='field.name', read_only=True, allow_null=True)
+    use_count = serializers.IntegerField(read_only=True)
+    created_at = serializers.DateTimeField(read_only=True)
+
+
+# =============================================================================
 # FSMA COMPLIANCE MODULE SERIALIZERS
 # =============================================================================
 

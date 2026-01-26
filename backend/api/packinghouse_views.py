@@ -20,7 +20,7 @@ from .models import (
     PackoutReport, PackoutGradeLine,
     PoolSettlement, SettlementGradeLine, SettlementDeduction,
     GrowerLedgerEntry, Field, PackinghouseStatement,
-    Harvest
+    Harvest, StatementBatchUpload, PackinghouseGrowerMapping, Farm
 )
 
 logger = logging.getLogger(__name__)
@@ -36,8 +36,13 @@ from .serializers import (
     BlockPerformanceSerializer, PackoutTrendSerializer, SettlementComparisonSerializer,
     PackinghouseStatementListSerializer, PackinghouseStatementSerializer,
     PackinghouseStatementUploadSerializer,
+    BatchUploadSerializer, BatchUploadResponseSerializer,
+    BatchConfirmSerializer, BatchConfirmResponseSerializer,
+    BatchStatusSerializer,
 )
-from .services import PDFExtractionService
+from .services import PDFExtractionService, StatementMatcher
+import uuid
+from django.utils import timezone
 
 
 class PackinghouseViewSet(viewsets.ModelViewSet):
@@ -2155,3 +2160,702 @@ class PackinghouseStatementViewSet(viewsets.ModelViewSet):
 
         response_serializer = PackinghouseStatementSerializer(statement)
         return Response(response_serializer.data)
+
+    @action(detail=False, methods=['post'], url_path='batch-upload')
+    def batch_upload(self, request):
+        """
+        Upload multiple PDFs at once with automatic extraction and farm/field matching.
+
+        Expected form data:
+        - files[]: PDF files (max 20)
+        - packinghouse: Packinghouse ID
+        - packinghouse_format (optional): 'vpoa', 'sla', or 'generic'
+
+        Returns batch_id and list of statements with auto-match suggestions.
+        """
+        # Validate request
+        serializer = BatchUploadSerializer(data=request.data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+
+        packinghouse = serializer.validated_data['packinghouse']
+        packinghouse_format = serializer.validated_data.get('packinghouse_format', '')
+
+        # Get uploaded files
+        files = request.FILES.getlist('files[]') or request.FILES.getlist('files')
+        if not files:
+            return Response(
+                {'error': 'No files provided. Use files[] or files parameter.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if len(files) > 20:
+            return Response(
+                {'error': f'Too many files. Maximum is 20, got {len(files)}.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if len(files) < 1:
+            return Response(
+                {'error': 'At least one file is required.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Auto-detect format from packinghouse if not specified
+        if not packinghouse_format:
+            short_code = packinghouse.short_code.upper() if packinghouse.short_code else ''
+            if 'VPOA' in short_code or 'VILLA' in packinghouse.name.upper():
+                packinghouse_format = 'vpoa'
+            elif 'SLA' in short_code or 'SATICOY' in packinghouse.name.upper():
+                packinghouse_format = 'sla'
+            else:
+                packinghouse_format = 'generic'
+
+        # Create batch record
+        batch_id = uuid.uuid4()
+        batch = StatementBatchUpload.objects.create(
+            batch_id=batch_id,
+            packinghouse=packinghouse,
+            status='processing',
+            total_files=len(files),
+            uploaded_by=request.user
+        )
+
+        # Initialize matcher
+        matcher = StatementMatcher(request.user.current_company)
+        extraction_service = PDFExtractionService()
+
+        results = []
+        success_count = 0
+        failed_count = 0
+
+        for pdf_file in files:
+            # Validate file
+            if not pdf_file.name.lower().endswith('.pdf'):
+                results.append({
+                    'id': None,
+                    'filename': pdf_file.name,
+                    'status': 'failed',
+                    'statement_type': None,
+                    'extraction_confidence': None,
+                    'extraction_error': 'Only PDF files are allowed',
+                    'auto_match': None,
+                    'needs_review': True
+                })
+                failed_count += 1
+                continue
+
+            # Check file size (50MB max)
+            if pdf_file.size > 50 * 1024 * 1024:
+                results.append({
+                    'id': None,
+                    'filename': pdf_file.name,
+                    'status': 'failed',
+                    'statement_type': None,
+                    'extraction_confidence': None,
+                    'extraction_error': 'File too large (max 50MB)',
+                    'auto_match': None,
+                    'needs_review': True
+                })
+                failed_count += 1
+                continue
+
+            try:
+                # Create statement record
+                statement = PackinghouseStatement.objects.create(
+                    packinghouse=packinghouse,
+                    pdf_file=pdf_file,
+                    original_filename=pdf_file.name,
+                    file_size_bytes=pdf_file.size,
+                    packinghouse_format=packinghouse_format,
+                    status='extracting',
+                    uploaded_by=request.user,
+                    batch_upload=batch
+                )
+
+                # Run extraction
+                try:
+                    result = extraction_service.extract_from_pdf(
+                        pdf_path=statement.pdf_file.path,
+                        packinghouse_format=packinghouse_format
+                    )
+
+                    if result.success:
+                        statement.status = 'extracted'
+                        statement.extracted_data = result.data
+                        statement.statement_type = result.statement_type
+                        statement.packinghouse_format = result.packinghouse_format
+                        statement.extraction_confidence = result.confidence
+
+                        # Run auto-matching
+                        match_result = matcher.match_statement(
+                            packinghouse.id,
+                            result.data
+                        )
+                        statement.auto_match_result = match_result.to_dict()
+                        statement.save()
+
+                        results.append({
+                            'id': statement.id,
+                            'filename': pdf_file.name,
+                            'status': 'extracted',
+                            'statement_type': statement.statement_type,
+                            'extraction_confidence': float(statement.extraction_confidence) if statement.extraction_confidence else None,
+                            'extraction_error': None,
+                            'auto_match': match_result.to_dict(),
+                            'needs_review': match_result.needs_review,
+                            'extracted_data': result.data,
+                            'pdf_url': request.build_absolute_uri(statement.pdf_file.url) if statement.pdf_file else None
+                        })
+                        success_count += 1
+                    else:
+                        statement.status = 'failed'
+                        statement.extraction_error = result.error
+                        statement.save()
+
+                        results.append({
+                            'id': statement.id,
+                            'filename': pdf_file.name,
+                            'status': 'failed',
+                            'statement_type': None,
+                            'extraction_confidence': None,
+                            'extraction_error': result.error,
+                            'auto_match': None,
+                            'needs_review': True
+                        })
+                        failed_count += 1
+
+                except Exception as e:
+                    logger.exception(f"Error extracting PDF {pdf_file.name}")
+                    statement.status = 'failed'
+                    statement.extraction_error = str(e)
+                    statement.save()
+
+                    results.append({
+                        'id': statement.id,
+                        'filename': pdf_file.name,
+                        'status': 'failed',
+                        'statement_type': None,
+                        'extraction_confidence': None,
+                        'extraction_error': str(e),
+                        'auto_match': None,
+                        'needs_review': True
+                    })
+                    failed_count += 1
+
+            except Exception as e:
+                logger.exception(f"Error creating statement for {pdf_file.name}")
+                results.append({
+                    'id': None,
+                    'filename': pdf_file.name,
+                    'status': 'failed',
+                    'statement_type': None,
+                    'extraction_confidence': None,
+                    'extraction_error': str(e),
+                    'auto_match': None,
+                    'needs_review': True
+                })
+                failed_count += 1
+
+        # Update batch status
+        batch.processed_count = len(files)
+        batch.success_count = success_count
+        batch.failed_count = failed_count
+        batch.completed_at = timezone.now()
+
+        if failed_count == 0:
+            batch.status = 'completed'
+        elif success_count == 0:
+            batch.status = 'failed'
+        else:
+            batch.status = 'partial'
+        batch.save()
+
+        return Response({
+            'batch_id': str(batch_id),
+            'total': len(files),
+            'success_count': success_count,
+            'failed_count': failed_count,
+            'statements': results
+        }, status=status.HTTP_201_CREATED)
+
+    @action(detail=False, methods=['post'], url_path='batch-confirm')
+    def batch_confirm(self, request):
+        """
+        Confirm multiple statements at once, creating settlements/packout reports.
+
+        Expected data:
+        - statements: List of {id, farm_id?, field_id?, pool_id?, skip?}
+        - save_mappings: Whether to save confirmed matches as learned mappings
+
+        Returns confirmation results for each statement.
+        """
+        serializer = BatchConfirmSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        statements_data = serializer.validated_data['statements']
+        save_mappings = serializer.validated_data.get('save_mappings', True)
+
+        if not statements_data:
+            return Response(
+                {'error': 'No statements provided'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        extraction_service = PDFExtractionService()
+        matcher = StatementMatcher(request.user.current_company)
+
+        results = []
+        confirmed_count = 0
+        skipped_count = 0
+        failed_count = 0
+        mappings_created = 0
+
+        for stmt_data in statements_data:
+            statement_id = stmt_data['id']
+            skip = stmt_data.get('skip', False)
+
+            if skip:
+                results.append({
+                    'id': statement_id,
+                    'filename': '',
+                    'success': True,
+                    'message': 'Skipped',
+                    'settlement_id': None,
+                    'packout_report_id': None,
+                    'mapping_saved': False
+                })
+                skipped_count += 1
+                continue
+
+            try:
+                # Get statement
+                statement = PackinghouseStatement.objects.select_related(
+                    'packinghouse'
+                ).get(
+                    id=statement_id,
+                    packinghouse__company=request.user.current_company
+                )
+            except PackinghouseStatement.DoesNotExist:
+                results.append({
+                    'id': statement_id,
+                    'filename': '',
+                    'success': False,
+                    'message': 'Statement not found',
+                    'settlement_id': None,
+                    'packout_report_id': None,
+                    'mapping_saved': False
+                })
+                failed_count += 1
+                continue
+
+            if statement.status not in ['extracted', 'review']:
+                results.append({
+                    'id': statement_id,
+                    'filename': statement.original_filename,
+                    'success': False,
+                    'message': f'Invalid status: {statement.status}',
+                    'settlement_id': None,
+                    'packout_report_id': None,
+                    'mapping_saved': False
+                })
+                failed_count += 1
+                continue
+
+            # Get farm/field/pool - use provided values or auto-matched
+            farm_id = stmt_data.get('farm_id')
+            field_id = stmt_data.get('field_id')
+            pool_id = stmt_data.get('pool_id')
+
+            # Fall back to auto-matched values
+            auto_match = statement.auto_match_result or {}
+            if not farm_id and auto_match.get('farm'):
+                farm_id = auto_match['farm'].get('id')
+            if not field_id and auto_match.get('field'):
+                field_id = auto_match['field'].get('id')
+
+            # Validate farm
+            farm = None
+            if farm_id:
+                try:
+                    farm = Farm.objects.get(
+                        id=farm_id,
+                        company=request.user.current_company
+                    )
+                except Farm.DoesNotExist:
+                    results.append({
+                        'id': statement_id,
+                        'filename': statement.original_filename,
+                        'success': False,
+                        'message': f'Farm not found: {farm_id}',
+                        'settlement_id': None,
+                        'packout_report_id': None,
+                        'mapping_saved': False
+                    })
+                    failed_count += 1
+                    continue
+
+            # Validate field
+            field = None
+            if field_id:
+                try:
+                    field = Field.objects.get(
+                        id=field_id,
+                        farm__company=request.user.current_company
+                    )
+                except Field.DoesNotExist:
+                    results.append({
+                        'id': statement_id,
+                        'filename': statement.original_filename,
+                        'success': False,
+                        'message': f'Field not found: {field_id}',
+                        'settlement_id': None,
+                        'packout_report_id': None,
+                        'mapping_saved': False
+                    })
+                    failed_count += 1
+                    continue
+
+            # Get or create pool
+            pool = None
+            if pool_id:
+                try:
+                    pool = Pool.objects.get(
+                        id=pool_id,
+                        packinghouse__company=request.user.current_company
+                    )
+                except Pool.DoesNotExist:
+                    results.append({
+                        'id': statement_id,
+                        'filename': statement.original_filename,
+                        'success': False,
+                        'message': f'Pool not found: {pool_id}',
+                        'settlement_id': None,
+                        'packout_report_id': None,
+                        'mapping_saved': False
+                    })
+                    failed_count += 1
+                    continue
+            else:
+                # Auto-create pool from extracted data (same logic as single confirm)
+                pool = self._get_or_create_pool_from_data(
+                    statement, request.user
+                )
+
+            # Create the appropriate record
+            try:
+                settlement_id = None
+                packout_report_id = None
+                data_to_use = statement.extracted_data
+
+                if statement.statement_type in ['settlement', 'grower_statement']:
+                    settlement_data = extraction_service.create_settlement_from_data(
+                        data_to_use, pool, field
+                    )
+                    settlement_data['source_statement'] = statement
+
+                    settlement = PoolSettlement.objects.create(**settlement_data)
+
+                    # Create grade lines
+                    grade_lines_data = extraction_service.get_grade_lines_data(
+                        data_to_use, for_settlement=True
+                    )
+                    for line_data in grade_lines_data:
+                        SettlementGradeLine.objects.create(
+                            settlement=settlement,
+                            **line_data
+                        )
+
+                    # Create deductions
+                    deductions_data = extraction_service.get_deductions_data(data_to_use)
+                    for ded_data in deductions_data:
+                        SettlementDeduction.objects.create(
+                            settlement=settlement,
+                            **ded_data
+                        )
+
+                    settlement_id = settlement.id
+
+                elif statement.statement_type in ['packout', 'wash_report']:
+                    if not field:
+                        results.append({
+                            'id': statement_id,
+                            'filename': statement.original_filename,
+                            'success': False,
+                            'message': 'Field required for packout reports',
+                            'settlement_id': None,
+                            'packout_report_id': None,
+                            'mapping_saved': False
+                        })
+                        failed_count += 1
+                        continue
+
+                    report_data = extraction_service.create_packout_report_from_data(
+                        data_to_use, pool, field
+                    )
+                    report_data['source_statement'] = statement
+
+                    packout_report = PackoutReport.objects.create(**report_data)
+
+                    # Create grade lines
+                    grade_lines_data = extraction_service.get_grade_lines_data(
+                        data_to_use, for_settlement=False
+                    )
+                    for line_data in grade_lines_data:
+                        PackoutGradeLine.objects.create(
+                            packout_report=packout_report,
+                            **line_data
+                        )
+
+                    packout_report_id = packout_report.id
+
+                else:
+                    results.append({
+                        'id': statement_id,
+                        'filename': statement.original_filename,
+                        'success': False,
+                        'message': f'Unknown statement type: {statement.statement_type}',
+                        'settlement_id': None,
+                        'packout_report_id': None,
+                        'mapping_saved': False
+                    })
+                    failed_count += 1
+                    continue
+
+                # Update statement
+                statement.pool = pool
+                statement.field = field
+                statement.status = 'completed'
+                statement.save()
+
+                # Save mapping if requested
+                mapping_saved = False
+                if save_mappings and farm:
+                    try:
+                        # Extract grower info for mapping
+                        header = data_to_use.get('header', {})
+                        grower_info = data_to_use.get('grower_info', {})
+
+                        grower_name = (
+                            grower_info.get('grower_name') or
+                            header.get('grower_name') or
+                            header.get('grower') or
+                            ''
+                        )
+                        grower_id = (
+                            grower_info.get('grower_id') or
+                            header.get('grower_id') or
+                            ''
+                        )
+                        block_name = (
+                            header.get('ranch_name') or
+                            header.get('block_name') or
+                            grower_info.get('ranch') or
+                            ''
+                        )
+
+                        if grower_name:
+                            matcher.save_mapping(
+                                packinghouse_id=statement.packinghouse_id,
+                                grower_name=grower_name,
+                                grower_id=grower_id,
+                                farm_id=farm.id,
+                                field_id=field.id if field else None,
+                                block_name=block_name,
+                                source_statement_id=statement.id,
+                                user=request.user
+                            )
+                            mapping_saved = True
+                            mappings_created += 1
+                    except Exception as e:
+                        logger.warning(f"Failed to save mapping: {e}")
+
+                results.append({
+                    'id': statement_id,
+                    'filename': statement.original_filename,
+                    'success': True,
+                    'message': 'Confirmed',
+                    'settlement_id': settlement_id,
+                    'packout_report_id': packout_report_id,
+                    'mapping_saved': mapping_saved
+                })
+                confirmed_count += 1
+
+            except Exception as e:
+                logger.exception(f"Error confirming statement {statement_id}")
+                results.append({
+                    'id': statement_id,
+                    'filename': statement.original_filename,
+                    'success': False,
+                    'message': str(e),
+                    'settlement_id': None,
+                    'packout_report_id': None,
+                    'mapping_saved': False
+                })
+                failed_count += 1
+
+        return Response({
+            'total': len(statements_data),
+            'confirmed': confirmed_count,
+            'skipped': skipped_count,
+            'failed': failed_count,
+            'mappings_created': mappings_created,
+            'results': results
+        })
+
+    @action(detail=False, methods=['get'], url_path=r'batch-status/(?P<batch_id>[^/.]+)')
+    def batch_status(self, request, batch_id=None):
+        """
+        Get the status of a batch upload.
+
+        URL: GET /api/packinghouse-statements/batch-status/{batch_id}/
+        """
+        try:
+            batch = StatementBatchUpload.objects.get(
+                batch_id=batch_id,
+                packinghouse__company=request.user.current_company
+            )
+        except StatementBatchUpload.DoesNotExist:
+            return Response(
+                {'error': 'Batch not found'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        return Response({
+            'batch_id': str(batch.batch_id),
+            'status': batch.status,
+            'total_files': batch.total_files,
+            'processed_count': batch.processed_count,
+            'success_count': batch.success_count,
+            'failed_count': batch.failed_count,
+            'progress_percent': batch.progress_percent,
+            'is_complete': batch.is_complete,
+            'created_at': batch.created_at,
+            'completed_at': batch.completed_at
+        })
+
+    @action(detail=False, methods=['get'], url_path='grower-mappings')
+    def grower_mappings(self, request):
+        """
+        List learned grower-to-farm mappings for a packinghouse.
+
+        Query params:
+        - packinghouse: Filter by packinghouse ID (required)
+        """
+        packinghouse_id = request.query_params.get('packinghouse')
+        if not packinghouse_id:
+            return Response(
+                {'error': 'packinghouse parameter required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        mappings = PackinghouseGrowerMapping.objects.filter(
+            packinghouse_id=packinghouse_id,
+            packinghouse__company=request.user.current_company
+        ).select_related('farm', 'field').order_by('-use_count', '-last_used_at')
+
+        data = [
+            {
+                'id': m.id,
+                'grower_name_pattern': m.grower_name_pattern,
+                'grower_id_pattern': m.grower_id_pattern,
+                'block_name_pattern': m.block_name_pattern,
+                'farm_id': m.farm_id,
+                'farm_name': m.farm.name,
+                'field_id': m.field_id,
+                'field_name': m.field.name if m.field else None,
+                'use_count': m.use_count,
+                'last_used_at': m.last_used_at,
+                'created_at': m.created_at
+            }
+            for m in mappings
+        ]
+
+        return Response(data)
+
+    @action(detail=False, methods=['delete'], url_path=r'grower-mappings/(?P<mapping_id>\d+)')
+    def delete_grower_mapping(self, request, mapping_id=None):
+        """
+        Delete a learned grower mapping.
+
+        URL: DELETE /api/packinghouse-statements/grower-mappings/{mapping_id}/
+        """
+        try:
+            mapping = PackinghouseGrowerMapping.objects.get(
+                id=mapping_id,
+                packinghouse__company=request.user.current_company
+            )
+            mapping.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except PackinghouseGrowerMapping.DoesNotExist:
+            return Response(
+                {'error': 'Mapping not found'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+    def _get_or_create_pool_from_data(self, statement, user):
+        """
+        Get or create a pool from extracted statement data.
+        Shared logic for single and batch confirm.
+        """
+        data_to_use = statement.extracted_data
+        header = data_to_use.get('header', {})
+
+        extracted_pool_id = header.get('pool_id') or ''
+        pool_name = header.get('pool_name') or extracted_pool_id or 'Imported Pool'
+        commodity = header.get('commodity', 'CITRUS')
+        season = header.get('season', '')
+
+        # Derive season from report date if not specified
+        if not season:
+            report_date_str = header.get('report_date')
+            if report_date_str:
+                try:
+                    from datetime import datetime
+                    report_date = datetime.strptime(report_date_str, '%Y-%m-%d').date()
+                    if report_date.month >= 10:
+                        season = f"{report_date.year}-{report_date.year + 1}"
+                    else:
+                        season = f"{report_date.year - 1}-{report_date.year}"
+                except (ValueError, TypeError):
+                    pass
+
+        # Default season
+        if not season:
+            from datetime import date
+            today = date.today()
+            if today.month >= 10:
+                season = f"{today.year}-{today.year + 1}"
+            else:
+                season = f"{today.year - 1}-{today.year}"
+
+        # Check for existing pool
+        existing_pool = None
+        if extracted_pool_id:
+            existing_pool = Pool.objects.filter(
+                packinghouse=statement.packinghouse,
+                pool_id=extracted_pool_id
+            ).first()
+
+        if not existing_pool:
+            existing_pool = Pool.objects.filter(
+                packinghouse=statement.packinghouse,
+                commodity__iexact=commodity,
+                season=season
+            ).first()
+
+        if existing_pool:
+            return existing_pool
+
+        # Create new pool
+        if not extracted_pool_id:
+            extracted_pool_id = f"IMP-{uuid.uuid4().hex[:8].upper()}"
+
+        pool = Pool.objects.create(
+            packinghouse=statement.packinghouse,
+            pool_id=extracted_pool_id,
+            name=pool_name,
+            commodity=commodity,
+            season=season,
+            status='active'
+        )
+        return pool

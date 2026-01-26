@@ -2565,6 +2565,32 @@ export const packinghouseStatementsAPI = {
   // data can contain: packinghouse_format (optional hint)
   reprocess: (id, data = {}) =>
     api.post(`/packinghouse-statements/${id}/reprocess/`, data),
+
+  // Batch upload multiple PDFs
+  // formData should contain: files[], packinghouse, packinghouse_format (optional)
+  batchUpload: (formData) =>
+    api.post('/packinghouse-statements/batch-upload/', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    }),
+
+  // Batch confirm multiple statements
+  // data: { statements: [{id, farm_id?, field_id?, skip?}], save_mappings: bool }
+  batchConfirm: (data) =>
+    api.post('/packinghouse-statements/batch-confirm/', data),
+
+  // Get batch status
+  getBatchStatus: (batchId) =>
+    api.get(`/packinghouse-statements/batch-status/${batchId}/`),
+
+  // Get learned grower mappings
+  getGrowerMappings: (packinghouseId) =>
+    api.get('/packinghouse-statements/grower-mappings/', {
+      params: { packinghouse: packinghouseId }
+    }),
+
+  // Delete a grower mapping
+  deleteGrowerMapping: (mappingId) =>
+    api.delete(`/packinghouse-statements/grower-mappings/${mappingId}/`),
 };
 
 export const PACKINGHOUSE_CONSTANTS = {
