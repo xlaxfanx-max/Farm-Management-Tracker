@@ -23,14 +23,15 @@ RUN npm run build
 # Production stage - serve with nginx
 FROM nginx:alpine
 
-# Copy custom nginx config
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Copy nginx config template
+COPY nginx.conf /etc/nginx/templates/default.conf.template
 
 # Copy built files
 COPY --from=builder /app/build /usr/share/nginx/html
 
-# nginx runs on port 80 by default, but Railway expects PORT env var
-# Use envsubst to inject PORT at runtime
-EXPOSE 80
+# Railway provides PORT env var - nginx:alpine auto-substitutes ${PORT} in templates
+ENV PORT=80
+
+EXPOSE ${PORT}
 
 CMD ["nginx", "-g", "daemon off;"]
