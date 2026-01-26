@@ -1,4 +1,6 @@
 from django.urls import path, include
+from django.http import JsonResponse
+from django.db import connection
 from rest_framework.routers import DefaultRouter
 from .views import (
     FarmViewSet, FieldViewSet, PesticideProductViewSet,
@@ -166,6 +168,16 @@ from .fsma_views import (
     FSMADashboardViewSet,
 )
 
+def health_check(request):
+    """Health check endpoint for Railway/container orchestration."""
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT 1")
+        return JsonResponse({"status": "healthy", "database": "connected"})
+    except Exception as e:
+        return JsonResponse({"status": "unhealthy", "error": str(e)}, status=503)
+
+
 router = DefaultRouter()
 router.register(r'farms', FarmViewSet, basename='farm')
 router.register(r'fields', FieldViewSet, basename='field')
@@ -256,6 +268,9 @@ router.register(r'fsma/dashboard', FSMADashboardViewSet, basename='fsma-dashboar
 
 
 urlpatterns = [
+    # Health check (no auth required) - must be first for Railway
+    path('health/', health_check, name='health-check'),
+
     path('', include(router.urls)),
     path('reports/statistics/', report_statistics, name='report-statistics'),
     path('geocode/', geocode_address, name='geocode-address'),  

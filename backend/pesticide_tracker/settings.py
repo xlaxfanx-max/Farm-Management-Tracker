@@ -8,13 +8,26 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # override=True ensures .env values take precedence over any existing env vars
 load_dotenv(BASE_DIR / '.env', override=True)
 
-SECRET_KEY = 'django-insecure-change-this-in-production-abc123xyz'
+# =============================================================================
+# CORE SETTINGS - Configure via environment variables for production
+# =============================================================================
 
-DEBUG = True
+# SECURITY: Generate a new secret key for production
+# python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-change-this-in-production-abc123xyz')
+
+# SECURITY: Set DEBUG=False in production
+DEBUG = os.environ.get('DEBUG', 'True').lower() in ('true', '1', 'yes')
 
 AUTH_USER_MODEL = 'api.User'
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+# Hosts allowed to serve this site
+# In production: Set ALLOWED_HOSTS to your domain (comma-separated)
+_allowed_hosts = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+ALLOWED_HOSTS = [h.strip() for h in _allowed_hosts if h.strip()]
+# Railway uses random subdomains - allow all .railway.app domains
+if os.environ.get('RAILWAY_ENVIRONMENT'):
+    ALLOWED_HOSTS.append('.railway.app')
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -27,13 +40,14 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt.token_blacklist',
     'rest_framework',
     'corsheaders',
+    'storages',  # Cloud storage support
     'api',
-   
 ]
 
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # Serve static files in production
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -67,23 +81,35 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'pesticide_tracker.wsgi.application'
 
-#DATABASES = {
-#   'default': {
-#        'ENGINE': 'django.db.backends.sqlite3',
-#        'NAME': BASE_DIR / 'db.sqlite3',
-#    }
-#}
+# =============================================================================
+# DATABASE CONFIGURATION
+# =============================================================================
+# Supports DATABASE_URL (Railway, Render, Heroku) or individual env vars
+import dj_database_url
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get('DB_NAME', 'farm_tracker'),
-        'USER': os.environ.get('DB_USER', 'farm_tracker_user'),
-        'PASSWORD': os.environ.get('DB_PASSWORD', ''),
-        'HOST': os.environ.get('DB_HOST', 'localhost'),
-        'PORT': os.environ.get('DB_PORT', '5432'),
+DATABASE_URL = os.environ.get('DATABASE_URL', '')
+
+if DATABASE_URL:
+    # Cloud deployment: Parse DATABASE_URL (Railway, Render, Heroku)
+    DATABASES = {
+        'default': dj_database_url.parse(
+            DATABASE_URL,
+            conn_max_age=60,
+            conn_health_checks=True,
+        )
     }
-}
+else:
+    # Local development: Use individual env vars
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.environ.get('DB_NAME', 'farm_tracker'),
+            'USER': os.environ.get('DB_USER', 'farm_tracker_user'),
+            'PASSWORD': os.environ.get('DB_PASSWORD', ''),
+            'HOST': os.environ.get('DB_HOST', 'localhost'),
+            'PORT': os.environ.get('DB_PORT', '5432'),
+        }
+    }
 
 CACHE_URL = os.environ.get('CACHE_URL', '')
 CACHES = {
@@ -113,15 +139,66 @@ USE_I18N = True
 USE_TZ = True
 
 STATIC_URL = 'static/'
-MEDIA_URL = 'media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+STATIC_ROOT = BASE_DIR / 'staticfiles'  # For collectstatic in production
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+# =============================================================================
+# MEDIA / FILE STORAGE
+# =============================================================================
+# Use cloud storage in production (S3, Cloudflare R2, etc.)
+# Falls back to local storage for development
+
+AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID', '')
+AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY', '')
+AWS_STORAGE_BUCKET_NAME = os.environ.get('AWS_STORAGE_BUCKET_NAME', '')
+AWS_S3_ENDPOINT_URL = os.environ.get('AWS_S3_ENDPOINT_URL', '')  # For R2/B2
+
+if AWS_ACCESS_KEY_ID and AWS_STORAGE_BUCKET_NAME:
+    # Cloud storage (Cloudflare R2, AWS S3, Backblaze B2)
+    DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+
+    # R2/S3 settings
+    AWS_S3_REGION_NAME = os.environ.get('AWS_S3_REGION_NAME', 'auto')
+    AWS_DEFAULT_ACL = None  # Use bucket default
+    AWS_S3_FILE_OVERWRITE = False  # Don't overwrite files with same name
+    AWS_QUERYSTRING_AUTH = True  # Signed URLs for private files
+    AWS_S3_SIGNATURE_VERSION = 's3v4'
+
+    # URL settings
+    if AWS_S3_ENDPOINT_URL:
+        # Cloudflare R2 or other S3-compatible
+        AWS_S3_CUSTOM_DOMAIN = os.environ.get('AWS_S3_CUSTOM_DOMAIN', '')
+
+    MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/' if os.environ.get('AWS_S3_CUSTOM_DOMAIN') else None
+else:
+    # Local storage for development
+    MEDIA_URL = 'media/'
+    MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-CORS_ALLOWED_ORIGINS = [
+# =============================================================================
+# CORS CONFIGURATION
+# =============================================================================
+# Add production frontend URL via FRONTEND_URL env var
+_cors_origins = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
 ]
+# Add production frontend URL if set
+_frontend_url = os.environ.get('FRONTEND_URL', '')
+if _frontend_url and _frontend_url not in _cors_origins:
+    _cors_origins.append(_frontend_url)
+
+CORS_ALLOWED_ORIGINS = _cors_origins
+
+# CSRF trusted origins (required for cross-origin POST requests in production)
+CSRF_TRUSTED_ORIGINS = _cors_origins.copy()
+# Add Railway domain if deployed there
+if os.environ.get('RAILWAY_ENVIRONMENT'):
+    _railway_url = os.environ.get('RAILWAY_PUBLIC_DOMAIN', '')
+    if _railway_url:
+        CSRF_TRUSTED_ORIGINS.append(f'https://{_railway_url}')
 
 CORS_ALLOW_CREDENTIALS = True
 
@@ -217,10 +294,12 @@ CIMIS_API_BASE_URL = 'https://et.water.ca.gov/api/data'
 # Install Redis: https://redis.io/download or use Docker: docker run -d -p 6379:6379 redis
 
 # Broker URL - where Celery sends/receives messages
-CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'redis://localhost:6379/0')
+# Railway provides REDIS_URL automatically
+_redis_url = os.environ.get('REDIS_URL', 'redis://localhost:6379/0')
+CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', _redis_url)
 
 # Result backend - where Celery stores task results
-CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND', 'redis://localhost:6379/0')
+CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND', _redis_url)
 
 # Serialization settings
 CELERY_ACCEPT_CONTENT = ['json']
