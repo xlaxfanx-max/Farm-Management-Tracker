@@ -5,7 +5,7 @@
     "dockerfilePath": "Dockerfile"
   },
   "deploy": {
-    "startCommand": "python -u -c \"import os; os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'pesticide_tracker.settings'); print('Importing settings...'); import pesticide_tracker.settings; print('Settings imported!')\"",
+    "startCommand": "python -u -c \"import os; os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'pesticide_tracker.settings'); print('Loading Django...'); import django; django.setup(); print('Django ready!')\" && gunicorn --bind 0.0.0.0:${PORT:-8000} --workers 1 --timeout 120 pesticide_tracker.wsgi:application",
     "healthcheckPath": "/api/health/",
     "healthcheckTimeout": 120,
     "restartPolicyType": "ON_FAILURE",
