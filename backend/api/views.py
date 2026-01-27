@@ -1615,6 +1615,23 @@ class WaterSourceViewSet(AuditLogMixin, viewsets.ModelViewSet):
         serializer = self.get_serializer(overdue_sources, many=True)
         return Response(serializer.data)
 
+    @action(detail=False, methods=['get'])
+    def gsa_fee_defaults(self, request):
+        """Get default fee rates for each GSA."""
+        from .models import GSA_FEE_DEFAULTS, GSA_CHOICES
+        # Convert Decimal to float for JSON serialization
+        result = {}
+        for gsa_code, defaults in GSA_FEE_DEFAULTS.items():
+            result[gsa_code] = {
+                k: float(v) if v is not None else None
+                for k, v in defaults.items()
+            }
+        # Add GSA display names
+        gsa_names = dict(GSA_CHOICES)
+        for gsa_code in result:
+            result[gsa_code]['display_name'] = gsa_names.get(gsa_code, gsa_code)
+        return Response(result)
+
 
 class WaterTestViewSet(AuditLogMixin, viewsets.ModelViewSet):
     """

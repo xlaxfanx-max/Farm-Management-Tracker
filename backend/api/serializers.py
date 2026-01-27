@@ -881,38 +881,44 @@ class HarvestStatisticsSerializer(serializers.Serializer):
 
 class WellReadingSerializer(serializers.ModelSerializer):
     """Full serializer for WellReading model."""
-    
+
     water_source_name = serializers.CharField(source='water_source.name', read_only=True)
     farm_name = serializers.CharField(source='water_source.farm.name', read_only=True)
     flowmeter_units = serializers.CharField(source='water_source.flowmeter_units', read_only=True)
     reading_type_display = serializers.CharField(source='get_reading_type_display', read_only=True)
-    
+
     class Meta:
         model = WellReading
         fields = '__all__'
         read_only_fields = [
             'previous_reading', 'previous_reading_date',
-            'extraction_native_units', 'extraction_acre_feet', 'extraction_gallons'
+            'extraction_native_units', 'extraction_acre_feet', 'extraction_gallons',
+            # Fee fields are auto-calculated
+            'irrigation_extraction_af', 'base_fee', 'gsp_fee', 'domestic_fee',
+            'fixed_fee', 'total_fee'
         ]
 
 
 class WellReadingCreateSerializer(serializers.ModelSerializer):
     """Serializer for creating meter readings."""
-    
+
     class Meta:
         model = WellReading
         fields = [
             'water_source', 'reading_date', 'reading_time', 'meter_reading',
             'reading_type', 'meter_photo', 'pump_hours', 'water_level_ft',
-            'recorded_by', 'notes'
+            'recorded_by', 'notes',
+            # New fields for rollover and domestic split
+            'meter_rollover', 'domestic_extraction_af'
         ]
-    
+
     def validate(self, data):
-        """Validate reading is greater than previous."""
+        """Validate reading is greater than previous (unless rollover specified)."""
         water_source = data.get('water_source')
         meter_reading = data.get('meter_reading')
         reading_date = data.get('reading_date')
-        
+        meter_rollover = data.get('meter_rollover')
+
         if water_source and meter_reading:
             # Get the previous reading
             prev = WellReading.objects.filter(
@@ -921,15 +927,18 @@ class WellReadingCreateSerializer(serializers.ModelSerializer):
             ).exclude(
                 id=self.instance.id if self.instance else None
             ).order_by('-reading_date', '-reading_time').first()
-            
+
             if prev and meter_reading < prev.meter_reading:
+                # Allow if meter_rollover is provided (meter reset)
+                if meter_rollover:
+                    pass  # Rollover handles lower reading
                 # Allow if reading_type is 'initial' (meter replacement)
-                if data.get('reading_type') != 'initial':
+                elif data.get('reading_type') != 'initial':
                     raise serializers.ValidationError({
                         'meter_reading': f'Reading ({meter_reading}) cannot be less than previous reading ({prev.meter_reading}). '
-                                        f'Use reading_type "initial" if meter was replaced.'
+                                        f'Provide meter_rollover value if meter reset, or use reading_type "initial" if meter was replaced.'
                     })
-        
+
         return data
 
 

@@ -19,6 +19,7 @@ import api from '../services/api';
 
 const GSA_OPTIONS = [
   { value: 'obgma', label: 'Ojai Basin GMA' },
+  { value: 'uwcd', label: 'United Water Conservation District' },
   { value: 'fpbgsa', label: 'Fillmore & Piru Basins GSA' },
   { value: 'uvrga', label: 'Upper Ventura River GA' },
   { value: 'fcgma', label: 'Fox Canyon GMA' },
@@ -87,6 +88,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
   const [errors, setErrors] = useState({});
   const [useCustomLocation, setUseCustomLocation] = useState(false);
   const [selectedFarm, setSelectedFarm] = useState(null);
+  const [gsaFeeDefaults, setGsaFeeDefaults] = useState({});
 
   // Form data - combines WaterSource + Well fields
   const [formData, setFormData] = useState({
@@ -150,9 +152,34 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
     is_de_minimis: false,
     registered_with_gsa: false,
     gsa_registration_date: '',
-    
+
+    // GSA Fee Configuration
+    base_extraction_rate: '',
+    gsp_rate: '',
+    domestic_rate: '',
+    fixed_quarterly_fee: '',
+    is_domestic_well: false,
+    owner_code: '',
+
     notes: ''
   });
+
+  // ---------------------------------------------------------------------------
+  // Fetch GSA fee defaults
+  // ---------------------------------------------------------------------------
+  useEffect(() => {
+    const fetchGsaDefaults = async () => {
+      try {
+        const response = await api.get('/water-sources/gsa_fee_defaults/');
+        setGsaFeeDefaults(response.data);
+      } catch (err) {
+        console.log('Could not load GSA fee defaults:', err);
+      }
+    };
+    if (isOpen) {
+      fetchGsaDefaults();
+    }
+  }, [isOpen]);
 
   // ---------------------------------------------------------------------------
   // Load existing data or reset
@@ -215,6 +242,13 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
             is_de_minimis: wellSource.is_de_minimis ?? false,
             registered_with_gsa: wellSource.registered_with_gsa ?? false,
             gsa_registration_date: wellSource.gsa_registration_date || '',
+            // Fee configuration
+            base_extraction_rate: wellSource.base_extraction_rate || '',
+            gsp_rate: wellSource.gsp_rate || '',
+            domestic_rate: wellSource.domestic_rate || '',
+            fixed_quarterly_fee: wellSource.fixed_quarterly_fee || '',
+            is_domestic_well: wellSource.is_domestic_well ?? false,
+            owner_code: wellSource.owner_code || '',
             notes: wellSource.notes || '',
           };
 
@@ -285,6 +319,13 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
         is_de_minimis: false,
         registered_with_gsa: false,
         gsa_registration_date: '',
+        // Fee configuration
+        base_extraction_rate: '',
+        gsp_rate: '',
+        domestic_rate: '',
+        fixed_quarterly_fee: '',
+        is_domestic_well: false,
+        owner_code: '',
         notes: ''
       });
       setSelectedFarm(null);
@@ -398,10 +439,27 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
       ...prev,
       [name]: type === 'checkbox' ? checked : value
     }));
-    
+
     // Clear error for this field
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: null }));
+    }
+  };
+
+  // ---------------------------------------------------------------------------
+  // Apply GSA fee defaults
+  // ---------------------------------------------------------------------------
+  const applyGsaFeeDefaults = () => {
+    const gsa = formData.gsa;
+    const defaults = gsaFeeDefaults[gsa];
+    if (defaults) {
+      setFormData(prev => ({
+        ...prev,
+        base_extraction_rate: defaults.base_extraction_rate || '',
+        gsp_rate: defaults.gsp_rate || '',
+        domestic_rate: defaults.domestic_rate || '',
+        fixed_quarterly_fee: defaults.fixed_quarterly_fee || '',
+      }));
     }
   };
 
@@ -506,7 +564,15 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
         is_de_minimis: formData.is_de_minimis ?? false,
         registered_with_gsa: formData.registered_with_gsa ?? false,
         gsa_registration_date: formData.gsa_registration_date || null,
-        
+
+        // GSA Fee Configuration
+        base_extraction_rate: formData.base_extraction_rate ? parseFloat(formData.base_extraction_rate) : null,
+        gsp_rate: formData.gsp_rate ? parseFloat(formData.gsp_rate) : null,
+        domestic_rate: formData.domestic_rate ? parseFloat(formData.domestic_rate) : null,
+        fixed_quarterly_fee: formData.fixed_quarterly_fee ? parseFloat(formData.fixed_quarterly_fee) : null,
+        is_domestic_well: formData.is_domestic_well ?? false,
+        owner_code: formData.owner_code || '',
+
         // Notes
         notes: formData.notes || '',
       };
@@ -1324,6 +1390,104 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
                     <option value="low">Low Priority</option>
                     <option value="very_low">Very Low Priority</option>
                   </select>
+                </div>
+
+                {/* GSA Fee Configuration */}
+                <div className="border-t pt-6">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-sm font-semibold text-gray-900">GSA Fee Configuration</h3>
+                    {gsaFeeDefaults[formData.gsa] && (
+                      <button
+                        type="button"
+                        onClick={applyGsaFeeDefaults}
+                        className="text-sm text-cyan-600 hover:text-cyan-700 hover:underline"
+                      >
+                        Apply {gsaFeeDefaults[formData.gsa]?.display_name || formData.gsa.toUpperCase()} Defaults
+                      </button>
+                    )}
+                  </div>
+                  <p className="text-sm text-gray-500 mb-4">
+                    Set the fee rates charged by your GSA. Fees will be auto-calculated when entering meter readings.
+                  </p>
+
+                  {/* Domestic Well Toggle */}
+                  <label className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer mb-4">
+                    <input
+                      type="checkbox"
+                      name="is_domestic_well"
+                      checked={formData.is_domestic_well}
+                      onChange={handleChange}
+                      className="rounded border-gray-300 text-cyan-600 focus:ring-cyan-500 w-5 h-5"
+                    />
+                    <div className="flex-1">
+                      <span className="font-medium text-gray-900">Domestic Well</span>
+                      <p className="text-sm text-gray-500">Well is primarily for domestic use (may have different rates)</p>
+                    </div>
+                  </label>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm text-gray-600 mb-1">Base Extraction Rate ($/AF)</label>
+                      <input
+                        type="number"
+                        name="base_extraction_rate"
+                        value={formData.base_extraction_rate}
+                        onChange={handleChange}
+                        step="0.01"
+                        placeholder="e.g., 192.34 for UWCD, 25 for OBGMA"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm text-gray-600 mb-1">GSP/SGMA Fee Rate ($/AF)</label>
+                      <input
+                        type="number"
+                        name="gsp_rate"
+                        value={formData.gsp_rate}
+                        onChange={handleChange}
+                        step="0.01"
+                        placeholder="e.g., 100 for OBGMA"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm text-gray-600 mb-1">Domestic Rate ($/AF)</label>
+                      <input
+                        type="number"
+                        name="domestic_rate"
+                        value={formData.domestic_rate}
+                        onChange={handleChange}
+                        step="0.01"
+                        placeholder="e.g., 214.22 for UWCD"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm text-gray-600 mb-1">Fixed Quarterly Fee ($)</label>
+                      <input
+                        type="number"
+                        name="fixed_quarterly_fee"
+                        value={formData.fixed_quarterly_fee}
+                        onChange={handleChange}
+                        step="0.01"
+                        placeholder="e.g., 70 for OBGMA"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="mt-4">
+                    <label className="block text-sm text-gray-600 mb-1">Owner Code</label>
+                    <input
+                      type="text"
+                      name="owner_code"
+                      value={formData.owner_code}
+                      onChange={handleChange}
+                      placeholder="e.g., JPF, FF, RMLF"
+                      className="w-full md:w-64 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
+                    />
+                    <p className="mt-1 text-xs text-gray-500">Owner identifier code used for GSA reporting</p>
+                  </div>
                 </div>
 
                 {/* SGMA Info Box */}

@@ -1906,12 +1906,35 @@ class PesticideApplication(models.Model):
 
 GSA_CHOICES = [
     ('obgma', 'Ojai Basin Groundwater Management Agency (OBGMA)'),
+    ('uwcd', 'United Water Conservation District (UWCD)'),
     ('fpbgsa', 'Fillmore and Piru Basins GSA'),
     ('uvrga', 'Upper Ventura River Groundwater Agency'),
     ('fcgma', 'Fox Canyon Groundwater Management Agency'),
     ('other', 'Other'),
     ('none', 'Not in GSA Jurisdiction'),
 ]
+
+# Default fee rates by GSA (used to pre-populate when GSA is selected)
+GSA_FEE_DEFAULTS = {
+    'obgma': {
+        'base_extraction_rate': Decimal('25.00'),
+        'gsp_rate': Decimal('100.00'),
+        'fixed_quarterly_fee': Decimal('70.00'),
+        'domestic_rate': None,
+    },
+    'uwcd': {
+        'base_extraction_rate': Decimal('192.34'),
+        'gsp_rate': None,
+        'fixed_quarterly_fee': None,
+        'domestic_rate': Decimal('214.22'),
+    },
+    'fpbgsa': {
+        'base_extraction_rate': None,
+        'gsp_rate': None,
+        'fixed_quarterly_fee': None,
+        'domestic_rate': None,
+    },
+}
 
 GROUNDWATER_BASIN_CHOICES = [
     ('ojai_valley', 'Ojai Valley (4-002)'),
@@ -2093,7 +2116,33 @@ class WaterSource(LocationMixin, models.Model):
     
     # === DE MINIMIS EXEMPTION ===
     is_de_minimis = models.BooleanField(default=False, help_text="Domestic well < 2 AF/year")
-    
+
+    # === GSA FEE CONFIGURATION ===
+    base_extraction_rate = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True,
+        help_text="Base extraction rate $/AF (e.g., OBGMA $25, UWCD $192.34)"
+    )
+    gsp_rate = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True,
+        help_text="GSP/SGMA fee rate $/AF (e.g., OBGMA $100)"
+    )
+    domestic_rate = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True,
+        help_text="Domestic usage rate $/AF (e.g., UWCD $214.22)"
+    )
+    fixed_quarterly_fee = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True,
+        help_text="Fixed quarterly fee (e.g., OBGMA $70)"
+    )
+    is_domestic_well = models.BooleanField(
+        default=False,
+        help_text="Well is primarily for domestic use (different rate applies)"
+    )
+    owner_code = models.CharField(
+        max_length=20, blank=True,
+        help_text="Owner identifier code (e.g., JPF, FF, RMLF)"
+    )
+
     # === COMPLIANCE TRACKING ===
     registered_with_gsa = models.BooleanField(default=False)
     gsa_registration_date = models.DateField(null=True, blank=True)
@@ -3338,43 +3387,176 @@ class WellReading(models.Model):
         help_text="Water level at time of reading (ft below surface)"
     )
     
+    # === METER ROLLOVER ===
+    meter_rollover = models.DecimalField(
+        max_digits=15,
+        decimal_places=4,
+        null=True,
+        blank=True,
+        help_text="Meter rollover value if meter reset (e.g., 1000000)"
+    )
+
+    # === DOMESTIC/IRRIGATION SPLIT ===
+    domestic_extraction_af = models.DecimalField(
+        max_digits=12,
+        decimal_places=6,
+        null=True,
+        blank=True,
+        help_text="Domestic portion of extraction (acre-feet)"
+    )
+    irrigation_extraction_af = models.DecimalField(
+        max_digits=12,
+        decimal_places=6,
+        null=True,
+        blank=True,
+        help_text="Irrigation portion of extraction (acre-feet)"
+    )
+
+    # === CALCULATED FEES ===
+    base_fee = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="Calculated base extraction fee"
+    )
+    gsp_fee = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="Calculated GSP/SGMA fee"
+    )
+    domestic_fee = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="Calculated domestic fee"
+    )
+    fixed_fee = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="Fixed quarterly fee"
+    )
+    total_fee = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="Total fees due this period"
+    )
+
     # === METADATA ===
     recorded_by = models.CharField(max_length=100, blank=True)
     notes = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    
+
     class Meta:
         ordering = ['-reading_date', '-reading_time']
         indexes = [
             models.Index(fields=['water_source', '-reading_date']),
         ]
-    
+
     def __str__(self):
         return f"{self.water_source.name} - {self.reading_date}: {self.meter_reading}"
-    
+
     def save(self, *args, **kwargs):
-        """Auto-calculate extraction on save."""
+        """Auto-calculate extraction and fees on save."""
+        # Get previous reading if not set
         if self.previous_reading is None:
             prev = WellReading.objects.filter(
                 water_source=self.water_source,
                 reading_date__lt=self.reading_date
             ).order_by('-reading_date', '-reading_time').first()
-            
+
             if prev:
                 self.previous_reading = prev.meter_reading
                 self.previous_reading_date = prev.reading_date
-        
+
+        # Calculate extraction
         if self.previous_reading is not None and self.meter_reading is not None:
             multiplier = self.water_source.flowmeter_multiplier or Decimal('1.0')
-            raw_extraction = (self.meter_reading - self.previous_reading) * multiplier
+
+            # Handle meter rollover
+            if self.meter_rollover:
+                # Meter rolled over: usage = (rollover - previous) + current
+                raw_extraction = ((self.meter_rollover - self.previous_reading) + self.meter_reading) * multiplier
+            else:
+                raw_extraction = (self.meter_reading - self.previous_reading) * multiplier
+
             self.extraction_native_units = raw_extraction
             self.extraction_acre_feet = self._convert_to_acre_feet(raw_extraction)
             if self.extraction_acre_feet:
                 self.extraction_gallons = self.extraction_acre_feet * Decimal('325851')
-        
+
+            # Split domestic/irrigation extraction
+            self._calculate_usage_split()
+
+            # Calculate fees
+            self._calculate_fees()
+
         super().save(*args, **kwargs)
-    
+
+    def _calculate_usage_split(self):
+        """Split extraction into domestic and irrigation based on well type."""
+        if self.extraction_acre_feet is None:
+            return
+
+        ws = self.water_source
+        if ws.is_domestic_well:
+            # All extraction is domestic for domestic wells
+            self.domestic_extraction_af = self.extraction_acre_feet
+            self.irrigation_extraction_af = Decimal('0')
+        else:
+            # All extraction is irrigation for non-domestic wells
+            # (user can manually override domestic_extraction_af if needed)
+            if self.domestic_extraction_af is None:
+                self.domestic_extraction_af = Decimal('0')
+            if self.irrigation_extraction_af is None:
+                # Irrigation = total - domestic
+                self.irrigation_extraction_af = self.extraction_acre_feet - (self.domestic_extraction_af or Decimal('0'))
+
+    def _calculate_fees(self):
+        """Auto-calculate fees based on water source rate configuration."""
+        ws = self.water_source
+
+        # Reset fees
+        self.base_fee = Decimal('0')
+        self.gsp_fee = Decimal('0')
+        self.domestic_fee = Decimal('0')
+        self.fixed_fee = Decimal('0')
+
+        # Calculate base fee (irrigation extraction * base rate)
+        irrigation_af = self.irrigation_extraction_af or Decimal('0')
+        if ws.base_extraction_rate and irrigation_af > 0:
+            self.base_fee = irrigation_af * ws.base_extraction_rate
+
+        # Calculate GSP/SGMA fee (total extraction * gsp rate)
+        total_af = self.extraction_acre_feet or Decimal('0')
+        if ws.gsp_rate and total_af > 0:
+            self.gsp_fee = total_af * ws.gsp_rate
+
+        # Calculate domestic fee (domestic extraction * domestic rate)
+        domestic_af = self.domestic_extraction_af or Decimal('0')
+        if ws.domestic_rate and domestic_af > 0:
+            self.domestic_fee = domestic_af * ws.domestic_rate
+
+        # Fixed quarterly fee
+        if ws.fixed_quarterly_fee:
+            self.fixed_fee = ws.fixed_quarterly_fee
+
+        # Total fees
+        self.total_fee = (
+            (self.base_fee or Decimal('0')) +
+            (self.gsp_fee or Decimal('0')) +
+            (self.domestic_fee or Decimal('0')) +
+            (self.fixed_fee or Decimal('0'))
+        )
+
     def _convert_to_acre_feet(self, value):
         """Convert native units to acre-feet."""
         unit = self.water_source.flowmeter_units

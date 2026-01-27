@@ -37,7 +37,8 @@
       "Bash(DATABASE_URL=\"postgresql://postgres:SMmAWIEmfhlsBWQyOpIXIkpWqCLrQoVs@caboose.proxy.rlwy.net:55652/railway\" python manage.py loaddata:*)",
       "Bash(node -e:*)",
       "Bash(git pull:*)",
-      "Bash(git rebase:*)"
+      "Bash(git rebase:*)",
+      "Bash(python manage.py makemigrations:*)"
     ]
   }
 }
