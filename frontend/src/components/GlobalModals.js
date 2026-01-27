@@ -19,6 +19,7 @@ import LaborContractorModal from './LaborContractorModal';
 import NutrientApplicationModal from './NutrientApplicationModal';
 import FertilizerProductModal from './FertilizerProductModal';
 import QuickHarvestModal from './QuickHarvestModal';
+import BatchReadingModal from './BatchReadingModal';
 
 // =============================================================================
 // GLOBAL MODALS COMPONENT
@@ -58,6 +59,7 @@ export function GlobalModals() {
     nutrientAppModal,
     fertilizerProductModal,
     quickHarvestModal,
+    batchReadingModal,
     closeFarmModal,
     closeFieldModal,
     closeApplicationModal,
@@ -76,6 +78,7 @@ export function GlobalModals() {
     closeNutrientAppModal,
     closeFertilizerProductModal,
     closeQuickHarvestModal,
+    closeBatchReadingModal,
     openHarvestModal,
     triggerRefresh,
   } = useModal();
@@ -355,6 +358,16 @@ export function GlobalModals() {
             // Pass form data from quick modal to full modal
             openHarvestModal({ ...formData, isFromQuickMode: true }, formData.field);
           }}
+        />
+      )}
+
+      {/* Batch Reading Modal */}
+      {batchReadingModal.isOpen && (
+        <BatchReadingModal
+          isOpen={batchReadingModal.isOpen}
+          onClose={closeBatchReadingModal}
+          wells={batchReadingModal.wells}
+          onSave={loadData}
         />
       )}
     </>

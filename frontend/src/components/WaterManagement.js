@@ -25,6 +25,7 @@ import IrrigationDashboard from './IrrigationDashboard';
 
 const GSA_NAMES = {
   'obgma': 'Ojai Basin GMA',
+  'uwcd': 'United Water Conservation District',
   'fpbgsa': 'Fillmore & Piru Basins GSA',
   'uvrga': 'Upper Ventura River GA',
   'fcgma': 'Fox Canyon GMA',
@@ -172,7 +173,8 @@ const WaterManagement = () => {
     openWaterTestModal,
     openWellModal,
     openWellReadingModal,
-    openWellSourceModal
+    openWellSourceModal,
+    openBatchReadingModal
   } = useModal();
 
   // Active tab state
@@ -686,7 +688,11 @@ const WaterManagement = () => {
             <QuickActionButton icon={Sprout} label="Record Irrigation" onClick={() => setActiveTab('irrigation')} color="green" />
             <QuickActionButton icon={Plus} label="Add Zone" onClick={() => setActiveTab('irrigation')} color="green" />
             <QuickActionButton icon={Plus} label="Add Well" onClick={() => openWellSourceModal()} color="cyan" />
-            <QuickActionButton icon={Gauge} label="Record Reading" onClick={() => {
+            <QuickActionButton icon={Gauge} label="Batch Readings" onClick={() => {
+              if (wells.length > 0) openBatchReadingModal(wells);
+              else alert('Add wells first to record readings');
+            }} color="cyan" />
+            <QuickActionButton icon={Gauge} label="Single Reading" onClick={() => {
               if (wells.length > 0) openWellReadingModal(wells[0].id, wells[0].well_name);
               else alert('Add a well first to record readings');
             }} color="blue" />
@@ -1002,9 +1008,10 @@ const WaterManagement = () => {
         </div>
       )}
 
-      {/* Filters */}
+      {/* Quick Actions Bar */}
       <div className="bg-white rounded-xl border border-gray-200 p-4">
-        <div className="flex flex-wrap gap-4">
+        <div className="flex flex-wrap items-center gap-4">
+          {/* Search */}
           <div className="flex-1 min-w-[200px] relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
             <input
@@ -1015,6 +1022,8 @@ const WaterManagement = () => {
               className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-cyan-500"
             />
           </div>
+
+          {/* GSA Filter */}
           <select
             value={filterGSA}
             onChange={(e) => setFilterGSA(e.target.value)}
@@ -1025,11 +1034,76 @@ const WaterManagement = () => {
               <option key={value} value={value}>{label}</option>
             ))}
           </select>
+
+          {/* Batch Reading Button */}
+          <button
+            onClick={() => {
+              if (filteredWells.length > 0) openBatchReadingModal(filteredWells);
+              else alert('No wells available for batch reading');
+            }}
+            className="flex items-center gap-2 px-4 py-2.5 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 font-medium"
+          >
+            <Gauge className="w-5 h-5" />
+            Batch Readings
+          </button>
+
+          {/* Refresh */}
           <button onClick={handleRefresh} className="p-2.5 border border-gray-200 rounded-lg hover:bg-gray-50">
             <RefreshCw className={`w-5 h-5 text-gray-600 ${loading ? 'animate-spin' : ''}`} />
           </button>
         </div>
       </div>
+
+      {/* Reading Status Summary */}
+      {filteredWells.length > 0 && (() => {
+        const now = new Date();
+        const wellsNeedingReading = filteredWells.filter(w => {
+          if (!w.latest_reading?.date) return true;
+          const lastDate = new Date(w.latest_reading.date);
+          const daysSince = Math.ceil((now - lastDate) / (1000 * 60 * 60 * 24));
+          return daysSince > 30;
+        });
+        const wellsOverdue = filteredWells.filter(w => {
+          if (!w.latest_reading?.date) return true;
+          const lastDate = new Date(w.latest_reading.date);
+          const daysSince = Math.ceil((now - lastDate) / (1000 * 60 * 60 * 24));
+          return daysSince > 90;
+        });
+
+        if (wellsNeedingReading.length === 0) return null;
+
+        return (
+          <div className={`rounded-xl p-4 flex items-center justify-between ${
+            wellsOverdue.length > 0 ? 'bg-red-50 border border-red-200' : 'bg-amber-50 border border-amber-200'
+          }`}>
+            <div className="flex items-center gap-3">
+              <Clock className={`w-5 h-5 ${wellsOverdue.length > 0 ? 'text-red-500' : 'text-amber-500'}`} />
+              <div>
+                <p className={`font-medium ${wellsOverdue.length > 0 ? 'text-red-800' : 'text-amber-800'}`}>
+                  {wellsOverdue.length > 0
+                    ? `${wellsOverdue.length} well${wellsOverdue.length > 1 ? 's' : ''} overdue for reading (90+ days)`
+                    : `${wellsNeedingReading.length} well${wellsNeedingReading.length > 1 ? 's' : ''} due for reading (30+ days)`
+                  }
+                </p>
+                <p className={`text-sm ${wellsOverdue.length > 0 ? 'text-red-600' : 'text-amber-600'}`}>
+                  {wellsNeedingReading.map(w => w.well_name || w.name).slice(0, 3).join(', ')}
+                  {wellsNeedingReading.length > 3 && ` +${wellsNeedingReading.length - 3} more`}
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => openBatchReadingModal(wellsNeedingReading)}
+              className={`px-4 py-2 rounded-lg font-medium ${
+                wellsOverdue.length > 0
+                  ? 'bg-red-600 text-white hover:bg-red-700'
+                  : 'bg-amber-600 text-white hover:bg-amber-700'
+              }`}
+            >
+              Record Readings
+            </button>
+          </div>
+        );
+      })()}
 
       {/* Wells List */}
       {filteredWells.length === 0 ? (
@@ -1065,11 +1139,47 @@ const WaterManagement = () => {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-6">
+                  <div className="flex items-center gap-4">
+                    {/* Reading Status Badge */}
+                    {(() => {
+                      if (!well.latest_reading?.date) {
+                        return (
+                          <span className="flex items-center gap-1.5 text-gray-600 text-xs bg-gray-100 px-2.5 py-1 rounded-full">
+                            <AlertCircle className="w-3.5 h-3.5" />
+                            No readings
+                          </span>
+                        );
+                      }
+                      const lastDate = new Date(well.latest_reading.date);
+                      const daysSince = Math.ceil((new Date() - lastDate) / (1000 * 60 * 60 * 24));
+                      if (daysSince > 90) {
+                        return (
+                          <span className="flex items-center gap-1.5 text-red-600 text-xs bg-red-50 px-2.5 py-1 rounded-full">
+                            <AlertTriangle className="w-3.5 h-3.5" />
+                            {daysSince}d ago
+                          </span>
+                        );
+                      }
+                      if (daysSince > 30) {
+                        return (
+                          <span className="flex items-center gap-1.5 text-amber-600 text-xs bg-amber-50 px-2.5 py-1 rounded-full">
+                            <Clock className="w-3.5 h-3.5" />
+                            {daysSince}d ago
+                          </span>
+                        );
+                      }
+                      return (
+                        <span className="flex items-center gap-1.5 text-green-600 text-xs bg-green-50 px-2.5 py-1 rounded-full">
+                          <CheckCircle className="w-3.5 h-3.5" />
+                          {daysSince}d ago
+                        </span>
+                      );
+                    })()}
+
                     {well.calibration_due_soon && (
-                      <span className="flex items-center gap-1.5 text-amber-600 text-sm bg-amber-50 px-3 py-1 rounded-full">
-                        <Clock className="w-4 h-4" />
-                        Calibration Due
+                      <span className="flex items-center gap-1.5 text-amber-600 text-xs bg-amber-50 px-2.5 py-1 rounded-full">
+                        <Zap className="w-3.5 h-3.5" />
+                        Cal. Due
                       </span>
                     )}
                     <div className="text-right">
@@ -1107,13 +1217,13 @@ const WaterManagement = () => {
               {/* Expanded Details */}
               {expandedItems[well.id] && (
                 <div className="border-t border-gray-100 bg-gray-50 p-5">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                     <div>
                       <h4 className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wider">Well Info</h4>
                       <dl className="space-y-2 text-sm">
                         <div className="flex justify-between">
-                          <dt className="text-gray-500">GSA Well ID:</dt>
-                          <dd className="text-gray-900 font-medium">{well.gsa_well_id || '-'}</dd>
+                          <dt className="text-gray-500">State Well #:</dt>
+                          <dd className="text-gray-900 font-medium text-xs">{well.state_well_number || '-'}</dd>
                         </div>
                         <div className="flex justify-between">
                           <dt className="text-gray-500">Basin:</dt>
@@ -1126,19 +1236,70 @@ const WaterManagement = () => {
                       </dl>
                     </div>
                     <div>
-                      <h4 className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wider">Calibration</h4>
+                      <h4 className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wider">Fee Rates</h4>
                       <dl className="space-y-2 text-sm">
-                        <div className="flex justify-between">
-                          <dt className="text-gray-500">Status:</dt>
-                          <dd className={`font-medium ${well.meter_calibration_current ? 'text-green-600' : 'text-red-600'}`}>
-                            {well.meter_calibration_current ? 'Current' : 'Due/Overdue'}
-                          </dd>
-                        </div>
-                        <div className="flex justify-between">
-                          <dt className="text-gray-500">Next Due:</dt>
-                          <dd className="text-gray-900 font-medium">{formatDate(well.next_calibration_due)}</dd>
-                        </div>
+                        {well.base_extraction_rate && (
+                          <div className="flex justify-between">
+                            <dt className="text-gray-500">Base Rate:</dt>
+                            <dd className="text-gray-900 font-medium">${parseFloat(well.base_extraction_rate).toFixed(2)}/AF</dd>
+                          </div>
+                        )}
+                        {well.gsp_rate && (
+                          <div className="flex justify-between">
+                            <dt className="text-gray-500">GSP Rate:</dt>
+                            <dd className="text-gray-900 font-medium">${parseFloat(well.gsp_rate).toFixed(2)}/AF</dd>
+                          </div>
+                        )}
+                        {well.domestic_rate && (
+                          <div className="flex justify-between">
+                            <dt className="text-gray-500">Domestic:</dt>
+                            <dd className="text-gray-900 font-medium">${parseFloat(well.domestic_rate).toFixed(2)}/AF</dd>
+                          </div>
+                        )}
+                        {well.fixed_quarterly_fee && (
+                          <div className="flex justify-between">
+                            <dt className="text-gray-500">Fixed/Qtr:</dt>
+                            <dd className="text-gray-900 font-medium">${parseFloat(well.fixed_quarterly_fee).toFixed(2)}</dd>
+                          </div>
+                        )}
+                        {!well.base_extraction_rate && !well.gsp_rate && !well.domestic_rate && (
+                          <p className="text-gray-400 italic">No rates configured</p>
+                        )}
                       </dl>
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wider">YTD Costs</h4>
+                      {well.ytd_extraction_af > 0 && (well.base_extraction_rate || well.gsp_rate) ? (
+                        <dl className="space-y-2 text-sm">
+                          {well.base_extraction_rate && (
+                            <div className="flex justify-between">
+                              <dt className="text-gray-500">Base Fee:</dt>
+                              <dd className="text-green-700 font-medium">
+                                ${(parseFloat(well.ytd_extraction_af || 0) * parseFloat(well.base_extraction_rate)).toFixed(2)}
+                              </dd>
+                            </div>
+                          )}
+                          {well.gsp_rate && (
+                            <div className="flex justify-between">
+                              <dt className="text-gray-500">GSP Fee:</dt>
+                              <dd className="text-green-700 font-medium">
+                                ${(parseFloat(well.ytd_extraction_af || 0) * parseFloat(well.gsp_rate)).toFixed(2)}
+                              </dd>
+                            </div>
+                          )}
+                          <div className="flex justify-between pt-1 border-t border-gray-200">
+                            <dt className="text-gray-700 font-medium">Est. Total:</dt>
+                            <dd className="text-green-700 font-bold">
+                              ${(
+                                (parseFloat(well.ytd_extraction_af || 0) * parseFloat(well.base_extraction_rate || 0)) +
+                                (parseFloat(well.ytd_extraction_af || 0) * parseFloat(well.gsp_rate || 0))
+                              ).toFixed(2)}
+                            </dd>
+                          </div>
+                        </dl>
+                      ) : (
+                        <p className="text-sm text-gray-400 italic">No extraction or rates</p>
+                      )}
                     </div>
                     <div>
                       <h4 className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wider">Latest Reading</h4>
@@ -1335,10 +1496,33 @@ const WaterManagement = () => {
             </div>
           </div>
 
-          {/* Allocation Progress */}
+          {/* Allocation Progress & Cost Estimate */}
           <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Allocation Progress</h3>
-            <div className="mb-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">Allocation Progress</h3>
+              {/* Monthly Rate Indicator */}
+              {sgmaDashboard.ytd_extraction_af > 0 && (() => {
+                const now = new Date();
+                const waterYearStart = now.getMonth() >= 9
+                  ? new Date(now.getFullYear(), 9, 1)
+                  : new Date(now.getFullYear() - 1, 9, 1);
+                const monthsElapsed = Math.max(1, Math.ceil((now - waterYearStart) / (1000 * 60 * 60 * 24 * 30)));
+                const monthlyRate = sgmaDashboard.ytd_extraction_af / monthsElapsed;
+                const projectedTotal = monthlyRate * 12;
+                const percentOfAllocation = sgmaDashboard.total_allocation_af > 0
+                  ? (projectedTotal / sgmaDashboard.total_allocation_af) * 100
+                  : 0;
+
+                return (
+                  <div className="text-right">
+                    <p className="text-xs text-gray-500">Monthly Avg</p>
+                    <p className="text-sm font-semibold text-gray-700">{formatNumber(monthlyRate, 1)} AF/mo</p>
+                  </div>
+                );
+              })()}
+            </div>
+
+            <div className="mb-6">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm text-gray-600">
                   {formatNumber(sgmaDashboard.ytd_extraction_af, 2)} AF used of {formatNumber(sgmaDashboard.total_allocation_af, 2)} AF
@@ -1356,7 +1540,79 @@ const WaterManagement = () => {
                   style={{ width: `${Math.min(sgmaDashboard.percent_allocation_used, 100)}%` }}
                 />
               </div>
+
+              {/* Projected end-of-year usage indicator */}
+              {sgmaDashboard.ytd_extraction_af > 0 && sgmaDashboard.total_allocation_af > 0 && (() => {
+                const now = new Date();
+                const waterYearStart = now.getMonth() >= 9
+                  ? new Date(now.getFullYear(), 9, 1)
+                  : new Date(now.getFullYear() - 1, 9, 1);
+                const waterYearEnd = new Date(waterYearStart.getFullYear() + 1, 8, 30);
+                const totalDays = (waterYearEnd - waterYearStart) / (1000 * 60 * 60 * 24);
+                const daysElapsed = Math.max(1, (now - waterYearStart) / (1000 * 60 * 60 * 24));
+                const projectedTotal = (sgmaDashboard.ytd_extraction_af / daysElapsed) * totalDays;
+                const projectedPercent = (projectedTotal / sgmaDashboard.total_allocation_af) * 100;
+
+                return (
+                  <div className="mt-3 p-3 bg-gray-50 rounded-lg">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-gray-600">Projected Year-End Usage:</span>
+                      <span className={`font-semibold ${projectedPercent > 100 ? 'text-red-600' : projectedPercent > 90 ? 'text-amber-600' : 'text-green-600'}`}>
+                        {formatNumber(projectedTotal, 1)} AF ({formatNumber(projectedPercent, 0)}%)
+                      </span>
+                    </div>
+                    {projectedPercent > 100 && (
+                      <p className="text-xs text-red-600 mt-1">
+                        At current rate, you may exceed allocation by {formatNumber(projectedTotal - sgmaDashboard.total_allocation_af, 1)} AF
+                      </p>
+                    )}
+                  </div>
+                );
+              })()}
             </div>
+
+            {/* Estimated Fees Summary */}
+            {sgmaDashboard.wells_by_gsa?.length > 0 && (() => {
+              let totalEstFees = 0;
+              const feesByGSA = sgmaDashboard.wells_by_gsa.map(gsa => {
+                // Use approximate GSA rates
+                const rates = {
+                  'obgma': { base: 25, gsp: 100 },
+                  'uwcd': { base: 192.34, gsp: 0 },
+                  'fpbgsa': { base: 75, gsp: 50 },
+                  'default': { base: 100, gsp: 0 }
+                };
+                const gsaRates = rates[gsa.gsa?.toLowerCase()] || rates.default;
+                const estFee = gsa.ytd_extraction * (gsaRates.base + gsaRates.gsp);
+                totalEstFees += estFee;
+                return { gsa: gsa.gsa, extraction: gsa.ytd_extraction, fee: estFee, rates: gsaRates };
+              });
+
+              if (totalEstFees === 0) return null;
+
+              return (
+                <div className="border-t border-gray-200 pt-4">
+                  <h4 className="text-sm font-semibold text-gray-700 mb-3">Estimated YTD Fees</h4>
+                  <div className="space-y-2">
+                    {feesByGSA.map((item, idx) => (
+                      <div key={idx} className="flex items-center justify-between text-sm">
+                        <span className="text-gray-600">
+                          {GSA_NAMES[item.gsa] || item.gsa} ({formatNumber(item.extraction, 1)} AF)
+                        </span>
+                        <span className="font-medium text-gray-900">${formatNumber(item.fee, 2)}</span>
+                      </div>
+                    ))}
+                    <div className="flex items-center justify-between text-sm pt-2 border-t border-gray-100">
+                      <span className="font-semibold text-gray-700">Total Estimated</span>
+                      <span className="font-bold text-green-700">${formatNumber(totalEstFees, 2)}</span>
+                    </div>
+                  </div>
+                  <p className="text-xs text-gray-400 mt-2">
+                    * Estimates based on default GSA rates. Actual fees may vary.
+                  </p>
+                </div>
+              );
+            })()}
           </div>
 
           {/* Deadlines */}

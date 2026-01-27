@@ -140,6 +140,14 @@ export function ModalProvider({ children }) {
   });
 
   // ============================================================================
+  // BATCH READING MODAL STATE
+  // ============================================================================
+  const [batchReadingModal, setBatchReadingModal] = useState({
+    isOpen: false,
+    wells: [],
+  });
+
+  // ============================================================================
   // REFRESH CALLBACKS REGISTRY
   // ============================================================================
   // Components can register their refresh functions here
@@ -347,6 +355,17 @@ export function ModalProvider({ children }) {
   }, []);
 
   // ============================================================================
+  // BATCH READING MODAL ACTIONS
+  // ============================================================================
+  const openBatchReadingModal = useCallback((wells = []) => {
+    setBatchReadingModal({ isOpen: true, wells });
+  }, []);
+
+  const closeBatchReadingModal = useCallback(() => {
+    setBatchReadingModal({ isOpen: false, wells: [] });
+  }, []);
+
+  // ============================================================================
   // GENERIC CLOSE FUNCTION
   // ============================================================================
   const closeModal = useCallback((modalType) => {
@@ -399,6 +418,9 @@ export function ModalProvider({ children }) {
       case 'quickHarvest':
         closeQuickHarvestModal();
         break;
+      case 'batchReading':
+        closeBatchReadingModal();
+        break;
       default:
         console.warn(`Unknown modal type: ${modalType}`);
     }
@@ -419,6 +441,7 @@ export function ModalProvider({ children }) {
     closeNutrientAppModal,
     closeFertilizerProductModal,
     closeQuickHarvestModal,
+    closeBatchReadingModal,
   ]);
 
   // ============================================================================
@@ -442,6 +465,7 @@ export function ModalProvider({ children }) {
     nutrientAppModal,
     fertilizerProductModal,
     quickHarvestModal,
+    batchReadingModal,
 
     // Farm actions
     openFarmModal,
@@ -506,6 +530,10 @@ export function ModalProvider({ children }) {
     // Quick harvest actions
     openQuickHarvestModal,
     closeQuickHarvestModal,
+
+    // Batch reading actions
+    openBatchReadingModal,
+    closeBatchReadingModal,
 
     // Generic close
     closeModal,
