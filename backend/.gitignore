@@ -6,6 +6,8 @@ node_modules/
 *.db
 dist/
 build/
+venv/
+__pycache__/
 
 # Data exports and backups
 data_*.json

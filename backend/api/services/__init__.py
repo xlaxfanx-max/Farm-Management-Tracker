@@ -3,6 +3,7 @@ from .quarantine_service import CDFAQuarantineService
 from .irrigation_scheduler import IrrigationScheduler
 from .pdf_extraction_service import PDFExtractionService, ExtractionResult
 from .statement_matcher import StatementMatcher, MatchResult
+from .packinghouse_lookup import PackinghouseLookupService, PackinghouseLookupResult
 
 # Import compliance services
 from .compliance import (
@@ -31,6 +32,8 @@ __all__ = [
     'ExtractionResult',
     'StatementMatcher',
     'MatchResult',
+    'PackinghouseLookupService',
+    'PackinghouseLookupResult',
 
     # Compliance services
     'PesticideComplianceService',

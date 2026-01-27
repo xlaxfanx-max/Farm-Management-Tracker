@@ -2177,17 +2177,21 @@ class PackinghouseStatementViewSet(viewsets.ModelViewSet):
 
         Expected form data:
         - files[]: PDF files (max 20)
-        - packinghouse: Packinghouse ID
+        - packinghouse (optional): Packinghouse ID - if not provided, auto-detects from PDF
         - packinghouse_format (optional): 'vpoa', 'sla', or 'generic'
 
         Returns batch_id and list of statements with auto-match suggestions.
+        Each statement may have a different auto-detected packinghouse.
         """
+        from .services import PackinghouseLookupService
+
         # Validate request
         serializer = BatchUploadSerializer(data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
 
-        packinghouse = serializer.validated_data['packinghouse']
-        packinghouse_format = serializer.validated_data.get('packinghouse_format', '')
+        # Packinghouse is now optional - can be None for auto-detection
+        default_packinghouse = serializer.validated_data.get('packinghouse')
+        packinghouse_format_hint = serializer.validated_data.get('packinghouse_format', '')
 
         # Get uploaded files
         files = request.FILES.getlist('files[]') or request.FILES.getlist('files')
@@ -2209,29 +2213,19 @@ class PackinghouseStatementViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # Auto-detect format from packinghouse if not specified
-        if not packinghouse_format:
-            short_code = packinghouse.short_code.upper() if packinghouse.short_code else ''
-            if 'VPOA' in short_code or 'VILLA' in packinghouse.name.upper():
-                packinghouse_format = 'vpoa'
-            elif 'SLA' in short_code or 'SATICOY' in packinghouse.name.upper():
-                packinghouse_format = 'sla'
-            else:
-                packinghouse_format = 'generic'
-
-        # Create batch record
+        # Create batch record (packinghouse can be null for mixed uploads)
         batch_id = uuid.uuid4()
         batch = StatementBatchUpload.objects.create(
             batch_id=batch_id,
-            packinghouse=packinghouse,
+            packinghouse=default_packinghouse,  # May be None
             status='processing',
             total_files=len(files),
             uploaded_by=request.user
         )
 
-        # Initialize matcher
-        matcher = StatementMatcher(request.user.current_company)
+        # Initialize services
         extraction_service = PDFExtractionService()
+        packinghouse_lookup = PackinghouseLookupService(request.user.current_company)
 
         results = []
         success_count = 0
@@ -2248,7 +2242,8 @@ class PackinghouseStatementViewSet(viewsets.ModelViewSet):
                     'extraction_confidence': None,
                     'extraction_error': 'Only PDF files are allowed',
                     'auto_match': None,
-                    'needs_review': True
+                    'needs_review': True,
+                    'detected_packinghouse': None
                 })
                 failed_count += 1
                 continue
@@ -2263,7 +2258,8 @@ class PackinghouseStatementViewSet(viewsets.ModelViewSet):
                     'extraction_confidence': None,
                     'extraction_error': 'File too large (max 50MB)',
                     'auto_match': None,
-                    'needs_review': True
+                    'needs_review': True,
+                    'detected_packinghouse': None
                 })
                 failed_count += 1
                 continue
@@ -2274,39 +2270,85 @@ class PackinghouseStatementViewSet(viewsets.ModelViewSet):
                 pdf_bytes = pdf_file.read()
                 pdf_file.seek(0)  # Reset for Django to save
 
-                # Create statement record
-                statement = PackinghouseStatement.objects.create(
-                    packinghouse=packinghouse,
-                    pdf_file=pdf_file,
-                    original_filename=pdf_file.name,
-                    file_size_bytes=pdf_file.size,
-                    packinghouse_format=packinghouse_format,
-                    status='extracting',
-                    uploaded_by=request.user,
-                    batch_upload=batch
-                )
-
-                # Run extraction using bytes (compatible with S3/R2 storage)
+                # Run extraction FIRST to detect packinghouse
                 try:
                     result = extraction_service.extract_from_pdf(
                         pdf_bytes=pdf_bytes,
-                        packinghouse_format=packinghouse_format
+                        packinghouse_format=packinghouse_format_hint or None
                     )
 
                     if result.success:
-                        statement.status = 'extracted'
-                        statement.extracted_data = result.data
-                        statement.statement_type = result.statement_type
-                        statement.packinghouse_format = result.packinghouse_format
-                        statement.extraction_confidence = result.confidence
+                        # Auto-detect packinghouse from extraction if not provided
+                        if default_packinghouse:
+                            statement_packinghouse = default_packinghouse
+                            detected_packinghouse_info = None
+                        else:
+                            # Lookup packinghouse from extracted data
+                            lookup_result = packinghouse_lookup.lookup_from_extraction(result.data)
+                            if lookup_result.found:
+                                statement_packinghouse = lookup_result.packinghouse
+                                detected_packinghouse_info = {
+                                    'id': lookup_result.packinghouse_id,
+                                    'name': lookup_result.packinghouse.name,
+                                    'short_code': lookup_result.packinghouse.short_code,
+                                    'confidence': lookup_result.confidence,
+                                    'match_reason': lookup_result.match_reason,
+                                    'auto_detected': True
+                                }
+                            else:
+                                # No packinghouse found - still save statement but flag for review
+                                statement_packinghouse = None
+                                detected_packinghouse_info = {
+                                    'id': None,
+                                    'name': result.data.get('packinghouse_name', 'Unknown'),
+                                    'short_code': result.data.get('packinghouse_short_code'),
+                                    'confidence': 0,
+                                    'match_reason': lookup_result.match_reason,
+                                    'auto_detected': True,
+                                    'suggestions': lookup_result.suggestions
+                                }
 
-                        # Run auto-matching
-                        match_result = matcher.match_statement(
-                            packinghouse.id,
-                            result.data
+                        # Determine format from packinghouse or extraction
+                        if statement_packinghouse and not packinghouse_format_hint:
+                            short_code = statement_packinghouse.short_code.upper() if statement_packinghouse.short_code else ''
+                            if 'VPOA' in short_code or 'VILLA' in statement_packinghouse.name.upper():
+                                packinghouse_format = 'vpoa'
+                            elif 'SLA' in short_code or 'SATICOY' in statement_packinghouse.name.upper():
+                                packinghouse_format = 'sla'
+                            else:
+                                packinghouse_format = result.packinghouse_format or 'generic'
+                        else:
+                            packinghouse_format = result.packinghouse_format or packinghouse_format_hint or 'generic'
+
+                        # Create statement record with detected packinghouse
+                        statement = PackinghouseStatement.objects.create(
+                            packinghouse=statement_packinghouse,
+                            pdf_file=pdf_file,
+                            original_filename=pdf_file.name,
+                            file_size_bytes=pdf_file.size,
+                            packinghouse_format=packinghouse_format,
+                            status='extracted',
+                            uploaded_by=request.user,
+                            batch_upload=batch,
+                            extracted_data=result.data,
+                            statement_type=result.statement_type,
+                            extraction_confidence=result.confidence
                         )
-                        statement.auto_match_result = match_result.to_dict()
-                        statement.save()
+
+                        # Run auto-matching for farm/field (only if packinghouse known)
+                        if statement_packinghouse:
+                            matcher = StatementMatcher(request.user.current_company)
+                            match_result = matcher.match_statement(
+                                statement_packinghouse.id,
+                                result.data
+                            )
+                            statement.auto_match_result = match_result.to_dict()
+                            statement.save()
+                            auto_match_dict = match_result.to_dict()
+                            needs_review = match_result.needs_review
+                        else:
+                            auto_match_dict = None
+                            needs_review = True  # No packinghouse = needs review
 
                         results.append({
                             'id': statement.id,
@@ -2315,16 +2357,27 @@ class PackinghouseStatementViewSet(viewsets.ModelViewSet):
                             'statement_type': statement.statement_type,
                             'extraction_confidence': float(statement.extraction_confidence) if statement.extraction_confidence else None,
                             'extraction_error': None,
-                            'auto_match': match_result.to_dict(),
-                            'needs_review': match_result.needs_review,
+                            'auto_match': auto_match_dict,
+                            'needs_review': needs_review,
                             'extracted_data': result.data,
-                            'pdf_url': request.build_absolute_uri(statement.pdf_file.url) if statement.pdf_file else None
+                            'pdf_url': request.build_absolute_uri(statement.pdf_file.url) if statement.pdf_file else None,
+                            'detected_packinghouse': detected_packinghouse_info,
+                            'packinghouse_id': statement_packinghouse.id if statement_packinghouse else None
                         })
                         success_count += 1
                     else:
-                        statement.status = 'failed'
-                        statement.extraction_error = result.error
-                        statement.save()
+                        # Extraction failed - still create statement for retry
+                        statement = PackinghouseStatement.objects.create(
+                            packinghouse=default_packinghouse,
+                            pdf_file=pdf_file,
+                            original_filename=pdf_file.name,
+                            file_size_bytes=pdf_file.size,
+                            packinghouse_format=packinghouse_format_hint or 'generic',
+                            status='failed',
+                            uploaded_by=request.user,
+                            batch_upload=batch,
+                            extraction_error=result.error
+                        )
 
                         results.append({
                             'id': statement.id,
@@ -2334,15 +2387,25 @@ class PackinghouseStatementViewSet(viewsets.ModelViewSet):
                             'extraction_confidence': None,
                             'extraction_error': result.error,
                             'auto_match': None,
-                            'needs_review': True
+                            'needs_review': True,
+                            'detected_packinghouse': None
                         })
                         failed_count += 1
 
                 except Exception as e:
                     logger.exception(f"Error extracting PDF {pdf_file.name}")
-                    statement.status = 'failed'
-                    statement.extraction_error = str(e)
-                    statement.save()
+                    # Create failed statement record
+                    statement = PackinghouseStatement.objects.create(
+                        packinghouse=default_packinghouse,
+                        pdf_file=pdf_file,
+                        original_filename=pdf_file.name,
+                        file_size_bytes=pdf_file.size,
+                        packinghouse_format=packinghouse_format_hint or 'generic',
+                        status='failed',
+                        uploaded_by=request.user,
+                        batch_upload=batch,
+                        extraction_error=str(e)
+                    )
 
                     results.append({
                         'id': statement.id,
@@ -2352,7 +2415,8 @@ class PackinghouseStatementViewSet(viewsets.ModelViewSet):
                         'extraction_confidence': None,
                         'extraction_error': str(e),
                         'auto_match': None,
-                        'needs_review': True
+                        'needs_review': True,
+                        'detected_packinghouse': None
                     })
                     failed_count += 1
 
@@ -2366,7 +2430,8 @@ class PackinghouseStatementViewSet(viewsets.ModelViewSet):
                     'extraction_confidence': None,
                     'extraction_error': str(e),
                     'auto_match': None,
-                    'needs_review': True
+                    'needs_review': True,
+                    'detected_packinghouse': None
                 })
                 failed_count += 1
 
@@ -2442,13 +2507,19 @@ class PackinghouseStatementViewSet(viewsets.ModelViewSet):
                 continue
 
             try:
-                # Get statement
+                # Get statement - packinghouse may be null for auto-detected uploads
                 statement = PackinghouseStatement.objects.select_related(
                     'packinghouse'
-                ).get(
-                    id=statement_id,
-                    packinghouse__company=request.user.current_company
-                )
+                ).filter(
+                    id=statement_id
+                ).filter(
+                    Q(packinghouse__company=request.user.current_company) |
+                    Q(packinghouse__isnull=True, uploaded_by=request.user)
+                ).first()
+
+                if not statement:
+                    raise PackinghouseStatement.DoesNotExist()
+
             except PackinghouseStatement.DoesNotExist:
                 results.append({
                     'id': statement_id,
@@ -2468,6 +2539,43 @@ class PackinghouseStatementViewSet(viewsets.ModelViewSet):
                     'filename': statement.original_filename,
                     'success': False,
                     'message': f'Invalid status: {statement.status}',
+                    'settlement_id': None,
+                    'packout_report_id': None,
+                    'mapping_saved': False
+                })
+                failed_count += 1
+                continue
+
+            # Handle packinghouse override - required if not already set
+            packinghouse_id = stmt_data.get('packinghouse_id')
+            if packinghouse_id:
+                try:
+                    packinghouse = Packinghouse.objects.get(
+                        id=packinghouse_id,
+                        company=request.user.current_company
+                    )
+                    statement.packinghouse = packinghouse
+                    statement.save(update_fields=['packinghouse'])
+                except Packinghouse.DoesNotExist:
+                    results.append({
+                        'id': statement_id,
+                        'filename': statement.original_filename,
+                        'success': False,
+                        'message': f'Packinghouse not found: {packinghouse_id}',
+                        'settlement_id': None,
+                        'packout_report_id': None,
+                        'mapping_saved': False
+                    })
+                    failed_count += 1
+                    continue
+
+            # Validate that packinghouse is now set
+            if not statement.packinghouse:
+                results.append({
+                    'id': statement_id,
+                    'filename': statement.original_filename,
+                    'success': False,
+                    'message': 'Packinghouse is required. Please select a packinghouse for this statement.',
                     'settlement_id': None,
                     'packout_report_id': None,
                     'mapping_saved': False

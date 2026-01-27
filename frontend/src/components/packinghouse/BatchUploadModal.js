@@ -209,8 +209,8 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
   };
 
   const handleUpload = async () => {
-    if (!files.length || !selectedPackinghouse) {
-      setError('Please select a packinghouse and at least one PDF file');
+    if (!files.length) {
+      setError('Please select at least one PDF file');
       return;
     }
 
@@ -219,7 +219,10 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
 
     try {
       const formData = new FormData();
-      formData.append('packinghouse', selectedPackinghouse);
+      // Packinghouse is now optional - only include if selected
+      if (selectedPackinghouse) {
+        formData.append('packinghouse', selectedPackinghouse);
+      }
       if (formatHint) {
         formData.append('packinghouse_format', formatHint);
       }
@@ -239,6 +242,7 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
             farm_id: stmt.auto_match?.farm?.id || null,
             field_id: stmt.auto_match?.field?.id || null,
             pool_id: null,
+            packinghouse_id: stmt.packinghouse_id || stmt.detected_packinghouse?.id || null,
             skip: false
           };
           // Auto-expand statements that need review or if single file
@@ -297,6 +301,7 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
         .filter(s => s.id && s.status === 'extracted')
         .map(s => ({
           id: s.id,
+          packinghouse_id: statementOverrides[s.id]?.packinghouse_id || s.packinghouse_id || null,
           farm_id: statementOverrides[s.id]?.farm_id || null,
           field_id: statementOverrides[s.id]?.field_id || null,
           pool_id: statementOverrides[s.id]?.pool_id || null,
@@ -379,11 +384,12 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
 
           {/* Content */}
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
-            {/* Packinghouse Selection */}
+            {/* Packinghouse Selection - Now Optional */}
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Packinghouse *
+                  Packinghouse
+                  <span className="text-gray-400 font-normal ml-1">(optional)</span>
                 </label>
                 <select
                   value={selectedPackinghouse}
@@ -391,13 +397,16 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
                   disabled={uploading}
                 >
-                  <option value="">Select Packinghouse</option>
+                  <option value="">Auto-detect from PDF</option>
                   {packinghouses.map(p => (
                     <option key={p.id} value={p.id}>
                       {p.name} {p.short_code && `(${p.short_code})`}
                     </option>
                   ))}
                 </select>
+                <p className="text-xs text-gray-500 mt-1">
+                  Leave empty to auto-detect from each PDF
+                </p>
               </div>
 
               <div>
@@ -500,7 +509,7 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
               </button>
               <button
                 onClick={handleUpload}
-                disabled={uploading || !files.length || !selectedPackinghouse}
+                disabled={uploading || !files.length}
                 className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
               >
                 {uploading ? (
@@ -819,7 +828,19 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
                   <FileText className="w-5 h-5 text-red-500" />
                   <div>
                     <p className="font-medium text-gray-900 text-sm">{stmt.filename}</p>
-                    <p className="text-xs text-gray-500">{stmt.statement_type || 'Unknown type'}</p>
+                    <div className="flex items-center space-x-2 text-xs text-gray-500">
+                      <span>{stmt.statement_type || 'Unknown type'}</span>
+                      {stmt.detected_packinghouse && (
+                        <span className={`px-1.5 py-0.5 rounded ${
+                          stmt.detected_packinghouse.auto_detected && stmt.detected_packinghouse.confidence > 0
+                            ? 'bg-blue-100 text-blue-700'
+                            : 'bg-yellow-100 text-yellow-700'
+                        }`}>
+                          {stmt.detected_packinghouse.short_code || stmt.detected_packinghouse.name}
+                          {stmt.detected_packinghouse.auto_detected && ' (auto)'}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
 
@@ -843,6 +864,7 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
                   )}
                   {stmt.status === 'failed' && <span className="text-xs text-red-600 bg-red-100 px-2 py-1 rounded">Failed</span>}
                   {stmt.needs_review && stmt.status !== 'failed' && <span className="text-xs text-yellow-600 bg-yellow-100 px-2 py-1 rounded">Review</span>}
+                  {!stmt.packinghouse_id && stmt.status === 'extracted' && <span className="text-xs text-orange-600 bg-orange-100 px-2 py-1 rounded">No Packinghouse</span>}
                   {stmt.id && stmt.status === 'extracted' && (
                     <label className="flex items-center text-xs text-gray-500" onClick={(e) => e.stopPropagation()}>
                       <input
@@ -860,10 +882,61 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
               {/* Expanded Details */}
               {stmt.id && expandedStatements[stmt.id] && stmt.status === 'extracted' && (
                 <div className="px-4 pb-4 pt-2 border-t border-gray-200 bg-white">
+                  {/* Detected Packinghouse Info */}
+                  {stmt.detected_packinghouse?.auto_detected && (
+                    <div className={`text-xs mb-3 p-2 rounded ${
+                      stmt.detected_packinghouse.confidence > 0
+                        ? 'bg-blue-50 text-blue-700'
+                        : 'bg-yellow-50 text-yellow-700'
+                    }`}>
+                      {stmt.detected_packinghouse.confidence > 0 ? (
+                        <>Auto-detected: <strong>{stmt.detected_packinghouse.name}</strong> ({stmt.detected_packinghouse.match_reason})</>
+                      ) : (
+                        <>Could not auto-detect packinghouse. Detected name: "{stmt.detected_packinghouse.name}"</>
+                      )}
+                    </div>
+                  )}
                   {stmt.auto_match?.match_reason && (
                     <p className="text-xs text-gray-500 mb-3">Match reason: {stmt.auto_match.match_reason}</p>
                   )}
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-3 gap-4">
+                    {/* Packinghouse Selection (for override or when not detected) */}
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 mb-1">
+                        Packinghouse
+                        {!stmt.packinghouse_id && <span className="text-red-500 ml-1">*</span>}
+                      </label>
+                      <select
+                        value={statementOverrides[stmt.id]?.packinghouse_id || stmt.packinghouse_id || ''}
+                        onChange={(e) => updateOverride(stmt.id, 'packinghouse_id', e.target.value ? parseInt(e.target.value) : null)}
+                        className={`w-full px-2 py-1.5 text-sm border rounded focus:ring-2 focus:ring-green-500 ${
+                          !stmt.packinghouse_id && !statementOverrides[stmt.id]?.packinghouse_id
+                            ? 'border-orange-300 bg-orange-50'
+                            : 'border-gray-300'
+                        }`}
+                        disabled={statementOverrides[stmt.id]?.skip}
+                      >
+                        <option value="">-- Select Packinghouse --</option>
+                        {packinghouses.map(p => (
+                          <option key={p.id} value={p.id}>
+                            {p.name} {p.short_code && `(${p.short_code})`}
+                          </option>
+                        ))}
+                      </select>
+                      {stmt.detected_packinghouse?.suggestions?.length > 0 && !stmt.packinghouse_id && (
+                        <div className="mt-1 flex flex-wrap gap-1">
+                          {stmt.detected_packinghouse.suggestions.slice(0, 3).map((s, i) => (
+                            <button
+                              key={i}
+                              onClick={() => updateOverride(stmt.id, 'packinghouse_id', s.id)}
+                              className="text-xs px-1.5 py-0.5 bg-gray-100 hover:bg-gray-200 rounded"
+                            >
+                              {s.short_code || s.name}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                     <div>
                       <label className="block text-xs font-medium text-gray-700 mb-1">Farm</label>
                       <select

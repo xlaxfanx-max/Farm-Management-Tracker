@@ -4060,7 +4060,9 @@ class BatchUploadSerializer(serializers.Serializer):
     """Serializer for batch PDF upload request."""
     packinghouse = serializers.PrimaryKeyRelatedField(
         queryset=Packinghouse.objects.all(),
-        help_text='Packinghouse ID these statements are from'
+        required=False,
+        allow_null=True,
+        help_text='Packinghouse ID (optional - will auto-detect from PDF if not specified)'
     )
     packinghouse_format = serializers.ChoiceField(
         choices=[('', 'Auto-detect'), ('vpoa', 'VPOA'), ('sla', 'SLA'), ('generic', 'Generic')],
@@ -4071,6 +4073,8 @@ class BatchUploadSerializer(serializers.Serializer):
     )
 
     def validate_packinghouse(self, value):
+        if value is None:
+            return value
         request = self.context.get('request')
         if request and request.user.current_company:
             if value.company != request.user.current_company:
@@ -4104,6 +4108,11 @@ class BatchUploadResponseSerializer(serializers.Serializer):
 class BatchConfirmItemSerializer(serializers.Serializer):
     """Serializer for individual statement in batch confirm request."""
     id = serializers.IntegerField(help_text='Statement ID')
+    packinghouse_id = serializers.IntegerField(
+        required=False,
+        allow_null=True,
+        help_text='Override packinghouse ID (required if not auto-detected)'
+    )
     farm_id = serializers.IntegerField(
         required=False,
         allow_null=True,

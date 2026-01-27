@@ -241,6 +241,8 @@ Then extract ALL relevant data. Return a JSON object with this structure:
 
 {{
     "packinghouse_format": "vpoa" | "sla" | "generic",
+    "packinghouse_name": "string - the full packinghouse name as shown on the document (e.g., 'Villa Park Orchards Association', 'Saticoy Lemon Association')",
+    "packinghouse_short_code": "string or null - any abbreviation shown (e.g., 'VPOA', 'SLA')",
     "statement_type": "packout" | "settlement" | "wash_report" | "grower_statement",
     "confidence": 0.0-1.0,
 

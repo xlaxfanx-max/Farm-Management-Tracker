@@ -9857,7 +9857,9 @@ class PackinghouseStatement(models.Model):
         Packinghouse,
         on_delete=models.CASCADE,
         related_name='statements',
-        help_text='Packinghouse this statement is from'
+        null=True,
+        blank=True,
+        help_text='Packinghouse this statement is from (auto-detected if not specified)'
     )
 
     # File storage
@@ -10108,7 +10110,9 @@ class StatementBatchUpload(models.Model):
         Packinghouse,
         on_delete=models.CASCADE,
         related_name='batch_uploads',
-        help_text='Packinghouse these statements are from'
+        null=True,
+        blank=True,
+        help_text='Default packinghouse (null for mixed uploads with auto-detection)'
     )
 
     # Status tracking
