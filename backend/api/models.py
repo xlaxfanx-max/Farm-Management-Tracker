@@ -9264,7 +9264,10 @@ class PackoutReport(models.Model):
     field = models.ForeignKey(
         Field,
         on_delete=models.CASCADE,
-        related_name='packout_reports'
+        related_name='packout_reports',
+        null=True,
+        blank=True,
+        help_text='Field this packout is from (optional - packouts may aggregate multiple fields)'
     )
 
     report_date = models.DateField(

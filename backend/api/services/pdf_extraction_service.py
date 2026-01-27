@@ -377,7 +377,7 @@ Return ONLY the JSON object, no additional text."""
         self,
         extracted_data: Dict[str, Any],
         pool,
-        field
+        field=None
     ) -> Dict[str, Any]:
         """
         Convert extracted data to PackoutReport model fields.
@@ -385,7 +385,7 @@ Return ONLY the JSON object, no additional text."""
         Args:
             extracted_data: The extracted_data JSON from a statement
             pool: Pool model instance
-            field: Field model instance
+            field: Field model instance (optional - packouts may aggregate multiple fields)
 
         Returns:
             Dictionary ready for PackoutReport.objects.create()

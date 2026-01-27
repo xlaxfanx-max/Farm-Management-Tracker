@@ -2025,13 +2025,7 @@ class PackinghouseStatementViewSet(viewsets.ModelViewSet):
 
         try:
             if statement.statement_type in ['packout', 'wash_report']:
-                # Create PackoutReport
-                if not field:
-                    return Response(
-                        {'error': 'field_id is required for packout reports'},
-                        status=status.HTTP_400_BAD_REQUEST
-                    )
-
+                # Create PackoutReport (field is optional - packouts may aggregate multiple fields)
                 report_data = extraction_service.create_packout_report_from_data(
                     data_to_use, pool, field
                 )
@@ -2698,19 +2692,7 @@ class PackinghouseStatementViewSet(viewsets.ModelViewSet):
                     settlement_id = settlement.id
 
                 elif statement.statement_type in ['packout', 'wash_report']:
-                    if not field:
-                        results.append({
-                            'id': statement_id,
-                            'filename': statement.original_filename,
-                            'success': False,
-                            'message': 'Field required for packout reports',
-                            'settlement_id': None,
-                            'packout_report_id': None,
-                            'mapping_saved': False
-                        })
-                        failed_count += 1
-                        continue
-
+                    # Field is optional - packouts may aggregate multiple fields
                     report_data = extraction_service.create_packout_report_from_data(
                         data_to_use, pool, field
                     )
