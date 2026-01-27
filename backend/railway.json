@@ -5,7 +5,7 @@
     "dockerfilePath": "Dockerfile"
   },
   "deploy": {
-    "startCommand": "python manage.py migrate --noinput && gunicorn --bind 0.0.0.0:${PORT:-8000} --workers 2 --threads 4 --worker-class gthread --timeout 120 --access-logfile - --error-logfile - pesticide_tracker.wsgi:application",
+    "startCommand": "echo 'Starting migrations...' && python manage.py migrate --noinput && echo 'Migrations complete. Starting gunicorn...' && gunicorn --bind 0.0.0.0:${PORT:-8000} --workers 1 --timeout 120 --access-logfile - --error-logfile - --capture-output --log-level debug pesticide_tracker.wsgi:application",
     "healthcheckPath": "/api/health/",
     "healthcheckTimeout": 120,
     "restartPolicyType": "ON_FAILURE",
