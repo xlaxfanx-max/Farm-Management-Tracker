@@ -2585,7 +2585,7 @@ class PackinghouseStatementViewSet(viewsets.ModelViewSet):
                 failed_count += 1
                 continue
 
-            if statement.status not in ['extracted', 'review']:
+            if statement.status not in ['extracted', 'review', 'completed']:
                 results.append({
                     'id': statement_id,
                     'filename': statement.original_filename,

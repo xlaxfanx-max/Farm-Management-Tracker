@@ -379,7 +379,7 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
   };
 
   // Determine if we're in single file mode (for detailed preview)
-  const isSingleFileMode = batchResult && batchResult.statements.length === 1 && batchResult.statements[0].status === 'extracted';
+  const isSingleFileMode = batchResult && batchResult.statements.length === 1 && ['extracted', 'completed'].includes(batchResult.statements[0].status);
   const singleStatement = isSingleFileMode ? batchResult.statements[0] : null;
   const showPdfPanel = isSingleFileMode && showPdf && singleStatement?.pdf_url;
 
