@@ -5,7 +5,7 @@
     "dockerfilePath": "Dockerfile"
   },
   "deploy": {
-    "startCommand": "sh -c 'python manage.py migrate --noinput && python manage.py load_water_fixture && python manage.py reassign_wells --company=\"Finch Farms\" && gunicorn --bind 0.0.0.0:$PORT --workers 1 --timeout 120 --preload pesticide_tracker.wsgi:application'",
+    "startCommand": "sh -c 'python manage.py migrate --noinput && python manage.py load_water_fixture && python manage.py reassign_wells --company=\"Finch Farms\" && python manage.py sync_well_names && gunicorn --bind 0.0.0.0:$PORT --workers 1 --timeout 120 --preload pesticide_tracker.wsgi:application'",
     "healthcheckPath": "/api/health/",
     "healthcheckTimeout": 120,
     "restartPolicyType": "ON_FAILURE",
