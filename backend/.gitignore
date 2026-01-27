@@ -6,3 +6,12 @@ node_modules/
 *.db
 dist/
 build/
+
+# Data exports and backups
+data_*.json
+data_*.sql
+data_*.dump
+*.dump
+
+# Claude settings
+.claude/
