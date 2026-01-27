@@ -41,10 +41,25 @@ const StatementList = ({ packinghouseId = null }) => {
   // Modal states
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [selectedStatement, setSelectedStatement] = useState(null);
+  const [loadingStatement, setLoadingStatement] = useState(null);
 
   useEffect(() => {
     fetchStatements();
   }, [packinghouseId, statusFilter, typeFilter]);
+
+  // Fetch full statement details (including extracted_data) before opening review modal
+  const handleReviewClick = async (statement) => {
+    setLoadingStatement(statement.id);
+    try {
+      const response = await packinghouseStatementsAPI.get(statement.id);
+      setSelectedStatement(response.data);
+    } catch (err) {
+      console.error('Error fetching statement details:', err);
+      setError('Failed to load statement details');
+    } finally {
+      setLoadingStatement(null);
+    }
+  };
 
   const fetchStatements = async () => {
     setLoading(true);
@@ -286,11 +301,16 @@ const StatementList = ({ packinghouseId = null }) => {
                         )}
                         {statement.status === 'extracted' && (
                           <button
-                            onClick={() => setSelectedStatement(statement)}
-                            className="p-1.5 text-green-600 hover:text-green-700 hover:bg-green-50 rounded"
+                            onClick={() => handleReviewClick(statement)}
+                            disabled={loadingStatement === statement.id}
+                            className="p-1.5 text-green-600 hover:text-green-700 hover:bg-green-50 rounded disabled:opacity-50"
                             title="Review & Confirm"
                           >
-                            <Eye className="w-4 h-4" />
+                            {loadingStatement === statement.id ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                              <Eye className="w-4 h-4" />
+                            )}
                           </button>
                         )}
                         {statement.status === 'failed' && (

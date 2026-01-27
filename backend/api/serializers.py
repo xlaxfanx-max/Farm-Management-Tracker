@@ -3960,8 +3960,8 @@ class PackinghouseStatementListSerializer(serializers.ModelSerializer):
 
 class PackinghouseStatementSerializer(serializers.ModelSerializer):
     """Full serializer for PackinghouseStatement with all details."""
-    packinghouse_name = serializers.CharField(source='packinghouse.name', read_only=True)
-    packinghouse_short_code = serializers.CharField(source='packinghouse.short_code', read_only=True)
+    packinghouse_name = serializers.CharField(source='packinghouse.name', read_only=True, allow_null=True)
+    packinghouse_short_code = serializers.CharField(source='packinghouse.short_code', read_only=True, allow_null=True)
     status_display = serializers.CharField(source='get_status_display', read_only=True)
     statement_type_display = serializers.CharField(source='get_statement_type_display', read_only=True)
     format_display = serializers.CharField(source='get_packinghouse_format_display', read_only=True)
@@ -3982,6 +3982,7 @@ class PackinghouseStatementSerializer(serializers.ModelSerializer):
             'packinghouse_format', 'format_display',
             'status', 'status_display',
             'extracted_data', 'extraction_confidence', 'extraction_error',
+            'auto_match_result',
             'pool', 'pool_name', 'field', 'field_name',
             'uploaded_by', 'uploaded_by_name',
             'is_processed', 'has_packout_report', 'has_pool_settlement',
@@ -3990,6 +3991,7 @@ class PackinghouseStatementSerializer(serializers.ModelSerializer):
         read_only_fields = [
             'id', 'pdf_file', 'original_filename', 'file_size_bytes',
             'extracted_data', 'extraction_confidence', 'extraction_error',
+            'auto_match_result',
             'uploaded_by', 'created_at', 'updated_at'
         ]
 
