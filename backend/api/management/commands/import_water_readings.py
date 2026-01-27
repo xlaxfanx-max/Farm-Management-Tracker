@@ -376,10 +376,16 @@ class Command(BaseCommand):
     def do_import(self, readings):
         """Import validated readings to database."""
         imported = 0
+        skipped_no_meter = 0
 
-        with transaction.atomic():
-            for r in readings:
-                try:
+        for r in readings:
+            # Skip readings without meter_reading (it's a required field)
+            if r.get('meter_reading') is None:
+                skipped_no_meter += 1
+                continue
+
+            try:
+                with transaction.atomic():
                     well = r['water_source']
 
                     reading = WellReading(
@@ -397,7 +403,10 @@ class Command(BaseCommand):
                     reading.save()
                     imported += 1
 
-                except Exception as e:
-                    self.stdout.write(self.style.ERROR(f"Error importing {r['state_well_number']} {r['reading_date']}: {e}"))
+            except Exception as e:
+                self.stdout.write(self.style.ERROR(f"Error importing {r['state_well_number']} {r['reading_date']}: {e}"))
+
+        if skipped_no_meter > 0:
+            self.stdout.write(self.style.NOTICE(f'[i] Skipped {skipped_no_meter} readings without meter values'))
 
         return imported
