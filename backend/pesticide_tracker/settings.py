@@ -156,8 +156,16 @@ AWS_S3_ENDPOINT_URL = os.environ.get('AWS_S3_ENDPOINT_URL', '')  # For R2/B2
 # Check if we're in a production environment (Railway sets this)
 IS_PRODUCTION = bool(os.environ.get('RAILWAY_ENVIRONMENT'))
 
+# Debug: Log what we're getting for storage config
+print(f"[Storage Config] IS_PRODUCTION={IS_PRODUCTION}")
+print(f"[Storage Config] AWS_ACCESS_KEY_ID present: {bool(AWS_ACCESS_KEY_ID)} (len={len(AWS_ACCESS_KEY_ID)})")
+print(f"[Storage Config] AWS_SECRET_ACCESS_KEY present: {bool(AWS_SECRET_ACCESS_KEY)} (len={len(AWS_SECRET_ACCESS_KEY)})")
+print(f"[Storage Config] AWS_STORAGE_BUCKET_NAME: '{AWS_STORAGE_BUCKET_NAME}'")
+print(f"[Storage Config] AWS_S3_ENDPOINT_URL: '{AWS_S3_ENDPOINT_URL}'")
+
 # Determine if cloud storage should be used
 USE_CLOUD_STORAGE = bool(AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY and AWS_STORAGE_BUCKET_NAME)
+print(f"[Storage Config] USE_CLOUD_STORAGE={USE_CLOUD_STORAGE}")
 
 if USE_CLOUD_STORAGE:
     # Cloud storage (Cloudflare R2, AWS S3, Backblaze B2)
