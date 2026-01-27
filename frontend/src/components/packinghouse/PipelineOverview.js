@@ -120,7 +120,11 @@ const PipelineOverview = () => {
   // Calculate settlement efficiency based on packed bins
   const packedBins = pipeline_stages.packout.total_bins || 0;
   const settledBins = pipeline_stages.settlement.total_bins || 0;
-  const settlementPercent = packedBins > 0 ? Math.round((settledBins / packedBins) * 100) : 0;
+
+  // Calculate percentage - if no packouts but have settlements, that's a data issue
+  const settlementPercent = packedBins > 0 ? Math.round((settledBins / packedBins) * 100) : (settledBins > 0 ? 999 : 0);
+  const hasMissingPackouts = settledBins > packedBins && settledBins > 0;
+  const missingPackoutBins = hasMissingPackouts ? Math.round(settledBins - packedBins) : 0;
 
   // Filter recent activity to only show packout and settlement
   const filteredActivity = recent_activity?.filter(
@@ -233,18 +237,32 @@ const PipelineOverview = () => {
             <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
               Settlement Progress
             </span>
-            <span className="text-sm font-bold text-gray-900 dark:text-gray-100">
-              {settlementPercent}%
+            <span className={`text-sm font-bold ${hasMissingPackouts ? 'text-orange-600' : 'text-gray-900 dark:text-gray-100'}`}>
+              {hasMissingPackouts ? (
+                <span className="flex items-center gap-1">
+                  <AlertCircle className="w-4 h-4" />
+                  {formatNumber(settledBins)} / {formatNumber(packedBins)} bins
+                </span>
+              ) : (
+                `${settlementPercent}%`
+              )}
             </span>
           </div>
           <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
             <div
-              className="bg-gradient-to-r from-purple-500 to-green-500 h-3 rounded-full transition-all duration-500"
+              className={`h-3 rounded-full transition-all duration-500 ${
+                hasMissingPackouts
+                  ? 'bg-gradient-to-r from-orange-400 to-orange-500'
+                  : 'bg-gradient-to-r from-purple-500 to-green-500'
+              }`}
               style={{ width: `${Math.min(settlementPercent, 100)}%` }}
             />
           </div>
           <p className="text-xs text-gray-500 mt-1">
-            Percentage of packed bins that have been settled
+            {hasMissingPackouts
+              ? `Settlements exceed packouts by ${formatNumber(missingPackoutBins)} bins - packout reports may be missing`
+              : 'Percentage of packed bins that have been settled'
+            }
           </p>
         </div>
       </div>
@@ -337,16 +355,35 @@ const PipelineOverview = () => {
       </div>
 
       {/* Alerts/Warnings */}
-      {pool_status.closed > 0 && (
-        <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
-          <h3 className="text-sm font-semibold text-yellow-800 dark:text-yellow-200 mb-2 flex items-center gap-2">
+      {(pool_status.closed > 0 || hasMissingPackouts) && (
+        <div className={`border rounded-lg p-4 ${
+          hasMissingPackouts
+            ? 'bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800'
+            : 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800'
+        }`}>
+          <h3 className={`text-sm font-semibold mb-2 flex items-center gap-2 ${
+            hasMissingPackouts
+              ? 'text-orange-800 dark:text-orange-200'
+              : 'text-yellow-800 dark:text-yellow-200'
+          }`}>
             <AlertCircle className="w-4 h-4" />
             Action Items
           </h3>
-          <ul className="text-sm text-yellow-700 dark:text-yellow-300 space-y-1">
-            <li>
-              • {pool_status.closed} pools are closed and awaiting settlement
-            </li>
+          <ul className={`text-sm space-y-1 ${
+            hasMissingPackouts
+              ? 'text-orange-700 dark:text-orange-300'
+              : 'text-yellow-700 dark:text-yellow-300'
+          }`}>
+            {hasMissingPackouts && (
+              <li>
+                • <strong>Missing packout reports:</strong> {formatNumber(missingPackoutBins)} more bins have been settled than packed. Upload the corresponding packout reports to reconcile.
+              </li>
+            )}
+            {pool_status.closed > 0 && (
+              <li>
+                • {pool_status.closed} pool{pool_status.closed > 1 ? 's are' : ' is'} closed and awaiting settlement
+              </li>
+            )}
           </ul>
         </div>
       )}
