@@ -140,7 +140,7 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'  # For collectstatic in production
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+# Note: STATICFILES_STORAGE is now configured in the STORAGES dict below (Django 4.2+)
 
 # =============================================================================
 # MEDIA / FILE STORAGE
@@ -167,21 +167,22 @@ print(f"[Storage Config] AWS_S3_ENDPOINT_URL: '{AWS_S3_ENDPOINT_URL}'")
 USE_CLOUD_STORAGE = bool(AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY and AWS_STORAGE_BUCKET_NAME)
 print(f"[Storage Config] USE_CLOUD_STORAGE={USE_CLOUD_STORAGE}")
 
+# Always set MEDIA_ROOT for local fallback
+MEDIA_ROOT = BASE_DIR / 'media'
+
 if USE_CLOUD_STORAGE:
     # Cloud storage (Cloudflare R2, AWS S3, Backblaze B2)
-
     # R2/S3 settings
     AWS_S3_REGION_NAME = os.environ.get('AWS_S3_REGION_NAME', 'auto')
     AWS_DEFAULT_ACL = None  # Use bucket default
     AWS_S3_FILE_OVERWRITE = False  # Don't overwrite files with same name
     AWS_QUERYSTRING_AUTH = True  # Signed URLs for private files
     AWS_S3_SIGNATURE_VERSION = 's3v4'
+    AWS_S3_CUSTOM_DOMAIN = os.environ.get('AWS_S3_CUSTOM_DOMAIN', '')
 
-    # Cloudflare R2 specific settings
-    if AWS_S3_ENDPOINT_URL:
-        AWS_S3_CUSTOM_DOMAIN = os.environ.get('AWS_S3_CUSTOM_DOMAIN', '')
+    MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/' if AWS_S3_CUSTOM_DOMAIN else f'{AWS_S3_ENDPOINT_URL}/{AWS_STORAGE_BUCKET_NAME}/'
 
-    # Django 4.2+ STORAGES configuration (preferred)
+    # Django 4.2+ STORAGES configuration
     STORAGES = {
         "default": {
             "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
@@ -190,11 +191,6 @@ if USE_CLOUD_STORAGE:
             "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
         },
     }
-
-    # Legacy setting for backwards compatibility
-    DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-
-    MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/' if os.environ.get('AWS_S3_CUSTOM_DOMAIN') else f'{AWS_S3_ENDPOINT_URL}/{AWS_STORAGE_BUCKET_NAME}/'
 
 elif IS_PRODUCTION:
     # Production but cloud storage not configured - this will fail!
@@ -208,11 +204,26 @@ elif IS_PRODUCTION:
     # Still set defaults so Django doesn't crash on startup
     MEDIA_URL = 'media/'
     MEDIA_ROOT = '/tmp/media'  # Use /tmp which is writable on Railway
+    STORAGES = {
+        "default": {
+            "BACKEND": "django.core.files.storage.FileSystemStorage",
+        },
+        "staticfiles": {
+            "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        },
+    }
 
 else:
     # Local storage for development
     MEDIA_URL = 'media/'
-    MEDIA_ROOT = BASE_DIR / 'media'
+    STORAGES = {
+        "default": {
+            "BACKEND": "django.core.files.storage.FileSystemStorage",
+        },
+        "staticfiles": {
+            "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        },
+    }
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
