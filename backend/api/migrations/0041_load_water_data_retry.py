@@ -20,11 +20,14 @@ def load_water_data(apps, schema_editor):
         print(f"  [SKIP] Already have {existing_count} wells, skipping load")
         return
 
-    # Get first farm as placeholder
-    farm = Farm.objects.first()
+    # Get first farm as placeholder - use raw query to avoid field issues
+    farm = Farm.objects.all().first()
     if not farm:
         print("  [SKIP] No farm exists, skipping water data load")
         return
+
+    farm_id = farm.pk
+    print(f"  Using farm ID: {farm_id}")
 
     # Find fixture file - migration is at backend/api/migrations/
     # Fixture is at backend/fixtures/
@@ -67,15 +70,11 @@ def load_water_data(apps, schema_editor):
     sources_created = 0
     sources_skipped = 0
 
-    # Get existing wells by state_well_number
-    existing_wells = set(
-        WaterSource.objects.filter(
-            source_type='well',
-            state_well_number__isnull=False
-        ).exclude(
-            state_well_number=''
-        ).values_list('state_well_number', flat=True)
-    )
+    # Get existing wells - use simple iteration to avoid queryset field issues
+    existing_wells = set()
+    for ws in WaterSource.objects.filter(source_type='well'):
+        if ws.state_well_number:
+            existing_wells.add(ws.state_well_number)
 
     for item in water_sources:
         old_pk = item['pk']
@@ -90,7 +89,7 @@ def load_water_data(apps, schema_editor):
                 continue
 
         ws = WaterSource(
-            farm=farm,
+            farm_id=farm_id,
             name=fields.get('name', ''),
             source_type='well',
             well_name=fields.get('well_name', ''),
