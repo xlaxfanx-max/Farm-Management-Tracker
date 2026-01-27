@@ -153,9 +153,14 @@ AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY', '')
 AWS_STORAGE_BUCKET_NAME = os.environ.get('AWS_STORAGE_BUCKET_NAME', '')
 AWS_S3_ENDPOINT_URL = os.environ.get('AWS_S3_ENDPOINT_URL', '')  # For R2/B2
 
-if AWS_ACCESS_KEY_ID and AWS_STORAGE_BUCKET_NAME:
+# Check if we're in a production environment (Railway sets this)
+IS_PRODUCTION = bool(os.environ.get('RAILWAY_ENVIRONMENT'))
+
+# Determine if cloud storage should be used
+USE_CLOUD_STORAGE = bool(AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY and AWS_STORAGE_BUCKET_NAME)
+
+if USE_CLOUD_STORAGE:
     # Cloud storage (Cloudflare R2, AWS S3, Backblaze B2)
-    DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 
     # R2/S3 settings
     AWS_S3_REGION_NAME = os.environ.get('AWS_S3_REGION_NAME', 'auto')
@@ -164,12 +169,38 @@ if AWS_ACCESS_KEY_ID and AWS_STORAGE_BUCKET_NAME:
     AWS_QUERYSTRING_AUTH = True  # Signed URLs for private files
     AWS_S3_SIGNATURE_VERSION = 's3v4'
 
-    # URL settings
+    # Cloudflare R2 specific settings
     if AWS_S3_ENDPOINT_URL:
-        # Cloudflare R2 or other S3-compatible
         AWS_S3_CUSTOM_DOMAIN = os.environ.get('AWS_S3_CUSTOM_DOMAIN', '')
 
-    MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/' if os.environ.get('AWS_S3_CUSTOM_DOMAIN') else None
+    # Django 4.2+ STORAGES configuration (preferred)
+    STORAGES = {
+        "default": {
+            "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
+        },
+        "staticfiles": {
+            "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        },
+    }
+
+    # Legacy setting for backwards compatibility
+    DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+
+    MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/' if os.environ.get('AWS_S3_CUSTOM_DOMAIN') else f'{AWS_S3_ENDPOINT_URL}/{AWS_STORAGE_BUCKET_NAME}/'
+
+elif IS_PRODUCTION:
+    # Production but cloud storage not configured - this will fail!
+    # Raise a clear error instead of silently failing with permission denied
+    import warnings
+    warnings.warn(
+        "Running in production without cloud storage configured! "
+        "File uploads will fail. Set AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, "
+        "AWS_STORAGE_BUCKET_NAME, and AWS_S3_ENDPOINT_URL environment variables."
+    )
+    # Still set defaults so Django doesn't crash on startup
+    MEDIA_URL = 'media/'
+    MEDIA_ROOT = '/tmp/media'  # Use /tmp which is writable on Railway
+
 else:
     # Local storage for development
     MEDIA_URL = 'media/'
