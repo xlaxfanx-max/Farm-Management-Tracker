@@ -1,0 +1,43 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -c:*)",
+      "Bash(pip install:*)",
+      "Bash(./venv/Scripts/python.exe:*)",
+      "Bash(find:*)",
+      "Bash(python manage.py shell:*)",
+      "Bash(xargs -d '\\\\n' git rm --cached)",
+      "Bash(git add:*)",
+      "Bash(python manage.py check:*)",
+      "Bash(python manage.py migrate:*)",
+      "Bash(git push:*)",
+      "Bash(git commit:*)",
+      "Bash(grep:*)",
+      "Bash(set DJANGO_SETTINGS_MODULE=pesticide_tracker.settings:*)",
+      "Bash(npx eslint:*)",
+      "Bash(railway open:*)",
+      "Bash(railway status:*)",
+      "Bash(railway up:*)",
+      "Bash(dir:*)",
+      "Bash(railway logs:*)",
+      "Bash(railway service)",
+      "Bash(railway variables --help:*)",
+      "Bash(railway variable list:*)",
+      "Bash(railway variable set:*)",
+      "Bash(railway exec --help:*)",
+      "Bash(railway:*)",
+      "Bash(python manage.py dumpdata:*)",
+      "Bash(where:*)",
+      "Bash(\"C:\\\\Program Files\\\\PostgreSQL\\\\18\\\\bin\\\\pg_dump\" --version)",
+      "Bash(set PGPASSWORD=FarmTracker2025:*)",
+      "Bash(\"C:\\\\Program Files\\\\PostgreSQL\\\\18\\\\bin\\\\pg_dump\" -U farm_tracker_user -h localhost -d farm_tracker --data-only --disable-triggers --no-owner --no-acl -F c -f data_backup.dump)",
+      "Bash(PGPASSWORD=FarmTracker2025 \"C:\\\\Program Files\\\\PostgreSQL\\\\18\\\\bin\\\\pg_dump\":*)",
+      "Bash(PGPASSWORD=FarmTracker2025 \"C:\\\\Program Files\\\\PostgreSQL\\\\18\\\\bin\\\\psql\" -U farm_tracker_user -h localhost -d farm_tracker -c \"SELECT current_user, session_user;\")",
+      "Bash(DATABASE_URL=\"postgresql://postgres:SMmAWIEmfhlsBWQyOpIXIkpWqCLrQoVs@caboose.proxy.rlwy.net:55652/railway\" python manage.py:*)",
+      "Bash(DATABASE_URL=\"postgresql://postgres:SMmAWIEmfhlsBWQyOpIXIkpWqCLrQoVs@caboose.proxy.rlwy.net:55652/railway\" python manage.py loaddata:*)",
+      "Bash(node -e:*)",
+      "Bash(git pull:*)",
+      "Bash(git rebase:*)"
+    ]
+  }
+}

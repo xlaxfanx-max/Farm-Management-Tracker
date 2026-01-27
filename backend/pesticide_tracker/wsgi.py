@@ -13,4 +13,6 @@ from django.core.wsgi import get_wsgi_application
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'pesticide_tracker.settings')
 
+print("[WSGI] Loading Django application...")
 application = get_wsgi_application()
+print("[WSGI] Django application loaded successfully")

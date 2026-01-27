@@ -180,17 +180,27 @@ if USE_CLOUD_STORAGE:
     AWS_S3_SIGNATURE_VERSION = 's3v4'
     AWS_S3_CUSTOM_DOMAIN = os.environ.get('AWS_S3_CUSTOM_DOMAIN', '')
 
+    # R2-specific settings
+    AWS_S3_ADDRESSING_STYLE = 'path'  # Required for R2
+    AWS_S3_VERIFY = True
+
     MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/' if AWS_S3_CUSTOM_DOMAIN else f'{AWS_S3_ENDPOINT_URL}/{AWS_STORAGE_BUCKET_NAME}/'
 
     # Django 4.2+ STORAGES configuration
     STORAGES = {
         "default": {
             "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
+            "OPTIONS": {
+                "bucket_name": AWS_STORAGE_BUCKET_NAME,
+                "endpoint_url": AWS_S3_ENDPOINT_URL,
+                "region_name": AWS_S3_REGION_NAME,
+            },
         },
         "staticfiles": {
             "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
         },
     }
+    print(f"[Storage Config] STORAGES configured for R2")
 
 elif IS_PRODUCTION:
     # Production but cloud storage not configured - this will fail!
