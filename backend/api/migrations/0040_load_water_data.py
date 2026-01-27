@@ -23,10 +23,15 @@ def load_water_data(apps, schema_editor):
         return
 
     # Find fixture file (try multiple paths for different environments)
+    # Migration is at: backend/api/migrations/0040_load_water_data.py
+    # Fixture is at:   backend/fixtures/water_data_export.json
     possible_paths = [
-        os.path.join(os.path.dirname(__file__), '..', 'fixtures', 'water_data_export.json'),
+        # From migrations folder: ../../fixtures/
         os.path.join(os.path.dirname(__file__), '..', '..', 'fixtures', 'water_data_export.json'),
+        # Railway Docker container paths
         '/app/fixtures/water_data_export.json',
+        # Fallback paths
+        os.path.join(os.path.dirname(__file__), '..', 'fixtures', 'water_data_export.json'),
         '/app/api/fixtures/water_data_export.json',
     ]
 
