@@ -98,34 +98,54 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
   // Fetch PDF blob for single file preview
   useEffect(() => {
     const pdfUrl = batchResult?.statements?.[0]?.pdf_url;
-    if (batchResult?.statements?.length === 1 && pdfUrl && showPdf) {
-      fetchPdfBlob(pdfUrl);
+    if (!pdfUrl || !showPdf || batchResult?.statements?.length !== 1) {
+      return;
     }
+
+    let cancelled = false;
+    let objectUrl = null;
+
+    const fetchPdf = async () => {
+      try {
+        setPdfLoading(true);
+        const token = localStorage.getItem('farm_tracker_access_token');
+        const response = await fetch(pdfUrl, {
+          headers: { 'Authorization': `Bearer ${token}` },
+        });
+        if (!response.ok) throw new Error('Failed to fetch PDF');
+        const blob = await response.blob();
+
+        if (!cancelled) {
+          objectUrl = URL.createObjectURL(blob);
+          setPdfBlobUrl(objectUrl);
+        }
+      } catch (err) {
+        console.error('Error fetching PDF:', err);
+      } finally {
+        if (!cancelled) {
+          setPdfLoading(false);
+        }
+      }
+    };
+
+    fetchPdf();
+
+    return () => {
+      cancelled = true;
+      if (objectUrl) {
+        URL.revokeObjectURL(objectUrl);
+      }
+    };
+  }, [batchResult?.statements?.[0]?.pdf_url, showPdf, batchResult?.statements?.length]);
+
+  // Cleanup pdfBlobUrl on unmount
+  useEffect(() => {
     return () => {
       if (pdfBlobUrl) {
         URL.revokeObjectURL(pdfBlobUrl);
-        setPdfBlobUrl(null);
       }
     };
-  }, [batchResult?.statements?.[0]?.pdf_url, showPdf]);
-
-  const fetchPdfBlob = async (url) => {
-    if (!url) return;
-    try {
-      setPdfLoading(true);
-      const token = localStorage.getItem('farm_tracker_access_token');
-      const response = await fetch(url, {
-        headers: { 'Authorization': `Bearer ${token}` },
-      });
-      if (!response.ok) throw new Error('Failed to fetch PDF');
-      const blob = await response.blob();
-      setPdfBlobUrl(URL.createObjectURL(blob));
-    } catch (err) {
-      console.error('Error fetching PDF:', err);
-    } finally {
-      setPdfLoading(false);
-    }
-  };
+  }, [pdfBlobUrl]);
 
   const fetchPackinghouses = async () => {
     try {
