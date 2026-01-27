@@ -61,14 +61,11 @@ def load_water_data(apps, schema_editor):
     sources_skipped = 0
 
     # Get existing wells by state_well_number to avoid duplicates
-    existing_wells = set(
-        WaterSource.objects.filter(
-            source_type='well',
-            state_well_number__isnull=False
-        ).exclude(
-            state_well_number=''
-        ).values_list('state_well_number', flat=True)
-    )
+    # Use iteration instead of values_list to avoid field resolution issues
+    existing_wells = set()
+    for ws in WaterSource.objects.filter(source_type='well'):
+        if ws.state_well_number:
+            existing_wells.add(ws.state_well_number)
 
     for item in water_sources:
         old_pk = item['pk']
