@@ -20,6 +20,7 @@ from .views import (
     CropCoefficientProfileViewSet, SoilMoistureReadingViewSet,
     irrigation_dashboard, cimis_stations,
     CropViewSet, RootstockViewSet,
+    load_water_data_api,
 )
 
 from .audit_views import (
@@ -315,6 +316,7 @@ urlpatterns = [
     path('reference/primary-crops/', get_primary_crop_options, name='primary-crops'),
 
     path('sgma/dashboard/', sgma_dashboard, name='sgma-dashboard'),
+    path('sgma/load-water-data/', load_water_data_api, name='load-water-data'),
 
     path('reports/nitrogen-summary/', nitrogen_summary, name='nitrogen-summary'),
     path('reports/nitrogen-export/', nitrogen_export, name='nitrogen-export'),
