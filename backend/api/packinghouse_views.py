@@ -1510,12 +1510,13 @@ def harvest_packing_pipeline(request):
     )
 
     # Pipeline Stage 3: Packout Reports
+    # Use bins_this_period (actual bins packed) not bins_cumulative (running total)
     packout_stats = PackoutReport.objects.filter(
         pool__packinghouse__company=company,
         pool__season=selected_season
     ).aggregate(
         total_reports=Count('id'),
-        total_bins_packed=Coalesce(Sum('bins_cumulative'), Decimal('0')),
+        total_bins_packed=Coalesce(Sum('bins_this_period'), Decimal('0')),
         avg_pack_percent=Avg('total_packed_percent'),
         avg_house_percent=Avg('house_avg_packed_percent')
     )
