@@ -58,17 +58,32 @@ class Command(BaseCommand):
             self.stdout.write('\nUsage: python manage.py reassign_wells --company="Company Name"')
             return
 
-        # Get all wells
+        # Get company's farms to check existing assignments
+        company = farm.company
+        company_farm_ids = []
+        if company:
+            company_farm_ids = list(Farm.objects.filter(company=company).values_list('id', flat=True))
+
+        # Get wells that are NOT already assigned to one of the company's farms
         wells = WaterSource.objects.filter(source_type='well')
-        count = wells.count()
+
+        if company_farm_ids:
+            # Only reassign wells that are not already on a company farm
+            wells_to_reassign = wells.exclude(farm_id__in=company_farm_ids)
+        else:
+            wells_to_reassign = wells
+
+        count = wells_to_reassign.count()
+        total = wells.count()
 
         if count == 0:
-            self.stdout.write('No wells found to reassign')
+            self.stdout.write(f'[SKIP] All {total} wells already assigned to {company.name if company else "target"} farms')
             return
 
-        self.stdout.write(f'Reassigning {count} wells to farm: {farm.name} (Company: {farm.company.name if farm.company else "None"})')
+        self.stdout.write(f'Reassigning {count} of {total} wells to farm: {farm.name} (Company: {farm.company.name if farm.company else "None"})')
+        self.stdout.write(f'  ({total - count} wells already on company farms, preserving their assignments)')
 
-        # Update all wells
-        wells.update(farm=farm)
+        # Update only unassigned wells
+        wells_to_reassign.update(farm=farm)
 
         self.stdout.write(self.style.SUCCESS(f'[OK] Reassigned {count} wells to {farm.name}'))
