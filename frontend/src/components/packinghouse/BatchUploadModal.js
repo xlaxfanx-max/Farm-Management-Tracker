@@ -97,15 +97,17 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
 
   // Fetch PDF blob for single file preview
   useEffect(() => {
-    if (isSingleFileMode && batchResult?.statements[0]?.pdf_url && showPdf && !pdfBlobUrl) {
-      fetchPdfBlob(batchResult.statements[0].pdf_url);
+    const pdfUrl = batchResult?.statements?.[0]?.pdf_url;
+    if (batchResult?.statements?.length === 1 && pdfUrl && showPdf) {
+      fetchPdfBlob(pdfUrl);
     }
     return () => {
       if (pdfBlobUrl) {
         URL.revokeObjectURL(pdfBlobUrl);
+        setPdfBlobUrl(null);
       }
     };
-  }, [batchResult, showPdf]);
+  }, [batchResult?.statements?.[0]?.pdf_url, showPdf]);
 
   const fetchPdfBlob = async (url) => {
     if (!url) return;
@@ -750,6 +752,8 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
               >
                 {confirming ? (
                   <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Saving...</>
+                ) : existingStatement?.status === 'completed' ? (
+                  <><CheckCircle className="w-4 h-4 mr-2" />Update & Save</>
                 ) : (
                   <><CheckCircle className="w-4 h-4 mr-2" />Confirm & Save</>
                 )}

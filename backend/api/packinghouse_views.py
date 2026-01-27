@@ -1870,6 +1870,7 @@ class PackinghouseStatementViewSet(viewsets.ModelViewSet):
     def confirm(self, request, pk=None):
         """
         Confirm extracted data and create PackoutReport or PoolSettlement.
+        Also supports updating already-completed statements.
 
         Expected data:
         - pool_id: Pool to associate with (optional - will auto-create from PDF data if not provided)
@@ -1878,9 +1879,9 @@ class PackinghouseStatementViewSet(viewsets.ModelViewSet):
         """
         statement = self.get_object()
 
-        if statement.status not in ['extracted', 'review']:
+        if statement.status not in ['extracted', 'review', 'completed']:
             return Response(
-                {'error': 'Statement must be in extracted or review status to confirm'},
+                {'error': 'Statement must be in extracted, review, or completed status to confirm/update'},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
@@ -1999,23 +2000,80 @@ class PackinghouseStatementViewSet(viewsets.ModelViewSet):
         existing_settlement = PoolSettlement.objects.filter(source_statement=statement).first()
 
         if existing_packout or existing_settlement:
-            # Already processed - update statement status and return success
+            # Already processed - update existing records with edited data
+            extraction_service = PDFExtractionService()
+
             statement.pool = pool
             statement.field = field
             statement.status = 'completed'
             statement.save()
 
             if existing_packout:
+                # Update the packout report with edited data
+                if edited_data:
+                    report_data = extraction_service.create_packout_report_from_data(
+                        data_to_use, pool, field
+                    )
+                    # Update fields on existing packout (exclude source_statement)
+                    for key, value in report_data.items():
+                        setattr(existing_packout, key, value)
+                    existing_packout.save()
+
+                    # Delete and recreate grade lines
+                    PackoutGradeLine.objects.filter(packout_report=existing_packout).delete()
+                    grade_lines_data = extraction_service.get_grade_lines_data(
+                        data_to_use, for_settlement=False
+                    )
+                    for line_data in grade_lines_data:
+                        PackoutGradeLine.objects.create(
+                            packout_report=existing_packout,
+                            **line_data
+                        )
+
+                    logger.info(f"Updated existing packout report {existing_packout.id} with edited data")
+
                 return Response({
                     'success': True,
-                    'message': 'Statement was already processed. Packout report exists.',
+                    'message': 'Packout report updated successfully' if edited_data else 'Statement was already processed. Packout report exists.',
                     'packout_report_id': existing_packout.id,
                     'statement_id': statement.id
                 })
             else:
+                # Update the settlement with edited data
+                if edited_data:
+                    settlement_data = extraction_service.create_settlement_from_data(
+                        data_to_use, pool, field
+                    )
+                    # Update fields on existing settlement (exclude source_statement)
+                    for key, value in settlement_data.items():
+                        setattr(existing_settlement, key, value)
+                    existing_settlement.save()
+
+                    # Delete and recreate grade lines and deductions
+                    SettlementGradeLine.objects.filter(settlement=existing_settlement).delete()
+                    SettlementDeduction.objects.filter(settlement=existing_settlement).delete()
+
+                    grade_lines_data = extraction_service.get_grade_lines_data(
+                        data_to_use, for_settlement=True
+                    )
+                    for line_data in grade_lines_data:
+                        SettlementGradeLine.objects.create(
+                            settlement=existing_settlement,
+                            **line_data
+                        )
+
+                    deductions_data = extraction_service.get_deductions_data(data_to_use)
+                    for deduction_data in deductions_data:
+                        SettlementDeduction.objects.create(
+                            settlement=existing_settlement,
+                            **deduction_data
+                        )
+
+                    logger.info(f"Updated existing settlement {existing_settlement.id} with edited data")
+
                 return Response({
                     'success': True,
-                    'message': 'Statement was already processed. Settlement exists.',
+                    'message': 'Settlement updated successfully' if edited_data else 'Statement was already processed. Settlement exists.',
                     'settlement_id': existing_settlement.id,
                     'statement_id': statement.id
                 })

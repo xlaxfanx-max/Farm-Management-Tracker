@@ -299,12 +299,16 @@ const StatementList = ({ packinghouseId = null }) => {
                             <ExternalLink className="w-4 h-4" />
                           </a>
                         )}
-                        {statement.status === 'extracted' && (
+                        {(statement.status === 'extracted' || statement.status === 'completed') && (
                           <button
                             onClick={() => handleReviewClick(statement)}
                             disabled={loadingStatement === statement.id}
-                            className="p-1.5 text-green-600 hover:text-green-700 hover:bg-green-50 rounded disabled:opacity-50"
-                            title="Review & Confirm"
+                            className={`p-1.5 rounded disabled:opacity-50 ${
+                              statement.status === 'completed'
+                                ? 'text-blue-600 hover:text-blue-700 hover:bg-blue-50'
+                                : 'text-green-600 hover:text-green-700 hover:bg-green-50'
+                            }`}
+                            title={statement.status === 'completed' ? "Edit Statement" : "Review & Confirm"}
                           >
                             {loadingStatement === statement.id ? (
                               <Loader2 className="w-4 h-4 animate-spin" />
