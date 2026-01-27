@@ -1806,6 +1806,11 @@ class PackinghouseStatementViewSet(viewsets.ModelViewSet):
             else:
                 packinghouse_format = 'generic'
 
+        # Read PDF bytes before saving (works with any storage backend)
+        pdf_file.seek(0)
+        pdf_bytes = pdf_file.read()
+        pdf_file.seek(0)  # Reset for Django to save
+
         # Create statement record
         statement = PackinghouseStatement.objects.create(
             packinghouse=packinghouse,
@@ -1817,11 +1822,11 @@ class PackinghouseStatementViewSet(viewsets.ModelViewSet):
             uploaded_by=request.user
         )
 
-        # Run extraction synchronously
+        # Run extraction synchronously using bytes (compatible with S3/R2 storage)
         try:
             extraction_service = PDFExtractionService()
             result = extraction_service.extract_from_pdf(
-                pdf_path=statement.pdf_file.path,
+                pdf_bytes=pdf_bytes,
                 packinghouse_format=packinghouse_format
             )
 
@@ -2133,9 +2138,13 @@ class PackinghouseStatementViewSet(viewsets.ModelViewSet):
         statement.save()
 
         try:
+            # Read PDF bytes from storage (works with S3/R2 and local storage)
+            statement.pdf_file.seek(0)
+            pdf_bytes = statement.pdf_file.read()
+
             extraction_service = PDFExtractionService()
             result = extraction_service.extract_from_pdf(
-                pdf_path=statement.pdf_file.path,
+                pdf_bytes=pdf_bytes,
                 packinghouse_format=packinghouse_format
             )
 
@@ -2260,6 +2269,11 @@ class PackinghouseStatementViewSet(viewsets.ModelViewSet):
                 continue
 
             try:
+                # Read PDF bytes before saving (works with any storage backend)
+                pdf_file.seek(0)
+                pdf_bytes = pdf_file.read()
+                pdf_file.seek(0)  # Reset for Django to save
+
                 # Create statement record
                 statement = PackinghouseStatement.objects.create(
                     packinghouse=packinghouse,
@@ -2272,10 +2286,10 @@ class PackinghouseStatementViewSet(viewsets.ModelViewSet):
                     batch_upload=batch
                 )
 
-                # Run extraction
+                # Run extraction using bytes (compatible with S3/R2 storage)
                 try:
                     result = extraction_service.extract_from_pdf(
-                        pdf_path=statement.pdf_file.path,
+                        pdf_bytes=pdf_bytes,
                         packinghouse_format=packinghouse_format
                     )
 
