@@ -219,6 +219,11 @@ if _frontend_url and _frontend_url not in _cors_origins:
 
 CORS_ALLOWED_ORIGINS = _cors_origins
 
+# Allow all Railway subdomains (for production cross-service communication)
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^https://.*\.up\.railway\.app$",
+]
+
 # CSRF trusted origins (required for cross-origin POST requests in production)
 CSRF_TRUSTED_ORIGINS = _cors_origins.copy()
 # Add Railway domain if deployed there
@@ -226,6 +231,8 @@ if os.environ.get('RAILWAY_ENVIRONMENT'):
     _railway_url = os.environ.get('RAILWAY_PUBLIC_DOMAIN', '')
     if _railway_url:
         CSRF_TRUSTED_ORIGINS.append(f'https://{_railway_url}')
+    # Allow all Railway subdomains for CSRF
+    CSRF_TRUSTED_ORIGINS.append('https://*.up.railway.app')
 
 CORS_ALLOW_CREDENTIALS = True
 
