@@ -9164,8 +9164,17 @@ class Pool(models.Model):
 
     @property
     def total_bins(self):
-        """Sum of all bins delivered to this pool."""
+        """
+        Total bins for this pool.
+        Uses packout reports as primary source (bins_this_period),
+        falls back to deliveries if no packout reports exist.
+        """
         from django.db.models import Sum
+        # First try packout reports - this is the source of truth from packinghouse
+        packout_bins = self.packout_reports.aggregate(total=Sum('bins_this_period'))['total']
+        if packout_bins:
+            return packout_bins
+        # Fall back to delivery records if no packout reports
         return self.deliveries.aggregate(total=Sum('bins'))['total'] or 0
 
     @property
