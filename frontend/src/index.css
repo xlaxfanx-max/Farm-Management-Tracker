@@ -201,6 +201,36 @@ h1, h2, h3, h4, h5, h6,
 .dark .divide-gray-100 > * + * { border-color: #374151 !important; }
 .dark .divide-gray-200 > * + * { border-color: #374151 !important; }
 
+/* Gradient overrides for dark mode - convert light gradients to dark */
+.dark .bg-gradient-to-r.from-green-50.to-blue-50,
+.dark .bg-gradient-to-br.from-green-50.to-blue-50 {
+  background: linear-gradient(to right, rgba(22, 163, 74, 0.15), rgba(59, 130, 246, 0.15)) !important;
+}
+
+.dark .bg-gradient-to-r.from-green-50.to-emerald-50,
+.dark .bg-gradient-to-br.from-green-50.to-emerald-50 {
+  background: linear-gradient(to right, rgba(22, 163, 74, 0.15), rgba(16, 185, 129, 0.15)) !important;
+}
+
+.dark .bg-gradient-to-r.from-blue-50.to-indigo-50,
+.dark .bg-gradient-to-br.from-blue-50.to-indigo-50 {
+  background: linear-gradient(to right, rgba(59, 130, 246, 0.15), rgba(99, 102, 241, 0.15)) !important;
+}
+
+.dark .bg-gradient-to-r.from-cyan-50.to-blue-50,
+.dark .bg-gradient-to-br.from-cyan-50.to-blue-50 {
+  background: linear-gradient(to right, rgba(6, 182, 212, 0.15), rgba(59, 130, 246, 0.15)) !important;
+}
+
+.dark .bg-gradient-to-r.from-blue-100.to-green-100,
+.dark .bg-gradient-to-br.from-blue-100.to-green-100 {
+  background: linear-gradient(to right, rgba(59, 130, 246, 0.25), rgba(22, 163, 74, 0.25)) !important;
+}
+
+.dark .bg-gradient-to-br.from-green-50.via-emerald-50.to-teal-50 {
+  background: linear-gradient(to bottom right, rgba(22, 163, 74, 0.15), rgba(16, 185, 129, 0.15), rgba(20, 184, 166, 0.15)) !important;
+}
+
 /* Shadow overrides */
 .dark .shadow,
 .dark .shadow-sm,
