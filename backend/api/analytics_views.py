@@ -8,6 +8,7 @@ from datetime import datetime, timedelta
 from decimal import Decimal
 from collections import defaultdict
 
+from django.conf import settings
 from django.db.models import Sum, Count, Avg, F, Q
 from django.db.models.functions import TruncMonth, ExtractMonth
 from django.utils import timezone
@@ -778,6 +779,7 @@ def get_multi_crop_season_dashboard(request):
     }
     """
     import logging
+    import traceback
     logger = logging.getLogger(__name__)
 
     company = get_company_from_user(request.user)
@@ -790,9 +792,10 @@ def get_multi_crop_season_dashboard(request):
     try:
         return _get_multi_crop_season_dashboard_impl(request, company)
     except Exception as e:
-        logger.exception(f"Multi-crop season dashboard error: {e}")
+        tb = traceback.format_exc()
+        logger.exception(f"Multi-crop season dashboard error: {e}\n{tb}")
         return Response(
-            {'error': str(e)},
+            {'error': str(e), 'detail': tb if settings.DEBUG else None},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
 

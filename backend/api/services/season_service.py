@@ -406,13 +406,16 @@ class SeasonService:
         if field_id:
             try:
                 from api.models import Field
-                field = Field.objects.select_related(
-                    'season_template', 'crop', 'crop__season_template'
-                ).get(id=field_id)
+                field = Field.objects.select_related('crop').get(id=field_id)
 
-                template = field.season_template
+                # Check if season_template field exists (migration may not have run)
+                template = None
+                if hasattr(field, 'season_template'):
+                    template = field.season_template
+
                 if not template and field.crop:
-                    template = field.crop.season_template
+                    if hasattr(field.crop, 'season_template'):
+                        template = field.crop.season_template
                     if not template and field.crop.category:
                         crop_category = field.crop.category
 
@@ -450,7 +453,8 @@ class SeasonService:
                         'season_type': template.season_type,
                     }
             except Exception:
-                # Database not ready or other error - fall through to built-in defaults
+                # Database not ready, SeasonTemplate doesn't exist, or other error
+                # Fall through to built-in defaults
                 pass
 
         # Fall back to built-in category defaults
