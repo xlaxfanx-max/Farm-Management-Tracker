@@ -169,6 +169,15 @@ from .fsma_views import (
     FSMADashboardViewSet,
 )
 
+# Import FSMA Water Assessment views
+from .fsma_water_views import (
+    FSMAWaterAssessmentViewSet,
+    FSMASourceAssessmentViewSet,
+    FSMAFieldAssessmentViewSet,
+    FSMAEnvironmentalAssessmentViewSet,
+    FSMAMitigationActionViewSet,
+)
+
 def health_check(request):
     """Health check endpoint for Railway/container orchestration."""
     try:
@@ -266,6 +275,13 @@ router.register(r'fsma/inventory-snapshots', MonthlyInventorySnapshotViewSet, ba
 router.register(r'fsma/phi-checks', PHIComplianceCheckViewSet, basename='fsma-phi-check')
 router.register(r'fsma/audit-binders', AuditBinderViewSet, basename='fsma-audit-binder')
 router.register(r'fsma/dashboard', FSMADashboardViewSet, basename='fsma-dashboard')
+
+# FSMA Water Assessment Module
+router.register(r'fsma/water-assessments', FSMAWaterAssessmentViewSet, basename='fsma-water-assessment')
+router.register(r'fsma/source-assessments', FSMASourceAssessmentViewSet, basename='fsma-source-assessment')
+router.register(r'fsma/field-assessments', FSMAFieldAssessmentViewSet, basename='fsma-field-assessment')
+router.register(r'fsma/environmental-assessments', FSMAEnvironmentalAssessmentViewSet, basename='fsma-environmental-assessment')
+router.register(r'fsma/mitigation-actions', FSMAMitigationActionViewSet, basename='fsma-mitigation-action')
 
 
 urlpatterns = [

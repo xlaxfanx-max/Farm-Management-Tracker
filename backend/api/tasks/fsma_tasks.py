@@ -602,6 +602,48 @@ def send_fsma_daily_reminder():
 
 
 @shared_task
+def generate_water_assessment_pdf(assessment_id: int):
+    """
+    Async task to generate a water assessment PDF.
+
+    Called when a water assessment is approved - runs asynchronously
+    to avoid blocking the API request.
+
+    Args:
+        assessment_id: The ID of the FSMAWaterAssessment to generate PDF for
+
+    Returns:
+        Dictionary with generation result
+    """
+    from api.models import FSMAWaterAssessment
+    from api.services.fsma.water_assessment_pdf_generator import WaterAssessmentPDFGenerator
+
+    try:
+        assessment = FSMAWaterAssessment.objects.get(id=assessment_id)
+    except FSMAWaterAssessment.DoesNotExist:
+        logger.error(f"FSMAWaterAssessment with id {assessment_id} not found")
+        return {'success': False, 'error': 'Assessment not found'}
+
+    generator = WaterAssessmentPDFGenerator(assessment)
+    success = generator.generate()
+
+    if success:
+        logger.info(f"Successfully generated water assessment PDF for assessment {assessment_id}")
+        return {
+            'success': True,
+            'assessment_id': assessment_id,
+            'pdf_file': assessment.pdf_file.name if assessment.pdf_file else None,
+        }
+    else:
+        logger.error(f"Failed to generate water assessment PDF for assessment {assessment_id}")
+        return {
+            'success': False,
+            'assessment_id': assessment_id,
+            'error': 'PDF generation failed',
+        }
+
+
+@shared_task
 def cleanup_old_fsma_data(days_old: int = 365):
     """
     Annual task to archive or cleanup old FSMA data.

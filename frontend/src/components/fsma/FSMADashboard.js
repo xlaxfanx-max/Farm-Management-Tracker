@@ -14,6 +14,7 @@ import {
   XCircle,
   Clock,
   Leaf,
+  Droplets,
 } from 'lucide-react';
 import { fsmaAPI } from '../../services/api';
 import VisitorLogList from './VisitorLogList';
@@ -22,6 +23,7 @@ import SafetyMeetingList from './SafetyMeetingList';
 import FertilizerInventoryManager from './FertilizerInventoryManager';
 import PHIComplianceChecker from './PHIComplianceChecker';
 import AuditBinderGenerator from './AuditBinderGenerator';
+import { WaterAssessmentDashboard, WaterAssessmentWizard } from './water-assessment';
 
 /**
  * FSMADashboard Component
@@ -38,6 +40,10 @@ const FSMADashboard = ({ onNavigate, initialTab = 'overview' }) => {
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Water Assessment state
+  const [waterAssessmentMode, setWaterAssessmentMode] = useState(null); // null, 'list', 'create', 'edit', 'view'
+  const [selectedAssessmentId, setSelectedAssessmentId] = useState(null);
 
   // Update activeTab when initialTab prop changes
   useEffect(() => {
@@ -94,8 +100,46 @@ const FSMADashboard = ({ onNavigate, initialTab = 'overview' }) => {
     { id: 'meetings', label: 'Safety Meetings', icon: Calendar },
     { id: 'inventory', label: 'Inventory', icon: Package },
     { id: 'phi', label: 'PHI Checks', icon: Leaf },
+    { id: 'water-assessment', label: 'Water Assessment', icon: Droplets },
     { id: 'audit', label: 'Audit Binder', icon: FileText },
   ];
+
+  // Water Assessment handlers
+  const handleWaterAssessmentCreate = () => {
+    setWaterAssessmentMode('create');
+    setSelectedAssessmentId(null);
+  };
+
+  const handleWaterAssessmentView = async (id) => {
+    // For viewing, we open in edit mode (wizard handles read-only display for approved)
+    // This allows users to see the full assessment details
+    setWaterAssessmentMode('edit');
+    setSelectedAssessmentId(id);
+  };
+
+  const handleWaterAssessmentEdit = (id) => {
+    setWaterAssessmentMode('edit');
+    setSelectedAssessmentId(id);
+  };
+
+  const handleWaterAssessmentComplete = () => {
+    setWaterAssessmentMode('list');
+    setSelectedAssessmentId(null);
+  };
+
+  const handleWaterAssessmentCancel = () => {
+    setWaterAssessmentMode('list');
+    setSelectedAssessmentId(null);
+  };
+
+  // Reset water assessment mode when changing tabs
+  useEffect(() => {
+    if (activeTab === 'water-assessment') {
+      setWaterAssessmentMode('list');
+    } else {
+      setWaterAssessmentMode(null);
+    }
+  }, [activeTab]);
 
   if (loading) {
     return (
@@ -169,6 +213,21 @@ const FSMADashboard = ({ onNavigate, initialTab = 'overview' }) => {
       {activeTab === 'meetings' && <SafetyMeetingList />}
       {activeTab === 'inventory' && <FertilizerInventoryManager />}
       {activeTab === 'phi' && <PHIComplianceChecker />}
+      {activeTab === 'water-assessment' && (
+        waterAssessmentMode === 'create' || waterAssessmentMode === 'edit' ? (
+          <WaterAssessmentWizard
+            assessmentId={selectedAssessmentId}
+            onComplete={handleWaterAssessmentComplete}
+            onCancel={handleWaterAssessmentCancel}
+          />
+        ) : (
+          <WaterAssessmentDashboard
+            onCreateNew={handleWaterAssessmentCreate}
+            onViewAssessment={handleWaterAssessmentView}
+            onEditAssessment={handleWaterAssessmentEdit}
+          />
+        )
+      )}
       {activeTab === 'audit' && <AuditBinderGenerator />}
     </div>
   );

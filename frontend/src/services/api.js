@@ -2763,6 +2763,67 @@ export const fsmaAPI = {
   getDashboardMetrics: () => api.get('/fsma/dashboard/metrics/'),
 
   // -------------------------------------------------------------------------
+  // Water Assessments (21 CFR 112.43)
+  // -------------------------------------------------------------------------
+  getWaterAssessments: (params = {}) => api.get('/fsma/water-assessments/', { params }),
+  getWaterAssessment: (id) => api.get(`/fsma/water-assessments/${id}/`),
+  createWaterAssessment: (data) => api.post('/fsma/water-assessments/', data),
+  updateWaterAssessment: (id, data) => api.put(`/fsma/water-assessments/${id}/`, data),
+  deleteWaterAssessment: (id) => api.delete(`/fsma/water-assessments/${id}/`),
+  calculateWaterRisk: (id) => api.post(`/fsma/water-assessments/${id}/calculate_risk/`),
+  submitWaterAssessment: (id, data) => api.post(`/fsma/water-assessments/${id}/submit/`, data),
+  approveWaterAssessment: (id, data) => api.post(`/fsma/water-assessments/${id}/approve/`, data),
+  downloadWaterAssessmentPdf: (id) =>
+    api.get(`/fsma/water-assessments/${id}/download/`, { responseType: 'blob' }),
+  duplicateWaterAssessment: (id, data) =>
+    api.post(`/fsma/water-assessments/${id}/duplicate/`, data),
+  getWaterAssessmentSummary: () => api.get('/fsma/water-assessments/summary/'),
+
+  // -------------------------------------------------------------------------
+  // Source Assessments (Water Assessment sub-resource)
+  // -------------------------------------------------------------------------
+  getSourceAssessments: (params = {}) => api.get('/fsma/source-assessments/', { params }),
+  getSourceAssessment: (id) => api.get(`/fsma/source-assessments/${id}/`),
+  createSourceAssessment: (data) => api.post('/fsma/source-assessments/', data),
+  updateSourceAssessment: (id, data) => api.put(`/fsma/source-assessments/${id}/`, data),
+  deleteSourceAssessment: (id) => api.delete(`/fsma/source-assessments/${id}/`),
+
+  // -------------------------------------------------------------------------
+  // Field Assessments (Water Assessment sub-resource)
+  // -------------------------------------------------------------------------
+  getFieldAssessments: (params = {}) => api.get('/fsma/field-assessments/', { params }),
+  getFieldAssessment: (id) => api.get(`/fsma/field-assessments/${id}/`),
+  createFieldAssessment: (data) => api.post('/fsma/field-assessments/', data),
+  updateFieldAssessment: (id, data) => api.put(`/fsma/field-assessments/${id}/`, data),
+  deleteFieldAssessment: (id) => api.delete(`/fsma/field-assessments/${id}/`),
+
+  // -------------------------------------------------------------------------
+  // Environmental Assessments (Water Assessment sub-resource)
+  // -------------------------------------------------------------------------
+  getEnvironmentalAssessments: (params = {}) =>
+    api.get('/fsma/environmental-assessments/', { params }),
+  getEnvironmentalAssessment: (id) => api.get(`/fsma/environmental-assessments/${id}/`),
+  createEnvironmentalAssessment: (data) =>
+    api.post('/fsma/environmental-assessments/', data),
+  updateEnvironmentalAssessment: (id, data) =>
+    api.put(`/fsma/environmental-assessments/${id}/`, data),
+  deleteEnvironmentalAssessment: (id) =>
+    api.delete(`/fsma/environmental-assessments/${id}/`),
+
+  // -------------------------------------------------------------------------
+  // Mitigation Actions (Water Assessment sub-resource)
+  // -------------------------------------------------------------------------
+  getMitigationActions: (params = {}) => api.get('/fsma/mitigation-actions/', { params }),
+  getMitigationAction: (id) => api.get(`/fsma/mitigation-actions/${id}/`),
+  createMitigationAction: (data) => api.post('/fsma/mitigation-actions/', data),
+  updateMitigationAction: (id, data) => api.put(`/fsma/mitigation-actions/${id}/`, data),
+  deleteMitigationAction: (id) => api.delete(`/fsma/mitigation-actions/${id}/`),
+  completeMitigationAction: (id, data) =>
+    api.post(`/fsma/mitigation-actions/${id}/complete/`, data),
+  verifyMitigationAction: (id, data) =>
+    api.post(`/fsma/mitigation-actions/${id}/verify/`, data),
+
+  // -------------------------------------------------------------------------
   // Related data helpers (reuse existing APIs)
   // -------------------------------------------------------------------------
   getFarms: () => api.get('/farms/'),
