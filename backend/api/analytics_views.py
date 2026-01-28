@@ -22,6 +22,7 @@ from .models import (
     PesticideApplication, Harvest, HarvestLoad, HarvestLabor,
     Field, Farm, WaterTest, WaterSource, LaborContractor
 )
+from .services.season_service import SeasonService
 
 
 def get_company_from_user(user):
@@ -529,4 +530,434 @@ def _get_analytics_summary_impl(request, company):
         'pur_compliance': pur_rate,
         'water_pass_rate': water_rate,
         'total_bins': total_bins,
+    })
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated, HasCompanyAccess])
+def get_season_dashboard(request):
+    """
+    Get season progress dashboard data for the Season Progress Card.
+
+    Query Parameters:
+    - season: Season label (e.g., "2024-2025")
+    - crop_category: Optional crop category filter
+    - farm_id: Optional farm filter
+
+    Returns:
+    {
+        "season": { label, start_date, end_date, days_elapsed, days_total, progress_percent },
+        "current": { harvest_bins, applications, deliveries, revenue },
+        "last_season": { harvest_bins, applications, deliveries, revenue },
+        "goals": { harvest_bins, revenue },  // null if no goals set
+        "tasks": { overdue, due_this_week }
+    }
+    """
+    import logging
+    logger = logging.getLogger(__name__)
+
+    company = get_company_from_user(request.user)
+    if not company:
+        return Response(
+            {'error': 'No company associated with user'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    try:
+        return _get_season_dashboard_impl(request, company)
+    except Exception as e:
+        logger.exception(f"Season dashboard error: {e}")
+        return Response(
+            {'error': str(e)},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+
+def _get_season_dashboard_impl(request, company):
+    """Internal implementation of season dashboard."""
+    from datetime import date
+
+    # Parse parameters
+    season_label = request.query_params.get('season')
+    crop_category = request.query_params.get('crop_category')
+    farm_id = request.query_params.get('farm_id')
+
+    # Get season service and date range
+    service = SeasonService(company_id=company.id)
+
+    if season_label:
+        try:
+            start_date, end_date = service.get_season_date_range(
+                season_label=season_label,
+                crop_category=crop_category
+            )
+        except ValueError:
+            # Fallback to current season
+            current = service.get_current_season(crop_category=crop_category)
+            season_label = current.label
+            start_date = current.start_date
+            end_date = current.end_date
+    else:
+        current = service.get_current_season(crop_category=crop_category)
+        season_label = current.label
+        start_date = current.start_date
+        end_date = current.end_date
+
+    # Calculate season progress
+    today = date.today()
+    total_days = (end_date - start_date).days
+    elapsed_days = (today - start_date).days
+    elapsed_days = max(0, min(elapsed_days, total_days))  # Clamp to 0-total
+    progress_percent = round((elapsed_days / total_days) * 100) if total_days > 0 else 0
+
+    # Get last season date range for comparison
+    try:
+        last_season = service.get_last_season(
+            season_label=season_label,
+            crop_category=crop_category
+        )
+        last_start_date = last_season.start_date
+        last_end_date = last_season.end_date
+        last_season_label = last_season.label
+    except (ValueError, AttributeError):
+        # No last season available
+        last_start_date = None
+        last_end_date = None
+        last_season_label = None
+
+    # Base querysets filtered by company
+    farms = Farm.objects.filter(company=company)
+    if farm_id:
+        farms = farms.filter(id=farm_id)
+
+    farm_ids = farms.values_list('id', flat=True)
+    field_ids = Field.objects.filter(farm_id__in=farm_ids).values_list('id', flat=True)
+
+    # ==========================================================================
+    # CURRENT SEASON DATA
+    # ==========================================================================
+
+    # Harvests
+    current_harvests = Harvest.objects.filter(
+        field_id__in=field_ids,
+        harvest_date__gte=start_date,
+        harvest_date__lte=end_date
+    )
+    current_bins = current_harvests.aggregate(total=Sum('total_bins'))['total'] or 0
+
+    # Revenue from harvest loads
+    current_harvest_ids = current_harvests.values_list('id', flat=True)
+    current_revenue = HarvestLoad.objects.filter(
+        harvest_id__in=current_harvest_ids
+    ).aggregate(total=Sum('total_revenue'))['total'] or Decimal('0')
+
+    # Deliveries (unique packinghouse receipts)
+    current_deliveries = HarvestLoad.objects.filter(
+        harvest_id__in=current_harvest_ids
+    ).count()
+
+    # Applications
+    current_applications = PesticideApplication.objects.filter(
+        field_id__in=field_ids,
+        application_date__gte=start_date,
+        application_date__lte=end_date
+    ).count()
+
+    # ==========================================================================
+    # LAST SEASON DATA (for comparison)
+    # ==========================================================================
+    last_season_data = None
+    if last_start_date and last_end_date:
+        last_harvests = Harvest.objects.filter(
+            field_id__in=field_ids,
+            harvest_date__gte=last_start_date,
+            harvest_date__lte=last_end_date
+        )
+        last_bins = last_harvests.aggregate(total=Sum('total_bins'))['total'] or 0
+
+        last_harvest_ids = last_harvests.values_list('id', flat=True)
+        last_revenue = HarvestLoad.objects.filter(
+            harvest_id__in=last_harvest_ids
+        ).aggregate(total=Sum('total_revenue'))['total'] or Decimal('0')
+
+        last_deliveries = HarvestLoad.objects.filter(
+            harvest_id__in=last_harvest_ids
+        ).count()
+
+        last_applications = PesticideApplication.objects.filter(
+            field_id__in=field_ids,
+            application_date__gte=last_start_date,
+            application_date__lte=last_end_date
+        ).count()
+
+        last_season_data = {
+            'label': last_season_label,
+            'harvest_bins': last_bins,
+            'applications': last_applications,
+            'deliveries': last_deliveries,
+            'revenue': float(last_revenue),
+        }
+
+    # ==========================================================================
+    # TASKS (Compliance deadlines)
+    # ==========================================================================
+    from .models import ComplianceDeadline
+
+    overdue_tasks = 0
+    due_this_week = 0
+
+    try:
+        deadlines = ComplianceDeadline.objects.filter(
+            company=company,
+            completed=False
+        )
+        overdue_tasks = deadlines.filter(due_date__lt=today).count()
+        week_from_now = today + timedelta(days=7)
+        due_this_week = deadlines.filter(
+            due_date__gte=today,
+            due_date__lte=week_from_now
+        ).count()
+    except Exception:
+        # ComplianceDeadline might not exist
+        pass
+
+    # ==========================================================================
+    # RESPONSE
+    # ==========================================================================
+    return Response({
+        'season': {
+            'label': season_label,
+            'start_date': start_date.isoformat(),
+            'end_date': end_date.isoformat(),
+            'days_elapsed': elapsed_days,
+            'days_total': total_days,
+            'progress_percent': progress_percent,
+            'is_active': start_date <= today <= end_date,
+        },
+        'current': {
+            'harvest_bins': current_bins,
+            'applications': current_applications,
+            'deliveries': current_deliveries,
+            'revenue': float(current_revenue),
+        },
+        'last_season': last_season_data,
+        'goals': None,  # Future: allow setting season goals
+        'tasks': {
+            'overdue': overdue_tasks,
+            'due_this_week': due_this_week,
+        },
+    })
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated, HasCompanyAccess])
+def get_multi_crop_season_dashboard(request):
+    """
+    Get season dashboard data for all crop categories the user farms.
+
+    Returns an array of season data, one for each crop category found in the user's fields.
+    This allows displaying multiple season progress cards for diversified operations.
+
+    Query Parameters:
+    - farm_id: Optional farm filter
+
+    Returns:
+    {
+        "categories": [
+            {
+                "category": "citrus",
+                "category_display": "Citrus",
+                "field_count": 10,
+                "season": { label, start_date, end_date, ... },
+                "current": { harvest_bins, applications, revenue },
+                "last_season": { ... }
+            },
+            ...
+        ],
+        "tasks": { overdue, due_this_week }
+    }
+    """
+    import logging
+    logger = logging.getLogger(__name__)
+
+    company = get_company_from_user(request.user)
+    if not company:
+        return Response(
+            {'error': 'No company associated with user'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    try:
+        return _get_multi_crop_season_dashboard_impl(request, company)
+    except Exception as e:
+        logger.exception(f"Multi-crop season dashboard error: {e}")
+        return Response(
+            {'error': str(e)},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+
+def _get_multi_crop_season_dashboard_impl(request, company):
+    """Internal implementation of multi-crop season dashboard."""
+    from datetime import date
+    from .models import Crop, CropCategory
+
+    farm_id = request.query_params.get('farm_id')
+    today = date.today()
+
+    # Get farms and fields
+    farms = Farm.objects.filter(company=company)
+    if farm_id:
+        farms = farms.filter(id=farm_id)
+
+    farm_ids = farms.values_list('id', flat=True)
+    fields = Field.objects.filter(farm_id__in=farm_ids).select_related('crop')
+
+    # Find unique crop categories from user's fields
+    categories_found = set()
+    field_by_category = defaultdict(list)
+
+    for field in fields:
+        if field.crop and field.crop.category:
+            cat = field.crop.category
+            categories_found.add(cat)
+            field_by_category[cat].append(field.id)
+        else:
+            # Default to 'citrus' for fields without explicit crop
+            categories_found.add('citrus')
+            field_by_category['citrus'].append(field.id)
+
+    # If no categories found, default to citrus
+    if not categories_found:
+        categories_found.add('citrus')
+
+    # Category display names
+    category_labels = {
+        'citrus': 'Citrus',
+        'subtropical': 'Subtropical',
+        'deciduous_fruit': 'Deciduous Fruit',
+        'vine': 'Vine',
+        'row_crop': 'Row Crop',
+        'vegetable': 'Vegetable',
+        'nut': 'Nut',
+        'berry': 'Berry',
+        'other': 'Other',
+    }
+
+    service = SeasonService(company_id=company.id)
+    categories_data = []
+
+    for category in sorted(categories_found):
+        field_ids_for_cat = field_by_category.get(category, [])
+
+        # Get season info for this category
+        current_season = service.get_current_season(crop_category=category)
+        start_date = current_season.start_date
+        end_date = current_season.end_date
+
+        # Calculate progress
+        total_days = (end_date - start_date).days
+        elapsed_days = (today - start_date).days
+        elapsed_days = max(0, min(elapsed_days, total_days))
+        progress_percent = round((elapsed_days / total_days) * 100) if total_days > 0 else 0
+
+        # Current season metrics for this category's fields
+        current_harvests = Harvest.objects.filter(
+            field_id__in=field_ids_for_cat,
+            harvest_date__gte=start_date,
+            harvest_date__lte=end_date
+        )
+        current_bins = current_harvests.aggregate(total=Sum('total_bins'))['total'] or 0
+
+        current_harvest_ids = current_harvests.values_list('id', flat=True)
+        current_revenue = HarvestLoad.objects.filter(
+            harvest_id__in=current_harvest_ids
+        ).aggregate(total=Sum('total_revenue'))['total'] or Decimal('0')
+
+        current_applications = PesticideApplication.objects.filter(
+            field_id__in=field_ids_for_cat,
+            application_date__gte=start_date,
+            application_date__lte=end_date
+        ).count()
+
+        # Last season comparison
+        last_season_data = None
+        try:
+            last_season = service.get_last_season(
+                season_label=current_season.label,
+                crop_category=category
+            )
+            last_harvests = Harvest.objects.filter(
+                field_id__in=field_ids_for_cat,
+                harvest_date__gte=last_season.start_date,
+                harvest_date__lte=last_season.end_date
+            )
+            last_bins = last_harvests.aggregate(total=Sum('total_bins'))['total'] or 0
+
+            last_harvest_ids = last_harvests.values_list('id', flat=True)
+            last_revenue = HarvestLoad.objects.filter(
+                harvest_id__in=last_harvest_ids
+            ).aggregate(total=Sum('total_revenue'))['total'] or Decimal('0')
+
+            last_applications = PesticideApplication.objects.filter(
+                field_id__in=field_ids_for_cat,
+                application_date__gte=last_season.start_date,
+                application_date__lte=last_season.end_date
+            ).count()
+
+            last_season_data = {
+                'label': last_season.label,
+                'harvest_bins': last_bins,
+                'applications': last_applications,
+                'revenue': float(last_revenue),
+            }
+        except (ValueError, AttributeError):
+            pass
+
+        categories_data.append({
+            'category': category,
+            'category_display': category_labels.get(category, category.title()),
+            'field_count': len(field_ids_for_cat),
+            'season': {
+                'label': current_season.label,
+                'start_date': start_date.isoformat(),
+                'end_date': end_date.isoformat(),
+                'days_elapsed': elapsed_days,
+                'days_total': total_days,
+                'progress_percent': progress_percent,
+                'is_active': start_date <= today <= end_date,
+            },
+            'current': {
+                'harvest_bins': current_bins,
+                'applications': current_applications,
+                'revenue': float(current_revenue),
+            },
+            'last_season': last_season_data,
+        })
+
+    # Tasks (company-wide, not per category)
+    from .models import ComplianceDeadline
+    overdue_tasks = 0
+    due_this_week = 0
+
+    try:
+        deadlines = ComplianceDeadline.objects.filter(
+            company=company,
+            completed=False
+        )
+        overdue_tasks = deadlines.filter(due_date__lt=today).count()
+        week_from_now = today + timedelta(days=7)
+        due_this_week = deadlines.filter(
+            due_date__gte=today,
+            due_date__lte=week_from_now
+        ).count()
+    except Exception:
+        pass
+
+    return Response({
+        'categories': categories_data,
+        'tasks': {
+            'overdue': overdue_tasks,
+            'due_this_week': due_this_week,
+        },
     })

@@ -27,6 +27,7 @@ import { useAuth } from './contexts/AuthContext';
 import { DataProvider } from './contexts/DataContext';
 import { ModalProvider } from './contexts/ModalContext';
 import { ThemeProvider, useTheme } from './contexts/ThemeContext';
+import { SeasonProvider } from './contexts/SeasonContext';
 
 // Components
 import Dashboard from './components/Dashboard';
@@ -551,11 +552,13 @@ function AppContent() {
 function App() {
   return (
     <ThemeProvider>
-      <DataProvider>
-        <ModalProvider>
-          <AppContent />
-        </ModalProvider>
-      </DataProvider>
+      <SeasonProvider>
+        <DataProvider>
+          <ModalProvider>
+            <AppContent />
+          </ModalProvider>
+        </DataProvider>
+      </SeasonProvider>
     </ThemeProvider>
   );
 }

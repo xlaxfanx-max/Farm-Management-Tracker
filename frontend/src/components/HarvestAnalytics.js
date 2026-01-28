@@ -6,25 +6,35 @@
 import React, { useState, useEffect } from 'react';
 import { TrendingUp, DollarSign, Users, BarChart3, AlertCircle } from 'lucide-react';
 import { harvestsAPI } from '../services/api';
+import SeasonSelector from './SeasonSelector';
+import { useSeason } from '../contexts/SeasonContext';
 
 const HarvestAnalytics = () => {
   const [analyticsData, setAnalyticsData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [filters, setFilters] = useState({
-    season: new Date().getFullYear().toString(),
-  });
 
-  // Load analytics data
+  // Use shared season context (persists across pages)
+  const { selectedSeason, setSelectedSeason, seasonDates } = useSeason();
+
+  // Load analytics data when season or dates change
   useEffect(() => {
-    loadAnalytics();
-  }, [filters]);
+    if (selectedSeason) {
+      loadAnalytics();
+    }
+  }, [selectedSeason, seasonDates]);
 
   const loadAnalytics = async () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await harvestsAPI.getCostAnalysis(filters);
+      const params = { season: selectedSeason };
+      // Include date range if available for more precise filtering
+      if (seasonDates) {
+        params.start_date = seasonDates.start_date;
+        params.end_date = seasonDates.end_date;
+      }
+      const response = await harvestsAPI.getCostAnalysis(params);
       setAnalyticsData(response.data);
     } catch (err) {
       console.error('Error loading analytics:', err);
@@ -32,10 +42,6 @@ const HarvestAnalytics = () => {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleSeasonChange = (e) => {
-    setFilters(prev => ({ ...prev, season: e.target.value }));
   };
 
   if (loading) {
@@ -79,15 +85,12 @@ const HarvestAnalytics = () => {
         </div>
         <div className="flex items-center gap-3">
           <label className="text-sm font-medium text-gray-700">Season:</label>
-          <select
-            value={filters.season}
-            onChange={handleSeasonChange}
+          <SeasonSelector
+            value={selectedSeason}
+            onChange={setSelectedSeason}
             className="border rounded-lg px-3 py-2"
-          >
-            {Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i).map(year => (
-              <option key={year} value={year}>{year}</option>
-            ))}
-          </select>
+            placeholder="Select Season"
+          />
         </div>
       </div>
 

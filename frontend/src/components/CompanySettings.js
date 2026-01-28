@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { companyAPI } from '../services/api';
+import SeasonTemplatesManager from './settings/SeasonTemplatesManager';
 import {
   Building2,
   MapPin,
@@ -17,7 +18,8 @@ import {
   AlertCircle,
   CheckCircle,
   Loader2,
-  ChevronLeft
+  ChevronLeft,
+  Sprout
 } from 'lucide-react';
 
 const CompanySettings = ({ onBack }) => {
@@ -716,6 +718,22 @@ const CompanySettings = ({ onBack }) => {
                 </p>
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* Season Templates */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+          <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
+            <h2 className="text-lg font-semibold text-gray-900 flex items-center">
+              <Sprout className="w-5 h-5 mr-2 text-green-600" />
+              Season Templates
+            </h2>
+            <p className="text-sm text-gray-500 mt-1">
+              Configure growing seasons for different crop types
+            </p>
+          </div>
+          <div className="p-6">
+            <SeasonTemplatesManager isOwner={isOwner} />
           </div>
         </div>
 

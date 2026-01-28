@@ -336,6 +336,20 @@ export const analyticsAPI = {
    * @returns Key metrics summary
    */
   getSummary: () => api.get('/analytics/summary/'),
+
+  /**
+   * Get season-specific dashboard data for SeasonProgressCard
+   * @param {Object} params - Query parameters (season, crop_category, farm_id)
+   * @returns Season progress data with current/last season comparison
+   */
+  getSeasonDashboard: (params = {}) => api.get('/analytics/season-dashboard/', { params }),
+
+  /**
+   * Get season data for all crop categories the user farms
+   * @param {Object} params - Query parameters (farm_id)
+   * @returns Array of season data grouped by crop category
+   */
+  getMultiCropSeasons: (params = {}) => api.get('/analytics/multi-crop-seasons/', { params }),
 };
 
 // =============================================================================
@@ -2652,6 +2666,69 @@ export const PACKINGHOUSE_CONSTANTS = {
     }
     return `${year - 1}-${year}`;
   },
+};
+
+// =============================================================================
+// SEASON MANAGEMENT API
+// =============================================================================
+
+export const seasonAPI = {
+  /**
+   * Get season information for current context.
+   * @param {Object} params - Query parameters
+   * @param {number} params.field_id - Optional field for context
+   * @param {string} params.crop_category - Optional crop category
+   * @param {string} params.date - Optional target date (YYYY-MM-DD)
+   * @returns {Promise} - { current_season, available_seasons }
+   */
+  getSeasonInfo: (params = {}) => api.get('/seasons/info/', { params }),
+
+  /**
+   * Get date range for a specific season label.
+   * @param {Object} params - Query parameters
+   * @param {string} params.season - Season label (required)
+   * @param {number} params.field_id - Optional field for context
+   * @param {string} params.crop_category - Optional crop category
+   * @returns {Promise} - { season, start_date, end_date }
+   */
+  getSeasonDateRange: (params = {}) => api.get('/seasons/date-range/', { params }),
+
+  /**
+   * Get the current season, optionally for a specific field or crop category.
+   * Fetches from API for accurate season calculation.
+   */
+  getCurrentSeason: async (fieldId = null, cropCategory = null) => {
+    const params = {};
+    if (fieldId) params.field_id = fieldId;
+    if (cropCategory) params.crop_category = cropCategory;
+    const response = await api.get('/seasons/info/', { params });
+    return response.data.current_season;
+  },
+
+  // Season Template CRUD
+  getSeasonTemplates: (params = {}) => api.get('/season-templates/', { params }),
+  getSeasonTemplate: (id) => api.get(`/season-templates/${id}/`),
+  createSeasonTemplate: (data) => api.post('/season-templates/', data),
+  updateSeasonTemplate: (id, data) => api.put(`/season-templates/${id}/`, data),
+  deleteSeasonTemplate: (id) => api.delete(`/season-templates/${id}/`),
+  getTemplateForCategory: (category) =>
+    api.get('/season-templates/for_category/', { params: { category } }),
+  getSystemDefaults: () => api.get('/season-templates/system_defaults/'),
+
+  // Growing Cycle CRUD
+  getGrowingCycles: (params = {}) => api.get('/growing-cycles/', { params }),
+  getGrowingCycle: (id) => api.get(`/growing-cycles/${id}/`),
+  createGrowingCycle: (data) => api.post('/growing-cycles/', data),
+  updateGrowingCycle: (id, data) => api.put(`/growing-cycles/${id}/`, data),
+  deleteGrowingCycle: (id) => api.delete(`/growing-cycles/${id}/`),
+  getActiveCycles: () => api.get('/growing-cycles/active/'),
+  getCyclesForField: (fieldId, year = null) => {
+    const params = { field_id: fieldId };
+    if (year) params.year = year;
+    return api.get('/growing-cycles/for_field/', { params });
+  },
+  completeCycle: (id) => api.post(`/growing-cycles/${id}/complete/`),
+  startCycle: (id) => api.post(`/growing-cycles/${id}/start/`),
 };
 
 // =============================================================================

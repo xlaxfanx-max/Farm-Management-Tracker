@@ -19,6 +19,8 @@ import {
   Award,
 } from 'lucide-react';
 import { analyticsAPI, farmsAPI } from '../services/api';
+import SeasonSelector from './SeasonSelector';
+import { useSeason } from '../contexts/SeasonContext';
 
 // =============================================================================
 // KPI CARD COMPONENT
@@ -388,16 +390,20 @@ export default function Analytics() {
   const [farms, setFarms] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [selectedFarm, setSelectedFarm] = useState('all');
+
+  // Use shared season context (persists across pages)
+  const { selectedSeason, setSelectedSeason, seasonDates } = useSeason();
 
   useEffect(() => {
     loadFarms();
   }, []);
 
   useEffect(() => {
-    loadData();
-  }, [selectedYear, selectedFarm]);
+    if (selectedSeason) {
+      loadData();
+    }
+  }, [selectedSeason, selectedFarm, seasonDates]);
 
   const loadFarms = async () => {
     try {
@@ -413,7 +419,18 @@ export default function Analytics() {
     setError(null);
 
     try {
-      const params = { year: selectedYear };
+      const params = {};
+      // Use season dates if available, otherwise extract year from season label
+      if (seasonDates) {
+        params.start_date = seasonDates.start_date;
+        params.end_date = seasonDates.end_date;
+      } else if (selectedSeason) {
+        // Fallback: extract year from season label
+        const year = selectedSeason.includes('-')
+          ? parseInt(selectedSeason.split('-')[0])
+          : parseInt(selectedSeason);
+        params.year = year;
+      }
       if (selectedFarm !== 'all') {
         params.farm_id = selectedFarm;
       }
@@ -435,12 +452,6 @@ export default function Analytics() {
     return `$${value.toFixed(0)}`;
   };
 
-  const years = [];
-  const currentYear = new Date().getFullYear();
-  for (let y = currentYear; y >= currentYear - 5; y--) {
-    years.push(y);
-  }
-
   return (
     <div className="max-w-7xl mx-auto">
       {/* Header */}
@@ -448,22 +459,19 @@ export default function Analytics() {
         <div>
           <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
             <BarChart3 className="w-7 h-7 text-green-600" />
-            Analytics
+            Analytics {selectedSeason && <span className="text-lg font-normal text-gray-500">• {selectedSeason} Season</span>}
           </h1>
           <p className="text-gray-600">Financial and operational insights for your farm</p>
         </div>
 
         <div className="flex items-center gap-3">
-          {/* Year Selector */}
-          <select
-            value={selectedYear}
-            onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+          {/* Season Selector */}
+          <SeasonSelector
+            value={selectedSeason}
+            onChange={setSelectedSeason}
             className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent"
-          >
-            {years.map(y => (
-              <option key={y} value={y}>{y}</option>
-            ))}
-          </select>
+            placeholder="Select Season"
+          />
 
           {/* Farm Selector */}
           <select

@@ -6,6 +6,7 @@ from .models import (
     Crop, Rootstock,
     ExternalDetection, QuarantineZone, DiseaseAlertRule, DiseaseAnalysisRun,
     DiseaseAlert, ScoutingReport, ScoutingPhoto,
+    SeasonTemplate, GrowingCycle,
 )
 
 @admin.register(Farm)
@@ -391,5 +392,57 @@ class ScoutingReportAdmin(admin.ModelAdmin):
         }),
         ('Sharing', {
             'fields': ('share_anonymously', 'is_public')
+        }),
+    )
+
+
+# =============================================================================
+# SEASON MANAGEMENT ADMIN
+# =============================================================================
+
+@admin.register(SeasonTemplate)
+class SeasonTemplateAdmin(admin.ModelAdmin):
+    list_display = ['name', 'season_type', 'start_month', 'duration_months', 'crosses_calendar_year', 'company', 'active']
+    list_filter = ['active', 'season_type', 'crosses_calendar_year', 'company']
+    search_fields = ['name']
+    ordering = ['name']
+
+    fieldsets = (
+        ('Identification', {
+            'fields': ('name', 'season_type')
+        }),
+        ('Date Configuration', {
+            'fields': ('start_month', 'start_day', 'duration_months', 'crosses_calendar_year')
+        }),
+        ('Display', {
+            'fields': ('label_format', 'applicable_categories')
+        }),
+        ('Ownership', {
+            'fields': ('company', 'active')
+        }),
+    )
+
+
+@admin.register(GrowingCycle)
+class GrowingCycleAdmin(admin.ModelAdmin):
+    list_display = ['field', 'year', 'cycle_number', 'crop', 'status', 'planting_date', 'expected_harvest_end']
+    list_filter = ['status', 'year', 'field__farm__company']
+    search_fields = ['field__name', 'crop__name']
+    ordering = ['-year', 'cycle_number']
+    raw_id_fields = ['field', 'crop']
+
+    fieldsets = (
+        ('Identification', {
+            'fields': ('field', 'year', 'cycle_number', 'crop')
+        }),
+        ('Dates', {
+            'fields': ('planting_date', 'expected_harvest_start', 'expected_harvest_end', 'actual_harvest_date')
+        }),
+        ('Growing Parameters', {
+            'fields': ('days_to_maturity', 'status')
+        }),
+        ('Notes', {
+            'fields': ('notes',),
+            'classes': ('collapse',)
         }),
     )

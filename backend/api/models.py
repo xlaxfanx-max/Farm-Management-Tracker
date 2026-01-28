@@ -1,5 +1,5 @@
 from django.db import models
-from django.core.validators import MinValueValidator
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.utils import timezone
 import uuid
@@ -931,6 +931,146 @@ class CropType(models.TextChoices):
     ANNUAL = 'annual', 'Annual'
 
 
+class SeasonType(models.TextChoices):
+    """Season type classifications determining how season dates are calculated."""
+    CALENDAR_YEAR = 'calendar_year', 'Calendar Year (Jan-Dec)'
+    CITRUS = 'citrus', 'Citrus Season (Oct-Sep)'
+    AVOCADO = 'avocado', 'Avocado Season (Nov-Oct)'
+    ALMOND = 'almond', 'Almond Season (Feb-Oct)'
+    GRAPE = 'grape', 'Grape Season (Mar-Dec)'
+    MULTIPLE_CYCLE = 'multiple_cycle', 'Multiple Cycles Per Year'
+    CUSTOM = 'custom', 'Custom Date Range'
+
+
+class SeasonTemplate(models.Model):
+    """
+    Season templates defining date calculation rules for different crop types.
+    System-wide defaults (company=null) can be customized per company.
+
+    Examples:
+    - California Citrus: starts Oct 1, duration 12 months, crosses calendar year
+    - Calendar Year: starts Jan 1, duration 12 months
+    - Almond: starts Feb 1, duration 9 months (Feb-Oct harvest window)
+    """
+
+    name = models.CharField(
+        max_length=100,
+        help_text="Template name (e.g., 'California Citrus', 'Calendar Year')"
+    )
+    season_type = models.CharField(
+        max_length=30,
+        choices=SeasonType.choices,
+        default=SeasonType.CALENDAR_YEAR,
+        help_text="Season calculation type"
+    )
+
+    # Date calculation fields
+    start_month = models.PositiveSmallIntegerField(
+        validators=[MinValueValidator(1), MaxValueValidator(12)],
+        help_text="Month season starts (1=January, 12=December)"
+    )
+    start_day = models.PositiveSmallIntegerField(
+        default=1,
+        validators=[MinValueValidator(1), MaxValueValidator(31)],
+        help_text="Day of month season starts"
+    )
+    duration_months = models.PositiveSmallIntegerField(
+        default=12,
+        validators=[MinValueValidator(1), MaxValueValidator(24)],
+        help_text="Duration in months (typically 12)"
+    )
+
+    # Cross-year indicator
+    crosses_calendar_year = models.BooleanField(
+        default=False,
+        help_text="True if season spans two calendar years (e.g., citrus Oct-Sep)"
+    )
+
+    # Label format for display
+    label_format = models.CharField(
+        max_length=50,
+        default='{start_year}',
+        help_text="Label format using {start_year} and/or {end_year} placeholders"
+    )
+
+    # Applicable crop categories (JSON list)
+    applicable_categories = models.JSONField(
+        default=list,
+        blank=True,
+        help_text="List of CropCategory values this template applies to (e.g., ['citrus', 'subtropical'])"
+    )
+
+    # Ownership - null for system defaults
+    company = models.ForeignKey(
+        'Company',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='season_templates',
+        help_text="Null for system defaults, set for company-specific templates"
+    )
+
+    active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['name']
+        verbose_name = "Season Template"
+        verbose_name_plural = "Season Templates"
+        constraints = [
+            models.UniqueConstraint(
+                fields=['name', 'company'],
+                name='unique_season_template_per_company'
+            )
+        ]
+        indexes = [
+            models.Index(fields=['company', 'active']),
+            models.Index(fields=['season_type']),
+        ]
+
+    def __str__(self):
+        company_str = f" ({self.company.name})" if self.company else " (System)"
+        return f"{self.name}{company_str}"
+
+    @classmethod
+    def get_system_defaults(cls):
+        """Get all system default season templates (company=null)."""
+        return cls.objects.filter(company__isnull=True, active=True)
+
+    @classmethod
+    def get_for_category(cls, category: str, company=None):
+        """
+        Get the best matching template for a crop category.
+        Priority: company-specific > system default > calendar year fallback.
+        """
+        # Try company-specific first
+        if company:
+            template = cls.objects.filter(
+                company=company,
+                applicable_categories__contains=[category],
+                active=True
+            ).first()
+            if template:
+                return template
+
+        # Try system default for category
+        template = cls.objects.filter(
+            company__isnull=True,
+            applicable_categories__contains=[category],
+            active=True
+        ).first()
+        if template:
+            return template
+
+        # Fall back to calendar year
+        return cls.objects.filter(
+            company__isnull=True,
+            season_type=SeasonType.CALENDAR_YEAR,
+            active=True
+        ).first()
+
+
 class Crop(models.Model):
     """
     Master reference table for crop varieties.
@@ -1023,6 +1163,30 @@ class Crop(models.Model):
     default_bin_weight_lbs = models.IntegerField(
         default=900,
         help_text="Default bin weight for harvest calculations"
+    )
+
+    # === SEASON CONFIGURATION ===
+    season_template = models.ForeignKey(
+        SeasonTemplate,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='crops',
+        help_text="Default season template for this crop type"
+    )
+    supports_multiple_cycles = models.BooleanField(
+        default=False,
+        help_text="True for crops with multiple harvests per year (lettuce, strawberries)"
+    )
+    typical_cycles_per_year = models.PositiveSmallIntegerField(
+        null=True,
+        blank=True,
+        help_text="Typical number of growing cycles per year (for multi-cycle crops)"
+    )
+    typical_days_to_maturity = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        help_text="Typical days from planting to harvest"
     )
 
     # === OWNERSHIP & STATUS ===
@@ -1268,6 +1432,24 @@ class Field(LocationMixin, models.Model):
         blank=True,
         related_name='fields',
         help_text="Rootstock variety (for tree/vine crops)"
+    )
+
+    # === SEASON CONFIGURATION ===
+    season_template = models.ForeignKey(
+        SeasonTemplate,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='fields',
+        help_text="Override season template for this field (defaults to crop's template)"
+    )
+    current_growing_cycle = models.ForeignKey(
+        'GrowingCycle',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='+',
+        help_text="Currently active growing cycle (for multi-cycle crops)"
     )
 
     # === PLANTING DATA ===
@@ -1536,6 +1718,182 @@ class Field(LocationMixin, models.Model):
         if self.boundary_geojson and not self.has_coordinates:
             self.calculate_centroid_from_boundary()
 
+        super().save(*args, **kwargs)
+
+    def get_season_template(self):
+        """
+        Get the applicable season template for this field.
+        Priority: Field override > Crop default > Category default > Calendar year
+        """
+        # Field-level override
+        if self.season_template:
+            return self.season_template
+
+        # Crop-level default
+        if self.crop and self.crop.season_template:
+            return self.crop.season_template
+
+        # Look up by crop category
+        if self.crop and self.crop.category:
+            company = self.farm.company if self.farm else None
+            return SeasonTemplate.get_for_category(self.crop.category, company)
+
+        # Fall back to calendar year (will be created in migration)
+        return SeasonTemplate.objects.filter(
+            company__isnull=True,
+            season_type=SeasonType.CALENDAR_YEAR,
+            active=True
+        ).first()
+
+
+class GrowingCycleStatus(models.TextChoices):
+    """Status choices for growing cycles."""
+    PLANNED = 'planned', 'Planned'
+    PLANTED = 'planted', 'Planted'
+    GROWING = 'growing', 'Growing'
+    HARVESTING = 'harvesting', 'Harvesting'
+    COMPLETE = 'complete', 'Complete'
+    ABANDONED = 'abandoned', 'Abandoned'
+
+
+class GrowingCycle(models.Model):
+    """
+    Represents a specific growing cycle for crops that have multiple
+    harvests per year (lettuce, strawberries, tomatoes, etc.)
+
+    Each cycle tracks planting to harvest for one crop rotation.
+    Applications and harvests can optionally link to a specific cycle.
+    """
+
+    field = models.ForeignKey(
+        'Field',
+        on_delete=models.CASCADE,
+        related_name='growing_cycles'
+    )
+
+    # Cycle identification
+    cycle_number = models.PositiveSmallIntegerField(
+        default=1,
+        help_text="Cycle number within the year (1, 2, 3...)"
+    )
+    year = models.PositiveIntegerField(
+        help_text="Calendar year this cycle occurs in"
+    )
+
+    # Crop for this cycle (may differ from field's primary crop for rotation)
+    crop = models.ForeignKey(
+        'Crop',
+        on_delete=models.PROTECT,
+        related_name='growing_cycles',
+        null=True,
+        blank=True,
+        help_text="Crop for this cycle (optional, defaults to field's crop)"
+    )
+
+    # Cycle dates
+    planting_date = models.DateField(
+        null=True,
+        blank=True,
+        help_text="Actual or planned planting date"
+    )
+    expected_harvest_start = models.DateField(
+        null=True,
+        blank=True,
+        help_text="Expected start of harvest window"
+    )
+    expected_harvest_end = models.DateField(
+        null=True,
+        blank=True,
+        help_text="Expected end of harvest window"
+    )
+    actual_harvest_date = models.DateField(
+        null=True,
+        blank=True,
+        help_text="Actual harvest completion date"
+    )
+
+    # Growing parameters
+    days_to_maturity = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        help_text="Expected days from planting to harvest (can override crop default)"
+    )
+
+    # Status
+    status = models.CharField(
+        max_length=20,
+        choices=GrowingCycleStatus.choices,
+        default=GrowingCycleStatus.PLANNED
+    )
+
+    notes = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['year', 'cycle_number']
+        verbose_name = "Growing Cycle"
+        verbose_name_plural = "Growing Cycles"
+        constraints = [
+            models.UniqueConstraint(
+                fields=['field', 'year', 'cycle_number'],
+                name='unique_cycle_per_field_year'
+            )
+        ]
+        indexes = [
+            models.Index(fields=['field', 'year']),
+            models.Index(fields=['status', 'year']),
+            models.Index(fields=['planting_date']),
+        ]
+
+    def __str__(self):
+        crop_name = self.crop.name if self.crop else (
+            self.field.crop.name if self.field.crop else 'Unknown'
+        )
+        return f"{self.field.name} - {crop_name} Cycle {self.cycle_number} ({self.year})"
+
+    @property
+    def is_active(self) -> bool:
+        """Check if this cycle is currently active."""
+        return self.status in (
+            GrowingCycleStatus.PLANTED,
+            GrowingCycleStatus.GROWING,
+            GrowingCycleStatus.HARVESTING
+        )
+
+    @property
+    def effective_crop(self):
+        """Get the crop for this cycle, defaulting to field's crop."""
+        return self.crop or self.field.crop
+
+    @property
+    def duration_days(self):
+        """Calculate actual or expected duration in days."""
+        if self.planting_date and self.actual_harvest_date:
+            return (self.actual_harvest_date - self.planting_date).days
+        if self.planting_date and self.expected_harvest_end:
+            return (self.expected_harvest_end - self.planting_date).days
+        return self.days_to_maturity
+
+    def get_season_context(self) -> dict:
+        """Return season-like context for this cycle (for compliance checking)."""
+        return {
+            'label': f"{self.year} Cycle {self.cycle_number}",
+            'start_date': self.planting_date,
+            'end_date': self.actual_harvest_date or self.expected_harvest_end,
+            'type': 'growing_cycle',
+            'cycle_id': self.id,
+        }
+
+    def save(self, *args, **kwargs):
+        # Auto-calculate expected harvest if planting date and days to maturity known
+        if self.planting_date and not self.expected_harvest_start:
+            days = self.days_to_maturity
+            if not days and self.effective_crop:
+                days = self.effective_crop.typical_days_to_maturity
+            if days:
+                from datetime import timedelta
+                self.expected_harvest_start = self.planting_date + timedelta(days=days)
         super().save(*args, **kwargs)
 
 
@@ -1856,7 +2214,17 @@ class PesticideApplication(models.Model):
     # Field information
     field = models.ForeignKey(Field, on_delete=models.PROTECT, related_name='applications')
     acres_treated = models.DecimalField(max_digits=10, decimal_places=2)
-    
+
+    # Growing cycle (optional, for multi-cycle crops)
+    growing_cycle = models.ForeignKey(
+        'GrowingCycle',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='applications',
+        help_text="Associated growing cycle (for multi-cycle crops like lettuce)"
+    )
+
     # Product information
     product = models.ForeignKey(PesticideProduct, on_delete=models.PROTECT, related_name='applications')
     
@@ -2733,7 +3101,17 @@ class Harvest(models.Model):
         on_delete=models.CASCADE,
         related_name='harvests'
     )
-    
+
+    # Growing cycle (optional, for multi-cycle crops)
+    growing_cycle = models.ForeignKey(
+        'GrowingCycle',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='harvests',
+        help_text="Associated growing cycle (for multi-cycle crops)"
+    )
+
     # Basic Harvest Info
     harvest_date = models.DateField()
     harvest_number = models.PositiveIntegerField(
@@ -9209,11 +9587,32 @@ class Pool(models.Model):
         help_text='e.g., "CARA NAVELS", "PIXIES"'
     )
 
-    # Season tracking
+    # Season tracking (legacy string field kept for backward compatibility)
     season = models.CharField(
         max_length=20,
-        help_text='e.g., "2024-2025"'
+        help_text='Legacy season string (e.g., "2024-2025")'
     )
+
+    # Structured season fields (new)
+    season_template = models.ForeignKey(
+        'SeasonTemplate',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='pools',
+        help_text="Season template used for this pool"
+    )
+    season_start = models.DateField(
+        null=True,
+        blank=True,
+        help_text="Actual season start date"
+    )
+    season_end = models.DateField(
+        null=True,
+        blank=True,
+        help_text="Actual season end date"
+    )
+
     pool_type = models.CharField(
         max_length=20,
         choices=POOL_TYPE_CHOICES,

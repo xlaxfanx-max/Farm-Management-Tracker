@@ -75,6 +75,16 @@ from .weather_views import (
 from .analytics_views import (
     get_analytics_dashboard,
     get_analytics_summary,
+    get_season_dashboard,
+    get_multi_crop_season_dashboard,
+)
+
+# Import season views
+from .season_views import (
+    get_season_info,
+    get_season_date_range,
+    SeasonTemplateViewSet,
+    GrowingCycleViewSet,
 )
 
 # Import imagery/tree detection views
@@ -216,6 +226,10 @@ router.register(r'kc-profiles', CropCoefficientProfileViewSet, basename='kc-prof
 router.register(r'soil-moisture-readings', SoilMoistureReadingViewSet, basename='soil-moisture-reading')
 router.register(r'crops', CropViewSet, basename='crop')
 router.register(r'rootstocks', RootstockViewSet, basename='rootstock')
+
+# Season Management
+router.register(r'season-templates', SeasonTemplateViewSet, basename='season-template')
+router.register(r'growing-cycles', GrowingCycleViewSet, basename='growing-cycle')
 
 # Satellite Imagery & Tree Detection
 router.register(r'satellite-images', SatelliteImageViewSet, basename='satellite-image')
@@ -360,6 +374,12 @@ urlpatterns = [
     # Analytics routes
     path('analytics/dashboard/', get_analytics_dashboard, name='analytics-dashboard'),
     path('analytics/summary/', get_analytics_summary, name='analytics-summary'),
+    path('analytics/season-dashboard/', get_season_dashboard, name='analytics-season-dashboard'),
+    path('analytics/multi-crop-seasons/', get_multi_crop_season_dashboard, name='analytics-multi-crop-seasons'),
+
+    # Season management routes
+    path('seasons/info/', get_season_info, name='season-info'),
+    path('seasons/date-range/', get_season_date_range, name='season-date-range'),
 
     # Quarantine status routes
     path('quarantine/check/', check_quarantine_status, name='quarantine-check'),

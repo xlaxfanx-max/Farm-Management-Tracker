@@ -19,6 +19,7 @@ import FarmStatusStrip from './dashboard/FarmStatusStrip';
 import QuickActionsGrid from './dashboard/QuickActionsGrid';
 import UnifiedTaskList from './dashboard/UnifiedTaskList';
 import ModuleStatusCard from './dashboard/ModuleStatusCard';
+import SeasonProgressCard from './dashboard/SeasonProgressCard';
 
 // Existing Widgets
 import WeatherWidget from './WeatherWidget';
@@ -204,6 +205,9 @@ function Dashboard({ onNavigate }) {
           waterSources={waterSources}
           onFarmClick={handleFarmClick}
         />
+
+        {/* Season Progress Card */}
+        <SeasonProgressCard onNavigate={handleNavigate} />
 
         {/* Quick Actions */}
         <div>
