@@ -333,7 +333,12 @@ DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'Grove Master <noreply
 EMAIL_SUBJECT_PREFIX = '[Grove Master] '
 
 # Frontend URL for email links
-FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:3000')
+_raw_frontend_url = os.environ.get('FRONTEND_URL', 'http://localhost:3000')
+# Ensure URL has https:// scheme (handle env vars without scheme)
+if _raw_frontend_url and not _raw_frontend_url.startswith('http://') and not _raw_frontend_url.startswith('https://'):
+    FRONTEND_URL = f'https://{_raw_frontend_url}'
+else:
+    FRONTEND_URL = _raw_frontend_url
 
 # Password reset token validity (in seconds) - 24 hours
 PASSWORD_RESET_TIMEOUT = 86400

@@ -220,8 +220,8 @@ export const invitationsAPI = {
   // Resend invitation
   resend: (id) => api.post(`/invitations/${id}/resend/`),
 
-  // Revoke invitation
-  revoke: (id) => api.post(`/invitations/${id}/revoke/`),
+  // Revoke/delete invitation (uses DELETE method)
+  revoke: (id) => api.delete(`/invitations/${id}/`),
 };
 
 // =============================================================================
