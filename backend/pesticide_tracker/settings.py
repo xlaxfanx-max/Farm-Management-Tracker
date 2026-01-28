@@ -16,8 +16,9 @@ load_dotenv(BASE_DIR / '.env', override=True)
 # python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-change-this-in-production-abc123xyz')
 
-# SECURITY: Set DEBUG=False in production
-DEBUG = os.environ.get('DEBUG', 'True').lower() in ('true', '1', 'yes')
+# SECURITY: Defaults to False for production safety
+# Set DEBUG=True explicitly in development via .env file
+DEBUG = os.environ.get('DEBUG', 'False').lower() in ('true', '1', 'yes')
 
 AUTH_USER_MODEL = 'api.User'
 
@@ -214,8 +215,12 @@ _cors_origins = [
 ]
 # Add production frontend URL if set (handle both www and non-www)
 _frontend_url = os.environ.get('FRONTEND_URL', '')
-if _frontend_url and _frontend_url not in _cors_origins:
-    _cors_origins.append(_frontend_url)
+if _frontend_url:
+    # Ensure URL has https:// scheme
+    if not _frontend_url.startswith('http://') and not _frontend_url.startswith('https://'):
+        _frontend_url = f'https://{_frontend_url}'
+    if _frontend_url not in _cors_origins:
+        _cors_origins.append(_frontend_url)
     # Also add www/non-www variant
     if '://www.' in _frontend_url:
         _non_www = _frontend_url.replace('://www.', '://')
@@ -251,13 +256,25 @@ CORS_ALLOW_CREDENTIALS = True
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 100,
-        'DEFAULT_AUTHENTICATION_CLASSES': [
+    'MAX_PAGE_SIZE': 1000,
+    'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
         'rest_framework.authentication.SessionAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
     ],
+    # Rate limiting to prevent brute force attacks
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle',
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '100/hour',
+        'user': '1000/hour',
+        'auth': '5/minute',  # Strict limit for auth endpoints
+        'password_reset': '3/hour',  # Very strict for password reset
+    },
 }
 
 from datetime import timedelta
