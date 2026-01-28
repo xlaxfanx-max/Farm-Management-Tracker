@@ -212,16 +212,26 @@ _cors_origins = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
 ]
-# Add production frontend URL if set
+# Add production frontend URL if set (handle both www and non-www)
 _frontend_url = os.environ.get('FRONTEND_URL', '')
 if _frontend_url and _frontend_url not in _cors_origins:
     _cors_origins.append(_frontend_url)
+    # Also add www/non-www variant
+    if '://www.' in _frontend_url:
+        _non_www = _frontend_url.replace('://www.', '://')
+        if _non_www not in _cors_origins:
+            _cors_origins.append(_non_www)
+    elif '://' in _frontend_url:
+        _www = _frontend_url.replace('://', '://www.')
+        if _www not in _cors_origins:
+            _cors_origins.append(_www)
 
 CORS_ALLOWED_ORIGINS = _cors_origins
 
 # Allow all Railway subdomains (for production cross-service communication)
 CORS_ALLOWED_ORIGIN_REGEXES = [
     r"^https://.*\.up\.railway\.app$",
+    r"^https://(www\.)?ojaifarmingco\.com$",
 ]
 
 # CSRF trusted origins (required for cross-origin POST requests in production)
@@ -233,6 +243,8 @@ if os.environ.get('RAILWAY_ENVIRONMENT'):
         CSRF_TRUSTED_ORIGINS.append(f'https://{_railway_url}')
     # Allow all Railway subdomains for CSRF
     CSRF_TRUSTED_ORIGINS.append('https://*.up.railway.app')
+# Add custom domain for CSRF
+CSRF_TRUSTED_ORIGINS.extend(['https://ojaifarmingco.com', 'https://www.ojaifarmingco.com'])
 
 CORS_ALLOW_CREDENTIALS = True
 
