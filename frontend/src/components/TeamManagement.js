@@ -1,21 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Users, 
-  UserPlus, 
-  Mail, 
-  Shield, 
-  MoreVertical, 
-  Trash2, 
+import {
+  Users,
+  UserPlus,
+  Mail,
+  Shield,
+  MoreVertical,
+  Trash2,
   Edit,
   Clock,
   CheckCircle,
   XCircle,
   AlertCircle,
+  AlertTriangle,
   RefreshCw,
   Crown,
   X,
   Copy,
-  Link
+  Link,
+  ArrowRightLeft,
+  Loader2
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { companyAPI, rolesAPI, invitationsAPI, authAPI } from '../services/api';
@@ -60,8 +63,12 @@ export default function TeamManagement() {
   // Modal states
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [showEditRoleModal, setShowEditRoleModal] = useState(false);
+  const [showTransferModal, setShowTransferModal] = useState(false);
   const [selectedMember, setSelectedMember] = useState(null);
   const [activeDropdown, setActiveDropdown] = useState(null);
+
+  // Check if current user is owner
+  const isOwner = currentCompany?.role_codename === 'owner';
 
   useEffect(() => {
     if (currentCompany?.id) {
@@ -152,6 +159,18 @@ export default function TeamManagement() {
       setSelectedMember(null);
     } catch (err) {
       alert(err.response?.data?.error || 'Failed to update role');
+    }
+  };
+
+  const handleTransferOwnership = async (newOwnerId) => {
+    try {
+      await companyAPI.transferOwnership(currentCompany.id, newOwnerId);
+      setShowTransferModal(false);
+      setSelectedMember(null);
+      // Reload page to refresh user context with new role
+      window.location.reload();
+    } catch (err) {
+      throw err; // Let the modal handle the error display
     }
   };
 
@@ -281,6 +300,20 @@ export default function TeamManagement() {
                     {member.role?.name}
                   </span>
                   
+                  {/* Transfer Ownership Button (only for owner viewing other members) */}
+                  {isOwner && member.user?.id !== user?.id && member.role?.codename !== 'owner' && (
+                    <button
+                      onClick={() => {
+                        setSelectedMember(member);
+                        setShowTransferModal(true);
+                      }}
+                      className="p-2 hover:bg-purple-100 rounded-lg text-gray-500 hover:text-purple-600"
+                      title="Transfer ownership to this member"
+                    >
+                      <ArrowRightLeft className="w-4 h-4" />
+                    </button>
+                  )}
+
                   {/* Actions Dropdown */}
                   {isOwnerOrAdmin() && member.user?.id !== user?.id && member.role?.codename !== 'owner' && (
                     <div className="relative">
@@ -290,7 +323,7 @@ export default function TeamManagement() {
                       >
                         <MoreVertical className="w-5 h-5 text-gray-500" />
                       </button>
-                      
+
                       {activeDropdown === member.id && (
                         <div className="absolute right-0 mt-1 w-48 bg-white border rounded-lg shadow-lg z-10 py-1">
                           <button
@@ -304,6 +337,19 @@ export default function TeamManagement() {
                             <Edit className="w-4 h-4" />
                             Change Role
                           </button>
+                          {isOwner && (
+                            <button
+                              onClick={() => {
+                                setSelectedMember(member);
+                                setShowTransferModal(true);
+                                setActiveDropdown(null);
+                              }}
+                              className="w-full flex items-center gap-2 px-4 py-2 text-sm text-purple-600 hover:bg-purple-50"
+                            >
+                              <ArrowRightLeft className="w-4 h-4" />
+                              Transfer Ownership
+                            </button>
+                          )}
                           <button
                             onClick={() => handleRemoveMember(member.id)}
                             className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50"
@@ -411,6 +457,19 @@ export default function TeamManagement() {
             setSelectedMember(null);
           }}
           onSave={handleUpdateRole}
+        />
+      )}
+
+      {/* Transfer Ownership Modal */}
+      {showTransferModal && selectedMember && (
+        <TransferOwnershipModal
+          member={selectedMember}
+          companyName={currentCompany?.name}
+          onClose={() => {
+            setShowTransferModal(false);
+            setSelectedMember(null);
+          }}
+          onConfirm={() => handleTransferOwnership(selectedMember.user.id)}
         />
       )}
 
@@ -639,6 +698,120 @@ function EditRoleModal({ member, roles, onClose, onSave }) {
               className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
             >
               {loading ? 'Saving...' : 'Save Changes'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+
+// =============================================================================
+// TRANSFER OWNERSHIP MODAL
+// =============================================================================
+
+function TransferOwnershipModal({ member, companyName, onClose, onConfirm }) {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [confirmText, setConfirmText] = useState('');
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (confirmText !== 'TRANSFER') {
+      setError('Please type TRANSFER to confirm');
+      return;
+    }
+
+    setLoading(true);
+    setError('');
+
+    try {
+      await onConfirm();
+    } catch (err) {
+      setError(err.response?.data?.error || 'Failed to transfer ownership');
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-xl shadow-2xl max-w-md w-full">
+        <div className="p-6 border-b border-gray-200">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-orange-100 rounded-lg">
+              <AlertTriangle className="w-6 h-6 text-orange-600" />
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900">Transfer Ownership</h3>
+              <p className="text-sm text-gray-500">This action cannot be undone</p>
+            </div>
+          </div>
+        </div>
+
+        <form onSubmit={handleSubmit}>
+          <div className="p-6 space-y-4">
+            {error && (
+              <div className="p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
+                <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                <span className="text-red-700 text-sm">{error}</span>
+              </div>
+            )}
+
+            <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg">
+              <p className="text-sm text-orange-800">
+                <strong>Warning:</strong> You are about to transfer ownership of{' '}
+                <strong>{companyName}</strong> to{' '}
+                <strong>{member.user.first_name} {member.user.last_name}</strong> ({member.user.email}).
+              </p>
+              <ul className="mt-3 text-sm text-orange-700 space-y-1">
+                <li>• You will become an Admin</li>
+                <li>• {member.user.first_name || 'The new owner'} will have full control</li>
+                <li>• Only the new owner can reverse this</li>
+              </ul>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Type <strong>TRANSFER</strong> to confirm
+              </label>
+              <input
+                type="text"
+                value={confirmText}
+                onChange={(e) => setConfirmText(e.target.value.toUpperCase())}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                placeholder="TRANSFER"
+                autoComplete="off"
+              />
+            </div>
+          </div>
+
+          <div className="p-6 border-t border-gray-200 flex gap-3">
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={loading}
+              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={loading || confirmText !== 'TRANSFER'}
+              className="flex-1 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Transferring...
+                </>
+              ) : (
+                <>
+                  <ArrowRightLeft className="w-4 h-4" />
+                  Transfer Ownership
+                </>
+              )}
             </button>
           </div>
         </form>

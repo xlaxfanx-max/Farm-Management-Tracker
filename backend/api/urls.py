@@ -42,7 +42,7 @@ from .auth_views import (
 # Import team views
 from .team_views import (
     available_roles, list_invitations, resend_invitation, revoke_invitation,
-    company_members, update_company_member, remove_company_member,
+    company_members, update_company_member, remove_company_member, transfer_ownership,
 )
 
 from .onboarding_views import (
@@ -335,6 +335,7 @@ urlpatterns = [
     path('companies/<int:company_id>/members/', company_members, name='company-members'),
     path('companies/<int:company_id>/members/<int:member_id>/', update_company_member, name='update-company-member'),
     path('companies/<int:company_id>/members/<int:member_id>/remove/', remove_company_member, name='remove-company-member'),
+    path('companies/<int:company_id>/transfer-ownership/', transfer_ownership, name='transfer-ownership'),
 
     # Company Management routes (NEW)
     path('companies/<int:company_id>/', get_company, name='company-detail'),

@@ -177,9 +177,9 @@ export const companyAPI = {
   removeMember: (companyId, memberId) => 
     api.delete(`/companies/${companyId}/members/${memberId}/`),
 
-  // Transfer ownership
-  transferOwnership: (companyId, memberId) => 
-    api.post(`/companies/${companyId}/members/${memberId}/transfer_ownership/`),
+  // Transfer ownership (owner only - transfers to another member)
+  transferOwnership: (companyId, newOwnerId) =>
+    api.post(`/companies/${companyId}/transfer-ownership/`, { new_owner_id: newOwnerId }),
 };
 
 // =============================================================================

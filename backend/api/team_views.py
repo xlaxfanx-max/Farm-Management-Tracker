@@ -181,3 +181,75 @@ def remove_company_member(request, company_id, member_id):
     
     membership.delete()
     return Response({'message': 'Member removed'})
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated, HasCompanyAccess])
+def transfer_ownership(request, company_id):
+    """
+    Transfer company ownership to another member.
+    Only the current owner can transfer ownership.
+    """
+    from .models import CompanyMembership, Company, Role
+    from django.db import transaction
+
+    new_owner_id = request.data.get('new_owner_id')
+    if not new_owner_id:
+        return Response({'error': 'new_owner_id is required'}, status=400)
+
+    try:
+        company = Company.objects.get(id=company_id)
+    except Company.DoesNotExist:
+        return Response({'error': 'Company not found'}, status=404)
+
+    # Get current user's membership
+    try:
+        current_membership = CompanyMembership.objects.select_related('role').get(
+            user=request.user,
+            company=company
+        )
+    except CompanyMembership.DoesNotExist:
+        return Response({'error': 'You are not a member of this company'}, status=403)
+
+    # Only owner can transfer ownership
+    if current_membership.role.codename != 'owner':
+        return Response({'error': 'Only the owner can transfer ownership'}, status=403)
+
+    # Get the new owner's membership
+    try:
+        new_owner_membership = CompanyMembership.objects.select_related('user', 'role').get(
+            id=new_owner_id,
+            company=company
+        )
+    except CompanyMembership.DoesNotExist:
+        return Response({'error': 'New owner not found in company members'}, status=404)
+
+    # Can't transfer to yourself
+    if new_owner_membership.user == request.user:
+        return Response({'error': 'You are already the owner'}, status=400)
+
+    # Get the roles
+    try:
+        owner_role = Role.objects.get(codename='owner')
+        admin_role = Role.objects.get(codename='admin')
+    except Role.DoesNotExist:
+        return Response({'error': 'Required roles not found'}, status=500)
+
+    # Perform the transfer atomically
+    with transaction.atomic():
+        # Change current owner to admin
+        current_membership.role = admin_role
+        current_membership.save()
+
+        # Change new owner to owner
+        new_owner_membership.role = owner_role
+        new_owner_membership.save()
+
+    return Response({
+        'message': 'Ownership transferred successfully',
+        'new_owner': {
+            'id': new_owner_membership.user.id,
+            'email': new_owner_membership.user.email,
+            'name': f"{new_owner_membership.user.first_name} {new_owner_membership.user.last_name}".strip() or new_owner_membership.user.email
+        }
+    })
