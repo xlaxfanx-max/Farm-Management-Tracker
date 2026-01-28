@@ -207,32 +207,20 @@ const LandingPage = () => {
               </div>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-              <button 
+              <button
                 onClick={() => navigate('/login')}
-                style={{ 
-                  color: '#334155', 
-                  fontWeight: 600, 
-                  background: 'none', 
-                  border: 'none', 
-                  cursor: 'pointer',
-                  transition: 'color 0.3s'
-                }}>
-                Sign In
-              </button>
-              <button 
-                onClick={() => navigate('/login')}
-                style={{ 
-                padding: '0.625rem 1.5rem', 
+                style={{
+                padding: '0.625rem 1.5rem',
                 background: 'linear-gradient(to right, #16a34a, #059669)',
-                color: 'white', 
-                borderRadius: '9999px', 
+                color: 'white',
+                borderRadius: '9999px',
                 fontWeight: 700,
                 border: 'none',
                 cursor: 'pointer',
                 transition: 'all 0.3s',
                 boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
               }}>
-                Get Started
+                Sign In
               </button>
             </div>
           </div>
@@ -280,13 +268,13 @@ const LandingPage = () => {
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem' }}>
-                  <button 
+                  <button
                     onClick={() => navigate('/login')}
-                    style={{ 
-                      padding: '1rem 2rem', 
+                    style={{
+                      padding: '1rem 2rem',
                       background: 'linear-gradient(to right, #ea580c, #fbbf24)',
-                      color: 'white', 
-                      borderRadius: '1rem', 
+                      color: 'white',
+                      borderRadius: '1rem',
                       fontWeight: 700,
                       fontSize: '1.125rem',
                       border: 'none',
@@ -297,21 +285,8 @@ const LandingPage = () => {
                       transition: 'all 0.3s',
                       boxShadow: '0 10px 15px rgba(0,0,0,0.1)'
                     }}>
-                    Start Free Trial
+                    Sign In
                     <ArrowRight size={20} />
-                  </button>
-                  <button style={{ 
-                    padding: '1rem 2rem', 
-                    background: 'white',
-                    border: '2px solid #0f172a',
-                    color: '#0f172a', 
-                    borderRadius: '1rem', 
-                    fontWeight: 700,
-                    fontSize: '1.125rem',
-                    cursor: 'pointer',
-                    transition: 'all 0.3s'
-                  }}>
-                    Watch Demo
                   </button>
                 </div>
               </div>
@@ -570,9 +545,9 @@ const LandingPage = () => {
                 </div>
 
                 <div>
-                  <button 
+                  <button
                     onClick={() => navigate('/login')}
-                    style={{ 
+                    style={{
                       width: '100%',
                       padding: '1rem 2rem',
                       background: 'linear-gradient(to right, #ea580c, #fbbf24)',
@@ -590,11 +565,11 @@ const LandingPage = () => {
                       boxShadow: '0 10px 15px rgba(0,0,0,0.1)',
                       marginBottom: '0.75rem'
                     }}>
-                    Start 30-Day Free Trial
+                    Sign In
                     <ArrowRight size={20} />
                   </button>
                   <p style={{ textAlign: 'center', fontSize: '0.875rem', color: '#64748b' }}>
-                    No credit card required • Cancel anytime
+                    Access by invitation only
                   </p>
                 </div>
               </div>
@@ -723,13 +698,13 @@ const LandingPage = () => {
                 Ready to Simplify Your Compliance?
               </h2>
               <p style={{ fontSize: '1.25rem', maxWidth: '42rem', margin: '0 auto 2rem', color: 'rgba(255,255,255,0.9)' }}>
-                Join us for just $50/month. Start your 30-day free trial today.
+                Professional compliance management for $50/month.
               </p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', justifyContent: 'center', alignItems: 'center', paddingTop: '1rem' }}>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', justifyContent: 'center' }}>
-                  <button 
+                  <button
                     onClick={() => navigate('/login')}
-                    style={{ 
+                    style={{
                       padding: '1.25rem 2.5rem',
                       background: 'white',
                       color: '#ea580c',
@@ -745,25 +720,12 @@ const LandingPage = () => {
                       transition: 'all 0.3s',
                       boxShadow: '0 10px 15px rgba(0,0,0,0.1)'
                     }}>
-                    Start Free Trial
+                    Sign In
                     <ArrowRight size={20} />
-                  </button>
-                  <button style={{ 
-                    padding: '1.25rem 2.5rem',
-                    background: 'transparent',
-                    border: '3px solid white',
-                    color: 'white',
-                    borderRadius: '1rem',
-                    fontWeight: 900,
-                    fontSize: '1.125rem',
-                    cursor: 'pointer',
-                    transition: 'all 0.3s'
-                  }}>
-                    Schedule Demo
                   </button>
                 </div>
                 <p style={{ fontSize: '0.875rem', color: 'rgba(255,255,255,0.7)', paddingTop: '0.5rem' }}>
-                  No credit card required • Cancel anytime • Full access during trial
+                  Access by invitation only
                 </p>
               </div>
             </div>

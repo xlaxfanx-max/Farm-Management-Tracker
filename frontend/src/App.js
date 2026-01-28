@@ -39,7 +39,7 @@ import Harvests from './components/Harvests';
 import NutrientManagement from './components/NutrientManagement';
 import AuditLogViewer from './components/AuditLogViewer';
 import TeamManagement from './components/TeamManagement';
-import Login, { Register } from './components/Login';
+import Login from './components/Login';
 import AcceptInvitation from './components/AcceptInvitation';
 import ForgotPassword from './components/ForgotPassword';
 import ResetPassword from './components/ResetPassword';
@@ -77,7 +77,6 @@ function AppContent() {
 
   const { isDarkMode, toggleTheme } = useTheme();
 
-  const [authMode, setAuthMode] = useState('login');
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showCompanyMenu, setShowCompanyMenu] = useState(false);
   const [currentView, setCurrentView] = useState('dashboard');
@@ -191,13 +190,10 @@ function AppContent() {
   }
 
   // ============================================================================
-  // LOGIN/REGISTER
+  // LOGIN (Registration is invitation-only via AcceptInvitation)
   // ============================================================================
   if (!isAuthenticated) {
-    if (authMode === 'register') {
-      return <Register onSwitchToLogin={() => setAuthMode('login')} />;
-    }
-    return <Login onSwitchToRegister={() => setAuthMode('register')} />;
+    return <Login />;
   }
 
   // ============================================================================

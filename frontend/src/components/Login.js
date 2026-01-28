@@ -6,7 +6,7 @@ import { Eye, EyeOff, Leaf, AlertCircle } from 'lucide-react';
 // LOGIN COMPONENT
 // =============================================================================
 
-export default function Login({ onSwitchToRegister }) {
+export default function Login() {
   const { login, error } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -133,18 +133,10 @@ export default function Login({ onSwitchToRegister }) {
             </button>
           </form>
 
-          {/* Register Link */}
-          {onSwitchToRegister && (
-            <p className="mt-6 text-center text-sm text-gray-600">
-              Don't have an account?{' '}
-              <button
-                onClick={onSwitchToRegister}
-                className="text-green-600 hover:text-green-700 font-medium"
-              >
-                Create one
-              </button>
-            </p>
-          )}
+          {/* Invitation-only notice */}
+          <p className="mt-6 text-center text-sm text-gray-600">
+            Need an account? Contact your administrator to receive an invitation.
+          </p>
         </div>
 
         {/* Footer */}
