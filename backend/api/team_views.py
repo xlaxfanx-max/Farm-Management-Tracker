@@ -215,10 +215,10 @@ def transfer_ownership(request, company_id):
     if current_membership.role.codename != 'owner':
         return Response({'error': 'Only the owner can transfer ownership'}, status=403)
 
-    # Get the new owner's membership
+    # Get the new owner's membership (new_owner_id is the user ID, not membership ID)
     try:
         new_owner_membership = CompanyMembership.objects.select_related('user', 'role').get(
-            id=new_owner_id,
+            user_id=new_owner_id,
             company=company
         )
     except CompanyMembership.DoesNotExist:
