@@ -12,16 +12,21 @@
 #
 # =============================================================================
 
+import logging
 from django.contrib.auth import authenticate, get_user_model
 from django.conf import settings
 from django.utils import timezone
 from django.db import transaction
 from rest_framework import status
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, throttle_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from datetime import timedelta
+
+from .throttles import AuthRateThrottle, PasswordResetThrottle
+
+logger = logging.getLogger(__name__)
 
 from .models import (
     Company, CompanyMembership, Role, Invitation, AuditLog
@@ -36,10 +41,11 @@ User = get_user_model()
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
+@throttle_classes([AuthRateThrottle])
 def register(request):
     """
     Register a new user and create their company.
-    
+
     POST /api/auth/register/
     {
         "email": "user@example.com",
@@ -156,10 +162,11 @@ def register(request):
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
+@throttle_classes([AuthRateThrottle])
 def login(request):
     """
     Authenticate user and return tokens.
-    
+
     POST /api/auth/login/
     {
         "email": "user@example.com",
@@ -168,16 +175,21 @@ def login(request):
     """
     email = request.data.get('email', '').lower().strip()
     password = request.data.get('password')
-    
+
     if not email or not password:
         return Response(
             {'error': 'Email and password are required'},
             status=status.HTTP_400_BAD_REQUEST
         )
-    
+
     user = authenticate(request, username=email, password=password)
-    
+
     if user is None:
+        # Log failed login attempt for security monitoring
+        client_ip = get_client_ip(request)
+        logger.warning(
+            f"Failed login attempt for email={email} from IP={client_ip}"
+        )
         return Response(
             {'error': 'Invalid email or password'},
             status=status.HTTP_401_UNAUTHORIZED
@@ -623,10 +635,11 @@ def invite_user(request):
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
+@throttle_classes([AuthRateThrottle])
 def accept_invitation(request):
     """
     Accept an invitation and create account (or add to existing account).
-    
+
     POST /api/auth/accept-invitation/
     {
         "token": "invitation-uuid-token",
@@ -906,12 +919,12 @@ def available_roles(request):
 # PASSWORD RESET ENDPOINTS
 # =============================================================================
 
-import secrets
-from django.core.cache import cache
+from .models import PasswordResetToken
 
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
+@throttle_classes([PasswordResetThrottle])
 def request_password_reset(request):
     """
     Request a password reset email.
@@ -933,16 +946,12 @@ def request_password_reset(request):
     user = User.objects.filter(email=email).first()
 
     if user:
-        # Generate secure token
-        reset_token = secrets.token_urlsafe(32)
-
-        # Store token in cache with 24 hour expiry
-        cache_key = f'password_reset_{reset_token}'
-        cache.set(cache_key, user.id, timeout=86400)  # 24 hours
+        # Create reset token in database (invalidates old tokens)
+        reset_token = PasswordResetToken.create_for_user(user)
 
         # Send email
         from .email_service import EmailService
-        EmailService.send_password_reset_email(user, reset_token)
+        EmailService.send_password_reset_email(user, reset_token.token)
 
     return Response({
         'message': 'If an account exists with this email, you will receive a password reset link.'
@@ -951,6 +960,7 @@ def request_password_reset(request):
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
+@throttle_classes([AuthRateThrottle])
 def reset_password(request):
     """
     Reset password using token from email.
@@ -976,30 +986,24 @@ def reset_password(request):
             status=status.HTTP_400_BAD_REQUEST
         )
 
-    # Look up token in cache
-    cache_key = f'password_reset_{token}'
-    user_id = cache.get(cache_key)
+    # Look up token in database
+    reset_token = PasswordResetToken.get_valid_token(token)
 
-    if not user_id:
+    if not reset_token:
         return Response(
             {'error': 'Invalid or expired reset token'},
             status=status.HTTP_400_BAD_REQUEST
         )
 
-    try:
-        user = User.objects.get(id=user_id)
-    except User.DoesNotExist:
-        return Response(
-            {'error': 'User not found'},
-            status=status.HTTP_400_BAD_REQUEST
-        )
+    user = reset_token.user
 
     # Update password
     user.set_password(password)
     user.save()
 
-    # Delete used token
-    cache.delete(cache_key)
+    # Mark token as used
+    reset_token.used = True
+    reset_token.save()
 
     # Send confirmation email
     from .email_service import EmailService

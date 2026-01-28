@@ -703,6 +703,66 @@ class Invitation(models.Model):
 
 
 # =============================================================================
+# PASSWORD RESET TOKEN MODEL
+# =============================================================================
+
+class PasswordResetToken(models.Model):
+    """
+    Stores password reset tokens in the database for reliable persistence.
+    Tokens expire after 24 hours.
+    """
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='password_reset_tokens'
+    )
+    token = models.CharField(max_length=64, unique=True, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+    used = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Password reset for {self.user.email}"
+
+    @property
+    def is_expired(self):
+        return timezone.now() > self.expires_at
+
+    @property
+    def is_valid(self):
+        return not self.used and not self.is_expired
+
+    def save(self, *args, **kwargs):
+        if not self.expires_at:
+            self.expires_at = timezone.now() + timezone.timedelta(hours=24)
+        super().save(*args, **kwargs)
+
+    @classmethod
+    def create_for_user(cls, user):
+        """Create a new reset token for a user, invalidating any existing ones."""
+        import secrets
+        # Mark old tokens as used
+        cls.objects.filter(user=user, used=False).update(used=True)
+        # Create new token
+        token = secrets.token_urlsafe(32)
+        return cls.objects.create(user=user, token=token)
+
+    @classmethod
+    def get_valid_token(cls, token):
+        """Get a valid (unused, not expired) token or None."""
+        try:
+            reset_token = cls.objects.select_related('user').get(token=token)
+            if reset_token.is_valid:
+                return reset_token
+        except cls.DoesNotExist:
+            pass
+        return None
+
+
+# =============================================================================
 # AUDIT LOG MODEL
 # =============================================================================
 
