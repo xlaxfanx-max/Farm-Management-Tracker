@@ -194,7 +194,9 @@ const SeasonProgressCard = ({ onNavigate }) => {
         setData(response.data);
       } catch (err) {
         console.error('Failed to fetch multi-crop season data:', err);
-        setError('Failed to load season data');
+        // Show more detail if available
+        const errorDetail = err.response?.data?.error || err.response?.data?.detail || err.message || 'Unknown error';
+        setError(`Failed to load season data: ${errorDetail}`);
       } finally {
         setLoading(false);
       }
@@ -239,7 +241,23 @@ const SeasonProgressCard = ({ onNavigate }) => {
       <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
         <div className="text-center text-red-500 dark:text-red-400">
           <AlertTriangle className="w-8 h-8 mx-auto mb-2" />
-          <p>{error}</p>
+          <p className="text-sm mb-3">{error}</p>
+          <button
+            onClick={() => {
+              setError(null);
+              setLoading(true);
+              analyticsAPI.getMultiCropSeasons()
+                .then(response => setData(response.data))
+                .catch(err => {
+                  const errorDetail = err.response?.data?.error || err.message || 'Unknown error';
+                  setError(`Failed to load season data: ${errorDetail}`);
+                })
+                .finally(() => setLoading(false));
+            }}
+            className="text-xs text-blue-600 hover:text-blue-700 underline"
+          >
+            Retry
+          </button>
         </div>
       </div>
     );
