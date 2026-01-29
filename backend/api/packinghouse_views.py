@@ -2218,6 +2218,7 @@ class PackinghouseStatementViewSet(viewsets.ModelViewSet):
         from django.http import FileResponse, HttpResponse
 
         statement = self.get_object()
+        logger.info(f"Serving PDF for statement {statement.id}: {statement.original_filename}")
 
         if not statement.pdf_file:
             return HttpResponse('No PDF file available', status=404)
