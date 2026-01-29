@@ -2908,6 +2908,24 @@ export const fsmaAPI = {
 };
 
 // =============================================================================
+// HELPER FUNCTIONS
+// =============================================================================
+
+/**
+ * Get the full API URL for a given path.
+ * Useful for constructing URLs for <a href> tags that need to point to the API.
+ * @param {string} path - The API path (e.g., '/api/packinghouse-statements/123/pdf/')
+ * @returns {string} The full URL including the API base
+ */
+export const getApiUrl = (path) => {
+  // Remove /api prefix if present since API_BASE_URL already includes it
+  const cleanPath = path.startsWith('/api/') ? path.slice(4) : path;
+  // Remove leading slash if API_BASE_URL ends with /api
+  const normalizedPath = cleanPath.startsWith('/') ? cleanPath : `/${cleanPath}`;
+  return `${API_BASE_URL}${normalizedPath}`;
+};
+
+// =============================================================================
 // DEFAULT EXPORT
 // =============================================================================
 

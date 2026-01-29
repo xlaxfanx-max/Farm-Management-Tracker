@@ -10,7 +10,7 @@ import {
   ChevronDown, ChevronUp, ArrowUpRight, ArrowDownRight,
   FileIcon, PanelLeftClose, PanelLeft, ExternalLink, Download
 } from 'lucide-react';
-import { poolSettlementsAPI } from '../../services/api';
+import { poolSettlementsAPI, getApiUrl } from '../../services/api';
 
 // Group deductions by category for display
 const DEDUCTION_CATEGORIES = {
@@ -55,7 +55,7 @@ const SettlementDetail = ({ settlementId, onClose }) => {
       setPdfLoading(true);
 
       // PDF is now served through our backend proxy endpoint to avoid CORS issues
-      const pdfUrl = settlement.source_pdf_url;
+      const pdfUrl = getApiUrl(settlement.source_pdf_url);
       const token = localStorage.getItem('farm_tracker_access_token');
 
       const response = await fetch(pdfUrl, {

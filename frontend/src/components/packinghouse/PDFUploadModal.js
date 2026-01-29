@@ -13,7 +13,8 @@ import {
   packinghouseStatementsAPI,
   packinghousesAPI,
   poolsAPI,
-  fieldsAPI
+  fieldsAPI,
+  getApiUrl
 } from '../../services/api';
 import ExtractedDataPreview from './ExtractedDataPreview';
 
@@ -71,7 +72,7 @@ const PDFUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, existi
 
       // PDF is now served through our backend proxy endpoint to avoid CORS issues
       // Always include Bearer token for authentication
-      const pdfUrl = statement.pdf_url;
+      const pdfUrl = getApiUrl(statement.pdf_url);
       const token = localStorage.getItem('farm_tracker_access_token');
 
       const response = await fetch(pdfUrl, {
@@ -333,7 +334,7 @@ const PDFUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, existi
                   )}
                 </button>
                 <a
-                  href={statement.pdf_url}
+                  href={getApiUrl(statement.pdf_url)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg"
@@ -365,7 +366,7 @@ const PDFUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, existi
                   </span>
                 </div>
                 <a
-                  href={statement?.pdf_url}
+                  href={getApiUrl(statement?.pdf_url)}
                   download
                   className="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded"
                   title="Download PDF"
@@ -389,7 +390,7 @@ const PDFUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, existi
                       <FileIcon className="w-16 h-16 text-gray-400 mb-4" />
                       <p className="text-gray-600 mb-4">PDF preview not available.</p>
                       <a
-                        href={statement?.pdf_url}
+                        href={getApiUrl(statement?.pdf_url)}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center"
@@ -404,7 +405,7 @@ const PDFUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, existi
                     <FileIcon className="w-16 h-16 text-gray-400 mb-4" />
                     <p className="text-gray-600 mb-4">Unable to load PDF.</p>
                     <a
-                      href={statement?.pdf_url}
+                      href={getApiUrl(statement?.pdf_url)}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center"

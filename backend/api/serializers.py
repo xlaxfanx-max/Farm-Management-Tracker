@@ -3793,11 +3793,8 @@ class PoolSettlementSerializer(serializers.ModelSerializer):
     def get_source_pdf_url(self, obj):
         """Return the proxy URL that serves PDF through our backend to avoid CORS issues."""
         if obj.source_statement and obj.source_statement.pdf_file:
-            request = self.context.get('request')
-            statement_id = obj.source_statement.id
-            if request:
-                return request.build_absolute_uri(f'/api/packinghouse-statements/{statement_id}/pdf/')
-            return f'/api/packinghouse-statements/{statement_id}/pdf/'
+            # Return relative URL so it works with frontend's API base URL
+            return f'/api/packinghouse-statements/{obj.source_statement.id}/pdf/'
         return None
 
     def get_source_pdf_filename(self, obj):
@@ -4012,10 +4009,7 @@ class PackinghouseStatementSerializer(serializers.ModelSerializer):
     def get_pdf_url(self, obj):
         """Return the proxy URL that serves PDF through our backend to avoid CORS issues."""
         if obj.pdf_file:
-            request = self.context.get('request')
-            if request:
-                # Use the proxy endpoint instead of direct cloud storage URL
-                return request.build_absolute_uri(f'/api/packinghouse-statements/{obj.id}/pdf/')
+            # Return relative URL so it works with frontend's API base URL
             return f'/api/packinghouse-statements/{obj.id}/pdf/'
         return None
 

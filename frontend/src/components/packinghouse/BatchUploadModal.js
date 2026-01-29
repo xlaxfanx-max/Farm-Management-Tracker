@@ -15,7 +15,8 @@ import {
   packinghousesAPI,
   farmsAPI,
   fieldsAPI,
-  poolsAPI
+  poolsAPI,
+  getApiUrl
 } from '../../services/api';
 import ExtractedDataPreview from './ExtractedDataPreview';
 
@@ -111,7 +112,7 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
 
         // PDF is now served through our backend proxy endpoint to avoid CORS issues
         const token = localStorage.getItem('farm_tracker_access_token');
-        const response = await fetch(pdfUrl, {
+        const response = await fetch(getApiUrl(pdfUrl), {
           headers: { 'Authorization': `Bearer ${token}` },
         });
         if (!response.ok) throw new Error('Failed to fetch PDF');
