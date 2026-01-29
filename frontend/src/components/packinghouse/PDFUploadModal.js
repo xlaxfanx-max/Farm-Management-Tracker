@@ -51,20 +51,24 @@ const PDFUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, existi
     fetchFields();
   }, []);
 
-  // Reset PDF blob URL when statement changes (new upload)
-  useEffect(() => {
-    if (pdfBlobUrl) {
-      URL.revokeObjectURL(pdfBlobUrl);
-      setPdfBlobUrl(null);
-    }
-  }, [statement?.id]);
+  // Fetch PDF as blob when conditions are met
+  // Track the last fetched PDF URL to avoid duplicate fetches
+  const [lastFetchedPdfUrl, setLastFetchedPdfUrl] = useState(null);
 
-  // Fetch PDF as blob when in preview mode
   useEffect(() => {
-    if (showPreview && statement?.pdf_url && showPdf && !pdfBlobUrl) {
-      fetchPdfBlob();
+    const pdfUrl = statement?.pdf_url;
+
+    // Only fetch if we're in preview mode, showing PDF, have a URL, and haven't fetched this URL yet
+    if (showPreview && pdfUrl && showPdf && pdfUrl !== lastFetchedPdfUrl) {
+      // Clean up old blob URL if exists
+      if (pdfBlobUrl) {
+        URL.revokeObjectURL(pdfBlobUrl);
+        setPdfBlobUrl(null);
+      }
+
+      fetchPdfBlob(pdfUrl);
     }
-  }, [showPreview, statement?.pdf_url, showPdf, pdfBlobUrl]);
+  }, [showPreview, statement?.pdf_url, showPdf]);
 
   // Cleanup blob URL on unmount
   useEffect(() => {
@@ -75,15 +79,16 @@ const PDFUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, existi
     };
   }, []);
 
-  const fetchPdfBlob = async () => {
-    if (!statement?.pdf_url) return;
+  const fetchPdfBlob = async (pdfUrlPath) => {
+    if (!pdfUrlPath) return;
 
     try {
       setPdfLoading(true);
+      setLastFetchedPdfUrl(pdfUrlPath);
 
       // PDF is now served through our backend proxy endpoint to avoid CORS issues
       // Always include Bearer token for authentication
-      const pdfUrl = getApiUrl(statement.pdf_url);
+      const pdfUrl = getApiUrl(pdfUrlPath);
       const token = localStorage.getItem('farm_tracker_access_token');
 
       const response = await fetch(pdfUrl, {
@@ -103,6 +108,7 @@ const PDFUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, existi
       setPdfBlobUrl(url + '#toolbar=0&navpanes=0&view=FitH');
     } catch (err) {
       console.error('Error fetching PDF:', err);
+      setLastFetchedPdfUrl(null); // Reset so we can retry
     } finally {
       setPdfLoading(false);
     }
