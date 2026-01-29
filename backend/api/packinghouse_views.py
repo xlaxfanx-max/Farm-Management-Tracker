@@ -1925,17 +1925,12 @@ class PackinghouseStatementViewSet(viewsets.ModelViewSet):
             season_service = SeasonService(company_id=request.user.current_company_id)
             season = ''
 
-            # Determine which date to use for season calculation based on statement type
-            # - Settlements/grower statements are issued AFTER the season ends, so use period dates
-            # - Wash reports/packouts are dated when fruit is packed, so use report_date
-            if statement.statement_type in ['settlement', 'grower_statement']:
-                # For settlements, prefer period_end (last fruit packed), then period_start, then report_date
-                season_date_str = header.get('period_end') or header.get('period_start') or header.get('report_date')
-                logger.info(f"Settlement season derivation - period_end: {header.get('period_end')}, period_start: {header.get('period_start')}, report_date: {header.get('report_date')}, using: {season_date_str}")
-            else:
-                # For wash reports/packouts, use report_date (when fruit was packed)
-                season_date_str = header.get('report_date')
-                logger.info(f"Packout/wash report season derivation - report_date: {season_date_str}")
+            # Determine which date to use for season calculation
+            # All statement types should use the fruit packing date, not the statement issue date
+            # Priority: period_end (last fruit packed) → period_start → report_date
+            # This handles cases where AI extracts "Fruit Packed On" into period fields instead of report_date
+            season_date_str = header.get('period_end') or header.get('period_start') or header.get('report_date')
+            logger.info(f"Season derivation - period_end: {header.get('period_end')}, period_start: {header.get('period_start')}, report_date: {header.get('report_date')}, using: {season_date_str}")
 
             logger.info(f"Season derivation - season_date_str: {season_date_str}, commodity: {commodity}, extracted_season: {extracted_season}")
 
@@ -3039,15 +3034,11 @@ class PackinghouseStatementViewSet(viewsets.ModelViewSet):
         season_service = SeasonService(company_id=user.current_company_id)
         season = ''
 
-        # Determine which date to use for season calculation based on statement type
-        # - Settlements/grower statements are issued AFTER the season ends, so use period dates
-        # - Wash reports/packouts are dated when fruit is packed, so use report_date
-        if statement.statement_type in ['settlement', 'grower_statement']:
-            # For settlements, prefer period_end (last fruit packed), then period_start, then report_date
-            season_date_str = header.get('period_end') or header.get('period_start') or header.get('report_date')
-        else:
-            # For wash reports/packouts, use report_date (when fruit was packed)
-            season_date_str = header.get('report_date')
+        # Determine which date to use for season calculation
+        # All statement types should use the fruit packing date, not the statement issue date
+        # Priority: period_end (last fruit packed) → period_start → report_date
+        # This handles cases where AI extracts "Fruit Packed On" into period fields instead of report_date
+        season_date_str = header.get('period_end') or header.get('period_start') or header.get('report_date')
 
         if season_date_str:
             try:
