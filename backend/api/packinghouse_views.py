@@ -1927,6 +1927,8 @@ class PackinghouseStatementViewSet(viewsets.ModelViewSet):
 
             # Derive season from report_date
             report_date_str = header.get('report_date')
+            logger.info(f"Season derivation - report_date_str: {report_date_str}, commodity: {commodity}, extracted_season: {extracted_season}")
+
             if report_date_str:
                 try:
                     report_date = datetime.strptime(report_date_str, '%Y-%m-%d').date()
@@ -1935,17 +1937,20 @@ class PackinghouseStatementViewSet(viewsets.ModelViewSet):
                         target_date=report_date
                     )
                     season = season_period.label
-                except (ValueError, TypeError):
-                    pass
+                    logger.info(f"Season derived from report_date {report_date}: {season}")
+                except (ValueError, TypeError) as e:
+                    logger.warning(f"Failed to parse report_date '{report_date_str}': {e}")
 
             # Fall back to extracted season if derivation failed
             if not season and extracted_season:
                 season = extracted_season
+                logger.info(f"Using extracted_season as fallback: {season}")
 
             # Final fallback: use current season for this commodity
             if not season:
                 current_season_period = season_service.get_current_season(crop_category=crop_category)
                 season = current_season_period.label
+                logger.info(f"Using current season as final fallback: {season}")
 
             # Check if a similar pool already exists for this season
             # First try by pool_id and season if we have one (most specific)
