@@ -91,6 +91,8 @@ const PDFUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, existi
       const pdfUrl = getApiUrl(pdfUrlPath);
       const token = localStorage.getItem('farm_tracker_access_token');
 
+      console.log('PDF fetch debug:', { pdfUrlPath, pdfUrl, hasToken: !!token });
+
       const response = await fetch(pdfUrl, {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -98,7 +100,8 @@ const PDFUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, existi
       });
 
       if (!response.ok) {
-        console.error('PDF fetch failed:', response.status, response.statusText);
+        const errorText = await response.text().catch(() => 'Could not read error');
+        console.error('PDF fetch failed:', response.status, response.statusText, errorText);
         throw new Error('Failed to fetch PDF');
       }
 
