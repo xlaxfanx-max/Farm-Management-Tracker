@@ -206,6 +206,14 @@ else:
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # =============================================================================
+# FILE UPLOAD CONFIGURATION
+# =============================================================================
+# Increase from Django defaults (2.5MB) to support batch PDF uploads
+DATA_UPLOAD_MAX_MEMORY_SIZE = 104857600  # 100MB
+FILE_UPLOAD_MAX_MEMORY_SIZE = 10485760   # 10MB (files >10MB use temp disk storage)
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 200      # Support batch uploads with many fields
+
+# =============================================================================
 # CORS CONFIGURATION
 # =============================================================================
 # Add production frontend URL via FRONTEND_URL env var

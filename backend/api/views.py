@@ -2208,11 +2208,27 @@ class HarvestViewSet(AuditLogMixin, viewsets.ModelViewSet):
         elif phi_compliant == 'false':
             queryset = queryset.filter(phi_compliant=False)
         
-        # Season filter (year)
+        # Season/date filter
+        start_date = self.request.query_params.get('start_date')
+        end_date = self.request.query_params.get('end_date')
         season = self.request.query_params.get('season')
-        if season:
-            queryset = queryset.filter(harvest_date__year=season)
-        
+
+        if start_date and end_date:
+            queryset = queryset.filter(harvest_date__gte=start_date, harvest_date__lte=end_date)
+        elif season:
+            if '-' in season:
+                from .services.season_service import SeasonService
+                try:
+                    s_start, s_end = SeasonService().get_season_date_range(season, crop_category='citrus')
+                    queryset = queryset.filter(harvest_date__gte=s_start, harvest_date__lte=s_end)
+                except Exception:
+                    pass
+            else:
+                try:
+                    queryset = queryset.filter(harvest_date__year=int(season))
+                except (ValueError, TypeError):
+                    pass
+
         return queryset.order_by('-harvest_date', '-created_at')
     
     def get_serializer_class(self):
@@ -2422,10 +2438,27 @@ class HarvestViewSet(AuditLogMixin, viewsets.ModelViewSet):
 
         queryset = self.get_queryset()
 
-        # Apply additional filters from query params
+        # Apply date/season filters
+        start_date = request.query_params.get('start_date')
+        end_date = request.query_params.get('end_date')
         season = request.query_params.get('season')
-        if season:
-            queryset = queryset.filter(harvest_date__year=season)
+
+        if start_date and end_date:
+            queryset = queryset.filter(harvest_date__gte=start_date, harvest_date__lte=end_date)
+        elif season:
+            if '-' in season:
+                # Cross-year season (e.g. "2024-2025") - resolve via SeasonService
+                from .services.season_service import SeasonService
+                try:
+                    s_start, s_end = SeasonService().get_season_date_range(season, crop_category='citrus')
+                    queryset = queryset.filter(harvest_date__gte=s_start, harvest_date__lte=s_end)
+                except Exception:
+                    pass
+            else:
+                try:
+                    queryset = queryset.filter(harvest_date__year=int(season))
+                except (ValueError, TypeError):
+                    pass
 
         # Get aggregated metrics
         harvests_with_metrics = queryset.annotate(

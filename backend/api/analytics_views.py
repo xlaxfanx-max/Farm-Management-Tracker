@@ -113,7 +113,9 @@ def _get_analytics_dashboard_impl(request, company):
         # Use SeasonService to resolve season label to date range
         season_service = SeasonService()
         try:
-            start_date, end_date = season_service.get_season_date_range(season)
+            # Use citrus category for cross-year seasons (e.g. "2024-2025")
+            crop_cat = 'citrus' if '-' in season else None
+            start_date, end_date = season_service.get_season_date_range(season, crop_category=crop_cat)
         except Exception:
             start_date = None
             end_date = None
