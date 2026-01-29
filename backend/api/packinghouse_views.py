@@ -1357,11 +1357,20 @@ def size_distribution(request):
     if commodity:
         filters &= Q(pool__commodity__icontains=commodity)
 
-    # Get latest packout report per field
-    latest_reports = PackoutReport.objects.filter(
+    # Get latest packout report per field (including null field)
+    # Reports with field assigned
+    latest_with_field = PackoutReport.objects.filter(
         filters,
         field__isnull=False
     ).values('field').annotate(
+        latest_date=Max('report_date')
+    )
+
+    # Reports without field — group by pool instead
+    latest_without_field = PackoutReport.objects.filter(
+        filters,
+        field__isnull=True
+    ).values('pool').annotate(
         latest_date=Max('report_date')
     )
 
@@ -1375,34 +1384,32 @@ def size_distribution(request):
     })})
     all_sizes = set()
 
-    for item in latest_reports:
-        report = PackoutReport.objects.filter(
-            field_id=item['field'],
-            report_date=item['latest_date']
-        ).select_related('field__farm').first()
-
-        if not report or not report.field:
-            continue
-
+    def process_report(report):
         grade_lines = PackoutGradeLine.objects.filter(
             packout_report=report
         ).exclude(size='')
 
-        if group_by == 'farm':
-            group_id = report.field.farm_id
-            group_name = report.field.farm.name
-        else:
-            group_id = report.field.id
-            group_name = report.field.name
+        if not grade_lines.exists():
+            return
 
-        group_key = group_id
+        if report.field:
+            if group_by == 'farm' and report.field.farm:
+                gid = report.field.farm_id
+                gname = report.field.farm.name
+            else:
+                gid = report.field.id
+                gname = report.field.name
+        else:
+            # No field — use pool as the group
+            gid = f'pool_{report.pool_id}'
+            gname = report.pool.name if report.pool else 'Unassigned'
 
         for line in grade_lines:
             qty = line.quantity_cumulative if line.quantity_cumulative is not None else line.quantity_this_period
             pct = line.percent_cumulative if line.percent_cumulative is not None else line.percent_this_period
 
             all_sizes.add(line.size)
-            size_data = groups[group_key]['sizes'][line.size]
+            size_data = groups[gid]['sizes'][line.size]
             size_data['quantity'] += qty
             size_data['percent_sum'] += pct
             size_data['count'] += 1
@@ -1410,9 +1417,26 @@ def size_distribution(request):
                 size_data['house_avg_sum'] += line.house_avg_percent
                 size_data['house_avg_count'] += 1
 
-            groups[group_key]['total_quantity'] += qty
-            groups[group_key]['group_id'] = group_id
-            groups[group_key]['group_name'] = group_name
+            groups[gid]['total_quantity'] += qty
+            groups[gid]['group_id'] = gid if isinstance(gid, int) else 0
+            groups[gid]['group_name'] = gname
+
+    for item in latest_with_field:
+        report = PackoutReport.objects.filter(
+            field_id=item['field'],
+            report_date=item['latest_date']
+        ).select_related('field__farm', 'pool').first()
+        if report:
+            process_report(report)
+
+    for item in latest_without_field:
+        report = PackoutReport.objects.filter(
+            pool_id=item['pool'],
+            field__isnull=True,
+            report_date=item['latest_date']
+        ).select_related('pool').first()
+        if report:
+            process_report(report)
 
     # Build response
     results = []
