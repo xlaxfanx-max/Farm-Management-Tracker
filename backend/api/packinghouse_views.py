@@ -1925,31 +1925,38 @@ class PackinghouseStatementViewSet(viewsets.ModelViewSet):
             season_service = SeasonService(company_id=request.user.current_company_id)
             season = ''
 
-            # Determine which date to use for season calculation
-            # All statement types should use the fruit packing date, not the statement issue date
-            # Priority: period_end (last fruit packed) → period_start → report_date
-            # This handles cases where AI extracts "Fruit Packed On" into period fields instead of report_date
-            season_date_str = header.get('period_end') or header.get('period_start') or header.get('report_date')
-            logger.info(f"Season derivation - period_end: {header.get('period_end')}, period_start: {header.get('period_start')}, report_date: {header.get('report_date')}, using: {season_date_str}")
+            # Season derivation priority:
+            # 1. For settlements/grower_statements: prefer extracted_season (often printed on document)
+            # 2. Derive from period_end → period_start (fruit packing dates)
+            # 3. Fall back to report_date only for wash reports/packouts
+            # 4. Final fallback: current season
 
-            logger.info(f"Season derivation - season_date_str: {season_date_str}, commodity: {commodity}, extracted_season: {extracted_season}")
+            logger.info(f"Season derivation - extracted_season: {extracted_season}, period_end: {header.get('period_end')}, period_start: {header.get('period_start')}, report_date: {header.get('report_date')}")
 
-            if season_date_str:
-                try:
-                    season_date = datetime.strptime(season_date_str, '%Y-%m-%d').date()
-                    season_period = season_service.get_current_season(
-                        crop_category=crop_category,
-                        target_date=season_date
-                    )
-                    season = season_period.label
-                    logger.info(f"Season derived from date {season_date}: {season}")
-                except (ValueError, TypeError) as e:
-                    logger.warning(f"Failed to parse season date '{season_date_str}': {e}")
-
-            # Fall back to extracted season if derivation failed
-            if not season and extracted_season:
+            # For settlements, the season is often explicitly printed - trust it first
+            if statement.statement_type in ['settlement', 'grower_statement'] and extracted_season:
                 season = extracted_season
-                logger.info(f"Using extracted_season as fallback: {season}")
+                logger.info(f"Using extracted_season for settlement: {season}")
+            else:
+                # Derive from dates: period_end → period_start → report_date
+                season_date_str = header.get('period_end') or header.get('period_start') or header.get('report_date')
+
+                if season_date_str:
+                    try:
+                        season_date = datetime.strptime(season_date_str, '%Y-%m-%d').date()
+                        season_period = season_service.get_current_season(
+                            crop_category=crop_category,
+                            target_date=season_date
+                        )
+                        season = season_period.label
+                        logger.info(f"Season derived from date {season_date}: {season}")
+                    except (ValueError, TypeError) as e:
+                        logger.warning(f"Failed to parse season date '{season_date_str}': {e}")
+
+                # Fall back to extracted season if date derivation failed
+                if not season and extracted_season:
+                    season = extracted_season
+                    logger.info(f"Using extracted_season as fallback: {season}")
 
             # Final fallback: use current season for this commodity
             if not season:
@@ -3034,26 +3041,33 @@ class PackinghouseStatementViewSet(viewsets.ModelViewSet):
         season_service = SeasonService(company_id=user.current_company_id)
         season = ''
 
-        # Determine which date to use for season calculation
-        # All statement types should use the fruit packing date, not the statement issue date
-        # Priority: period_end (last fruit packed) → period_start → report_date
-        # This handles cases where AI extracts "Fruit Packed On" into period fields instead of report_date
-        season_date_str = header.get('period_end') or header.get('period_start') or header.get('report_date')
+        # Season derivation priority:
+        # 1. For settlements/grower_statements: prefer extracted_season (often printed on document)
+        # 2. Derive from period_end → period_start (fruit packing dates)
+        # 3. Fall back to report_date only for wash reports/packouts
+        # 4. Final fallback: current season
 
-        if season_date_str:
-            try:
-                season_date = datetime.strptime(season_date_str, '%Y-%m-%d').date()
-                season_period = season_service.get_current_season(
-                    crop_category=crop_category,
-                    target_date=season_date
-                )
-                season = season_period.label
-            except (ValueError, TypeError):
-                pass
-
-        # Fall back to extracted season if derivation failed
-        if not season and extracted_season:
+        # For settlements, the season is often explicitly printed - trust it first
+        if statement.statement_type in ['settlement', 'grower_statement'] and extracted_season:
             season = extracted_season
+        else:
+            # Derive from dates: period_end → period_start → report_date
+            season_date_str = header.get('period_end') or header.get('period_start') or header.get('report_date')
+
+            if season_date_str:
+                try:
+                    season_date = datetime.strptime(season_date_str, '%Y-%m-%d').date()
+                    season_period = season_service.get_current_season(
+                        crop_category=crop_category,
+                        target_date=season_date
+                    )
+                    season = season_period.label
+                except (ValueError, TypeError):
+                    pass
+
+            # Fall back to extracted season if date derivation failed
+            if not season and extracted_season:
+                season = extracted_season
 
         # Final fallback: use current season for this commodity
         if not season:
