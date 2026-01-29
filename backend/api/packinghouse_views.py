@@ -1904,46 +1904,46 @@ class PackinghouseStatementViewSet(viewsets.ModelViewSet):
             extracted_pool_id = header.get('pool_id') or ''
             pool_name = header.get('pool_name') or extracted_pool_id or 'Imported Pool'
             commodity = header.get('commodity', 'CITRUS')
-            season = header.get('season', '')
+            extracted_season = header.get('season', '')
 
-            # If no season, derive from report date using commodity-appropriate season logic
+            # ALWAYS derive season from report_date + commodity using SeasonService
+            # This is more reliable than AI extraction because:
+            # 1. Documents often don't have explicit season
+            # 2. AI doesn't understand citrus marketing year conventions (Oct-Sep)
+            # 3. SeasonService has correct logic for all commodity types
+            from datetime import datetime, date as date_module
+
+            # Map commodity to crop category for season calculation
+            commodity_upper = commodity.upper()
+            if any(c in commodity_upper for c in ['AVOCADO', 'SUBTROPICAL']):
+                crop_category = 'subtropical'
+            elif any(c in commodity_upper for c in ['LEMON', 'ORANGE', 'NAVEL', 'VALENCIA', 'TANGERINE', 'MANDARIN', 'GRAPEFRUIT', 'CITRUS']):
+                crop_category = 'citrus'
+            else:
+                crop_category = 'citrus'  # Default to citrus for unknown commodities
+
+            season_service = SeasonService(company_id=request.user.current_company_id)
+            season = ''
+
+            # Derive season from report_date
+            report_date_str = header.get('report_date')
+            if report_date_str:
+                try:
+                    report_date = datetime.strptime(report_date_str, '%Y-%m-%d').date()
+                    season_period = season_service.get_current_season(
+                        crop_category=crop_category,
+                        target_date=report_date
+                    )
+                    season = season_period.label
+                except (ValueError, TypeError):
+                    pass
+
+            # Fall back to extracted season if derivation failed
+            if not season and extracted_season:
+                season = extracted_season
+
+            # Final fallback: use current season for this commodity
             if not season:
-                report_date_str = header.get('report_date')
-                from datetime import datetime, date as date_module
-
-                # Map commodity to crop category for season calculation
-                commodity_upper = commodity.upper()
-                if any(c in commodity_upper for c in ['AVOCADO', 'SUBTROPICAL']):
-                    crop_category = 'subtropical'
-                elif any(c in commodity_upper for c in ['LEMON', 'ORANGE', 'NAVEL', 'VALENCIA', 'TANGERINE', 'MANDARIN', 'GRAPEFRUIT', 'CITRUS']):
-                    crop_category = 'citrus'
-                else:
-                    crop_category = 'citrus'  # Default to citrus for unknown commodities
-
-                # Use SeasonService to get the correct season for this commodity
-                season_service = SeasonService(company_id=request.user.current_company_id)
-
-                if report_date_str:
-                    try:
-                        report_date = datetime.strptime(report_date_str, '%Y-%m-%d').date()
-                        season_period = season_service.get_current_season(
-                            crop_category=crop_category,
-                            target_date=report_date
-                        )
-                        season = season_period.label
-                    except (ValueError, TypeError):
-                        pass
-
-            # Default season if still empty - use commodity-appropriate current season
-            if not season:
-                from datetime import date as date_module
-                commodity_upper = commodity.upper()
-                if any(c in commodity_upper for c in ['AVOCADO', 'SUBTROPICAL']):
-                    crop_category = 'subtropical'
-                else:
-                    crop_category = 'citrus'
-
-                season_service = SeasonService(company_id=request.user.current_company_id)
                 current_season_period = season_service.get_current_season(crop_category=crop_category)
                 season = current_season_period.label
 
@@ -3003,46 +3003,46 @@ class PackinghouseStatementViewSet(viewsets.ModelViewSet):
         extracted_pool_id = header.get('pool_id') or ''
         pool_name = header.get('pool_name') or extracted_pool_id or 'Imported Pool'
         commodity = header.get('commodity', 'CITRUS')
-        season = header.get('season', '')
+        extracted_season = header.get('season', '')
 
-        # Derive season from report date if not specified, using commodity-appropriate logic
+        # ALWAYS derive season from report_date + commodity using SeasonService
+        # This is more reliable than AI extraction because:
+        # 1. Documents often don't have explicit season
+        # 2. AI doesn't understand citrus marketing year conventions (Oct-Sep)
+        # 3. SeasonService has correct logic for all commodity types
+        from datetime import datetime, date as date_module
+
+        # Map commodity to crop category for season calculation
+        commodity_upper = commodity.upper()
+        if any(c in commodity_upper for c in ['AVOCADO', 'SUBTROPICAL']):
+            crop_category = 'subtropical'
+        elif any(c in commodity_upper for c in ['LEMON', 'ORANGE', 'NAVEL', 'VALENCIA', 'TANGERINE', 'MANDARIN', 'GRAPEFRUIT', 'CITRUS']):
+            crop_category = 'citrus'
+        else:
+            crop_category = 'citrus'  # Default to citrus for unknown commodities
+
+        season_service = SeasonService(company_id=user.current_company_id)
+        season = ''
+
+        # Derive season from report_date
+        report_date_str = header.get('report_date')
+        if report_date_str:
+            try:
+                report_date = datetime.strptime(report_date_str, '%Y-%m-%d').date()
+                season_period = season_service.get_current_season(
+                    crop_category=crop_category,
+                    target_date=report_date
+                )
+                season = season_period.label
+            except (ValueError, TypeError):
+                pass
+
+        # Fall back to extracted season if derivation failed
+        if not season and extracted_season:
+            season = extracted_season
+
+        # Final fallback: use current season for this commodity
         if not season:
-            report_date_str = header.get('report_date')
-            from datetime import datetime, date as date_module
-
-            # Map commodity to crop category for season calculation
-            commodity_upper = commodity.upper()
-            if any(c in commodity_upper for c in ['AVOCADO', 'SUBTROPICAL']):
-                crop_category = 'subtropical'
-            elif any(c in commodity_upper for c in ['LEMON', 'ORANGE', 'NAVEL', 'VALENCIA', 'TANGERINE', 'MANDARIN', 'GRAPEFRUIT', 'CITRUS']):
-                crop_category = 'citrus'
-            else:
-                crop_category = 'citrus'  # Default to citrus for unknown commodities
-
-            # Use SeasonService to get the correct season for this commodity
-            season_service = SeasonService(company_id=user.current_company_id)
-
-            if report_date_str:
-                try:
-                    report_date = datetime.strptime(report_date_str, '%Y-%m-%d').date()
-                    season_period = season_service.get_current_season(
-                        crop_category=crop_category,
-                        target_date=report_date
-                    )
-                    season = season_period.label
-                except (ValueError, TypeError):
-                    pass
-
-        # Default season if still empty - use commodity-appropriate current season
-        if not season:
-            from datetime import date as date_module
-            commodity_upper = commodity.upper()
-            if any(c in commodity_upper for c in ['AVOCADO', 'SUBTROPICAL']):
-                crop_category = 'subtropical'
-            else:
-                crop_category = 'citrus'
-
-            season_service = SeasonService(company_id=user.current_company_id)
             current_season_period = season_service.get_current_season(crop_category=crop_category)
             season = current_season_period.label
 
