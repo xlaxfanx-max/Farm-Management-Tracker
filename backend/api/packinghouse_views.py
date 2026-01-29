@@ -1691,8 +1691,12 @@ def harvest_packing_pipeline(request):
         breakdowns = sorted(group_map.values(), key=lambda x: x.get('revenue', 0), reverse=True)
 
     elif breakdown_param == 'farm':
-        # Group packout stats by farm
-        packout_by_group = PackoutReport.objects.filter(
+        # Group by farm. Reports with field set use field.farm; reports without
+        # a field are grouped by pool.packinghouse instead.
+        group_map = {}
+
+        # Packout reports WITH a field linked
+        packout_with_field = PackoutReport.objects.filter(
             pool__packinghouse__company=company,
             pool__season=selected_season,
             field__isnull=False
@@ -1701,9 +1705,34 @@ def harvest_packing_pipeline(request):
             avg_pack_percent=Avg('total_packed_percent'),
             report_count=Count('id'),
         )
+        for row in packout_with_field:
+            fid = row['field__farm__id'] or 'unassigned'
+            label = row['field__farm__name'] or 'Unassigned'
+            group_map.setdefault(fid, {'farm_id': fid, 'label': label})
+            group_map[fid]['bins_packed'] = group_map[fid].get('bins_packed', 0) + float(row['total_bins_packed'])
+            group_map[fid]['avg_pack_percent'] = round(float(row['avg_pack_percent'] or 0), 1)
+            group_map[fid]['packout_reports'] = group_map[fid].get('packout_reports', 0) + row['report_count']
 
-        # Group settlement stats by farm
-        settlement_by_group = PoolSettlement.objects.filter(
+        # Packout reports WITHOUT a field - group by packinghouse name
+        packout_no_field = PackoutReport.objects.filter(
+            pool__packinghouse__company=company,
+            pool__season=selected_season,
+            field__isnull=True
+        ).values('pool__packinghouse__id', 'pool__packinghouse__name').annotate(
+            total_bins_packed=Coalesce(Sum('bins_this_period'), Decimal('0')),
+            avg_pack_percent=Avg('total_packed_percent'),
+            report_count=Count('id'),
+        )
+        for row in packout_no_field:
+            key = f"ph-{row['pool__packinghouse__id']}"
+            label = row['pool__packinghouse__name'] or 'Unknown Packinghouse'
+            group_map.setdefault(key, {'farm_id': key, 'label': label})
+            group_map[key]['bins_packed'] = group_map[key].get('bins_packed', 0) + float(row['total_bins_packed'])
+            group_map[key]['avg_pack_percent'] = round(float(row['avg_pack_percent'] or 0), 1)
+            group_map[key]['packout_reports'] = group_map[key].get('packout_reports', 0) + row['report_count']
+
+        # Settlement stats WITH a field linked
+        settlement_with_field = PoolSettlement.objects.filter(
             pool__packinghouse__company=company,
             pool__season=selected_season,
             field__isnull=False
@@ -1713,22 +1742,34 @@ def harvest_packing_pipeline(request):
             avg_per_bin=Avg('net_per_bin'),
             settlement_count=Count('id'),
         )
-
-        group_map = {}
-        for row in packout_by_group:
-            fid = row['field__farm__id']
-            group_map.setdefault(fid, {'farm_id': fid, 'label': row['field__farm__name']})
-            group_map[fid]['bins_packed'] = float(row['total_bins_packed'])
-            group_map[fid]['avg_pack_percent'] = round(float(row['avg_pack_percent'] or 0), 1)
-            group_map[fid]['packout_reports'] = row['report_count']
-
-        for row in settlement_by_group:
-            fid = row['field__farm__id']
-            group_map.setdefault(fid, {'farm_id': fid, 'label': row['field__farm__name']})
-            group_map[fid]['bins_settled'] = float(row['total_bins_settled'])
-            group_map[fid]['revenue'] = float(row['total_revenue'])
+        for row in settlement_with_field:
+            fid = row['field__farm__id'] or 'unassigned'
+            label = row['field__farm__name'] or 'Unassigned'
+            group_map.setdefault(fid, {'farm_id': fid, 'label': label})
+            group_map[fid]['bins_settled'] = group_map[fid].get('bins_settled', 0) + float(row['total_bins_settled'])
+            group_map[fid]['revenue'] = group_map[fid].get('revenue', 0) + float(row['total_revenue'])
             group_map[fid]['avg_per_bin'] = round(float(row['avg_per_bin'] or 0), 2)
-            group_map[fid]['settlements'] = row['settlement_count']
+            group_map[fid]['settlements'] = group_map[fid].get('settlements', 0) + row['settlement_count']
+
+        # Settlement stats WITHOUT a field - group by packinghouse name
+        settlement_no_field = PoolSettlement.objects.filter(
+            pool__packinghouse__company=company,
+            pool__season=selected_season,
+            field__isnull=True
+        ).values('pool__packinghouse__id', 'pool__packinghouse__name').annotate(
+            total_bins_settled=Coalesce(Sum('total_bins'), Decimal('0')),
+            total_revenue=Coalesce(Sum('net_return'), Decimal('0')),
+            avg_per_bin=Avg('net_per_bin'),
+            settlement_count=Count('id'),
+        )
+        for row in settlement_no_field:
+            key = f"ph-{row['pool__packinghouse__id']}"
+            label = row['pool__packinghouse__name'] or 'Unknown Packinghouse'
+            group_map.setdefault(key, {'farm_id': key, 'label': label})
+            group_map[key]['bins_settled'] = group_map[key].get('bins_settled', 0) + float(row['total_bins_settled'])
+            group_map[key]['revenue'] = group_map[key].get('revenue', 0) + float(row['total_revenue'])
+            group_map[key]['avg_per_bin'] = round(float(row['avg_per_bin'] or 0), 2)
+            group_map[key]['settlements'] = group_map[key].get('settlements', 0) + row['settlement_count']
 
         for key, data in group_map.items():
             packed = data.get('bins_packed', 0)
