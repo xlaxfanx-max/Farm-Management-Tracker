@@ -343,14 +343,12 @@ export default function Analytics() {
 
     try {
       const params = {};
+      if (selectedSeason) {
+        params.season = selectedSeason;
+      }
       if (seasonDates) {
         params.start_date = seasonDates.start_date;
         params.end_date = seasonDates.end_date;
-      } else if (selectedSeason) {
-        const year = selectedSeason.includes('-')
-          ? parseInt(selectedSeason.split('-')[0])
-          : parseInt(selectedSeason);
-        params.year = year;
       }
       if (selectedFarm !== 'all') {
         params.farm_id = selectedFarm;

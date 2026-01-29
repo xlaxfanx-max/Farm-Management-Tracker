@@ -93,31 +93,42 @@ def get_analytics_dashboard(request):
 def _get_analytics_dashboard_impl(request, company):
     """Internal implementation of analytics dashboard."""
 
-    # Parse date filters
-    year = request.query_params.get('year', timezone.now().year)
-    try:
-        year = int(year)
-    except ValueError:
-        year = timezone.now().year
-
+    # Parse date filters - supports season param (e.g. "2024-2025") or start_date/end_date or year
+    season = request.query_params.get('season')
     start_date = request.query_params.get('start_date')
     end_date = request.query_params.get('end_date')
 
-    if start_date:
+    if start_date and end_date:
+        # Explicit date range takes priority
         try:
             start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
         except ValueError:
-            start_date = datetime(year, 1, 1).date()
-    else:
-        start_date = datetime(year, 1, 1).date()
-
-    if end_date:
+            start_date = None
         try:
             end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
         except ValueError:
-            end_date = datetime(year, 12, 31).date()
-    else:
+            end_date = None
+
+    if (not start_date or not end_date) and season:
+        # Use SeasonService to resolve season label to date range
+        season_service = SeasonService()
+        try:
+            start_date, end_date = season_service.get_season_date_range(season)
+        except Exception:
+            start_date = None
+            end_date = None
+
+    # Fallback to calendar year
+    if not start_date or not end_date:
+        year = request.query_params.get('year', timezone.now().year)
+        try:
+            year = int(year)
+        except ValueError:
+            year = timezone.now().year
+        start_date = datetime(year, 1, 1).date()
         end_date = datetime(year, 12, 31).date()
+
+    year = start_date.year
 
     farm_id = request.query_params.get('farm_id')
 
