@@ -4007,9 +4007,12 @@ class PackinghouseStatementSerializer(serializers.ModelSerializer):
         return None
 
     def get_pdf_url(self, obj):
-        """Return the proxy URL that serves PDF through our backend to avoid CORS issues."""
+        """
+        Return the proxy URL that serves PDF through our backend.
+        This avoids CORS issues with direct R2/S3 access.
+        """
         if obj.pdf_file:
-            # Return relative URL so it works with frontend's API base URL
+            # Return relative URL - frontend prepends API base URL
             return f'/api/packinghouse-statements/{obj.id}/pdf/'
         return None
 
