@@ -8,10 +8,6 @@ import {
   TrendingUp,
   BarChart3,
   RefreshCw,
-  Filter,
-  ArrowUpRight,
-  ArrowDownRight,
-  Minus,
   DollarSign,
   Package
 } from 'lucide-react';
@@ -20,6 +16,20 @@ import {
   packinghousesAPI,
   PACKINGHOUSE_CONSTANTS
 } from '../../services/api';
+import SeasonSelector from '../SeasonSelector';
+import { useSeason } from '../../contexts/SeasonContext';
+import {
+  AnalyticsCard,
+  AnalyticsTabs,
+  LoadingState,
+  EmptyState,
+  SectionCard,
+  VarianceIndicator,
+  formatCurrency,
+  formatNumber,
+  tableHeaderClass,
+  tableCellClass,
+} from '../analytics/analyticsShared';
 
 // Fixed color palette for size codes (smaller number = larger fruit)
 const SIZE_COLORS = [
@@ -47,19 +57,20 @@ const PackinghouseAnalytics = () => {
   const [sizePricing, setSizePricing] = useState(null);
   const [groupBy, setGroupBy] = useState('farm');
   const [loading, setLoading] = useState(true);
-  const [filters, setFilters] = useState({
-    season: PACKINGHOUSE_CONSTANTS.getCurrentSeason(),
-    packinghouse: '',
-    commodity: '',
-  });
+  const [selectedPackinghouse, setSelectedPackinghouse] = useState('');
+  const [selectedCommodity, setSelectedCommodity] = useState('');
+
+  const { selectedSeason, setSelectedSeason } = useSeason();
 
   useEffect(() => {
     fetchPackinghouses();
   }, []);
 
   useEffect(() => {
-    fetchAnalytics();
-  }, [activeView, filters, groupBy]);
+    if (selectedSeason) {
+      fetchAnalytics();
+    }
+  }, [activeView, selectedSeason, selectedPackinghouse, selectedCommodity, groupBy]);
 
   const fetchPackinghouses = async () => {
     try {
@@ -74,9 +85,9 @@ const PackinghouseAnalytics = () => {
     try {
       setLoading(true);
       const params = {};
-      if (filters.season) params.season = filters.season;
-      if (filters.packinghouse) params.packinghouse = filters.packinghouse;
-      if (filters.commodity) params.commodity = filters.commodity;
+      if (selectedSeason) params.season = selectedSeason;
+      if (selectedPackinghouse) params.packinghouse = selectedPackinghouse;
+      if (selectedCommodity) params.commodity = selectedCommodity;
 
       if (activeView === 'block-performance') {
         const response = await packinghouseAnalyticsAPI.getBlockPerformance(params);
@@ -102,42 +113,6 @@ const PackinghouseAnalytics = () => {
     }
   };
 
-  const formatNumber = (value, decimals = 0) => {
-    if (value === null || value === undefined) return '-';
-    return new Intl.NumberFormat('en-US', {
-      minimumFractionDigits: decimals,
-      maximumFractionDigits: decimals
-    }).format(value);
-  };
-
-  const formatCurrency = (value) => {
-    if (value === null || value === undefined) return '-';
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD'
-    }).format(value);
-  };
-
-  const getVarianceIndicator = (variance) => {
-    if (variance === null || variance === undefined) {
-      return <Minus className="w-4 h-4 text-gray-400" />;
-    }
-    if (variance > 0) {
-      return <ArrowUpRight className="w-4 h-4 text-green-500" />;
-    }
-    if (variance < 0) {
-      return <ArrowDownRight className="w-4 h-4 text-red-500" />;
-    }
-    return <Minus className="w-4 h-4 text-gray-400" />;
-  };
-
-  const getVarianceColor = (variance) => {
-    if (variance === null || variance === undefined) return 'text-gray-500';
-    if (variance > 0) return 'text-green-600';
-    if (variance < 0) return 'text-red-600';
-    return 'text-gray-500';
-  };
-
   const views = [
     { id: 'block-performance', label: 'Block Performance' },
     { id: 'packout-trends', label: 'Packout Trends' },
@@ -149,138 +124,111 @@ const PackinghouseAnalytics = () => {
   const showGroupByToggle = activeView === 'size-distribution';
 
   return (
-    <div className="space-y-6">
-      {/* View Selection and Filters */}
-      <div className="flex flex-wrap justify-between items-center gap-4">
-        <div className="flex flex-wrap gap-2">
-          {views.map(view => (
-            <button
-              key={view.id}
-              onClick={() => setActiveView(view.id)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                activeView === view.id
-                  ? 'bg-green-600 text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              }`}
-            >
-              {view.label}
-            </button>
-          ))}
-        </div>
+    <div className="space-y-4">
+      {/* View Tabs (underline style) */}
+      <AnalyticsTabs
+        tabs={views}
+        activeTab={activeView}
+        onChange={setActiveView}
+        accentColor="green"
+      />
 
-        <div className="flex items-center space-x-3">
-          {showGroupByToggle && (
-            <select
-              value={groupBy}
-              onChange={(e) => setGroupBy(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-lg text-sm"
-            >
-              <option value="farm">Group by Farm</option>
-              <option value="field">Group by Field</option>
-            </select>
-          )}
-          <input
-            type="text"
-            value={filters.season}
-            onChange={(e) => setFilters(prev => ({ ...prev, season: e.target.value }))}
-            placeholder="Season"
-            className="px-3 py-2 border border-gray-300 rounded-lg text-sm w-32"
-          />
+      {/* Filters */}
+      <div className="flex flex-wrap items-center gap-3">
+        {showGroupByToggle && (
           <select
-            value={filters.packinghouse}
-            onChange={(e) => setFilters(prev => ({ ...prev, packinghouse: e.target.value }))}
-            className="px-3 py-2 border border-gray-300 rounded-lg text-sm"
+            value={groupBy}
+            onChange={(e) => setGroupBy(e.target.value)}
+            className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent"
           >
-            <option value="">All Packinghouses</option>
-            {packinghouses.map(ph => (
-              <option key={ph.id} value={ph.id}>{ph.name}</option>
-            ))}
+            <option value="farm">Group by Farm</option>
+            <option value="field">Group by Field</option>
           </select>
-          <select
-            value={filters.commodity}
-            onChange={(e) => setFilters(prev => ({ ...prev, commodity: e.target.value }))}
-            className="px-3 py-2 border border-gray-300 rounded-lg text-sm"
-          >
-            <option value="">All Commodities</option>
-            {PACKINGHOUSE_CONSTANTS.commodities.map(c => (
-              <option key={c.value} value={c.value}>{c.label}</option>
-            ))}
-          </select>
-          <button
-            onClick={fetchAnalytics}
-            className="p-2 text-gray-400 hover:text-gray-600"
-            title="Refresh"
-          >
-            <RefreshCw className="w-4 h-4" />
-          </button>
-        </div>
+        )}
+        <SeasonSelector
+          value={selectedSeason}
+          onChange={setSelectedSeason}
+          className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent"
+          placeholder="Select Season"
+        />
+        <select
+          value={selectedPackinghouse}
+          onChange={(e) => setSelectedPackinghouse(e.target.value)}
+          className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent"
+        >
+          <option value="">All Packinghouses</option>
+          {packinghouses.map(ph => (
+            <option key={ph.id} value={ph.id}>{ph.name}</option>
+          ))}
+        </select>
+        <select
+          value={selectedCommodity}
+          onChange={(e) => setSelectedCommodity(e.target.value)}
+          className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent"
+        >
+          <option value="">All Commodities</option>
+          {PACKINGHOUSE_CONSTANTS.commodities.map(c => (
+            <option key={c.value} value={c.value}>{c.label}</option>
+          ))}
+        </select>
+        <button
+          onClick={fetchAnalytics}
+          className="p-2 text-gray-400 hover:text-gray-600"
+          title="Refresh"
+        >
+          <RefreshCw className="w-4 h-4" />
+        </button>
       </div>
 
       {/* Content */}
       {loading ? (
-        <div className="flex justify-center py-12">
-          <RefreshCw className="w-8 h-8 animate-spin text-green-600" />
-        </div>
+        <LoadingState />
       ) : (
         <>
           {/* Block Performance View */}
           {activeView === 'block-performance' && (
-            <div className="bg-white rounded-lg border border-gray-200">
-              <div className="p-4 border-b border-gray-200">
-                <h3 className="font-semibold text-gray-800 flex items-center">
-                  <BarChart3 className="w-5 h-5 mr-2 text-green-600" />
-                  Block Performance Comparison
-                </h3>
-                <p className="text-sm text-gray-500 mt-1">
-                  Compare pack percentages and returns across your blocks
-                </p>
-              </div>
-
+            <SectionCard
+              title="Block Performance Comparison"
+              subtitle="Compare pack percentages and returns across your blocks"
+              icon={BarChart3}
+            >
               {blockPerformance.length === 0 ? (
-                <div className="p-8 text-center text-gray-500">
-                  No data available for the selected filters.
-                </div>
+                <EmptyState message="No data available for the selected filters." />
               ) : (
                 <div className="overflow-x-auto">
                   <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                       <tr>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Block</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Pool</th>
-                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Bins</th>
-                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Pack %</th>
-                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">House Avg</th>
-                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Variance</th>
-                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">$/Bin</th>
-                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">vs House</th>
+                        <th className={`${tableHeaderClass} text-left`}>Block</th>
+                        <th className={`${tableHeaderClass} text-left`}>Pool</th>
+                        <th className={`${tableHeaderClass} text-right`}>Bins</th>
+                        <th className={`${tableHeaderClass} text-right`}>Pack %</th>
+                        <th className={`${tableHeaderClass} text-right`}>House Avg</th>
+                        <th className={`${tableHeaderClass} text-right`}>Variance</th>
+                        <th className={`${tableHeaderClass} text-right`}>$/Bin</th>
+                        <th className={`${tableHeaderClass} text-right`}>vs House</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200">
                       {blockPerformance.map((row, idx) => (
                         <tr key={idx} className="hover:bg-gray-50">
-                          <td className="px-4 py-3 font-medium text-gray-900">{row.field_name}</td>
-                          <td className="px-4 py-3 text-sm text-gray-600">{row.pool_name}</td>
-                          <td className="px-4 py-3 text-sm text-right">{formatNumber(row.total_bins, 2)}</td>
-                          <td className="px-4 py-3 text-sm text-right font-semibold text-blue-600">
+                          <td className={`${tableCellClass} font-medium text-gray-900`}>{row.field_name}</td>
+                          <td className={`${tableCellClass} text-gray-600`}>{row.pool_name}</td>
+                          <td className={`${tableCellClass} text-right`}>{formatNumber(row.total_bins, 2)}</td>
+                          <td className={`${tableCellClass} text-right font-semibold text-blue-600`}>
                             {row.pack_percent ? `${row.pack_percent}%` : '-'}
                           </td>
-                          <td className="px-4 py-3 text-sm text-right text-gray-500">
+                          <td className={`${tableCellClass} text-right text-gray-500`}>
                             {row.house_avg_pack_percent ? `${row.house_avg_pack_percent}%` : '-'}
                           </td>
-                          <td className={`px-4 py-3 text-sm text-right ${getVarianceColor(row.pack_variance)}`}>
-                            <span className="flex items-center justify-end">
-                              {getVarianceIndicator(row.pack_variance)}
-                              {row.pack_variance !== null ? `${row.pack_variance > 0 ? '+' : ''}${formatNumber(row.pack_variance, 1)}%` : '-'}
-                            </span>
+                          <td className={`${tableCellClass} text-right`}>
+                            <VarianceIndicator value={row.pack_variance} />
                           </td>
-                          <td className="px-4 py-3 text-sm text-right font-semibold text-green-600">
+                          <td className={`${tableCellClass} text-right font-semibold text-green-600`}>
                             {formatCurrency(row.net_per_bin)}
                           </td>
-                          <td className={`px-4 py-3 text-sm text-right ${getVarianceColor(row.return_variance)}`}>
-                            <span className="flex items-center justify-end">
-                              {getVarianceIndicator(row.return_variance)}
-                              {row.return_variance !== null ? formatCurrency(row.return_variance) : '-'}
-                            </span>
+                          <td className={`${tableCellClass} text-right`}>
+                            <VarianceIndicator value={row.return_variance} format="currency" />
                           </td>
                         </tr>
                       ))}
@@ -288,36 +236,28 @@ const PackinghouseAnalytics = () => {
                   </table>
                 </div>
               )}
-            </div>
+            </SectionCard>
           )}
 
           {/* Packout Trends View */}
           {activeView === 'packout-trends' && (
-            <div className="bg-white rounded-lg border border-gray-200">
-              <div className="p-4 border-b border-gray-200">
-                <h3 className="font-semibold text-gray-800 flex items-center">
-                  <TrendingUp className="w-5 h-5 mr-2 text-green-600" />
-                  Packout Percentage Trends
-                </h3>
-                <p className="text-sm text-gray-500 mt-1">
-                  Track pack percentages over time
-                </p>
-              </div>
-
+            <SectionCard
+              title="Packout Percentage Trends"
+              subtitle="Track pack percentages over time"
+              icon={TrendingUp}
+            >
               {packoutTrends.length === 0 ? (
-                <div className="p-8 text-center text-gray-500">
-                  No data available for the selected filters.
-                </div>
+                <EmptyState message="No data available for the selected filters." />
               ) : (
                 <div className="overflow-x-auto">
                   <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                       <tr>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Field</th>
-                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Pack %</th>
-                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">House Avg</th>
-                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Variance</th>
+                        <th className={`${tableHeaderClass} text-left`}>Date</th>
+                        <th className={`${tableHeaderClass} text-left`}>Field</th>
+                        <th className={`${tableHeaderClass} text-right`}>Pack %</th>
+                        <th className={`${tableHeaderClass} text-right`}>House Avg</th>
+                        <th className={`${tableHeaderClass} text-right`}>Variance</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200">
@@ -327,23 +267,20 @@ const PackinghouseAnalytics = () => {
                           : null;
                         return (
                           <tr key={idx} className="hover:bg-gray-50">
-                            <td className="px-4 py-3 text-sm">
+                            <td className={tableCellClass}>
                               {new Date(row.report_date).toLocaleDateString()}
                             </td>
-                            <td className="px-4 py-3 text-sm font-medium text-gray-900">
+                            <td className={`${tableCellClass} font-medium text-gray-900`}>
                               {row.field_name}
                             </td>
-                            <td className="px-4 py-3 text-sm text-right font-semibold text-blue-600">
+                            <td className={`${tableCellClass} text-right font-semibold text-blue-600`}>
                               {row.total_packed_percent}%
                             </td>
-                            <td className="px-4 py-3 text-sm text-right text-gray-500">
+                            <td className={`${tableCellClass} text-right text-gray-500`}>
                               {row.house_avg_packed_percent ? `${row.house_avg_packed_percent}%` : '-'}
                             </td>
-                            <td className={`px-4 py-3 text-sm text-right ${getVarianceColor(variance)}`}>
-                              <span className="flex items-center justify-end">
-                                {getVarianceIndicator(variance)}
-                                {variance !== null ? `${variance > 0 ? '+' : ''}${formatNumber(variance, 1)}%` : '-'}
-                              </span>
+                            <td className={`${tableCellClass} text-right`}>
+                              <VarianceIndicator value={variance} />
                             </td>
                           </tr>
                         );
@@ -352,50 +289,42 @@ const PackinghouseAnalytics = () => {
                   </table>
                 </div>
               )}
-            </div>
+            </SectionCard>
           )}
 
           {/* Settlement Comparison View */}
           {activeView === 'settlement-comparison' && (
-            <div className="bg-white rounded-lg border border-gray-200">
-              <div className="p-4 border-b border-gray-200">
-                <h3 className="font-semibold text-gray-800 flex items-center">
-                  <BarChart3 className="w-5 h-5 mr-2 text-green-600" />
-                  Settlement Comparison
-                </h3>
-                <p className="text-sm text-gray-500 mt-1">
-                  Compare returns across packinghouses
-                </p>
-              </div>
-
+            <SectionCard
+              title="Settlement Comparison"
+              subtitle="Compare returns across packinghouses"
+              icon={BarChart3}
+            >
               {settlementComparison.length === 0 ? (
-                <div className="p-8 text-center text-gray-500">
-                  No settlement data available. Select a season to compare packinghouse returns.
-                </div>
+                <EmptyState message="No settlement data available. Select a season to compare packinghouse returns." />
               ) : (
                 <div className="overflow-x-auto">
                   <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                       <tr>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Packinghouse</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Commodity</th>
-                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Bins</th>
-                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Net Return</th>
-                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">$/Bin</th>
-                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Fresh %</th>
+                        <th className={`${tableHeaderClass} text-left`}>Packinghouse</th>
+                        <th className={`${tableHeaderClass} text-left`}>Commodity</th>
+                        <th className={`${tableHeaderClass} text-right`}>Bins</th>
+                        <th className={`${tableHeaderClass} text-right`}>Net Return</th>
+                        <th className={`${tableHeaderClass} text-right`}>$/Bin</th>
+                        <th className={`${tableHeaderClass} text-right`}>Fresh %</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200">
                       {settlementComparison.map((row, idx) => (
                         <tr key={idx} className="hover:bg-gray-50">
-                          <td className="px-4 py-3 font-medium text-gray-900">{row.packinghouse_name}</td>
-                          <td className="px-4 py-3 text-sm text-gray-600">{row.commodity}</td>
-                          <td className="px-4 py-3 text-sm text-right">{formatNumber(row.total_bins, 2)}</td>
-                          <td className="px-4 py-3 text-sm text-right">{formatCurrency(row.net_return)}</td>
-                          <td className="px-4 py-3 text-sm text-right font-semibold text-green-600">
+                          <td className={`${tableCellClass} font-medium text-gray-900`}>{row.packinghouse_name}</td>
+                          <td className={`${tableCellClass} text-gray-600`}>{row.commodity}</td>
+                          <td className={`${tableCellClass} text-right`}>{formatNumber(row.total_bins, 2)}</td>
+                          <td className={`${tableCellClass} text-right`}>{formatCurrency(row.net_return)}</td>
+                          <td className={`${tableCellClass} text-right font-semibold text-green-600`}>
                             {formatCurrency(row.net_per_bin)}
                           </td>
-                          <td className="px-4 py-3 text-sm text-right text-blue-600">
+                          <td className={`${tableCellClass} text-right text-blue-600`}>
                             {row.fresh_fruit_percent ? `${row.fresh_fruit_percent}%` : '-'}
                           </td>
                         </tr>
@@ -404,31 +333,23 @@ const PackinghouseAnalytics = () => {
                   </table>
                 </div>
               )}
-            </div>
+            </SectionCard>
           )}
 
           {/* Size Distribution View */}
           {activeView === 'size-distribution' && (
             <div className="space-y-6">
-              <div className="bg-white rounded-lg border border-gray-200">
-                <div className="p-4 border-b border-gray-200">
-                  <h3 className="font-semibold text-gray-800 flex items-center">
-                    <Package className="w-5 h-5 mr-2 text-green-600" />
-                    Size Distribution by {groupBy === 'farm' ? 'Farm' : 'Field'}
-                  </h3>
-                  <p className="text-sm text-gray-500 mt-1">
-                    Compare fruit size breakdown across your {groupBy === 'farm' ? 'farms' : 'fields'}. Smaller size numbers = larger fruit.
-                  </p>
-                </div>
-
+              <SectionCard
+                title={`Size Distribution by ${groupBy === 'farm' ? 'Farm' : 'Field'}`}
+                subtitle={`Compare fruit size breakdown across your ${groupBy === 'farm' ? 'farms' : 'fields'}. Smaller size numbers = larger fruit.`}
+                icon={Package}
+              >
                 {!sizeDistribution || sizeDistribution.groups.length === 0 ? (
-                  <div className="p-8 text-center text-gray-500">
-                    No size distribution data available for the selected filters.
-                  </div>
+                  <EmptyState message="No size distribution data available for the selected filters." />
                 ) : (
                   <>
                     {/* Size Legend */}
-                    <div className="px-4 pt-4 flex flex-wrap gap-3">
+                    <div className="px-5 pt-4 flex flex-wrap gap-3">
                       {sizeDistribution.all_sizes.map((size, idx) => (
                         <div key={size} className="flex items-center space-x-1.5 text-xs">
                           <div
@@ -441,7 +362,7 @@ const PackinghouseAnalytics = () => {
                     </div>
 
                     {/* Stacked Bar Chart */}
-                    <div className="p-4 space-y-3">
+                    <div className="p-5 space-y-3">
                       {sizeDistribution.groups.map((group) => {
                         const maxQty = Math.max(...sizeDistribution.groups.map(g => parseFloat(g.total_quantity) || 0));
                         const barWidth = maxQty > 0 ? (parseFloat(group.total_quantity) / maxQty) * 100 : 0;
@@ -484,14 +405,14 @@ const PackinghouseAnalytics = () => {
                         <table className="min-w-full divide-y divide-gray-200">
                           <thead className="bg-gray-50">
                             <tr>
-                              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                              <th className={`${tableHeaderClass} text-left`}>
                                 {groupBy === 'farm' ? 'Farm' : 'Field'}
                               </th>
-                              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Size</th>
-                              <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Quantity</th>
-                              <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">%</th>
-                              <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">House Avg %</th>
-                              <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Variance</th>
+                              <th className={`${tableHeaderClass} text-left`}>Size</th>
+                              <th className={`${tableHeaderClass} text-right`}>Quantity</th>
+                              <th className={`${tableHeaderClass} text-right`}>%</th>
+                              <th className={`${tableHeaderClass} text-right`}>House Avg %</th>
+                              <th className={`${tableHeaderClass} text-right`}>Variance</th>
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-gray-200">
@@ -503,11 +424,11 @@ const PackinghouseAnalytics = () => {
                                 return (
                                   <tr key={`${group.group_id}-${s.size}`} className="hover:bg-gray-50">
                                     {sIdx === 0 ? (
-                                      <td className="px-4 py-3 font-medium text-gray-900" rowSpan={group.sizes.length}>
+                                      <td className={`${tableCellClass} font-medium text-gray-900`} rowSpan={group.sizes.length}>
                                         {group.group_name}
                                       </td>
                                     ) : null}
-                                    <td className="px-4 py-3 text-sm">
+                                    <td className={tableCellClass}>
                                       <span className="inline-flex items-center space-x-1.5">
                                         <span
                                           className="w-2.5 h-2.5 rounded-sm inline-block"
@@ -516,18 +437,15 @@ const PackinghouseAnalytics = () => {
                                         <span>{s.size}</span>
                                       </span>
                                     </td>
-                                    <td className="px-4 py-3 text-sm text-right">{formatNumber(s.quantity)}</td>
-                                    <td className="px-4 py-3 text-sm text-right font-semibold text-blue-600">
+                                    <td className={`${tableCellClass} text-right`}>{formatNumber(s.quantity)}</td>
+                                    <td className={`${tableCellClass} text-right font-semibold text-blue-600`}>
                                       {s.percent}%
                                     </td>
-                                    <td className="px-4 py-3 text-sm text-right text-gray-500">
+                                    <td className={`${tableCellClass} text-right text-gray-500`}>
                                       {s.house_avg_percent !== null ? `${s.house_avg_percent}%` : '-'}
                                     </td>
-                                    <td className={`px-4 py-3 text-sm text-right ${getVarianceColor(variance)}`}>
-                                      <span className="flex items-center justify-end">
-                                        {getVarianceIndicator(variance)}
-                                        {variance !== null ? `${variance > 0 ? '+' : ''}${formatNumber(variance, 1)}%` : '-'}
-                                      </span>
+                                    <td className={`${tableCellClass} text-right`}>
+                                      <VarianceIndicator value={variance} />
                                     </td>
                                   </tr>
                                 );
@@ -539,7 +457,7 @@ const PackinghouseAnalytics = () => {
                     </div>
                   </>
                 )}
-              </div>
+              </SectionCard>
             </div>
           )}
 
@@ -549,56 +467,39 @@ const PackinghouseAnalytics = () => {
               {/* Summary Cards */}
               {sizePricing && sizePricing.totals && (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="bg-white rounded-lg border border-gray-200 p-4">
-                    <div className="flex items-center space-x-2 text-sm text-gray-500 mb-1">
-                      <DollarSign className="w-4 h-4" />
-                      <span>Total Revenue</span>
-                    </div>
-                    <div className="text-2xl font-bold text-gray-900">
-                      {formatCurrency(sizePricing.totals.total_revenue)}
-                    </div>
-                  </div>
-                  <div className="bg-white rounded-lg border border-gray-200 p-4">
-                    <div className="flex items-center space-x-2 text-sm text-gray-500 mb-1">
-                      <TrendingUp className="w-4 h-4" />
-                      <span>Overall Avg FOB</span>
-                    </div>
-                    <div className="text-2xl font-bold text-gray-900">
-                      {formatCurrency(sizePricing.totals.overall_avg_fob)}
-                    </div>
-                    <div className="text-xs text-gray-400 mt-1">per carton</div>
-                  </div>
-                  <div className="bg-white rounded-lg border border-gray-200 p-4">
-                    <div className="flex items-center space-x-2 text-sm text-gray-500 mb-1">
-                      <Package className="w-4 h-4" />
-                      <span>Total Cartons</span>
-                    </div>
-                    <div className="text-2xl font-bold text-gray-900">
-                      {formatNumber(sizePricing.totals.total_quantity)}
-                    </div>
-                  </div>
+                  <AnalyticsCard
+                    title="Total Revenue"
+                    value={formatCurrency(sizePricing.totals.total_revenue, { compact: true })}
+                    icon={DollarSign}
+                    color="green"
+                  />
+                  <AnalyticsCard
+                    title="Overall Avg FOB"
+                    value={formatCurrency(sizePricing.totals.overall_avg_fob)}
+                    subtitle="per carton"
+                    icon={TrendingUp}
+                    color="blue"
+                  />
+                  <AnalyticsCard
+                    title="Total Cartons"
+                    value={formatNumber(sizePricing.totals.total_quantity)}
+                    icon={Package}
+                    color="purple"
+                  />
                 </div>
               )}
 
-              <div className="bg-white rounded-lg border border-gray-200">
-                <div className="p-4 border-b border-gray-200">
-                  <h3 className="font-semibold text-gray-800 flex items-center">
-                    <DollarSign className="w-5 h-5 mr-2 text-green-600" />
-                    FOB Pricing by Size
-                  </h3>
-                  <p className="text-sm text-gray-500 mt-1">
-                    Revenue and pricing breakdown by fruit size from settlements
-                  </p>
-                </div>
-
+              <SectionCard
+                title="FOB Pricing by Size"
+                subtitle="Revenue and pricing breakdown by fruit size from settlements"
+                icon={DollarSign}
+              >
                 {!sizePricing || sizePricing.sizes.length === 0 ? (
-                  <div className="p-8 text-center text-gray-500">
-                    No size pricing data available for the selected filters.
-                  </div>
+                  <EmptyState message="No size pricing data available for the selected filters." />
                 ) : (
                   <>
                     {/* Revenue by Size Bar Chart */}
-                    <div className="p-4 space-y-2">
+                    <div className="p-5 space-y-2">
                       {sizePricing.sizes.map((s, idx) => {
                         const maxRev = Math.max(...sizePricing.sizes.map(x => parseFloat(x.total_revenue) || 0));
                         const barWidth = maxRev > 0 ? (parseFloat(s.total_revenue) / maxRev) * 100 : 0;
@@ -634,18 +535,18 @@ const PackinghouseAnalytics = () => {
                       <table className="min-w-full divide-y divide-gray-200">
                         <thead className="bg-gray-50">
                           <tr>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Size</th>
-                            <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Quantity</th>
-                            <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">% of Total</th>
-                            <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Avg FOB Rate</th>
-                            <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Revenue</th>
-                            <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">% of Revenue</th>
+                            <th className={`${tableHeaderClass} text-left`}>Size</th>
+                            <th className={`${tableHeaderClass} text-right`}>Quantity</th>
+                            <th className={`${tableHeaderClass} text-right`}>% of Total</th>
+                            <th className={`${tableHeaderClass} text-right`}>Avg FOB Rate</th>
+                            <th className={`${tableHeaderClass} text-right`}>Revenue</th>
+                            <th className={`${tableHeaderClass} text-right`}>% of Revenue</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-200">
                           {sizePricing.sizes.map((s, idx) => (
                             <tr key={s.size} className="hover:bg-gray-50">
-                              <td className="px-4 py-3 font-medium text-gray-900">
+                              <td className={`${tableCellClass} font-medium text-gray-900`}>
                                 <span className="inline-flex items-center space-x-1.5">
                                   <span
                                     className="w-2.5 h-2.5 rounded-sm inline-block"
@@ -654,27 +555,27 @@ const PackinghouseAnalytics = () => {
                                   <span>{s.size}</span>
                                 </span>
                               </td>
-                              <td className="px-4 py-3 text-sm text-right">{formatNumber(s.total_quantity)}</td>
-                              <td className="px-4 py-3 text-sm text-right text-gray-500">{s.percent_of_total_quantity}%</td>
-                              <td className="px-4 py-3 text-sm text-right font-semibold text-blue-600">
+                              <td className={`${tableCellClass} text-right`}>{formatNumber(s.total_quantity)}</td>
+                              <td className={`${tableCellClass} text-right text-gray-500`}>{s.percent_of_total_quantity}%</td>
+                              <td className={`${tableCellClass} text-right font-semibold text-blue-600`}>
                                 {formatCurrency(s.weighted_avg_fob)}
                               </td>
-                              <td className="px-4 py-3 text-sm text-right font-semibold text-green-600">
+                              <td className={`${tableCellClass} text-right font-semibold text-green-600`}>
                                 {formatCurrency(s.total_revenue)}
                               </td>
-                              <td className="px-4 py-3 text-sm text-right text-gray-500">{s.percent_of_total_revenue}%</td>
+                              <td className={`${tableCellClass} text-right text-gray-500`}>{s.percent_of_total_revenue}%</td>
                             </tr>
                           ))}
                         </tbody>
                         {sizePricing.totals && (
                           <tfoot className="bg-gray-50">
                             <tr className="font-semibold">
-                              <td className="px-4 py-3 text-gray-900">Total</td>
-                              <td className="px-4 py-3 text-right">{formatNumber(sizePricing.totals.total_quantity)}</td>
-                              <td className="px-4 py-3 text-right">100%</td>
-                              <td className="px-4 py-3 text-right text-blue-600">{formatCurrency(sizePricing.totals.overall_avg_fob)}</td>
-                              <td className="px-4 py-3 text-right text-green-600">{formatCurrency(sizePricing.totals.total_revenue)}</td>
-                              <td className="px-4 py-3 text-right">100%</td>
+                              <td className={`${tableCellClass} text-gray-900`}>Total</td>
+                              <td className={`${tableCellClass} text-right`}>{formatNumber(sizePricing.totals.total_quantity)}</td>
+                              <td className={`${tableCellClass} text-right`}>100%</td>
+                              <td className={`${tableCellClass} text-right text-blue-600`}>{formatCurrency(sizePricing.totals.overall_avg_fob)}</td>
+                              <td className={`${tableCellClass} text-right text-green-600`}>{formatCurrency(sizePricing.totals.total_revenue)}</td>
+                              <td className={`${tableCellClass} text-right`}>100%</td>
                             </tr>
                           </tfoot>
                         )}
@@ -682,7 +583,7 @@ const PackinghouseAnalytics = () => {
                     </div>
                   </>
                 )}
-              </div>
+              </SectionCard>
             </div>
           )}
         </>

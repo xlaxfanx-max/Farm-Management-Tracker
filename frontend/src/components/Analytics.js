@@ -1,69 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import {
   BarChart3,
-  TrendingUp,
-  TrendingDown,
   DollarSign,
   Package,
   Wheat,
   Droplets,
   FileText,
   RefreshCw,
-  AlertCircle,
-  CheckCircle,
-  AlertTriangle,
-  ChevronDown,
-  Calendar,
   Users,
   Target,
   Award,
+  AlertTriangle,
 } from 'lucide-react';
 import { analyticsAPI, farmsAPI } from '../services/api';
 import SeasonSelector from './SeasonSelector';
 import { useSeason } from '../contexts/SeasonContext';
-
-// =============================================================================
-// KPI CARD COMPONENT
-// =============================================================================
-
-const KPICard = ({ title, value, subtitle, icon: Icon, trend, trendValue, color = 'blue' }) => {
-  const colorClasses = {
-    blue: 'bg-blue-50 text-blue-600 border-blue-100',
-    green: 'bg-green-50 text-green-600 border-green-100',
-    purple: 'bg-purple-50 text-purple-600 border-purple-100',
-    orange: 'bg-orange-50 text-orange-600 border-orange-100',
-    red: 'bg-red-50 text-red-600 border-red-100',
-  };
-
-  return (
-    <div className="bg-white rounded-xl border border-gray-200 p-5 hover:shadow-md transition-shadow">
-      <div className="flex items-start justify-between">
-        <div className="flex-1">
-          <p className="text-sm font-medium text-gray-500 mb-1">{title}</p>
-          <p className="text-2xl font-bold text-gray-900">{value}</p>
-          {subtitle && (
-            <p className="text-sm text-gray-500 mt-1">{subtitle}</p>
-          )}
-          {trend && trendValue && (
-            <div className="flex items-center gap-1 mt-2">
-              {trend === 'up' ? (
-                <TrendingUp className="w-4 h-4 text-green-500" />
-              ) : (
-                <TrendingDown className="w-4 h-4 text-red-500" />
-              )}
-              <span className={`text-sm font-medium ${trend === 'up' ? 'text-green-600' : 'text-red-600'}`}>
-                {trendValue}
-              </span>
-            </div>
-          )}
-        </div>
-        <div className={`p-3 rounded-lg ${colorClasses[color]}`}>
-          <Icon className="w-6 h-6" />
-        </div>
-      </div>
-    </div>
-  );
-};
+import {
+  AnalyticsCard,
+  LoadingState,
+  ErrorState,
+  SectionCard,
+  formatCurrency,
+  formatNumber,
+} from './analytics/analyticsShared';
 
 // =============================================================================
 // SIMPLE BAR CHART COMPONENT
@@ -72,24 +31,21 @@ const KPICard = ({ title, value, subtitle, icon: Icon, trend, trendValue, color 
 const BarChart = ({ data, title, valueKey = 'count', labelKey = 'month', height = 200 }) => {
   if (!data || data.length === 0) {
     return (
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">{title}</h3>
-        <div className="flex items-center justify-center h-40 text-gray-400">
+      <SectionCard title={title}>
+        <div className="flex items-center justify-center h-40 text-gray-400 p-6">
           <p>No data available</p>
         </div>
-      </div>
+      </SectionCard>
     );
   }
 
   const maxValue = Math.max(...data.map(d => d[valueKey] || 0), 1);
-  const barWidth = 100 / data.length;
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-6">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">{title}</h3>
-      <div style={{ height: `${height}px` }} className="relative">
+    <SectionCard title={title}>
+      <div style={{ height: `${height}px` }} className="relative p-6 pt-2">
         {/* Y-axis labels */}
-        <div className="absolute left-0 top-0 bottom-6 w-8 flex flex-col justify-between text-xs text-gray-400">
+        <div className="absolute left-6 top-2 bottom-10 w-8 flex flex-col justify-between text-xs text-gray-400">
           <span>{maxValue}</span>
           <span>{Math.round(maxValue / 2)}</span>
           <span>0</span>
@@ -103,7 +59,6 @@ const BarChart = ({ data, title, valueKey = 'count', labelKey = 'month', height 
               <div
                 key={index}
                 className="flex-1 flex flex-col items-center"
-                style={{ maxWidth: `${barWidth}%` }}
               >
                 <div
                   className="w-full bg-green-500 rounded-t hover:bg-green-600 transition-colors cursor-pointer"
@@ -118,7 +73,7 @@ const BarChart = ({ data, title, valueKey = 'count', labelKey = 'month', height 
           })}
         </div>
       </div>
-    </div>
+    </SectionCard>
   );
 };
 
@@ -131,28 +86,20 @@ const DonutChart = ({ data, title, valueKey = 'revenue', labelKey = 'crop' }) =>
 
   if (!data || data.length === 0) {
     return (
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">{title}</h3>
-        <div className="flex items-center justify-center h-40 text-gray-400">
+      <SectionCard title={title}>
+        <div className="flex items-center justify-center h-40 text-gray-400 p-6">
           <p>No data available</p>
         </div>
-      </div>
+      </SectionCard>
     );
   }
 
   const total = data.reduce((sum, item) => sum + (item[valueKey] || 0), 0);
   let currentAngle = 0;
 
-  const formatCurrency = (value) => {
-    if (value >= 1000000) return `$${(value / 1000000).toFixed(1)}M`;
-    if (value >= 1000) return `$${(value / 1000).toFixed(0)}K`;
-    return `$${value.toFixed(0)}`;
-  };
-
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-6">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">{title}</h3>
-      <div className="flex items-center gap-6">
+    <SectionCard title={title}>
+      <div className="flex items-center gap-6 p-6 pt-2">
         {/* Donut */}
         <div className="relative w-40 h-40 flex-shrink-0">
           <svg viewBox="0 0 100 100" className="w-full h-full transform -rotate-90">
@@ -162,7 +109,6 @@ const DonutChart = ({ data, title, valueKey = 'revenue', labelKey = 'crop' }) =>
               const startAngle = currentAngle;
               currentAngle += angle;
 
-              // Calculate arc path
               const startRad = (startAngle * Math.PI) / 180;
               const endRad = ((startAngle + angle) * Math.PI) / 180;
               const x1 = 50 + 40 * Math.cos(startRad);
@@ -183,13 +129,11 @@ const DonutChart = ({ data, title, valueKey = 'revenue', labelKey = 'crop' }) =>
                 />
               );
             })}
-            {/* Center hole */}
             <circle cx="50" cy="50" r="25" fill="white" />
           </svg>
-          {/* Center text */}
           <div className="absolute inset-0 flex flex-col items-center justify-center">
             <span className="text-xs text-gray-500">Total</span>
-            <span className="text-lg font-bold text-gray-900">{formatCurrency(total)}</span>
+            <span className="text-lg font-bold text-gray-900">{formatCurrency(total, { compact: true })}</span>
           </div>
         </div>
 
@@ -203,13 +147,13 @@ const DonutChart = ({ data, title, valueKey = 'revenue', labelKey = 'crop' }) =>
               />
               <span className="text-sm text-gray-600 truncate flex-1">{item[labelKey]}</span>
               <span className="text-sm font-medium text-gray-900">
-                {formatCurrency(item[valueKey])}
+                {formatCurrency(item[valueKey], { compact: true })}
               </span>
             </div>
           ))}
         </div>
       </div>
-    </div>
+    </SectionCard>
   );
 };
 
@@ -220,27 +164,19 @@ const DonutChart = ({ data, title, valueKey = 'revenue', labelKey = 'crop' }) =>
 const HorizontalBarChart = ({ data, title }) => {
   if (!data || data.length === 0) {
     return (
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">{title}</h3>
-        <div className="flex items-center justify-center h-40 text-gray-400">
+      <SectionCard title={title}>
+        <div className="flex items-center justify-center h-40 text-gray-400 p-6">
           <p>No data available</p>
         </div>
-      </div>
+      </SectionCard>
     );
   }
 
   const maxProfit = Math.max(...data.map(d => Math.abs(d.profit || 0)), 1);
 
-  const formatCurrency = (value) => {
-    if (value >= 1000000) return `$${(value / 1000000).toFixed(1)}M`;
-    if (value >= 1000) return `$${(value / 1000).toFixed(0)}K`;
-    return `$${value.toFixed(0)}`;
-  };
-
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-6">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">{title}</h3>
-      <div className="space-y-3">
+    <SectionCard title={title}>
+      <div className="space-y-3 p-6 pt-2">
         {data.slice(0, 8).map((field, index) => {
           const width = (Math.abs(field.profit) / maxProfit) * 100;
           const isPositive = field.profit >= 0;
@@ -261,13 +197,13 @@ const HorizontalBarChart = ({ data, title }) => {
               <div className={`w-20 text-sm font-medium text-right ${
                 isPositive ? 'text-green-600' : 'text-red-600'
               }`}>
-                {formatCurrency(field.profit)}
+                {formatCurrency(field.profit, { compact: true })}
               </div>
             </div>
           );
         })}
       </div>
-    </div>
+    </SectionCard>
   );
 };
 
@@ -276,51 +212,42 @@ const HorizontalBarChart = ({ data, title }) => {
 // =============================================================================
 
 const ContractorTable = ({ contractors }) => {
-  if (!contractors || contractors.length === 0) {
-    return (
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-          <Users className="w-5 h-5 text-gray-400" />
-          Contractor Performance
-        </h3>
-        <div className="text-center py-6 text-gray-400">
+  return (
+    <SectionCard
+      title="Contractor Performance"
+      icon={Users}
+    >
+      {!contractors || contractors.length === 0 ? (
+        <div className="text-center py-6 text-gray-400 px-6">
           <p>No contractor data available</p>
         </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="bg-white rounded-xl border border-gray-200 p-6">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-        <Users className="w-5 h-5 text-gray-400" />
-        Contractor Performance
-      </h3>
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="text-left border-b border-gray-200">
-              <th className="pb-3 font-medium text-gray-500">Contractor</th>
-              <th className="pb-3 font-medium text-gray-500 text-right">Bins</th>
-              <th className="pb-3 font-medium text-gray-500 text-right">Cost</th>
-              <th className="pb-3 font-medium text-gray-500 text-right">$/Bin</th>
-              <th className="pb-3 font-medium text-gray-500 text-right">Bins/Hr</th>
-            </tr>
-          </thead>
-          <tbody>
-            {contractors.map((c, index) => (
-              <tr key={index} className="border-b border-gray-100 last:border-0">
-                <td className="py-3 font-medium text-gray-900">{c.name}</td>
-                <td className="py-3 text-right text-gray-600">{c.bins.toLocaleString()}</td>
-                <td className="py-3 text-right text-gray-600">${c.cost.toLocaleString()}</td>
-                <td className="py-3 text-right font-medium text-gray-900">${c.cost_per_bin.toFixed(2)}</td>
-                <td className="py-3 text-right text-gray-600">{c.bins_per_hour.toFixed(1)}</td>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="text-left border-b border-gray-200">
+                <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase">Contractor</th>
+                <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase text-right">Bins</th>
+                <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase text-right">Cost</th>
+                <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase text-right">$/Bin</th>
+                <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase text-right">Bins/Hr</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
+            </thead>
+            <tbody className="divide-y divide-gray-200">
+              {contractors.map((c, index) => (
+                <tr key={index} className="hover:bg-gray-50">
+                  <td className="px-4 py-3 font-medium text-gray-900">{c.name}</td>
+                  <td className="px-4 py-3 text-right text-gray-600">{formatNumber(c.bins)}</td>
+                  <td className="px-4 py-3 text-right text-gray-600">{formatCurrency(c.cost)}</td>
+                  <td className="px-4 py-3 text-right font-medium text-gray-900">{formatCurrency(c.cost_per_bin)}</td>
+                  <td className="px-4 py-3 text-right text-gray-600">{formatNumber(c.bins_per_hour, 1)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </SectionCard>
   );
 };
 
@@ -330,54 +257,51 @@ const ContractorTable = ({ contractors }) => {
 
 const InsightsPanel = ({ topPerformers, needsAttention }) => {
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-6">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-        <Target className="w-5 h-5 text-gray-400" />
-        Insights
-      </h3>
-
-      {/* Top Performers */}
-      {topPerformers && topPerformers.length > 0 && (
-        <div className="mb-6">
-          <h4 className="text-sm font-medium text-gray-500 mb-3 flex items-center gap-2">
-            <Award className="w-4 h-4 text-green-500" />
-            Top Performing Fields
-          </h4>
-          <div className="space-y-2">
-            {topPerformers.slice(0, 3).map((field, index) => (
-              <div key={index} className="flex items-center justify-between p-2 bg-green-50 rounded-lg">
-                <span className="text-sm font-medium text-green-700">{field.name}</span>
-                <span className="text-sm text-green-600">{field.yield_per_acre} bins/acre</span>
-              </div>
-            ))}
+    <SectionCard title="Insights" icon={Target}>
+      <div className="p-5 pt-2">
+        {/* Top Performers */}
+        {topPerformers && topPerformers.length > 0 && (
+          <div className="mb-6">
+            <h4 className="text-sm font-medium text-gray-500 mb-3 flex items-center gap-2">
+              <Award className="w-4 h-4 text-green-500" />
+              Top Performing Fields
+            </h4>
+            <div className="space-y-2">
+              {topPerformers.slice(0, 3).map((field, index) => (
+                <div key={index} className="flex items-center justify-between p-2 bg-green-50 rounded-lg">
+                  <span className="text-sm font-medium text-green-700">{field.name}</span>
+                  <span className="text-sm text-green-600">{field.yield_per_acre} bins/acre</span>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Needs Attention */}
-      {needsAttention && needsAttention.length > 0 && (
-        <div>
-          <h4 className="text-sm font-medium text-gray-500 mb-3 flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4 text-orange-500" />
-            Needs Attention
-          </h4>
-          <div className="space-y-2">
-            {needsAttention.slice(0, 3).map((field, index) => (
-              <div key={index} className="flex items-center justify-between p-2 bg-orange-50 rounded-lg">
-                <span className="text-sm font-medium text-orange-700">{field.name}</span>
-                <span className="text-sm text-orange-600">{field.issue}</span>
-              </div>
-            ))}
+        {/* Needs Attention */}
+        {needsAttention && needsAttention.length > 0 && (
+          <div>
+            <h4 className="text-sm font-medium text-gray-500 mb-3 flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4 text-orange-500" />
+              Needs Attention
+            </h4>
+            <div className="space-y-2">
+              {needsAttention.slice(0, 3).map((field, index) => (
+                <div key={index} className="flex items-center justify-between p-2 bg-orange-50 rounded-lg">
+                  <span className="text-sm font-medium text-orange-700">{field.name}</span>
+                  <span className="text-sm text-orange-600">{field.issue}</span>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {(!topPerformers || topPerformers.length === 0) && (!needsAttention || needsAttention.length === 0) && (
-        <div className="text-center py-6 text-gray-400">
-          <p>Add harvests to see insights</p>
-        </div>
-      )}
-    </div>
+        {(!topPerformers || topPerformers.length === 0) && (!needsAttention || needsAttention.length === 0) && (
+          <div className="text-center py-6 text-gray-400">
+            <p>Add harvests to see insights</p>
+          </div>
+        )}
+      </div>
+    </SectionCard>
   );
 };
 
@@ -392,7 +316,6 @@ export default function Analytics() {
   const [error, setError] = useState(null);
   const [selectedFarm, setSelectedFarm] = useState('all');
 
-  // Use shared season context (persists across pages)
   const { selectedSeason, setSelectedSeason, seasonDates } = useSeason();
 
   useEffect(() => {
@@ -420,12 +343,10 @@ export default function Analytics() {
 
     try {
       const params = {};
-      // Use season dates if available, otherwise extract year from season label
       if (seasonDates) {
         params.start_date = seasonDates.start_date;
         params.end_date = seasonDates.end_date;
       } else if (selectedSeason) {
-        // Fallback: extract year from season label
         const year = selectedSeason.includes('-')
           ? parseInt(selectedSeason.split('-')[0])
           : parseInt(selectedSeason);
@@ -445,13 +366,6 @@ export default function Analytics() {
     }
   };
 
-  const formatCurrency = (value) => {
-    if (!value) return '$0';
-    if (value >= 1000000) return `$${(value / 1000000).toFixed(2)}M`;
-    if (value >= 1000) return `$${(value / 1000).toFixed(0)}K`;
-    return `$${value.toFixed(0)}`;
-  };
-
   return (
     <div className="max-w-7xl mx-auto">
       {/* Header */}
@@ -465,7 +379,6 @@ export default function Analytics() {
         </div>
 
         <div className="flex items-center gap-3">
-          {/* Season Selector */}
           <SeasonSelector
             value={selectedSeason}
             onChange={setSelectedSeason}
@@ -473,7 +386,6 @@ export default function Analytics() {
             placeholder="Select Season"
           />
 
-          {/* Farm Selector */}
           <select
             value={selectedFarm}
             onChange={(e) => setSelectedFarm(e.target.value)}
@@ -485,7 +397,6 @@ export default function Analytics() {
             ))}
           </select>
 
-          {/* Refresh Button */}
           <button
             onClick={loadData}
             disabled={loading}
@@ -498,71 +409,52 @@ export default function Analytics() {
       </div>
 
       {/* Loading State */}
-      {loading && (
-        <div className="flex items-center justify-center py-16">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Loading analytics...</p>
-          </div>
-        </div>
-      )}
+      {loading && <LoadingState />}
 
       {/* Error State */}
-      {error && !loading && (
-        <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
-          <AlertCircle className="w-12 h-12 text-red-400 mx-auto mb-3" />
-          <h3 className="text-lg font-medium text-red-800 mb-2">Error Loading Analytics</h3>
-          <p className="text-red-600">{error}</p>
-          <button
-            onClick={loadData}
-            className="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
-          >
-            Try Again
-          </button>
-        </div>
-      )}
+      {error && !loading && <ErrorState message={error} onRetry={loadData} />}
 
       {/* Analytics Content */}
       {data && !loading && !error && (
         <div className="space-y-6">
           {/* KPI Cards Row */}
           <div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-4">
-            <KPICard
+            <AnalyticsCard
               title="Total Revenue"
-              value={formatCurrency(data.financial?.total_revenue)}
+              value={formatCurrency(data.financial?.total_revenue, { compact: true })}
               subtitle={`${data.period?.year}`}
               icon={DollarSign}
               color="green"
             />
-            <KPICard
+            <AnalyticsCard
               title="Net Profit"
-              value={formatCurrency(data.financial?.net_profit)}
+              value={formatCurrency(data.financial?.net_profit, { compact: true })}
               subtitle={`${data.financial?.profit_margin || 0}% margin`}
-              icon={TrendingUp}
+              icon={BarChart3}
               color={data.financial?.net_profit >= 0 ? 'green' : 'red'}
             />
-            <KPICard
+            <AnalyticsCard
               title="Cost per Bin"
-              value={`$${(data.financial?.cost_per_bin || 0).toFixed(2)}`}
-              subtitle={`${data.harvests?.total_bins || 0} total bins`}
+              value={formatCurrency(data.financial?.cost_per_bin)}
+              subtitle={`${formatNumber(data.harvests?.total_bins)} total bins`}
               icon={Package}
               color="blue"
             />
-            <KPICard
+            <AnalyticsCard
               title="Yield per Acre"
-              value={`${(data.harvests?.yield_per_acre || 0).toFixed(1)}`}
+              value={formatNumber(data.harvests?.yield_per_acre, 1)}
               subtitle="bins per acre"
               icon={Wheat}
               color="purple"
             />
-            <KPICard
+            <AnalyticsCard
               title="PUR Compliance"
               value={`${data.applications?.pur_compliance_rate || 0}%`}
               subtitle={`${data.applications?.submitted_to_pur || 0}/${data.applications?.complete || 0}`}
               icon={FileText}
               color={data.applications?.pur_compliance_rate >= 90 ? 'green' : 'orange'}
             />
-            <KPICard
+            <AnalyticsCard
               title="Water Test Pass"
               value={`${data.water?.pass_rate || 100}%`}
               subtitle={`${data.water?.tests_passed || 0}/${data.water?.tests_total || 0} tests`}
@@ -604,9 +496,8 @@ export default function Analytics() {
 
           {/* Top Products Used */}
           {data.applications?.top_products && data.applications.top_products.length > 0 && (
-            <div className="bg-white rounded-xl border border-gray-200 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Top Products Used</h3>
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+            <SectionCard title="Top Products Used">
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-4 p-5 pt-2">
                 {data.applications.top_products.map((product, index) => (
                   <div key={index} className="bg-gray-50 rounded-lg p-3">
                     <div className="text-sm font-medium text-gray-900 truncate" title={product.product_name}>
@@ -617,7 +508,7 @@ export default function Analytics() {
                   </div>
                 ))}
               </div>
-            </div>
+            </SectionCard>
           )}
         </div>
       )}
