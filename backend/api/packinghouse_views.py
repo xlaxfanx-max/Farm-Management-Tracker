@@ -1621,6 +1621,129 @@ def harvest_packing_pipeline(request):
     # Sort by date descending
     recent_activity.sort(key=lambda x: x['date'], reverse=True)
 
+    # --- Pipeline Breakdown (optional) ---
+    breakdown_param = request.query_params.get('breakdown', None)
+    breakdowns = None
+
+    if breakdown_param == 'commodity':
+        # Group packout stats by commodity
+        packout_by_group = PackoutReport.objects.filter(
+            pool__packinghouse__company=company,
+            pool__season=selected_season
+        ).values('pool__commodity').annotate(
+            total_bins_packed=Coalesce(Sum('bins_this_period'), Decimal('0')),
+            avg_pack_percent=Avg('total_packed_percent'),
+            report_count=Count('id'),
+        )
+
+        # Group settlement stats by commodity
+        settlement_by_group = PoolSettlement.objects.filter(
+            pool__packinghouse__company=company,
+            pool__season=selected_season
+        ).values('pool__commodity').annotate(
+            total_bins_settled=Coalesce(Sum('total_bins'), Decimal('0')),
+            total_revenue=Coalesce(Sum('net_return'), Decimal('0')),
+            avg_per_bin=Avg('net_per_bin'),
+            settlement_count=Count('id'),
+        )
+
+        # Pool status by commodity
+        pool_by_group = Pool.objects.filter(
+            packinghouse__company=company,
+            season=selected_season
+        ).values('commodity', 'status').annotate(count=Count('id'))
+
+        group_map = {}
+        for row in packout_by_group:
+            key = row['pool__commodity'] or 'Unknown'
+            group_map.setdefault(key, {'label': key})
+            group_map[key]['bins_packed'] = float(row['total_bins_packed'])
+            group_map[key]['avg_pack_percent'] = round(float(row['avg_pack_percent'] or 0), 1)
+            group_map[key]['packout_reports'] = row['report_count']
+
+        for row in settlement_by_group:
+            key = row['pool__commodity'] or 'Unknown'
+            group_map.setdefault(key, {'label': key})
+            group_map[key]['bins_settled'] = float(row['total_bins_settled'])
+            group_map[key]['revenue'] = float(row['total_revenue'])
+            group_map[key]['avg_per_bin'] = round(float(row['avg_per_bin'] or 0), 2)
+            group_map[key]['settlements'] = row['settlement_count']
+
+        for row in pool_by_group:
+            key = row['commodity'] or 'Unknown'
+            group_map.setdefault(key, {'label': key})
+            group_map[key].setdefault('pools', {})
+            group_map[key]['pools'][row['status']] = row['count']
+
+        for key, data in group_map.items():
+            packed = data.get('bins_packed', 0)
+            settled = data.get('bins_settled', 0)
+            data['settlement_percent'] = round((settled / packed * 100), 1) if packed > 0 else 0
+            data.setdefault('bins_packed', 0)
+            data.setdefault('bins_settled', 0)
+            data.setdefault('revenue', 0)
+            data.setdefault('avg_per_bin', 0)
+            data.setdefault('avg_pack_percent', 0)
+            data.setdefault('packout_reports', 0)
+            data.setdefault('settlements', 0)
+            data.setdefault('pools', {})
+
+        breakdowns = sorted(group_map.values(), key=lambda x: x.get('revenue', 0), reverse=True)
+
+    elif breakdown_param == 'farm':
+        # Group packout stats by farm
+        packout_by_group = PackoutReport.objects.filter(
+            pool__packinghouse__company=company,
+            pool__season=selected_season,
+            field__isnull=False
+        ).values('field__farm__id', 'field__farm__name').annotate(
+            total_bins_packed=Coalesce(Sum('bins_this_period'), Decimal('0')),
+            avg_pack_percent=Avg('total_packed_percent'),
+            report_count=Count('id'),
+        )
+
+        # Group settlement stats by farm
+        settlement_by_group = PoolSettlement.objects.filter(
+            pool__packinghouse__company=company,
+            pool__season=selected_season,
+            field__isnull=False
+        ).values('field__farm__id', 'field__farm__name').annotate(
+            total_bins_settled=Coalesce(Sum('total_bins'), Decimal('0')),
+            total_revenue=Coalesce(Sum('net_return'), Decimal('0')),
+            avg_per_bin=Avg('net_per_bin'),
+            settlement_count=Count('id'),
+        )
+
+        group_map = {}
+        for row in packout_by_group:
+            fid = row['field__farm__id']
+            group_map.setdefault(fid, {'farm_id': fid, 'label': row['field__farm__name']})
+            group_map[fid]['bins_packed'] = float(row['total_bins_packed'])
+            group_map[fid]['avg_pack_percent'] = round(float(row['avg_pack_percent'] or 0), 1)
+            group_map[fid]['packout_reports'] = row['report_count']
+
+        for row in settlement_by_group:
+            fid = row['field__farm__id']
+            group_map.setdefault(fid, {'farm_id': fid, 'label': row['field__farm__name']})
+            group_map[fid]['bins_settled'] = float(row['total_bins_settled'])
+            group_map[fid]['revenue'] = float(row['total_revenue'])
+            group_map[fid]['avg_per_bin'] = round(float(row['avg_per_bin'] or 0), 2)
+            group_map[fid]['settlements'] = row['settlement_count']
+
+        for key, data in group_map.items():
+            packed = data.get('bins_packed', 0)
+            settled = data.get('bins_settled', 0)
+            data['settlement_percent'] = round((settled / packed * 100), 1) if packed > 0 else 0
+            data.setdefault('bins_packed', 0)
+            data.setdefault('bins_settled', 0)
+            data.setdefault('revenue', 0)
+            data.setdefault('avg_per_bin', 0)
+            data.setdefault('avg_pack_percent', 0)
+            data.setdefault('packout_reports', 0)
+            data.setdefault('settlements', 0)
+
+        breakdowns = sorted(group_map.values(), key=lambda x: x.get('revenue', 0), reverse=True)
+
     return Response({
         'current_season': selected_season,
         'selected_season': selected_season,
@@ -1666,7 +1789,9 @@ def harvest_packing_pipeline(request):
             'settled': pool_by_status.get('settled', 0)
         },
         'pipeline_efficiency': pipeline_efficiency,
-        'recent_activity': recent_activity[:15]
+        'recent_activity': recent_activity[:15],
+        'breakdown_type': breakdown_param,
+        'breakdowns': breakdowns,
     })
 
 

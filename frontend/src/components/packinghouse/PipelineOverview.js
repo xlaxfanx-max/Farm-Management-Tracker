@@ -12,7 +12,8 @@ import {
   AlertCircle,
   Clock,
   Layers,
-  Calendar
+  Calendar,
+  BarChart3
 } from 'lucide-react';
 import { packinghouseAnalyticsAPI } from '../../services/api';
 
@@ -21,16 +22,18 @@ const PipelineOverview = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedSeason, setSelectedSeason] = useState('');
+  const [breakdownView, setBreakdownView] = useState(null);
 
   useEffect(() => {
     fetchPipelineData();
-  }, [selectedSeason]);
+  }, [selectedSeason, breakdownView]);
 
   const fetchPipelineData = async () => {
     try {
       setLoading(true);
       setError(null);
       const params = selectedSeason ? { season: selectedSeason } : {};
+      if (breakdownView) params.breakdown = breakdownView;
       const response = await packinghouseAnalyticsAPI.getPipeline(params);
       setData(response.data);
       // Set selected season from response if not already set
@@ -387,6 +390,109 @@ const PipelineOverview = () => {
           </ul>
         </div>
       )}
+
+      {/* Pipeline Breakdown */}
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+            <BarChart3 className="w-5 h-5 text-blue-600" />
+            Pipeline Breakdown
+          </h3>
+          <div className="flex space-x-2">
+            {[
+              { id: null, label: 'Summary Only' },
+              { id: 'commodity', label: 'By Commodity' },
+              { id: 'farm', label: 'By Farm/Ranch' },
+            ].map((view) => (
+              <button
+                key={view.id || 'none'}
+                onClick={() => setBreakdownView(view.id)}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  breakdownView === view.id
+                    ? 'bg-green-600 text-white'
+                    : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                }`}
+              >
+                {view.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {breakdownView && data.breakdowns && data.breakdowns.length > 0 && (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="text-left text-sm text-gray-500 dark:text-gray-400 border-b dark:border-gray-700">
+                  <th className="py-3 px-3">
+                    {breakdownView === 'commodity' ? 'Commodity' : 'Farm / Ranch'}
+                  </th>
+                  <th className="py-3 px-3 text-right">Bins Packed</th>
+                  <th className="py-3 px-3 text-right">Pack %</th>
+                  <th className="py-3 px-3 text-right">Bins Settled</th>
+                  <th className="py-3 px-3 text-right">Settlement</th>
+                  <th className="py-3 px-3 text-right">Revenue</th>
+                  <th className="py-3 px-3 text-right">$/Bin</th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.breakdowns.map((row, idx) => (
+                  <tr
+                    key={row.label || idx}
+                    className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50"
+                  >
+                    <td className="py-3 px-3 font-medium text-gray-900 dark:text-gray-100">
+                      {row.label}
+                    </td>
+                    <td className="py-3 px-3 text-right text-purple-600 dark:text-purple-400 font-semibold">
+                      {formatNumber(row.bins_packed)}
+                    </td>
+                    <td className="py-3 px-3 text-right">
+                      <span className="px-2 py-0.5 bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 rounded text-xs font-medium">
+                        {row.avg_pack_percent}%
+                      </span>
+                    </td>
+                    <td className="py-3 px-3 text-right text-green-600 dark:text-green-400 font-semibold">
+                      {formatNumber(row.bins_settled)}
+                    </td>
+                    <td className="py-3 px-3 text-right">
+                      <div className="inline-flex items-center gap-2">
+                        <div className="w-16 bg-gray-200 dark:bg-gray-600 rounded-full h-2">
+                          <div
+                            className="bg-green-500 h-2 rounded-full transition-all"
+                            style={{ width: `${Math.min(row.settlement_percent, 100)}%` }}
+                          />
+                        </div>
+                        <span className="text-xs text-gray-600 dark:text-gray-400 w-10 text-right">
+                          {row.settlement_percent}%
+                        </span>
+                      </div>
+                    </td>
+                    <td className="py-3 px-3 text-right text-green-700 dark:text-green-400 font-semibold">
+                      {formatCurrency(row.revenue)}
+                    </td>
+                    <td className="py-3 px-3 text-right text-gray-700 dark:text-gray-300">
+                      {row.avg_per_bin > 0 ? `$${formatNumber(row.avg_per_bin, 2)}` : '-'}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {breakdownView && data.breakdowns && data.breakdowns.length === 0 && (
+          <p className="text-gray-500 dark:text-gray-400 text-center py-6">
+            No data available for this breakdown
+          </p>
+        )}
+
+        {breakdownView && !data.breakdowns && (
+          <div className="flex justify-center py-6">
+            <RefreshCw className="w-5 h-5 animate-spin text-gray-400" />
+          </div>
+        )}
+      </div>
     </div>
   );
 };
