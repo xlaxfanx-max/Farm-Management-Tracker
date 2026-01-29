@@ -120,7 +120,8 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
 
         if (!cancelled) {
           objectUrl = URL.createObjectURL(blob);
-          setPdfBlobUrl(objectUrl);
+          // Add PDF viewer parameters to hide sidebar and toolbar for cleaner view
+          setPdfBlobUrl(objectUrl + '#toolbar=0&navpanes=0&view=FitH');
         }
       } catch (err) {
         console.error('Error fetching PDF:', err);

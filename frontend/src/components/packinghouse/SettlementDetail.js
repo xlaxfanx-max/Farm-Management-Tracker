@@ -68,7 +68,8 @@ const SettlementDetail = ({ settlementId, onClose }) => {
 
       const blob = await response.blob();
       const url = URL.createObjectURL(blob);
-      setPdfBlobUrl(url);
+      // Add PDF viewer parameters to hide sidebar and toolbar for cleaner view
+      setPdfBlobUrl(url + '#toolbar=0&navpanes=0&view=FitH');
     } catch (err) {
       console.error('Error fetching PDF:', err);
       // Don't set error - just won't show PDF preview
