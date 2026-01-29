@@ -75,6 +75,7 @@ const HarvestAnalytics = () => {
           <SeasonSelector
             value={selectedSeason}
             onChange={setSelectedSeason}
+            cropCategory="citrus"
             className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent"
             placeholder="Select Season"
           />

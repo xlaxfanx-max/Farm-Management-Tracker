@@ -37,13 +37,25 @@ export const SeasonProvider = ({ children }) => {
   useEffect(() => {
     const fetchSeasonInfo = async () => {
       try {
-        const response = await seasonAPI.getSeasonInfo();
+        const response = await seasonAPI.getSeasonInfo({ crop_category: 'citrus' });
         setSeasonInfo(response.data);
 
         // If no season selected, default to current season
         if (!selectedSeason && response.data.current_season) {
           setSelectedSeasonState(response.data.current_season.label);
           localStorage.setItem('grove-selected-season', response.data.current_season.label);
+        }
+
+        // If saved season is in calendar-year format but we have citrus seasons,
+        // update to the matching citrus season format
+        if (selectedSeason && !selectedSeason.includes('-') && response.data.available_seasons) {
+          const matchingSeason = response.data.available_seasons.find(s =>
+            s.label.startsWith(selectedSeason) || s.label.endsWith(selectedSeason)
+          );
+          if (matchingSeason) {
+            setSelectedSeasonState(matchingSeason.label);
+            localStorage.setItem('grove-selected-season', matchingSeason.label);
+          }
         }
       } catch (err) {
         console.error('Failed to fetch season info:', err);
