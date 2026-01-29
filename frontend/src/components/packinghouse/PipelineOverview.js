@@ -137,138 +137,266 @@ const PipelineOverview = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">
-            Packing to Payment Pipeline
-          </h2>
-          <div className="flex items-center gap-3 mt-1">
-            <span className="text-gray-600 dark:text-gray-400 flex items-center">
-              <Calendar className="w-4 h-4 mr-1" />
-              Season:
-            </span>
-            <select
-              value={selectedSeason || data?.selected_season || ''}
-              onChange={handleSeasonChange}
-              className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-gray-800 dark:text-gray-200 dark:bg-gray-700 text-sm font-medium"
-            >
-              {data?.available_seasons?.map((season) => (
-                <option key={season} value={season}>
-                  {season}
-                </option>
-              ))}
-            </select>
-            <span className="text-gray-500 dark:text-gray-400 text-sm">
-              Track packout reports to settlement
-            </span>
-          </div>
-        </div>
-        <button
-          onClick={fetchPipelineData}
-          className="flex items-center gap-2 px-3 py-2 border dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
-        >
-          <RefreshCw size={16} />
-          Refresh
-        </button>
-      </div>
-
-      {/* Pipeline Flow Visualization - Simplified: Packed → Settled */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-        <div className="flex items-center justify-center gap-8">
-          {/* Stage 1: Packout */}
-          <div className="flex-1 max-w-xs text-center">
-            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-purple-100 dark:bg-purple-900/30 mb-3">
-              <Package className="w-10 h-10 text-purple-600" />
-            </div>
-            <h3 className="font-semibold text-gray-900 dark:text-gray-100 text-lg">
-              {pipeline_stages.packout.label}
-            </h3>
-            <p className="text-3xl font-bold text-purple-600 mt-2">
-              {formatNumber(pipeline_stages.packout.total_bins)}
-            </p>
-            <p className="text-sm text-gray-500">bins in {pipeline_stages.packout.total_count} reports</p>
-            <div className="mt-3 flex justify-center gap-2 text-xs">
-              <span className="px-2 py-1 bg-purple-100 text-purple-800 rounded">
-                {pipeline_stages.packout.avg_pack_percent}% packed
+      <div className="flex flex-col gap-4">
+        <div className="flex justify-between items-center">
+          <div>
+            <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">
+              Harvest Pipeline
+            </h2>
+            <div className="flex items-center gap-3 mt-1">
+              <span className="text-gray-600 dark:text-gray-400 flex items-center">
+                <Calendar className="w-4 h-4 mr-1" />
+                Season:
               </span>
-              {pipeline_stages.packout.avg_house_percent > 0 && (
-                <span className={`px-2 py-1 rounded ${
-                  pipeline_stages.packout.avg_pack_percent >= pipeline_stages.packout.avg_house_percent
-                    ? 'bg-green-100 text-green-800'
-                    : 'bg-red-100 text-red-800'
-                }`}>
-                  vs {pipeline_stages.packout.avg_house_percent}% house
-                </span>
-              )}
+              <select
+                value={selectedSeason || data?.selected_season || ''}
+                onChange={handleSeasonChange}
+                className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-gray-800 dark:text-gray-200 dark:bg-gray-700 text-sm font-medium"
+              >
+                {data?.available_seasons?.map((season) => (
+                  <option key={season} value={season}>
+                    {season}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
-
-          {/* Arrow */}
-          <div className="flex flex-col items-center px-6">
-            <ArrowRight className="w-10 h-10 text-gray-400" />
-            <span className="text-sm text-gray-500 mt-2 font-medium">
-              {settlementPercent}%
-            </span>
-            <span className="text-xs text-gray-400">settled</span>
-          </div>
-
-          {/* Stage 2: Settlement */}
-          <div className="flex-1 max-w-xs text-center">
-            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-green-100 dark:bg-green-900/30 mb-3">
-              <DollarSign className="w-10 h-10 text-green-600" />
-            </div>
-            <h3 className="font-semibold text-gray-900 dark:text-gray-100 text-lg">
-              {pipeline_stages.settlement.label}
-            </h3>
-            <p className="text-3xl font-bold text-green-600 mt-2">
-              {formatCurrency(pipeline_stages.settlement.total_revenue)}
-            </p>
-            <p className="text-sm text-gray-500">{formatNumber(pipeline_stages.settlement.total_bins)} bins settled</p>
-            <div className="mt-3 flex justify-center gap-2 text-xs">
-              {pipeline_stages.settlement.avg_per_bin > 0 && (
-                <span className="px-2 py-1 bg-green-100 text-green-800 rounded">
-                  ${formatNumber(pipeline_stages.settlement.avg_per_bin, 2)}/bin
-                </span>
-              )}
-            </div>
-          </div>
+          <button
+            onClick={fetchPipelineData}
+            className="flex items-center gap-2 px-3 py-2 border dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+          >
+            <RefreshCw size={16} />
+            Refresh
+          </button>
         </div>
-
-        {/* Progress Bar */}
-        <div className="mt-8 pt-6 border-t dark:border-gray-700">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-              Settlement Progress
-            </span>
-            <span className={`text-sm font-bold ${hasMissingPackouts ? 'text-orange-600' : 'text-gray-900 dark:text-gray-100'}`}>
-              {hasMissingPackouts ? (
-                <span className="flex items-center gap-1">
-                  <AlertCircle className="w-4 h-4" />
-                  {formatNumber(settledBins)} / {formatNumber(packedBins)} bins
-                </span>
-              ) : (
-                `${settlementPercent}%`
-              )}
-            </span>
-          </div>
-          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
-            <div
-              className={`h-3 rounded-full transition-all duration-500 ${
-                hasMissingPackouts
-                  ? 'bg-gradient-to-r from-orange-400 to-orange-500'
-                  : 'bg-gradient-to-r from-purple-500 to-green-500'
+        {/* View Toggle */}
+        <div className="flex space-x-2">
+          {[
+            { id: null, label: 'All', icon: <BarChart3 className="w-4 h-4" /> },
+            { id: 'commodity', label: 'By Commodity', icon: <Package className="w-4 h-4" /> },
+            { id: 'farm', label: 'By Farm / Ranch', icon: <Layers className="w-4 h-4" /> },
+          ].map((view) => (
+            <button
+              key={view.id || 'all'}
+              onClick={() => setBreakdownView(view.id)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                breakdownView === view.id
+                  ? 'bg-green-600 text-white shadow-sm'
+                  : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'
               }`}
-              style={{ width: `${Math.min(settlementPercent, 100)}%` }}
-            />
-          </div>
-          <p className="text-xs text-gray-500 mt-1">
-            {hasMissingPackouts
-              ? `Settlements exceed packouts by ${formatNumber(missingPackoutBins)} bins - packout reports may be missing`
-              : 'Percentage of packed bins that have been settled'
-            }
-          </p>
+            >
+              {view.icon}
+              {view.label}
+            </button>
+          ))}
         </div>
       </div>
+
+      {/* Main Content Area */}
+      {!breakdownView ? (
+        /* Aggregate Pipeline Flow Visualization */
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+          <div className="flex items-center justify-center gap-8">
+            {/* Stage 1: Packout */}
+            <div className="flex-1 max-w-xs text-center">
+              <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-purple-100 dark:bg-purple-900/30 mb-3">
+                <Package className="w-10 h-10 text-purple-600" />
+              </div>
+              <h3 className="font-semibold text-gray-900 dark:text-gray-100 text-lg">
+                {pipeline_stages.packout.label}
+              </h3>
+              <p className="text-3xl font-bold text-purple-600 mt-2">
+                {formatNumber(pipeline_stages.packout.total_bins)}
+              </p>
+              <p className="text-sm text-gray-500">bins in {pipeline_stages.packout.total_count} reports</p>
+              <div className="mt-3 flex justify-center gap-2 text-xs">
+                <span className="px-2 py-1 bg-purple-100 text-purple-800 rounded">
+                  {pipeline_stages.packout.avg_pack_percent}% packed
+                </span>
+                {pipeline_stages.packout.avg_house_percent > 0 && (
+                  <span className={`px-2 py-1 rounded ${
+                    pipeline_stages.packout.avg_pack_percent >= pipeline_stages.packout.avg_house_percent
+                      ? 'bg-green-100 text-green-800'
+                      : 'bg-red-100 text-red-800'
+                  }`}>
+                    vs {pipeline_stages.packout.avg_house_percent}% house
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Arrow */}
+            <div className="flex flex-col items-center px-6">
+              <ArrowRight className="w-10 h-10 text-gray-400" />
+              <span className="text-sm text-gray-500 mt-2 font-medium">
+                {settlementPercent}%
+              </span>
+              <span className="text-xs text-gray-400">settled</span>
+            </div>
+
+            {/* Stage 2: Settlement */}
+            <div className="flex-1 max-w-xs text-center">
+              <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-green-100 dark:bg-green-900/30 mb-3">
+                <DollarSign className="w-10 h-10 text-green-600" />
+              </div>
+              <h3 className="font-semibold text-gray-900 dark:text-gray-100 text-lg">
+                {pipeline_stages.settlement.label}
+              </h3>
+              <p className="text-3xl font-bold text-green-600 mt-2">
+                {formatCurrency(pipeline_stages.settlement.total_revenue)}
+              </p>
+              <p className="text-sm text-gray-500">{formatNumber(pipeline_stages.settlement.total_bins)} bins settled</p>
+              <div className="mt-3 flex justify-center gap-2 text-xs">
+                {pipeline_stages.settlement.avg_per_bin > 0 && (
+                  <span className="px-2 py-1 bg-green-100 text-green-800 rounded">
+                    ${formatNumber(pipeline_stages.settlement.avg_per_bin, 2)}/bin
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Progress Bar */}
+          <div className="mt-8 pt-6 border-t dark:border-gray-700">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                Settlement Progress
+              </span>
+              <span className={`text-sm font-bold ${hasMissingPackouts ? 'text-orange-600' : 'text-gray-900 dark:text-gray-100'}`}>
+                {hasMissingPackouts ? (
+                  <span className="flex items-center gap-1">
+                    <AlertCircle className="w-4 h-4" />
+                    {formatNumber(settledBins)} / {formatNumber(packedBins)} bins
+                  </span>
+                ) : (
+                  `${settlementPercent}%`
+                )}
+              </span>
+            </div>
+            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
+              <div
+                className={`h-3 rounded-full transition-all duration-500 ${
+                  hasMissingPackouts
+                    ? 'bg-gradient-to-r from-orange-400 to-orange-500'
+                    : 'bg-gradient-to-r from-purple-500 to-green-500'
+                }`}
+                style={{ width: `${Math.min(settlementPercent, 100)}%` }}
+              />
+            </div>
+            <p className="text-xs text-gray-500 mt-1">
+              {hasMissingPackouts
+                ? `Settlements exceed packouts by ${formatNumber(missingPackoutBins)} bins - packout reports may be missing`
+                : 'Percentage of packed bins that have been settled'
+              }
+            </p>
+          </div>
+        </div>
+      ) : (
+        /* Breakdown View */
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
+            {breakdownView === 'commodity' ? 'Pipeline by Commodity' : 'Pipeline by Farm / Ranch'}
+          </h3>
+
+          {data.breakdowns && data.breakdowns.length > 0 ? (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="text-left text-sm text-gray-500 dark:text-gray-400 border-b dark:border-gray-700">
+                    <th className="py-3 px-3">
+                      {breakdownView === 'commodity' ? 'Commodity' : 'Farm / Ranch'}
+                    </th>
+                    <th className="py-3 px-3 text-right">Bins Packed</th>
+                    <th className="py-3 px-3 text-right">Pack %</th>
+                    <th className="py-3 px-3 text-right">Bins Settled</th>
+                    <th className="py-3 px-3 text-right">Settlement</th>
+                    <th className="py-3 px-3 text-right">Revenue</th>
+                    <th className="py-3 px-3 text-right">$/Bin</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.breakdowns.map((row, idx) => (
+                    <tr
+                      key={row.label || idx}
+                      className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50"
+                    >
+                      <td className="py-3 px-3 font-medium text-gray-900 dark:text-gray-100">
+                        {row.label}
+                      </td>
+                      <td className="py-3 px-3 text-right text-purple-600 dark:text-purple-400 font-semibold">
+                        {formatNumber(row.bins_packed)}
+                      </td>
+                      <td className="py-3 px-3 text-right">
+                        <span className="px-2 py-0.5 bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 rounded text-xs font-medium">
+                          {row.avg_pack_percent}%
+                        </span>
+                      </td>
+                      <td className="py-3 px-3 text-right text-green-600 dark:text-green-400 font-semibold">
+                        {formatNumber(row.bins_settled)}
+                      </td>
+                      <td className="py-3 px-3 text-right">
+                        <div className="inline-flex items-center gap-2">
+                          <div className="w-16 bg-gray-200 dark:bg-gray-600 rounded-full h-2">
+                            <div
+                              className="bg-green-500 h-2 rounded-full transition-all"
+                              style={{ width: `${Math.min(row.settlement_percent, 100)}%` }}
+                            />
+                          </div>
+                          <span className="text-xs text-gray-600 dark:text-gray-400 w-10 text-right">
+                            {row.settlement_percent}%
+                          </span>
+                        </div>
+                      </td>
+                      <td className="py-3 px-3 text-right text-green-700 dark:text-green-400 font-semibold">
+                        {formatCurrency(row.revenue)}
+                      </td>
+                      <td className="py-3 px-3 text-right text-gray-700 dark:text-gray-300">
+                        {row.avg_per_bin > 0 ? `$${formatNumber(row.avg_per_bin, 2)}` : '-'}
+                      </td>
+                    </tr>
+                  ))}
+                  {/* Totals row */}
+                  <tr className="bg-gray-50 dark:bg-gray-700/50 font-semibold">
+                    <td className="py-3 px-3 text-gray-900 dark:text-gray-100">Total</td>
+                    <td className="py-3 px-3 text-right text-purple-600 dark:text-purple-400">
+                      {formatNumber(data.breakdowns.reduce((sum, r) => sum + (r.bins_packed || 0), 0))}
+                    </td>
+                    <td className="py-3 px-3 text-right">
+                      <span className="px-2 py-0.5 bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 rounded text-xs font-medium">
+                        {pipeline_stages.packout.avg_pack_percent}%
+                      </span>
+                    </td>
+                    <td className="py-3 px-3 text-right text-green-600 dark:text-green-400">
+                      {formatNumber(data.breakdowns.reduce((sum, r) => sum + (r.bins_settled || 0), 0))}
+                    </td>
+                    <td className="py-3 px-3 text-right">
+                      <span className="text-xs text-gray-600 dark:text-gray-400">
+                        {settlementPercent}%
+                      </span>
+                    </td>
+                    <td className="py-3 px-3 text-right text-green-700 dark:text-green-400">
+                      {formatCurrency(data.breakdowns.reduce((sum, r) => sum + (r.revenue || 0), 0))}
+                    </td>
+                    <td className="py-3 px-3 text-right text-gray-700 dark:text-gray-300">
+                      {pipeline_stages.settlement.avg_per_bin > 0
+                        ? `$${formatNumber(pipeline_stages.settlement.avg_per_bin, 2)}`
+                        : '-'}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          ) : data.breakdowns && data.breakdowns.length === 0 ? (
+            <p className="text-gray-500 dark:text-gray-400 text-center py-8">
+              No data available for this breakdown view
+            </p>
+          ) : (
+            <div className="flex justify-center py-8">
+              <RefreshCw className="w-5 h-5 animate-spin text-gray-400" />
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Pool Status & Recent Activity */}
       <div className="grid grid-cols-3 gap-6">
@@ -391,108 +519,6 @@ const PipelineOverview = () => {
         </div>
       )}
 
-      {/* Pipeline Breakdown */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-            <BarChart3 className="w-5 h-5 text-blue-600" />
-            Pipeline Breakdown
-          </h3>
-          <div className="flex space-x-2">
-            {[
-              { id: null, label: 'Summary Only' },
-              { id: 'commodity', label: 'By Commodity' },
-              { id: 'farm', label: 'By Farm/Ranch' },
-            ].map((view) => (
-              <button
-                key={view.id || 'none'}
-                onClick={() => setBreakdownView(view.id)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  breakdownView === view.id
-                    ? 'bg-green-600 text-white'
-                    : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-                }`}
-              >
-                {view.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {breakdownView && data.breakdowns && data.breakdowns.length > 0 && (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="text-left text-sm text-gray-500 dark:text-gray-400 border-b dark:border-gray-700">
-                  <th className="py-3 px-3">
-                    {breakdownView === 'commodity' ? 'Commodity' : 'Farm / Ranch'}
-                  </th>
-                  <th className="py-3 px-3 text-right">Bins Packed</th>
-                  <th className="py-3 px-3 text-right">Pack %</th>
-                  <th className="py-3 px-3 text-right">Bins Settled</th>
-                  <th className="py-3 px-3 text-right">Settlement</th>
-                  <th className="py-3 px-3 text-right">Revenue</th>
-                  <th className="py-3 px-3 text-right">$/Bin</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.breakdowns.map((row, idx) => (
-                  <tr
-                    key={row.label || idx}
-                    className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50"
-                  >
-                    <td className="py-3 px-3 font-medium text-gray-900 dark:text-gray-100">
-                      {row.label}
-                    </td>
-                    <td className="py-3 px-3 text-right text-purple-600 dark:text-purple-400 font-semibold">
-                      {formatNumber(row.bins_packed)}
-                    </td>
-                    <td className="py-3 px-3 text-right">
-                      <span className="px-2 py-0.5 bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 rounded text-xs font-medium">
-                        {row.avg_pack_percent}%
-                      </span>
-                    </td>
-                    <td className="py-3 px-3 text-right text-green-600 dark:text-green-400 font-semibold">
-                      {formatNumber(row.bins_settled)}
-                    </td>
-                    <td className="py-3 px-3 text-right">
-                      <div className="inline-flex items-center gap-2">
-                        <div className="w-16 bg-gray-200 dark:bg-gray-600 rounded-full h-2">
-                          <div
-                            className="bg-green-500 h-2 rounded-full transition-all"
-                            style={{ width: `${Math.min(row.settlement_percent, 100)}%` }}
-                          />
-                        </div>
-                        <span className="text-xs text-gray-600 dark:text-gray-400 w-10 text-right">
-                          {row.settlement_percent}%
-                        </span>
-                      </div>
-                    </td>
-                    <td className="py-3 px-3 text-right text-green-700 dark:text-green-400 font-semibold">
-                      {formatCurrency(row.revenue)}
-                    </td>
-                    <td className="py-3 px-3 text-right text-gray-700 dark:text-gray-300">
-                      {row.avg_per_bin > 0 ? `$${formatNumber(row.avg_per_bin, 2)}` : '-'}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-
-        {breakdownView && data.breakdowns && data.breakdowns.length === 0 && (
-          <p className="text-gray-500 dark:text-gray-400 text-center py-6">
-            No data available for this breakdown
-          </p>
-        )}
-
-        {breakdownView && !data.breakdowns && (
-          <div className="flex justify-center py-6">
-            <RefreshCw className="w-5 h-5 animate-spin text-gray-400" />
-          </div>
-        )}
-      </div>
     </div>
   );
 };
