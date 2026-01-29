@@ -283,6 +283,8 @@ Then extract ALL relevant data. Return a JSON object with this structure:
     ],
 
     "summary": {{
+        "bins_this_period": number or null,
+        "bins_cumulative": number or null,
         "total_bins": number or null,
         "total_cartons": number or null,
         "total_weight_lbs": number or null,
@@ -328,6 +330,10 @@ Important:
 - For percentages, use decimal values (e.g., 85.5 not "85.5%")
 - Be precise with grade names (SK DOMESTIC, CH DOMESTIC, STANDARD, JUICE, etc.)
 - Include size codes exactly as shown (048, 056, 072, 075, 088, 095, etc.)
+- CRITICAL for bins: Wash reports often show TWO bin values - "This Date" (incremental for the period) and "Pool-to-Date" or "Block-to-Date" (cumulative). Extract BOTH:
+  * bins_this_period = the "This Date" or period-specific incremental value
+  * bins_cumulative = the "Pool-to-Date", "Block-to-Date", or cumulative running total
+  * total_bins = use bins_this_period if available, otherwise the main bin count shown
 
 Return ONLY the JSON object, no additional text."""
 
@@ -409,8 +415,12 @@ Return ONLY the JSON object, no additional text."""
             'period_start': parse_date(header.get('period_start')) or date.today(),
             'period_end': parse_date(header.get('period_end')) or date.today(),
             'run_numbers': header.get('run_numbers') or '',
-            'bins_this_period': Decimal(str(summary.get('total_bins', 0) or 0)),
-            'bins_cumulative': Decimal(str(summary.get('total_bins', 0) or 0)),
+            'bins_this_period': Decimal(str(
+                summary.get('bins_this_period') or summary.get('total_bins', 0) or 0
+            )),
+            'bins_cumulative': Decimal(str(
+                summary.get('bins_cumulative') or summary.get('total_bins', 0) or 0
+            )),
             'total_packed_percent': self._to_decimal(summary.get('total_packed_percent')),
             'house_avg_packed_percent': self._to_decimal(summary.get('house_avg_packed_percent')),
             'juice_percent': self._to_decimal(summary.get('juice_percent')),
