@@ -51,18 +51,29 @@ const PDFUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, existi
     fetchFields();
   }, []);
 
+  // Reset PDF blob URL when statement changes (new upload)
+  useEffect(() => {
+    if (pdfBlobUrl) {
+      URL.revokeObjectURL(pdfBlobUrl);
+      setPdfBlobUrl(null);
+    }
+  }, [statement?.id]);
+
   // Fetch PDF as blob when in preview mode
   useEffect(() => {
     if (showPreview && statement?.pdf_url && showPdf && !pdfBlobUrl) {
       fetchPdfBlob();
     }
-    // Cleanup blob URL on unmount
+  }, [showPreview, statement?.pdf_url, showPdf, pdfBlobUrl]);
+
+  // Cleanup blob URL on unmount
+  useEffect(() => {
     return () => {
       if (pdfBlobUrl) {
         URL.revokeObjectURL(pdfBlobUrl);
       }
     };
-  }, [showPreview, statement?.pdf_url, showPdf]);
+  }, []);
 
   const fetchPdfBlob = async () => {
     if (!statement?.pdf_url) return;
