@@ -69,29 +69,16 @@ const PDFUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, existi
     try {
       setPdfLoading(true);
 
-      // Check if this is a cloud storage signed URL (S3, R2, etc.)
-      // Signed URLs contain authentication in query params and don't need/want Bearer tokens
-      // Also check if URL is external (different origin) - external URLs don't need our Bearer token
+      // PDF is now served through our backend proxy endpoint to avoid CORS issues
+      // Always include Bearer token for authentication
       const pdfUrl = statement.pdf_url;
-      const currentOrigin = window.location.origin;
-      const isExternalUrl = !pdfUrl.startsWith(currentOrigin) && !pdfUrl.startsWith('/');
-      const isSignedUrl = pdfUrl.includes('X-Amz-Signature') ||
-                          pdfUrl.includes('r2.cloudflarestorage.com') ||
-                          pdfUrl.includes('.s3.') ||
-                          pdfUrl.includes('s3.amazonaws.com');
+      const token = localStorage.getItem('farm_tracker_access_token');
 
-      console.log('PDF fetch debug:', { pdfUrl, currentOrigin, isExternalUrl, isSignedUrl });
-
-      const fetchOptions = {};
-      if (!isSignedUrl && !isExternalUrl) {
-        // Only add Bearer token for local/Django-served files
-        const token = localStorage.getItem('farm_tracker_access_token');
-        fetchOptions.headers = {
+      const response = await fetch(pdfUrl, {
+        headers: {
           'Authorization': `Bearer ${token}`,
-        };
-      }
-
-      const response = await fetch(pdfUrl, fetchOptions);
+        },
+      });
 
       if (!response.ok) {
         console.error('PDF fetch failed:', response.status, response.statusText);

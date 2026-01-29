@@ -109,24 +109,11 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
       try {
         setPdfLoading(true);
 
-        // Check if this is a cloud storage signed URL (S3, R2, etc.)
-        // Signed URLs contain authentication in query params and don't need/want Bearer tokens
-        // Also check if URL is external (different origin) - external URLs don't need our Bearer token
-        const currentOrigin = window.location.origin;
-        const isExternalUrl = !pdfUrl.startsWith(currentOrigin) && !pdfUrl.startsWith('/');
-        const isSignedUrl = pdfUrl.includes('X-Amz-Signature') ||
-                            pdfUrl.includes('r2.cloudflarestorage.com') ||
-                            pdfUrl.includes('.s3.') ||
-                            pdfUrl.includes('s3.amazonaws.com');
-
-        const fetchOptions = {};
-        if (!isSignedUrl && !isExternalUrl) {
-          // Only add Bearer token for local/Django-served files
-          const token = localStorage.getItem('farm_tracker_access_token');
-          fetchOptions.headers = { 'Authorization': `Bearer ${token}` };
-        }
-
-        const response = await fetch(pdfUrl, fetchOptions);
+        // PDF is now served through our backend proxy endpoint to avoid CORS issues
+        const token = localStorage.getItem('farm_tracker_access_token');
+        const response = await fetch(pdfUrl, {
+          headers: { 'Authorization': `Bearer ${token}` },
+        });
         if (!response.ok) throw new Error('Failed to fetch PDF');
         const blob = await response.blob();
 

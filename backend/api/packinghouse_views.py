@@ -22,6 +22,7 @@ from .models import (
     GrowerLedgerEntry, Field, PackinghouseStatement,
     Harvest, StatementBatchUpload, PackinghouseGrowerMapping, Farm
 )
+from .services.season_service import SeasonService, get_citrus_season, parse_legacy_season
 
 logger = logging.getLogger(__name__)
 from .serializers import (
@@ -628,12 +629,10 @@ def profitability_analysis(request):
     ).values_list('season', flat=True).distinct().order_by('-season')
     available_seasons = list(all_seasons)
 
-    # Get current/default season
+    # Get current/default season using SeasonService (citrus default for packinghouse)
     today = date.today()
-    if today.month >= 10:
-        default_season = f"{today.year}-{today.year + 1}"
-    else:
-        default_season = f"{today.year - 1}-{today.year}"
+    current_season = get_citrus_season(today)
+    default_season = current_season.label
 
     selected_season = request.query_params.get('season') or ''
 
@@ -657,14 +656,12 @@ def profitability_analysis(request):
         if selected_season not in available_seasons:
             selected_season = available_seasons[0]
 
-    # Calculate season date range for harvest filtering
+    # Calculate season date range for harvest filtering using SeasonService
     try:
-        season_year = int(selected_season.split('-')[0])
-        season_start = date(season_year, 10, 1)
-        season_end = date(season_year + 1, 9, 30)
+        season_start, season_end = parse_legacy_season(selected_season)
     except (ValueError, IndexError):
-        season_start = date(today.year - 1, 10, 1)
-        season_end = date(today.year, 9, 30)
+        season_start = current_season.start_date
+        season_end = current_season.end_date
 
     # Base filters
     packinghouse_id = request.query_params.get('packinghouse')
@@ -926,12 +923,10 @@ def deduction_breakdown(request):
     seasons_with_settlements = list(set(seasons_with_settlements))
     seasons_with_settlements.sort(reverse=True)
 
-    # Get current/default season
+    # Get current/default season using SeasonService
     today = date.today()
-    if today.month >= 10:
-        default_season = f"{today.year}-{today.year + 1}"
-    else:
-        default_season = f"{today.year - 1}-{today.year}"
+    current_season = get_citrus_season(today)
+    default_season = current_season.label
 
     selected_season = request.query_params.get('season') or ''
 
@@ -1357,10 +1352,8 @@ def packinghouse_dashboard(request):
     # Get selected season from query params or default to current
     from datetime import date
     today = date.today()
-    if today.month >= 10:
-        default_season = f"{today.year}-{today.year + 1}"
-    else:
-        default_season = f"{today.year - 1}-{today.year}"
+    current_season = get_citrus_season(today)
+    default_season = current_season.label
 
     selected_season = request.query_params.get('season', default_season)
 
@@ -1461,13 +1454,11 @@ def harvest_packing_pipeline(request):
     ).values_list('season', flat=True).distinct().order_by('-season')
     available_seasons = list(available_seasons)
 
-    # Get current/default season
+    # Get current/default season using SeasonService
     from datetime import date, timedelta
     today = date.today()
-    if today.month >= 10:
-        default_season = f"{today.year}-{today.year + 1}"
-    else:
-        default_season = f"{today.year - 1}-{today.year}"
+    current_season = get_citrus_season(today)
+    default_season = current_season.label
 
     # Get selected season from query params
     selected_season = request.query_params.get('season', default_season)
@@ -1476,14 +1467,12 @@ def harvest_packing_pipeline(request):
     if selected_season not in available_seasons and available_seasons:
         selected_season = available_seasons[0]
 
-    # Calculate season start date for harvest filtering
+    # Calculate season start date for harvest filtering using SeasonService
     try:
-        season_year = int(selected_season.split('-')[0])
-        season_start = date(season_year, 10, 1)
-        season_end = date(season_year + 1, 9, 30)
+        season_start, season_end = parse_legacy_season(selected_season)
     except (ValueError, IndexError):
-        season_start = date(today.year - 1, 10, 1)
-        season_end = date(today.year, 9, 30)
+        season_start = current_season.start_date
+        season_end = current_season.end_date
 
     # Pipeline Stage 1: Harvests
     harvest_stats = Harvest.objects.filter(
@@ -1935,11 +1924,8 @@ class PackinghouseStatementViewSet(viewsets.ModelViewSet):
             # Default season if still empty
             if not season:
                 from datetime import date
-                today = date.today()
-                if today.month >= 10:
-                    season = f"{today.year}-{today.year + 1}"
-                else:
-                    season = f"{today.year - 1}-{today.year}"
+                current_season = get_citrus_season(date.today())
+                season = current_season.label
 
             # Check if a similar pool already exists
             # First try by pool_id if we have one (most specific)
@@ -2222,6 +2208,35 @@ class PackinghouseStatementViewSet(viewsets.ModelViewSet):
 
         response_serializer = PackinghouseStatementSerializer(statement)
         return Response(response_serializer.data)
+
+    @action(detail=True, methods=['get'], url_path='pdf')
+    def serve_pdf(self, request, pk=None):
+        """
+        Serve the PDF file directly from the backend.
+        This proxies the file from cloud storage (R2/S3) to avoid CORS issues.
+        """
+        from django.http import FileResponse, HttpResponse
+
+        statement = self.get_object()
+
+        if not statement.pdf_file:
+            return HttpResponse('No PDF file available', status=404)
+
+        try:
+            # Open the file from storage (works with both local and cloud storage)
+            pdf_file = statement.pdf_file.open('rb')
+            response = FileResponse(
+                pdf_file,
+                content_type='application/pdf',
+                as_attachment=False,
+                filename=statement.original_filename or 'statement.pdf'
+            )
+            # Allow the browser to cache the PDF for 1 hour
+            response['Cache-Control'] = 'private, max-age=3600'
+            return response
+        except Exception as e:
+            logger.exception(f"Error serving PDF for statement {statement.id}")
+            return HttpResponse(f'Error loading PDF: {str(e)}', status=500)
 
     @action(detail=False, methods=['post'], url_path='batch-upload')
     def batch_upload(self, request):
@@ -2982,14 +2997,11 @@ class PackinghouseStatementViewSet(viewsets.ModelViewSet):
                 except (ValueError, TypeError):
                     pass
 
-        # Default season
+        # Default season using SeasonService
         if not season:
             from datetime import date
-            today = date.today()
-            if today.month >= 10:
-                season = f"{today.year}-{today.year + 1}"
-            else:
-                season = f"{today.year - 1}-{today.year}"
+            current_season = get_citrus_season(date.today())
+            season = current_season.label
 
         # Check for existing pool
         existing_pool = None
