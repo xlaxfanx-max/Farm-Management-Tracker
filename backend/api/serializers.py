@@ -3927,6 +3927,32 @@ class SettlementComparisonSerializer(serializers.Serializer):
     fresh_fruit_percent = serializers.DecimalField(max_digits=5, decimal_places=2, allow_null=True)
 
 
+class SizeDistributionSizeSerializer(serializers.Serializer):
+    """Individual size entry within a farm/field group."""
+    size = serializers.CharField()
+    quantity = serializers.DecimalField(max_digits=12, decimal_places=2)
+    percent = serializers.DecimalField(max_digits=5, decimal_places=2)
+    house_avg_percent = serializers.DecimalField(max_digits=5, decimal_places=2, allow_null=True)
+
+
+class SizeDistributionGroupSerializer(serializers.Serializer):
+    """Farm or field group with size breakdown."""
+    group_id = serializers.IntegerField()
+    group_name = serializers.CharField()
+    total_quantity = serializers.DecimalField(max_digits=12, decimal_places=2)
+    sizes = SizeDistributionSizeSerializer(many=True)
+
+
+class SizePricingEntrySerializer(serializers.Serializer):
+    """Pricing data for a single size code."""
+    size = serializers.CharField()
+    total_quantity = serializers.DecimalField(max_digits=12, decimal_places=2)
+    total_revenue = serializers.DecimalField(max_digits=14, decimal_places=2)
+    weighted_avg_fob = serializers.DecimalField(max_digits=10, decimal_places=2, allow_null=True)
+    percent_of_total_quantity = serializers.DecimalField(max_digits=5, decimal_places=1)
+    percent_of_total_revenue = serializers.DecimalField(max_digits=5, decimal_places=1)
+
+
 # =============================================================================
 # PACKINGHOUSE STATEMENT SERIALIZERS
 # =============================================================================

@@ -156,6 +156,8 @@ from .packinghouse_views import (
     block_performance,
     packout_trends,
     settlement_comparison,
+    size_distribution,
+    size_pricing,
     packinghouse_dashboard,
     harvest_packing_pipeline,
     profitability_analysis,
@@ -414,6 +416,8 @@ urlpatterns = [
     path('packinghouse-analytics/block-performance/', block_performance, name='packinghouse-block-performance'),
     path('packinghouse-analytics/packout-trends/', packout_trends, name='packinghouse-packout-trends'),
     path('packinghouse-analytics/settlement-comparison/', settlement_comparison, name='packinghouse-settlement-comparison'),
+    path('packinghouse-analytics/size-distribution/', size_distribution, name='packinghouse-size-distribution'),
+    path('packinghouse-analytics/size-pricing/', size_pricing, name='packinghouse-size-pricing'),
     path('packinghouse-analytics/dashboard/', packinghouse_dashboard, name='packinghouse-dashboard'),
     path('harvest-packing/pipeline/', harvest_packing_pipeline, name='harvest-packing-pipeline'),
 

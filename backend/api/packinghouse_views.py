@@ -35,6 +35,7 @@ from .serializers import (
     SettlementGradeLineSerializer, SettlementDeductionSerializer,
     GrowerLedgerEntryListSerializer, GrowerLedgerEntrySerializer,
     BlockPerformanceSerializer, PackoutTrendSerializer, SettlementComparisonSerializer,
+    SizeDistributionGroupSerializer, SizePricingEntrySerializer,
     PackinghouseStatementListSerializer, PackinghouseStatementSerializer,
     PackinghouseStatementUploadSerializer,
     BatchUploadSerializer, BatchUploadResponseSerializer,
@@ -1318,6 +1319,249 @@ def settlement_comparison(request):
 
     serializer = SettlementComparisonSerializer(results, many=True)
     return Response(serializer.data)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def size_distribution(request):
+    """
+    Fruit size distribution across farms/fields from packout (wash) reports.
+
+    Query params:
+    - season: Filter by season (e.g., "2024-2025")
+    - packinghouse: Filter by packinghouse ID
+    - commodity: Filter by commodity
+    - group_by: "farm" (default) or "field"
+    """
+    from django.db.models import Max
+    from collections import defaultdict
+
+    user = request.user
+    if not user.current_company:
+        return Response({'error': 'No company selected'}, status=400)
+
+    group_by = request.query_params.get('group_by', 'farm')
+
+    # Base filter
+    filters = Q(pool__packinghouse__company=user.current_company)
+
+    season = request.query_params.get('season')
+    if season:
+        filters &= Q(pool__season=season)
+
+    packinghouse_id = request.query_params.get('packinghouse')
+    if packinghouse_id:
+        filters &= Q(pool__packinghouse_id=packinghouse_id)
+
+    commodity = request.query_params.get('commodity')
+    if commodity:
+        filters &= Q(pool__commodity__icontains=commodity)
+
+    # Get latest packout report per field
+    latest_reports = PackoutReport.objects.filter(
+        filters,
+        field__isnull=False
+    ).values('field').annotate(
+        latest_date=Max('report_date')
+    )
+
+    # Collect grade lines grouped by farm or field
+    groups = defaultdict(lambda: {'total_quantity': Decimal('0'), 'sizes': defaultdict(lambda: {
+        'quantity': Decimal('0'),
+        'percent_sum': Decimal('0'),
+        'house_avg_sum': Decimal('0'),
+        'count': 0,
+        'house_avg_count': 0,
+    })})
+    all_sizes = set()
+
+    for item in latest_reports:
+        report = PackoutReport.objects.filter(
+            field_id=item['field'],
+            report_date=item['latest_date']
+        ).select_related('field__farm').first()
+
+        if not report or not report.field:
+            continue
+
+        grade_lines = PackoutGradeLine.objects.filter(
+            packout_report=report
+        ).exclude(size='')
+
+        if group_by == 'farm':
+            group_id = report.field.farm_id
+            group_name = report.field.farm.name
+        else:
+            group_id = report.field.id
+            group_name = report.field.name
+
+        group_key = group_id
+
+        for line in grade_lines:
+            qty = line.quantity_cumulative if line.quantity_cumulative is not None else line.quantity_this_period
+            pct = line.percent_cumulative if line.percent_cumulative is not None else line.percent_this_period
+
+            all_sizes.add(line.size)
+            size_data = groups[group_key]['sizes'][line.size]
+            size_data['quantity'] += qty
+            size_data['percent_sum'] += pct
+            size_data['count'] += 1
+            if line.house_avg_percent is not None:
+                size_data['house_avg_sum'] += line.house_avg_percent
+                size_data['house_avg_count'] += 1
+
+            groups[group_key]['total_quantity'] += qty
+            groups[group_key]['group_id'] = group_id
+            groups[group_key]['group_name'] = group_name
+
+    # Build response
+    results = []
+    for group_key, group_data in groups.items():
+        total_qty = group_data['total_quantity']
+        sizes = []
+        for size_code, size_data in sorted(group_data['sizes'].items(), key=lambda x: int(x[0]) if x[0].isdigit() else 999):
+            pct = (size_data['quantity'] / total_qty * 100) if total_qty else Decimal('0')
+            house_avg = None
+            if size_data['house_avg_count'] > 0:
+                house_avg = size_data['house_avg_sum'] / size_data['house_avg_count']
+            sizes.append({
+                'size': size_code,
+                'quantity': size_data['quantity'],
+                'percent': round(pct, 2),
+                'house_avg_percent': round(house_avg, 2) if house_avg is not None else None,
+            })
+        results.append({
+            'group_id': group_data['group_id'],
+            'group_name': group_data['group_name'],
+            'total_quantity': total_qty,
+            'sizes': sizes,
+        })
+
+    results.sort(key=lambda x: x['group_name'])
+
+    sorted_sizes = sorted(all_sizes, key=lambda x: int(x) if x.isdigit() else 999)
+
+    return Response({
+        'groups': SizeDistributionGroupSerializer(results, many=True).data,
+        'all_sizes': sorted_sizes,
+    })
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def size_pricing(request):
+    """
+    FOB pricing and revenue by fruit size from settlement grade lines.
+
+    Query params:
+    - season: Filter by season (e.g., "2024-2025")
+    - packinghouse: Filter by packinghouse ID
+    - commodity: Filter by commodity
+    - group_by: "none" (default), "farm", or "field"
+    """
+    user = request.user
+    if not user.current_company:
+        return Response({'error': 'No company selected'}, status=400)
+
+    group_by = request.query_params.get('group_by', 'none')
+
+    # Base filter
+    filters = Q(settlement__pool__packinghouse__company=user.current_company)
+
+    season = request.query_params.get('season')
+    if season:
+        filters &= Q(settlement__pool__season=season)
+
+    packinghouse_id = request.query_params.get('packinghouse')
+    if packinghouse_id:
+        filters &= Q(settlement__pool__packinghouse_id=packinghouse_id)
+
+    commodity = request.query_params.get('commodity')
+    if commodity:
+        filters &= Q(settlement__pool__commodity__icontains=commodity)
+
+    grade_lines = SettlementGradeLine.objects.filter(
+        filters
+    ).exclude(size='').select_related(
+        'settlement__field__farm',
+        'settlement__pool'
+    )
+
+    # Aggregate by size
+    from collections import defaultdict
+
+    size_totals = defaultdict(lambda: {
+        'total_quantity': Decimal('0'),
+        'total_revenue': Decimal('0'),
+        'by_farm': defaultdict(lambda: {
+            'farm_name': '',
+            'quantity': Decimal('0'),
+            'revenue': Decimal('0'),
+        }),
+    })
+
+    grand_total_qty = Decimal('0')
+    grand_total_rev = Decimal('0')
+
+    for line in grade_lines:
+        s = size_totals[line.size]
+        s['total_quantity'] += line.quantity
+        s['total_revenue'] += line.total_amount
+        grand_total_qty += line.quantity
+        grand_total_rev += line.total_amount
+
+        if group_by in ('farm', 'field') and line.settlement.field:
+            if group_by == 'farm':
+                key = line.settlement.field.farm_id
+                name = line.settlement.field.farm.name
+            else:
+                key = line.settlement.field.id
+                name = line.settlement.field.name
+            farm_data = s['by_farm'][key]
+            farm_data['farm_name'] = name
+            farm_data['quantity'] += line.quantity
+            farm_data['revenue'] += line.total_amount
+
+    # Build response
+    results = []
+    for size_code in sorted(size_totals.keys(), key=lambda x: int(x) if x.isdigit() else 999):
+        s = size_totals[size_code]
+        weighted_avg_fob = (s['total_revenue'] / s['total_quantity']) if s['total_quantity'] else None
+        pct_qty = (s['total_quantity'] / grand_total_qty * 100) if grand_total_qty else Decimal('0')
+        pct_rev = (s['total_revenue'] / grand_total_rev * 100) if grand_total_rev else Decimal('0')
+
+        entry = {
+            'size': size_code,
+            'total_quantity': s['total_quantity'],
+            'total_revenue': s['total_revenue'],
+            'weighted_avg_fob': round(weighted_avg_fob, 2) if weighted_avg_fob else None,
+            'percent_of_total_quantity': round(pct_qty, 1),
+            'percent_of_total_revenue': round(pct_rev, 1),
+        }
+
+        if group_by in ('farm', 'field'):
+            entry['by_farm'] = sorted([
+                {
+                    'farm_name': fd['farm_name'],
+                    'quantity': fd['quantity'],
+                    'revenue': fd['revenue'],
+                    'avg_fob': round(fd['revenue'] / fd['quantity'], 2) if fd['quantity'] else None,
+                }
+                for fd in s['by_farm'].values()
+            ], key=lambda x: x['farm_name'])
+
+        results.append(entry)
+
+    overall_avg_fob = (grand_total_rev / grand_total_qty) if grand_total_qty else None
+
+    return Response({
+        'sizes': SizePricingEntrySerializer(results, many=True).data,
+        'totals': {
+            'total_quantity': grand_total_qty,
+            'total_revenue': grand_total_rev,
+            'overall_avg_fob': round(overall_avg_fob, 2) if overall_avg_fob else None,
+        },
+    })
 
 
 @api_view(['GET'])

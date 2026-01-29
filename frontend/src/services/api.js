@@ -2504,6 +2504,12 @@ export const packinghouseAnalyticsAPI = {
   getSettlementComparison: (params = {}) =>
     api.get('/packinghouse-analytics/settlement-comparison/', { params }),
 
+  getSizeDistribution: (params = {}) =>
+    api.get('/packinghouse-analytics/size-distribution/', { params }),
+
+  getSizePricing: (params = {}) =>
+    api.get('/packinghouse-analytics/size-pricing/', { params }),
+
   getDashboard: (params = {}) =>
     api.get('/packinghouse-analytics/dashboard/', { params }),
 
