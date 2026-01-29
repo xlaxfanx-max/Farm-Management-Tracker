@@ -2429,7 +2429,7 @@ class PackinghouseStatementViewSet(viewsets.ModelViewSet):
                             'auto_match': auto_match_dict,
                             'needs_review': needs_review,
                             'extracted_data': result.data,
-                            'pdf_url': request.build_absolute_uri(statement.pdf_file.url) if statement.pdf_file else None,
+                            'pdf_url': f'/api/packinghouse-statements/{statement.id}/pdf/' if statement.pdf_file else None,
                             'detected_packinghouse': detected_packinghouse_info,
                             'packinghouse_id': statement_packinghouse.id if statement_packinghouse else None
                         })
