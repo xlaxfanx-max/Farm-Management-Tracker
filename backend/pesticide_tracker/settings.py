@@ -401,6 +401,9 @@ CELERY_TASK_ACKS_LATE = True
 # Prefetch one task at a time (better for long-running tasks)
 CELERY_WORKER_PREFETCH_MULTIPLIER = 1
 
+# Beat schedule file location (writable by non-root user in Docker)
+CELERY_BEAT_SCHEDULE_FILENAME = '/tmp/celerybeat-schedule'
+
 # Celery Beat Schedule - periodic tasks for compliance automation
 from celery.schedules import crontab
 
