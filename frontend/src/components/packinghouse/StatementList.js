@@ -236,6 +236,7 @@ const StatementList = ({ packinghouseId = null }) => {
                   <th className="pb-3 font-medium">File</th>
                   <th className="pb-3 font-medium">Packinghouse</th>
                   <th className="pb-3 font-medium">Type</th>
+                  <th className="pb-3 font-medium">Commodity</th>
                   <th className="pb-3 font-medium">Status</th>
                   <th className="pb-3 font-medium">Pool</th>
                   <th className="pb-3 font-medium">Uploaded</th>
@@ -266,6 +267,11 @@ const StatementList = ({ packinghouseId = null }) => {
                     <td className="py-3">
                       <span className="text-sm text-gray-700">
                         {TYPE_LABELS[statement.statement_type] || statement.statement_type || '-'}
+                      </span>
+                    </td>
+                    <td className="py-3">
+                      <span className="text-sm text-gray-700">
+                        {statement.commodity || '-'}
                       </span>
                     </td>
                     <td className="py-3">

@@ -3967,6 +3967,7 @@ class PackinghouseStatementListSerializer(serializers.ModelSerializer):
     pool_name = serializers.CharField(source='pool.name', read_only=True, allow_null=True)
     field_name = serializers.CharField(source='field.name', read_only=True, allow_null=True)
     uploaded_by_name = serializers.SerializerMethodField()
+    commodity = serializers.SerializerMethodField()
     is_processed = serializers.ReadOnlyField()
 
     class Meta:
@@ -3980,6 +3981,7 @@ class PackinghouseStatementListSerializer(serializers.ModelSerializer):
             'extraction_confidence',
             'pool', 'pool_name', 'field', 'field_name',
             'uploaded_by', 'uploaded_by_name',
+            'commodity',
             'is_processed',
             'created_at'
         ]
@@ -3987,6 +3989,16 @@ class PackinghouseStatementListSerializer(serializers.ModelSerializer):
     def get_uploaded_by_name(self, obj):
         if obj.uploaded_by:
             return f"{obj.uploaded_by.first_name} {obj.uploaded_by.last_name}".strip() or obj.uploaded_by.email
+        return None
+
+    def get_commodity(self, obj):
+        """Return commodity from pool (if confirmed) or extracted_data header."""
+        if obj.pool and obj.pool.commodity:
+            return obj.pool.commodity
+        if obj.extracted_data and isinstance(obj.extracted_data, dict):
+            header = obj.extracted_data.get('header', {})
+            if isinstance(header, dict):
+                return header.get('commodity')
         return None
 
 
