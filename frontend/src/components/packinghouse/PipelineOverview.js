@@ -1,6 +1,10 @@
 // =============================================================================
 // PIPELINE OVERVIEW COMPONENT
 // Shows the packout → settlement flow for growers who receive packinghouse reports
+//
+// Two modes:
+// 1. All Commodities (default) - Summary tiles + per-commodity cards
+// 2. Specific Commodity - Season dropdown + pipeline flow + farm breakdown
 // =============================================================================
 
 import React, { useState, useEffect } from 'react';
@@ -8,12 +12,15 @@ import {
   Package,
   DollarSign,
   ArrowRight,
+  ArrowLeft,
   RefreshCw,
   AlertCircle,
   Clock,
   Layers,
   Calendar,
-  BarChart3
+  BarChart3,
+  TrendingUp,
+  ChevronRight
 } from 'lucide-react';
 import { packinghouseAnalyticsAPI } from '../../services/api';
 
@@ -21,23 +28,28 @@ const PipelineOverview = () => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [selectedCommodity, setSelectedCommodity] = useState(null); // null = All Commodities
   const [selectedSeason, setSelectedSeason] = useState('');
-  const [breakdownView, setBreakdownView] = useState(null);
+  const [breakdownView, setBreakdownView] = useState(null); // null or 'farm'
 
   useEffect(() => {
     fetchPipelineData();
-  }, [selectedSeason, breakdownView]);
+  }, [selectedCommodity, selectedSeason, breakdownView]);
 
   const fetchPipelineData = async () => {
     try {
       setLoading(true);
       setError(null);
-      const params = selectedSeason ? { season: selectedSeason } : {};
-      if (breakdownView) params.breakdown = breakdownView;
+      const params = {};
+      if (selectedCommodity) {
+        params.commodity = selectedCommodity;
+        if (selectedSeason) params.season = selectedSeason;
+        if (breakdownView) params.breakdown = breakdownView;
+      }
       const response = await packinghouseAnalyticsAPI.getPipeline(params);
       setData(response.data);
-      // Set selected season from response if not already set
-      if (!selectedSeason && response.data.selected_season) {
+      // Auto-set season from response if in commodity mode and not already set
+      if (selectedCommodity && !selectedSeason && response.data.selected_season) {
         setSelectedSeason(response.data.selected_season);
       }
     } catch (err) {
@@ -46,6 +58,18 @@ const PipelineOverview = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleCommoditySelect = (commodity) => {
+    setSelectedCommodity(commodity);
+    setSelectedSeason(''); // Reset season when switching commodity
+    setBreakdownView(null); // Reset breakdown
+  };
+
+  const handleBackToAll = () => {
+    setSelectedCommodity(null);
+    setSelectedSeason('');
+    setBreakdownView(null);
   };
 
   const handleSeasonChange = (e) => {
@@ -87,9 +111,20 @@ const PipelineOverview = () => {
 
   const getActivityBgColor = (type) => {
     switch (type) {
-      case 'packout': return 'bg-purple-50 border-purple-200';
-      case 'settlement': return 'bg-green-50 border-green-200';
-      default: return 'bg-gray-50 border-gray-200';
+      case 'packout': return 'bg-purple-50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-800';
+      case 'settlement': return 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800';
+      default: return 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700';
+    }
+  };
+
+  // Get a color accent for commodity cards based on crop category
+  const getCommodityColor = (cropCategory) => {
+    switch (cropCategory) {
+      case 'citrus': return { bg: 'bg-orange-50 dark:bg-orange-900/20', border: 'border-orange-200 dark:border-orange-800', text: 'text-orange-700 dark:text-orange-300', accent: 'text-orange-600', badge: 'bg-orange-100 dark:bg-orange-900/40 text-orange-800 dark:text-orange-200' };
+      case 'subtropical': return { bg: 'bg-emerald-50 dark:bg-emerald-900/20', border: 'border-emerald-200 dark:border-emerald-800', text: 'text-emerald-700 dark:text-emerald-300', accent: 'text-emerald-600', badge: 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-200' };
+      case 'nut': return { bg: 'bg-amber-50 dark:bg-amber-900/20', border: 'border-amber-200 dark:border-amber-800', text: 'text-amber-700 dark:text-amber-300', accent: 'text-amber-600', badge: 'bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-200' };
+      case 'vine': return { bg: 'bg-violet-50 dark:bg-violet-900/20', border: 'border-violet-200 dark:border-violet-800', text: 'text-violet-700 dark:text-violet-300', accent: 'text-violet-600', badge: 'bg-violet-100 dark:bg-violet-900/40 text-violet-800 dark:text-violet-200' };
+      default: return { bg: 'bg-blue-50 dark:bg-blue-900/20', border: 'border-blue-200 dark:border-blue-800', text: 'text-blue-700 dark:text-blue-300', accent: 'text-blue-600', badge: 'bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-200' };
     }
   };
 
@@ -118,13 +153,183 @@ const PipelineOverview = () => {
 
   if (!data) return null;
 
+  // =========================================================================
+  // MODE A: ALL COMMODITIES VIEW
+  // =========================================================================
+  if (data.mode === 'all_commodities') {
+    const { summary, commodity_cards } = data;
+
+    return (
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex justify-between items-center">
+          <div>
+            <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">
+              Harvest Pipeline
+            </h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+              All commodities — select a commodity to view season details
+            </p>
+          </div>
+          <button
+            onClick={fetchPipelineData}
+            className="flex items-center gap-2 px-3 py-2 border dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
+          >
+            <RefreshCw size={16} />
+            Refresh
+          </button>
+        </div>
+
+        {/* Summary Tiles */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+            <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-1">
+              <DollarSign className="w-4 h-4" />
+              Total Revenue
+            </div>
+            <p className="text-2xl font-bold text-green-600">
+              {formatCurrency(summary.total_revenue)}
+            </p>
+          </div>
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+            <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-1">
+              <Package className="w-4 h-4" />
+              Bins Packed
+            </div>
+            <p className="text-2xl font-bold text-purple-600">
+              {formatNumber(summary.total_bins_packed)}
+            </p>
+          </div>
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+            <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-1">
+              <TrendingUp className="w-4 h-4" />
+              Bins Settled
+            </div>
+            <p className="text-2xl font-bold text-blue-600">
+              {formatNumber(summary.total_bins_settled)}
+            </p>
+          </div>
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+            <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-1">
+              <BarChart3 className="w-4 h-4" />
+              Settlement
+            </div>
+            <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+              {summary.settlement_percent}%
+            </p>
+          </div>
+        </div>
+
+        {/* Commodity Cards */}
+        {commodity_cards && commodity_cards.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {commodity_cards.map((card) => {
+              const colors = getCommodityColor(card.crop_category);
+              const totalPools = (card.pools?.active || 0) + (card.pools?.closed || 0) + (card.pools?.settled || 0);
+              return (
+                <div
+                  key={card.commodity}
+                  onClick={() => handleCommoditySelect(card.commodity)}
+                  className={`${colors.bg} border ${colors.border} rounded-lg p-5 cursor-pointer hover:shadow-md transition-all group`}
+                >
+                  {/* Card Header */}
+                  <div className="flex justify-between items-start mb-4">
+                    <div>
+                      <h3 className={`font-bold text-lg ${colors.text}`}>
+                        {card.commodity}
+                      </h3>
+                      <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${colors.badge}`}>
+                        Season {card.current_season}
+                      </span>
+                    </div>
+                    <ChevronRight className={`w-5 h-5 ${colors.accent} opacity-50 group-hover:opacity-100 transition-opacity`} />
+                  </div>
+
+                  {/* Stats */}
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600 dark:text-gray-400">Bins Packed</span>
+                      <span className="font-semibold text-purple-600 dark:text-purple-400">
+                        {formatNumber(card.bins_packed)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600 dark:text-gray-400">Settlement</span>
+                      <div className="flex items-center gap-2">
+                        <div className="w-16 bg-gray-200 dark:bg-gray-600 rounded-full h-2">
+                          <div
+                            className="bg-green-500 h-2 rounded-full transition-all"
+                            style={{ width: `${Math.min(card.settlement_percent, 100)}%` }}
+                          />
+                        </div>
+                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300 w-12 text-right">
+                          {card.settlement_percent}%
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600 dark:text-gray-400">Revenue</span>
+                      <span className="font-semibold text-green-600 dark:text-green-400">
+                        {formatCurrency(card.revenue)}
+                      </span>
+                    </div>
+                    {card.avg_per_bin > 0 && (
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-600 dark:text-gray-400">$/Bin</span>
+                        <span className="font-medium text-gray-700 dark:text-gray-300">
+                          ${formatNumber(card.avg_per_bin, 2)}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Pool Status Footer */}
+                  {totalPools > 0 && (
+                    <div className="mt-4 pt-3 border-t border-gray-200 dark:border-gray-700 flex gap-3 text-xs">
+                      {card.pools.active > 0 && (
+                        <span className="flex items-center gap-1 text-gray-500 dark:text-gray-400">
+                          <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                          {card.pools.active} active
+                        </span>
+                      )}
+                      {card.pools.closed > 0 && (
+                        <span className="flex items-center gap-1 text-gray-500 dark:text-gray-400">
+                          <span className="w-2 h-2 rounded-full bg-yellow-500"></span>
+                          {card.pools.closed} closed
+                        </span>
+                      )}
+                      {card.pools.settled > 0 && (
+                        <span className="flex items-center gap-1 text-gray-500 dark:text-gray-400">
+                          <span className="w-2 h-2 rounded-full bg-blue-500"></span>
+                          {card.pools.settled} settled
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-8 text-center">
+            <Package className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+            <p className="text-gray-500 dark:text-gray-400">
+              No commodity data available. Upload packinghouse statements to get started.
+            </p>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // =========================================================================
+  // MODE B: SPECIFIC COMMODITY VIEW
+  // =========================================================================
   const { pipeline_stages, pool_status, pipeline_efficiency, recent_activity } = data;
 
   // Calculate settlement efficiency based on packed bins
   const packedBins = pipeline_stages.packout.total_bins || 0;
   const settledBins = pipeline_stages.settlement.total_bins || 0;
-
-  // Calculate percentage - if no packouts but have settlements, that's a data issue
   const settlementPercent = packedBins > 0 ? Math.round((settledBins / packedBins) * 100) : (settledBins > 0 ? 999 : 0);
   const hasMissingPackouts = settledBins > packedBins && settledBins > 0;
   const missingPackoutBins = hasMissingPackouts ? Math.round(settledBins - packedBins) : 0;
@@ -140,9 +345,20 @@ const PipelineOverview = () => {
       <div className="flex flex-col gap-4">
         <div className="flex justify-between items-center">
           <div>
-            <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">
-              Harvest Pipeline
+            {/* Back Button + Title */}
+            <div className="flex items-center gap-3">
+              <button
+                onClick={handleBackToAll}
+                className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                All Commodities
+              </button>
+            </div>
+            <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mt-1">
+              {data.selected_commodity} Pipeline
             </h2>
+            {/* Season Selector */}
             <div className="flex items-center gap-3 mt-1">
               <span className="text-gray-600 dark:text-gray-400 flex items-center">
                 <Calendar className="w-4 h-4 mr-1" />
@@ -163,17 +379,16 @@ const PipelineOverview = () => {
           </div>
           <button
             onClick={fetchPipelineData}
-            className="flex items-center gap-2 px-3 py-2 border dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+            className="flex items-center gap-2 px-3 py-2 border dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
           >
             <RefreshCw size={16} />
             Refresh
           </button>
         </div>
-        {/* View Toggle */}
+        {/* View Toggle - only All and By Farm/Ranch */}
         <div className="flex space-x-2">
           {[
             { id: null, label: 'All', icon: <BarChart3 className="w-4 h-4" /> },
-            { id: 'commodity', label: 'By Commodity', icon: <Package className="w-4 h-4" /> },
             { id: 'farm', label: 'By Farm / Ranch', icon: <Layers className="w-4 h-4" /> },
           ].map((view) => (
             <button
@@ -292,10 +507,10 @@ const PipelineOverview = () => {
           </div>
         </div>
       ) : (
-        /* Breakdown View */
+        /* Farm Breakdown View */
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
-            {breakdownView === 'commodity' ? 'Pipeline by Commodity' : 'Pipeline by Farm / Ranch'}
+            Pipeline by Farm / Ranch
           </h3>
 
           {data.breakdowns && data.breakdowns.length > 0 ? (
@@ -303,9 +518,7 @@ const PipelineOverview = () => {
               <table className="w-full">
                 <thead>
                   <tr className="text-left text-sm text-gray-500 dark:text-gray-400 border-b dark:border-gray-700">
-                    <th className="py-3 px-3">
-                      {breakdownView === 'commodity' ? 'Commodity' : 'Farm / Ranch'}
-                    </th>
+                    <th className="py-3 px-3">Farm / Ranch</th>
                     <th className="py-3 px-3 text-right">Bins Packed</th>
                     <th className="py-3 px-3 text-right">Pack %</th>
                     <th className="py-3 px-3 text-right">Bins Settled</th>

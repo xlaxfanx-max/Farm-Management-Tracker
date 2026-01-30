@@ -567,3 +567,66 @@ def parse_legacy_season(season_string: str) -> Tuple[date, date]:
         # Calendar year format: "2024" -> Jan 1, 2024 to Dec 31, 2024
         year = int(season_string)
         return date(year, 1, 1), date(year, 12, 31)
+
+
+def get_crop_category_for_commodity(commodity_string: str) -> str:
+    """
+    Map a free-text commodity string (e.g. 'LEMONS', 'HASS AVOCADOS')
+    to a crop category key matching SeasonService.DEFAULT_SEASON_CONFIGS.
+
+    Used to determine the correct season date range for a given commodity.
+
+    Returns: 'citrus', 'subtropical', 'nut', 'vine', or 'citrus' (default fallback).
+    """
+    upper = (commodity_string or '').upper()
+    if any(c in upper for c in ['AVOCADO', 'SUBTROPICAL']):
+        return 'subtropical'
+    elif any(c in upper for c in [
+        'LEMON', 'ORANGE', 'NAVEL', 'VALENCIA',
+        'TANGERINE', 'MANDARIN', 'GRAPEFRUIT', 'CITRUS', 'LIME'
+    ]):
+        return 'citrus'
+    elif any(c in upper for c in ['ALMOND', 'WALNUT', 'PISTACHIO']):
+        return 'nut'
+    elif any(c in upper for c in ['GRAPE', 'WINE']):
+        return 'vine'
+    else:
+        return 'citrus'  # Default to citrus for unknown commodities
+
+
+def parse_season_for_category(season_string: str, crop_category: str) -> Tuple[date, date]:
+    """
+    Parse a season string into dates using the correct season config for the crop category.
+
+    Unlike parse_legacy_season() which assumes citrus Oct-Sep for all cross-year formats,
+    this function uses the actual season start month for the given crop category.
+
+    Args:
+        season_string: Season string like "2024-2025" or "2025"
+        crop_category: Crop category key (e.g., 'citrus', 'subtropical', 'nut')
+
+    Returns:
+        Tuple of (start_date, end_date)
+    """
+    config = SeasonService.DEFAULT_SEASON_CONFIGS.get(
+        crop_category,
+        SeasonService.DEFAULT_SEASON_CONFIGS.get('other', {
+            'start_month': 1, 'start_day': 1,
+            'duration_months': 12, 'crosses_calendar_year': False,
+        })
+    )
+
+    start_month = config.get('start_month', 1)
+    start_day = config.get('start_day', 1)
+    duration_months = config.get('duration_months', 12)
+
+    if '-' in season_string:
+        # Cross-year format: "2024-2025"
+        start_year = int(season_string.split('-')[0])
+    else:
+        # Single year format: "2025"
+        start_year = int(season_string)
+
+    start = date(start_year, start_month, start_day)
+    end = start + relativedelta(months=duration_months) - timedelta(days=1)
+    return start, end

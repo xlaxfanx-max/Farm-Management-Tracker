@@ -22,7 +22,10 @@ from .models import (
     GrowerLedgerEntry, Field, PackinghouseStatement,
     Harvest, StatementBatchUpload, PackinghouseGrowerMapping, Farm
 )
-from .services.season_service import SeasonService, get_citrus_season, parse_legacy_season
+from .services.season_service import (
+    SeasonService, get_citrus_season, parse_legacy_season,
+    get_crop_category_for_commodity, parse_season_for_category
+)
 
 logger = logging.getLogger(__name__)
 from .serializers import (
@@ -1706,7 +1709,11 @@ def harvest_packing_pipeline(request):
     Get unified pipeline overview: Harvest → Delivery → Packout → Settlement.
 
     Query params:
-    - season: Optional season filter (e.g., "2024-2025"). Defaults to current season.
+    - commodity: Optional commodity filter (e.g., "LEMONS"). If omitted, returns
+      all-commodities summary with per-commodity cards.
+    - season: Optional season filter (e.g., "2024-2025"). Only used when commodity
+      is specified. Defaults to the current season for that commodity's crop type.
+    - breakdown: Optional breakdown type ('farm'). Only used when commodity is specified.
 
     Shows the complete flow of fruit from field to payment.
     """
@@ -1715,17 +1722,154 @@ def harvest_packing_pipeline(request):
         return Response({'error': 'No company selected'}, status=400)
 
     company = user.current_company
-
-    # Get available seasons from pools
-    available_seasons = Pool.objects.filter(
-        packinghouse__company=company
-    ).values_list('season', flat=True).distinct().order_by('-season')
-    available_seasons = list(available_seasons)
-
-    # Get current/default season using SeasonService
     from datetime import date, timedelta
     today = date.today()
-    current_season = get_citrus_season(today)
+
+    selected_commodity = request.query_params.get('commodity', None)
+
+    # =========================================================================
+    # MODE A: ALL COMMODITIES OVERVIEW
+    # Shows summary tiles + per-commodity cards, each with its own current season
+    # =========================================================================
+    if not selected_commodity:
+        # Get all distinct commodities from this company's pools
+        commodities = list(
+            Pool.objects.filter(
+                packinghouse__company=company
+            ).values_list('commodity', flat=True).distinct().order_by('commodity')
+        )
+
+        # Batch query: packout stats by commodity + season
+        packout_by_cs = PackoutReport.objects.filter(
+            pool__packinghouse__company=company
+        ).values('pool__commodity', 'pool__season').annotate(
+            total_bins_packed=Coalesce(Sum('bins_this_period'), Decimal('0')),
+            avg_pack_percent=Avg('total_packed_percent'),
+            report_count=Count('id'),
+        )
+
+        # Batch query: settlement stats by commodity + season
+        settlement_by_cs = PoolSettlement.objects.filter(
+            pool__packinghouse__company=company
+        ).values('pool__commodity', 'pool__season').annotate(
+            total_bins_settled=Coalesce(Sum('total_bins'), Decimal('0')),
+            total_revenue=Coalesce(Sum('net_return'), Decimal('0')),
+            avg_per_bin=Avg('net_per_bin'),
+            settlement_count=Count('id'),
+        )
+
+        # Batch query: pool status by commodity + season
+        pool_status_by_cs = Pool.objects.filter(
+            packinghouse__company=company
+        ).values('commodity', 'season', 'status').annotate(count=Count('id'))
+
+        # Build per-commodity cards
+        commodity_cards = []
+        total_revenue = Decimal('0')
+        total_bins_packed = Decimal('0')
+        total_bins_settled = Decimal('0')
+
+        for commodity in commodities:
+            if not commodity:
+                continue
+
+            # Determine current season for this commodity
+            crop_category = get_crop_category_for_commodity(commodity)
+            season_service = SeasonService(company_id=company.id)
+            current = season_service.get_current_season(crop_category=crop_category, target_date=today)
+            current_season_label = current.label
+
+            # Filter batch data for this commodity + its current season
+            bins_packed = Decimal('0')
+            avg_pack = 0
+            packout_count = 0
+            for row in packout_by_cs:
+                if row['pool__commodity'] == commodity and row['pool__season'] == current_season_label:
+                    bins_packed = row['total_bins_packed']
+                    avg_pack = round(float(row['avg_pack_percent'] or 0), 1)
+                    packout_count = row['report_count']
+
+            bins_settled = Decimal('0')
+            revenue = Decimal('0')
+            avg_per_bin = 0
+            settlement_count = 0
+            for row in settlement_by_cs:
+                if row['pool__commodity'] == commodity and row['pool__season'] == current_season_label:
+                    bins_settled = row['total_bins_settled']
+                    revenue = row['total_revenue']
+                    avg_per_bin = round(float(row['avg_per_bin'] or 0), 2)
+                    settlement_count = row['settlement_count']
+
+            pools = {}
+            for row in pool_status_by_cs:
+                if row['commodity'] == commodity and row['season'] == current_season_label:
+                    pools[row['status']] = row['count']
+
+            packed_f = float(bins_packed)
+            settled_f = float(bins_settled)
+            settlement_pct = round((settled_f / packed_f * 100), 1) if packed_f > 0 else 0
+
+            commodity_cards.append({
+                'commodity': commodity,
+                'crop_category': crop_category,
+                'current_season': current_season_label,
+                'bins_packed': packed_f,
+                'avg_pack_percent': avg_pack,
+                'bins_settled': settled_f,
+                'settlement_percent': settlement_pct,
+                'revenue': float(revenue),
+                'avg_per_bin': avg_per_bin,
+                'packout_reports': packout_count,
+                'settlements': settlement_count,
+                'pools': {
+                    'active': pools.get('active', 0),
+                    'closed': pools.get('closed', 0),
+                    'settled': pools.get('settled', 0),
+                },
+            })
+
+            total_revenue += revenue
+            total_bins_packed += bins_packed
+            total_bins_settled += bins_settled
+
+        # Sort by revenue descending
+        commodity_cards.sort(key=lambda x: x['revenue'], reverse=True)
+
+        total_packed_f = float(total_bins_packed)
+        total_settled_f = float(total_bins_settled)
+
+        return Response({
+            'mode': 'all_commodities',
+            'available_commodities': commodities,
+            'summary': {
+                'total_revenue': float(total_revenue),
+                'total_bins_packed': total_packed_f,
+                'total_bins_settled': total_settled_f,
+                'settlement_percent': round((total_settled_f / total_packed_f * 100), 1) if total_packed_f > 0 else 0,
+                'total_pools': Pool.objects.filter(packinghouse__company=company).count(),
+            },
+            'commodity_cards': commodity_cards,
+        })
+
+    # =========================================================================
+    # MODE B: SPECIFIC COMMODITY
+    # Shows season dropdown + pipeline flow filtered to one commodity
+    # =========================================================================
+
+    # Determine crop category and season config for this commodity
+    crop_category = get_crop_category_for_commodity(selected_commodity)
+    season_service = SeasonService(company_id=company.id)
+
+    # Get available seasons from pools for this commodity only
+    available_seasons = list(
+        Pool.objects.filter(
+            packinghouse__company=company,
+            commodity__iexact=selected_commodity
+        ).values_list('season', flat=True).distinct().order_by('-season')
+    )
+
+    # Determine default season using correct crop category
+    current_season = season_service.get_current_season(crop_category=crop_category, target_date=today)
     default_season = current_season.label
 
     # Get selected season from query params
@@ -1735,14 +1879,18 @@ def harvest_packing_pipeline(request):
     if selected_season not in available_seasons and available_seasons:
         selected_season = available_seasons[0]
 
-    # Calculate season start date for harvest filtering using SeasonService
+    # Calculate season date range using the correct crop category
     try:
-        season_start, season_end = parse_legacy_season(selected_season)
+        season_start, season_end = parse_season_for_category(selected_season, crop_category)
     except (ValueError, IndexError):
         season_start = current_season.start_date
         season_end = current_season.end_date
 
-    # Pipeline Stage 1: Harvests
+    # Base filters for this commodity
+    pool_commodity_filter = Q(pool__commodity__iexact=selected_commodity)
+    commodity_filter = Q(commodity__iexact=selected_commodity)
+
+    # Pipeline Stage 1: Harvests (date-based, no commodity filter on Harvest model)
     harvest_stats = Harvest.objects.filter(
         field__farm__company=company,
         harvest_date__gte=season_start,
@@ -1757,6 +1905,7 @@ def harvest_packing_pipeline(request):
 
     # Pipeline Stage 2: Deliveries to Packinghouse
     delivery_stats = PackinghouseDelivery.objects.filter(
+        pool_commodity_filter,
         pool__packinghouse__company=company,
         pool__season=selected_season
     ).aggregate(
@@ -1767,8 +1916,8 @@ def harvest_packing_pipeline(request):
     )
 
     # Pipeline Stage 3: Packout Reports
-    # Use bins_this_period (actual bins packed) not bins_cumulative (running total)
     packout_stats = PackoutReport.objects.filter(
+        pool_commodity_filter,
         pool__packinghouse__company=company,
         pool__season=selected_season
     ).aggregate(
@@ -1780,6 +1929,7 @@ def harvest_packing_pipeline(request):
 
     # Pipeline Stage 4: Settlements
     settlement_stats = PoolSettlement.objects.filter(
+        pool_commodity_filter,
         pool__packinghouse__company=company,
         pool__season=selected_season
     ).aggregate(
@@ -1791,12 +1941,13 @@ def harvest_packing_pipeline(request):
 
     # Pool status breakdown
     pool_status = Pool.objects.filter(
+        commodity_filter,
         packinghouse__company=company,
         season=selected_season
     ).values('status').annotate(count=Count('id'))
     pool_by_status = {item['status']: item['count'] for item in pool_status}
 
-    # Recent activity (last 10 items across all stages)
+    # Recent activity
     recent_harvests = Harvest.objects.filter(
         field__farm__company=company,
         harvest_date__gte=season_start,
@@ -1804,16 +1955,19 @@ def harvest_packing_pipeline(request):
     ).select_related('field', 'field__farm').order_by('-harvest_date')[:5]
 
     recent_deliveries = PackinghouseDelivery.objects.filter(
+        pool_commodity_filter,
         pool__packinghouse__company=company,
         pool__season=selected_season
     ).select_related('pool', 'pool__packinghouse', 'field', 'harvest').order_by('-delivery_date')[:5]
 
     recent_packouts = PackoutReport.objects.filter(
+        pool_commodity_filter,
         pool__packinghouse__company=company,
         pool__season=selected_season
     ).select_related('pool', 'field').order_by('-report_date')[:5]
 
     recent_settlements = PoolSettlement.objects.filter(
+        pool_commodity_filter,
         pool__packinghouse__company=company,
         pool__season=selected_season
     ).select_related('pool', 'field').order_by('-statement_date')[:5]
@@ -1889,82 +2043,18 @@ def harvest_packing_pipeline(request):
     # Sort by date descending
     recent_activity.sort(key=lambda x: x['date'], reverse=True)
 
-    # --- Pipeline Breakdown (optional) ---
+    # --- Pipeline Breakdown: Farm (optional) ---
     breakdown_param = request.query_params.get('breakdown', None)
     breakdowns = None
 
-    if breakdown_param == 'commodity':
-        # Group packout stats by commodity
-        packout_by_group = PackoutReport.objects.filter(
-            pool__packinghouse__company=company,
-            pool__season=selected_season
-        ).values('pool__commodity').annotate(
-            total_bins_packed=Coalesce(Sum('bins_this_period'), Decimal('0')),
-            avg_pack_percent=Avg('total_packed_percent'),
-            report_count=Count('id'),
-        )
-
-        # Group settlement stats by commodity
-        settlement_by_group = PoolSettlement.objects.filter(
-            pool__packinghouse__company=company,
-            pool__season=selected_season
-        ).values('pool__commodity').annotate(
-            total_bins_settled=Coalesce(Sum('total_bins'), Decimal('0')),
-            total_revenue=Coalesce(Sum('net_return'), Decimal('0')),
-            avg_per_bin=Avg('net_per_bin'),
-            settlement_count=Count('id'),
-        )
-
-        # Pool status by commodity
-        pool_by_group = Pool.objects.filter(
-            packinghouse__company=company,
-            season=selected_season
-        ).values('commodity', 'status').annotate(count=Count('id'))
-
-        group_map = {}
-        for row in packout_by_group:
-            key = row['pool__commodity'] or 'Unknown'
-            group_map.setdefault(key, {'label': key})
-            group_map[key]['bins_packed'] = float(row['total_bins_packed'])
-            group_map[key]['avg_pack_percent'] = round(float(row['avg_pack_percent'] or 0), 1)
-            group_map[key]['packout_reports'] = row['report_count']
-
-        for row in settlement_by_group:
-            key = row['pool__commodity'] or 'Unknown'
-            group_map.setdefault(key, {'label': key})
-            group_map[key]['bins_settled'] = float(row['total_bins_settled'])
-            group_map[key]['revenue'] = float(row['total_revenue'])
-            group_map[key]['avg_per_bin'] = round(float(row['avg_per_bin'] or 0), 2)
-            group_map[key]['settlements'] = row['settlement_count']
-
-        for row in pool_by_group:
-            key = row['commodity'] or 'Unknown'
-            group_map.setdefault(key, {'label': key})
-            group_map[key].setdefault('pools', {})
-            group_map[key]['pools'][row['status']] = row['count']
-
-        for key, data in group_map.items():
-            packed = data.get('bins_packed', 0)
-            settled = data.get('bins_settled', 0)
-            data['settlement_percent'] = round((settled / packed * 100), 1) if packed > 0 else 0
-            data.setdefault('bins_packed', 0)
-            data.setdefault('bins_settled', 0)
-            data.setdefault('revenue', 0)
-            data.setdefault('avg_per_bin', 0)
-            data.setdefault('avg_pack_percent', 0)
-            data.setdefault('packout_reports', 0)
-            data.setdefault('settlements', 0)
-            data.setdefault('pools', {})
-
-        breakdowns = sorted(group_map.values(), key=lambda x: x.get('revenue', 0), reverse=True)
-
-    elif breakdown_param == 'farm':
+    if breakdown_param == 'farm':
         # Group by farm. Reports with field set use field.farm; reports without
         # a field are grouped by pool.packinghouse instead.
         group_map = {}
 
         # Packout reports WITH a field linked
         packout_with_field = PackoutReport.objects.filter(
+            pool_commodity_filter,
             pool__packinghouse__company=company,
             pool__season=selected_season,
             field__isnull=False
@@ -1983,6 +2073,7 @@ def harvest_packing_pipeline(request):
 
         # Packout reports WITHOUT a field - group by packinghouse name
         packout_no_field = PackoutReport.objects.filter(
+            pool_commodity_filter,
             pool__packinghouse__company=company,
             pool__season=selected_season,
             field__isnull=True
@@ -2001,6 +2092,7 @@ def harvest_packing_pipeline(request):
 
         # Settlement stats WITH a field linked
         settlement_with_field = PoolSettlement.objects.filter(
+            pool_commodity_filter,
             pool__packinghouse__company=company,
             pool__season=selected_season,
             field__isnull=False
@@ -2021,6 +2113,7 @@ def harvest_packing_pipeline(request):
 
         # Settlement stats WITHOUT a field - group by packinghouse name
         settlement_no_field = PoolSettlement.objects.filter(
+            pool_commodity_filter,
             pool__packinghouse__company=company,
             pool__season=selected_season,
             field__isnull=True
@@ -2054,6 +2147,9 @@ def harvest_packing_pipeline(request):
         breakdowns = sorted(group_map.values(), key=lambda x: x.get('revenue', 0), reverse=True)
 
     return Response({
+        'mode': 'specific_commodity',
+        'selected_commodity': selected_commodity,
+        'crop_category': crop_category,
         'current_season': selected_season,
         'selected_season': selected_season,
         'available_seasons': available_seasons,
@@ -2348,13 +2444,7 @@ class PackinghouseStatementViewSet(viewsets.ModelViewSet):
             from datetime import datetime, date as date_module
 
             # Map commodity to crop category for season calculation
-            commodity_upper = commodity.upper()
-            if any(c in commodity_upper for c in ['AVOCADO', 'SUBTROPICAL']):
-                crop_category = 'subtropical'
-            elif any(c in commodity_upper for c in ['LEMON', 'ORANGE', 'NAVEL', 'VALENCIA', 'TANGERINE', 'MANDARIN', 'GRAPEFRUIT', 'CITRUS']):
-                crop_category = 'citrus'
-            else:
-                crop_category = 'citrus'  # Default to citrus for unknown commodities
+            crop_category = get_crop_category_for_commodity(commodity)
 
             season_service = SeasonService(company_id=request.user.current_company_id)
             season = ''
@@ -3464,13 +3554,7 @@ class PackinghouseStatementViewSet(viewsets.ModelViewSet):
         from datetime import datetime, date as date_module
 
         # Map commodity to crop category for season calculation
-        commodity_upper = commodity.upper()
-        if any(c in commodity_upper for c in ['AVOCADO', 'SUBTROPICAL']):
-            crop_category = 'subtropical'
-        elif any(c in commodity_upper for c in ['LEMON', 'ORANGE', 'NAVEL', 'VALENCIA', 'TANGERINE', 'MANDARIN', 'GRAPEFRUIT', 'CITRUS']):
-            crop_category = 'citrus'
-        else:
-            crop_category = 'citrus'  # Default to citrus for unknown commodities
+        crop_category = get_crop_category_for_commodity(commodity)
 
         season_service = SeasonService(company_id=user.current_company_id)
         season = ''
