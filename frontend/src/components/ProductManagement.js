@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Package, Upload, Download, Search, Plus, Edit2, Trash2, AlertTriangle, CheckCircle, X, FileText } from 'lucide-react';
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:8000/api';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
 
 /**
  * Product Management Component

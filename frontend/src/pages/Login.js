@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Droplet, Mail, Lock, Building2, AlertCircle, Eye, EyeOff } from 'lucide-react';
 
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
+
 const Login = ({ onLogin }) => {
   const [isSignup, setIsSignup] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -66,8 +68,8 @@ const Login = ({ onLogin }) => {
     setError('');
 
     try {
-      const endpoint = isSignup ? '/api/auth/register' : '/api/auth/login';
-      const response = await fetch(`http://localhost:8000${endpoint}`, {
+      const endpoint = isSignup ? '/auth/register/' : '/auth/login/';
+      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

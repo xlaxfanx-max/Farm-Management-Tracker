@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { FileText, Download, AlertTriangle, CheckCircle, Calendar, FileSpreadsheet } from 'lucide-react';
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:8000/api';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
 
 /**
  * PUR Report Generator Component
