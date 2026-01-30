@@ -1,14 +1,18 @@
 #!/bin/bash
 set -e
 
-# Run migrations
-python manage.py migrate --noinput
+echo "=== Starting entrypoint ==="
 
-# Load fixtures (idempotent - skips if data exists)
-# These should not prevent the server from starting if they fail
-python manage.py load_water_fixture || echo "Warning: load_water_fixture failed, continuing..."
-python manage.py reassign_wells --company="Finch Farms" || echo "Warning: reassign_wells failed, continuing..."
-python manage.py sync_well_names || echo "Warning: sync_well_names failed, continuing..."
+# Run migrations
+echo "Running migrations..."
+python manage.py migrate --noinput
+echo "Migrations complete."
+
+# Skip management commands on startup - run manually if needed
+# python manage.py load_water_fixture
+# python manage.py reassign_wells --company="Finch Farms"
+# python manage.py sync_well_names
 
 # Start gunicorn
+echo "Starting gunicorn on port ${PORT:-8000}..."
 exec gunicorn --bind 0.0.0.0:${PORT:-8000} --workers 1 --timeout 120 --preload pesticide_tracker.wsgi:application
