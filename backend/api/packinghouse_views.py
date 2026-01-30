@@ -24,7 +24,8 @@ from .models import (
 )
 from .services.season_service import (
     SeasonService, get_citrus_season, parse_legacy_season,
-    get_crop_category_for_commodity, parse_season_for_category
+    get_crop_category_for_commodity, parse_season_for_category,
+    normalize_commodity
 )
 
 logger = logging.getLogger(__name__)
@@ -2433,7 +2434,7 @@ class PackinghouseStatementViewSet(viewsets.ModelViewSet):
             # Extract pool info from PDF data
             extracted_pool_id = header.get('pool_id') or ''
             pool_name = header.get('pool_name') or extracted_pool_id or 'Imported Pool'
-            commodity = header.get('commodity', 'CITRUS')
+            commodity = normalize_commodity(header.get('commodity', 'CITRUS'))
             extracted_season = header.get('season', '')
 
             # ALWAYS derive season from report_date + commodity using SeasonService
@@ -3543,7 +3544,7 @@ class PackinghouseStatementViewSet(viewsets.ModelViewSet):
 
         extracted_pool_id = header.get('pool_id') or ''
         pool_name = header.get('pool_name') or extracted_pool_id or 'Imported Pool'
-        commodity = header.get('commodity', 'CITRUS')
+        commodity = normalize_commodity(header.get('commodity', 'CITRUS'))
         extracted_season = header.get('season', '')
 
         # ALWAYS derive season from report_date + commodity using SeasonService

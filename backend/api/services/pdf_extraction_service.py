@@ -251,7 +251,7 @@ Then extract ALL relevant data. Return a JSON object with this structure:
         "grower_id": "string or null",
         "pool_id": "string or null",
         "pool_name": "string or null",
-        "commodity": "string (e.g., LEMONS, NAVELS)",
+        "commodity": "The fruit/crop type (e.g., LEMONS, NAVELS, AVOCADOS, TANGERINES, GRAPEFRUIT, VALENCIAS). Must be the type of fruit, NOT a grower name, ranch name, or block ID.",
         "variety": "string or null",
         "season": "string (e.g., 2024-2025)",
         "report_date": "YYYY-MM-DD",

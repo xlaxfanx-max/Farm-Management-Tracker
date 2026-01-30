@@ -569,6 +569,75 @@ def parse_legacy_season(season_string: str) -> Tuple[date, date]:
         return date(year, 1, 1), date(year, 12, 31)
 
 
+# =============================================================================
+# COMMODITY NORMALIZATION
+# =============================================================================
+
+# Canonical commodity names and their known aliases/variants
+COMMODITY_ALIASES = {
+    'AVOCADOS': [
+        'AVOCADO', 'CA AVOCADO', 'CA AVOCADOS', 'CALIFORNIA AVOCADO',
+        'HASS', 'HASS AVOCADO', 'HASS AVOCADOS', 'FUERTE', 'FUERTE AVOCADO',
+        'LAMB HASS', 'GEM', 'REED', 'ZUTANO', 'BACON',
+    ],
+    'LEMONS': ['LEMON'],
+    'NAVELS': ['NAVEL', 'NAVEL ORANGE', 'NAVEL ORANGES'],
+    'VALENCIAS': ['VALENCIA', 'VALENCIA ORANGE', 'VALENCIA ORANGES'],
+    'TANGERINES': [
+        'TANGERINE', 'MANDARIN', 'MANDARINS',
+        'CLEMENTINE', 'CLEMENTINES', 'PIXIE', 'PIXIES',
+        'TANGO', 'MURCOTT', 'W. MURCOTT',
+    ],
+    'GRAPEFRUIT': ['GRAPEFRUITS'],
+    'LIMES': ['LIME'],
+    'ORANGES': ['ORANGE'],
+}
+
+# Build reverse lookup: alias (uppercase) -> canonical name
+_COMMODITY_LOOKUP = {}
+for _canonical, _aliases in COMMODITY_ALIASES.items():
+    _COMMODITY_LOOKUP[_canonical.upper()] = _canonical
+    for _alias in _aliases:
+        _COMMODITY_LOOKUP[_alias.upper()] = _canonical
+
+logger = __import__('logging').getLogger(__name__)
+
+
+def normalize_commodity(raw: str) -> str:
+    """
+    Normalize a free-text commodity string to a canonical name.
+
+    Returns the canonical name if recognized, or the original string
+    (uppercased/stripped) if not recognized. Logs a warning for
+    unrecognized values so they can be flagged for review.
+
+    Examples:
+        normalize_commodity('HASS') -> 'AVOCADOS'
+        normalize_commodity('CA AVOCADO') -> 'AVOCADOS'
+        normalize_commodity('LEMON') -> 'LEMONS'
+        normalize_commodity('SESPE') -> 'SESPE' (with warning)
+    """
+    cleaned = (raw or '').strip().upper()
+    if not cleaned:
+        return cleaned
+
+    # Direct lookup
+    if cleaned in _COMMODITY_LOOKUP:
+        return _COMMODITY_LOOKUP[cleaned]
+
+    # Substring match fallback (e.g., "CALIFORNIA HASS AVOCADO" contains "AVOCADO")
+    for keyword, canonical in _COMMODITY_LOOKUP.items():
+        if keyword in cleaned:
+            return canonical
+
+    # Unknown — return as-is with warning
+    logger.warning(
+        f"Unknown commodity value '{raw}' — not normalized. "
+        f"Consider adding to COMMODITY_ALIASES in season_service.py."
+    )
+    return cleaned
+
+
 def get_crop_category_for_commodity(commodity_string: str) -> str:
     """
     Map a free-text commodity string (e.g. 'LEMONS', 'HASS AVOCADOS')
