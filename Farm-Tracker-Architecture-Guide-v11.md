@@ -1,5 +1,5 @@
 # Farm Management Tracker - System Architecture Guide
-## Version 12.2 | January 21, 2026
+## Version 12.3 | January 29, 2026
 
 ---
 
@@ -45,6 +45,16 @@ The **Farm Management Tracker** is a comprehensive full-stack web application de
 | **PDF Statement Extraction** | AI-powered extraction from packinghouse PDF statements (NEW) |
 | **Compliance Reporting** | PUR exports, SGMA semi-annual reports, Nitrogen/ILRP reports |
 | **Audit Logging** | Comprehensive activity tracking for compliance |
+
+### What's New in v12.3
+
+| Feature | Description |
+|---------|-------------|
+| **Software Evaluation** | Comprehensive codebase evaluation with prioritized improvement roadmap |
+| **Season Management** | SeasonTemplate and GrowingCycle models for citrus season tracking (2024-2025 format) |
+| **Celery Worker Procfile** | Procfile for deploying Celery background worker as separate Railway service |
+| **Bug Fixes** | Password reset token model, settlement deduction unit default, citrus season format fixes |
+| **Updated Counts** | 45 migrations, 144 frontend components, 80+ models |
 
 ### What's New in v12.2
 
@@ -1496,6 +1506,10 @@ celery -A pesticide_tracker beat --loglevel=info
 
 ### Phase 2: Near-term
 
+- [ ] Enable Celery worker in production (Procfile created — deploy as Railway service)
+- [ ] Configure Cloudflare R2 cloud storage (code ready — set env vars in Railway)
+- [ ] Add automated tests for financial calculations (settlements, deductions, profitability)
+- [ ] Add error monitoring service (Sentry) for production issue visibility
 - [ ] Email sending for invitations (currently logged to console)
 - [ ] Extraction report PDF generation
 - [ ] GSA portal direct submission
@@ -1506,6 +1520,8 @@ celery -A pesticide_tracker beat --loglevel=info
 ### Phase 3: Medium-term
 
 - [ ] Split models.py into domain-specific apps
+- [ ] Split serializers.py and views.py into domain-specific modules
+- [ ] Implement URL-based routing with React Router (library installed but not used for main views)
 - [ ] Data export/portability for customers
 - [ ] QuickBooks integration
 - [ ] Mobile responsive improvements
@@ -1521,7 +1537,19 @@ celery -A pesticide_tracker beat --loglevel=info
 
 ---
 
-*Document Version: 12.2 | Last Updated: January 21, 2026*
+*Document Version: 12.3 | Last Updated: January 29, 2026*
+
+*Changes in v12.3:*
+- *Comprehensive software evaluation completed — strengths and improvement areas documented*
+- *Added Season Management module (SeasonTemplate, GrowingCycle models, migrations 0042-0043)*
+- *Added Procfile for Railway Celery worker deployment*
+- *Fixed password reset token model (migration 0044)*
+- *Fixed settlement deduction unit_of_measure default (migration 0045)*
+- *Fixed citrus season format (2024-2025) across harvest endpoints and analytics views*
+- *Updated roadmap with evaluation findings: automated testing, error monitoring, infrastructure fixes, code splitting*
+- *Updated migration count from 34 to 45*
+- *Updated frontend component count to 144*
+- *Updated model count to 80+*
 
 *Changes in v12.2:*
 - *Added Harvest Analytics Module with profitability analysis, deduction breakdown, and season comparison*

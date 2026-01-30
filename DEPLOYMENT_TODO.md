@@ -34,19 +34,28 @@
 ---
 
 ### 2. Celery Worker (Background Tasks)
-**Why**: Scheduled tasks won't run without a Celery worker:
-- Compliance deadline reminders
-- Disease alert digests
-- FSMA daily reminders
-- License expiration checks
-- Monthly PUR report generation
+**Why**: 22+ scheduled tasks won't run without a Celery worker:
+- Compliance deadline reminders (daily at 6:00 AM)
+- Disease alert digests (daily at 7:00 AM)
+- FSMA daily reminders (daily at 7:15 AM)
+- License expiration checks (daily at 6:05 AM)
+- Monthly PUR report generation (1st of each month)
+- REI checks (every 2 hours)
+- CDFA disease sync (daily at 5:00 AM)
+- And 15+ more scheduled tasks
+
+**A `Procfile` has been created in `backend/Procfile`** that defines both the web and worker processes.
 
 **Steps**:
-1. In Railway dashboard, click "New" → "Empty Service"
-2. Name it `celery-worker`
-3. Set the same env vars as backend (DATABASE_URL, REDIS_URL, SECRET_KEY, etc.)
-4. Set start command: `celery -A pesticide_tracker worker -l info -B`
-5. Or create a Dockerfile for the worker
+1. In Railway dashboard, click "New" → "Service" → select the same GitHub repo
+2. Name the new service `celery-worker`
+3. In the service settings, set **Procfile process** to `worker`
+4. Copy all env vars from the backend service (DATABASE_URL, REDIS_URL, SECRET_KEY, etc.)
+   - The worker needs the same database and Redis connections as the backend
+5. Deploy — the worker will start running `celery -A pesticide_tracker worker -l info -B`
+6. The `-B` flag runs the beat scheduler in the same process (handles all periodic tasks)
+
+**Verify it works**: Check Railway logs for the worker service. You should see Celery startup messages and periodic task registrations.
 
 ---
 
@@ -79,4 +88,28 @@
 
 ---
 
-*Last updated: January 25, 2026*
+---
+
+## Software Evaluation Findings (January 2026)
+
+A comprehensive software evaluation was completed on January 29, 2026. Below is a summary of findings for tracking purposes. The full evaluation report is available in `.claude/plans/floating-stirring-raven.md`.
+
+### Strengths
+- Comprehensive feature coverage across all farm operations in one platform
+- Enterprise-grade data security with dual-layer company isolation (RLS)
+- Modern, open-source tech stack with large developer talent pool
+- Smart integrations with California agricultural data sources (CIMIS, CDFA, weather)
+- Clean user experience with onboarding wizard and dark mode
+
+### Priority Improvements
+
+| # | Item | Impact | Status |
+|---|------|--------|--------|
+| 1 | **Enable Celery worker** | Compliance reminders, disease alerts not running | Procfile created — needs Railway service setup |
+| 2 | **Configure cloud storage (R2)** | File uploads lost on each deploy | Code ready — needs env vars in Railway |
+| 3 | **Add automated tests** | Financial calculations (settlements, deductions) unverified | Not started |
+| 4 | **Add error monitoring (Sentry)** | No visibility into production errors | Not started |
+| 5 | **Break up large code files** | models.py (408KB), serializers.py (220KB), views.py (203KB) slow development | Not started |
+| 6 | **Implement URL-based routing** | Users can't bookmark pages or use browser back button | React Router installed but unused for main views |
+
+*Last updated: January 29, 2026*

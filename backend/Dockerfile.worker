@@ -40,17 +40,8 @@ RUN pip install --no-cache /wheels/*
 # Copy application code
 COPY --chown=appuser:appuser . .
 
-# Make entrypoint executable and collect static files
-RUN chmod +x entrypoint.sh && python manage.py collectstatic --noinput
-
 # Switch to non-root user
 USER appuser
 
-# Railway sets PORT env var - default to 8000 for local testing
-ENV PORT=8000
-
-EXPOSE ${PORT}
-
-# Default: run web server via entrypoint (migrations + gunicorn)
-# The celery-worker service overrides this with its own CMD
-CMD ["./entrypoint.sh"]
+# Celery worker with beat scheduler for periodic tasks
+CMD ["celery", "-A", "pesticide_tracker", "worker", "-l", "info", "-B"]
