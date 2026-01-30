@@ -10270,6 +10270,8 @@ class SettlementDeduction(models.Model):
     )
     unit_of_measure = models.CharField(
         max_length=20,
+        default='UNIT',
+        blank=True,
         help_text='Unit (BIN, CTN, LBS, etc.)'
     )
     rate = models.DecimalField(

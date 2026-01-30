@@ -544,7 +544,7 @@ Return ONLY the JSON object, no additional text."""
                 'category': ded.get('category', 'other'),
                 'description': ded.get('description', ''),
                 'quantity': self._to_decimal(ded.get('quantity'), default=Decimal('0')),
-                'unit_of_measure': ded.get('unit', 'UNIT'),
+                'unit_of_measure': ded.get('unit') or 'UNIT',
                 'rate': self._to_decimal(ded.get('rate'), default=Decimal('0')),
                 'amount': self._to_decimal(ded.get('amount'), default=Decimal('0')),
             }
