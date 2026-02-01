@@ -3375,12 +3375,12 @@ class WellViewSet(AuditLogMixin, viewsets.ModelViewSet):
 
 class WellReadingViewSet(AuditLogMixin, viewsets.ModelViewSet):
     """ViewSet for WellReading model."""
-    
+
     queryset = WellReading.objects.select_related(
-        'well', 'water_source', 'water_source__farm'
+        'water_source', 'water_source__farm'
     ).all()
     permission_classes = [IsAuthenticated, HasCompanyAccess]
-    
+
     def get_serializer_class(self):
         if self.action == 'list':
             return WellReadingListSerializer
@@ -3400,10 +3400,10 @@ class WellReadingViewSet(AuditLogMixin, viewsets.ModelViewSet):
                 water_source__farm__company=company
             )
         
-        # Filter by well
-        well_id = self.request.query_params.get('well')
-        if well_id:
-            queryset = queryset.filter(water_source_id=well_id)
+        # Filter by water source (well)
+        water_source_id = self.request.query_params.get('water_source') or self.request.query_params.get('well')
+        if water_source_id:
+            queryset = queryset.filter(water_source_id=water_source_id)
         
         # Filter by date range
         start_date = self.request.query_params.get('start_date')

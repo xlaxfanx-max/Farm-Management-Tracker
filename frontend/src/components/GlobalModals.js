@@ -231,6 +231,7 @@ export function GlobalModals() {
         <WellReadingModal
           isOpen={wellReadingModal.isOpen}
           onClose={closeWellReadingModal}
+          reading={wellReadingModal.reading}
           wellId={wellReadingModal.wellId}
           wellName={wellReadingModal.wellName}
           onSave={() => {

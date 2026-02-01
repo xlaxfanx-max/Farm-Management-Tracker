@@ -138,7 +138,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
     flowmeter_make: '',
     flowmeter_model: '',
     flowmeter_serial_number: '',
-    flowmeter_units: 'acre_feet',
+    flowmeter_units: 'gallons',
     flowmeter_multiplier: '1.0',
     flowmeter_installation_date: '', // Correct field name
     
@@ -309,7 +309,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
         flowmeter_make: '',
         flowmeter_model: '',
         flowmeter_serial_number: '',
-        flowmeter_units: 'acre_feet',
+        flowmeter_units: 'gallons',
         flowmeter_multiplier: '1.0',
         flowmeter_installation_date: '',
         has_ami: false,
@@ -546,7 +546,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
         flowmeter_make: formData.flowmeter_make || '',
         flowmeter_model: formData.flowmeter_model || '',
         flowmeter_serial_number: formData.flowmeter_serial_number || '',
-        flowmeter_units: formData.flowmeter_units || 'acre_feet',
+        flowmeter_units: formData.flowmeter_units || 'gallons',
         flowmeter_multiplier: formData.flowmeter_multiplier ? parseFloat(formData.flowmeter_multiplier) : 1.0,
         flowmeter_installation_date: formData.flowmeter_installation_date || null,
         

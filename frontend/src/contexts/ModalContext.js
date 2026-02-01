@@ -65,6 +65,7 @@ export function ModalProvider({ children }) {
     isOpen: false,
     wellId: null,
     wellName: null,
+    reading: null,
   });
 
   // ============================================================================
@@ -247,12 +248,12 @@ export function ModalProvider({ children }) {
   // ============================================================================
   // WELL READING MODAL ACTIONS
   // ============================================================================
-  const openWellReadingModal = useCallback((wellId, wellName) => {
-    setWellReadingModal({ isOpen: true, wellId, wellName });
+  const openWellReadingModal = useCallback((wellId, wellName, reading = null) => {
+    setWellReadingModal({ isOpen: true, wellId, wellName, reading });
   }, []);
 
   const closeWellReadingModal = useCallback(() => {
-    setWellReadingModal({ isOpen: false, wellId: null, wellName: null });
+    setWellReadingModal({ isOpen: false, wellId: null, wellName: null, reading: null });
   }, []);
 
   // ============================================================================

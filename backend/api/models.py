@@ -2555,7 +2555,7 @@ class WaterSource(LocationMixin, models.Model):
     flowmeter_serial_number = models.CharField(max_length=100, blank=True)
     flowmeter_size_inches = models.DecimalField(max_digits=4, decimal_places=2, null=True, blank=True)
     flowmeter_installation_date = models.DateField(null=True, blank=True)
-    flowmeter_units = models.CharField(max_length=20, choices=FLOWMETER_UNIT_CHOICES, default='acre_feet')
+    flowmeter_units = models.CharField(max_length=20, choices=FLOWMETER_UNIT_CHOICES, default='gallons')
     flowmeter_multiplier = models.DecimalField(max_digits=10, decimal_places=4, default=1.0)
     flowmeter_decimal_places = models.IntegerField(default=2)
     
@@ -3869,14 +3869,14 @@ class WellReading(models.Model):
         help_text="Extraction in meter's native units"
     )
     extraction_acre_feet = models.DecimalField(
-        max_digits=12,
+        max_digits=20,
         decimal_places=6,
         null=True,
         blank=True,
         help_text="Extraction converted to acre-feet"
     )
     extraction_gallons = models.DecimalField(
-        max_digits=15,
+        max_digits=20,
         decimal_places=2,
         null=True,
         blank=True,
@@ -3925,14 +3925,14 @@ class WellReading(models.Model):
 
     # === DOMESTIC/IRRIGATION SPLIT ===
     domestic_extraction_af = models.DecimalField(
-        max_digits=12,
+        max_digits=20,
         decimal_places=6,
         null=True,
         blank=True,
         help_text="Domestic portion of extraction (acre-feet)"
     )
     irrigation_extraction_af = models.DecimalField(
-        max_digits=12,
+        max_digits=20,
         decimal_places=6,
         null=True,
         blank=True,

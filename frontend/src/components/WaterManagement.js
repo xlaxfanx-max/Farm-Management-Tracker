@@ -196,6 +196,9 @@ const WaterManagement = () => {
   const [filterSourceType, setFilterSourceType] = useState('');
   const [expandedItems, setExpandedItems] = useState({});
   const [selectedSource, setSelectedSource] = useState(null);
+  const [wellReadings, setWellReadings] = useState({});  // { wellId: [readings] }
+  const [loadingReadings, setLoadingReadings] = useState({});
+  const [deletingReading, setDeletingReading] = useState(null);
 
   // =============================================================================
   // DATA FETCHING
@@ -250,6 +253,33 @@ const WaterManagement = () => {
     }
   }, []);
 
+  const fetchWellReadings = useCallback(async (wellId) => {
+    setLoadingReadings(prev => ({ ...prev, [wellId]: true }));
+    try {
+      const response = await api.get('/well-readings/', { params: { water_source: wellId } });
+      const readings = response.data.results || response.data || [];
+      setWellReadings(prev => ({ ...prev, [wellId]: readings }));
+    } catch (err) {
+      console.error('Error fetching well readings:', err);
+    } finally {
+      setLoadingReadings(prev => ({ ...prev, [wellId]: false }));
+    }
+  }, []);
+
+  const deleteWellReading = useCallback(async (readingId, wellId) => {
+    try {
+      await api.delete(`/well-readings/${readingId}/`);
+      // Refresh readings for this well and reload well data
+      fetchWellReadings(wellId);
+      fetchWells();
+    } catch (err) {
+      console.error('Error deleting reading:', err);
+      alert('Failed to delete reading. Please try again.');
+    } finally {
+      setDeletingReading(null);
+    }
+  }, [fetchWellReadings, fetchWells]);
+
   // Load data based on active tab
   useEffect(() => {
     setLoading(true);
@@ -278,12 +308,23 @@ const WaterManagement = () => {
     fetchData();
   }, [activeTab, fetchWaterSources, fetchWells, fetchWaterTests, fetchSGMADashboard, fetchIrrigationData]);
 
-  // Sync with parent's waterSources prop
+  const refreshExpandedReadings = useCallback(() => {
+    // Refresh readings for any currently expanded wells
+    Object.keys(expandedItems).forEach(wellId => {
+      if (expandedItems[wellId]) {
+        fetchWellReadings(parseInt(wellId));
+      }
+    });
+  }, [expandedItems, fetchWellReadings]);
+
+  // Sync with parent's waterSources prop and refresh expanded readings
   useEffect(() => {
     if (initialWaterSources) {
       setWaterSources(initialWaterSources);
+      // Refresh readings for expanded wells when data reloads
+      refreshExpandedReadings();
     }
-  }, [initialWaterSources]);
+  }, [initialWaterSources, refreshExpandedReadings]);
 
   // =============================================================================
   // HANDLERS
@@ -298,6 +339,7 @@ const WaterManagement = () => {
       else if (activeTab === 'tests') await fetchWaterTests();
       else if (activeTab === 'reports') await fetchSGMADashboard();
       else if (activeTab === 'irrigation') await fetchIrrigationData();
+      refreshExpandedReadings();
       loadData();
     } finally {
       setLoading(false);
@@ -315,7 +357,12 @@ const WaterManagement = () => {
   };
 
   const toggleExpanded = (id) => {
+    const isExpanding = !expandedItems[id];
     setExpandedItems(prev => ({ ...prev, [id]: !prev[id] }));
+    // Fetch readings when expanding a well card
+    if (isExpanding && !wellReadings[id]) {
+      fetchWellReadings(id);
+    }
   };
 
   // =============================================================================
@@ -1317,13 +1364,96 @@ const WaterManagement = () => {
                       ) : (
                         <p className="text-sm text-gray-500 italic">No readings recorded</p>
                       )}
+                    </div>
+                  </div>
+
+                  {/* Reading History */}
+                  <div className="mt-6">
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="text-sm font-semibold text-gray-700 uppercase tracking-wider">Reading History</h4>
                       <button
                         onClick={() => openWellReadingModal(well.id, well.well_name)}
-                        className="mt-3 text-sm text-cyan-600 hover:text-cyan-700 font-medium"
+                        className="flex items-center gap-1.5 text-sm text-cyan-600 hover:text-cyan-700 font-medium"
                       >
-                        + Add Reading
+                        <Plus className="w-4 h-4" />
+                        Add Reading
                       </button>
                     </div>
+
+                    {loadingReadings[well.id] ? (
+                      <div className="flex items-center justify-center py-6 text-gray-400">
+                        <RefreshCw className="w-5 h-5 animate-spin mr-2" />
+                        Loading readings...
+                      </div>
+                    ) : wellReadings[well.id]?.length > 0 ? (
+                      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                        <table className="w-full text-sm">
+                          <thead>
+                            <tr className="bg-gray-100 text-gray-600 text-xs uppercase tracking-wider">
+                              <th className="px-4 py-2.5 text-left font-semibold">Date</th>
+                              <th className="px-4 py-2.5 text-right font-semibold">Meter Reading</th>
+                              <th className="px-4 py-2.5 text-right font-semibold">Extraction (AF)</th>
+                              <th className="px-4 py-2.5 text-left font-semibold">Type</th>
+                              <th className="px-4 py-2.5 text-left font-semibold">Recorded By</th>
+                              <th className="px-4 py-2.5 text-center font-semibold">Actions</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-gray-100">
+                            {wellReadings[well.id].map((reading) => (
+                              <tr key={reading.id} className="hover:bg-gray-50 transition-colors">
+                                <td className="px-4 py-2.5 text-gray-900">{formatDate(reading.reading_date)}</td>
+                                <td className="px-4 py-2.5 text-right font-mono text-gray-900">{Number(reading.meter_reading).toLocaleString()}</td>
+                                <td className="px-4 py-2.5 text-right text-cyan-700 font-medium">
+                                  {reading.extraction_acre_feet != null ? formatNumber(reading.extraction_acre_feet, 4) : '-'}
+                                </td>
+                                <td className="px-4 py-2.5 text-gray-600">{reading.reading_type_display || reading.reading_type}</td>
+                                <td className="px-4 py-2.5 text-gray-600">{reading.recorded_by || '-'}</td>
+                                <td className="px-4 py-2.5 text-center">
+                                  <div className="flex items-center justify-center gap-1">
+                                    <button
+                                      onClick={() => openWellReadingModal(well.id, well.well_name, reading)}
+                                      className="p-1.5 text-gray-400 hover:text-cyan-600 hover:bg-cyan-50 rounded-lg transition-colors"
+                                      title="Edit Reading"
+                                    >
+                                      <Edit className="w-4 h-4" />
+                                    </button>
+                                    {deletingReading === reading.id ? (
+                                      <div className="flex items-center gap-1">
+                                        <button
+                                          onClick={() => deleteWellReading(reading.id, well.id)}
+                                          className="px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700"
+                                        >
+                                          Confirm
+                                        </button>
+                                        <button
+                                          onClick={() => setDeletingReading(null)}
+                                          className="px-2 py-1 text-xs bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
+                                        >
+                                          Cancel
+                                        </button>
+                                      </div>
+                                    ) : (
+                                      <button
+                                        onClick={() => setDeletingReading(reading.id)}
+                                        className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                        title="Delete Reading"
+                                      >
+                                        <Trash2 className="w-4 h-4" />
+                                      </button>
+                                    )}
+                                  </div>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    ) : (
+                      <div className="text-center py-6 text-gray-400">
+                        <Gauge className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                        <p className="text-sm">No readings recorded for this well</p>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}

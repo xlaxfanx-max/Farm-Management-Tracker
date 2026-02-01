@@ -177,8 +177,13 @@ const WellReadingModal = ({ isOpen, onClose, reading, wellId, wellName, onSave }
     setLoading(true);
     try {
       const cleanData = { ...formData };
+      // Convert empty strings to null for numeric/optional fields,
+      // but keep empty strings for text fields (CharField/TextField don't accept null)
+      const textFields = ['recorded_by', 'notes', 'reading_type'];
       Object.keys(cleanData).forEach(key => {
-        if (cleanData[key] === '') cleanData[key] = null;
+        if (cleanData[key] === '' && !textFields.includes(key)) {
+          cleanData[key] = null;
+        }
       });
       
       if (reading?.id) {
