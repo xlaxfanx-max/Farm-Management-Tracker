@@ -30,7 +30,8 @@ import {
   FileText,
   TrendingUp
 } from 'lucide-react';
-import { harvestsAPI, HARVEST_CONSTANTS } from '../services/api';
+import { harvestsAPI, harvestLoadsAPI, harvestLaborAPI, HARVEST_CONSTANTS } from '../services/api';
+import DrillDownModal from './ui/DrillDownModal';
 import { useData } from '../contexts/DataContext';
 import { useModal } from '../contexts/ModalContext';
 import HarvestAnalytics from './HarvestAnalytics';
@@ -69,6 +70,154 @@ const Harvests = () => {
     crop_variety: ''
   });
   const [showFilters, setShowFilters] = useState(false);
+
+  // Drill-down modal state
+  const [drillDown, setDrillDown] = useState({ isOpen: false, title: '', subtitle: '', icon: null, columns: [], data: [], loading: false, error: null, summaryRow: null });
+
+  const openDrillDown = async (type) => {
+    const params = {};
+    if (filters.season) params.season = filters.season;
+    if (filters.farm) params.farm = filters.farm;
+    if (filters.field) params.field = filters.field;
+
+    const configs = {
+      total_harvests: {
+        title: `Total Harvests — ${statistics?.total_harvests || 0}`,
+        icon: Wheat,
+        columns: [
+          { key: 'harvest_date', label: 'Date', format: 'date' },
+          { key: 'field_name', label: 'Field' },
+          { key: 'farm_name', label: 'Farm' },
+          { key: 'crop_variety', label: 'Crop' },
+          { key: 'total_bins', label: 'Bins', align: 'right', format: 'number' },
+          { key: 'status', label: 'Status', format: 'status' },
+        ],
+        fetch: () => harvestsAPI.getAll(params),
+        extractData: (res) => res.data.results || res.data || [],
+        summaryKey: 'total_bins',
+      },
+      total_bins: {
+        title: `Total Bins — ${formatNumber(statistics?.total_bins)}`,
+        icon: Package,
+        columns: [
+          { key: 'harvest_date', label: 'Date', format: 'date' },
+          { key: 'field_name', label: 'Field' },
+          { key: 'total_bins', label: 'Bins', align: 'right', format: 'number' },
+          { key: 'acres_harvested', label: 'Acres', align: 'right', format: 'decimal' },
+          { key: 'yield_per_acre', label: 'Yield/Acre', align: 'right', format: 'decimal' },
+        ],
+        fetch: () => harvestsAPI.getAll(params),
+        extractData: (res) => {
+          const records = res.data.results || res.data || [];
+          return records.map(r => ({
+            ...r,
+            yield_per_acre: r.acres_harvested > 0 ? (r.total_bins / r.acres_harvested) : null,
+          }));
+        },
+        summaryKey: 'total_bins',
+      },
+      total_revenue: {
+        title: `Total Revenue — ${formatCurrency(statistics?.total_revenue)}`,
+        icon: DollarSign,
+        columns: [
+          { key: 'created_at', label: 'Date', format: 'date' },
+          { key: 'harvest_field_name', label: 'Field' },
+          { key: 'buyer_name', label: 'Buyer' },
+          { key: 'bins', label: 'Bins', align: 'right', format: 'number' },
+          { key: 'price_per_unit', label: 'Price/Bin', align: 'right', format: 'currency' },
+          { key: 'total_revenue', label: 'Revenue', align: 'right', format: 'currency' },
+        ],
+        fetch: () => harvestLoadsAPI.getAll({ ...params, ordering: '-created_at' }),
+        extractData: (res) => res.data.results || res.data || [],
+        summaryKey: 'total_revenue',
+      },
+      labor_cost: {
+        title: `Labor Cost — ${formatCurrency(statistics?.total_labor_cost)}`,
+        icon: Users,
+        columns: [
+          { key: 'created_at', label: 'Date', format: 'date' },
+          { key: 'harvest_field_name', label: 'Field' },
+          { key: 'contractor_name', label: 'Contractor' },
+          { key: 'worker_count', label: 'Workers', align: 'right', format: 'number' },
+          { key: 'total_hours', label: 'Hours', align: 'right', format: 'decimal' },
+          { key: 'total_labor_cost', label: 'Cost', align: 'right', format: 'currency' },
+        ],
+        fetch: () => harvestLaborAPI.getAll({ ...params, ordering: '-created_at' }),
+        extractData: (res) => res.data.results || res.data || [],
+        summaryKey: 'total_labor_cost',
+      },
+      pending_payments: {
+        title: `Pending Payments — ${formatCurrency(statistics?.pending_payments)}`,
+        icon: Clock,
+        columns: [
+          { key: 'created_at', label: 'Date', format: 'date' },
+          { key: 'harvest_field_name', label: 'Field' },
+          { key: 'buyer_name', label: 'Buyer' },
+          { key: 'bins', label: 'Bins', align: 'right', format: 'number' },
+          { key: 'total_revenue', label: 'Amount', align: 'right', format: 'currency' },
+          { key: 'payment_status', label: 'Status', format: 'status' },
+        ],
+        fetch: () => harvestLoadsAPI.getAll({ ...params, payment_status: 'pending', ordering: '-created_at' }),
+        extractData: (res) => res.data.results || res.data || [],
+        summaryKey: 'total_revenue',
+      },
+      yield_per_acre: {
+        title: `Yield/Acre — ${statistics?.avg_yield_per_acre?.toFixed(1) || '0'} bins`,
+        icon: Wheat,
+        columns: [
+          { key: 'field_name', label: 'Field' },
+          { key: 'farm_name', label: 'Farm' },
+          { key: 'acres_harvested', label: 'Acres', align: 'right', format: 'decimal' },
+          { key: 'total_bins', label: 'Bins', align: 'right', format: 'number' },
+          { key: 'yield_per_acre', label: 'Yield/Acre', align: 'right', format: 'decimal' },
+        ],
+        fetch: () => harvestsAPI.getAll({ ...params, ordering: '-total_bins' }),
+        extractData: (res) => {
+          const records = res.data.results || res.data || [];
+          return records.map(r => ({
+            ...r,
+            yield_per_acre: r.acres_harvested > 0 ? (r.total_bins / r.acres_harvested) : null,
+          }));
+        },
+        summaryKey: 'total_bins',
+      },
+    };
+
+    const config = configs[type];
+    if (!config) return;
+
+    setDrillDown({
+      isOpen: true,
+      title: config.title,
+      subtitle: '',
+      icon: config.icon,
+      columns: config.columns,
+      data: [],
+      loading: true,
+      error: null,
+      summaryRow: null,
+    });
+
+    try {
+      const response = await config.fetch();
+      const records = config.extractData(response);
+      const summaryRow = config.summaryKey
+        ? { [config.columns[0].key]: 'Total', [config.summaryKey]: records.reduce((sum, r) => sum + (Number(r[config.summaryKey]) || 0), 0) }
+        : null;
+      setDrillDown(prev => ({
+        ...prev,
+        data: records,
+        loading: false,
+        subtitle: `${records.length} ${records.length === 1 ? 'record' : 'records'}`,
+        summaryRow,
+      }));
+    } catch (err) {
+      console.error('Drill-down fetch error:', err);
+      setDrillDown(prev => ({ ...prev, loading: false, error: 'Failed to load records' }));
+    }
+  };
+
+  const closeDrillDown = () => setDrillDown(prev => ({ ...prev, isOpen: false }));
 
   // Tab definitions - unified harvest to packing pipeline
   const tabs = [
@@ -419,10 +568,24 @@ const Harvests = () => {
         </div>
       )}
 
+      {/* Drill-Down Modal */}
+      <DrillDownModal
+        isOpen={drillDown.isOpen}
+        onClose={closeDrillDown}
+        title={drillDown.title}
+        subtitle={drillDown.subtitle}
+        icon={drillDown.icon}
+        columns={drillDown.columns}
+        data={drillDown.data}
+        loading={drillDown.loading}
+        error={drillDown.error}
+        summaryRow={drillDown.summaryRow}
+      />
+
       {/* Statistics Cards */}
       {statistics && (
         <div className="grid grid-cols-6 gap-4">
-          <div className="bg-white rounded-lg shadow p-4">
+          <div className="bg-white rounded-lg shadow p-4 cursor-pointer hover:shadow-md hover:border-green-200 border border-transparent transition-all" onClick={() => openDrillDown('total_harvests')}>
             <div className="flex items-center gap-3">
               <div className="p-2 bg-orange-100 rounded-lg">
                 <Wheat className="text-orange-600" size={24} />
@@ -432,8 +595,9 @@ const Harvests = () => {
                 <p className="text-xl font-bold">{statistics.total_harvests}</p>
               </div>
             </div>
+            <p className="text-xs text-gray-400 mt-2">Click for details</p>
           </div>
-          <div className="bg-white rounded-lg shadow p-4">
+          <div className="bg-white rounded-lg shadow p-4 cursor-pointer hover:shadow-md hover:border-green-200 border border-transparent transition-all" onClick={() => openDrillDown('total_bins')}>
             <div className="flex items-center gap-3">
               <div className="p-2 bg-blue-100 rounded-lg">
                 <Package className="text-blue-600" size={24} />
@@ -443,8 +607,9 @@ const Harvests = () => {
                 <p className="text-xl font-bold">{formatNumber(statistics.total_bins)}</p>
               </div>
             </div>
+            <p className="text-xs text-gray-400 mt-2">Click for details</p>
           </div>
-          <div className="bg-white rounded-lg shadow p-4">
+          <div className="bg-white rounded-lg shadow p-4 cursor-pointer hover:shadow-md hover:border-green-200 border border-transparent transition-all" onClick={() => openDrillDown('total_revenue')}>
             <div className="flex items-center gap-3">
               <div className="p-2 bg-green-100 rounded-lg">
                 <DollarSign className="text-green-600" size={24} />
@@ -454,8 +619,9 @@ const Harvests = () => {
                 <p className="text-xl font-bold">{formatCurrency(statistics.total_revenue)}</p>
               </div>
             </div>
+            <p className="text-xs text-gray-400 mt-2">Click for details</p>
           </div>
-          <div className="bg-white rounded-lg shadow p-4">
+          <div className="bg-white rounded-lg shadow p-4 cursor-pointer hover:shadow-md hover:border-green-200 border border-transparent transition-all" onClick={() => openDrillDown('labor_cost')}>
             <div className="flex items-center gap-3">
               <div className="p-2 bg-purple-100 rounded-lg">
                 <Users className="text-purple-600" size={24} />
@@ -465,8 +631,9 @@ const Harvests = () => {
                 <p className="text-xl font-bold">{formatCurrency(statistics.total_labor_cost)}</p>
               </div>
             </div>
+            <p className="text-xs text-gray-400 mt-2">Click for details</p>
           </div>
-          <div className="bg-white rounded-lg shadow p-4">
+          <div className="bg-white rounded-lg shadow p-4 cursor-pointer hover:shadow-md hover:border-green-200 border border-transparent transition-all" onClick={() => openDrillDown('pending_payments')}>
             <div className="flex items-center gap-3">
               <div className="p-2 bg-yellow-100 rounded-lg">
                 <Clock className="text-yellow-600" size={24} />
@@ -476,8 +643,9 @@ const Harvests = () => {
                 <p className="text-xl font-bold">{formatCurrency(statistics.pending_payments)}</p>
               </div>
             </div>
+            <p className="text-xs text-gray-400 mt-2">Click for details</p>
           </div>
-          <div className="bg-white rounded-lg shadow p-4">
+          <div className="bg-white rounded-lg shadow p-4 cursor-pointer hover:shadow-md hover:border-green-200 border border-transparent transition-all" onClick={() => openDrillDown('yield_per_acre')}>
             <div className="flex items-center gap-3">
               <div className="p-2 bg-emerald-100 rounded-lg">
                 <Wheat className="text-emerald-600" size={24} />
@@ -487,6 +655,7 @@ const Harvests = () => {
                 <p className="text-xl font-bold">{statistics.avg_yield_per_acre?.toFixed(1) || '0'} bins</p>
               </div>
             </div>
+            <p className="text-xs text-gray-400 mt-2">Click for details</p>
           </div>
         </div>
       )}

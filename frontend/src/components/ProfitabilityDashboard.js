@@ -16,7 +16,8 @@ import {
   ChevronUp,
   Minus,
 } from 'lucide-react';
-import { harvestAnalyticsAPI, packinghousesAPI } from '../services/api';
+import { harvestAnalyticsAPI, packinghousesAPI, packinghouseDeliveriesAPI, poolSettlementsAPI } from '../services/api';
+import DrillDownModal from './ui/DrillDownModal';
 import SeasonSelector from './SeasonSelector';
 import { useSeason } from '../contexts/SeasonContext';
 import {
@@ -48,6 +49,9 @@ const ProfitabilityDashboard = () => {
   const [selectedPackinghouse, setSelectedPackinghouse] = useState('');
   const [expandedFields, setExpandedFields] = useState({});
   const [expandedCategories, setExpandedCategories] = useState({});
+
+  // Drill-down modal state
+  const [drillDown, setDrillDown] = useState({ isOpen: false, title: '', subtitle: '', icon: null, columns: [], data: [], loading: false, error: null, summaryRow: null });
 
   const { selectedSeason, setSelectedSeason } = useSeason();
 
@@ -106,6 +110,126 @@ const ProfitabilityDashboard = () => {
   const toggleCategoryExpand = (category) => {
     setExpandedCategories(prev => ({ ...prev, [category]: !prev[category] }));
   };
+
+  const openDrillDown = async (type) => {
+    const params = {};
+    if (selectedSeason) params.season = selectedSeason;
+    if (selectedPackinghouse) params.packinghouse = selectedPackinghouse;
+    const summary = profitabilityData?.summary || {};
+
+    const configs = {
+      total_bins: {
+        title: `Total Bins — ${formatNumber(summary.total_bins)}`,
+        icon: BarChart3,
+        columns: [
+          { key: 'delivery_date', label: 'Date', format: 'date' },
+          { key: 'field_name', label: 'Field' },
+          { key: 'pool_name', label: 'Pool' },
+          { key: 'ticket_number', label: 'Ticket #' },
+          { key: 'bins', label: 'Bins', align: 'right', format: 'number' },
+        ],
+        fetch: () => packinghouseDeliveriesAPI.getAll({ ...params, ordering: '-delivery_date' }),
+        extractData: (res) => res.data.results || res.data || [],
+        summaryKey: 'bins',
+      },
+      gross_revenue: {
+        title: `Gross Revenue — ${formatCurrency(summary.gross_revenue, { compact: true })}`,
+        icon: DollarSign,
+        columns: [
+          { key: 'pool_name', label: 'Pool' },
+          { key: 'field_name', label: 'Field' },
+          { key: 'total_bins', label: 'Bins', align: 'right', format: 'number' },
+          { key: 'total_credits', label: 'Credits', align: 'right', format: 'currency' },
+          { key: 'credit_per_bin', label: '$/Bin', align: 'right', format: 'currency' },
+        ],
+        fetch: () => poolSettlementsAPI.getAll(params),
+        extractData: (res) => {
+          const records = res.data.results || res.data || [];
+          return records.map(r => ({
+            ...r,
+            credit_per_bin: r.total_bins > 0 ? (r.total_credits / r.total_bins) : null,
+          }));
+        },
+        summaryKey: 'total_credits',
+      },
+      deductions: {
+        title: `Deductions — ${formatCurrency(summary.total_deductions, { compact: true })}`,
+        icon: Minus,
+        columns: [
+          { key: 'pool_name', label: 'Pool' },
+          { key: 'field_name', label: 'Field' },
+          { key: 'total_bins', label: 'Bins', align: 'right', format: 'number' },
+          { key: 'total_deductions', label: 'Deductions', align: 'right', format: 'currency' },
+          { key: 'deductions_per_bin', label: '$/Bin', align: 'right', format: 'currency' },
+        ],
+        fetch: () => poolSettlementsAPI.getAll(params),
+        extractData: (res) => {
+          const records = res.data.results || res.data || [];
+          return records.map(r => ({
+            ...r,
+            deductions_per_bin: r.total_bins > 0 ? (r.total_deductions / r.total_bins) : null,
+          }));
+        },
+        summaryKey: 'total_deductions',
+      },
+      net_return: {
+        title: `Net Return — ${formatCurrency(summary.net_settlement, { compact: true })}`,
+        icon: TrendingUp,
+        columns: [
+          { key: 'pool_name', label: 'Pool' },
+          { key: 'total_bins', label: 'Bins', align: 'right', format: 'number' },
+          { key: 'total_credits', label: 'Gross', align: 'right', format: 'currency' },
+          { key: 'total_deductions', label: 'Deductions', align: 'right', format: 'currency' },
+          { key: 'net_return', label: 'Net', align: 'right', format: 'currency' },
+          { key: 'margin', label: 'Margin', align: 'right', format: 'percent' },
+        ],
+        fetch: () => poolSettlementsAPI.getAll(params),
+        extractData: (res) => {
+          const records = res.data.results || res.data || [];
+          return records.map(r => ({
+            ...r,
+            margin: r.total_credits > 0 ? ((r.net_return / r.total_credits) * 100) : null,
+          }));
+        },
+        summaryKey: 'net_return',
+      },
+    };
+
+    const config = configs[type];
+    if (!config) return;
+
+    setDrillDown({
+      isOpen: true,
+      title: config.title,
+      subtitle: '',
+      icon: config.icon,
+      columns: config.columns,
+      data: [],
+      loading: true,
+      error: null,
+      summaryRow: null,
+    });
+
+    try {
+      const response = await config.fetch();
+      const records = config.extractData(response);
+      const summaryRow = config.summaryKey
+        ? { [config.columns[0].key]: 'Total', [config.summaryKey]: records.reduce((sum, r) => sum + (Number(r[config.summaryKey]) || 0), 0) }
+        : null;
+      setDrillDown(prev => ({
+        ...prev,
+        data: records,
+        loading: false,
+        subtitle: `${records.length} ${records.length === 1 ? 'record' : 'records'}`,
+        summaryRow,
+      }));
+    } catch (err) {
+      console.error('Drill-down fetch error:', err);
+      setDrillDown(prev => ({ ...prev, loading: false, error: 'Failed to load records' }));
+    }
+  };
+
+  const closeDrillDown = () => setDrillDown(prev => ({ ...prev, isOpen: false }));
 
   const ProfitIndicator = ({ value, showArrow = true }) => {
     if (value === null || value === undefined) return <span className="text-gray-400">-</span>;
@@ -182,6 +306,7 @@ const ProfitabilityDashboard = () => {
             subtitle={hasFieldData ? `${summary.total_fields} fields` : hasPoolData ? `${summary.total_pools} pools` : 'No data'}
             icon={BarChart3}
             color="blue"
+            onClick={() => openDrillDown('total_bins')}
           />
           <AnalyticsCard
             title="Gross Revenue"
@@ -189,6 +314,7 @@ const ProfitabilityDashboard = () => {
             subtitle="Fruit sales"
             icon={DollarSign}
             color="green"
+            onClick={() => openDrillDown('gross_revenue')}
           />
           <AnalyticsCard
             title="Deductions"
@@ -196,6 +322,7 @@ const ProfitabilityDashboard = () => {
             subtitle="Packing, pick/haul, etc."
             icon={Minus}
             color="orange"
+            onClick={() => openDrillDown('deductions')}
           />
           <AnalyticsCard
             title="Net Return"
@@ -203,6 +330,7 @@ const ProfitabilityDashboard = () => {
             subtitle={`${summary.return_margin}% of gross`}
             icon={TrendingUp}
             color="blue"
+            onClick={() => openDrillDown('net_return')}
           />
         </div>
 
@@ -596,6 +724,20 @@ const ProfitabilityDashboard = () => {
 
   return (
     <div className="space-y-4">
+      {/* Drill-Down Modal */}
+      <DrillDownModal
+        isOpen={drillDown.isOpen}
+        onClose={closeDrillDown}
+        title={drillDown.title}
+        subtitle={drillDown.subtitle}
+        icon={drillDown.icon}
+        columns={drillDown.columns}
+        data={drillDown.data}
+        loading={drillDown.loading}
+        error={drillDown.error}
+        summaryRow={drillDown.summaryRow}
+      />
+
       {/* View Tabs */}
       <AnalyticsTabs
         tabs={viewTabs}

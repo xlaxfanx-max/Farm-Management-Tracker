@@ -400,6 +400,16 @@ class PackoutReportViewSet(viewsets.ModelViewSet):
         if packinghouse_id:
             queryset = queryset.filter(pool__packinghouse_id=packinghouse_id)
 
+        # Filter by commodity (pool commodity)
+        commodity = self.request.query_params.get('commodity')
+        if commodity:
+            queryset = queryset.filter(pool__commodity__iexact=commodity)
+
+        # Filter by season (pool season)
+        season = self.request.query_params.get('season')
+        if season:
+            queryset = queryset.filter(pool__season=season)
+
         return queryset.order_by('-report_date')
 
     def get_serializer_class(self):
@@ -473,6 +483,16 @@ class PoolSettlementViewSet(viewsets.ModelViewSet):
         packinghouse_id = self.request.query_params.get('packinghouse')
         if packinghouse_id:
             queryset = queryset.filter(pool__packinghouse_id=packinghouse_id)
+
+        # Filter by commodity (pool commodity)
+        commodity = self.request.query_params.get('commodity')
+        if commodity:
+            queryset = queryset.filter(pool__commodity__iexact=commodity)
+
+        # Filter by season (pool season)
+        season = self.request.query_params.get('season')
+        if season:
+            queryset = queryset.filter(pool__season=season)
 
         return queryset.order_by('-statement_date')
 

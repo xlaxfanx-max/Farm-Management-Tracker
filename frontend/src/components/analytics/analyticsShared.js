@@ -67,9 +67,18 @@ const colorClasses = {
   red: 'bg-red-50 text-red-600',
 };
 
-export const AnalyticsCard = ({ title, value, subtitle, icon: Icon, trend, trendValue, color = 'blue' }) => {
+export const AnalyticsCard = ({ title, value, subtitle, icon: Icon, trend, trendValue, color = 'blue', onClick, className = '' }) => {
+  const clickable = !!onClick;
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-5 hover:shadow-md transition-shadow">
+    <div
+      className={`bg-white rounded-xl border border-gray-200 p-5 transition-all ${
+        clickable ? 'cursor-pointer hover:shadow-md hover:border-green-200' : 'hover:shadow-md'
+      } ${className}`}
+      onClick={onClick}
+      role={clickable ? 'button' : undefined}
+      tabIndex={clickable ? 0 : undefined}
+      onKeyDown={clickable ? (e) => { if (e.key === 'Enter') onClick(); } : undefined}
+    >
       <div className="flex items-start justify-between">
         <div className="flex-1 min-w-0">
           <p className="text-sm font-medium text-gray-500 mb-1">{title}</p>
@@ -88,6 +97,9 @@ export const AnalyticsCard = ({ title, value, subtitle, icon: Icon, trend, trend
                 {trendValue}
               </span>
             </div>
+          )}
+          {clickable && (
+            <p className="text-xs text-gray-400 mt-2">Click for details</p>
           )}
         </div>
         {Icon && (

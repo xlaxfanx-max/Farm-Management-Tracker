@@ -1122,24 +1122,39 @@ class PesticideComplianceService:
         field: 'Field',
         application_date: date
     ) -> List[ComplianceIssue]:
-        """Check maximum applications per season."""
+        """
+        Check maximum applications per season.
+
+        Uses the field's season template (or crop's default) to determine
+        the correct season boundaries. This properly handles:
+        - Citrus: Oct-Sep seasons
+        - Deciduous/Nuts: Calendar year
+        - Row crops: Calendar year or per-cycle
+        """
         issues = []
 
         if not product.max_applications_per_season:
             return issues
 
         from api.models import PesticideApplication
+        from api.services.season_service import SeasonService
 
-        # Determine season (calendar year)
-        year_start = date(application_date.year, 1, 1)
-        year_end = date(application_date.year, 12, 31)
+        # Get the correct season for this field based on crop type
+        service = SeasonService()
+        season = service.get_current_season(
+            field_id=field.id,
+            target_date=application_date
+        )
+
+        season_start = season.start_date
+        season_end = season.end_date
 
         # Count existing applications this season
         existing_count = PesticideApplication.objects.filter(
             field=field,
             product=product,
-            application_date__gte=year_start,
-            application_date__lte=year_end
+            application_date__gte=season_start,
+            application_date__lte=season_end
         ).count()
 
         if existing_count >= product.max_applications_per_season:
@@ -1152,7 +1167,9 @@ class PesticideComplianceService:
                 details={
                     'max_allowed': product.max_applications_per_season,
                     'current_count': existing_count,
-                    'season': application_date.year
+                    'season': season.label,
+                    'season_start': season_start.isoformat(),
+                    'season_end': season_end.isoformat(),
                 }
             ))
         elif existing_count >= product.max_applications_per_season - 1:
@@ -1160,12 +1177,13 @@ class PesticideComplianceService:
                 severity='warning',
                 category='rate',
                 message=f'This will be the last allowed application of {product.product_name} '
-                       f'on this field for {application_date.year}',
+                       f'on this field for the {season.label} season',
                 blocking=False,
                 details={
                     'max_allowed': product.max_applications_per_season,
                     'current_count': existing_count,
-                    'remaining_after': 0
+                    'remaining_after': 0,
+                    'season': season.label,
                 }
             ))
 

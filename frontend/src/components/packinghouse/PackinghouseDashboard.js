@@ -19,7 +19,8 @@ import {
   BarChart3,
   Upload
 } from 'lucide-react';
-import { packinghouseAnalyticsAPI, PACKINGHOUSE_CONSTANTS } from '../../services/api';
+import { packinghouseAnalyticsAPI, poolsAPI, packinghouseDeliveriesAPI, PACKINGHOUSE_CONSTANTS } from '../../services/api';
+import DrillDownModal from '../ui/DrillDownModal';
 import PackinghouseList from './PackinghouseList';
 import PoolList from './PoolList';
 import PackinghouseAnalytics from './PackinghouseAnalytics';
@@ -31,6 +32,90 @@ const PackinghouseDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedSeason, setSelectedSeason] = useState('');
+
+  // Drill-down modal state
+  const [drillDown, setDrillDown] = useState({ isOpen: false, title: '', subtitle: '', icon: null, columns: [], data: [], loading: false, error: null, summaryRow: null });
+
+  const openDrillDown = async (type) => {
+    const seasonParam = selectedSeason || dashboardData?.selected_season;
+    const params = seasonParam ? { season: seasonParam } : {};
+
+    const configs = {
+      total_pools: {
+        title: `Total Pools — ${dashboardData?.total_pools || 0}`,
+        icon: Boxes,
+        columns: [
+          { key: 'name', label: 'Pool Name' },
+          { key: 'packinghouse_name', label: 'Packinghouse' },
+          { key: 'commodity', label: 'Commodity' },
+          { key: 'status', label: 'Status', format: 'status' },
+        ],
+        fetch: () => poolsAPI.getAll(params),
+        extractData: (res) => res.data.results || res.data || [],
+      },
+      bins_delivered: {
+        title: `Bins Delivered — ${formatNumber(dashboardData?.total_bins_this_season)}`,
+        icon: Truck,
+        columns: [
+          { key: 'delivery_date', label: 'Date', format: 'date' },
+          { key: 'ticket_number', label: 'Ticket #' },
+          { key: 'field_name', label: 'Field' },
+          { key: 'pool_name', label: 'Pool' },
+          { key: 'bins', label: 'Bins', align: 'right', format: 'number' },
+        ],
+        fetch: () => packinghouseDeliveriesAPI.getAll({ ...params, ordering: '-delivery_date' }),
+        extractData: (res) => res.data.results || res.data || [],
+        summaryKey: 'bins',
+      },
+      pending_settlement: {
+        title: `Pending Settlement`,
+        icon: FileText,
+        columns: [
+          { key: 'name', label: 'Pool' },
+          { key: 'packinghouse_name', label: 'Packinghouse' },
+          { key: 'commodity', label: 'Commodity' },
+          { key: 'status', label: 'Status', format: 'status' },
+        ],
+        fetch: () => poolsAPI.getAll({ ...params, status: 'closed' }),
+        extractData: (res) => res.data.results || res.data || [],
+      },
+    };
+
+    const config = configs[type];
+    if (!config) return;
+
+    setDrillDown({
+      isOpen: true,
+      title: config.title,
+      subtitle: '',
+      icon: config.icon,
+      columns: config.columns,
+      data: [],
+      loading: true,
+      error: null,
+      summaryRow: null,
+    });
+
+    try {
+      const response = await config.fetch();
+      const records = config.extractData(response);
+      const summaryRow = config.summaryKey
+        ? { [config.columns[0].key]: 'Total', [config.summaryKey]: records.reduce((sum, r) => sum + (Number(r[config.summaryKey]) || 0), 0) }
+        : null;
+      setDrillDown(prev => ({
+        ...prev,
+        data: records,
+        loading: false,
+        subtitle: `${records.length} ${records.length === 1 ? 'record' : 'records'}`,
+        summaryRow,
+      }));
+    } catch (err) {
+      console.error('Drill-down fetch error:', err);
+      setDrillDown(prev => ({ ...prev, loading: false, error: 'Failed to load records' }));
+    }
+  };
+
+  const closeDrillDown = () => setDrillDown(prev => ({ ...prev, isOpen: false }));
 
   useEffect(() => {
     if (activeTab === 'dashboard') {
@@ -145,7 +230,7 @@ const PackinghouseDashboard = () => {
 
         {/* Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-white rounded-lg border border-gray-200 p-4">
+          <div className="bg-white rounded-lg border border-gray-200 p-4 cursor-pointer hover:shadow-md hover:border-green-200 transition-all" onClick={() => openDrillDown('total_pools')}>
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-500">Total Pools</p>
@@ -157,10 +242,10 @@ const PackinghouseDashboard = () => {
                 <Boxes className="w-6 h-6 text-green-600" />
               </div>
             </div>
-            <p className="text-xs text-gray-400 mt-1">{dashboardData.active_pools || 0} active</p>
+            <p className="text-xs text-gray-400 mt-1">{dashboardData.active_pools || 0} active &middot; Click for details</p>
           </div>
 
-          <div className="bg-white rounded-lg border border-gray-200 p-4">
+          <div className="bg-white rounded-lg border border-gray-200 p-4 cursor-pointer hover:shadow-md hover:border-green-200 transition-all" onClick={() => openDrillDown('bins_delivered')}>
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-500">Bins Delivered</p>
@@ -172,9 +257,10 @@ const PackinghouseDashboard = () => {
                 <Truck className="w-6 h-6 text-blue-600" />
               </div>
             </div>
+            <p className="text-xs text-gray-400 mt-1">Click for details</p>
           </div>
 
-          <div className="bg-white rounded-lg border border-gray-200 p-4">
+          <div className="bg-white rounded-lg border border-gray-200 p-4 cursor-pointer hover:shadow-md hover:border-green-200 transition-all" onClick={() => openDrillDown('pending_settlement')}>
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-500">Pending Settlement</p>
@@ -186,10 +272,10 @@ const PackinghouseDashboard = () => {
                 <FileText className="w-6 h-6 text-yellow-600" />
               </div>
             </div>
-            <p className="text-xs text-gray-400 mt-1">Closed pools</p>
+            <p className="text-xs text-gray-400 mt-1">Closed pools &middot; Click for details</p>
           </div>
 
-          <div className="bg-white rounded-lg border border-gray-200 p-4">
+          <div className="bg-white rounded-lg border border-gray-200 p-4 cursor-pointer hover:shadow-md hover:border-green-200 transition-all" onClick={() => setActiveTab('packinghouses')}>
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-500">Packinghouses</p>
@@ -336,6 +422,20 @@ const PackinghouseDashboard = () => {
 
   return (
     <div className="p-6">
+      {/* Drill-Down Modal */}
+      <DrillDownModal
+        isOpen={drillDown.isOpen}
+        onClose={closeDrillDown}
+        title={drillDown.title}
+        subtitle={drillDown.subtitle}
+        icon={drillDown.icon}
+        columns={drillDown.columns}
+        data={drillDown.data}
+        loading={drillDown.loading}
+        error={drillDown.error}
+        summaryRow={drillDown.summaryRow}
+      />
+
       {/* Header */}
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-800 flex items-center">

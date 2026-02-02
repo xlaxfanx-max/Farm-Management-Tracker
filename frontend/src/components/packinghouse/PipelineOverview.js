@@ -22,7 +22,8 @@ import {
   TrendingUp,
   ChevronRight
 } from 'lucide-react';
-import { packinghouseAnalyticsAPI } from '../../services/api';
+import { packinghouseAnalyticsAPI, packoutReportsAPI, poolSettlementsAPI } from '../../services/api';
+import DrillDownModal from '../ui/DrillDownModal';
 
 const PipelineOverview = () => {
   const [data, setData] = useState(null);
@@ -31,6 +32,127 @@ const PipelineOverview = () => {
   const [selectedCommodity, setSelectedCommodity] = useState(null); // null = All Commodities
   const [selectedSeason, setSelectedSeason] = useState('');
   const [breakdownView, setBreakdownView] = useState(null); // null or 'farm'
+
+  // Drill-down modal state
+  const [drillDown, setDrillDown] = useState({ isOpen: false, title: '', subtitle: '', icon: null, columns: [], data: [], loading: false, error: null, summaryRow: null });
+
+  const openDrillDown = async (type) => {
+    const params = {};
+    if (selectedCommodity) params.commodity = selectedCommodity;
+    const season = selectedSeason || data?.selected_season;
+    if (season) params.season = season;
+
+    const configs = {
+      packed_bins: {
+        title: 'Packed Bins — Detail',
+        icon: Package,
+        columns: [
+          { key: 'report_date', label: 'Date', format: 'date' },
+          { key: 'field_name', label: 'Field' },
+          { key: 'pool_name', label: 'Pool' },
+          { key: 'bins_this_period', label: 'Bins (Period)', align: 'right', format: 'number' },
+          { key: 'bins_cumulative', label: 'Cumulative', align: 'right', format: 'number' },
+          { key: 'total_packed_percent', label: 'Pack %', align: 'right', format: 'percent' },
+          { key: 'house_avg_packed_percent', label: 'House Avg %', align: 'right', format: 'percent' },
+        ],
+        fetch: () => packoutReportsAPI.getAll({ ...params, ordering: '-report_date' }),
+        extractData: (res) => res.data.results || res.data || [],
+        summaryKey: 'bins_this_period',
+      },
+      settled: {
+        title: 'Settlements — Detail',
+        icon: DollarSign,
+        columns: [
+          { key: 'pool_name', label: 'Pool' },
+          { key: 'field_name', label: 'Field' },
+          { key: 'total_bins', label: 'Bins', align: 'right', format: 'number' },
+          { key: 'total_credits', label: 'Credits', align: 'right', format: 'currency' },
+          { key: 'total_deductions', label: 'Deductions', align: 'right', format: 'currency' },
+          { key: 'net_return', label: 'Net Return', align: 'right', format: 'currency' },
+        ],
+        fetch: () => poolSettlementsAPI.getAll({ ...params, ordering: '-created_at' }),
+        extractData: (res) => res.data.results || res.data || [],
+        summaryKey: 'net_return',
+      },
+      total_revenue: {
+        title: 'Total Revenue — Detail',
+        icon: DollarSign,
+        columns: [
+          { key: 'pool_name', label: 'Pool' },
+          { key: 'field_name', label: 'Field' },
+          { key: 'total_bins', label: 'Bins', align: 'right', format: 'number' },
+          { key: 'total_credits', label: 'Revenue', align: 'right', format: 'currency' },
+          { key: 'net_return', label: 'Net Return', align: 'right', format: 'currency' },
+        ],
+        fetch: () => poolSettlementsAPI.getAll({ ...params, ordering: '-created_at' }),
+        extractData: (res) => res.data.results || res.data || [],
+        summaryKey: 'total_credits',
+      },
+      bins_packed_all: {
+        title: 'All Bins Packed — Detail',
+        icon: Package,
+        columns: [
+          { key: 'report_date', label: 'Date', format: 'date' },
+          { key: 'field_name', label: 'Field' },
+          { key: 'pool_name', label: 'Pool' },
+          { key: 'bins_this_period', label: 'Bins (Period)', align: 'right', format: 'number' },
+          { key: 'bins_cumulative', label: 'Cumulative', align: 'right', format: 'number' },
+          { key: 'total_packed_percent', label: 'Pack %', align: 'right', format: 'percent' },
+        ],
+        fetch: () => packoutReportsAPI.getAll({ ordering: '-report_date' }),
+        extractData: (res) => res.data.results || res.data || [],
+        summaryKey: 'bins_this_period',
+      },
+      bins_settled_all: {
+        title: 'All Bins Settled — Detail',
+        icon: TrendingUp,
+        columns: [
+          { key: 'pool_name', label: 'Pool' },
+          { key: 'field_name', label: 'Field' },
+          { key: 'total_bins', label: 'Bins', align: 'right', format: 'number' },
+          { key: 'net_return', label: 'Net Return', align: 'right', format: 'currency' },
+        ],
+        fetch: () => poolSettlementsAPI.getAll({ ordering: '-created_at' }),
+        extractData: (res) => res.data.results || res.data || [],
+        summaryKey: 'total_bins',
+      },
+    };
+
+    const config = configs[type];
+    if (!config) return;
+
+    setDrillDown({
+      isOpen: true,
+      title: config.title,
+      subtitle: '',
+      icon: config.icon,
+      columns: config.columns,
+      data: [],
+      loading: true,
+      error: null,
+      summaryRow: null,
+    });
+
+    try {
+      const response = await config.fetch();
+      const records = config.extractData(response);
+      const summaryRow = config.summaryKey
+        ? { [config.columns[0].key]: 'Total', [config.summaryKey]: records.reduce((sum, r) => sum + (Number(r[config.summaryKey]) || 0), 0) }
+        : null;
+      setDrillDown(prev => ({
+        ...prev,
+        data: records,
+        loading: false,
+        subtitle: `${records.length} ${records.length === 1 ? 'record' : 'records'}`,
+        summaryRow,
+      }));
+    } catch (err) {
+      console.error('Drill-down fetch error:', err);
+      setDrillDown(prev => ({ ...prev, loading: false, error: 'Failed to load records' }));
+    }
+  };
+
+  const closeDrillDown = () => setDrillDown(prev => ({ ...prev, isOpen: false }));
 
   useEffect(() => {
     fetchPipelineData();
@@ -153,6 +275,22 @@ const PipelineOverview = () => {
 
   if (!data) return null;
 
+  // Drill-Down Modal (shared across both modes)
+  const drillDownModal = (
+    <DrillDownModal
+      isOpen={drillDown.isOpen}
+      onClose={closeDrillDown}
+      title={drillDown.title}
+      subtitle={drillDown.subtitle}
+      icon={drillDown.icon}
+      columns={drillDown.columns}
+      data={drillDown.data}
+      loading={drillDown.loading}
+      error={drillDown.error}
+      summaryRow={drillDown.summaryRow}
+    />
+  );
+
   // =========================================================================
   // MODE A: ALL COMMODITIES VIEW
   // =========================================================================
@@ -161,6 +299,7 @@ const PipelineOverview = () => {
 
     return (
       <div className="space-y-6">
+        {drillDownModal}
         {/* Header */}
         <div className="flex justify-between items-center">
           <div>
@@ -182,7 +321,7 @@ const PipelineOverview = () => {
 
         {/* Summary Tiles */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 cursor-pointer hover:shadow-md hover:border-green-200 border border-transparent transition-all" onClick={() => openDrillDown('total_revenue')}>
             <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-1">
               <DollarSign className="w-4 h-4" />
               Total Revenue
@@ -190,8 +329,9 @@ const PipelineOverview = () => {
             <p className="text-2xl font-bold text-green-600">
               {formatCurrency(summary.total_revenue)}
             </p>
+            <p className="text-xs text-gray-400 mt-1">Click for details</p>
           </div>
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 cursor-pointer hover:shadow-md hover:border-green-200 border border-transparent transition-all" onClick={() => openDrillDown('bins_packed_all')}>
             <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-1">
               <Package className="w-4 h-4" />
               Bins Packed
@@ -199,8 +339,9 @@ const PipelineOverview = () => {
             <p className="text-2xl font-bold text-purple-600">
               {formatNumber(summary.total_bins_packed)}
             </p>
+            <p className="text-xs text-gray-400 mt-1">Click for details</p>
           </div>
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 cursor-pointer hover:shadow-md hover:border-green-200 border border-transparent transition-all" onClick={() => openDrillDown('bins_settled_all')}>
             <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-1">
               <TrendingUp className="w-4 h-4" />
               Bins Settled
@@ -208,6 +349,7 @@ const PipelineOverview = () => {
             <p className="text-2xl font-bold text-blue-600">
               {formatNumber(summary.total_bins_settled)}
             </p>
+            <p className="text-xs text-gray-400 mt-1">Click for details</p>
           </div>
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
             <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-1">
@@ -341,6 +483,7 @@ const PipelineOverview = () => {
 
   return (
     <div className="space-y-6">
+      {drillDownModal}
       {/* Header */}
       <div className="flex flex-col gap-4">
         <div className="flex justify-between items-center">
@@ -413,14 +556,14 @@ const PipelineOverview = () => {
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <div className="flex items-center justify-center gap-8">
             {/* Stage 1: Packout */}
-            <div className="flex-1 max-w-xs text-center">
-              <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-purple-100 dark:bg-purple-900/30 mb-3">
+            <div className="flex-1 max-w-xs text-center cursor-pointer group" onClick={() => openDrillDown('packed_bins')}>
+              <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-purple-100 dark:bg-purple-900/30 mb-3 group-hover:ring-2 group-hover:ring-purple-300 transition-all">
                 <Package className="w-10 h-10 text-purple-600" />
               </div>
               <h3 className="font-semibold text-gray-900 dark:text-gray-100 text-lg">
                 {pipeline_stages.packout.label}
               </h3>
-              <p className="text-3xl font-bold text-purple-600 mt-2">
+              <p className="text-3xl font-bold text-purple-600 mt-2 group-hover:underline decoration-purple-300">
                 {formatNumber(pipeline_stages.packout.total_bins)}
               </p>
               <p className="text-sm text-gray-500">bins in {pipeline_stages.packout.total_count} reports</p>
@@ -450,14 +593,14 @@ const PipelineOverview = () => {
             </div>
 
             {/* Stage 2: Settlement */}
-            <div className="flex-1 max-w-xs text-center">
-              <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-green-100 dark:bg-green-900/30 mb-3">
+            <div className="flex-1 max-w-xs text-center cursor-pointer group" onClick={() => openDrillDown('settled')}>
+              <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-green-100 dark:bg-green-900/30 mb-3 group-hover:ring-2 group-hover:ring-green-300 transition-all">
                 <DollarSign className="w-10 h-10 text-green-600" />
               </div>
               <h3 className="font-semibold text-gray-900 dark:text-gray-100 text-lg">
                 {pipeline_stages.settlement.label}
               </h3>
-              <p className="text-3xl font-bold text-green-600 mt-2">
+              <p className="text-3xl font-bold text-green-600 mt-2 group-hover:underline decoration-green-300">
                 {formatCurrency(pipeline_stages.settlement.total_revenue)}
               </p>
               <p className="text-sm text-gray-500">{formatNumber(pipeline_stages.settlement.total_bins)} bins settled</p>
