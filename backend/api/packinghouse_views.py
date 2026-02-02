@@ -2472,35 +2472,41 @@ class PackinghouseStatementViewSet(viewsets.ModelViewSet):
             season = ''
 
             # Season derivation priority:
-            # 1. For settlements/grower_statements: prefer extracted_season (often printed on document)
-            # 2. Derive from period_end → period_start (fruit packing dates)
-            # 3. Fall back to report_date only for wash reports/packouts
-            # 4. Final fallback: current season
+            # 1. Derive from period_end → period_start → report_date (most reliable)
+            # 2. Use extracted_season, but validate/correct bare years for cross-year crops
+            # 3. Final fallback: current season
 
             logger.info(f"Season derivation - extracted_season: {extracted_season}, period_end: {header.get('period_end')}, period_start: {header.get('period_start')}, report_date: {header.get('report_date')}")
 
-            # For settlements, the season is often explicitly printed - trust it first
-            if statement.statement_type in ['settlement', 'grower_statement'] and extracted_season:
-                season = extracted_season
-                logger.info(f"Using extracted_season for settlement: {season}")
-            else:
-                # Derive from dates: period_end → period_start → report_date
-                season_date_str = header.get('period_end') or header.get('period_start') or header.get('report_date')
+            # Try date-based derivation first (most reliable for all statement types)
+            season_date_str = header.get('period_end') or header.get('period_start') or header.get('report_date')
 
-                if season_date_str:
-                    try:
-                        season_date = datetime.strptime(season_date_str, '%Y-%m-%d').date()
-                        season_period = season_service.get_current_season(
-                            crop_category=crop_category,
-                            target_date=season_date
-                        )
-                        season = season_period.label
-                        logger.info(f"Season derived from date {season_date}: {season}")
-                    except (ValueError, TypeError) as e:
-                        logger.warning(f"Failed to parse season date '{season_date_str}': {e}")
+            if season_date_str:
+                try:
+                    season_date = datetime.strptime(season_date_str, '%Y-%m-%d').date()
+                    season_period = season_service.get_current_season(
+                        crop_category=crop_category,
+                        target_date=season_date
+                    )
+                    season = season_period.label
+                    logger.info(f"Season derived from date {season_date}: {season}")
+                except (ValueError, TypeError) as e:
+                    logger.warning(f"Failed to parse season date '{season_date_str}': {e}")
 
-                # Fall back to extracted season if date derivation failed
-                if not season and extracted_season:
+            # Fall back to extracted season, but validate bare years against commodity season format
+            if not season and extracted_season:
+                config = season_service._get_season_config(field_id=None, crop_category=crop_category)
+                bare_year_match = re.match(r'^(\d{4})$', extracted_season.strip())
+                if bare_year_match and config.get('crosses_calendar_year'):
+                    harvest_year = int(bare_year_match.group(1))
+                    mid_season_date = date_module(harvest_year, 6, 1)
+                    season_period = season_service.get_current_season(
+                        crop_category=crop_category,
+                        target_date=mid_season_date
+                    )
+                    season = season_period.label
+                    logger.info(f"Converted bare year '{extracted_season}' to cross-year season: {season}")
+                else:
                     season = extracted_season
                     logger.info(f"Using extracted_season as fallback: {season}")
 
