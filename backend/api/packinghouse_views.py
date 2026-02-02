@@ -14,6 +14,7 @@ from django.db.models import Sum, Avg, Count, F, Q
 from django.db.models.functions import Coalesce
 from decimal import Decimal
 import logging
+import re
 
 from .models import (
     Packinghouse, Pool, PackinghouseDelivery,
@@ -3581,31 +3582,42 @@ class PackinghouseStatementViewSet(viewsets.ModelViewSet):
         season = ''
 
         # Season derivation priority:
-        # 1. For settlements/grower_statements: prefer extracted_season (often printed on document)
-        # 2. Derive from period_end → period_start (fruit packing dates)
-        # 3. Fall back to report_date only for wash reports/packouts
-        # 4. Final fallback: current season
+        # 1. Derive from period_end → period_start → report_date (most reliable)
+        # 2. Use extracted_season, but validate/correct bare years for cross-year crops
+        # 3. Final fallback: current season
 
-        # For settlements, the season is often explicitly printed - trust it first
-        if statement.statement_type in ['settlement', 'grower_statement'] and extracted_season:
-            season = extracted_season
-        else:
-            # Derive from dates: period_end → period_start → report_date
-            season_date_str = header.get('period_end') or header.get('period_start') or header.get('report_date')
+        # Try date-based derivation first (most reliable for all statement types)
+        season_date_str = header.get('period_end') or header.get('period_start') or header.get('report_date')
 
-            if season_date_str:
-                try:
-                    season_date = datetime.strptime(season_date_str, '%Y-%m-%d').date()
-                    season_period = season_service.get_current_season(
-                        crop_category=crop_category,
-                        target_date=season_date
-                    )
-                    season = season_period.label
-                except (ValueError, TypeError):
-                    pass
+        if season_date_str:
+            try:
+                season_date = datetime.strptime(season_date_str, '%Y-%m-%d').date()
+                season_period = season_service.get_current_season(
+                    crop_category=crop_category,
+                    target_date=season_date
+                )
+                season = season_period.label
+            except (ValueError, TypeError):
+                pass
 
-            # Fall back to extracted season if date derivation failed
-            if not season and extracted_season:
+        # Fall back to extracted season, but validate bare years against commodity season format
+        if not season and extracted_season:
+            config = season_service._get_season_config(field_id=None, crop_category=crop_category)
+            bare_year_match = re.match(r'^(\d{4})$', extracted_season.strip())
+            if bare_year_match and config.get('crosses_calendar_year'):
+                # AI extracted a bare year like "2025" but this commodity uses cross-year
+                # seasons (e.g., avocado "2024-2025"). Convert: a bare year typically refers
+                # to the harvest year, so the season started the prior year.
+                harvest_year = int(bare_year_match.group(1))
+                start_month = config['start_month']
+                # Use mid-season date in the harvest year to get the correct season label
+                mid_season_date = date_module(harvest_year, 6, 1)
+                season_period = season_service.get_current_season(
+                    crop_category=crop_category,
+                    target_date=mid_season_date
+                )
+                season = season_period.label
+            else:
                 season = extracted_season
 
         # Final fallback: use current season for this commodity
