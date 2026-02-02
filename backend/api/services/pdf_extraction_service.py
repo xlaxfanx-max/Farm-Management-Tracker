@@ -504,9 +504,9 @@ Return ONLY the JSON object, no additional text."""
 
         for line in grade_lines:
             line_data = {
-                'grade': line.get('grade') or 'UNKNOWN',
-                'size': line.get('size') or '',  # Handle None values
-                'unit_of_measure': line.get('unit') or 'CARTON',
+                'grade': (line.get('grade') or 'UNKNOWN')[:20],
+                'size': (line.get('size') or '')[:10],  # Handle None values, truncate to model max_length
+                'unit_of_measure': (line.get('unit') or 'CARTON')[:20],
             }
 
             if for_settlement:

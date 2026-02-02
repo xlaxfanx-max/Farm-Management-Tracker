@@ -9945,7 +9945,7 @@ class PackoutGradeLine(models.Model):
         help_text='Grade designation (e.g., "SUNKIST", "CHOICE", "STANDARD", "JUICE")'
     )
     size = models.CharField(
-        max_length=10,
+        max_length=20,
         blank=True,
         help_text='Size code (e.g., "075", "088", "113")'
     )
@@ -10191,7 +10191,7 @@ class SettlementGradeLine(models.Model):
         help_text='Grade designation (e.g., "SK DOMESTIC", "CH DOMESTIC", "JUICE")'
     )
     size = models.CharField(
-        max_length=10,
+        max_length=20,
         blank=True,
         help_text='Size code (e.g., "048", "056", "072")'
     )
