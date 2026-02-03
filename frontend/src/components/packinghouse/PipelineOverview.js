@@ -42,15 +42,23 @@ const PipelineOverview = () => {
     const season = selectedSeason || data?.selected_season;
     if (season) params.season = season;
 
+    // Determine unit label for current context
+    const currentCard = selectedCommodity && data?.commodity_cards
+      ? data.commodity_cards.find(c => c.commodity === selectedCommodity)
+      : null;
+    const unitLabel = currentCard?.primary_unit_label || 'Bins';
+    const isLbs = currentCard?.primary_unit === 'LBS';
+    const qtyKey = isLbs ? 'total_weight_lbs' : 'total_bins';
+
     const configs = {
       packed_bins: {
-        title: 'Packed Bins — Detail',
+        title: `Packed ${unitLabel} — Detail`,
         icon: Package,
         columns: [
           { key: 'report_date', label: 'Date', format: 'date' },
           { key: 'field_name', label: 'Field' },
           { key: 'pool_name', label: 'Pool' },
-          { key: 'bins_this_period', label: 'Bins (Period)', align: 'right', format: 'number' },
+          { key: 'bins_this_period', label: `${unitLabel} (Period)`, align: 'right', format: 'number' },
           { key: 'bins_cumulative', label: 'Cumulative', align: 'right', format: 'number' },
           { key: 'total_packed_percent', label: 'Pack %', align: 'right', format: 'percent' },
           { key: 'house_avg_packed_percent', label: 'House Avg %', align: 'right', format: 'percent' },
@@ -65,7 +73,7 @@ const PipelineOverview = () => {
         columns: [
           { key: 'pool_name', label: 'Pool' },
           { key: 'field_name', label: 'Field' },
-          { key: 'total_bins', label: 'Bins', align: 'right', format: 'number' },
+          { key: 'primary_quantity', label: unitLabel, align: 'right', format: 'number' },
           { key: 'total_credits', label: 'Credits', align: 'right', format: 'currency' },
           { key: 'total_deductions', label: 'Deductions', align: 'right', format: 'currency' },
           { key: 'net_return', label: 'Net Return', align: 'right', format: 'currency' },
@@ -80,7 +88,7 @@ const PipelineOverview = () => {
         columns: [
           { key: 'pool_name', label: 'Pool' },
           { key: 'field_name', label: 'Field' },
-          { key: 'total_bins', label: 'Bins', align: 'right', format: 'number' },
+          { key: 'primary_quantity', label: unitLabel, align: 'right', format: 'number' },
           { key: 'total_credits', label: 'Revenue', align: 'right', format: 'currency' },
           { key: 'net_return', label: 'Net Return', align: 'right', format: 'currency' },
         ],
@@ -89,13 +97,13 @@ const PipelineOverview = () => {
         summaryKey: 'total_credits',
       },
       bins_packed_all: {
-        title: 'All Bins Packed — Detail',
+        title: 'All Quantity Packed — Detail',
         icon: Package,
         columns: [
           { key: 'report_date', label: 'Date', format: 'date' },
           { key: 'field_name', label: 'Field' },
           { key: 'pool_name', label: 'Pool' },
-          { key: 'bins_this_period', label: 'Bins (Period)', align: 'right', format: 'number' },
+          { key: 'bins_this_period', label: 'Qty (Period)', align: 'right', format: 'number' },
           { key: 'bins_cumulative', label: 'Cumulative', align: 'right', format: 'number' },
           { key: 'total_packed_percent', label: 'Pack %', align: 'right', format: 'percent' },
         ],
@@ -104,17 +112,17 @@ const PipelineOverview = () => {
         summaryKey: 'bins_this_period',
       },
       bins_settled_all: {
-        title: 'All Bins Settled — Detail',
+        title: 'All Settled — Detail',
         icon: TrendingUp,
         columns: [
           { key: 'pool_name', label: 'Pool' },
           { key: 'field_name', label: 'Field' },
-          { key: 'total_bins', label: 'Bins', align: 'right', format: 'number' },
+          { key: 'primary_quantity', label: 'Quantity', align: 'right', format: 'number' },
           { key: 'net_return', label: 'Net Return', align: 'right', format: 'currency' },
         ],
         fetch: () => poolSettlementsAPI.getAll({ ordering: '-created_at' }),
         extractData: (res) => res.data.results || res.data || [],
-        summaryKey: 'total_bins',
+        summaryKey: 'primary_quantity',
       },
     };
 
@@ -334,7 +342,7 @@ const PipelineOverview = () => {
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 cursor-pointer hover:shadow-md hover:border-green-200 border border-transparent transition-all" onClick={() => openDrillDown('bins_packed_all')}>
             <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-1">
               <Package className="w-4 h-4" />
-              Bins Packed
+              Qty Packed
             </div>
             <p className="text-2xl font-bold text-purple-600">
               {formatNumber(summary.total_bins_packed)}
@@ -344,7 +352,7 @@ const PipelineOverview = () => {
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 cursor-pointer hover:shadow-md hover:border-green-200 border border-transparent transition-all" onClick={() => openDrillDown('bins_settled_all')}>
             <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-1">
               <TrendingUp className="w-4 h-4" />
-              Bins Settled
+              Qty Settled
             </div>
             <p className="text-2xl font-bold text-blue-600">
               {formatNumber(summary.total_bins_settled)}
@@ -390,9 +398,9 @@ const PipelineOverview = () => {
                   {/* Stats */}
                   <div className="space-y-3">
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600 dark:text-gray-400">Bins Packed</span>
+                      <span className="text-sm text-gray-600 dark:text-gray-400">{card.primary_unit_label || 'Bins'} Packed</span>
                       <span className="font-semibold text-purple-600 dark:text-purple-400">
-                        {formatNumber(card.bins_packed)}
+                        {formatNumber(card.quantity_packed != null ? card.quantity_packed : card.bins_packed)}
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
@@ -415,11 +423,11 @@ const PipelineOverview = () => {
                         {formatCurrency(card.revenue)}
                       </span>
                     </div>
-                    {card.avg_per_bin > 0 && (
+                    {(card.avg_per_unit || card.avg_per_bin) > 0 && (
                       <div className="flex justify-between items-center">
-                        <span className="text-sm text-gray-600 dark:text-gray-400">$/Bin</span>
+                        <span className="text-sm text-gray-600 dark:text-gray-400">$/{card.primary_unit === 'LBS' ? 'Lb' : 'Bin'}</span>
                         <span className="font-medium text-gray-700 dark:text-gray-300">
-                          ${formatNumber(card.avg_per_bin, 2)}
+                          ${formatNumber(card.avg_per_unit || card.avg_per_bin, 2)}
                         </span>
                       </div>
                     )}

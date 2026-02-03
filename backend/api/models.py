@@ -2954,6 +2954,12 @@ CROP_VARIETY_CHOICES = [
     ('satsuma', 'Satsuma'),
     ('tangelo', 'Tangelo'),
     ('kumquat', 'Kumquat'),
+    ('hass_avocado', 'Hass Avocado'),
+    ('lamb_hass_avocado', 'Lamb Hass Avocado'),
+    ('gem_avocado', 'GEM Avocado'),
+    ('reed_avocado', 'Reed Avocado'),
+    ('fuerte_avocado', 'Fuerte Avocado'),
+    ('bacon_avocado', 'Bacon Avocado'),
     ('other', 'Other'),
 ]
 
@@ -2975,6 +2981,12 @@ DEFAULT_BIN_WEIGHTS = {
     'satsuma': 800,
     'tangelo': 850,
     'kumquat': 800,
+    'hass_avocado': 800,
+    'lamb_hass_avocado': 800,
+    'gem_avocado': 800,
+    'reed_avocado': 800,
+    'fuerte_avocado': 800,
+    'bacon_avocado': 800,
     'other': 900,
 }
 
@@ -3360,10 +3372,31 @@ class Harvest(models.Model):
     
     @property
     def yield_per_acre(self):
-        """Calculate bins per acre."""
-        if self.acres_harvested and self.total_bins:
-            return round(self.total_bins / float(self.acres_harvested), 1)
+        """Calculate primary quantity per acre (bins for citrus, lbs for avocados)."""
+        if self.acres_harvested and self.primary_quantity:
+            return round(float(self.primary_quantity) / float(self.acres_harvested), 1)
         return None
+
+    @property
+    def primary_unit_info(self):
+        from api.services.season_service import get_primary_unit_for_crop_variety
+        return get_primary_unit_for_crop_variety(self.crop_variety)
+
+    @property
+    def primary_quantity(self):
+        """Primary quantity in the crop's natural unit (bins or lbs)."""
+        info = self.primary_unit_info
+        if info['unit'] == 'LBS':
+            return self.estimated_weight_lbs or 0
+        return self.total_bins
+
+    @property
+    def primary_unit(self):
+        return self.primary_unit_info['unit']
+
+    @property
+    def primary_unit_label(self):
+        return self.primary_unit_info['label_plural']
 
 
 # -----------------------------------------------------------------------------
@@ -9726,6 +9759,38 @@ class Pool(models.Model):
         return self.deliveries.aggregate(total=Sum('bins'))['total'] or 0
 
     @property
+    def total_weight(self):
+        """Total weight in lbs for this pool (from settlements or deliveries)."""
+        from django.db.models import Sum
+        # Try settlements first
+        settlement = self.settlements.first()
+        if settlement and settlement.total_weight_lbs:
+            return settlement.total_weight_lbs
+        # Fall back to deliveries
+        return self.deliveries.aggregate(total=Sum('weight_lbs'))['total'] or 0
+
+    @property
+    def primary_unit_info(self):
+        from api.services.season_service import get_primary_unit_for_commodity
+        return get_primary_unit_for_commodity(self.commodity)
+
+    @property
+    def primary_quantity(self):
+        """Primary quantity in the commodity's natural unit (bins or lbs)."""
+        info = self.primary_unit_info
+        if info['unit'] == 'LBS':
+            return self.total_weight
+        return self.total_bins
+
+    @property
+    def primary_unit(self):
+        return self.primary_unit_info['unit']
+
+    @property
+    def primary_unit_label(self):
+        return self.primary_unit_info['label_plural']
+
+    @property
     def delivery_count(self):
         """Number of deliveries to this pool."""
         return self.deliveries.count()
@@ -10029,7 +10094,9 @@ class PoolSettlement(models.Model):
     total_bins = models.DecimalField(
         max_digits=10,
         decimal_places=2,
-        help_text='Total bins in settlement'
+        null=True,
+        blank=True,
+        help_text='Total bins in settlement (primary for citrus)'
     )
     total_cartons = models.DecimalField(
         max_digits=12,

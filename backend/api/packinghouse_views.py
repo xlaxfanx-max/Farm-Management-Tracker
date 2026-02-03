@@ -892,6 +892,14 @@ def profitability_analysis(request):
     # Note: net_settlement is the grower's return after all deductions (including pick & haul)
     return_margin = round((float(totals['net_settlement']) / float(totals['gross_revenue']) * 100), 1) if totals['gross_revenue'] > 0 else 0
 
+    # Determine primary unit from pool commodities
+    from .services.season_service import get_primary_unit_for_commodity
+    pool_commodities = set(p.commodity for p in pools if p.commodity)
+    if len(pool_commodities) == 1:
+        unit_info = get_primary_unit_for_commodity(pool_commodities.pop())
+    else:
+        unit_info = get_primary_unit_for_commodity('CITRUS')  # default
+
     summary = {
         'total_fields': len(results),
         'total_pools': len(pool_results),
@@ -901,6 +909,8 @@ def profitability_analysis(request):
         'net_settlement': float(totals['net_settlement']),
         'avg_net_per_bin': round(float(totals['net_settlement'] / totals['total_bins']), 2) if totals['total_bins'] > 0 else 0,
         'return_margin': return_margin,  # Net as % of gross
+        'primary_unit': unit_info['unit'],
+        'primary_unit_label': unit_info['label_plural'],
     }
 
     # Note if showing pool-level vs field-level
@@ -1050,12 +1060,25 @@ def deduction_breakdown(request):
         if grand_total > 0:
             cat['percent_of_total'] = round((cat['total_amount'] / float(grand_total) * 100), 1)
 
+    # Determine primary unit from pool commodities
+    from .services.season_service import get_primary_unit_for_commodity
+    pool_commodities = set(
+        settlements.values_list('pool__commodity', flat=True).distinct()
+    )
+    pool_commodities.discard(None)
+    if len(pool_commodities) == 1:
+        ded_unit_info = get_primary_unit_for_commodity(pool_commodities.pop())
+    else:
+        ded_unit_info = get_primary_unit_for_commodity('CITRUS')
+
     return Response({
         'season': selected_season,
         'total_bins': float(total_bins),
         'grand_total': float(grand_total),
         'grand_total_per_bin': round(float(grand_total / total_bins), 2) if total_bins > 0 else 0,
         'by_category': by_category,
+        'primary_unit': ded_unit_info['unit'],
+        'primary_unit_label': ded_unit_info['label_plural'],
     })
 
 
@@ -1775,8 +1798,10 @@ def harvest_packing_pipeline(request):
             pool__packinghouse__company=company
         ).values('pool__commodity', 'pool__season').annotate(
             total_bins_settled=Coalesce(Sum('total_bins'), Decimal('0')),
+            total_lbs_settled=Coalesce(Sum('total_weight_lbs'), Decimal('0')),
             total_revenue=Coalesce(Sum('net_return'), Decimal('0')),
             avg_per_bin=Avg('net_per_bin'),
+            avg_per_lb=Avg('net_per_lb'),
             settlement_count=Count('id'),
         )
 
@@ -1795,8 +1820,10 @@ def harvest_packing_pipeline(request):
             if not commodity:
                 continue
 
-            # Determine current season for this commodity
+            # Determine current season and unit for this commodity
             crop_category = get_crop_category_for_commodity(commodity)
+            from api.services.season_service import get_primary_unit_for_commodity
+            unit_info = get_primary_unit_for_commodity(commodity)
             season_service = SeasonService(company_id=company.id)
             current = season_service.get_current_season(crop_category=crop_category, target_date=today)
             current_season_label = current.label
@@ -1812,14 +1839,19 @@ def harvest_packing_pipeline(request):
                     packout_count = row['report_count']
 
             bins_settled = Decimal('0')
+            lbs_settled = Decimal('0')
             revenue = Decimal('0')
-            avg_per_bin = 0
+            avg_per_unit = 0
             settlement_count = 0
             for row in settlement_by_cs:
                 if row['pool__commodity'] == commodity and row['pool__season'] == current_season_label:
                     bins_settled = row['total_bins_settled']
+                    lbs_settled = row['total_lbs_settled']
                     revenue = row['total_revenue']
-                    avg_per_bin = round(float(row['avg_per_bin'] or 0), 2)
+                    if unit_info['unit'] == 'LBS':
+                        avg_per_unit = round(float(row['avg_per_lb'] or 0), 2)
+                    else:
+                        avg_per_unit = round(float(row['avg_per_bin'] or 0), 2)
                     settlement_count = row['settlement_count']
 
             pools = {}
@@ -1827,20 +1859,33 @@ def harvest_packing_pipeline(request):
                 if row['commodity'] == commodity and row['season'] == current_season_label:
                     pools[row['status']] = row['count']
 
-            packed_f = float(bins_packed)
-            settled_f = float(bins_settled)
-            settlement_pct = round((settled_f / packed_f * 100), 1) if packed_f > 0 else 0
+            # Use the primary unit for this commodity
+            if unit_info['unit'] == 'LBS':
+                quantity_packed = float(lbs_settled)  # For avocados, use weight
+                quantity_settled = float(lbs_settled)
+            else:
+                quantity_packed = float(bins_packed)
+                quantity_settled = float(bins_settled)
+
+            settlement_pct = round((quantity_settled / quantity_packed * 100), 1) if quantity_packed > 0 else 0
 
             commodity_cards.append({
                 'commodity': commodity,
                 'crop_category': crop_category,
                 'current_season': current_season_label,
-                'bins_packed': packed_f,
+                'primary_unit': unit_info['unit'],
+                'primary_unit_label': unit_info['label_plural'],
+                'quantity_packed': quantity_packed,
+                'quantity_settled': quantity_settled,
+                # Keep legacy fields for backward compat
+                'bins_packed': float(bins_packed),
+                'bins_settled': float(bins_settled),
+                'lbs_settled': float(lbs_settled),
                 'avg_pack_percent': avg_pack,
-                'bins_settled': settled_f,
                 'settlement_percent': settlement_pct,
                 'revenue': float(revenue),
-                'avg_per_bin': avg_per_bin,
+                'avg_per_unit': avg_per_unit,
+                'avg_per_bin': avg_per_unit if unit_info['unit'] == 'BIN' else 0,
                 'packout_reports': packout_count,
                 'settlements': settlement_count,
                 'pools': {

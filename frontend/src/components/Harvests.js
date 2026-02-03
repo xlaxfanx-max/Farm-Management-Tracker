@@ -74,6 +74,10 @@ const Harvests = () => {
   // Drill-down modal state
   const [drillDown, setDrillDown] = useState({ isOpen: false, title: '', subtitle: '', icon: null, columns: [], data: [], loading: false, error: null, summaryRow: null });
 
+  // Dynamic unit label from statistics (Bins vs Lbs)
+  const unitLabel = statistics?.primary_unit_label || 'Bins';
+  const unitSingular = statistics?.primary_unit === 'LBS' ? 'Lb' : 'Bin';
+
   const openDrillDown = async (type) => {
     const params = {};
     if (filters.season) params.season = filters.season;
@@ -89,20 +93,20 @@ const Harvests = () => {
           { key: 'field_name', label: 'Field' },
           { key: 'farm_name', label: 'Farm' },
           { key: 'crop_variety', label: 'Crop' },
-          { key: 'total_bins', label: 'Bins', align: 'right', format: 'number' },
+          { key: 'primary_quantity', label: unitLabel, align: 'right', format: 'number' },
           { key: 'status', label: 'Status', format: 'status' },
         ],
         fetch: () => harvestsAPI.getAll(params),
         extractData: (res) => res.data.results || res.data || [],
-        summaryKey: 'total_bins',
+        summaryKey: 'primary_quantity',
       },
       total_bins: {
-        title: `Total Bins — ${formatNumber(statistics?.total_bins)}`,
+        title: `Total ${unitLabel} — ${formatNumber(statistics?.primary_quantity ?? statistics?.total_bins)}`,
         icon: Package,
         columns: [
           { key: 'harvest_date', label: 'Date', format: 'date' },
           { key: 'field_name', label: 'Field' },
-          { key: 'total_bins', label: 'Bins', align: 'right', format: 'number' },
+          { key: 'primary_quantity', label: unitLabel, align: 'right', format: 'number' },
           { key: 'acres_harvested', label: 'Acres', align: 'right', format: 'decimal' },
           { key: 'yield_per_acre', label: 'Yield/Acre', align: 'right', format: 'decimal' },
         ],
@@ -111,10 +115,10 @@ const Harvests = () => {
           const records = res.data.results || res.data || [];
           return records.map(r => ({
             ...r,
-            yield_per_acre: r.acres_harvested > 0 ? (r.total_bins / r.acres_harvested) : null,
+            yield_per_acre: r.acres_harvested > 0 ? ((r.primary_quantity || r.total_bins) / r.acres_harvested) : null,
           }));
         },
-        summaryKey: 'total_bins',
+        summaryKey: 'primary_quantity',
       },
       total_revenue: {
         title: `Total Revenue — ${formatCurrency(statistics?.total_revenue)}`,
@@ -123,8 +127,8 @@ const Harvests = () => {
           { key: 'created_at', label: 'Date', format: 'date' },
           { key: 'harvest_field_name', label: 'Field' },
           { key: 'buyer_name', label: 'Buyer' },
-          { key: 'bins', label: 'Bins', align: 'right', format: 'number' },
-          { key: 'price_per_unit', label: 'Price/Bin', align: 'right', format: 'currency' },
+          { key: 'bins', label: unitLabel, align: 'right', format: 'number' },
+          { key: 'price_per_unit', label: `Price/${unitSingular}`, align: 'right', format: 'currency' },
           { key: 'total_revenue', label: 'Revenue', align: 'right', format: 'currency' },
         ],
         fetch: () => harvestLoadsAPI.getAll({ ...params, ordering: '-created_at' }),
@@ -153,7 +157,7 @@ const Harvests = () => {
           { key: 'created_at', label: 'Date', format: 'date' },
           { key: 'harvest_field_name', label: 'Field' },
           { key: 'buyer_name', label: 'Buyer' },
-          { key: 'bins', label: 'Bins', align: 'right', format: 'number' },
+          { key: 'bins', label: unitLabel, align: 'right', format: 'number' },
           { key: 'total_revenue', label: 'Amount', align: 'right', format: 'currency' },
           { key: 'payment_status', label: 'Status', format: 'status' },
         ],
@@ -162,13 +166,13 @@ const Harvests = () => {
         summaryKey: 'total_revenue',
       },
       yield_per_acre: {
-        title: `Yield/Acre — ${statistics?.avg_yield_per_acre?.toFixed(1) || '0'} bins`,
+        title: `Yield/Acre — ${statistics?.avg_yield_per_acre?.toFixed(1) || '0'} ${unitLabel.toLowerCase()}`,
         icon: Wheat,
         columns: [
           { key: 'field_name', label: 'Field' },
           { key: 'farm_name', label: 'Farm' },
           { key: 'acres_harvested', label: 'Acres', align: 'right', format: 'decimal' },
-          { key: 'total_bins', label: 'Bins', align: 'right', format: 'number' },
+          { key: 'primary_quantity', label: unitLabel, align: 'right', format: 'number' },
           { key: 'yield_per_acre', label: 'Yield/Acre', align: 'right', format: 'decimal' },
         ],
         fetch: () => harvestsAPI.getAll({ ...params, ordering: '-total_bins' }),
@@ -176,7 +180,7 @@ const Harvests = () => {
           const records = res.data.results || res.data || [];
           return records.map(r => ({
             ...r,
-            yield_per_acre: r.acres_harvested > 0 ? (r.total_bins / r.acres_harvested) : null,
+            yield_per_acre: r.acres_harvested > 0 ? ((r.primary_quantity || r.total_bins) / r.acres_harvested) : null,
           }));
         },
         summaryKey: 'total_bins',
@@ -603,8 +607,8 @@ const Harvests = () => {
                 <Package className="text-blue-600" size={24} />
               </div>
               <div>
-                <p className="text-sm text-gray-600">Total Bins</p>
-                <p className="text-xl font-bold">{formatNumber(statistics.total_bins)}</p>
+                <p className="text-sm text-gray-600">Total {unitLabel}</p>
+                <p className="text-xl font-bold">{formatNumber(statistics.primary_quantity ?? statistics.total_bins)}</p>
               </div>
             </div>
             <p className="text-xs text-gray-400 mt-2">Click for details</p>
@@ -652,7 +656,7 @@ const Harvests = () => {
               </div>
               <div>
                 <p className="text-sm text-gray-600">Yield/Acre</p>
-                <p className="text-xl font-bold">{statistics.avg_yield_per_acre?.toFixed(1) || '0'} bins</p>
+                <p className="text-xl font-bold">{statistics.avg_yield_per_acre?.toFixed(1) || '0'} {unitLabel.toLowerCase()}</p>
               </div>
             </div>
             <p className="text-xs text-gray-400 mt-2">Click for details</p>
@@ -725,7 +729,7 @@ const Harvests = () => {
                   
                   <div className="flex items-center gap-6">
                     <div className="text-right">
-                      <p className="font-medium">{formatNumber(harvest.total_bins)} bins</p>
+                      <p className="font-medium">{formatNumber(harvest.primary_quantity ?? harvest.total_bins)} {(harvest.primary_unit_label || 'bins').toLowerCase()}</p>
                       <p className="text-sm text-gray-500">{harvest.acres_harvested} acres</p>
                     </div>
                     <div className="text-right">
@@ -758,13 +762,13 @@ const Harvests = () => {
                     {/* Bins Reconciliation Widget */}
                     {harvest.bins_reconciliation_status && (
                       <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                        <p className="font-medium text-blue-800 mb-2">Bin Tracking</p>
+                        <p className="font-medium text-blue-800 mb-2">{harvest.primary_unit_label || 'Bin'} Tracking</p>
                         <div className="grid grid-cols-3 gap-4 text-sm">
                           {/* Harvest Total */}
                           <div>
                             <p className="text-gray-600">Total Harvest</p>
                             <p className="text-lg font-semibold text-gray-900">
-                              {harvest.bins_reconciliation_status.total_harvest_bins} bins
+                              {harvest.primary_quantity ?? harvest.bins_reconciliation_status.total_harvest_bins} {(harvest.primary_unit_label || 'bins').toLowerCase()}
                             </p>
                           </div>
 
@@ -789,7 +793,7 @@ const Harvests = () => {
                               )}
                             </div>
                             <p className="text-lg font-semibold text-gray-900">
-                              {harvest.bins_reconciliation_status.total_load_bins} bins
+                              {harvest.bins_reconciliation_status.total_load_bins} {(harvest.primary_unit_label || 'bins').toLowerCase()}
                             </p>
                             {harvest.bins_reconciliation_status.loads_message && (
                               <p className="text-xs text-gray-500 mt-1">
@@ -819,7 +823,7 @@ const Harvests = () => {
                               )}
                             </div>
                             <p className="text-lg font-semibold text-gray-900">
-                              {harvest.bins_reconciliation_status.total_labor_bins} bins
+                              {harvest.bins_reconciliation_status.total_labor_bins} {(harvest.primary_unit_label || 'bins').toLowerCase()}
                             </p>
                             {harvest.bins_reconciliation_status.labor_message && (
                               <p className="text-xs text-gray-500 mt-1">

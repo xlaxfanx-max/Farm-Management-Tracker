@@ -5,7 +5,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { X, AlertTriangle, CheckCircle, Info } from 'lucide-react';
-import { harvestsAPI, HARVEST_CONSTANTS } from '../services/api';
+import { harvestsAPI, HARVEST_CONSTANTS, getUnitLabelForCropVariety } from '../services/api';
 
 const HarvestModal = ({ 
   isOpen, 
@@ -38,6 +38,10 @@ const HarvestModal = ({
   const [errors, setErrors] = useState({});
   const [saving, setSaving] = useState(false);
   const [reconciliationStatus, setReconciliationStatus] = useState(null);
+
+  // Dynamic unit label based on selected crop variety
+  const unitInfo = getUnitLabelForCropVariety(formData.crop_variety);
+  const isWeightBased = unitInfo.unit === 'LBS';
 
   // Initialize form when modal opens
   useEffect(() => {
@@ -153,7 +157,7 @@ const HarvestModal = ({
       newErrors.acres_harvested = 'Acres harvested must be greater than 0';
     }
     if (!formData.total_bins || formData.total_bins < 0) {
-      newErrors.total_bins = 'Total bins is required';
+      newErrors.total_bins = `Total ${unitInfo.labelPlural.toLowerCase()} is required`;
     }
     
     // Validate acres don't exceed field total
@@ -377,7 +381,7 @@ const HarvestModal = ({
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Total Bins <span className="text-red-500">*</span>
+                Total {unitInfo.labelPlural} <span className="text-red-500">*</span>
               </label>
               <input
                 type="number"
@@ -391,22 +395,24 @@ const HarvestModal = ({
               {errors.total_bins && <p className="text-red-500 text-sm mt-1">{errors.total_bins}</p>}
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Bin Weight (lbs)
-              </label>
-              <input
-                type="number"
-                name="bin_weight_lbs"
-                value={formData.bin_weight_lbs}
-                onChange={handleChange}
-                min="1"
-                className="w-full border rounded-lg px-3 py-2"
-              />
-              <p className="text-xs text-gray-500 mt-1">
-                Est. weight: {((formData.total_bins || 0) * formData.bin_weight_lbs).toLocaleString()} lbs
-              </p>
-            </div>
+            {!isWeightBased && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Bin Weight (lbs)
+                </label>
+                <input
+                  type="number"
+                  name="bin_weight_lbs"
+                  value={formData.bin_weight_lbs}
+                  onChange={handleChange}
+                  min="1"
+                  className="w-full border rounded-lg px-3 py-2"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Est. weight: {((formData.total_bins || 0) * formData.bin_weight_lbs).toLocaleString()} lbs
+                </p>
+              </div>
+            )}
           </div>
 
           {/* GAP/GHP Section */}
@@ -502,7 +508,7 @@ const HarvestModal = ({
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
               <div className="flex items-center gap-2 mb-3">
                 <Info size={18} className="text-blue-600" />
-                <h3 className="font-medium text-blue-800">Bin Tracking Status</h3>
+                <h3 className="font-medium text-blue-800">{unitInfo.labelSingular} Tracking Status</h3>
               </div>
 
               <div className="grid grid-cols-3 gap-4 text-sm mb-3">
@@ -510,7 +516,7 @@ const HarvestModal = ({
                 <div>
                   <p className="text-gray-600">Total Harvest</p>
                   <p className="text-lg font-semibold text-gray-900">
-                    {reconciliationStatus.total_harvest_bins} bins
+                    {reconciliationStatus.total_harvest_bins} {unitInfo.labelPlural.toLowerCase()}
                   </p>
                 </div>
 
@@ -535,7 +541,7 @@ const HarvestModal = ({
                     )}
                   </div>
                   <p className="text-lg font-semibold text-gray-900">
-                    {reconciliationStatus.total_load_bins} bins
+                    {reconciliationStatus.total_load_bins} {unitInfo.labelPlural.toLowerCase()}
                   </p>
                   {reconciliationStatus.loads_message && (
                     <p className="text-xs text-gray-600 mt-1">{reconciliationStatus.loads_message}</p>
@@ -563,7 +569,7 @@ const HarvestModal = ({
                     )}
                   </div>
                   <p className="text-lg font-semibold text-gray-900">
-                    {reconciliationStatus.total_labor_bins} bins
+                    {reconciliationStatus.total_labor_bins} {unitInfo.labelPlural.toLowerCase()}
                   </p>
                   {reconciliationStatus.labor_message && (
                     <p className="text-xs text-gray-600 mt-1">{reconciliationStatus.labor_message}</p>

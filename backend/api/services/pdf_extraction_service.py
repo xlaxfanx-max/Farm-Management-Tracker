@@ -461,20 +461,41 @@ Return ONLY the JSON object, no additional text."""
             except (ValueError, TypeError):
                 return None
 
+        # Determine if this commodity uses pounds instead of bins
+        from api.services.season_service import get_primary_unit_for_commodity
+        commodity = header.get('commodity', '')
+        unit_info = get_primary_unit_for_commodity(commodity)
+        is_weight_based = (unit_info['unit'] == 'LBS')
+
+        total_bins = self._to_decimal(summary.get('total_bins'))
+        total_weight_lbs = self._to_decimal(summary.get('total_weight_lbs'))
+
+        # For weight-based commodities (avocados), total_bins can be null
+        # For bin-based commodities (citrus), default total_bins to 0
+        if not is_weight_based and total_bins is None:
+            total_bins = Decimal('0')
+
+        # Calculate net_per_lb from net_return and total_weight if not extracted
+        net_per_lb = self._to_decimal(financials.get('net_per_lb'))
+        net_return = self._to_decimal(financials.get('net_return'), default=Decimal('0'))
+        if not net_per_lb and total_weight_lbs and total_weight_lbs > 0 and net_return:
+            net_per_lb = round(net_return / total_weight_lbs, 4)
+
         settlement_data = {
             'pool': pool,
             'field': field,
             'statement_date': parse_date(header.get('report_date')) or date.today(),
-            'total_bins': self._to_decimal(summary.get('total_bins'), default=Decimal('0')),
+            'total_bins': total_bins,
             'total_cartons': self._to_decimal(summary.get('total_cartons')),
-            'total_weight_lbs': self._to_decimal(summary.get('total_weight_lbs')),
+            'total_weight_lbs': total_weight_lbs,
             'total_credits': self._to_decimal(financials.get('total_credits'), default=Decimal('0')),
             'total_deductions': self._to_decimal(financials.get('total_deductions'), default=Decimal('0')),
-            'net_return': self._to_decimal(financials.get('net_return'), default=Decimal('0')),
+            'net_return': net_return,
             'prior_advances': self._to_decimal(financials.get('prior_advances'), default=Decimal('0')),
             'amount_due': self._to_decimal(financials.get('amount_due'), default=Decimal('0')),
             'net_per_bin': self._to_decimal(financials.get('net_per_bin')),
             'net_per_carton': self._to_decimal(financials.get('net_per_carton')),
+            'net_per_lb': net_per_lb,
             'house_avg_per_bin': self._to_decimal(financials.get('house_avg_per_bin')),
             'house_avg_per_carton': self._to_decimal(financials.get('house_avg_per_carton')),
             'fresh_fruit_percent': self._to_decimal(summary.get('fresh_fruit_percent')),

@@ -696,20 +696,26 @@ class HarvestSerializer(serializers.ModelSerializer):
     # PHI warning flag
     phi_warning = serializers.SerializerMethodField()
 
+    # Commodity-aware unit fields
+    primary_quantity = serializers.SerializerMethodField()
+    primary_unit = serializers.SerializerMethodField()
+    primary_unit_label = serializers.SerializerMethodField()
+
     # Reconciliation fields
     total_bins_in_loads = serializers.SerializerMethodField()
     total_bins_picked_by_labor = serializers.SerializerMethodField()
     bins_reconciliation_status = serializers.SerializerMethodField()
-    
+
     class Meta:
         model = Harvest
         fields = [
-            'id', 
+            'id',
             'field', 'field_name', 'farm_id', 'farm_name',
             'harvest_date', 'harvest_number',
             'crop_variety', 'crop_variety_display',
             'acres_harvested', 'total_bins', 'bin_weight_lbs', 'estimated_weight_lbs',
             'yield_per_acre',
+            'primary_quantity', 'primary_unit', 'primary_unit_label',
             # PHI fields
             'phi_verified', 'last_application_date', 'last_application_product',
             'days_since_last_application', 'phi_required_days', 'phi_compliant',
@@ -748,6 +754,15 @@ class HarvestSerializer(serializers.ModelSerializer):
         elif obj.phi_compliant is None and obj.last_application_date:
             return "PHI compliance could not be determined. Please verify manually."
         return None
+
+    def get_primary_quantity(self, obj):
+        return obj.primary_quantity
+
+    def get_primary_unit(self, obj):
+        return obj.primary_unit
+
+    def get_primary_unit_label(self, obj):
+        return obj.primary_unit_label
 
     def get_total_bins_in_loads(self, obj):
         """Calculate total bins across all loads."""
@@ -3558,6 +3573,9 @@ class PoolListSerializer(serializers.ModelSerializer):
     pool_type_display = serializers.CharField(source='get_pool_type_display', read_only=True)
     total_bins = serializers.ReadOnlyField()
     delivery_count = serializers.ReadOnlyField()
+    primary_quantity = serializers.ReadOnlyField()
+    primary_unit = serializers.ReadOnlyField()
+    primary_unit_label = serializers.ReadOnlyField()
 
     class Meta:
         model = Pool
@@ -3567,7 +3585,8 @@ class PoolListSerializer(serializers.ModelSerializer):
             'commodity', 'variety', 'season',
             'pool_type', 'pool_type_display',
             'status', 'status_display',
-            'total_bins', 'delivery_count'
+            'total_bins', 'delivery_count',
+            'primary_quantity', 'primary_unit', 'primary_unit_label'
         ]
 
 
@@ -3579,6 +3598,9 @@ class PoolSerializer(serializers.ModelSerializer):
     pool_type_display = serializers.CharField(source='get_pool_type_display', read_only=True)
     total_bins = serializers.ReadOnlyField()
     delivery_count = serializers.ReadOnlyField()
+    primary_quantity = serializers.ReadOnlyField()
+    primary_unit = serializers.ReadOnlyField()
+    primary_unit_label = serializers.ReadOnlyField()
 
     class Meta:
         model = Pool
@@ -3589,6 +3611,7 @@ class PoolSerializer(serializers.ModelSerializer):
             'status', 'status_display',
             'open_date', 'close_date',
             'notes', 'total_bins', 'delivery_count',
+            'primary_quantity', 'primary_unit', 'primary_unit_label',
             'created_at', 'updated_at'
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']
@@ -3742,15 +3765,34 @@ class PoolSettlementListSerializer(serializers.ModelSerializer):
     pool_name = serializers.CharField(source='pool.name', read_only=True)
     field_name = serializers.CharField(source='field.name', read_only=True, allow_null=True)
     variance_vs_house_per_bin = serializers.ReadOnlyField()
+    primary_quantity = serializers.SerializerMethodField()
+    primary_unit = serializers.SerializerMethodField()
+    primary_unit_label = serializers.SerializerMethodField()
 
     class Meta:
         model = PoolSettlement
         fields = [
             'id', 'pool', 'pool_name', 'field', 'field_name',
-            'statement_date', 'total_bins',
+            'statement_date', 'total_bins', 'total_weight_lbs',
             'net_return', 'amount_due',
-            'net_per_bin', 'house_avg_per_bin', 'variance_vs_house_per_bin'
+            'net_per_bin', 'house_avg_per_bin', 'variance_vs_house_per_bin',
+            'primary_quantity', 'primary_unit', 'primary_unit_label'
         ]
+
+    def get_primary_quantity(self, obj):
+        from api.services.season_service import get_primary_unit_for_commodity
+        info = get_primary_unit_for_commodity(obj.pool.commodity)
+        if info['unit'] == 'LBS':
+            return obj.total_weight_lbs
+        return obj.total_bins
+
+    def get_primary_unit(self, obj):
+        from api.services.season_service import get_primary_unit_for_commodity
+        return get_primary_unit_for_commodity(obj.pool.commodity)['unit']
+
+    def get_primary_unit_label(self, obj):
+        from api.services.season_service import get_primary_unit_for_commodity
+        return get_primary_unit_for_commodity(obj.pool.commodity)['label_plural']
 
 
 class PoolSettlementSerializer(serializers.ModelSerializer):
@@ -3765,6 +3807,10 @@ class PoolSettlementSerializer(serializers.ModelSerializer):
     variance_vs_house_per_bin = serializers.ReadOnlyField()
     source_pdf_url = serializers.SerializerMethodField()
     source_pdf_filename = serializers.SerializerMethodField()
+    primary_quantity = serializers.SerializerMethodField()
+    primary_unit = serializers.SerializerMethodField()
+    primary_unit_label = serializers.SerializerMethodField()
+    primary_net_per_unit = serializers.SerializerMethodField()
 
     class Meta:
         model = PoolSettlement
@@ -3781,6 +3827,7 @@ class PoolSettlementSerializer(serializers.ModelSerializer):
             'settlement_data_json',
             'grade_lines', 'deductions',
             'source_pdf_url', 'source_pdf_filename',
+            'primary_quantity', 'primary_unit', 'primary_unit_label', 'primary_net_per_unit',
             'created_at', 'updated_at'
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']
@@ -3789,6 +3836,26 @@ class PoolSettlementSerializer(serializers.ModelSerializer):
         if obj.field:
             return obj.field.farm.name
         return None
+
+    def get_primary_quantity(self, obj):
+        from api.services.season_service import get_primary_unit_for_commodity
+        info = get_primary_unit_for_commodity(obj.pool.commodity)
+        if info['unit'] == 'LBS':
+            return obj.total_weight_lbs
+        return obj.total_bins
+
+    def get_primary_unit(self, obj):
+        from api.services.season_service import get_primary_unit_for_commodity
+        return get_primary_unit_for_commodity(obj.pool.commodity)['unit']
+
+    def get_primary_unit_label(self, obj):
+        from api.services.season_service import get_primary_unit_for_commodity
+        return get_primary_unit_for_commodity(obj.pool.commodity)['label_plural']
+
+    def get_primary_net_per_unit(self, obj):
+        from api.services.season_service import get_primary_unit_for_commodity
+        info = get_primary_unit_for_commodity(obj.pool.commodity)
+        return getattr(obj, info['net_per_field'])
 
     def get_source_pdf_url(self, obj):
         """Return the proxy URL that serves PDF through our backend to avoid CORS issues."""

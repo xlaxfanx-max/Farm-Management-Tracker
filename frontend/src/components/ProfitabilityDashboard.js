@@ -55,6 +55,10 @@ const ProfitabilityDashboard = () => {
 
   const { selectedSeason, setSelectedSeason } = useSeason();
 
+  // Dynamic unit labels from API data
+  const unitLabel = profitabilityData?.summary?.primary_unit_label || deductionData?.primary_unit_label || 'Bins';
+  const unitSingular = (profitabilityData?.summary?.primary_unit === 'LBS' || deductionData?.primary_unit === 'LBS') ? 'Lb' : 'Bin';
+
   useEffect(() => {
     const fetchPackinghouses = async () => {
       try {
@@ -119,14 +123,14 @@ const ProfitabilityDashboard = () => {
 
     const configs = {
       total_bins: {
-        title: `Total Bins — ${formatNumber(summary.total_bins)}`,
+        title: `Total ${unitLabel} — ${formatNumber(summary.total_bins)}`,
         icon: BarChart3,
         columns: [
           { key: 'delivery_date', label: 'Date', format: 'date' },
           { key: 'field_name', label: 'Field' },
           { key: 'pool_name', label: 'Pool' },
           { key: 'ticket_number', label: 'Ticket #' },
-          { key: 'bins', label: 'Bins', align: 'right', format: 'number' },
+          { key: 'bins', label: unitLabel, align: 'right', format: 'number' },
         ],
         fetch: () => packinghouseDeliveriesAPI.getAll({ ...params, ordering: '-delivery_date' }),
         extractData: (res) => res.data.results || res.data || [],
@@ -138,9 +142,9 @@ const ProfitabilityDashboard = () => {
         columns: [
           { key: 'pool_name', label: 'Pool' },
           { key: 'field_name', label: 'Field' },
-          { key: 'total_bins', label: 'Bins', align: 'right', format: 'number' },
+          { key: 'total_bins', label: unitLabel, align: 'right', format: 'number' },
           { key: 'total_credits', label: 'Credits', align: 'right', format: 'currency' },
-          { key: 'credit_per_bin', label: '$/Bin', align: 'right', format: 'currency' },
+          { key: 'credit_per_bin', label: `$/${unitSingular}`, align: 'right', format: 'currency' },
         ],
         fetch: () => poolSettlementsAPI.getAll(params),
         extractData: (res) => {
@@ -158,9 +162,9 @@ const ProfitabilityDashboard = () => {
         columns: [
           { key: 'pool_name', label: 'Pool' },
           { key: 'field_name', label: 'Field' },
-          { key: 'total_bins', label: 'Bins', align: 'right', format: 'number' },
+          { key: 'total_bins', label: unitLabel, align: 'right', format: 'number' },
           { key: 'total_deductions', label: 'Deductions', align: 'right', format: 'currency' },
-          { key: 'deductions_per_bin', label: '$/Bin', align: 'right', format: 'currency' },
+          { key: 'deductions_per_bin', label: `$/${unitSingular}`, align: 'right', format: 'currency' },
         ],
         fetch: () => poolSettlementsAPI.getAll(params),
         extractData: (res) => {
@@ -177,7 +181,7 @@ const ProfitabilityDashboard = () => {
         icon: TrendingUp,
         columns: [
           { key: 'pool_name', label: 'Pool' },
-          { key: 'total_bins', label: 'Bins', align: 'right', format: 'number' },
+          { key: 'total_bins', label: unitLabel, align: 'right', format: 'number' },
           { key: 'total_credits', label: 'Gross', align: 'right', format: 'currency' },
           { key: 'total_deductions', label: 'Deductions', align: 'right', format: 'currency' },
           { key: 'net_return', label: 'Net', align: 'right', format: 'currency' },
@@ -301,7 +305,7 @@ const ProfitabilityDashboard = () => {
         {/* Summary Cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <AnalyticsCard
-            title="Total Bins"
+            title={`Total ${unitLabel}`}
             value={formatNumber(summary.total_bins)}
             subtitle={hasFieldData ? `${summary.total_fields} fields` : hasPoolData ? `${summary.total_pools} pools` : 'No data'}
             icon={BarChart3}
@@ -334,23 +338,23 @@ const ProfitabilityDashboard = () => {
           />
         </div>
 
-        {/* Per-Bin Summary */}
+        {/* Per-Unit Summary */}
         {summary.total_bins > 0 && (
           <div className="bg-white rounded-xl border border-gray-200 p-5">
-            <h4 className="text-sm font-medium text-gray-500 mb-3">Per-Bin Breakdown</h4>
+            <h4 className="text-sm font-medium text-gray-500 mb-3">Per-{unitSingular} Breakdown</h4>
             <div className="flex flex-wrap gap-6">
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 bg-green-500 rounded"></div>
-                <span className="text-sm text-gray-700">Gross: {formatCurrency(summary.gross_revenue / summary.total_bins)}/bin</span>
+                <span className="text-sm text-gray-700">Gross: {formatCurrency(summary.gross_revenue / summary.total_bins)}/{unitSingular.toLowerCase()}</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 bg-orange-500 rounded"></div>
-                <span className="text-sm text-gray-700">Deductions: {formatCurrency(summary.total_deductions / summary.total_bins)}/bin</span>
+                <span className="text-sm text-gray-700">Deductions: {formatCurrency(summary.total_deductions / summary.total_bins)}/{unitSingular.toLowerCase()}</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 bg-blue-600 rounded"></div>
                 <span className="text-sm font-medium text-blue-600">
-                  Net: {formatCurrency(summary.avg_net_per_bin || summary.net_settlement / summary.total_bins)}/bin
+                  Net: {formatCurrency(summary.avg_net_per_bin || summary.net_settlement / summary.total_bins)}/{unitSingular.toLowerCase()}
                 </span>
               </div>
             </div>
@@ -365,11 +369,11 @@ const ProfitabilityDashboard = () => {
                 <thead className="bg-gray-50">
                   <tr>
                     <th className={`${tableHeaderClass} text-left`}>Field</th>
-                    <th className={`${tableHeaderClass} text-right`}>Bins</th>
+                    <th className={`${tableHeaderClass} text-right`}>{unitLabel}</th>
                     <th className={`${tableHeaderClass} text-right`}>Gross</th>
                     <th className={`${tableHeaderClass} text-right`}>Deductions</th>
                     <th className={`${tableHeaderClass} text-right`}>Net Return</th>
-                    <th className={`${tableHeaderClass} text-right`}>$/Bin</th>
+                    <th className={`${tableHeaderClass} text-right`}>{`$/${unitSingular}`}</th>
                     <th className={`${tableHeaderClass} text-right`}>Margin</th>
                   </tr>
                 </thead>
@@ -421,15 +425,15 @@ const ProfitabilityDashboard = () => {
                                 <span className="ml-2 text-gray-900">{field.pool_name}</span>
                               </div>
                               <div>
-                                <span className="text-gray-500">Gross/Bin:</span>
+                                <span className="text-gray-500">Gross/{unitSingular}:</span>
                                 <span className="ml-2 text-green-600">{formatCurrency(field.gross_per_bin)}</span>
                               </div>
                               <div>
-                                <span className="text-gray-500">Deductions/Bin:</span>
+                                <span className="text-gray-500">Deductions/{unitSingular}:</span>
                                 <span className="ml-2 text-orange-600">{formatCurrency(field.deductions_per_bin)}</span>
                               </div>
                               <div>
-                                <span className="text-gray-500">Net/Bin:</span>
+                                <span className="text-gray-500">Net/{unitSingular}:</span>
                                 <span className="ml-2 text-blue-600">{formatCurrency(field.net_per_bin)}</span>
                               </div>
                               <div>
@@ -456,11 +460,11 @@ const ProfitabilityDashboard = () => {
                 <thead className="bg-gray-50">
                   <tr>
                     <th className={`${tableHeaderClass} text-left`}>Pool</th>
-                    <th className={`${tableHeaderClass} text-right`}>Bins</th>
+                    <th className={`${tableHeaderClass} text-right`}>{unitLabel}</th>
                     <th className={`${tableHeaderClass} text-right`}>Gross</th>
                     <th className={`${tableHeaderClass} text-right`}>Deductions</th>
                     <th className={`${tableHeaderClass} text-right`}>Net Return</th>
-                    <th className={`${tableHeaderClass} text-right`}>$/Bin</th>
+                    <th className={`${tableHeaderClass} text-right`}>{`$/${unitSingular}`}</th>
                     <th className={`${tableHeaderClass} text-right`}>Margin</th>
                   </tr>
                 </thead>
@@ -518,7 +522,7 @@ const ProfitabilityDashboard = () => {
         {/* Summary */}
         <div className="grid grid-cols-3 gap-4">
           <AnalyticsCard
-            title="Total Bins"
+            title={`Total ${deductionData.primary_unit_label || unitLabel}`}
             value={formatNumber(deductionData.total_bins)}
             icon={BarChart3}
             color="blue"
@@ -530,7 +534,7 @@ const ProfitabilityDashboard = () => {
             color="orange"
           />
           <AnalyticsCard
-            title="Avg Deduction/Bin"
+            title={`Avg Deduction/${deductionData.primary_unit === 'LBS' ? 'Lb' : unitSingular}`}
             value={formatCurrency(deductionData.grand_total_per_bin)}
             icon={DollarSign}
             color="blue"
@@ -556,7 +560,7 @@ const ProfitabilityDashboard = () => {
                   <div className="text-right">
                     <div className="font-medium text-gray-900">{formatCurrency(category.total_amount)}</div>
                     <div className="flex items-center gap-2 text-xs text-gray-500">
-                      <span>{formatCurrency(category.per_bin)}/bin</span>
+                      <span>{formatCurrency(category.per_bin)}/{unitSingular.toLowerCase()}</span>
                       <span className="px-1.5 py-0.5 bg-gray-100 rounded">{category.percent_of_total}%</span>
                     </div>
                   </div>
@@ -569,7 +573,7 @@ const ProfitabilityDashboard = () => {
                         <tr className="text-xs text-gray-500 uppercase">
                           <th className="text-left py-2">Description</th>
                           <th className="text-right py-2">Amount</th>
-                          <th className="text-right py-2">Per Bin</th>
+                          <th className="text-right py-2">Per {unitSingular}</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-200">
@@ -644,7 +648,7 @@ const ProfitabilityDashboard = () => {
 
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-gray-500">Total Bins</span>
+                  <span className="text-gray-500">Total {unitLabel}</span>
                   <div className="flex items-center gap-2">
                     <span className="text-gray-900">{formatNumber(season.total_bins)}</span>
                     {season.volume_change !== null && season.volume_change !== undefined && (
@@ -667,7 +671,7 @@ const ProfitabilityDashboard = () => {
                   </div>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-500">Net/Bin</span>
+                  <span className="text-gray-500">Net/{unitSingular}</span>
                   <div className="flex items-center gap-2">
                     <span className="font-medium text-gray-900">{formatCurrency(season.net_per_bin)}</span>
                     {season.net_per_bin_change !== null && season.net_per_bin_change !== undefined && (
@@ -685,16 +689,16 @@ const ProfitabilityDashboard = () => {
         </div>
 
         {/* Trend Table */}
-        <SectionCard title="Per-Bin Metrics Trend">
+        <SectionCard title={`Per-${unitSingular} Metrics Trend`}>
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-gray-50">
                 <tr>
                   <th className={`${tableHeaderClass} text-left`}>Season</th>
-                  <th className={`${tableHeaderClass} text-right`}>Bins</th>
-                  <th className={`${tableHeaderClass} text-right`}>Gross/Bin</th>
-                  <th className={`${tableHeaderClass} text-right`}>Deductions/Bin</th>
-                  <th className={`${tableHeaderClass} text-right`}>Net/Bin</th>
+                  <th className={`${tableHeaderClass} text-right`}>{unitLabel}</th>
+                  <th className={`${tableHeaderClass} text-right`}>{`Gross/${unitSingular}`}</th>
+                  <th className={`${tableHeaderClass} text-right`}>{`Deductions/${unitSingular}`}</th>
+                  <th className={`${tableHeaderClass} text-right`}>{`Net/${unitSingular}`}</th>
                   <th className={`${tableHeaderClass} text-right`}>Margin</th>
                 </tr>
               </thead>

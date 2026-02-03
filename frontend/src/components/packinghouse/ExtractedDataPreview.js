@@ -9,7 +9,17 @@ import {
   DollarSign, Package, Percent
 } from 'lucide-react';
 
+// Determine if commodity is weight-based (avocados/subtropical)
+const isWeightBasedCommodity = (commodity) => {
+  if (!commodity) return false;
+  const c = commodity.toLowerCase();
+  return c.includes('avocado') || c.includes('subtropical');
+};
+
 const ExtractedDataPreview = ({ data, statementType, onChange }) => {
+  const commodity = data?.header?.commodity || '';
+  const isWeightBased = isWeightBasedCommodity(commodity);
+  const unitLabel = isWeightBased ? 'Lb' : 'Bin';
   const [expandedSections, setExpandedSections] = useState({
     header: true,
     summary: true,
@@ -225,7 +235,7 @@ const ExtractedDataPreview = ({ data, statementType, onChange }) => {
         <SectionHeader title="Summary" section="summary" icon={Package} />
         {expandedSections.summary && (
           <div className="p-4 grid grid-cols-2 gap-x-8 gap-y-1">
-            <EditableField label="Total Bins" path="summary.total_bins" type="number" />
+            <EditableField label={`Total ${isWeightBased ? 'Lbs' : 'Bins'}`} path="summary.total_bins" type="number" />
             <EditableField label="Total Cartons" path="summary.total_cartons" type="number" />
             <EditableField label="Total Weight (lbs)" path="summary.total_weight_lbs" type="number" />
             <EditableField label="Total Packed %" path="summary.total_packed_percent" type="number" />
@@ -356,9 +366,9 @@ const ExtractedDataPreview = ({ data, statementType, onChange }) => {
               <EditableField label="Net Return" path="financials.net_return" type="number" />
               <EditableField label="Prior Advances" path="financials.prior_advances" type="number" />
               <EditableField label="Amount Due" path="financials.amount_due" type="number" />
-              <EditableField label="Net Per Bin" path="financials.net_per_bin" type="number" />
+              <EditableField label={`Net Per ${unitLabel}`} path="financials.net_per_bin" type="number" />
               <EditableField label="Net Per Carton" path="financials.net_per_carton" type="number" />
-              <EditableField label="House Avg Per Bin" path="financials.house_avg_per_bin" type="number" />
+              <EditableField label={`House Avg Per ${unitLabel}`} path="financials.house_avg_per_bin" type="number" />
               <EditableField label="House Avg Per Carton" path="financials.house_avg_per_carton" type="number" />
             </div>
           )}

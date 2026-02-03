@@ -2338,12 +2338,25 @@ class HarvestViewSet(AuditLogMixin, viewsets.ModelViewSet):
         # PHI violations
         phi_violations = queryset.filter(phi_compliant=False).count()
         
+        # Determine primary unit based on filtered crop variety
+        from .services.season_service import get_primary_unit_for_crop_variety
+        crop_filter = self.request.query_params.get('crop_variety', '')
+        unit_info = get_primary_unit_for_crop_variety(crop_filter) if crop_filter else None
+        if unit_info and unit_info['unit'] == 'LBS':
+            primary_quantity = float(stats['total_weight_lbs'])
+            primary_unit = 'LBS'
+            primary_unit_label = 'Lbs'
+        else:
+            primary_quantity = stats['total_bins']
+            primary_unit = 'BIN'
+            primary_unit_label = 'Bins'
+
         # Calculate yield per acre
         if stats['total_acres_harvested'] and stats['total_acres_harvested'] > 0:
-            avg_yield = float(stats['total_bins']) / float(stats['total_acres_harvested'])
+            avg_yield = float(primary_quantity) / float(stats['total_acres_harvested'])
         else:
             avg_yield = 0
-        
+
         # By crop breakdown
         by_crop = list(queryset.values('crop_variety').annotate(
             count=Count('id'),
@@ -2372,7 +2385,10 @@ class HarvestViewSet(AuditLogMixin, viewsets.ModelViewSet):
             'pending_payments': load_stats['pending_payments'],
             'phi_violations': phi_violations,
             'by_crop': by_crop,
-            'by_buyer': by_buyer
+            'by_buyer': by_buyer,
+            'primary_quantity': primary_quantity,
+            'primary_unit': primary_unit,
+            'primary_unit_label': primary_unit_label,
         })
     
     @action(detail=True, methods=['post'])

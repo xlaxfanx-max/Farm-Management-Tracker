@@ -663,6 +663,79 @@ def get_crop_category_for_commodity(commodity_string: str) -> str:
         return 'citrus'  # Default to citrus for unknown commodities
 
 
+def get_primary_unit_for_commodity(commodity: str) -> dict:
+    """
+    Get the primary unit of measure for a commodity.
+
+    Avocados are tracked in pounds (LBS), citrus and most other crops in bins (BIN).
+
+    Returns dict with keys:
+        - unit: 'LBS' or 'BIN'
+        - label_singular: 'Lb' or 'Bin'
+        - label_plural: 'Lbs' or 'Bins'
+        - db_field: 'total_weight_lbs' or 'total_bins' (for settlements)
+        - delivery_db_field: 'weight_lbs' or 'bins' (for deliveries)
+        - net_per_field: 'net_per_lb' or 'net_per_bin'
+    """
+    category = get_crop_category_for_commodity(commodity)
+    if category == 'subtropical':
+        return {
+            'unit': 'LBS',
+            'label_singular': 'Lb',
+            'label_plural': 'Lbs',
+            'db_field': 'total_weight_lbs',
+            'delivery_db_field': 'weight_lbs',
+            'net_per_field': 'net_per_lb',
+        }
+    return {
+        'unit': 'BIN',
+        'label_singular': 'Bin',
+        'label_plural': 'Bins',
+        'db_field': 'total_bins',
+        'delivery_db_field': 'bins',
+        'net_per_field': 'net_per_bin',
+    }
+
+
+# Map crop_variety choice values to commodity strings for unit resolution
+CROP_VARIETY_TO_COMMODITY = {
+    'hass_avocado': 'AVOCADOS',
+    'lamb_hass_avocado': 'AVOCADOS',
+    'gem_avocado': 'AVOCADOS',
+    'reed_avocado': 'AVOCADOS',
+    'fuerte_avocado': 'AVOCADOS',
+    'bacon_avocado': 'AVOCADOS',
+    'navel_orange': 'NAVELS',
+    'valencia_orange': 'VALENCIAS',
+    'cara_cara': 'NAVELS',
+    'blood_orange': 'NAVELS',
+    'meyer_lemon': 'LEMONS',
+    'eureka_lemon': 'LEMONS',
+    'lisbon_lemon': 'LEMONS',
+    'lime': 'LIMES',
+    'grapefruit_white': 'GRAPEFRUIT',
+    'grapefruit_ruby': 'GRAPEFRUIT',
+    'mandarin': 'MANDARINS',
+    'tangerine': 'TANGERINES',
+    'clementine': 'MANDARINS',
+    'satsuma': 'MANDARINS',
+    'tangelo': 'TANGELOS',
+    'kumquat': 'KUMQUATS',
+    'other': 'OTHER',
+}
+
+
+def get_commodity_from_crop_variety(crop_variety: str) -> str:
+    """Map a Harvest crop_variety choice value to a commodity string."""
+    return CROP_VARIETY_TO_COMMODITY.get(crop_variety, 'OTHER')
+
+
+def get_primary_unit_for_crop_variety(crop_variety: str) -> dict:
+    """Get the primary unit info for a harvest crop_variety choice value."""
+    commodity = get_commodity_from_crop_variety(crop_variety)
+    return get_primary_unit_for_commodity(commodity)
+
+
 def parse_season_for_category(season_string: str, crop_category: str) -> Tuple[date, date]:
     """
     Parse a season string into dates using the correct season config for the crop category.

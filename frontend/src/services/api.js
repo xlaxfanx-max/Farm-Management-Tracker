@@ -856,7 +856,19 @@ export const HARVEST_CONSTANTS = {
     { value: 'satsuma', label: 'Satsuma' },
     { value: 'tangelo', label: 'Tangelo' },
     { value: 'kumquat', label: 'Kumquat' },
+    { value: 'hass_avocado', label: 'Hass Avocado' },
+    { value: 'lamb_hass_avocado', label: 'Lamb Hass Avocado' },
+    { value: 'gem_avocado', label: 'GEM Avocado' },
+    { value: 'reed_avocado', label: 'Reed Avocado' },
+    { value: 'fuerte_avocado', label: 'Fuerte Avocado' },
+    { value: 'bacon_avocado', label: 'Bacon Avocado' },
     { value: 'other', label: 'Other' },
+  ],
+
+  // Crop varieties that are weight-based (lbs) instead of bin-based
+  WEIGHT_BASED_VARIETIES: [
+    'hass_avocado', 'lamb_hass_avocado', 'gem_avocado',
+    'reed_avocado', 'fuerte_avocado', 'bacon_avocado',
   ],
   
   DEFAULT_BIN_WEIGHTS: {
@@ -876,6 +888,12 @@ export const HARVEST_CONSTANTS = {
     'satsuma': 800,
     'tangelo': 850,
     'kumquat': 800,
+    'hass_avocado': 800,
+    'lamb_hass_avocado': 800,
+    'gem_avocado': 800,
+    'reed_avocado': 800,
+    'fuerte_avocado': 800,
+    'bacon_avocado': 800,
     'other': 900,
   },
   
@@ -1150,6 +1168,16 @@ export const IRRIGATION_CONSTANTS = {
     vegetables: 18,
     other: 36,
   },
+};
+
+// Helper: get unit label for a crop variety
+export const getUnitLabelForCropVariety = (cropVariety) => {
+  const isWeightBased = HARVEST_CONSTANTS.WEIGHT_BASED_VARIETIES.includes(cropVariety);
+  return {
+    unit: isWeightBased ? 'LBS' : 'BIN',
+    labelPlural: isWeightBased ? 'Lbs' : 'Bins',
+    labelSingular: isWeightBased ? 'Lb' : 'Bin',
+  };
 };
 
 // Constants for Field agricultural data

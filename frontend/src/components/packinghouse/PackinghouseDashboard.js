@@ -54,14 +54,14 @@ const PackinghouseDashboard = () => {
         extractData: (res) => res.data.results || res.data || [],
       },
       bins_delivered: {
-        title: `Bins Delivered — ${formatNumber(dashboardData?.total_bins_this_season)}`,
+        title: `Delivered — ${formatNumber(dashboardData?.total_bins_this_season)}`,
         icon: Truck,
         columns: [
           { key: 'delivery_date', label: 'Date', format: 'date' },
           { key: 'ticket_number', label: 'Ticket #' },
           { key: 'field_name', label: 'Field' },
           { key: 'pool_name', label: 'Pool' },
-          { key: 'bins', label: 'Bins', align: 'right', format: 'number' },
+          { key: 'bins', label: 'Qty', align: 'right', format: 'number' },
         ],
         fetch: () => packinghouseDeliveriesAPI.getAll({ ...params, ordering: '-delivery_date' }),
         extractData: (res) => res.data.results || res.data || [],
@@ -248,7 +248,7 @@ const PackinghouseDashboard = () => {
           <div className="bg-white rounded-lg border border-gray-200 p-4 cursor-pointer hover:shadow-md hover:border-green-200 transition-all" onClick={() => openDrillDown('bins_delivered')}>
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500">Bins Delivered</p>
+                <p className="text-sm text-gray-500">Delivered</p>
                 <p className="text-2xl font-bold text-gray-900">
                   {formatNumber(dashboardData.total_bins_this_season, 0)}
                 </p>
@@ -311,7 +311,7 @@ const PackinghouseDashboard = () => {
                       <p className="font-semibold">{ph.total_pools || 0}</p>
                     </div>
                     <div className="text-center">
-                      <p className="text-gray-500">Bins</p>
+                      <p className="text-gray-500">Qty</p>
                       <p className="font-semibold">{formatNumber(ph.season_bins)}</p>
                     </div>
                     <div className="text-center">
@@ -349,7 +349,7 @@ const PackinghouseDashboard = () => {
                       </div>
                       <div className="text-right">
                         <p className="font-semibold text-green-600">
-                          {formatNumber(delivery.bins)} bins
+                          {formatNumber(delivery.bins)}
                         </p>
                         <p className="text-xs text-gray-400">
                           {new Date(delivery.delivery_date).toLocaleDateString()}

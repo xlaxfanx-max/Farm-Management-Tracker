@@ -5,7 +5,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { X, Zap } from 'lucide-react';
-import { harvestsAPI, HARVEST_CONSTANTS } from '../services/api';
+import { harvestsAPI, HARVEST_CONSTANTS, getUnitLabelForCropVariety } from '../services/api';
 
 const QuickHarvestModal = ({
   isOpen,
@@ -25,6 +25,9 @@ const QuickHarvestModal = ({
   const [errors, setErrors] = useState({});
   const [saving, setSaving] = useState(false);
   const [lastCropUsed, setLastCropUsed] = useState(null);
+
+  // Dynamic unit label based on selected crop variety
+  const unitInfo = getUnitLabelForCropVariety(formData.crop_variety);
 
   // Load last used crop variety
   useEffect(() => {
@@ -85,7 +88,7 @@ const QuickHarvestModal = ({
     }
 
     if (!formData.total_bins || formData.total_bins <= 0) {
-      newErrors.total_bins = 'Total bins must be greater than 0';
+      newErrors.total_bins = `Total ${unitInfo.labelPlural.toLowerCase()} must be greater than 0`;
     }
 
     setErrors(newErrors);
@@ -224,10 +227,10 @@ const QuickHarvestModal = ({
             {errors.harvest_date && <p className="text-red-500 text-sm mt-1">{errors.harvest_date}</p>}
           </div>
 
-          {/* Total Bins */}
+          {/* Total Bins/Lbs */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Total Bins <span className="text-red-500">*</span>
+              Total {unitInfo.labelPlural} <span className="text-red-500">*</span>
             </label>
             <input
               type="number"
@@ -236,7 +239,7 @@ const QuickHarvestModal = ({
               onChange={handleChange}
               min="1"
               className={`w-full border rounded-lg px-3 py-2 ${errors.total_bins ? 'border-red-500' : ''}`}
-              placeholder="Number of bins harvested"
+              placeholder={`Number of ${unitInfo.labelPlural.toLowerCase()} harvested`}
               required
             />
             {errors.total_bins && <p className="text-red-500 text-sm mt-1">{errors.total_bins}</p>}
