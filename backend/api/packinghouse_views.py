@@ -2007,11 +2007,12 @@ def harvest_packing_pipeline(request):
     )
 
     # Pipeline Stage 3: Packout Reports
-    packout_stats = PackoutReport.objects.filter(
+    packout_qs = PackoutReport.objects.filter(
         pool_commodity_filter,
         pool__packinghouse__company=company,
         pool__season=selected_season
-    ).aggregate(
+    )
+    packout_stats = packout_qs.aggregate(
         total_reports=Count('id'),
         total_bins_packed=Coalesce(Sum('bins_this_period'), Decimal('0')),
         avg_pack_percent=Avg('total_packed_percent'),
@@ -2026,6 +2027,15 @@ def harvest_packing_pipeline(request):
     from api.services.season_service import get_primary_unit_for_commodity
     unit_info = get_primary_unit_for_commodity(selected_commodity)
     is_weight_based = unit_info['unit'] == 'LBS'
+
+    # For weight-based commodities, calculate packed weight from packout grade lines
+    total_lbs_packed = Decimal('0')
+    if is_weight_based and packout_stats['total_reports'] > 0:
+        from api.models import PackoutGradeLine
+        total_lbs_packed = PackoutGradeLine.objects.filter(
+            packout_report__in=packout_qs,
+            unit_of_measure='LBS'
+        ).aggregate(total=Coalesce(Sum('quantity_this_period'), Decimal('0')))['total']
 
     # For weight-based commodities, also calculate weight from grade lines as fallback
     settlement_qs = PoolSettlement.objects.filter(
