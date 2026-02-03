@@ -1972,14 +1972,23 @@ def harvest_packing_pipeline(request):
     pool_commodity_filter = Q(pool__commodity__iexact=selected_commodity)
     commodity_filter = Q(commodity__iexact=selected_commodity)
 
-    # Pipeline Stage 1: Harvests (date-based, no commodity filter on Harvest model)
-    harvest_stats = Harvest.objects.filter(
+    # Pipeline Stage 1: Harvests
+    # Filter by crop varieties that map to this commodity
+    from api.services.season_service import get_varieties_for_commodity
+    commodity_varieties = get_varieties_for_commodity(selected_commodity)
+
+    harvest_qs = Harvest.objects.filter(
         field__farm__company=company,
         harvest_date__gte=season_start,
         harvest_date__lte=season_end
-    ).aggregate(
+    )
+    if commodity_varieties:
+        harvest_qs = harvest_qs.filter(crop_variety__in=commodity_varieties)
+
+    harvest_stats = harvest_qs.aggregate(
         total_harvests=Count('id'),
         total_bins_harvested=Coalesce(Sum('total_bins'), 0),
+        total_weight_harvested=Coalesce(Sum('estimated_weight_lbs'), Decimal('0')),
         in_progress=Count('id', filter=Q(status='in_progress')),
         complete=Count('id', filter=Q(status='complete')),
         verified=Count('id', filter=Q(status='verified'))
@@ -2051,12 +2060,15 @@ def harvest_packing_pipeline(request):
     ).values('status').annotate(count=Count('id'))
     pool_by_status = {item['status']: item['count'] for item in pool_status}
 
-    # Recent activity
-    recent_harvests = Harvest.objects.filter(
+    # Recent activity (filter harvests by commodity varieties)
+    recent_harvest_qs = Harvest.objects.filter(
         field__farm__company=company,
         harvest_date__gte=season_start,
         harvest_date__lte=season_end
-    ).select_related('field', 'field__farm').order_by('-harvest_date')[:5]
+    )
+    if commodity_varieties:
+        recent_harvest_qs = recent_harvest_qs.filter(crop_variety__in=commodity_varieties)
+    recent_harvests = recent_harvest_qs.select_related('field', 'field__farm').order_by('-harvest_date')[:5]
 
     recent_deliveries = PackinghouseDelivery.objects.filter(
         pool_commodity_filter,
@@ -2078,28 +2090,28 @@ def harvest_packing_pipeline(request):
 
     # Calculate pipeline efficiency metrics
     bins_harvested = harvest_stats['total_bins_harvested'] or 0
+    lbs_harvested = float(harvest_stats['total_weight_harvested'] or 0)
     bins_delivered = float(delivery_stats['total_bins_delivered'] or 0)
     bins_packed = float(packout_stats['total_bins_packed'] or 0)
     bins_settled = float(settlement_stats['total_bins_settled'] or 0)
     lbs_settled = float(settlement_stats['total_lbs_settled'] or 0)
 
-    # For weight-based commodities, use lbs for settled quantity
+    # For weight-based commodities, use lbs throughout the pipeline
     if is_weight_based:
+        harvested_quantity = lbs_harvested
         settled_quantity = lbs_settled
-        packed_quantity = lbs_settled  # Use settlement weight as "packed" baseline for avocados
-        # Settlement progress: compare settled revenue existence (avocados don't have bin counts)
-        # Use bins_packed from packout reports as the packed count (still bins for packout tracking)
-        settlement_progress = 100.0 if lbs_settled > 0 and bins_packed > 0 else 0
+        # Settlement progress: lbs settled vs lbs harvested
+        settlement_progress = round((lbs_settled / lbs_harvested * 100), 1) if lbs_harvested > 0 else 0
     else:
+        harvested_quantity = bins_harvested
         settled_quantity = bins_settled
-        packed_quantity = bins_packed
         settlement_progress = round((bins_settled / bins_packed * 100), 1) if bins_packed > 0 else 0
 
     pipeline_efficiency = {
         'harvest_to_delivery': round((bins_delivered / bins_harvested * 100), 1) if bins_harvested > 0 else 0,
         'delivery_to_packout': round((bins_packed / bins_delivered * 100), 1) if bins_delivered > 0 else 0,
         'packout_to_settlement': settlement_progress,
-        'overall': round((bins_settled / bins_harvested * 100), 1) if bins_harvested > 0 else 0,
+        'overall': round((lbs_settled / lbs_harvested * 100), 1) if is_weight_based and lbs_harvested > 0 else (round((bins_settled / bins_harvested * 100), 1) if bins_harvested > 0 else 0),
     }
 
     # Format recent activity for response
@@ -2283,6 +2295,8 @@ def harvest_packing_pipeline(request):
                 'label': 'Harvested',
                 'total_count': harvest_stats['total_harvests'],
                 'total_bins': bins_harvested,
+                'total_lbs': lbs_harvested,
+                'primary_quantity': harvested_quantity,
                 'breakdown': {
                     'in_progress': harvest_stats['in_progress'],
                     'complete': harvest_stats['complete'],

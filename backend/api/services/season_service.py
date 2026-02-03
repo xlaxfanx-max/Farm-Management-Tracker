@@ -730,6 +730,12 @@ def get_commodity_from_crop_variety(crop_variety: str) -> str:
     return CROP_VARIETY_TO_COMMODITY.get(crop_variety, 'OTHER')
 
 
+def get_varieties_for_commodity(commodity: str) -> list:
+    """Get all crop_variety values that map to a given commodity string."""
+    upper = commodity.upper()
+    return [k for k, v in CROP_VARIETY_TO_COMMODITY.items() if v.upper() == upper]
+
+
 def get_primary_unit_for_crop_variety(crop_variety: str) -> dict:
     """Get the primary unit info for a harvest crop_variety choice value."""
     commodity = get_commodity_from_crop_variety(crop_variety)
