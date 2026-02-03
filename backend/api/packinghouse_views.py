@@ -1854,6 +1854,20 @@ def harvest_packing_pipeline(request):
                         avg_per_unit = round(float(row['avg_per_bin'] or 0), 2)
                     settlement_count = row['settlement_count']
 
+            # Fallback: if lbs_settled is 0 but we have settlements, try grade lines
+            if unit_info['unit'] == 'LBS' and lbs_settled == 0 and settlement_count > 0:
+                from api.models import SettlementGradeLine
+                grade_line_lbs = SettlementGradeLine.objects.filter(
+                    settlement__pool__commodity=commodity,
+                    settlement__pool__season=current_season_label,
+                    settlement__pool__packinghouse__company=company,
+                    unit_of_measure='LBS'
+                ).aggregate(total=Coalesce(Sum('quantity'), Decimal('0')))['total']
+                lbs_settled = grade_line_lbs
+                # Also calculate avg_per_unit from net_return / total_lbs
+                if lbs_settled > 0 and revenue > 0:
+                    avg_per_unit = round(float(revenue / lbs_settled), 2)
+
             pools = {}
             for row in pool_status_by_cs:
                 if row['commodity'] == commodity and row['season'] == current_season_label:
@@ -1996,11 +2010,17 @@ def harvest_packing_pipeline(request):
     )
 
     # Pipeline Stage 4: Settlements
-    settlement_stats = PoolSettlement.objects.filter(
+    from django.db.models import Subquery, OuterRef
+    from django.db.models.functions import Coalesce as CoalesceFunc
+
+    # For weight-based commodities, also calculate weight from grade lines as fallback
+    settlement_qs = PoolSettlement.objects.filter(
         pool_commodity_filter,
         pool__packinghouse__company=company,
         pool__season=selected_season
-    ).aggregate(
+    )
+
+    settlement_stats = settlement_qs.aggregate(
         total_settlements=Count('id'),
         total_revenue=Coalesce(Sum('net_return'), Decimal('0')),
         total_bins_settled=Coalesce(Sum('total_bins'), Decimal('0')),
@@ -2008,6 +2028,15 @@ def harvest_packing_pipeline(request):
         avg_per_bin=Avg('net_per_bin'),
         avg_per_lb=Avg('net_per_lb'),
     )
+
+    # Fallback: if total_lbs_settled is 0 but settlements exist, try summing LBS grade lines
+    if is_weight_based and float(settlement_stats['total_lbs_settled']) == 0 and settlement_stats['total_settlements'] > 0:
+        from api.models import SettlementGradeLine
+        grade_line_lbs = SettlementGradeLine.objects.filter(
+            settlement__in=settlement_qs,
+            unit_of_measure='LBS'
+        ).aggregate(total=Coalesce(Sum('quantity'), Decimal('0')))['total']
+        settlement_stats['total_lbs_settled'] = grade_line_lbs
 
     # Pool status breakdown
     pool_status = Pool.objects.filter(
@@ -2793,6 +2822,17 @@ class PackinghouseStatementViewSet(viewsets.ModelViewSet):
                         settlement=settlement,
                         **ded_data
                     )
+
+                # Backfill total_weight_lbs from LBS grade lines if not already set
+                if not settlement.total_weight_lbs:
+                    lbs_total = SettlementGradeLine.objects.filter(
+                        settlement=settlement, unit_of_measure='LBS'
+                    ).aggregate(total=Coalesce(Sum('quantity'), Decimal('0')))['total']
+                    if lbs_total and lbs_total > 0:
+                        settlement.total_weight_lbs = lbs_total
+                        if not settlement.net_per_lb and settlement.net_return:
+                            settlement.net_per_lb = round(settlement.net_return / lbs_total, 4)
+                        settlement.save(update_fields=['total_weight_lbs', 'net_per_lb'])
 
                 statement.pool = pool
                 statement.field = field
