@@ -1,6 +1,7 @@
 // =============================================================================
 // PIPELINE OVERVIEW COMPONENT
-// Shows the packout → settlement flow for growers who receive packinghouse reports
+// Shows the packed → settled flow for growers who receive packinghouse reports
+// Supports commodity-aware units: citrus uses bins, avocados use lbs
 //
 // Two modes:
 // 1. All Commodities (default) - Summary tiles + per-commodity cards
