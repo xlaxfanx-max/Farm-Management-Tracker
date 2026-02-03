@@ -3,6 +3,7 @@ Packinghouse Pool Tracking Views
 ================================
 ViewSets and API views for the packinghouse pool tracking module.
 Handles deliveries, packout reports, settlements, and grower ledger entries.
+Supports commodity-aware units (bins for citrus, lbs for avocados).
 """
 
 from rest_framework import viewsets, status
