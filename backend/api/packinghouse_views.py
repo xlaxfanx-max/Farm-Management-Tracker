@@ -1861,13 +1861,14 @@ def harvest_packing_pipeline(request):
 
             # Use the primary unit for this commodity
             if unit_info['unit'] == 'LBS':
-                quantity_packed = float(lbs_settled)  # For avocados, use weight
+                quantity_packed = float(bins_packed)  # Packout reports still track bins
                 quantity_settled = float(lbs_settled)
+                # Settlement progress for weight-based: if we have settled lbs and packed bins, show 100%
+                settlement_pct = 100.0 if lbs_settled > 0 and bins_packed > 0 else (0 if bins_packed > 0 else 0)
             else:
                 quantity_packed = float(bins_packed)
                 quantity_settled = float(bins_settled)
-
-            settlement_pct = round((quantity_settled / quantity_packed * 100), 1) if quantity_packed > 0 else 0
+                settlement_pct = round((quantity_settled / quantity_packed * 100), 1) if quantity_packed > 0 else 0
 
             commodity_cards.append({
                 'commodity': commodity,
@@ -2003,7 +2004,9 @@ def harvest_packing_pipeline(request):
         total_settlements=Count('id'),
         total_revenue=Coalesce(Sum('net_return'), Decimal('0')),
         total_bins_settled=Coalesce(Sum('total_bins'), Decimal('0')),
-        avg_per_bin=Avg('net_per_bin')
+        total_lbs_settled=Coalesce(Sum('total_weight_lbs'), Decimal('0')),
+        avg_per_bin=Avg('net_per_bin'),
+        avg_per_lb=Avg('net_per_lb'),
     )
 
     # Pool status breakdown
@@ -2039,16 +2042,34 @@ def harvest_packing_pipeline(request):
         pool__season=selected_season
     ).select_related('pool', 'field').order_by('-statement_date')[:5]
 
+    # Determine primary unit for this commodity
+    from api.services.season_service import get_primary_unit_for_commodity
+    unit_info = get_primary_unit_for_commodity(selected_commodity)
+    is_weight_based = unit_info['unit'] == 'LBS'
+
     # Calculate pipeline efficiency metrics
     bins_harvested = harvest_stats['total_bins_harvested'] or 0
     bins_delivered = float(delivery_stats['total_bins_delivered'] or 0)
     bins_packed = float(packout_stats['total_bins_packed'] or 0)
     bins_settled = float(settlement_stats['total_bins_settled'] or 0)
+    lbs_settled = float(settlement_stats['total_lbs_settled'] or 0)
+
+    # For weight-based commodities, use lbs for settled quantity
+    if is_weight_based:
+        settled_quantity = lbs_settled
+        packed_quantity = lbs_settled  # Use settlement weight as "packed" baseline for avocados
+        # Settlement progress: compare settled revenue existence (avocados don't have bin counts)
+        # Use bins_packed from packout reports as the packed count (still bins for packout tracking)
+        settlement_progress = 100.0 if lbs_settled > 0 and bins_packed > 0 else 0
+    else:
+        settled_quantity = bins_settled
+        packed_quantity = bins_packed
+        settlement_progress = round((bins_settled / bins_packed * 100), 1) if bins_packed > 0 else 0
 
     pipeline_efficiency = {
         'harvest_to_delivery': round((bins_delivered / bins_harvested * 100), 1) if bins_harvested > 0 else 0,
         'delivery_to_packout': round((bins_packed / bins_delivered * 100), 1) if bins_delivered > 0 else 0,
-        'packout_to_settlement': round((bins_settled / bins_packed * 100), 1) if bins_packed > 0 else 0,
+        'packout_to_settlement': settlement_progress,
         'overall': round((bins_settled / bins_harvested * 100), 1) if bins_harvested > 0 else 0,
     }
 
@@ -2213,6 +2234,12 @@ def harvest_packing_pipeline(request):
 
         breakdowns = sorted(group_map.values(), key=lambda x: x.get('revenue', 0), reverse=True)
 
+    # Avg per unit for settlement
+    if is_weight_based:
+        avg_per_unit = round(float(settlement_stats['avg_per_lb'] or 0), 2)
+    else:
+        avg_per_unit = round(float(settlement_stats['avg_per_bin'] or 0), 2)
+
     return Response({
         'mode': 'specific_commodity',
         'selected_commodity': selected_commodity,
@@ -2220,6 +2247,8 @@ def harvest_packing_pipeline(request):
         'current_season': selected_season,
         'selected_season': selected_season,
         'available_seasons': available_seasons,
+        'primary_unit': unit_info['unit'],
+        'primary_unit_label': unit_info['label_plural'],
         'pipeline_stages': {
             'harvest': {
                 'label': 'Harvested',
@@ -2251,8 +2280,11 @@ def harvest_packing_pipeline(request):
                 'label': 'Settled',
                 'total_count': settlement_stats['total_settlements'],
                 'total_bins': bins_settled,
+                'total_lbs': lbs_settled,
+                'primary_quantity': settled_quantity,
                 'total_revenue': float(settlement_stats['total_revenue'] or 0),
-                'avg_per_bin': round(float(settlement_stats['avg_per_bin'] or 0), 2)
+                'avg_per_bin': round(float(settlement_stats['avg_per_bin'] or 0), 2),
+                'avg_per_unit': avg_per_unit,
             }
         },
         'pool_status': {

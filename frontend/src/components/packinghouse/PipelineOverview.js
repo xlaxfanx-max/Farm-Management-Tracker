@@ -477,11 +477,19 @@ const PipelineOverview = () => {
   // =========================================================================
   const { pipeline_stages, pool_status, pipeline_efficiency, recent_activity } = data;
 
-  // Calculate settlement efficiency based on packed bins
+  // Dynamic unit info for this commodity
+  const isLbsCommodity = data.primary_unit === 'LBS';
+  const commodityUnitLabel = data.primary_unit_label || 'Bins';
+  const commodityUnitSingular = isLbsCommodity ? 'Lb' : 'Bin';
+
+  // Calculate settlement efficiency
   const packedBins = pipeline_stages.packout.total_bins || 0;
   const settledBins = pipeline_stages.settlement.total_bins || 0;
-  const settlementPercent = packedBins > 0 ? Math.round((settledBins / packedBins) * 100) : (settledBins > 0 ? 999 : 0);
-  const hasMissingPackouts = settledBins > packedBins && settledBins > 0;
+  const settledQuantity = isLbsCommodity
+    ? (pipeline_stages.settlement.total_lbs || pipeline_stages.settlement.primary_quantity || 0)
+    : settledBins;
+  const settlementPercent = pipeline_efficiency?.packout_to_settlement ?? (packedBins > 0 ? Math.round((settledBins / packedBins) * 100) : 0);
+  const hasMissingPackouts = !isLbsCommodity && settledBins > packedBins && settledBins > 0;
   const missingPackoutBins = hasMissingPackouts ? Math.round(settledBins - packedBins) : 0;
 
   // Filter recent activity to only show packout and settlement
@@ -574,7 +582,7 @@ const PipelineOverview = () => {
               <p className="text-3xl font-bold text-purple-600 mt-2 group-hover:underline decoration-purple-300">
                 {formatNumber(pipeline_stages.packout.total_bins)}
               </p>
-              <p className="text-sm text-gray-500">bins in {pipeline_stages.packout.total_count} reports</p>
+              <p className="text-sm text-gray-500">{isLbsCommodity ? 'bins' : 'bins'} in {pipeline_stages.packout.total_count} reports</p>
               <div className="mt-3 flex justify-center gap-2 text-xs">
                 <span className="px-2 py-1 bg-purple-100 text-purple-800 rounded">
                   {pipeline_stages.packout.avg_pack_percent}% packed
@@ -611,11 +619,11 @@ const PipelineOverview = () => {
               <p className="text-3xl font-bold text-green-600 mt-2 group-hover:underline decoration-green-300">
                 {formatCurrency(pipeline_stages.settlement.total_revenue)}
               </p>
-              <p className="text-sm text-gray-500">{formatNumber(pipeline_stages.settlement.total_bins)} bins settled</p>
+              <p className="text-sm text-gray-500">{formatNumber(settledQuantity)} {commodityUnitLabel.toLowerCase()} settled</p>
               <div className="mt-3 flex justify-center gap-2 text-xs">
-                {pipeline_stages.settlement.avg_per_bin > 0 && (
+                {(pipeline_stages.settlement.avg_per_unit || pipeline_stages.settlement.avg_per_bin) > 0 && (
                   <span className="px-2 py-1 bg-green-100 text-green-800 rounded">
-                    ${formatNumber(pipeline_stages.settlement.avg_per_bin, 2)}/bin
+                    ${formatNumber(pipeline_stages.settlement.avg_per_unit || pipeline_stages.settlement.avg_per_bin, 2)}/{commodityUnitSingular.toLowerCase()}
                   </span>
                 )}
               </div>
@@ -632,7 +640,7 @@ const PipelineOverview = () => {
                 {hasMissingPackouts ? (
                   <span className="flex items-center gap-1">
                     <AlertCircle className="w-4 h-4" />
-                    {formatNumber(settledBins)} / {formatNumber(packedBins)} bins
+                    {formatNumber(settledBins)} / {formatNumber(packedBins)} {commodityUnitLabel.toLowerCase()}
                   </span>
                 ) : (
                   `${settlementPercent}%`
@@ -651,8 +659,8 @@ const PipelineOverview = () => {
             </div>
             <p className="text-xs text-gray-500 mt-1">
               {hasMissingPackouts
-                ? `Settlements exceed packouts by ${formatNumber(missingPackoutBins)} bins - packout reports may be missing`
-                : 'Percentage of packed bins that have been settled'
+                ? `Settlements exceed packouts by ${formatNumber(missingPackoutBins)} ${commodityUnitLabel.toLowerCase()} - packout reports may be missing`
+                : `Percentage of packed ${commodityUnitLabel.toLowerCase()} that have been settled`
               }
             </p>
           </div>
@@ -670,12 +678,12 @@ const PipelineOverview = () => {
                 <thead>
                   <tr className="text-left text-sm text-gray-500 dark:text-gray-400 border-b dark:border-gray-700">
                     <th className="py-3 px-3">Farm / Ranch</th>
-                    <th className="py-3 px-3 text-right">Bins Packed</th>
+                    <th className="py-3 px-3 text-right">{commodityUnitLabel} Packed</th>
                     <th className="py-3 px-3 text-right">Pack %</th>
-                    <th className="py-3 px-3 text-right">Bins Settled</th>
+                    <th className="py-3 px-3 text-right">{commodityUnitLabel} Settled</th>
                     <th className="py-3 px-3 text-right">Settlement</th>
                     <th className="py-3 px-3 text-right">Revenue</th>
-                    <th className="py-3 px-3 text-right">$/Bin</th>
+                    <th className="py-3 px-3 text-right">$/{commodityUnitSingular}</th>
                   </tr>
                 </thead>
                 <tbody>
