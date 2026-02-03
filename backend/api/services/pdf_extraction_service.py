@@ -302,6 +302,7 @@ Then extract ALL relevant data. Return a JSON object with this structure:
         "prior_advances": number or null,
         "amount_due": number or null,
         "net_per_bin": number or null,
+        "net_per_lb": number or null,
         "net_per_carton": number or null,
         "house_avg_per_bin": number or null,
         "house_avg_per_carton": number or null
