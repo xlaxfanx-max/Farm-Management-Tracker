@@ -493,9 +493,10 @@ const PipelineOverview = () => {
   const settledQuantity = isLbsCommodity
     ? (pipeline_stages.settlement.total_lbs || pipeline_stages.settlement.primary_quantity || 0)
     : settledBins;
-  const settlementPercent = pipeline_efficiency?.packout_to_settlement ?? (packedQuantity > 0 ? Math.round((settledQuantity / packedQuantity) * 100) : 0);
-  const hasMissingPackouts = !isLbsCommodity && settledBins > packedBins && settledBins > 0;
-  const missingPackoutBins = hasMissingPackouts ? Math.round(settledBins - packedBins) : 0;
+  const rawSettlementPercent = pipeline_efficiency?.packout_to_settlement ?? (packedQuantity > 0 ? Math.round((settledQuantity / packedQuantity) * 100) : 0);
+  const settlementPercent = Math.min(rawSettlementPercent, 100);
+  const hasMissingPackouts = pipeline_efficiency?.has_missing_packouts || (settledQuantity > packedQuantity && packedQuantity > 0);
+  const missingPackoutQuantity = hasMissingPackouts ? Math.round(settledQuantity - packedQuantity) : 0;
 
   // Filter recent activity to only show packout and settlement
   const filteredActivity = recent_activity?.filter(
@@ -671,7 +672,7 @@ const PipelineOverview = () => {
                 {hasMissingPackouts ? (
                   <span className="flex items-center gap-1">
                     <AlertCircle className="w-4 h-4" />
-                    {formatNumber(settledBins)} / {formatNumber(packedBins)} {commodityUnitLabel.toLowerCase()}
+                    {formatNumber(settledQuantity)} / {formatNumber(packedQuantity)} {commodityUnitLabel.toLowerCase()}
                   </span>
                 ) : (
                   `${settlementPercent}%`
@@ -690,7 +691,7 @@ const PipelineOverview = () => {
             </div>
             <p className="text-xs text-gray-500 mt-1">
               {hasMissingPackouts
-                ? `Settlements exceed packouts by ${formatNumber(missingPackoutBins)} ${commodityUnitLabel.toLowerCase()} - packout reports may be missing`
+                ? `Settlements exceed packouts by ${formatNumber(missingPackoutQuantity)} ${commodityUnitLabel.toLowerCase()} - packout reports may be missing`
                 : `Percentage of packed ${commodityUnitLabel.toLowerCase()} that have been settled`
               }
             </p>
@@ -910,7 +911,7 @@ const PipelineOverview = () => {
           }`}>
             {hasMissingPackouts && (
               <li>
-                • <strong>Missing packout reports:</strong> {formatNumber(missingPackoutBins)} more bins have been settled than packed. Upload the corresponding packout reports to reconcile.
+                • <strong>Missing packout reports:</strong> {formatNumber(missingPackoutQuantity)} more {commodityUnitLabel.toLowerCase()} have been settled than packed. Upload the corresponding packout reports to reconcile.
               </li>
             )}
             {pool_status.closed > 0 && (
