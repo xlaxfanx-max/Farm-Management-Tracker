@@ -485,15 +485,13 @@ const PipelineOverview = () => {
   // Calculate settlement efficiency
   const packedBins = pipeline_stages.packout.total_bins || 0;
   const settledBins = pipeline_stages.settlement.total_bins || 0;
-  // For weight-based commodities, use lbs harvested as the "packed" baseline
-  const harvestedQuantity = isLbsCommodity
-    ? (pipeline_stages.harvest.total_lbs || pipeline_stages.harvest.primary_quantity || 0)
-    : (pipeline_stages.harvest.total_bins || 0);
+  // For weight-based commodities, use lbs packed from grade lines
+  const packedQuantity = isLbsCommodity
+    ? (pipeline_stages.packout.total_lbs || pipeline_stages.packout.primary_quantity || 0)
+    : packedBins;
   const settledQuantity = isLbsCommodity
     ? (pipeline_stages.settlement.total_lbs || pipeline_stages.settlement.primary_quantity || 0)
     : settledBins;
-  // For avocados: compare lbs settled to lbs harvested. For citrus: bins settled to bins packed.
-  const packedQuantity = isLbsCommodity ? harvestedQuantity : packedBins;
   const settlementPercent = pipeline_efficiency?.packout_to_settlement ?? (packedQuantity > 0 ? Math.round((settledQuantity / packedQuantity) * 100) : 0);
   const hasMissingPackouts = !isLbsCommodity && settledBins > packedBins && settledBins > 0;
   const missingPackoutBins = hasMissingPackouts ? Math.round(settledBins - packedBins) : 0;
@@ -579,42 +577,36 @@ const PipelineOverview = () => {
           <div className="flex items-center justify-center gap-8">
             {/* Stage 1: Packout (or Harvested for weight-based) */}
             <div className="flex-1 max-w-xs text-center cursor-pointer group" onClick={() => openDrillDown('packed_bins')}>
-              <div className={`inline-flex items-center justify-center w-20 h-20 rounded-full mb-3 group-hover:ring-2 transition-all ${
-                isLbsCommodity
-                  ? 'bg-blue-100 dark:bg-blue-900/30 group-hover:ring-blue-300'
-                  : 'bg-purple-100 dark:bg-purple-900/30 group-hover:ring-purple-300'
-              }`}>
-                {isLbsCommodity
-                  ? <Layers className="w-10 h-10 text-blue-600" />
-                  : <Package className="w-10 h-10 text-purple-600" />
-                }
+              <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-purple-100 dark:bg-purple-900/30 mb-3 group-hover:ring-2 group-hover:ring-purple-300 transition-all">
+                <Package className="w-10 h-10 text-purple-600" />
               </div>
               <h3 className="font-semibold text-gray-900 dark:text-gray-100 text-lg">
-                {isLbsCommodity ? 'Harvested' : pipeline_stages.packout.label}
+                {pipeline_stages.packout.label}
               </h3>
-              <p className={`text-3xl font-bold mt-2 group-hover:underline ${isLbsCommodity ? 'text-blue-600 decoration-blue-300' : 'text-purple-600 decoration-purple-300'}`}>
-                {isLbsCommodity
-                  ? formatNumber(harvestedQuantity)
-                  : formatNumber(pipeline_stages.packout.total_bins)
-                }
+              <p className="text-3xl font-bold text-purple-600 mt-2 group-hover:underline decoration-purple-300">
+                {formatNumber(packedQuantity)}
               </p>
               <p className="text-sm text-gray-500">
                 {isLbsCommodity
-                  ? `lbs in ${pipeline_stages.harvest.total_count} harvests`
+                  ? `lbs in ${pipeline_stages.packout.total_count} reports`
                   : `bins in ${pipeline_stages.packout.total_count} reports`
                 }
               </p>
               {isLbsCommodity ? (
-                /* For weight-based: show harvest status breakdown */
+                /* For weight-based: show pack percent */
                 <div className="mt-3 flex justify-center gap-2 text-xs">
-                  {pipeline_stages.harvest.breakdown.verified > 0 && (
-                    <span className="px-2 py-1 bg-green-100 text-green-800 rounded">
-                      {pipeline_stages.harvest.breakdown.verified} verified
+                  {pipeline_stages.packout.avg_pack_percent > 0 && (
+                    <span className="px-2 py-1 bg-purple-100 text-purple-800 rounded">
+                      {pipeline_stages.packout.avg_pack_percent}% packed
                     </span>
                   )}
-                  {pipeline_stages.harvest.breakdown.complete > 0 && (
-                    <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded">
-                      {pipeline_stages.harvest.breakdown.complete} complete
+                  {pipeline_stages.packout.avg_house_percent > 0 && (
+                    <span className={`px-2 py-1 rounded ${
+                      pipeline_stages.packout.avg_pack_percent >= pipeline_stages.packout.avg_house_percent
+                        ? 'bg-green-100 text-green-800'
+                        : 'bg-red-100 text-red-800'
+                    }`}>
+                      vs {pipeline_stages.packout.avg_house_percent}% house
                     </span>
                   )}
                 </div>
@@ -690,9 +682,7 @@ const PipelineOverview = () => {
                 className={`h-3 rounded-full transition-all duration-500 ${
                   hasMissingPackouts
                     ? 'bg-gradient-to-r from-orange-400 to-orange-500'
-                    : isLbsCommodity
-                      ? 'bg-gradient-to-r from-blue-500 to-green-500'
-                      : 'bg-gradient-to-r from-purple-500 to-green-500'
+                    : 'bg-gradient-to-r from-purple-500 to-green-500'
                 }`}
                 style={{ width: `${Math.min(settlementPercent, 100)}%` }}
               />
@@ -700,9 +690,7 @@ const PipelineOverview = () => {
             <p className="text-xs text-gray-500 mt-1">
               {hasMissingPackouts
                 ? `Settlements exceed packouts by ${formatNumber(missingPackoutBins)} ${commodityUnitLabel.toLowerCase()} - packout reports may be missing`
-                : isLbsCommodity
-                  ? `Percentage of harvested ${commodityUnitLabel.toLowerCase()} that have been settled`
-                  : `Percentage of packed ${commodityUnitLabel.toLowerCase()} that have been settled`
+                : `Percentage of packed ${commodityUnitLabel.toLowerCase()} that have been settled`
               }
             </p>
           </div>

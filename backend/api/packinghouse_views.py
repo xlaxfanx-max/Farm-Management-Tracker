@@ -2103,17 +2103,20 @@ def harvest_packing_pipeline(request):
     lbs_harvested = float(harvest_stats['total_weight_harvested'] or 0)
     bins_delivered = float(delivery_stats['total_bins_delivered'] or 0)
     bins_packed = float(packout_stats['total_bins_packed'] or 0)
+    lbs_packed = float(total_lbs_packed)
     bins_settled = float(settlement_stats['total_bins_settled'] or 0)
     lbs_settled = float(settlement_stats['total_lbs_settled'] or 0)
 
     # For weight-based commodities, use lbs throughout the pipeline
     if is_weight_based:
         harvested_quantity = lbs_harvested
+        packed_quantity = lbs_packed
         settled_quantity = lbs_settled
-        # Settlement progress: lbs settled vs lbs harvested
-        settlement_progress = round((lbs_settled / lbs_harvested * 100), 1) if lbs_harvested > 0 else 0
+        # Settlement progress: lbs settled vs lbs packed
+        settlement_progress = round((lbs_settled / lbs_packed * 100), 1) if lbs_packed > 0 else 0
     else:
         harvested_quantity = bins_harvested
+        packed_quantity = bins_packed
         settled_quantity = bins_settled
         settlement_progress = round((bins_settled / bins_packed * 100), 1) if bins_packed > 0 else 0
 
@@ -2121,7 +2124,7 @@ def harvest_packing_pipeline(request):
         'harvest_to_delivery': round((bins_delivered / bins_harvested * 100), 1) if bins_harvested > 0 else 0,
         'delivery_to_packout': round((bins_packed / bins_delivered * 100), 1) if bins_delivered > 0 else 0,
         'packout_to_settlement': settlement_progress,
-        'overall': round((lbs_settled / lbs_harvested * 100), 1) if is_weight_based and lbs_harvested > 0 else (round((bins_settled / bins_harvested * 100), 1) if bins_harvested > 0 else 0),
+        'overall': round((lbs_settled / lbs_packed * 100), 1) if is_weight_based and lbs_packed > 0 else (round((bins_settled / bins_harvested * 100), 1) if bins_harvested > 0 else 0),
     }
 
     # Format recent activity for response
@@ -2326,6 +2329,8 @@ def harvest_packing_pipeline(request):
                 'label': 'Packed',
                 'total_count': packout_stats['total_reports'],
                 'total_bins': bins_packed,
+                'total_lbs': lbs_packed,
+                'primary_quantity': packed_quantity,
                 'avg_pack_percent': round(float(packout_stats['avg_pack_percent'] or 0), 1),
                 'avg_house_percent': round(float(packout_stats['avg_house_percent'] or 0), 1)
             },
