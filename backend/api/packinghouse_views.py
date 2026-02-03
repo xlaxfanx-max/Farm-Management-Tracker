@@ -2013,6 +2013,11 @@ def harvest_packing_pipeline(request):
     from django.db.models import Subquery, OuterRef
     from django.db.models.functions import Coalesce as CoalesceFunc
 
+    # Determine primary unit for this commodity (needed for fallback logic below)
+    from api.services.season_service import get_primary_unit_for_commodity
+    unit_info = get_primary_unit_for_commodity(selected_commodity)
+    is_weight_based = unit_info['unit'] == 'LBS'
+
     # For weight-based commodities, also calculate weight from grade lines as fallback
     settlement_qs = PoolSettlement.objects.filter(
         pool_commodity_filter,
@@ -2070,11 +2075,6 @@ def harvest_packing_pipeline(request):
         pool__packinghouse__company=company,
         pool__season=selected_season
     ).select_related('pool', 'field').order_by('-statement_date')[:5]
-
-    # Determine primary unit for this commodity
-    from api.services.season_service import get_primary_unit_for_commodity
-    unit_info = get_primary_unit_for_commodity(selected_commodity)
-    is_weight_based = unit_info['unit'] == 'LBS'
 
     # Calculate pipeline efficiency metrics
     bins_harvested = harvest_stats['total_bins_harvested'] or 0
