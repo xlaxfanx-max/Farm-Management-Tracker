@@ -14,6 +14,9 @@ import {
 // Create context
 const DataContext = createContext(null);
 
+// Helper to extract results from paginated or plain responses
+const extractResults = (res) => res.data.results || res.data || [];
+
 // =============================================================================
 // DATA PROVIDER COMPONENT
 // =============================================================================
@@ -37,7 +40,35 @@ export function DataProvider({ children }) {
   const [error, setError] = useState(null);
 
   // ============================================================================
-  // LOAD DATA
+  // TARGETED REFRESH FUNCTIONS
+  // ============================================================================
+  const refreshFarms = useCallback(async () => {
+    const res = await farmsAPI.getAll();
+    setFarms(extractResults(res));
+  }, []);
+
+  const refreshFields = useCallback(async () => {
+    const res = await fieldsAPI.getAll();
+    setFields(extractResults(res));
+  }, []);
+
+  const refreshApplications = useCallback(async () => {
+    const res = await applicationsAPI.getAll();
+    setApplications(extractResults(res));
+  }, []);
+
+  const refreshWaterSources = useCallback(async () => {
+    const res = await waterSourcesAPI.getAll();
+    setWaterSources(extractResults(res));
+  }, []);
+
+  const refreshWaterTests = useCallback(async () => {
+    const res = await waterTestsAPI.getAll();
+    setWaterTests(extractResults(res));
+  }, []);
+
+  // ============================================================================
+  // LOAD ALL DATA (initial load + company switch)
   // ============================================================================
   const loadData = useCallback(async () => {
     if (!isAuthenticated) {
@@ -59,14 +90,14 @@ export function DataProvider({ children }) {
         rootstocksAPI.getAll()
       ]);
 
-      setFarms(farmsRes.data.results || farmsRes.data || []);
-      setFields(fieldsRes.data.results || fieldsRes.data || []);
-      setApplications(appsRes.data.results || appsRes.data || []);
-      setProducts(productsRes.data.results || productsRes.data || []);
-      setWaterSources(waterSourcesRes.data.results || waterSourcesRes.data || []);
-      setWaterTests(waterTestsRes.data.results || waterTestsRes.data || []);
-      setCrops(cropsRes.data.results || cropsRes.data || []);
-      setRootstocks(rootstocksRes.data.results || rootstocksRes.data || []);
+      setFarms(extractResults(farmsRes));
+      setFields(extractResults(fieldsRes));
+      setApplications(extractResults(appsRes));
+      setProducts(extractResults(productsRes));
+      setWaterSources(extractResults(waterSourcesRes));
+      setWaterTests(extractResults(waterTestsRes));
+      setCrops(extractResults(cropsRes));
+      setRootstocks(extractResults(rootstocksRes));
     } catch (err) {
       setError('Failed to load data. Please check your connection.');
       console.error('Error loading data:', err);
@@ -87,52 +118,54 @@ export function DataProvider({ children }) {
   // ============================================================================
   const saveFarm = useCallback(async (farmData, isEdit = false) => {
     try {
+      let response;
       if (isEdit) {
-        await farmsAPI.update(farmData.id, farmData);
+        response = await farmsAPI.update(farmData.id, farmData);
       } else {
-        await farmsAPI.create(farmData);
+        response = await farmsAPI.create(farmData);
       }
-      await loadData();
-      return { success: true };
+      await refreshFarms();
+      return { success: true, data: response.data };
     } catch (err) {
       console.error('Error saving farm:', err);
       return { success: false, error: 'Failed to save farm' };
     }
-  }, [loadData]);
+  }, [refreshFarms]);
 
   const updateFarm = useCallback(async (farmId, farmData) => {
     try {
       await farmsAPI.update(farmId, farmData);
-      await loadData();
+      await refreshFarms();
       return { success: true };
     } catch (err) {
       console.error('Error updating farm:', err);
       return { success: false, error: 'Failed to update farm' };
     }
-  }, [loadData]);
+  }, [refreshFarms]);
 
   // Partial update for farms (uses PATCH instead of PUT)
   const patchFarm = useCallback(async (farmId, partialData) => {
     try {
       await farmsAPI.patch(farmId, partialData);
-      await loadData();
+      await refreshFarms();
       return { success: true };
     } catch (err) {
       console.error('Error patching farm:', err);
       return { success: false, error: 'Failed to update farm' };
     }
-  }, [loadData]);
+  }, [refreshFarms]);
 
   const deleteFarm = useCallback(async (farmId) => {
     try {
       await farmsAPI.delete(farmId);
-      await loadData();
+      // Deleting a farm may cascade to fields, so refresh both
+      await Promise.all([refreshFarms(), refreshFields()]);
       return { success: true };
     } catch (err) {
       console.error('Error deleting farm:', err);
       return { success: false, error: 'Failed to delete farm' };
     }
-  }, [loadData]);
+  }, [refreshFarms, refreshFields]);
 
   // ============================================================================
   // FIELD CRUD OPERATIONS
@@ -144,7 +177,7 @@ export function DataProvider({ children }) {
       } else {
         await fieldsAPI.create(fieldData);
       }
-      await loadData();
+      await refreshFields();
       return { success: true };
     } catch (err) {
       console.error('Error saving field:', err);
@@ -170,18 +203,18 @@ export function DataProvider({ children }) {
       }
       return { success: false, error: errorMessage };
     }
-  }, [loadData]);
+  }, [refreshFields]);
 
   const deleteField = useCallback(async (fieldId) => {
     try {
       await fieldsAPI.delete(fieldId);
-      await loadData();
+      await refreshFields();
       return { success: true };
     } catch (err) {
       console.error('Error deleting field:', err);
       return { success: false, error: 'Failed to delete field' };
     }
-  }, [loadData]);
+  }, [refreshFields]);
 
   // ============================================================================
   // APPLICATION CRUD OPERATIONS
@@ -204,7 +237,7 @@ export function DataProvider({ children }) {
       } else {
         await applicationsAPI.create(cleanedData);
       }
-      await loadData();
+      await refreshApplications();
       return { success: true };
     } catch (err) {
       console.error('Error saving application:', err);
@@ -214,18 +247,18 @@ export function DataProvider({ children }) {
         error: err.response?.data?.detail || err.message || 'Failed to save application'
       };
     }
-  }, [loadData]);
+  }, [refreshApplications]);
 
   const deleteApplication = useCallback(async (appId) => {
     try {
       await applicationsAPI.delete(appId);
-      await loadData();
+      await refreshApplications();
       return { success: true };
     } catch (err) {
       console.error('Error deleting application:', err);
       return { success: false, error: 'Failed to delete application' };
     }
-  }, [loadData]);
+  }, [refreshApplications]);
 
   // ============================================================================
   // WATER SOURCE CRUD OPERATIONS
@@ -237,24 +270,25 @@ export function DataProvider({ children }) {
       } else {
         await waterSourcesAPI.create(waterSourceData);
       }
-      await loadData();
+      await refreshWaterSources();
       return { success: true };
     } catch (err) {
       console.error('Error saving water source:', err);
       return { success: false, error: 'Failed to save water source' };
     }
-  }, [loadData]);
+  }, [refreshWaterSources]);
 
   const deleteWaterSource = useCallback(async (sourceId) => {
     try {
       await waterSourcesAPI.delete(sourceId);
-      await loadData();
+      // Deleting a water source may affect water tests
+      await Promise.all([refreshWaterSources(), refreshWaterTests()]);
       return { success: true };
     } catch (err) {
       console.error('Error deleting water source:', err);
       return { success: false, error: 'Failed to delete water source' };
     }
-  }, [loadData]);
+  }, [refreshWaterSources, refreshWaterTests]);
 
   // ============================================================================
   // WATER TEST CRUD OPERATIONS
@@ -266,13 +300,13 @@ export function DataProvider({ children }) {
       } else {
         await waterTestsAPI.create(testData);
       }
-      await loadData();
+      await refreshWaterTests();
       return { success: true };
     } catch (err) {
       console.error('Error saving water test:', err);
       return { success: false, error: 'Failed to save water test' };
     }
-  }, [loadData]);
+  }, [refreshWaterTests]);
 
   // ============================================================================
   // CONTEXT VALUE

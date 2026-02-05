@@ -6,12 +6,14 @@ Supports VPOA and SLA statement formats.
 """
 
 import os
+import json
 import base64
 import logging
 import tempfile
+from pathlib import Path
 from dataclasses import dataclass, field
 from typing import Optional, List, Dict, Any
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 from datetime import date
 
 import anthropic
@@ -19,6 +21,9 @@ import fitz  # PyMuPDF - no external dependencies needed
 from django.conf import settings
 
 logger = logging.getLogger(__name__)
+
+# Maximum allowed PDF file size (50 MB)
+MAX_PDF_FILE_SIZE = 50 * 1024 * 1024
 
 
 @dataclass
@@ -53,13 +58,11 @@ class PDFExtractionService:
         """Initialize the extraction service."""
         self.client = None
         api_key = os.environ.get('ANTHROPIC_API_KEY') or getattr(settings, 'ANTHROPIC_API_KEY', None)
-        logger.info(f"PDFExtractionService init - API key present: {bool(api_key)}")
         if not api_key:
-            logger.error("ANTHROPIC_API_KEY not found in environment or settings!")
-            logger.error(f"os.environ keys: {[k for k in os.environ.keys() if 'ANTHROPIC' in k.upper()]}")
-        if api_key:
+            logger.warning("PDFExtractionService initialized without API key - extraction will fail")
+        else:
             self.client = anthropic.Anthropic(api_key=api_key)
-            logger.info("Anthropic client initialized successfully")
+            logger.debug("PDFExtractionService configured")
 
     def extract_from_pdf(
         self,
@@ -83,15 +86,33 @@ class PDFExtractionService:
             api_key = os.environ.get('ANTHROPIC_API_KEY') or getattr(settings, 'ANTHROPIC_API_KEY', None)
             if api_key:
                 self.client = anthropic.Anthropic(api_key=api_key)
-                logger.info("Late-initialized Anthropic client")
+                logger.debug("Late-initialized Anthropic client")
             else:
-                logger.error(f"API key still not found. Env has ANTHROPIC keys: {[k for k in os.environ.keys() if 'ANTHROP' in k.upper()]}")
+                logger.error("ANTHROPIC_API_KEY not configured")
                 return ExtractionResult(
                     success=False,
                     error="Anthropic API key not configured. Set ANTHROPIC_API_KEY environment variable. Please restart the Django server after adding the key to your .env file."
                 )
 
         try:
+            # Validate file size
+            if pdf_path:
+                try:
+                    file_size = os.path.getsize(pdf_path)
+                    if file_size > MAX_PDF_FILE_SIZE:
+                        return ExtractionResult(
+                            success=False,
+                            error=f"PDF too large ({file_size // (1024*1024)}MB). Maximum is {MAX_PDF_FILE_SIZE // (1024*1024)}MB."
+                        )
+                except OSError as e:
+                    return ExtractionResult(success=False, error=f"Cannot access PDF file: {e}")
+            elif pdf_bytes:
+                if len(pdf_bytes) > MAX_PDF_FILE_SIZE:
+                    return ExtractionResult(
+                        success=False,
+                        error=f"PDF too large ({len(pdf_bytes) // (1024*1024)}MB). Maximum is {MAX_PDF_FILE_SIZE // (1024*1024)}MB."
+                    )
+
             # Convert PDF pages to images
             images = self._pdf_to_images(pdf_path, pdf_bytes)
             if not images:
@@ -128,10 +149,30 @@ class PDFExtractionService:
         Returns:
             List of base64 encoded image strings
         """
+        doc = None
         try:
             # Open PDF with PyMuPDF
             if pdf_path:
-                doc = fitz.open(pdf_path)
+                # Path traversal protection: resolve and validate
+                resolved = Path(pdf_path).resolve()
+                media_root = Path(settings.MEDIA_ROOT).resolve() if hasattr(settings, 'MEDIA_ROOT') and settings.MEDIA_ROOT else None
+                temp_dir = Path(tempfile.gettempdir()).resolve()
+
+                # Allow files under MEDIA_ROOT or the system temp directory
+                allowed = False
+                if media_root and str(resolved).startswith(str(media_root)):
+                    allowed = True
+                if str(resolved).startswith(str(temp_dir)):
+                    allowed = True
+
+                if not allowed:
+                    logger.error(f"PDF path outside allowed directories: {resolved}")
+                    raise ValueError("PDF file path is not within an allowed directory")
+
+                if not resolved.exists():
+                    raise FileNotFoundError(f"PDF file not found: {pdf_path}")
+
+                doc = fitz.open(str(resolved))
             elif pdf_bytes:
                 doc = fitz.open(stream=pdf_bytes, filetype="pdf")
             else:
@@ -152,12 +193,14 @@ class PDFExtractionService:
                 base64_images.append(base64.standard_b64encode(img_data).decode('utf-8'))
                 logger.debug(f"Converted page {i+1} to image ({len(img_data)} bytes)")
 
-            doc.close()
             return base64_images
 
         except Exception as e:
             logger.error(f"Failed to convert PDF to images: {e}")
             return []
+        finally:
+            if doc:
+                doc.close()
 
     def _extract_with_claude(
         self,
@@ -285,9 +328,9 @@ Then extract ALL relevant data. Return a JSON object with this structure:
     "summary": {{
         "bins_this_period": number or null,
         "bins_cumulative": number or null,
-        "total_bins": number or null,
+        "total_bins": number or null,  // Use the total bins from the grade/size breakdown if available, not a gross or field-level total.
         "total_cartons": number or null,
-        "total_weight_lbs": number or null,
+        "total_weight_lbs": number or null,  // Use NET pounds (from grade/size breakdown), NOT gross pounds. If both gross and net are shown, use the net figure that matches the sum of the grade lines.
         "total_packed_percent": number or null,
         "house_avg_packed_percent": number or null,
         "juice_percent": number or null,
@@ -338,10 +381,97 @@ Important:
 
 Return ONLY the JSON object, no additional text."""
 
+    def _validate_extraction_data(self, data: Dict[str, Any]) -> List[str]:
+        """
+        Validate extracted data for structural integrity and sensible values.
+
+        Returns a list of warning messages (empty if all valid).
+        Raises ValueError for critical issues that should reject the data.
+        """
+        warnings = []
+
+        # Validate packinghouse_format
+        valid_formats = ('vpoa', 'sla', 'generic')
+        fmt = data.get('packinghouse_format', 'generic')
+        if fmt not in valid_formats:
+            data['packinghouse_format'] = 'generic'
+            warnings.append(f"Unknown packinghouse_format '{fmt}', defaulted to 'generic'")
+
+        # Validate statement_type
+        valid_types = ('packout', 'settlement', 'wash_report', 'grower_statement', '')
+        st = data.get('statement_type', '')
+        if st not in valid_types:
+            warnings.append(f"Unknown statement_type '{st}'")
+
+        # Validate confidence is 0-1
+        confidence = data.get('confidence', 0.5)
+        try:
+            confidence = float(confidence)
+            if not (0.0 <= confidence <= 1.0):
+                data['confidence'] = max(0.0, min(1.0, confidence))
+                warnings.append(f"Confidence {confidence} clamped to [0, 1]")
+        except (TypeError, ValueError):
+            data['confidence'] = 0.5
+            warnings.append("Invalid confidence value, defaulted to 0.5")
+
+        # Validate grade lines
+        grade_lines = data.get('grade_lines', [])
+        if not isinstance(grade_lines, list):
+            data['grade_lines'] = []
+            warnings.append("grade_lines was not a list, reset to empty")
+        else:
+            for i, line in enumerate(grade_lines):
+                if not isinstance(line, dict):
+                    warnings.append(f"grade_lines[{i}] is not a dict, skipping validation")
+                    continue
+                qty = line.get('quantity')
+                if qty is not None:
+                    try:
+                        qty_val = float(qty)
+                        if qty_val < 0:
+                            warnings.append(f"grade_lines[{i}] has negative quantity ({qty_val})")
+                        if qty_val > 10_000_000:
+                            warnings.append(f"grade_lines[{i}] has suspiciously large quantity ({qty_val})")
+                    except (TypeError, ValueError):
+                        warnings.append(f"grade_lines[{i}] has non-numeric quantity: {qty}")
+
+                pct = line.get('percent')
+                if pct is not None:
+                    try:
+                        pct_val = float(pct)
+                        if pct_val < 0 or pct_val > 100:
+                            warnings.append(f"grade_lines[{i}] percent out of range: {pct_val}")
+                    except (TypeError, ValueError):
+                        pass
+
+        # Validate financials
+        financials = data.get('financials')
+        if financials and isinstance(financials, dict):
+            for key in ('total_credits', 'total_deductions'):
+                val = financials.get(key)
+                if val is not None:
+                    try:
+                        if float(val) < 0:
+                            warnings.append(f"financials.{key} is negative: {val}")
+                    except (TypeError, ValueError):
+                        warnings.append(f"financials.{key} is not numeric: {val}")
+
+        # Validate summary
+        summary = data.get('summary')
+        if summary and isinstance(summary, dict):
+            for key in ('total_bins', 'total_weight_lbs', 'total_cartons'):
+                val = summary.get(key)
+                if val is not None:
+                    try:
+                        if float(val) < 0:
+                            warnings.append(f"summary.{key} is negative: {val}")
+                    except (TypeError, ValueError):
+                        warnings.append(f"summary.{key} is not numeric: {val}")
+
+        return warnings
+
     def _parse_extraction_response(self, response_text: str) -> ExtractionResult:
         """Parse Claude's response into an ExtractionResult."""
-        import json
-
         try:
             # Try to find JSON in the response
             # Claude might include markdown code blocks
@@ -359,7 +489,18 @@ Return ONLY the JSON object, no additional text."""
             # Parse JSON
             data = json.loads(text)
 
-            # Validate required fields
+            if not isinstance(data, dict):
+                return ExtractionResult(
+                    success=False,
+                    error="Extraction returned non-object JSON"
+                )
+
+            # Validate extracted data
+            validation_warnings = self._validate_extraction_data(data)
+            if validation_warnings:
+                logger.warning(f"Extraction validation warnings: {validation_warnings}")
+
+            # Extract validated fields
             packinghouse_format = data.get('packinghouse_format', 'generic')
             statement_type = data.get('statement_type', '')
             confidence = float(data.get('confidence', 0.5))
@@ -374,7 +515,7 @@ Return ONLY the JSON object, no additional text."""
 
         except json.JSONDecodeError as e:
             logger.error(f"Failed to parse Claude response as JSON: {e}")
-            logger.debug(f"Response text: {response_text[:500]}...")
+            logger.debug(f"Response text (first 500 chars): {response_text[:500]}")
             return ExtractionResult(
                 success=False,
                 error=f"Failed to parse extraction results: {str(e)}"
@@ -580,5 +721,5 @@ Return ONLY the JSON object, no additional text."""
             return default
         try:
             return Decimal(str(value))
-        except (ValueError, TypeError, Decimal.InvalidOperation):
+        except (ValueError, TypeError, InvalidOperation):
             return default

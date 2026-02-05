@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useData } from '../contexts/DataContext';
 import { useModal } from '../contexts/ModalContext';
+import { farmsAPI } from '../services/api';
 
 // Import all modal components
 import FarmModal from './FarmModal';
@@ -98,12 +99,25 @@ export function GlobalModals() {
   // ============================================================================
   // FARM MODAL
   // ============================================================================
-  const handleSaveFarm = async (farmData) => {
+  const handleSaveFarm = async (farmData, newParcels = []) => {
     const result = await saveFarm(farmData, !!farmModal.data);
     if (result.success) {
+      // Save any new parcels if provided
+      if (newParcels.length > 0 && result.data?.id) {
+        await farmsAPI.bulkAddParcels(
+          result.data.id,
+          newParcels.map(p => ({
+            apn: p.apn,
+            acreage: p.acreage,
+            ownership_type: p.ownership_type,
+            notes: p.notes
+          })),
+          false
+        );
+      }
       closeFarmModal();
     } else {
-      alert(result.error);
+      throw new Error(result.error);
     }
   };
 

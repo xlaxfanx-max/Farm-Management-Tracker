@@ -269,4 +269,4 @@ function UnifiedTaskList({
   );
 }
 
-export default UnifiedTaskList;
+export default React.memo(UnifiedTaskList);

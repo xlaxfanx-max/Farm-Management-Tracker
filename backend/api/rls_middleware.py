@@ -11,21 +11,30 @@ needing custom_variable_classes configuration.
 from django.db import connection
 
 
+def _is_postgresql():
+    """Check if the default database is PostgreSQL."""
+    return connection.vendor == 'postgresql'
+
+
 class RowLevelSecurityMiddleware:
     """
     Sets the PostgreSQL session variable for RLS on each request.
-    
+
     This must run AFTER authentication middleware so request.user is available.
+    Silently skips on non-PostgreSQL databases (e.g. SQLite during tests).
     """
-    
+
     def __init__(self, get_response):
         self.get_response = get_response
-    
+
     def __call__(self, request):
+        if not _is_postgresql():
+            return self.get_response(request)
+
         # Set company context if user is authenticated and has a company
         if hasattr(request, 'user') and request.user.is_authenticated:
             company_id = getattr(request.user, 'current_company_id', None)
-            
+
             if company_id:
                 self._set_company_context(company_id)
             else:
@@ -33,10 +42,10 @@ class RowLevelSecurityMiddleware:
                 self._clear_company_context()
         else:
             self._clear_company_context()
-        
+
         response = self.get_response(request)
         return response
-    
+
     def _set_company_context(self, company_id):
         """Set the RLS context variable in PostgreSQL using set_config()."""
         with connection.cursor() as cursor:
@@ -46,7 +55,7 @@ class RowLevelSecurityMiddleware:
                 "SELECT set_config('app.current_company_id', %s, false)",
                 [str(company_id)]
             )
-    
+
     def _clear_company_context(self):
         """Clear the RLS context variable."""
         with connection.cursor() as cursor:
@@ -74,26 +83,30 @@ class RLSContextManager:
         self.company_id = company_id
     
     def __enter__(self):
-        with connection.cursor() as cursor:
-            cursor.execute(
-                "SELECT set_config('app.current_company_id', %s, false)",
-                [str(self.company_id)]
-            )
+        if _is_postgresql():
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    "SELECT set_config('app.current_company_id', %s, false)",
+                    [str(self.company_id)]
+                )
         return self
-    
+
     def __exit__(self, exc_type, exc_val, exc_tb):
-        with connection.cursor() as cursor:
-            cursor.execute("SELECT set_config('app.current_company_id', '', false)")
+        if _is_postgresql():
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT set_config('app.current_company_id', '', false)")
         return False
 
 
 def set_rls_company(company_id):
     """
     Manually set the RLS company context.
-    
+
     Call this in management commands or background tasks before making queries.
     Remember to call clear_rls_company() when done.
     """
+    if not _is_postgresql():
+        return
     with connection.cursor() as cursor:
         cursor.execute(
             "SELECT set_config('app.current_company_id', %s, false)",
@@ -103,5 +116,7 @@ def set_rls_company(company_id):
 
 def clear_rls_company():
     """Clear the RLS company context."""
+    if not _is_postgresql():
+        return
     with connection.cursor() as cursor:
         cursor.execute("SELECT set_config('app.current_company_id', '', false)")

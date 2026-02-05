@@ -222,15 +222,27 @@ def build_disable_rls_sql():
     return "\n".join(sql_statements)
 
 
+def is_postgresql(schema_editor):
+    """Only run RLS SQL on PostgreSQL databases."""
+    return schema_editor.connection.vendor == 'postgresql'
+
+
+def apply_rls(apps, schema_editor):
+    if is_postgresql(schema_editor):
+        schema_editor.execute(build_enable_rls_sql())
+
+
+def remove_rls(apps, schema_editor):
+    if is_postgresql(schema_editor):
+        schema_editor.execute(build_disable_rls_sql())
+
+
 class Migration(migrations.Migration):
-    
+
     dependencies = [
         ('api', '0005_company_county_company_federal_tax_id_company_notes_and_more'),
     ]
-    
+
     operations = [
-        migrations.RunSQL(
-            sql=build_enable_rls_sql(),
-            reverse_sql=build_disable_rls_sql(),
-        ),
+        migrations.RunPython(apply_rls, remove_rls),
     ]

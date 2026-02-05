@@ -41,6 +41,7 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
   const [expandedStatements, setExpandedStatements] = useState({});
   const [confirming, setConfirming] = useState(false);
   const [saveMappings, setSaveMappings] = useState(true);
+  const [confirmWarnings, setConfirmWarnings] = useState(null);
 
   // State for single file detailed view
   const [showPdf, setShowPdf] = useState(true);
@@ -317,8 +318,14 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
           // Actually the confirm endpoint doesn't save mappings, so we'll use batch-confirm
         }
 
-        onSuccess && onSuccess(response.data);
-        onClose();
+        // Show warnings if any, otherwise close immediately
+        if (response.data?.warnings?.length > 0) {
+          setConfirmWarnings(response.data.warnings);
+          onSuccess && onSuccess(response.data);
+        } else {
+          onSuccess && onSuccess(response.data);
+          onClose();
+        }
         return;
       }
 
@@ -551,6 +558,48 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
                 )}
               </button>
             </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // =========================================================================
+  // RENDER: Post-Confirmation Warnings
+  // =========================================================================
+  if (confirmWarnings) {
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="bg-white rounded-lg shadow-xl w-full max-w-lg overflow-hidden flex flex-col">
+          <div className="flex items-center justify-between p-4 border-b border-gray-200">
+            <h2 className="text-lg font-semibold text-gray-900 flex items-center">
+              <AlertCircle className="w-5 h-5 mr-2 text-amber-500" />
+              Statement Saved with Warnings
+            </h2>
+            <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+          <div className="p-4 space-y-3">
+            <p className="text-sm text-gray-600">
+              The statement was saved successfully, but the following discrepancies were detected between the header totals and the grade line breakdown. The grade line totals were used.
+            </p>
+            {confirmWarnings.map((warning, idx) => (
+              <div key={idx} className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                <div className="flex items-start">
+                  <AlertCircle className="w-4 h-4 text-amber-500 mt-0.5 mr-2 flex-shrink-0" />
+                  <span className="text-sm text-amber-800">{warning}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="flex justify-end p-4 border-t border-gray-200">
+            <button
+              onClick={onClose}
+              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm font-medium"
+            >
+              OK
+            </button>
           </div>
         </div>
       </div>

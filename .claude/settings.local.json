@@ -38,7 +38,29 @@
       "Bash(node -e:*)",
       "Bash(git pull:*)",
       "Bash(git rebase:*)",
-      "Bash(python manage.py makemigrations:*)"
+      "Bash(python manage.py makemigrations:*)",
+      "Bash(git fetch:*)",
+      "Bash(python manage.py:*)",
+      "Bash(npm run build:*)",
+      "Bash(cd:*)",
+      "Bash(curl:*)",
+      "WebFetch(domain:farm-management-tracker-production-9c7d.up.railway.app)",
+      "Bash(xargs:*)",
+      "Bash(xxd:*)",
+      "Bash(npx react-scripts build:*)",
+      "Bash(python3:*)",
+      "Bash(git -C \"C:\\\\Users\\\\Owner\\\\Documents\\\\Farm Pesticide Tracker\" ls-files:*)",
+      "Bash(git -C \"C:\\\\Users\\\\Owner\\\\Documents\\\\Farm Pesticide Tracker\" grep -n \"Canvas\\\\|SVG\\\\|svg\" -- \"*.js\" \"*.jsx\")",
+      "Bash(git -C \"C:\\\\Users\\\\Owner\\\\Documents\\\\Farm Pesticide Tracker\" show HEAD:frontend/src/components/Analytics.js)",
+      "Bash(python backend/manage.py makemigrations:*)",
+      "Bash(findstr:*)",
+      "Bash(python -m pip:*)",
+      "Bash(set:*)",
+      "Bash(powershell -Command \"\\(Get-Content ''C:\\\\Users\\\\Owner\\\\Documents\\\\Farm Pesticide Tracker\\\\backend\\\\api\\\\models.py''\\).Count\")",
+      "Bash(python -u -c:*)",
+      "WebSearch",
+      "Bash(claude update:*)",
+      "Bash(git status:*)"
     ]
   }
 }

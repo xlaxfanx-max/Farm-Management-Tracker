@@ -112,4 +112,4 @@ function FarmStatusStrip({ farms = [], fields = [], applications = [], waterSour
   );
 }
 
-export default FarmStatusStrip;
+export default React.memo(FarmStatusStrip);

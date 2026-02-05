@@ -244,4 +244,4 @@ function FarmInsightsPanel({ farms = [], fields = [], applications = [], waterSo
   );
 }
 
-export default FarmInsightsPanel;
+export default React.memo(FarmInsightsPanel);

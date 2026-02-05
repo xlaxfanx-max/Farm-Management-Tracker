@@ -12,9 +12,12 @@
 #
 # =============================================================================
 
+import re
 import logging
 from django.contrib.auth import authenticate, get_user_model
 from django.conf import settings
+from django.core.validators import validate_email as django_validate_email
+from django.core.exceptions import ValidationError as DjangoValidationError
 from django.utils import timezone
 from django.db import transaction
 from rest_framework import status
@@ -25,6 +28,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from datetime import timedelta
 
 from .throttles import AuthRateThrottle, PasswordResetThrottle
+from .authentication import set_auth_cookies, clear_auth_cookies
 
 logger = logging.getLogger(__name__)
 
@@ -65,9 +69,10 @@ def register(request):
     
     # Validation
     errors = {}
-    
-    if not email:
-        errors['email'] = 'Email is required'
+
+    email_valid, email_error = validate_email_address(email)
+    if not email_valid:
+        errors['email'] = email_error
     elif User.objects.filter(email=email).exists():
         errors['email'] = 'An account with this email already exists'
     
@@ -134,7 +139,7 @@ def register(request):
                 ip_address=get_client_ip(request),
             )
             
-            return Response({
+            response = Response({
                 'message': 'Registration successful',
                 'user': {
                     'id': user.id,
@@ -152,10 +157,13 @@ def register(request):
                     'refresh': str(refresh),
                 }
             }, status=status.HTTP_201_CREATED)
+            set_auth_cookies(response, refresh.access_token, refresh)
+            return response
             
     except Exception as e:
+        logger.error(f"Registration failed: {e}", exc_info=True)
         return Response(
-            {'error': f'Registration failed: {str(e)}'},
+            {'error': 'Registration failed. Please try again.'},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
 
@@ -179,6 +187,13 @@ def login(request):
     if not email or not password:
         return Response(
             {'error': 'Email and password are required'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    email_valid, email_error = validate_email_address(email)
+    if not email_valid:
+        return Response(
+            {'error': email_error},
             status=status.HTTP_400_BAD_REQUEST
         )
 
@@ -238,7 +253,7 @@ def login(request):
     
     current_membership = memberships.filter(company=user.current_company).first()
     
-    return Response({
+    response = Response({
         'user': {
             'id': user.id,
             'email': user.email,
@@ -259,6 +274,8 @@ def login(request):
             'refresh': str(refresh),
         }
     })
+    set_auth_cookies(response, refresh.access_token, refresh)
+    return response
 
 
 @api_view(['POST'])
@@ -290,43 +307,58 @@ def logout(request):
                 ip_address=get_client_ip(request),
             )
         
-        return Response({'message': 'Logged out successfully'})
-    except Exception:
-        return Response({'message': 'Logged out'})
+        response = Response({'message': 'Logged out successfully'})
+        clear_auth_cookies(response)
+        return response
+    except (Exception) as e:
+        logger.warning(f"Logout token blacklist failed: {e}")
+        response = Response({'message': 'Logged out'})
+        clear_auth_cookies(response)
+        return response
 
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@permission_classes([AllowAny])
 def refresh_token(request):
     """
     Refresh access token.
-    
+
     POST /api/auth/refresh/
     {
         "refresh": "refresh_token_here"
     }
+
+    Also reads refresh token from HttpOnly cookie if not in request body.
     """
-    refresh_token = request.data.get('refresh')
-    if not refresh_token:
+    from .authentication import REFRESH_COOKIE_NAME
+
+    refresh_token_str = request.data.get('refresh') or request.COOKIES.get(REFRESH_COOKIE_NAME)
+    if not refresh_token_str:
         return Response(
             {'error': 'Refresh token is required'},
             status=status.HTTP_400_BAD_REQUEST
         )
-    
+
     try:
-        refresh = RefreshToken(refresh_token)
+        refresh = RefreshToken(refresh_token_str)
         access_token = refresh.access_token
 
         response_payload = {'access': str(access_token)}
 
+        new_refresh_token = None
         if settings.SIMPLE_JWT.get('ROTATE_REFRESH_TOKENS'):
             if settings.SIMPLE_JWT.get('BLACKLIST_AFTER_ROTATION'):
                 refresh.blacklist()
-            new_refresh = RefreshToken.for_user(refresh.user)
+            user = User.objects.get(id=refresh['user_id'])
+            new_refresh = RefreshToken.for_user(user)
             response_payload['refresh'] = str(new_refresh)
+            new_refresh_token = new_refresh
 
-        return Response(response_payload)
+        response = Response(response_payload)
+        set_auth_cookies(response, access_token, new_refresh_token)
+        return response
     except Exception as e:
+        logger.warning(f"Token refresh failed: {e}")
         return Response(
             {'error': 'Invalid or expired refresh token'},
             status=status.HTTP_401_UNAUTHORIZED
@@ -552,13 +584,14 @@ def invite_user(request):
     email = request.data.get('email', '').lower().strip()
     role_codename = request.data.get('role', 'viewer')
     message = request.data.get('message', '')
-    
-    if not email:
+
+    email_valid, email_error = validate_email_address(email)
+    if not email_valid:
         return Response(
-            {'error': 'Email is required'},
+            {'error': email_error},
             status=status.HTTP_400_BAD_REQUEST
         )
-    
+
     # Check if user already exists in this company
     if CompanyMembership.objects.filter(
         user__email=email,
@@ -723,7 +756,7 @@ def accept_invitation(request):
             # Generate tokens
             refresh = RefreshToken.for_user(user)
             
-            return Response({
+            response = Response({
                 'message': f'Welcome to {invitation.company.name}!',
                 'user': {
                     'id': user.id,
@@ -741,10 +774,13 @@ def accept_invitation(request):
                     'refresh': str(refresh),
                 }
             })
+            set_auth_cookies(response, refresh.access_token, refresh)
+            return response
             
     except Exception as e:
+        logger.error(f"Accept invitation failed: {e}", exc_info=True)
         return Response(
-            {'error': f'Failed to accept invitation: {str(e)}'},
+            {'error': 'Failed to accept invitation. Please try again.'},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
 
@@ -845,8 +881,9 @@ def accept_invitation_existing(request):
             'permissions': permissions,
         })
     except Exception as e:
+        logger.error(f"Accept invitation (existing user) failed: {e}", exc_info=True)
         return Response(
-            {'error': f'Failed to accept invitation: {str(e)}'},
+            {'error': 'Failed to accept invitation. Please try again.'},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
 
@@ -897,6 +934,22 @@ def validate_invitation(request, token):
 # HELPER FUNCTIONS
 # =============================================================================
 
+def validate_email_address(email):
+    """
+    Validate an email address using Django's built-in validator.
+    Returns (is_valid, error_message).
+    """
+    if not email:
+        return False, 'Email is required'
+    if len(email) > 254:
+        return False, 'Email address is too long'
+    try:
+        django_validate_email(email)
+    except DjangoValidationError:
+        return False, 'Please enter a valid email address'
+    return True, None
+
+
 def get_client_ip(request):
     """Get client IP address from request."""
     x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
@@ -936,9 +989,10 @@ def request_password_reset(request):
     """
     email = request.data.get('email', '').lower().strip()
 
-    if not email:
+    email_valid, email_error = validate_email_address(email)
+    if not email_valid:
         return Response(
-            {'error': 'Email is required'},
+            {'error': email_error},
             status=status.HTTP_400_BAD_REQUEST
         )
 
@@ -1022,10 +1076,9 @@ def validate_reset_token(request, token):
 
     GET /api/auth/reset-password/{token}/
     """
-    cache_key = f'password_reset_{token}'
-    user_id = cache.get(cache_key)
+    reset_token = PasswordResetToken.get_valid_token(token)
 
-    if not user_id:
+    if not reset_token:
         return Response(
             {'valid': False, 'error': 'Invalid or expired reset token'},
             status=status.HTTP_400_BAD_REQUEST

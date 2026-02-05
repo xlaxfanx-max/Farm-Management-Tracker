@@ -351,4 +351,4 @@ function FarmCard({
   );
 }
 
-export default FarmCard;
+export default React.memo(FarmCard);

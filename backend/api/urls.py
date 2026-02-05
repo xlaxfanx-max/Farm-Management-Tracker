@@ -181,6 +181,17 @@ from .fsma_views import (
     FSMADashboardViewSet,
 )
 
+# Import yield forecast views
+from .yield_views import (
+    YieldForecastViewSet,
+    YieldFeatureSnapshotViewSet,
+    ExternalDataSourceViewSet,
+    SoilSurveyDataViewSet,
+    yield_forecast_dashboard,
+    field_forecast_detail,
+    forecast_season_comparison,
+)
+
 # Import FSMA Water Assessment views
 from .fsma_water_views import (
     FSMAWaterAssessmentViewSet,
@@ -298,6 +309,12 @@ router.register(r'fsma/source-assessments', FSMASourceAssessmentViewSet, basenam
 router.register(r'fsma/field-assessments', FSMAFieldAssessmentViewSet, basename='fsma-field-assessment')
 router.register(r'fsma/environmental-assessments', FSMAEnvironmentalAssessmentViewSet, basename='fsma-environmental-assessment')
 router.register(r'fsma/mitigation-actions', FSMAMitigationActionViewSet, basename='fsma-mitigation-action')
+
+# Yield Forecast Module
+router.register(r'yield-forecast/forecasts', YieldForecastViewSet, basename='yield-forecast')
+router.register(r'yield-forecast/feature-snapshots', YieldFeatureSnapshotViewSet, basename='yield-feature-snapshot')
+router.register(r'yield-forecast/external-sources', ExternalDataSourceViewSet, basename='external-data-source')
+router.register(r'yield-forecast/soil-survey', SoilSurveyDataViewSet, basename='soil-survey')
 
 
 urlpatterns = [
@@ -425,4 +442,9 @@ urlpatterns = [
     path('harvest-analytics/profitability/', profitability_analysis, name='harvest-profitability'),
     path('harvest-analytics/deductions/', deduction_breakdown, name='harvest-deductions'),
     path('harvest-analytics/seasons/', season_comparison, name='harvest-season-comparison'),
+
+    # Yield Forecast analytics routes
+    path('yield-forecast/dashboard/', yield_forecast_dashboard, name='yield-forecast-dashboard'),
+    path('yield-forecast/fields/<int:field_id>/detail/', field_forecast_detail, name='yield-forecast-field-detail'),
+    path('yield-forecast/season-comparison/', forecast_season_comparison, name='yield-forecast-season-comparison'),
 ]

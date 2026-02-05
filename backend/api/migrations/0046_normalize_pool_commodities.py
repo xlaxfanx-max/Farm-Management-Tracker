@@ -79,12 +79,12 @@ def normalize_pool_commodities(apps, schema_editor):
             unknown.append(f"Pool {pool.id} (packinghouse={pool.packinghouse_id}, season={pool.season}): '{original}'")
 
     if unknown:
-        print(f"\n⚠️  WARNING: {len(unknown)} pools have unrecognized commodities:")
+        print(f"\nWARNING: {len(unknown)} pools have unrecognized commodities:")
         for item in unknown:
             print(f"  - {item}")
         print("These were left unchanged. Please review and fix manually.\n")
 
-    print(f"✅ Normalized {updated} pool commodity values.")
+    print(f"Normalized {updated} pool commodity values.")
 
 
 def reverse_noop(apps, schema_editor):

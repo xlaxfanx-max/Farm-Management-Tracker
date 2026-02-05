@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { X, Building2, MapPin, Users } from 'lucide-react';
-import api from '../services/api';
 import FarmParcelManager from './FarmParcelManager';
 
 // California counties for dropdown
@@ -61,35 +60,14 @@ function FarmModal({ farm, onClose, onSave }) {
     setError(null);
 
     try {
-      let savedFarm;
-      
-      if (isEditing) {
-        // Update existing farm
-        const response = await api.put(`/farms/${farm.id}/`, formData);
-        savedFarm = response.data;
-      } else {
-        // Create new farm
-        const response = await api.post('/farms/', formData);
-        savedFarm = response.data;
-      }
-
-      // Save any new parcels (those with temp IDs)
+      // Collect new parcels (those with temp IDs) to pass along
       const newParcels = parcels.filter(p => String(p.id).startsWith('temp-'));
-      if (newParcels.length > 0) {
-        await api.post(`/farms/${savedFarm.id}/bulk-parcels/`, {
-          parcels: newParcels.map(p => ({
-            apn: p.apn,
-            acreage: p.acreage,
-            ownership_type: p.ownership_type,
-            notes: p.notes
-          })),
-          replace: false
-        });
-      }
 
-      onSave(savedFarm);
+      // Delegate creation/update to the parent handler (DataContext.saveFarm)
+      const dataToSave = isEditing ? { ...formData, id: farm.id } : formData;
+      await onSave(dataToSave, newParcels);
     } catch (err) {
-      setError(err.response?.data?.detail || 'Failed to save farm');
+      setError(err.response?.data?.detail || err.message || 'Failed to save farm');
     } finally {
       setLoading(false);
     }

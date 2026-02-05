@@ -11,7 +11,7 @@ from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
-from django.db.models import Sum, Avg, Count, F, Q
+from django.db.models import Sum, Avg, Count, F, Q, Subquery, OuterRef, DecimalField
 from django.db.models.functions import Coalesce
 from decimal import Decimal
 import logging
@@ -31,6 +31,44 @@ from .services.season_service import (
 )
 
 logger = logging.getLogger(__name__)
+
+
+def _annotate_pool_aggregates(queryset):
+    """
+    Annotate a Pool queryset with delivery_count, total_bins, and total_weight
+    to eliminate N+1 queries when serializing pool lists.
+
+    Logic mirrors the Pool model properties:
+    - total_bins: packout_reports.bins_this_period if any, else deliveries.bins
+    - total_weight: first settlement's total_weight_lbs if any, else deliveries.weight_lbs
+    - delivery_count: count of deliveries
+    """
+    return queryset.annotate(
+        _delivery_count=Count('deliveries', distinct=True),
+        _packout_bins=Coalesce(
+            Sum('packout_reports__bins_this_period'),
+            Decimal('0'),
+            output_field=DecimalField(),
+        ),
+        _delivery_bins=Coalesce(
+            Sum('deliveries__bins'),
+            Decimal('0'),
+            output_field=DecimalField(),
+        ),
+        _settlement_weight=Subquery(
+            PoolSettlement.objects.filter(
+                pool=OuterRef('pk')
+            ).order_by('-statement_date').values('total_weight_lbs')[:1],
+            output_field=DecimalField(),
+        ),
+        _delivery_weight=Coalesce(
+            Sum('deliveries__weight_lbs'),
+            Decimal('0'),
+            output_field=DecimalField(),
+        ),
+    )
+
+
 from .serializers import (
     PackinghouseListSerializer, PackinghouseSerializer,
     PoolListSerializer, PoolSerializer,
@@ -100,7 +138,11 @@ class PackinghouseViewSet(viewsets.ModelViewSet):
     def pools(self, request, pk=None):
         """Get all pools for a packinghouse."""
         packinghouse = self.get_object()
-        pools = Pool.objects.filter(packinghouse=packinghouse)
+        pools = _annotate_pool_aggregates(
+            Pool.objects.filter(
+                packinghouse=packinghouse
+            ).select_related('packinghouse')
+        )
 
         # Filter by status
         pool_status = request.query_params.get('status')
@@ -112,6 +154,10 @@ class PackinghouseViewSet(viewsets.ModelViewSet):
         if season:
             pools = pools.filter(season=season)
 
+        page = self.paginate_queryset(pools)
+        if page is not None:
+            serializer = PoolListSerializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
         serializer = PoolListSerializer(pools, many=True)
         return Response(serializer.data)
 
@@ -121,7 +167,7 @@ class PackinghouseViewSet(viewsets.ModelViewSet):
         packinghouse = self.get_object()
         entries = GrowerLedgerEntry.objects.filter(
             packinghouse=packinghouse
-        ).order_by('-entry_date', '-created_at')
+        ).select_related('packinghouse', 'pool').order_by('-entry_date', '-created_at')
 
         # Date range filter
         start_date = request.query_params.get('start_date')
@@ -131,6 +177,10 @@ class PackinghouseViewSet(viewsets.ModelViewSet):
         if end_date:
             entries = entries.filter(entry_date__lte=end_date)
 
+        page = self.paginate_queryset(entries)
+        if page is not None:
+            serializer = GrowerLedgerEntryListSerializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
         serializer = GrowerLedgerEntryListSerializer(entries, many=True)
         return Response(serializer.data)
 
@@ -159,9 +209,11 @@ class PoolViewSet(viewsets.ModelViewSet):
         if not user.current_company:
             return Pool.objects.none()
 
-        queryset = Pool.objects.filter(
-            packinghouse__company=user.current_company
-        ).select_related('packinghouse')
+        queryset = _annotate_pool_aggregates(
+            Pool.objects.filter(
+                packinghouse__company=user.current_company
+            ).select_related('packinghouse')
+        )
 
         # Filter by packinghouse
         packinghouse_id = self.request.query_params.get('packinghouse')
@@ -211,6 +263,10 @@ class PoolViewSet(viewsets.ModelViewSet):
         if end_date:
             deliveries = deliveries.filter(delivery_date__lte=end_date)
 
+        page = self.paginate_queryset(deliveries)
+        if page is not None:
+            serializer = PackinghouseDeliveryListSerializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
         serializer = PackinghouseDeliveryListSerializer(deliveries, many=True)
         return Response(serializer.data)
 
@@ -227,6 +283,10 @@ class PoolViewSet(viewsets.ModelViewSet):
         if field_id:
             reports = reports.filter(field_id=field_id)
 
+        page = self.paginate_queryset(reports)
+        if page is not None:
+            serializer = PackoutReportListSerializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
         serializer = PackoutReportListSerializer(reports, many=True)
         return Response(serializer.data)
 
@@ -243,6 +303,10 @@ class PoolViewSet(viewsets.ModelViewSet):
         if field_id:
             settlements = settlements.filter(field_id=field_id)
 
+        page = self.paginate_queryset(settlements)
+        if page is not None:
+            serializer = PoolSettlementListSerializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
         serializer = PoolSettlementListSerializer(settlements, many=True)
         return Response(serializer.data)
 
@@ -706,14 +770,21 @@ def profitability_analysis(request):
 
     pools = Pool.objects.filter(pool_filters).select_related('packinghouse')
 
-    # Get pool-level settlements (grower summaries where field=None)
+    # Get pool-level settlements (grower summaries where field=None) in one query
+    pool_ids = list(pools.values_list('id', flat=True))
+    grower_settlements = PoolSettlement.objects.filter(
+        pool_id__in=pool_ids,
+        field__isnull=True
+    ).select_related('pool')
+    # Build lookup keyed by pool_id (take first settlement per pool)
+    settlement_by_pool = {}
+    for settlement in grower_settlements:
+        if settlement.pool_id not in settlement_by_pool:
+            settlement_by_pool[settlement.pool_id] = settlement
+
     pool_settlement_data = {}
     for pool in pools:
-        settlement = PoolSettlement.objects.filter(
-            pool=pool,
-            field__isnull=True  # Grower summary level
-        ).first()
-
+        settlement = settlement_by_pool.get(pool.id)
         if settlement:
             pool_settlement_data[pool.id] = {
                 'pool': pool,
@@ -1226,45 +1297,61 @@ def block_performance(request):
         latest_date=Max('report_date')
     )
 
-    results = []
+    # Build filter to batch-fetch all latest reports in one query
+    from django.db.models import Q as _Q
+    report_filter = _Q()
     for item in latest_reports:
-        report = PackoutReport.objects.filter(
-            field_id=item['field'],
-            report_date=item['latest_date']
-        ).select_related('field', 'pool').first()
+        report_filter |= _Q(field_id=item['field'], report_date=item['latest_date'])
 
-        if report:
-            # Check for settlement
-            settlement = PoolSettlement.objects.filter(
-                pool=report.pool,
-                field=report.field
-            ).order_by('-statement_date').first()
+    reports = []
+    if report_filter:
+        reports = list(
+            PackoutReport.objects.filter(report_filter)
+            .select_related('field', 'pool')
+            .order_by('field_id')
+        )
 
-            pack_variance = None
-            if report.total_packed_percent and report.house_avg_packed_percent:
-                pack_variance = float(report.total_packed_percent - report.house_avg_packed_percent)
+    # Batch-fetch latest settlement per (pool, field) pair
+    pool_field_pairs = [(r.pool_id, r.field_id) for r in reports]
+    settlement_lookup = {}
+    if pool_field_pairs:
+        settlement_filter = _Q()
+        for pool_id, field_id in pool_field_pairs:
+            settlement_filter |= _Q(pool_id=pool_id, field_id=field_id)
+        for s in PoolSettlement.objects.filter(settlement_filter).order_by('pool_id', 'field_id', '-statement_date'):
+            key = (s.pool_id, s.field_id)
+            if key not in settlement_lookup:
+                settlement_lookup[key] = s
 
-            return_variance = None
-            net_per_bin = None
-            house_avg_per_bin = None
-            if settlement:
-                net_per_bin = settlement.net_per_bin
-                house_avg_per_bin = settlement.house_avg_per_bin
-                if net_per_bin and house_avg_per_bin:
-                    return_variance = float(net_per_bin - house_avg_per_bin)
+    results = []
+    for report in reports:
+        settlement = settlement_lookup.get((report.pool_id, report.field_id))
 
-            results.append({
-                'field_id': report.field.id,
-                'field_name': report.field.name,
-                'pool_name': report.pool.name,
-                'total_bins': report.bins_cumulative,
-                'pack_percent': report.total_packed_percent,
-                'house_avg_pack_percent': report.house_avg_packed_percent,
-                'pack_variance': pack_variance,
-                'net_per_bin': net_per_bin,
-                'house_avg_per_bin': house_avg_per_bin,
-                'return_variance': return_variance,
-            })
+        pack_variance = None
+        if report.total_packed_percent and report.house_avg_packed_percent:
+            pack_variance = float(report.total_packed_percent - report.house_avg_packed_percent)
+
+        return_variance = None
+        net_per_bin = None
+        house_avg_per_bin = None
+        if settlement:
+            net_per_bin = settlement.net_per_bin
+            house_avg_per_bin = settlement.house_avg_per_bin
+            if net_per_bin and house_avg_per_bin:
+                return_variance = float(net_per_bin - house_avg_per_bin)
+
+        results.append({
+            'field_id': report.field.id,
+            'field_name': report.field.name,
+            'pool_name': report.pool.name,
+            'total_bins': report.bins_cumulative,
+            'pack_percent': report.total_packed_percent,
+            'house_avg_pack_percent': report.house_avg_packed_percent,
+            'pack_variance': pack_variance,
+            'net_per_bin': net_per_bin,
+            'house_avg_per_bin': house_avg_per_bin,
+            'return_variance': return_variance,
+        })
 
     serializer = BlockPerformanceSerializer(results, many=True)
     return Response(serializer.data)
@@ -1433,12 +1520,9 @@ def size_distribution(request):
     })})
     all_sizes = set()
 
-    def process_report(report):
-        grade_lines = PackoutGradeLine.objects.filter(
-            packout_report=report
-        ).exclude(size='')
-
-        if not grade_lines.exists():
+    def process_report(report, prefetched_lines):
+        lines = [gl for gl in prefetched_lines if gl.packout_report_id == report.id and gl.size]
+        if not lines:
             return
 
         if report.field:
@@ -1453,7 +1537,7 @@ def size_distribution(request):
             gid = f'pool_{report.pool_id}'
             gname = report.pool.name if report.pool else 'Unassigned'
 
-        for line in grade_lines:
+        for line in lines:
             qty = line.quantity_cumulative if line.quantity_cumulative is not None else line.quantity_this_period
             pct = line.percent_cumulative if line.percent_cumulative is not None else line.percent_this_period
 
@@ -1470,22 +1554,36 @@ def size_distribution(request):
             groups[gid]['group_id'] = gid if isinstance(gid, int) else 0
             groups[gid]['group_name'] = gname
 
+    # Batch-fetch all latest reports in two queries instead of N
+    from django.db.models import Q as _Q
+    field_report_filter = _Q()
     for item in latest_with_field:
-        report = PackoutReport.objects.filter(
-            field_id=item['field'],
-            report_date=item['latest_date']
-        ).select_related('field__farm', 'pool').first()
-        if report:
-            process_report(report)
+        field_report_filter |= _Q(field_id=item['field'], report_date=item['latest_date'])
 
+    pool_report_filter = _Q()
     for item in latest_without_field:
-        report = PackoutReport.objects.filter(
-            pool_id=item['pool'],
-            field__isnull=True,
-            report_date=item['latest_date']
-        ).select_related('pool').first()
-        if report:
-            process_report(report)
+        pool_report_filter |= _Q(pool_id=item['pool'], field__isnull=True, report_date=item['latest_date'])
+
+    field_reports = list(
+        PackoutReport.objects.filter(field_report_filter)
+        .select_related('field__farm', 'pool')
+    ) if field_report_filter else []
+
+    pool_reports = list(
+        PackoutReport.objects.filter(pool_report_filter)
+        .select_related('pool')
+    ) if pool_report_filter else []
+
+    all_reports = field_reports + pool_reports
+
+    # Batch-fetch all grade lines for these reports in one query
+    report_ids = [r.id for r in all_reports]
+    all_grade_lines = list(
+        PackoutGradeLine.objects.filter(packout_report_id__in=report_ids).exclude(size='')
+    ) if report_ids else []
+
+    for report in all_reports:
+        process_report(report, all_grade_lines)
 
     # Build response
     results = []
@@ -2091,13 +2189,13 @@ def harvest_packing_pipeline(request):
         pool_commodity_filter,
         pool__packinghouse__company=company,
         pool__season=selected_season
-    ).select_related('pool', 'field').order_by('-report_date')[:5]
+    ).select_related('pool', 'pool__packinghouse', 'field').order_by('-report_date')[:5]
 
     recent_settlements = PoolSettlement.objects.filter(
         pool_commodity_filter,
         pool__packinghouse__company=company,
         pool__season=selected_season
-    ).select_related('pool', 'field').order_by('-statement_date')[:5]
+    ).select_related('pool', 'pool__packinghouse', 'field').order_by('-statement_date')[:5]
 
     # Calculate pipeline efficiency metrics
     bins_harvested = harvest_stats['total_bins_harvested'] or 0
@@ -2364,6 +2462,123 @@ def harvest_packing_pipeline(request):
     })
 
 
+def _reconcile_settlement_from_grade_lines(settlement):
+    """
+    Recalculate total_weight_lbs and total_bins from grade line sums.
+    Always prefer grade line totals (which represent net/packed quantities)
+    over the header-level totals (which may be gross).
+
+    Returns a list of warning strings if the header total differs
+    significantly from the grade line sum.
+    """
+    from api.models import SettlementGradeLine
+
+    warnings = []
+    update_fields = []
+
+    # Sum LBS grade lines
+    lbs_total = SettlementGradeLine.objects.filter(
+        settlement=settlement, unit_of_measure='LBS'
+    ).aggregate(total=Coalesce(Sum('quantity'), Decimal('0')))['total']
+
+    # Sum BIN grade lines
+    bins_total = SettlementGradeLine.objects.filter(
+        settlement=settlement, unit_of_measure='BIN'
+    ).aggregate(total=Coalesce(Sum('quantity'), Decimal('0')))['total']
+
+    # Reconcile LBS
+    if lbs_total and lbs_total > 0:
+        header_lbs = settlement.total_weight_lbs or Decimal('0')
+        if header_lbs > 0 and header_lbs != lbs_total:
+            diff = abs(float(header_lbs) - float(lbs_total))
+            pct = (diff / float(header_lbs)) * 100
+            if pct > 1:  # More than 1% difference
+                warnings.append(
+                    f"Weight mismatch: header shows {header_lbs:,.0f} lbs but grade lines sum to {lbs_total:,.0f} lbs "
+                    f"(diff: {diff:,.0f} lbs / {pct:.1f}%). Using grade line total."
+                )
+        settlement.total_weight_lbs = lbs_total
+        update_fields.append('total_weight_lbs')
+
+        # Recalculate net_per_lb
+        if settlement.net_return:
+            settlement.net_per_lb = round(settlement.net_return / lbs_total, 4)
+            update_fields.append('net_per_lb')
+
+    # Reconcile BINs
+    if bins_total and bins_total > 0:
+        header_bins = settlement.total_bins or Decimal('0')
+        if header_bins > 0 and header_bins != bins_total:
+            diff = abs(float(header_bins) - float(bins_total))
+            pct = (diff / float(header_bins)) * 100
+            if pct > 1:  # More than 1% difference
+                warnings.append(
+                    f"Bins mismatch: header shows {header_bins:,.0f} bins but grade lines sum to {bins_total:,.0f} bins "
+                    f"(diff: {diff:,.0f} bins / {pct:.1f}%). Using grade line total."
+                )
+        settlement.total_bins = bins_total
+        update_fields.append('total_bins')
+
+        # Recalculate net_per_bin
+        if settlement.net_return:
+            settlement.net_per_bin = round(settlement.net_return / bins_total, 4)
+            update_fields.append('net_per_bin')
+
+    if update_fields:
+        settlement.save(update_fields=update_fields)
+
+    return warnings
+
+
+def _auto_update_pool_status(pool):
+    """
+    Automatically update a pool's status to 'settled' when all packed
+    quantity has been settled. Compares settled lbs/bins to packed lbs/bins.
+    Only promotes status forward (active -> settled), never demotes.
+    """
+    from api.models import PoolSettlement, PackoutGradeLine, SettlementGradeLine, PackoutReport
+    from api.services.season_service import get_primary_unit_for_commodity
+
+    if pool.status == 'settled':
+        return
+
+    unit_info = get_primary_unit_for_commodity(pool.commodity)
+    is_weight_based = (unit_info['unit'] == 'LBS')
+
+    settlements = PoolSettlement.objects.filter(pool=pool)
+    if not settlements.exists():
+        return
+
+    if is_weight_based:
+        settled_lbs = SettlementGradeLine.objects.filter(
+            settlement__pool=pool, unit_of_measure='LBS'
+        ).aggregate(total=Coalesce(Sum('quantity'), Decimal('0')))['total']
+
+        packed_lbs = PackoutGradeLine.objects.filter(
+            packout_report__pool=pool, unit_of_measure='LBS'
+        ).aggregate(total=Coalesce(Sum('quantity_this_period'), Decimal('0')))['total']
+
+        if packed_lbs > 0 and settled_lbs >= packed_lbs:
+            pool.status = 'settled'
+            pool.save(update_fields=['status'])
+            logger.info(f"Auto-updated pool {pool.id} ({pool.pool_id}) status to 'settled' "
+                        f"({settled_lbs} lbs settled >= {packed_lbs} lbs packed)")
+    else:
+        settled_bins = SettlementGradeLine.objects.filter(
+            settlement__pool=pool, unit_of_measure='BIN'
+        ).aggregate(total=Coalesce(Sum('quantity'), Decimal('0')))['total']
+
+        packed_bins = PackoutReport.objects.filter(
+            pool=pool
+        ).aggregate(total=Coalesce(Sum('bins_this_period'), Decimal('0')))['total']
+
+        if packed_bins > 0 and settled_bins >= packed_bins:
+            pool.status = 'settled'
+            pool.save(update_fields=['status'])
+            logger.info(f"Auto-updated pool {pool.id} ({pool.pool_id}) status to 'settled' "
+                        f"({settled_bins} bins settled >= {packed_bins} bins packed)")
+
+
 # =============================================================================
 # PACKINGHOUSE STATEMENT UPLOAD & EXTRACTION
 # =============================================================================
@@ -2529,7 +2744,7 @@ class PackinghouseStatementViewSet(viewsets.ModelViewSet):
         except Exception as e:
             logger.exception(f"Error extracting PDF for statement {statement.id}")
             statement.status = 'failed'
-            statement.extraction_error = str(e)
+            statement.extraction_error = 'PDF extraction failed. Please try uploading again.'
             statement.save()
 
         # Return the statement with extracted data
@@ -2788,14 +3003,24 @@ class PackinghouseStatementViewSet(viewsets.ModelViewSet):
                             **deduction_data
                         )
 
+                    # Reconcile totals from grade lines and detect mismatches
+                    warnings = _reconcile_settlement_from_grade_lines(existing_settlement)
+
+                    # Auto-update pool status if fully settled
+                    _auto_update_pool_status(existing_settlement.pool)
+
                     logger.info(f"Updated existing settlement {existing_settlement.id} with edited data")
 
-                return Response({
+                response_data = {
                     'success': True,
                     'message': 'Settlement updated successfully' if edited_data else 'Statement was already processed. Settlement exists.',
                     'settlement_id': existing_settlement.id,
                     'statement_id': statement.id
-                })
+                }
+                if edited_data and warnings:
+                    response_data['warnings'] = warnings
+
+                return Response(response_data)
 
         # Create the appropriate record based on statement type
         extraction_service = PDFExtractionService()
@@ -2859,28 +3084,27 @@ class PackinghouseStatementViewSet(viewsets.ModelViewSet):
                         **ded_data
                     )
 
-                # Backfill total_weight_lbs from LBS grade lines if not already set
-                if not settlement.total_weight_lbs:
-                    lbs_total = SettlementGradeLine.objects.filter(
-                        settlement=settlement, unit_of_measure='LBS'
-                    ).aggregate(total=Coalesce(Sum('quantity'), Decimal('0')))['total']
-                    if lbs_total and lbs_total > 0:
-                        settlement.total_weight_lbs = lbs_total
-                        if not settlement.net_per_lb and settlement.net_return:
-                            settlement.net_per_lb = round(settlement.net_return / lbs_total, 4)
-                        settlement.save(update_fields=['total_weight_lbs', 'net_per_lb'])
+                # Reconcile totals from grade lines and detect mismatches
+                warnings = _reconcile_settlement_from_grade_lines(settlement)
+
+                # Auto-update pool status if fully settled
+                _auto_update_pool_status(pool)
 
                 statement.pool = pool
                 statement.field = field
                 statement.status = 'completed'
                 statement.save()
 
-                return Response({
+                response_data = {
                     'success': True,
                     'message': 'Pool settlement created successfully',
                     'settlement_id': settlement.id,
                     'statement_id': statement.id
-                })
+                }
+                if warnings:
+                    response_data['warnings'] = warnings
+
+                return Response(response_data)
 
             else:
                 return Response(
@@ -2891,7 +3115,7 @@ class PackinghouseStatementViewSet(viewsets.ModelViewSet):
         except Exception as e:
             logger.exception(f"Error creating record from statement {statement.id}")
             return Response(
-                {'error': f'Failed to create record: {str(e)}'},
+                {'error': 'Failed to create record. Please check the extracted data and try again.'},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
@@ -2980,7 +3204,7 @@ class PackinghouseStatementViewSet(viewsets.ModelViewSet):
             return response
         except Exception as e:
             logger.exception(f"Error serving PDF for statement {statement.id}")
-            return HttpResponse(f'Error loading PDF: {str(e)}', status=500)
+            return HttpResponse('Error loading PDF. The file may be unavailable.', status=500)
 
     @action(detail=False, methods=['post'], url_path='batch-upload')
     def batch_upload(self, request):
@@ -3216,7 +3440,7 @@ class PackinghouseStatementViewSet(viewsets.ModelViewSet):
                         status='failed',
                         uploaded_by=request.user,
                         batch_upload=batch,
-                        extraction_error=str(e)
+                        extraction_error='PDF extraction failed. Please try uploading again.'
                     )
 
                     results.append({
@@ -3240,7 +3464,7 @@ class PackinghouseStatementViewSet(viewsets.ModelViewSet):
                     'status': 'failed',
                     'statement_type': None,
                     'extraction_confidence': None,
-                    'extraction_error': str(e),
+                    'extraction_error': 'Failed to process PDF file.',
                     'auto_match': None,
                     'needs_review': True,
                     'detected_packinghouse': None
@@ -3608,7 +3832,7 @@ class PackinghouseStatementViewSet(viewsets.ModelViewSet):
                     'id': statement_id,
                     'filename': statement.original_filename,
                     'success': False,
-                    'message': str(e),
+                    'message': 'Failed to confirm statement. Please try again.',
                     'settlement_id': None,
                     'packout_report_id': None,
                     'mapping_saved': False

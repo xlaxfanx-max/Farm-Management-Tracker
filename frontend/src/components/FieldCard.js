@@ -297,4 +297,4 @@ function FieldCard({
   );
 }
 
-export default FieldCard;
+export default React.memo(FieldCard);

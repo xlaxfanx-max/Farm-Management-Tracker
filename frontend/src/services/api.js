@@ -18,6 +18,8 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true,  // Send HttpOnly cookies with every request
+  timeout: 30000,  // 30 second timeout to prevent hanging requests
 });
 
 // Token storage keys
@@ -48,31 +50,38 @@ api.interceptors.response.use(
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
+      // Try refreshing - the backend reads the refresh token from HttpOnly cookie
+      // or from the request body (localStorage fallback for migration)
       const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
-      if (refreshToken) {
-        try {
-          // Use base axios to avoid infinite loop
-          const response = await axios.post(`${API_BASE_URL}/auth/refresh/`, {
-            refresh: refreshToken,
-          });
+      try {
+        const response = await axios.post(
+          `${API_BASE_URL}/auth/refresh/`,
+          refreshToken ? { refresh: refreshToken } : {},
+          { withCredentials: true }  // Send cookies for cookie-based refresh
+        );
 
-          const newAccessToken = response.data.access;
-          const newRefreshToken = response.data.refresh;
+        const newAccessToken = response.data.access;
+        const newRefreshToken = response.data.refresh;
+
+        // Keep localStorage in sync during migration
+        if (newAccessToken) {
           localStorage.setItem(ACCESS_TOKEN_KEY, newAccessToken);
-          if (newRefreshToken) {
-            localStorage.setItem(REFRESH_TOKEN_KEY, newRefreshToken);
-          }
-
-          // Retry original request with new token
-          originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
-          return api(originalRequest);
-        } catch (refreshError) {
-          // Refresh failed - clear tokens and redirect to login
-          localStorage.removeItem(ACCESS_TOKEN_KEY);
-          localStorage.removeItem(REFRESH_TOKEN_KEY);
-          window.location.href = '/login';
-          return Promise.reject(refreshError);
         }
+        if (newRefreshToken) {
+          localStorage.setItem(REFRESH_TOKEN_KEY, newRefreshToken);
+        }
+
+        // Retry original request (cookies set by backend, header set here as fallback)
+        if (newAccessToken) {
+          originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+        }
+        return api(originalRequest);
+      } catch (refreshError) {
+        // Refresh failed - clear tokens and redirect to login
+        localStorage.removeItem(ACCESS_TOKEN_KEY);
+        localStorage.removeItem(REFRESH_TOKEN_KEY);
+        window.location.href = '/login';
+        return Promise.reject(refreshError);
       }
     }
 
@@ -86,20 +95,20 @@ api.interceptors.response.use(
 
 export const authAPI = {
   // Register new user and company
-  register: (data) => 
-    axios.post(`${API_BASE_URL}/auth/register/`, data),
+  register: (data) =>
+    axios.post(`${API_BASE_URL}/auth/register/`, data, { withCredentials: true }),
 
   // Login
-  login: (email, password) => 
-    axios.post(`${API_BASE_URL}/auth/login/`, { email, password }),
+  login: (email, password) =>
+    axios.post(`${API_BASE_URL}/auth/login/`, { email, password }, { withCredentials: true }),
 
   // Logout
-  logout: (refreshToken) => 
+  logout: (refreshToken) =>
     api.post('/auth/logout/', { refresh: refreshToken }),
 
   // Refresh token
-  refresh: (refreshToken) => 
-    axios.post(`${API_BASE_URL}/auth/refresh/`, { refresh: refreshToken }),
+  refresh: (refreshToken) =>
+    axios.post(`${API_BASE_URL}/auth/refresh/`, { refresh: refreshToken }, { withCredentials: true }),
 
   // Get current user
   me: () => api.get('/auth/me/'),
@@ -123,13 +132,13 @@ export const authAPI = {
     api.post('/auth/invite/', { email, role, message }),
 
   // Accept invitation
-  acceptInvitation: (token, password, firstName, lastName) => 
+  acceptInvitation: (token, password, firstName, lastName) =>
     axios.post(`${API_BASE_URL}/auth/accept-invitation/`, {
       token,
       password,
       first_name: firstName,
       last_name: lastName,
-    }),
+    }, { withCredentials: true }),
 
   // Accept invitation for existing user (authenticated)
   acceptInvitationExisting: (token) =>
@@ -2957,6 +2966,40 @@ export const getApiUrl = (path) => {
   // Remove leading slash if API_BASE_URL ends with /api
   const normalizedPath = cleanPath.startsWith('/') ? cleanPath : `/${cleanPath}`;
   return `${API_BASE_URL}${normalizedPath}`;
+};
+
+// =============================================================================
+// YIELD FORECAST MODULE
+// =============================================================================
+
+export const yieldForecastAPI = {
+  // Forecasts CRUD
+  getAll: (params = {}) => api.get('/yield-forecast/forecasts/', { params }),
+  get: (id) => api.get(`/yield-forecast/forecasts/${id}/`),
+  create: (data) => api.post('/yield-forecast/forecasts/', data),
+  update: (id, data) => api.put(`/yield-forecast/forecasts/${id}/`, data),
+  patch: (id, data) => api.patch(`/yield-forecast/forecasts/${id}/`, data),
+  delete: (id) => api.delete(`/yield-forecast/forecasts/${id}/`),
+
+  // Actions
+  generate: (data) => api.post('/yield-forecast/forecasts/generate/', data),
+  backfillActuals: (data) => api.post('/yield-forecast/forecasts/backfill_actuals/', data),
+
+  // Analytics
+  getDashboard: (params = {}) => api.get('/yield-forecast/dashboard/', { params }),
+  getFieldDetail: (fieldId, params = {}) => api.get(`/yield-forecast/fields/${fieldId}/detail/`, { params }),
+  getSeasonComparison: (params = {}) => api.get('/yield-forecast/season-comparison/', { params }),
+
+  // Feature snapshots (read-only)
+  getFeatureSnapshots: (params = {}) => api.get('/yield-forecast/feature-snapshots/', { params }),
+  getFeatureSnapshot: (id) => api.get(`/yield-forecast/feature-snapshots/${id}/`),
+
+  // Soil survey (read-only)
+  getSoilSurvey: (params = {}) => api.get('/yield-forecast/soil-survey/', { params }),
+
+  // External data sources
+  getExternalSources: (params = {}) => api.get('/yield-forecast/external-sources/', { params }),
+  createExternalSource: (data) => api.post('/yield-forecast/external-sources/', data),
 };
 
 // =============================================================================

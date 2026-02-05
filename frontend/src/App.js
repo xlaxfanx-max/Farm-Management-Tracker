@@ -20,6 +20,7 @@ import {
   Bug,
   Sun,
   Moon,
+  TrendingUp,
 } from 'lucide-react';
 
 // Contexts
@@ -57,7 +58,9 @@ import ComplianceSettings from './components/compliance/ComplianceSettings';
 import { DiseaseDashboard } from './components/disease';
 import { FSMADashboard } from './components/fsma';
 import Breadcrumbs from './components/navigation/Breadcrumbs';
+import YieldForecastDashboard from './components/yield-forecast/YieldForecastDashboard';
 
+import ErrorBoundary from './components/ui/ErrorBoundary';
 import { onboardingAPI } from './services/api';
 import './components/OnboardingWizard.css';
 
@@ -220,6 +223,7 @@ function AppContent() {
     { id: 'water', label: 'Water Management', icon: Droplets },
     { id: 'nutrients', label: 'Nutrients', icon: Leaf },
     { id: 'harvests', label: 'Harvest & Packing', icon: Wheat },
+    { id: 'yield-forecast', label: 'Yield Forecast', icon: TrendingUp },
     { id: 'compliance', label: 'Compliance', icon: Shield },
     { id: 'disease', label: 'Disease Prevention', icon: Bug },
     { id: 'reports', label: 'Reports', icon: FileText },
@@ -414,6 +418,7 @@ function AppContent() {
 
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto">
+        <ErrorBoundary level="section" name="Page Content" key={currentView}>
         {currentView === 'dashboard' && <Dashboard onNavigate={setCurrentView} />}
         {currentView === 'farms' && (
           <div className="p-6">
@@ -526,6 +531,10 @@ function AppContent() {
         {currentView === 'compliance-pesticide' && (
           <DeadlineCalendar onNavigate={setCurrentView} />
         )}
+        {currentView === 'yield-forecast' && (
+          <YieldForecastDashboard />
+        )}
+        </ErrorBoundary>
       </main>
 
       {/* Global Modals */}
@@ -551,15 +560,17 @@ function AppContent() {
 
 function App() {
   return (
-    <ThemeProvider>
-      <SeasonProvider>
-        <DataProvider>
-          <ModalProvider>
-            <AppContent />
-          </ModalProvider>
-        </DataProvider>
-      </SeasonProvider>
-    </ThemeProvider>
+    <ErrorBoundary level="app" name="Grove Master">
+      <ThemeProvider>
+        <SeasonProvider>
+          <DataProvider>
+            <ModalProvider>
+              <AppContent />
+            </ModalProvider>
+          </DataProvider>
+        </SeasonProvider>
+      </ThemeProvider>
+    </ErrorBoundary>
   );
 }
 
