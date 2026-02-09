@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Routes, Route, useLocation, useNavigate, NavLink } from 'react-router-dom';
 import {
   LayoutDashboard,
   Home as HomeIcon,
@@ -30,6 +31,9 @@ import { ModalProvider } from './contexts/ModalContext';
 import { ThemeProvider, useTheme } from './contexts/ThemeContext';
 import { SeasonProvider } from './contexts/SeasonContext';
 
+// Route config
+import { VIEW_TO_PATH, PATH_TO_VIEW } from './routes';
+
 // Components
 import Dashboard from './components/Dashboard';
 import CompanySettings from './components/CompanySettings';
@@ -41,10 +45,6 @@ import Harvests from './components/Harvests';
 import NutrientManagement from './components/NutrientManagement';
 import AuditLogViewer from './components/AuditLogViewer';
 import TeamManagement from './components/TeamManagement';
-import Login from './components/Login';
-import AcceptInvitation from './components/AcceptInvitation';
-import ForgotPassword from './components/ForgotPassword';
-import ResetPassword from './components/ResetPassword';
 import OnboardingWizard from './components/OnboardingWizard';
 import GlobalModals from './components/GlobalModals';
 import WeatherForecast from './components/WeatherForecast';
@@ -81,9 +81,19 @@ function AppContent() {
 
   const { isDarkMode, toggleTheme } = useTheme();
 
+  const location = useLocation();
+  const navigate = useNavigate();
+  const currentView = PATH_TO_VIEW[location.pathname] || 'dashboard';
+
+  const handleNavigate = (viewId) => {
+    const path = VIEW_TO_PATH[viewId];
+    if (path) {
+      navigate(path);
+    }
+  };
+
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showCompanyMenu, setShowCompanyMenu] = useState(false);
-  const [currentView, setCurrentView] = useState('dashboard');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   // Onboarding state
@@ -156,30 +166,6 @@ function AppContent() {
   };
 
   // ============================================================================
-  // CHECK FOR SPECIAL ROUTES (invitation, password reset)
-  // ============================================================================
-  const urlParams = new URLSearchParams(window.location.search);
-  const currentPath = window.location.pathname;
-
-  // Check for invitation token
-  const inviteToken = urlParams.get('invite') ||
-    (currentPath.startsWith('/invite/') ? currentPath.split('/invite/')[1] : null);
-
-  if (inviteToken) {
-    return <AcceptInvitation token={inviteToken} onComplete={() => window.location.href = '/'} />;
-  }
-
-  // Check for forgot password route
-  if (currentPath === '/forgot-password') {
-    return <ForgotPassword />;
-  }
-
-  // Check for reset password route
-  if (currentPath === '/reset-password') {
-    return <ResetPassword />;
-  }
-
-  // ============================================================================
   // LOADING STATE
   // ============================================================================
   if (authLoading || checkingOnboarding) {
@@ -197,7 +183,7 @@ function AppContent() {
   // LOGIN (Registration is invitation-only via AcceptInvitation)
   // ============================================================================
   if (!isAuthenticated) {
-    return <Login />;
+    return null; // Main.jsx handles unauthenticated routing
   }
 
   // ============================================================================
@@ -292,7 +278,7 @@ function AppContent() {
                     if (companies.length > 1) {
                       setShowCompanyMenu(!showCompanyMenu);
                     } else {
-                      setCurrentView('company');
+                      navigate(VIEW_TO_PATH['company']);
                     }
                   }}
                   className="w-full flex items-center gap-2 px-3 py-2 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
@@ -318,7 +304,7 @@ function AppContent() {
                       >
                         <span className="text-sm text-gray-700 dark:text-gray-200 truncate">{company.name}</span>
                         {company.id === currentCompany.id && (
-                          <span className="ml-auto text-green-600 dark:text-green-400">✓</span>
+                          <span className="ml-auto text-green-600 dark:text-green-400">&#10003;</span>
                         )}
                       </button>
                     ))}
@@ -334,18 +320,19 @@ function AppContent() {
           {/* Navigation */}
           <nav className="flex-1 p-4 space-y-1">
             {navItems.map((item) => (
-              <button
+              <NavLink
                 key={item.id}
-                onClick={() => setCurrentView(item.id)}
-                className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
-                  currentView === item.id
+                to={VIEW_TO_PATH[item.id]}
+                end={item.id === 'dashboard' || item.id === 'compliance'}
+                className={({ isActive }) => `w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
+                  isActive
                     ? 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-400'
                     : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                 }`}
               >
                 <item.icon className="w-5 h-5" />
                 {!sidebarCollapsed && <span>{item.label}</span>}
-              </button>
+              </NavLink>
             ))}
           </nav>
 
@@ -373,7 +360,7 @@ function AppContent() {
                     <button
                       onClick={() => {
                         setShowUserMenu(false);
-                        setCurrentView('profile');
+                        navigate(VIEW_TO_PATH['profile']);
                       }}
                       className="w-full flex items-center gap-2 px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-600 text-left text-sm text-gray-700 dark:text-gray-200"
                     >
@@ -419,121 +406,93 @@ function AppContent() {
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto">
         <ErrorBoundary level="section" name="Page Content" key={currentView}>
-        {currentView === 'dashboard' && <Dashboard onNavigate={setCurrentView} />}
-        {currentView === 'farms' && (
-          <div className="p-6">
-            <Breadcrumbs currentView={currentView} onNavigate={setCurrentView} />
-            <Farms />
-          </div>
-        )}
-        {currentView === 'reports' && (
-          <div className="p-6">
-            <Breadcrumbs currentView={currentView} onNavigate={setCurrentView} />
-            <Reports />
-          </div>
-        )}
-        {currentView === 'harvests' && (
-          <div className="p-6">
-            <Breadcrumbs currentView={currentView} onNavigate={setCurrentView} />
-            <Harvests />
-          </div>
-        )}
-        {currentView === 'team' && (
-          <div className="p-6">
-            <Breadcrumbs currentView={currentView} onNavigate={setCurrentView} />
-            <TeamManagement />
-          </div>
-        )}
-        {currentView === 'company' && (
-          <div className="p-6">
-            <Breadcrumbs currentView={currentView} onNavigate={setCurrentView} />
-            <CompanySettings onBack={() => setCurrentView('dashboard')} />
-          </div>
-        )}
-        {currentView === 'profile' && (
-          <div className="p-6">
-            <Breadcrumbs currentView={currentView} onNavigate={setCurrentView} />
-            <Profile onBack={() => setCurrentView('dashboard')} />
-          </div>
-        )}
-        {currentView === 'water' && (
-          <div className="p-6">
-            <Breadcrumbs currentView={currentView} onNavigate={setCurrentView} />
-            <WaterManagement />
-          </div>
-        )}
-        {currentView === 'weather' && (
-          <div className="p-6">
-            <Breadcrumbs currentView={currentView} onNavigate={setCurrentView} />
-            <WeatherForecast />
-          </div>
-        )}
-        {currentView === 'analytics' && (
-          <div className="p-6">
-            <Breadcrumbs currentView={currentView} onNavigate={setCurrentView} />
-            <Analytics />
-          </div>
-        )}
-        {currentView === 'nutrients' && (
-          <div className="p-6">
-            <Breadcrumbs currentView={currentView} onNavigate={setCurrentView} />
-            <NutrientManagement />
-          </div>
-        )}
-        {currentView === 'activity' && (
-          <div className="p-6">
-            <Breadcrumbs currentView={currentView} onNavigate={setCurrentView} />
-            <AuditLogViewer />
-          </div>
-        )}
-        {currentView === 'compliance' && (
-          <ComplianceDashboard onNavigate={setCurrentView} />
-        )}
-        {currentView === 'compliance-deadlines' && (
-          <DeadlineCalendar onNavigate={setCurrentView} />
-        )}
-        {currentView === 'compliance-licenses' && (
-          <LicenseManagement onNavigate={setCurrentView} />
-        )}
-        {currentView === 'compliance-wps' && (
-          <WPSCompliance onNavigate={setCurrentView} />
-        )}
-        {currentView === 'compliance-reports' && (
-          <ComplianceReports onNavigate={setCurrentView} />
-        )}
-        {currentView === 'compliance-settings' && (
-          <ComplianceSettings onNavigate={setCurrentView} />
-        )}
-        {currentView === 'disease' && (
-          <DiseaseDashboard onNavigate={setCurrentView} />
-        )}
-        {currentView === 'compliance-fsma' && (
-          <FSMADashboard onNavigate={setCurrentView} />
-        )}
-        {currentView === 'compliance-fsma-visitors' && (
-          <FSMADashboard onNavigate={setCurrentView} initialTab="visitors" />
-        )}
-        {currentView === 'compliance-fsma-cleaning' && (
-          <FSMADashboard onNavigate={setCurrentView} initialTab="cleaning" />
-        )}
-        {currentView === 'compliance-fsma-meetings' && (
-          <FSMADashboard onNavigate={setCurrentView} initialTab="meetings" />
-        )}
-        {currentView === 'compliance-fsma-inventory' && (
-          <FSMADashboard onNavigate={setCurrentView} initialTab="inventory" />
-        )}
-        {currentView === 'compliance-fsma-phi' && (
-          <FSMADashboard onNavigate={setCurrentView} initialTab="phi" />
-        )}
-        {currentView === 'compliance-fsma-audit' && (
-          <FSMADashboard onNavigate={setCurrentView} initialTab="audit" />
-        )}
-        {currentView === 'compliance-pesticide' && (
-          <DeadlineCalendar onNavigate={setCurrentView} />
-        )}
-        {currentView === 'yield-forecast' && (
-          <YieldForecastDashboard />
-        )}
+          <Routes>
+            <Route index element={<Dashboard onNavigate={handleNavigate} />} />
+            <Route path="farms" element={
+              <div className="p-6">
+                <Breadcrumbs currentView="farms" onNavigate={handleNavigate} />
+                <Farms />
+              </div>
+            } />
+            <Route path="reports" element={
+              <div className="p-6">
+                <Breadcrumbs currentView="reports" onNavigate={handleNavigate} />
+                <Reports />
+              </div>
+            } />
+            <Route path="harvests" element={
+              <div className="p-6">
+                <Breadcrumbs currentView="harvests" onNavigate={handleNavigate} />
+                <Harvests />
+              </div>
+            } />
+            <Route path="team" element={
+              <div className="p-6">
+                <Breadcrumbs currentView="team" onNavigate={handleNavigate} />
+                <TeamManagement />
+              </div>
+            } />
+            <Route path="company" element={
+              <div className="p-6">
+                <Breadcrumbs currentView="company" onNavigate={handleNavigate} />
+                <CompanySettings onBack={() => handleNavigate('dashboard')} />
+              </div>
+            } />
+            <Route path="profile" element={
+              <div className="p-6">
+                <Breadcrumbs currentView="profile" onNavigate={handleNavigate} />
+                <Profile onBack={() => handleNavigate('dashboard')} />
+              </div>
+            } />
+            <Route path="water" element={
+              <div className="p-6">
+                <Breadcrumbs currentView="water" onNavigate={handleNavigate} />
+                <WaterManagement />
+              </div>
+            } />
+            <Route path="weather" element={
+              <div className="p-6">
+                <Breadcrumbs currentView="weather" onNavigate={handleNavigate} />
+                <WeatherForecast />
+              </div>
+            } />
+            <Route path="analytics" element={
+              <div className="p-6">
+                <Breadcrumbs currentView="analytics" onNavigate={handleNavigate} />
+                <Analytics />
+              </div>
+            } />
+            <Route path="nutrients" element={
+              <div className="p-6">
+                <Breadcrumbs currentView="nutrients" onNavigate={handleNavigate} />
+                <NutrientManagement />
+              </div>
+            } />
+            <Route path="activity" element={
+              <div className="p-6">
+                <Breadcrumbs currentView="activity" onNavigate={handleNavigate} />
+                <AuditLogViewer />
+              </div>
+            } />
+            <Route path="compliance" element={<ComplianceDashboard onNavigate={handleNavigate} />} />
+            <Route path="compliance/deadlines" element={<DeadlineCalendar onNavigate={handleNavigate} />} />
+            <Route path="compliance/licenses" element={<LicenseManagement onNavigate={handleNavigate} />} />
+            <Route path="compliance/wps" element={<WPSCompliance onNavigate={handleNavigate} />} />
+            <Route path="compliance/reports" element={<ComplianceReports onNavigate={handleNavigate} />} />
+            <Route path="compliance/settings" element={<ComplianceSettings onNavigate={handleNavigate} />} />
+            <Route path="disease" element={<DiseaseDashboard onNavigate={handleNavigate} />} />
+            <Route path="compliance/fsma" element={<FSMADashboard onNavigate={handleNavigate} />} />
+            <Route path="compliance/fsma/visitors" element={<FSMADashboard onNavigate={handleNavigate} initialTab="visitors" />} />
+            <Route path="compliance/fsma/cleaning" element={<FSMADashboard onNavigate={handleNavigate} initialTab="cleaning" />} />
+            <Route path="compliance/fsma/meetings" element={<FSMADashboard onNavigate={handleNavigate} initialTab="meetings" />} />
+            <Route path="compliance/fsma/inventory" element={<FSMADashboard onNavigate={handleNavigate} initialTab="inventory" />} />
+            <Route path="compliance/fsma/phi" element={<FSMADashboard onNavigate={handleNavigate} initialTab="phi" />} />
+            <Route path="compliance/fsma/audit" element={<FSMADashboard onNavigate={handleNavigate} initialTab="audit" />} />
+            <Route path="compliance/pesticide" element={<DeadlineCalendar onNavigate={handleNavigate} />} />
+            <Route path="yield-forecast" element={<YieldForecastDashboard />} />
+            {/* Catch-all redirect to dashboard */}
+            <Route path="*" element={<Dashboard onNavigate={handleNavigate} />} />
+          </Routes>
         </ErrorBoundary>
       </main>
 

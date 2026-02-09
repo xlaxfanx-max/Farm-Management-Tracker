@@ -24,7 +24,7 @@ from .yield_serializers import (
     YieldForecastListSerializer,
 )
 from .permissions import HasCompanyAccess, AuditLogMixin
-from .views import get_user_company, require_company
+from .view_helpers import get_user_company, require_company
 
 
 # =============================================================================

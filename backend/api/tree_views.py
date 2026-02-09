@@ -23,7 +23,7 @@ from .models import (
     Field, Tree, TreeObservation, TreeMatchingRun,
     TreeDetectionRun, LiDARProcessingRun, TreeFeedback,
 )
-from .views import get_user_company
+from .view_helpers import get_user_company
 from .serializers import (
     TreeListSerializer, TreeDetailSerializer, TreeGeoJSONSerializer,
     TreeObservationSerializer, TreeMatchingRunSerializer,

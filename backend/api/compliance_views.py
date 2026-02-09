@@ -51,25 +51,7 @@ from .serializers import (
 )
 
 
-# =============================================================================
-# HELPER FUNCTIONS
-# =============================================================================
-
-def get_user_company(user):
-    """Helper to safely get user's current company."""
-    if hasattr(user, 'current_company') and user.current_company:
-        return user.current_company
-    return None
-
-
-def require_company(user):
-    """Raise validation error if user has no company."""
-    company = get_user_company(user)
-    if not company:
-        raise drf_serializers.ValidationError(
-            "You must be associated with a company to perform this action."
-        )
-    return company
+from .view_helpers import get_user_company, require_company
 
 
 # =============================================================================

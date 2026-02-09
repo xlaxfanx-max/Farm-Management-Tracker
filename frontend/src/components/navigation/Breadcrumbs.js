@@ -1,47 +1,15 @@
 import React from 'react';
 import { ChevronRight, Home } from 'lucide-react';
+import { VIEW_NAMES, PARENT_VIEWS } from '../../routes';
 
 /**
  * Breadcrumb navigation component
  */
 function Breadcrumbs({ currentView, onNavigate }) {
-  // Map view IDs to display names
-  const viewNames = {
-    dashboard: 'Dashboard',
-    farms: 'Farms & Fields',
-    weather: 'Weather',
-    analytics: 'Analytics',
-    water: 'Water Management',
-    nutrients: 'Nutrients',
-    harvests: 'Harvests',
-    compliance: 'Compliance',
-    'compliance-deadlines': 'Deadlines',
-    'compliance-licenses': 'Licenses',
-    'compliance-wps': 'WPS Compliance',
-    'compliance-reports': 'Reports',
-    'compliance-settings': 'Settings',
-    disease: 'Disease Prevention',
-    reports: 'Reports',
-    activity: 'Activity Log',
-    team: 'Team',
-    company: 'Company Settings',
-    profile: 'Profile'
-  };
-
-  // Parent view mappings for nested views
-  const parentViews = {
-    'compliance-deadlines': 'compliance',
-    'compliance-licenses': 'compliance',
-    'compliance-wps': 'compliance',
-    'compliance-reports': 'compliance',
-    'compliance-settings': 'compliance',
-  };
-
   // Build breadcrumb trail
   const getBreadcrumbs = () => {
     const crumbs = [];
 
-    // Always start with Dashboard
     if (currentView !== 'dashboard') {
       crumbs.push({
         id: 'dashboard',
@@ -50,20 +18,25 @@ function Breadcrumbs({ currentView, onNavigate }) {
       });
     }
 
-    // Add parent view if current view has one
-    const parentView = parentViews[currentView];
-    if (parentView) {
+    // Walk up parent chain
+    const parentChain = [];
+    let current = currentView;
+    while (PARENT_VIEWS[current]) {
+      parentChain.unshift(PARENT_VIEWS[current]);
+      current = PARENT_VIEWS[current];
+    }
+
+    for (const parentView of parentChain) {
       crumbs.push({
         id: parentView,
-        label: viewNames[parentView] || parentView,
+        label: VIEW_NAMES[parentView] || parentView,
         isLink: true
       });
     }
 
-    // Add current view
     crumbs.push({
       id: currentView,
-      label: viewNames[currentView] || currentView,
+      label: VIEW_NAMES[currentView] || currentView,
       isLink: false
     });
 
