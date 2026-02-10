@@ -3053,8 +3053,18 @@ class PackinghouseStatementViewSet(viewsets.ModelViewSet):
         existing_packout = PackoutReport.objects.filter(source_statement=statement).first()
         existing_settlement = PoolSettlement.objects.filter(source_statement=statement).first()
 
-        # Save grower-to-farm mapping for future auto-matching
+        # Save grower-to-farm mapping and update auto_match_result
         def _save_grower_mapping():
+            # Always update auto_match_result so farm/field persist on reopen
+            if farm or field:
+                match_data = statement.auto_match_result or {}
+                if farm:
+                    match_data['farm'] = {'id': farm.id, 'name': farm.name}
+                if field:
+                    match_data['field'] = {'id': field.id, 'name': field.name}
+                statement.auto_match_result = match_data
+                statement.save(update_fields=['auto_match_result'])
+
             if not save_mappings or not farm:
                 return
             try:

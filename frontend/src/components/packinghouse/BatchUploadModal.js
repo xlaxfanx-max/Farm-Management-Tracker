@@ -72,18 +72,29 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
       setSelectedPackinghouse(existingStatement.packinghouse);
       setExpandedStatements({ [existingStatement.id]: true });
 
-      // Initialize overrides
+      // Initialize overrides from existing assignments first, then auto-match
       const autoMatch = existingStatement.auto_match_result || {};
+
+      // Derive farm_id from the statement's assigned field if available
+      let farmId = autoMatch.farm?.id || null;
+      let fieldId = existingStatement.field || autoMatch.field?.id || null;
+      if (fieldId && fields.length > 0) {
+        const matchedField = fields.find(f => f.id === fieldId);
+        if (matchedField) {
+          farmId = matchedField.farm;
+        }
+      }
+
       setStatementOverrides({
         [existingStatement.id]: {
-          farm_id: autoMatch.farm?.id || null,
-          field_id: autoMatch.field?.id || null,
-          pool_id: null,
+          farm_id: farmId,
+          field_id: fieldId,
+          pool_id: existingStatement.pool || null,
           skip: false
         }
       });
     }
-  }, [existingStatement]);
+  }, [existingStatement, fields]);
 
   useEffect(() => {
     fetchPackinghouses();
