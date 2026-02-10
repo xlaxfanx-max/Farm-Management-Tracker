@@ -2530,6 +2530,114 @@ def _reconcile_settlement_from_grade_lines(settlement):
     return warnings
 
 
+def _validate_settlement_financials(settlement):
+    """
+    Validate financial consistency of a PoolSettlement.
+    Checks that dollar amounts are internally consistent:
+    - Grade line amounts sum to total_credits
+    - Deduction amounts sum to total_deductions
+    - net_return ≈ total_credits - total_deductions
+    - amount_due ≈ net_return - prior_advances
+
+    Non-blocking: returns warnings but does not modify data.
+
+    Args:
+        settlement: PoolSettlement instance (already saved with
+                    grade_lines and deductions created)
+
+    Returns:
+        List[str]: Warning messages, empty if all checks pass.
+    """
+    from api.models import SettlementGradeLine, SettlementDeduction
+
+    warnings = []
+
+    def _check_mismatch(actual, expected, label, pct_threshold=1.0, abs_threshold=None):
+        """Compare actual vs expected. Warn if difference exceeds thresholds."""
+        if actual is None or expected is None:
+            return None
+        diff = abs(float(actual) - float(expected))
+        if diff < 0.01:
+            return None
+        denominator = max(abs(float(actual)), abs(float(expected)))
+        if denominator == 0:
+            return None
+        pct = (diff / denominator) * 100
+
+        exceeded = pct > pct_threshold
+        if abs_threshold is not None and diff > abs_threshold:
+            exceeded = True
+
+        if exceeded:
+            return (
+                f"{label}: expected ${float(expected):,.2f} but found "
+                f"${float(actual):,.2f} (diff: ${diff:,.2f} / {pct:.1f}%)"
+            )
+        return None
+
+    # Check 1: Grade line amounts sum to total_credits
+    grade_line_sum = SettlementGradeLine.objects.filter(
+        settlement=settlement
+    ).aggregate(
+        total=Coalesce(Sum('total_amount'), Decimal('0'))
+    )['total']
+
+    if grade_line_sum and grade_line_sum > 0 and settlement.total_credits:
+        warning = _check_mismatch(
+            actual=settlement.total_credits,
+            expected=grade_line_sum,
+            label="Grade line total vs total credits",
+        )
+        if warning:
+            warnings.append(warning)
+
+    # Check 2: Deduction amounts sum to total_deductions
+    deduction_sum = SettlementDeduction.objects.filter(
+        settlement=settlement
+    ).aggregate(
+        total=Coalesce(Sum('amount'), Decimal('0'))
+    )['total']
+
+    if deduction_sum and deduction_sum > 0 and settlement.total_deductions:
+        warning = _check_mismatch(
+            actual=settlement.total_deductions,
+            expected=deduction_sum,
+            label="Deduction total vs total deductions",
+        )
+        if warning:
+            warnings.append(warning)
+
+    # Check 3: net_return ≈ total_credits - total_deductions
+    if (settlement.total_credits is not None
+            and settlement.total_deductions is not None
+            and settlement.net_return is not None):
+        expected_net = settlement.total_credits - settlement.total_deductions
+        warning = _check_mismatch(
+            actual=settlement.net_return,
+            expected=expected_net,
+            label="Net return math (credits - deductions)",
+            abs_threshold=100.00,
+        )
+        if warning:
+            warnings.append(warning)
+
+    # Check 4: amount_due ≈ net_return - prior_advances
+    if (settlement.net_return is not None
+            and settlement.amount_due is not None):
+        prior = settlement.prior_advances or Decimal('0')
+        expected_due = settlement.net_return - prior
+        warning = _check_mismatch(
+            actual=settlement.amount_due,
+            expected=expected_due,
+            label="Amount due math (net return - prior advances)",
+            abs_threshold=50.00,
+        )
+        if warning:
+            warnings.append(warning)
+
+    return warnings
+
+
 def _auto_update_pool_status(pool):
     """
     Automatically update a pool's status to 'settled' when all packed
@@ -3006,6 +3114,10 @@ class PackinghouseStatementViewSet(viewsets.ModelViewSet):
                     # Reconcile totals from grade lines and detect mismatches
                     warnings = _reconcile_settlement_from_grade_lines(existing_settlement)
 
+                    # Validate financial consistency
+                    financial_warnings = _validate_settlement_financials(existing_settlement)
+                    warnings.extend(financial_warnings)
+
                     # Auto-update pool status if fully settled
                     _auto_update_pool_status(existing_settlement.pool)
 
@@ -3086,6 +3198,10 @@ class PackinghouseStatementViewSet(viewsets.ModelViewSet):
 
                 # Reconcile totals from grade lines and detect mismatches
                 warnings = _reconcile_settlement_from_grade_lines(settlement)
+
+                # Validate financial consistency
+                financial_warnings = _validate_settlement_financials(settlement)
+                warnings.extend(financial_warnings)
 
                 # Auto-update pool status if fully settled
                 _auto_update_pool_status(pool)
@@ -3703,6 +3819,7 @@ class PackinghouseStatementViewSet(viewsets.ModelViewSet):
             try:
                 settlement_id = None
                 packout_report_id = None
+                settlement_warnings = []
                 data_to_use = statement.extracted_data
 
                 if statement.statement_type in ['settlement', 'grower_statement']:
@@ -3730,6 +3847,16 @@ class PackinghouseStatementViewSet(viewsets.ModelViewSet):
                             settlement=settlement,
                             **ded_data
                         )
+
+                    # Reconcile totals from grade lines and detect mismatches
+                    settlement_warnings = _reconcile_settlement_from_grade_lines(settlement)
+
+                    # Validate financial consistency
+                    financial_warnings = _validate_settlement_financials(settlement)
+                    settlement_warnings.extend(financial_warnings)
+
+                    # Auto-update pool status if fully settled
+                    _auto_update_pool_status(pool)
 
                     settlement_id = settlement.id
 
@@ -3815,7 +3942,7 @@ class PackinghouseStatementViewSet(viewsets.ModelViewSet):
                     except Exception as e:
                         logger.warning(f"Failed to save mapping: {e}")
 
-                results.append({
+                result_item = {
                     'id': statement_id,
                     'filename': statement.original_filename,
                     'success': True,
@@ -3823,7 +3950,10 @@ class PackinghouseStatementViewSet(viewsets.ModelViewSet):
                     'settlement_id': settlement_id,
                     'packout_report_id': packout_report_id,
                     'mapping_saved': mapping_saved
-                })
+                }
+                if settlement_warnings:
+                    result_item['warnings'] = settlement_warnings
+                results.append(result_item)
                 confirmed_count += 1
 
             except Exception as e:

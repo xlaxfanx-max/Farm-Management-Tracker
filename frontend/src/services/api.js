@@ -2621,13 +2621,16 @@ export const packinghouseStatementsAPI = {
   // Reprocess PDF extraction
   // data can contain: packinghouse_format (optional hint)
   reprocess: (id, data = {}) =>
-    api.post(`/packinghouse-statements/${id}/reprocess/`, data),
+    api.post(`/packinghouse-statements/${id}/reprocess/`, data, {
+      timeout: 300000,  // 5 min - PDF extraction via Claude AI is slow
+    }),
 
   // Batch upload multiple PDFs
   // formData should contain: files[], packinghouse, packinghouse_format (optional)
   batchUpload: (formData) =>
     api.post('/packinghouse-statements/batch-upload/', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
+      headers: { 'Content-Type': 'multipart/form-data' },
+      timeout: 300000,  // 5 min - PDF extraction via Claude AI is slow
     }),
 
   // Batch confirm multiple statements
