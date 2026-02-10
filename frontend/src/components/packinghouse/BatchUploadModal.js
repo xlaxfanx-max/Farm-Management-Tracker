@@ -309,14 +309,10 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
         const response = await packinghouseStatementsAPI.confirm(stmt.id, {
           pool_id: override.pool_id || null,
           field_id: override.field_id || null,
-          edited_data: editedData
+          farm_id: override.farm_id || null,
+          edited_data: editedData,
+          save_mappings: saveMappings
         });
-
-        // Save mapping if requested
-        if (saveMappings && override.farm_id) {
-          // The backend batch-confirm handles this, but for single we need to handle it
-          // Actually the confirm endpoint doesn't save mappings, so we'll use batch-confirm
-        }
 
         // Show warnings if any, otherwise close immediately
         if (response.data?.warnings?.length > 0) {

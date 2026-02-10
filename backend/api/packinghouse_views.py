@@ -2894,7 +2894,9 @@ class PackinghouseStatementViewSet(viewsets.ModelViewSet):
 
         pool_id = request.data.get('pool_id')
         field_id = request.data.get('field_id')
+        farm_id = request.data.get('farm_id')
         edited_data = request.data.get('edited_data')
+        save_mappings = request.data.get('save_mappings', False)
 
         # Use edited data if provided, otherwise use original extracted data
         data_to_use = edited_data if edited_data else statement.extracted_data
@@ -3032,6 +3034,16 @@ class PackinghouseStatementViewSet(viewsets.ModelViewSet):
                     status=status.HTTP_404_NOT_FOUND
                 )
 
+        farm = None
+        if farm_id:
+            try:
+                farm = Farm.objects.get(
+                    id=farm_id,
+                    company=request.user.current_company
+                )
+            except Farm.DoesNotExist:
+                pass  # Non-critical — farm is only used for mapping
+
         # Update statement with edited data if provided
         if edited_data:
             statement.extracted_data = edited_data
@@ -3041,6 +3053,45 @@ class PackinghouseStatementViewSet(viewsets.ModelViewSet):
         existing_packout = PackoutReport.objects.filter(source_statement=statement).first()
         existing_settlement = PoolSettlement.objects.filter(source_statement=statement).first()
 
+        # Save grower-to-farm mapping for future auto-matching
+        def _save_grower_mapping():
+            if not save_mappings or not farm:
+                return
+            try:
+                matcher = StatementMatcher(request.user.current_company)
+                header = data_to_use.get('header', {})
+                grower_info = data_to_use.get('grower_info', {})
+                grower_name = (
+                    grower_info.get('grower_name') or
+                    header.get('grower_name') or
+                    header.get('grower') or
+                    ''
+                )
+                grower_id = (
+                    grower_info.get('grower_id') or
+                    header.get('grower_id') or
+                    ''
+                )
+                block_name = (
+                    header.get('ranch_name') or
+                    header.get('block_name') or
+                    grower_info.get('ranch') or
+                    ''
+                )
+                if grower_name:
+                    matcher.save_mapping(
+                        packinghouse_id=statement.packinghouse_id,
+                        grower_name=grower_name,
+                        grower_id=grower_id,
+                        farm_id=farm.id,
+                        field_id=field.id if field else None,
+                        block_name=block_name,
+                        source_statement_id=statement.id,
+                        user=request.user
+                    )
+            except Exception as e:
+                logger.warning(f"Failed to save grower mapping: {e}")
+
         if existing_packout or existing_settlement:
             # Already processed - update existing records with edited data
             extraction_service = PDFExtractionService()
@@ -3049,6 +3100,7 @@ class PackinghouseStatementViewSet(viewsets.ModelViewSet):
             statement.field = field
             statement.status = 'completed'
             statement.save()
+            _save_grower_mapping()
 
             if existing_packout:
                 # Update the packout report with edited data
@@ -3161,6 +3213,7 @@ class PackinghouseStatementViewSet(viewsets.ModelViewSet):
                 statement.field = field
                 statement.status = 'completed'
                 statement.save()
+                _save_grower_mapping()
 
                 return Response({
                     'success': True,
@@ -3210,6 +3263,7 @@ class PackinghouseStatementViewSet(viewsets.ModelViewSet):
                 statement.field = field
                 statement.status = 'completed'
                 statement.save()
+                _save_grower_mapping()
 
                 response_data = {
                     'success': True,
