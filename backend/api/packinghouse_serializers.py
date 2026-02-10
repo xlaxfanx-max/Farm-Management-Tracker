@@ -514,7 +514,7 @@ class PackinghouseStatementListSerializer(serializers.ModelSerializer):
     format_display = serializers.CharField(source='get_packinghouse_format_display', read_only=True)
     pool_name = serializers.CharField(source='pool.name', read_only=True, allow_null=True)
     field_name = serializers.CharField(source='field.name', read_only=True, allow_null=True)
-    farm_name = serializers.CharField(source='field.farm.name', read_only=True, allow_null=True)
+    farm_name = serializers.SerializerMethodField()
     uploaded_by_name = serializers.SerializerMethodField()
     commodity = serializers.SerializerMethodField()
     is_processed = serializers.ReadOnlyField()
@@ -538,6 +538,16 @@ class PackinghouseStatementListSerializer(serializers.ModelSerializer):
     def get_uploaded_by_name(self, obj):
         if obj.uploaded_by:
             return f"{obj.uploaded_by.first_name} {obj.uploaded_by.last_name}".strip() or obj.uploaded_by.email
+        return None
+
+    def get_farm_name(self, obj):
+        """Return farm name from assigned field, or from auto_match_result."""
+        if obj.field and obj.field.farm:
+            return obj.field.farm.name
+        if obj.auto_match_result and isinstance(obj.auto_match_result, dict):
+            farm = obj.auto_match_result.get('farm')
+            if isinstance(farm, dict):
+                return farm.get('name')
         return None
 
     def get_commodity(self, obj):
