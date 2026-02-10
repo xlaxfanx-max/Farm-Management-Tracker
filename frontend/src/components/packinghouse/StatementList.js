@@ -122,7 +122,8 @@ const StatementList = ({ packinghouseId = null }) => {
   const filteredStatements = statements.filter(s =>
     searchTerm === '' ||
     s.original_filename.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    s.packinghouse_name?.toLowerCase().includes(searchTerm.toLowerCase())
+    s.packinghouse_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    s.farm_name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const StatusBadge = ({ status }) => {
@@ -235,6 +236,7 @@ const StatementList = ({ packinghouseId = null }) => {
                 <tr className="text-left text-sm text-gray-500 border-b">
                   <th className="pb-3 font-medium">File</th>
                   <th className="pb-3 font-medium">Packinghouse</th>
+                  <th className="pb-3 font-medium">Farm</th>
                   <th className="pb-3 font-medium">Type</th>
                   <th className="pb-3 font-medium">Commodity</th>
                   <th className="pb-3 font-medium">Status</th>
@@ -262,6 +264,11 @@ const StatementList = ({ packinghouseId = null }) => {
                     <td className="py-3">
                       <span className="text-sm text-gray-900">
                         {statement.packinghouse_short_code || statement.packinghouse_name}
+                      </span>
+                    </td>
+                    <td className="py-3">
+                      <span className="text-sm text-gray-700">
+                        {statement.farm_name || '-'}
                       </span>
                     </td>
                     <td className="py-3">

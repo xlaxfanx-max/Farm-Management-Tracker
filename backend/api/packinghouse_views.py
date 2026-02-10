@@ -2715,7 +2715,7 @@ class PackinghouseStatementViewSet(viewsets.ModelViewSet):
 
         queryset = PackinghouseStatement.objects.filter(
             packinghouse__company=user.current_company
-        ).select_related('packinghouse', 'pool', 'field', 'uploaded_by')
+        ).select_related('packinghouse', 'pool', 'field', 'field__farm', 'uploaded_by')
 
         # Filter by packinghouse
         packinghouse_id = self.request.query_params.get('packinghouse')

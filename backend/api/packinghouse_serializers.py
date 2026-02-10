@@ -514,6 +514,7 @@ class PackinghouseStatementListSerializer(serializers.ModelSerializer):
     format_display = serializers.CharField(source='get_packinghouse_format_display', read_only=True)
     pool_name = serializers.CharField(source='pool.name', read_only=True, allow_null=True)
     field_name = serializers.CharField(source='field.name', read_only=True, allow_null=True)
+    farm_name = serializers.CharField(source='field.farm.name', read_only=True, allow_null=True)
     uploaded_by_name = serializers.SerializerMethodField()
     commodity = serializers.SerializerMethodField()
     is_processed = serializers.ReadOnlyField()
@@ -527,7 +528,7 @@ class PackinghouseStatementListSerializer(serializers.ModelSerializer):
             'packinghouse_format', 'format_display',
             'status', 'status_display',
             'extraction_confidence',
-            'pool', 'pool_name', 'field', 'field_name',
+            'pool', 'pool_name', 'field', 'field_name', 'farm_name',
             'uploaded_by', 'uploaded_by_name',
             'commodity',
             'is_processed',
