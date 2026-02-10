@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Eye, EyeOff, Leaf, AlertCircle } from 'lucide-react';
 
@@ -8,6 +9,7 @@ import { Eye, EyeOff, Leaf, AlertCircle } from 'lucide-react';
 
 export default function Login() {
   const { login, error } = useAuth();
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -20,11 +22,13 @@ export default function Login() {
     setLoading(true);
 
     const result = await login(email, password);
-    
-    if (!result.success) {
+
+    if (result.success) {
+      navigate('/dashboard');
+    } else {
       setLocalError(result.error);
     }
-    
+
     setLoading(false);
   };
 

@@ -147,8 +147,7 @@ class BuyerViewSet(AuditLogMixin, viewsets.ModelViewSet):
 
         # Pricing by crop variety
         pricing_by_crop = []
-        for crop_choice in HARVEST_CONSTANTS['CROP_VARIETIES']:
-            crop_value = crop_choice['value']
+        for crop_value, crop_label in CROP_VARIETY_CHOICES:
             crop_loads = loads.filter(harvest__crop_variety=crop_value)
             crop_stats = crop_loads.aggregate(
                 load_count=Count('id'),
@@ -161,7 +160,7 @@ class BuyerViewSet(AuditLogMixin, viewsets.ModelViewSet):
             if crop_stats['load_count'] > 0:
                 pricing_by_crop.append({
                     'crop_variety': crop_value,
-                    'crop_variety_display': crop_choice['label'],
+                    'crop_variety_display': crop_label,
                     'load_count': crop_stats['load_count'],
                     'total_bins': crop_stats['total_bins'] or 0,
                     'avg_price_per_bin': float(crop_stats['avg_price'] or 0),
