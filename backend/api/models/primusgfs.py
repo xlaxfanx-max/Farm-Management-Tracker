@@ -117,7 +117,7 @@ class ControlledDocument(models.Model):
     )
 
     # Identification
-    document_number = models.CharField(max_length=50, help_text="e.g., SOP-GAP-001")
+    document_number = models.CharField(max_length=50, blank=True, help_text="Auto-generated if blank, e.g., SOP-GAP-001")
     title = models.CharField(max_length=300)
     document_type = models.CharField(max_length=30, choices=DOCUMENT_TYPE_CHOICES)
     primus_module = models.CharField(
@@ -264,7 +264,7 @@ class InternalAudit(models.Model):
     )
 
     # Audit identification
-    audit_number = models.CharField(max_length=50, help_text="e.g., IA-2026-001")
+    audit_number = models.CharField(max_length=50, blank=True, help_text="Auto-generated if blank, e.g., IA-2026-001")
     title = models.CharField(max_length=300)
     audit_type = models.CharField(
         max_length=30, choices=AUDIT_TYPE_CHOICES, default='internal'
@@ -347,7 +347,7 @@ class AuditFinding(models.Model):
         InternalAudit, on_delete=models.CASCADE, related_name='findings'
     )
 
-    finding_number = models.CharField(max_length=20)
+    finding_number = models.CharField(max_length=20, blank=True, help_text="Auto-generated if blank")
     primus_module = models.CharField(
         max_length=50, choices=PRIMUS_MODULE_CHOICES, blank=True
     )
@@ -402,7 +402,7 @@ class CorrectiveAction(models.Model):
     )
 
     # Action details
-    ca_number = models.CharField(max_length=50)
+    ca_number = models.CharField(max_length=50, blank=True, help_text="Auto-generated if blank, e.g., CA-001")
     description = models.TextField()
     root_cause = models.TextField(blank=True)
     corrective_steps = models.TextField(blank=True)
@@ -798,7 +798,7 @@ class MockRecall(models.Model):
         'Company', on_delete=models.CASCADE, related_name='mock_recalls'
     )
 
-    recall_number = models.CharField(max_length=50)
+    recall_number = models.CharField(max_length=50, blank=True, help_text="Auto-generated if blank, e.g., MR-2026-001")
     exercise_date = models.DateField()
 
     # Recall scenario

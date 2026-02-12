@@ -109,8 +109,9 @@ const RecallModal = ({ recall, onClose, onSave }) => {
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           {saveError && <div className="p-3 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 text-sm rounded-lg">{saveError}</div>}
           <div className="grid grid-cols-2 gap-4">
-            <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Recall Number *</label>
-              <input type="text" name="recall_number" required value={formData.recall_number} onChange={handleChange} placeholder="e.g., MR-2026-001" className={inputCls} /></div>
+            <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Recall Number</label>
+              <input type="text" name="recall_number" value={formData.recall_number} onChange={handleChange} placeholder="Auto-generated (e.g., MR-2026-001)" className={inputCls} />
+              <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">Leave blank to auto-generate</p></div>
             <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Exercise Date</label>
               <input type="date" name="exercise_date" value={formData.exercise_date} onChange={handleChange} className={inputCls} /></div>
           </div>

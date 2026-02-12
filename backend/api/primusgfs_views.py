@@ -50,10 +50,93 @@ from .primusgfs_serializers import (
 
 
 # =============================================================================
-# MULTIPART JSON PARSING MIXIN
+# AUTO-NUMBER GENERATION UTILITIES
 # =============================================================================
 
 import json
+from datetime import datetime
+
+
+# Prefix mapping for document types
+DOCUMENT_TYPE_PREFIX = {
+    'sop': 'SOP',
+    'policy': 'POL',
+    'manual': 'MAN',
+    'form': 'FRM',
+    'record': 'REC',
+    'plan': 'PLN',
+    'work_instruction': 'WI',
+    'external': 'EXT',
+}
+
+
+def _next_number(model, field_name, prefix, company, pad=3):
+    """
+    Generate the next sequential number for a given model/field/prefix.
+    E.g. prefix='SOP' → 'SOP-001', 'SOP-002', ...
+    Searches existing records for the highest number with this prefix.
+    """
+    existing = (
+        model.objects.filter(company=company, **{f'{field_name}__startswith': f'{prefix}-'})
+        .values_list(field_name, flat=True)
+    )
+    max_num = 0
+    for val in existing:
+        # Extract the numeric suffix after the last hyphen
+        parts = val.rsplit('-', 1)
+        if len(parts) == 2:
+            try:
+                max_num = max(max_num, int(parts[-1]))
+            except ValueError:
+                pass
+    return f"{prefix}-{str(max_num + 1).zfill(pad)}"
+
+
+def _generate_document_number(company, document_type):
+    """Generate a document number like SOP-001, POL-002, etc."""
+    prefix = DOCUMENT_TYPE_PREFIX.get(document_type, 'DOC')
+    return _next_number(ControlledDocument, 'document_number', prefix, company)
+
+
+def _generate_audit_number(company):
+    """Generate an audit number like IA-2026-001."""
+    year = datetime.now().year
+    prefix = f"IA-{year}"
+    return _next_number(InternalAudit, 'audit_number', prefix, company)
+
+
+def _generate_ca_number(company):
+    """Generate a corrective action number like CA-001."""
+    return _next_number(CorrectiveAction, 'ca_number', 'CA', company)
+
+
+def _generate_recall_number(company):
+    """Generate a mock recall number like MR-2026-001."""
+    year = datetime.now().year
+    prefix = f"MR-{year}"
+    return _next_number(MockRecall, 'recall_number', prefix, company)
+
+
+def _generate_finding_number(audit):
+    """Generate a finding number like F-001 within a specific audit."""
+    existing = (
+        AuditFinding.objects.filter(audit=audit)
+        .values_list('finding_number', flat=True)
+    )
+    max_num = 0
+    for val in existing:
+        parts = val.rsplit('-', 1)
+        if len(parts) == 2:
+            try:
+                max_num = max(max_num, int(parts[-1]))
+            except ValueError:
+                pass
+    return f"F-{str(max_num + 1).zfill(3)}"
+
+
+# =============================================================================
+# MULTIPART JSON PARSING MIXIN
+# =============================================================================
 
 
 class MultipartJsonMixin:
@@ -134,7 +217,11 @@ class ControlledDocumentViewSet(MultipartJsonMixin, AuditLogMixin, viewsets.Mode
 
     def perform_create(self, serializer):
         company = require_company(self.request.user)
-        serializer.save(company=company, prepared_by=self.request.user)
+        extra = {'company': company, 'prepared_by': self.request.user}
+        if not serializer.validated_data.get('document_number'):
+            doc_type = serializer.validated_data.get('document_type', 'sop')
+            extra['document_number'] = _generate_document_number(company, doc_type)
+        serializer.save(**extra)
 
     @action(detail=True, methods=['post'])
     def approve(self, request, pk=None):
@@ -247,7 +334,10 @@ class InternalAuditViewSet(MultipartJsonMixin, AuditLogMixin, viewsets.ModelView
 
     def perform_create(self, serializer):
         company = require_company(self.request.user)
-        serializer.save(company=company)
+        extra = {'company': company}
+        if not serializer.validated_data.get('audit_number'):
+            extra['audit_number'] = _generate_audit_number(company)
+        serializer.save(**extra)
 
     @action(detail=True, methods=['post'])
     def complete(self, request, pk=None):
@@ -315,6 +405,13 @@ class AuditFindingViewSet(AuditLogMixin, viewsets.ModelViewSet):
 
         return queryset
 
+    def perform_create(self, serializer):
+        if not serializer.validated_data.get('finding_number'):
+            audit = serializer.validated_data.get('audit')
+            serializer.save(finding_number=_generate_finding_number(audit))
+        else:
+            serializer.save()
+
 
 # =============================================================================
 # CORRECTIVE ACTION VIEWSET
@@ -362,7 +459,10 @@ class CorrectiveActionViewSet(AuditLogMixin, viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         company = require_company(self.request.user)
-        serializer.save(company=company)
+        extra = {'company': company}
+        if not serializer.validated_data.get('ca_number'):
+            extra['ca_number'] = _generate_ca_number(company)
+        serializer.save(**extra)
 
     @action(detail=True, methods=['post'])
     def implement(self, request, pk=None):
@@ -672,7 +772,10 @@ class MockRecallViewSet(MultipartJsonMixin, AuditLogMixin, viewsets.ModelViewSet
 
     def perform_create(self, serializer):
         company = require_company(self.request.user)
-        serializer.save(company=company)
+        extra = {'company': company}
+        if not serializer.validated_data.get('recall_number'):
+            extra['recall_number'] = _generate_recall_number(company)
+        serializer.save(**extra)
 
     @action(detail=True, methods=['post'])
     def start(self, request, pk=None):

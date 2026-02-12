@@ -190,16 +190,16 @@ const AuditModal = ({ onClose, onSave, editAudit }) => {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Audit Number *</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Audit Number</label>
               <input
                 type="text"
                 name="audit_number"
-                required
                 value={formData.audit_number}
                 onChange={handleChange}
-                placeholder="e.g., AUD-2026-001"
+                placeholder="Auto-generated (e.g., IA-2026-001)"
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
+              <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">Leave blank to auto-generate</p>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Audit Type *</label>
