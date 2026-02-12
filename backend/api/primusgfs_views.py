@@ -26,6 +26,7 @@ from .models import (
     MockRecall, FoodDefensePlan, FieldSanitationLog,
     EquipmentCalibration, PestControlProgram, PestMonitoringLog,
     PreHarvestInspection, Farm,
+    CONTAMINATION_RISK_CHOICES,
 )
 
 from .primusgfs_serializers import (
@@ -421,6 +422,39 @@ class LandHistoryAssessmentViewSet(AuditLogMixin, viewsets.ModelViewSet):
         assessment.save()
 
         return Response(LandHistoryAssessmentSerializer(assessment).data)
+
+    @action(detail=False, methods=['get'])
+    def summary(self, request):
+        """Aggregated stats for the land history section header."""
+        company = require_company(request.user)
+        total_fields = Field.objects.filter(
+            farm__company=company, farm__active=True
+        ).count()
+
+        assessments = LandHistoryAssessment.objects.filter(company=company)
+        assessed_fields = assessments.values('field').distinct().count()
+        approved_count = assessments.filter(approved=True).count()
+        pending_count = assessments.filter(approved=False).count()
+
+        risk_distribution = {}
+        for choice_val, _ in CONTAMINATION_RISK_CHOICES:
+            risk_distribution[choice_val] = assessments.filter(
+                contamination_risk=choice_val
+            ).count()
+
+        remediation_needed = assessments.filter(
+            remediation_required=True, remediation_verified=False
+        ).count()
+
+        return Response({
+            'total_fields': total_fields,
+            'assessed_fields': assessed_fields,
+            'approved_count': approved_count,
+            'pending_count': pending_count,
+            'risk_distribution': risk_distribution,
+            'fields_needing_assessment': max(total_fields - assessed_fields, 0),
+            'remediation_pending': remediation_needed,
+        })
 
 
 # =============================================================================

@@ -3056,6 +3056,7 @@ export const primusGFSAPI = {
   updateLandAssessment: (id, data) => api.put(`/primusgfs/land-assessments/${id}/`, data),
   deleteLandAssessment: (id) => api.delete(`/primusgfs/land-assessments/${id}/`),
   approveLandAssessment: (id, data = {}) => api.post(`/primusgfs/land-assessments/${id}/approve/`, data),
+  getLandAssessmentSummary: () => api.get('/primusgfs/land-assessments/summary/'),
 
   // Suppliers
   getSuppliers: (params = {}) => api.get('/primusgfs/suppliers/', { params }),

@@ -531,6 +531,39 @@ class LandHistoryAssessment(models.Model):
     )
     approved_at = models.DateTimeField(null=True, blank=True)
 
+    # Source documentation
+    information_source = models.CharField(
+        max_length=200, blank=True,
+        help_text="How land history was obtained (county records, owner interview, deed research, etc.)"
+    )
+
+    # Buffer period between prior non-ag use and current production
+    buffer_period_months = models.IntegerField(
+        null=True, blank=True,
+        help_text="Months between prior non-ag use cessation and current production"
+    )
+    buffer_period_adequate = models.BooleanField(null=True, blank=True)
+
+    # Animal history (Primus GFS specific requirement)
+    previous_animal_operations = models.BooleanField(null=True, blank=True)
+    animal_operation_details = models.TextField(
+        blank=True,
+        help_text="Type of animals, manure management, duration"
+    )
+
+    # Soil testing detail
+    soil_test_lab = models.CharField(max_length=200, blank=True)
+    soil_test_parameters_tested = models.JSONField(
+        default=list, blank=True,
+        help_text='["heavy_metals", "pH", "e_coli", "salmonella", "nitrates"]'
+    )
+
+    # Remediation tracking
+    remediation_required = models.BooleanField(default=False)
+    remediation_description = models.TextField(blank=True)
+    remediation_completion_date = models.DateField(null=True, blank=True)
+    remediation_verified = models.BooleanField(default=False)
+
     # Linked document
     related_document = models.ForeignKey(
         ControlledDocument, on_delete=models.SET_NULL, null=True, blank=True

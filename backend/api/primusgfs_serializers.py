@@ -284,8 +284,14 @@ class LandHistoryAssessmentSerializer(serializers.ModelSerializer):
             'previous_pesticide_use', 'previous_chemical_storage',
             'previous_waste_disposal', 'previous_mining',
             'flood_zone', 'adjacent_contamination_risk',
+            'information_source',
+            'buffer_period_months', 'buffer_period_adequate',
+            'previous_animal_operations', 'animal_operation_details',
             'soil_testing_conducted', 'soil_test_date',
             'soil_test_results', 'soil_test_passed',
+            'soil_test_lab', 'soil_test_parameters_tested',
+            'remediation_required', 'remediation_description',
+            'remediation_completion_date', 'remediation_verified',
             'contamination_risk', 'contamination_risk_display',
             'risk_justification', 'mitigation_measures',
             'approved', 'approved_by', 'approved_by_name', 'approved_at',
@@ -316,6 +322,9 @@ class LandHistoryAssessmentListSerializer(serializers.ModelSerializer):
             'assessment_date', 'contamination_risk',
             'contamination_risk_display', 'approved',
             'risk_factor_count',
+            'buffer_period_adequate', 'previous_animal_operations',
+            'remediation_required', 'remediation_verified',
+            'information_source',
         ]
 
 
