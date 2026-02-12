@@ -13,6 +13,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from django.db.models import Sum, Avg, Count, F, Q, Subquery, OuterRef, DecimalField
 from django.db.models.functions import Coalesce
+from django.db import transaction
 from decimal import Decimal
 import logging
 import re
@@ -2751,38 +2752,40 @@ class PackinghouseStatementViewSet(viewsets.ModelViewSet):
         Delete a statement and all associated data (settlements, packout reports, grade lines, deductions).
         """
         statement = self.get_object()
+        pdf_file_to_delete = statement.pdf_file if statement.pdf_file else None
 
-        # Delete associated PoolSettlement and its related data
-        try:
-            settlement = PoolSettlement.objects.get(source_statement=statement)
-            # Delete grade lines and deductions first (cascade should handle this, but be explicit)
-            SettlementGradeLine.objects.filter(settlement=settlement).delete()
-            SettlementDeduction.objects.filter(settlement=settlement).delete()
-            settlement.delete()
-            logger.info(f"Deleted settlement {settlement.id} for statement {statement.id}")
-        except PoolSettlement.DoesNotExist:
-            pass
-
-        # Delete associated PackoutReport and its related data
-        try:
-            packout = PackoutReport.objects.get(source_statement=statement)
-            # Delete grade lines first
-            PackoutGradeLine.objects.filter(packout_report=packout).delete()
-            packout.delete()
-            logger.info(f"Deleted packout report {packout.id} for statement {statement.id}")
-        except PackoutReport.DoesNotExist:
-            pass
-
-        # Delete the PDF file if it exists
-        if statement.pdf_file:
+        with transaction.atomic():
+            # Delete associated PoolSettlement and its related data
             try:
-                statement.pdf_file.delete(save=False)
-            except Exception as e:
-                logger.warning(f"Failed to delete PDF file for statement {statement.id}: {e}")
+                settlement = PoolSettlement.objects.get(source_statement=statement)
+                # Delete grade lines and deductions first (cascade should handle this, but be explicit)
+                SettlementGradeLine.objects.filter(settlement=settlement).delete()
+                SettlementDeduction.objects.filter(settlement=settlement).delete()
+                settlement.delete()
+                logger.info(f"Deleted settlement {settlement.id} for statement {statement.id}")
+            except PoolSettlement.DoesNotExist:
+                pass
 
-        # Delete the statement
-        statement.delete()
-        logger.info(f"Deleted statement {statement.id}")
+            # Delete associated PackoutReport and its related data
+            try:
+                packout = PackoutReport.objects.get(source_statement=statement)
+                # Delete grade lines first
+                PackoutGradeLine.objects.filter(packout_report=packout).delete()
+                packout.delete()
+                logger.info(f"Deleted packout report {packout.id} for statement {statement.id}")
+            except PackoutReport.DoesNotExist:
+                pass
+
+            # Delete the statement
+            statement.delete()
+            logger.info(f"Deleted statement {statement.id}")
+
+        # Delete the PDF file AFTER transaction commits (filesystem I/O outside atomic)
+        if pdf_file_to_delete:
+            try:
+                pdf_file_to_delete.delete(save=False)
+            except Exception as e:
+                logger.warning(f"Failed to delete PDF file for statement: {e}")
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -3106,35 +3109,38 @@ class PackinghouseStatementViewSet(viewsets.ModelViewSet):
             # Already processed - update existing records with edited data
             extraction_service = PDFExtractionService()
 
-            statement.pool = pool
-            statement.field = field
-            statement.status = 'completed'
-            statement.save()
-            _save_grower_mapping()
-
             if existing_packout:
-                # Update the packout report with edited data
-                if edited_data:
-                    report_data = extraction_service.create_packout_report_from_data(
-                        data_to_use, pool, field
-                    )
-                    # Update fields on existing packout (exclude source_statement)
-                    for key, value in report_data.items():
-                        setattr(existing_packout, key, value)
-                    existing_packout.save()
+                with transaction.atomic():
+                    statement.pool = pool
+                    statement.field = field
+                    statement.status = 'completed'
+                    statement.save()
 
-                    # Delete and recreate grade lines
-                    PackoutGradeLine.objects.filter(packout_report=existing_packout).delete()
-                    grade_lines_data = extraction_service.get_grade_lines_data(
-                        data_to_use, for_settlement=False
-                    )
-                    for line_data in grade_lines_data:
-                        PackoutGradeLine.objects.create(
-                            packout_report=existing_packout,
-                            **line_data
+                    # Update the packout report with edited data
+                    if edited_data:
+                        report_data = extraction_service.create_packout_report_from_data(
+                            data_to_use, pool, field
                         )
+                        # Update fields on existing packout (exclude source_statement)
+                        for key, value in report_data.items():
+                            setattr(existing_packout, key, value)
+                        existing_packout.save()
 
-                    logger.info(f"Updated existing packout report {existing_packout.id} with edited data")
+                        # Delete and recreate grade lines
+                        PackoutGradeLine.objects.filter(packout_report=existing_packout).delete()
+                        grade_lines_data = extraction_service.get_grade_lines_data(
+                            data_to_use, for_settlement=False
+                        )
+                        for line_data in grade_lines_data:
+                            PackoutGradeLine.objects.create(
+                                packout_report=existing_packout,
+                                **line_data
+                            )
+
+                        logger.info(f"Updated existing packout report {existing_packout.id} with edited data")
+
+                # Mapping save outside atomic block (non-critical)
+                _save_grower_mapping()
 
                 return Response({
                     'success': True,
@@ -3144,46 +3150,56 @@ class PackinghouseStatementViewSet(viewsets.ModelViewSet):
                 })
             else:
                 # Update the settlement with edited data
-                if edited_data:
-                    settlement_data = extraction_service.create_settlement_from_data(
-                        data_to_use, pool, field
-                    )
-                    # Update fields on existing settlement (exclude source_statement)
-                    for key, value in settlement_data.items():
-                        setattr(existing_settlement, key, value)
-                    existing_settlement.save()
+                warnings = []
+                with transaction.atomic():
+                    statement.pool = pool
+                    statement.field = field
+                    statement.status = 'completed'
+                    statement.save()
 
-                    # Delete and recreate grade lines and deductions
-                    SettlementGradeLine.objects.filter(settlement=existing_settlement).delete()
-                    SettlementDeduction.objects.filter(settlement=existing_settlement).delete()
-
-                    grade_lines_data = extraction_service.get_grade_lines_data(
-                        data_to_use, for_settlement=True
-                    )
-                    for line_data in grade_lines_data:
-                        SettlementGradeLine.objects.create(
-                            settlement=existing_settlement,
-                            **line_data
+                    if edited_data:
+                        settlement_data = extraction_service.create_settlement_from_data(
+                            data_to_use, pool, field
                         )
+                        # Update fields on existing settlement (exclude source_statement)
+                        for key, value in settlement_data.items():
+                            setattr(existing_settlement, key, value)
+                        existing_settlement.save()
 
-                    deductions_data = extraction_service.get_deductions_data(data_to_use)
-                    for deduction_data in deductions_data:
-                        SettlementDeduction.objects.create(
-                            settlement=existing_settlement,
-                            **deduction_data
+                        # Delete and recreate grade lines and deductions
+                        SettlementGradeLine.objects.filter(settlement=existing_settlement).delete()
+                        SettlementDeduction.objects.filter(settlement=existing_settlement).delete()
+
+                        grade_lines_data = extraction_service.get_grade_lines_data(
+                            data_to_use, for_settlement=True
                         )
+                        for line_data in grade_lines_data:
+                            SettlementGradeLine.objects.create(
+                                settlement=existing_settlement,
+                                **line_data
+                            )
 
-                    # Reconcile totals from grade lines and detect mismatches
-                    warnings = _reconcile_settlement_from_grade_lines(existing_settlement)
+                        deductions_data = extraction_service.get_deductions_data(data_to_use)
+                        for deduction_data in deductions_data:
+                            SettlementDeduction.objects.create(
+                                settlement=existing_settlement,
+                                **deduction_data
+                            )
 
-                    # Validate financial consistency
-                    financial_warnings = _validate_settlement_financials(existing_settlement)
-                    warnings.extend(financial_warnings)
+                        # Reconcile totals from grade lines and detect mismatches
+                        warnings = _reconcile_settlement_from_grade_lines(existing_settlement)
 
-                    # Auto-update pool status if fully settled
-                    _auto_update_pool_status(existing_settlement.pool)
+                        # Validate financial consistency
+                        financial_warnings = _validate_settlement_financials(existing_settlement)
+                        warnings.extend(financial_warnings)
 
-                    logger.info(f"Updated existing settlement {existing_settlement.id} with edited data")
+                        # Auto-update pool status if fully settled
+                        _auto_update_pool_status(existing_settlement.pool)
+
+                        logger.info(f"Updated existing settlement {existing_settlement.id} with edited data")
+
+                # Mapping save outside atomic block (non-critical)
+                _save_grower_mapping()
 
                 response_data = {
                     'success': True,
@@ -3201,28 +3217,31 @@ class PackinghouseStatementViewSet(viewsets.ModelViewSet):
 
         try:
             if statement.statement_type in ['packout', 'wash_report']:
-                # Create PackoutReport (field is optional - packouts may aggregate multiple fields)
-                report_data = extraction_service.create_packout_report_from_data(
-                    data_to_use, pool, field
-                )
-                report_data['source_statement'] = statement
-
-                packout_report = PackoutReport.objects.create(**report_data)
-
-                # Create grade lines
-                grade_lines_data = extraction_service.get_grade_lines_data(
-                    data_to_use, for_settlement=False
-                )
-                for line_data in grade_lines_data:
-                    PackoutGradeLine.objects.create(
-                        packout_report=packout_report,
-                        **line_data
+                with transaction.atomic():
+                    # Create PackoutReport (field is optional - packouts may aggregate multiple fields)
+                    report_data = extraction_service.create_packout_report_from_data(
+                        data_to_use, pool, field
                     )
+                    report_data['source_statement'] = statement
 
-                statement.pool = pool
-                statement.field = field
-                statement.status = 'completed'
-                statement.save()
+                    packout_report = PackoutReport.objects.create(**report_data)
+
+                    # Create grade lines
+                    grade_lines_data = extraction_service.get_grade_lines_data(
+                        data_to_use, for_settlement=False
+                    )
+                    for line_data in grade_lines_data:
+                        PackoutGradeLine.objects.create(
+                            packout_report=packout_report,
+                            **line_data
+                        )
+
+                    statement.pool = pool
+                    statement.field = field
+                    statement.status = 'completed'
+                    statement.save()
+
+                # Mapping save outside atomic block (non-critical)
                 _save_grower_mapping()
 
                 return Response({
@@ -3233,46 +3252,49 @@ class PackinghouseStatementViewSet(viewsets.ModelViewSet):
                 })
 
             elif statement.statement_type in ['settlement', 'grower_statement']:
-                # Create PoolSettlement
-                settlement_data = extraction_service.create_settlement_from_data(
-                    data_to_use, pool, field
-                )
-                settlement_data['source_statement'] = statement
-
-                settlement = PoolSettlement.objects.create(**settlement_data)
-
-                # Create grade lines
-                grade_lines_data = extraction_service.get_grade_lines_data(
-                    data_to_use, for_settlement=True
-                )
-                for line_data in grade_lines_data:
-                    SettlementGradeLine.objects.create(
-                        settlement=settlement,
-                        **line_data
+                with transaction.atomic():
+                    # Create PoolSettlement
+                    settlement_data = extraction_service.create_settlement_from_data(
+                        data_to_use, pool, field
                     )
+                    settlement_data['source_statement'] = statement
 
-                # Create deductions
-                deductions_data = extraction_service.get_deductions_data(data_to_use)
-                for ded_data in deductions_data:
-                    SettlementDeduction.objects.create(
-                        settlement=settlement,
-                        **ded_data
+                    settlement = PoolSettlement.objects.create(**settlement_data)
+
+                    # Create grade lines
+                    grade_lines_data = extraction_service.get_grade_lines_data(
+                        data_to_use, for_settlement=True
                     )
+                    for line_data in grade_lines_data:
+                        SettlementGradeLine.objects.create(
+                            settlement=settlement,
+                            **line_data
+                        )
 
-                # Reconcile totals from grade lines and detect mismatches
-                warnings = _reconcile_settlement_from_grade_lines(settlement)
+                    # Create deductions
+                    deductions_data = extraction_service.get_deductions_data(data_to_use)
+                    for ded_data in deductions_data:
+                        SettlementDeduction.objects.create(
+                            settlement=settlement,
+                            **ded_data
+                        )
 
-                # Validate financial consistency
-                financial_warnings = _validate_settlement_financials(settlement)
-                warnings.extend(financial_warnings)
+                    # Reconcile totals from grade lines and detect mismatches
+                    warnings = _reconcile_settlement_from_grade_lines(settlement)
 
-                # Auto-update pool status if fully settled
-                _auto_update_pool_status(pool)
+                    # Validate financial consistency
+                    financial_warnings = _validate_settlement_financials(settlement)
+                    warnings.extend(financial_warnings)
 
-                statement.pool = pool
-                statement.field = field
-                statement.status = 'completed'
-                statement.save()
+                    # Auto-update pool status if fully settled
+                    _auto_update_pool_status(pool)
+
+                    statement.pool = pool
+                    statement.field = field
+                    statement.status = 'completed'
+                    statement.save()
+
+                # Mapping save outside atomic block (non-critical)
                 _save_grower_mapping()
 
                 response_data = {
@@ -3886,85 +3908,86 @@ class PackinghouseStatementViewSet(viewsets.ModelViewSet):
                 settlement_warnings = []
                 data_to_use = statement.extracted_data
 
-                if statement.statement_type in ['settlement', 'grower_statement']:
-                    settlement_data = extraction_service.create_settlement_from_data(
-                        data_to_use, pool, field
-                    )
-                    settlement_data['source_statement'] = statement
-
-                    settlement = PoolSettlement.objects.create(**settlement_data)
-
-                    # Create grade lines
-                    grade_lines_data = extraction_service.get_grade_lines_data(
-                        data_to_use, for_settlement=True
-                    )
-                    for line_data in grade_lines_data:
-                        SettlementGradeLine.objects.create(
-                            settlement=settlement,
-                            **line_data
+                with transaction.atomic():
+                    if statement.statement_type in ['settlement', 'grower_statement']:
+                        settlement_data = extraction_service.create_settlement_from_data(
+                            data_to_use, pool, field
                         )
+                        settlement_data['source_statement'] = statement
 
-                    # Create deductions
-                    deductions_data = extraction_service.get_deductions_data(data_to_use)
-                    for ded_data in deductions_data:
-                        SettlementDeduction.objects.create(
-                            settlement=settlement,
-                            **ded_data
+                        settlement = PoolSettlement.objects.create(**settlement_data)
+
+                        # Create grade lines
+                        grade_lines_data = extraction_service.get_grade_lines_data(
+                            data_to_use, for_settlement=True
                         )
+                        for line_data in grade_lines_data:
+                            SettlementGradeLine.objects.create(
+                                settlement=settlement,
+                                **line_data
+                            )
 
-                    # Reconcile totals from grade lines and detect mismatches
-                    settlement_warnings = _reconcile_settlement_from_grade_lines(settlement)
+                        # Create deductions
+                        deductions_data = extraction_service.get_deductions_data(data_to_use)
+                        for ded_data in deductions_data:
+                            SettlementDeduction.objects.create(
+                                settlement=settlement,
+                                **ded_data
+                            )
 
-                    # Validate financial consistency
-                    financial_warnings = _validate_settlement_financials(settlement)
-                    settlement_warnings.extend(financial_warnings)
+                        # Reconcile totals from grade lines and detect mismatches
+                        settlement_warnings = _reconcile_settlement_from_grade_lines(settlement)
 
-                    # Auto-update pool status if fully settled
-                    _auto_update_pool_status(pool)
+                        # Validate financial consistency
+                        financial_warnings = _validate_settlement_financials(settlement)
+                        settlement_warnings.extend(financial_warnings)
 
-                    settlement_id = settlement.id
+                        # Auto-update pool status if fully settled
+                        _auto_update_pool_status(pool)
 
-                elif statement.statement_type in ['packout', 'wash_report']:
-                    # Field is optional - packouts may aggregate multiple fields
-                    report_data = extraction_service.create_packout_report_from_data(
-                        data_to_use, pool, field
-                    )
-                    report_data['source_statement'] = statement
+                        settlement_id = settlement.id
 
-                    packout_report = PackoutReport.objects.create(**report_data)
-
-                    # Create grade lines
-                    grade_lines_data = extraction_service.get_grade_lines_data(
-                        data_to_use, for_settlement=False
-                    )
-                    for line_data in grade_lines_data:
-                        PackoutGradeLine.objects.create(
-                            packout_report=packout_report,
-                            **line_data
+                    elif statement.statement_type in ['packout', 'wash_report']:
+                        # Field is optional - packouts may aggregate multiple fields
+                        report_data = extraction_service.create_packout_report_from_data(
+                            data_to_use, pool, field
                         )
+                        report_data['source_statement'] = statement
 
-                    packout_report_id = packout_report.id
+                        packout_report = PackoutReport.objects.create(**report_data)
 
-                else:
-                    results.append({
-                        'id': statement_id,
-                        'filename': statement.original_filename,
-                        'success': False,
-                        'message': f'Unknown statement type: {statement.statement_type}',
-                        'settlement_id': None,
-                        'packout_report_id': None,
-                        'mapping_saved': False
-                    })
-                    failed_count += 1
-                    continue
+                        # Create grade lines
+                        grade_lines_data = extraction_service.get_grade_lines_data(
+                            data_to_use, for_settlement=False
+                        )
+                        for line_data in grade_lines_data:
+                            PackoutGradeLine.objects.create(
+                                packout_report=packout_report,
+                                **line_data
+                            )
 
-                # Update statement
-                statement.pool = pool
-                statement.field = field
-                statement.status = 'completed'
-                statement.save()
+                        packout_report_id = packout_report.id
 
-                # Save mapping if requested
+                    else:
+                        results.append({
+                            'id': statement_id,
+                            'filename': statement.original_filename,
+                            'success': False,
+                            'message': f'Unknown statement type: {statement.statement_type}',
+                            'settlement_id': None,
+                            'packout_report_id': None,
+                            'mapping_saved': False
+                        })
+                        failed_count += 1
+                        continue
+
+                    # Update statement (inside atomic)
+                    statement.pool = pool
+                    statement.field = field
+                    statement.status = 'completed'
+                    statement.save()
+
+                # Save mapping if requested (outside atomic block, non-critical)
                 mapping_saved = False
                 if save_mappings and farm:
                     try:
@@ -4234,3 +4257,761 @@ class PackinghouseStatementViewSet(viewsets.ModelViewSet):
             status='active'
         )
         return pool
+
+
+# =============================================================================
+# SETTLEMENT INTELLIGENCE ANALYTICS
+# =============================================================================
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def commodity_roi_ranking(request):
+    """
+    Rank commodities (or varieties) by net return per bin.
+
+    Shows which crops are most profitable after all packinghouse deductions,
+    with multi-season trend data for each commodity.
+
+    Query params:
+    - season: Filter by season (e.g., "2024-2025")
+    - packinghouse: Filter by packinghouse ID
+    - group_by: "commodity" (default) or "variety"
+    """
+    from datetime import date
+    from collections import defaultdict
+
+    user = request.user
+    if not user.current_company:
+        return Response({'error': 'No company selected'}, status=400)
+
+    company = user.current_company
+
+    # Get seasons with settlement data
+    seasons_with_settlements = PoolSettlement.objects.filter(
+        pool__packinghouse__company=company
+    ).values_list('pool__season', flat=True).distinct()
+    seasons_with_settlements = list(set(seasons_with_settlements))
+    seasons_with_settlements.sort(reverse=True)
+
+    # Get all available seasons
+    all_seasons = Pool.objects.filter(
+        packinghouse__company=company
+    ).values_list('season', flat=True).distinct().order_by('-season')
+    available_seasons = list(all_seasons)
+
+    # Default season selection
+    today = date.today()
+    current_season = get_citrus_season(today)
+    default_season = current_season.label
+
+    selected_season = request.query_params.get('season') or ''
+    if not selected_season:
+        if seasons_with_settlements:
+            selected_season = seasons_with_settlements[0]
+        else:
+            selected_season = default_season
+
+    packinghouse_id = request.query_params.get('packinghouse')
+    group_by = request.query_params.get('group_by', 'commodity')
+    group_field = 'pool__variety' if group_by == 'variety' else 'pool__commodity'
+
+    # Build base filter
+    base_filters = Q(
+        pool__packinghouse__company=company,
+        field__isnull=True  # Grower summary settlements
+    )
+    if packinghouse_id:
+        base_filters &= Q(pool__packinghouse_id=packinghouse_id)
+
+    # Query settlements for selected season
+    settlements = PoolSettlement.objects.filter(
+        base_filters, pool__season=selected_season
+    ).select_related('pool')
+
+    # Group by commodity/variety
+    groups = defaultdict(lambda: {
+        'total_bins': Decimal('0'),
+        'total_credits': Decimal('0'),
+        'total_deductions': Decimal('0'),
+        'net_return': Decimal('0'),
+    })
+
+    for s in settlements:
+        key = getattr(s.pool, 'variety' if group_by == 'variety' else 'commodity', '') or 'Unknown'
+        g = groups[key]
+        g['total_bins'] += s.total_bins or Decimal('0')
+        g['total_credits'] += s.total_credits or Decimal('0')
+        g['total_deductions'] += s.total_deductions or Decimal('0')
+        g['net_return'] += s.net_return or Decimal('0')
+
+    # Build rankings
+    rankings = []
+    for key, g in groups.items():
+        if g['total_bins'] <= 0:
+            continue
+
+        gross_per_bin = g['total_credits'] / g['total_bins']
+        deductions_per_bin = g['total_deductions'] / g['total_bins']
+        net_per_bin = g['net_return'] / g['total_bins']
+        margin_percent = round(float(g['net_return'] / g['total_credits'] * 100), 1) if g['total_credits'] > 0 else 0
+
+        # Get primary unit for this commodity
+        from .services.season_service import get_primary_unit_for_commodity
+        unit_info = get_primary_unit_for_commodity(key if group_by == 'commodity' else 'CITRUS')
+
+        rankings.append({
+            'group_key': key,
+            'total_bins': float(g['total_bins']),
+            'gross_per_bin': round(float(gross_per_bin), 2),
+            'deductions_per_bin': round(float(deductions_per_bin), 2),
+            'net_per_bin': round(float(net_per_bin), 2),
+            'margin_percent': margin_percent,
+            'total_net_return': float(g['net_return']),
+            'primary_unit': unit_info['unit'],
+            'primary_unit_label': unit_info['label_plural'],
+        })
+
+    # Sort by net_per_bin descending
+    rankings.sort(key=lambda x: x['net_per_bin'], reverse=True)
+
+    # Add multi-season trend (up to 5 most recent seasons)
+    trend_seasons = seasons_with_settlements[:5]
+    for rank in rankings:
+        trend = []
+        for trend_season in trend_seasons:
+            trend_filters = Q(
+                pool__packinghouse__company=company,
+                field__isnull=True,
+                pool__season=trend_season,
+            )
+            if packinghouse_id:
+                trend_filters &= Q(pool__packinghouse_id=packinghouse_id)
+
+            if group_by == 'variety':
+                trend_filters &= Q(pool__variety=rank['group_key'])
+            else:
+                trend_filters &= Q(pool__commodity=rank['group_key'])
+
+            agg = PoolSettlement.objects.filter(trend_filters).aggregate(
+                total_bins=Coalesce(Sum('total_bins'), Decimal('0')),
+                net_return=Coalesce(Sum('net_return'), Decimal('0')),
+            )
+            if agg['total_bins'] > 0:
+                trend.append({
+                    'season': trend_season,
+                    'net_per_bin': round(float(agg['net_return'] / agg['total_bins']), 2),
+                })
+        rank['trend'] = trend
+
+    return Response({
+        'season': selected_season,
+        'available_seasons': available_seasons,
+        'group_by': group_by,
+        'rankings': rankings,
+    })
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def deduction_creep_analysis(request):
+    """
+    Track deduction rates per bin across multiple seasons to reveal cost creep.
+
+    Shows how each deduction category trends over time on a per-bin basis,
+    making it easy to spot charges that are gradually increasing.
+
+    Query params:
+    - packinghouse: Filter by packinghouse ID
+    - commodity: Filter by commodity
+    """
+    from datetime import date
+    from collections import defaultdict
+
+    user = request.user
+    if not user.current_company:
+        return Response({'error': 'No company selected'}, status=400)
+
+    company = user.current_company
+
+    # Get seasons with settlement data (up to 5 most recent)
+    seasons_with_settlements = PoolSettlement.objects.filter(
+        pool__packinghouse__company=company
+    ).values_list('pool__season', flat=True).distinct()
+    seasons_list = sorted(set(seasons_with_settlements), reverse=True)[:5]
+
+    if not seasons_list:
+        return Response({
+            'seasons': [],
+            'categories': [],
+            'totals_by_season': {},
+        })
+
+    packinghouse_id = request.query_params.get('packinghouse')
+    commodity = request.query_params.get('commodity')
+
+    category_order = ['packing', 'assessment', 'pick_haul', 'capital', 'marketing', 'other']
+    category_labels = {
+        'packing': 'Packing Charges',
+        'assessment': 'Assessments',
+        'pick_haul': 'Pick & Haul',
+        'capital': 'Capital Funds',
+        'marketing': 'Marketing',
+        'other': 'Other',
+    }
+
+    # For each season, get deductions grouped by category and total bins
+    totals_by_season = {}
+    category_data = defaultdict(dict)  # {category: {season: {total_amount, per_bin}}}
+
+    for season in seasons_list:
+        # Build settlement filter
+        settlement_filters = Q(
+            pool__packinghouse__company=company,
+            pool__season=season,
+        )
+        if packinghouse_id:
+            settlement_filters &= Q(pool__packinghouse_id=packinghouse_id)
+        if commodity:
+            settlement_filters &= Q(pool__commodity__icontains=commodity)
+
+        settlements = PoolSettlement.objects.filter(settlement_filters)
+        settlement_ids = list(settlements.values_list('id', flat=True))
+
+        total_bins = settlements.aggregate(
+            total=Coalesce(Sum('total_bins'), Decimal('0'))
+        )['total']
+
+        if total_bins <= 0:
+            continue
+
+        # Get deductions for this season
+        deductions = SettlementDeduction.objects.filter(
+            settlement_id__in=settlement_ids
+        )
+
+        season_deduction_total = Decimal('0')
+        for ded in deductions:
+            cat = ded.category
+            amount = ded.amount or Decimal('0')
+            if cat not in category_data:
+                category_data[cat] = {}
+            if season not in category_data[cat]:
+                category_data[cat][season] = {'total_amount': Decimal('0')}
+            category_data[cat][season]['total_amount'] += amount
+            season_deduction_total += amount
+
+        # Compute per-bin for each category this season
+        for cat in category_data:
+            if season in category_data[cat]:
+                cat_amount = category_data[cat][season]['total_amount']
+                category_data[cat][season]['per_bin'] = round(float(cat_amount / total_bins), 2)
+
+        totals_by_season[season] = {
+            'total_amount': float(season_deduction_total),
+            'per_bin': round(float(season_deduction_total / total_bins), 2),
+            'total_bins': float(total_bins),
+        }
+
+    # Build response with YoY changes
+    categories_response = []
+    for cat in category_order:
+        if cat not in category_data:
+            continue
+
+        by_season = {}
+        season_values = []
+        for season in seasons_list:
+            if season in category_data[cat]:
+                entry = {
+                    'total_amount': float(category_data[cat][season]['total_amount']),
+                    'per_bin': category_data[cat][season].get('per_bin', 0),
+                    'yoy_change': None,
+                }
+                season_values.append((season, entry))
+                by_season[season] = entry
+            else:
+                by_season[season] = {'total_amount': 0, 'per_bin': 0, 'yoy_change': None}
+
+        # Calculate YoY changes (seasons are sorted newest first)
+        for i in range(len(season_values) - 1):
+            current_season, current = season_values[i]
+            _, previous = season_values[i + 1]
+            if previous['per_bin'] and previous['per_bin'] != 0:
+                current['yoy_change'] = round(
+                    ((current['per_bin'] - previous['per_bin']) / abs(previous['per_bin'])) * 100, 1
+                )
+
+        categories_response.append({
+            'category': cat,
+            'label': category_labels.get(cat, cat),
+            'by_season': by_season,
+        })
+
+    # Add YoY changes to totals
+    totals_seasons = [s for s in seasons_list if s in totals_by_season]
+    for i in range(len(totals_seasons) - 1):
+        current = totals_by_season[totals_seasons[i]]
+        previous = totals_by_season[totals_seasons[i + 1]]
+        if previous['per_bin'] and previous['per_bin'] != 0:
+            current['yoy_change'] = round(
+                ((current['per_bin'] - previous['per_bin']) / abs(previous['per_bin'])) * 100, 1
+            )
+
+    # Determine primary unit
+    from .services.season_service import get_primary_unit_for_commodity
+    if commodity:
+        unit_info = get_primary_unit_for_commodity(commodity)
+    else:
+        unit_info = get_primary_unit_for_commodity('CITRUS')
+
+    return Response({
+        'seasons': seasons_list,
+        'categories': categories_response,
+        'totals_by_season': totals_by_season,
+        'primary_unit': unit_info['unit'],
+        'primary_unit_label': unit_info['label_plural'],
+    })
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def grade_size_price_trends(request):
+    """
+    Track FOB pricing trends by grade and size across multiple seasons.
+
+    Shows how the weighted average FOB rate for each grade/size combination
+    has changed over time, helping identify which sizes are gaining or losing value.
+
+    Query params:
+    - packinghouse: Filter by packinghouse ID
+    - commodity: Filter by commodity
+    - grade: Filter by grade name (partial match, e.g., "SUNKIST")
+    """
+    from collections import defaultdict
+
+    user = request.user
+    if not user.current_company:
+        return Response({'error': 'No company selected'}, status=400)
+
+    company = user.current_company
+
+    # Get seasons with settlement data (up to 5 most recent)
+    seasons_with_settlements = PoolSettlement.objects.filter(
+        pool__packinghouse__company=company
+    ).values_list('pool__season', flat=True).distinct()
+    seasons_list = sorted(set(seasons_with_settlements), reverse=True)[:5]
+
+    if not seasons_list:
+        return Response({
+            'seasons': [],
+            'grade_sizes': [],
+        })
+
+    packinghouse_id = request.query_params.get('packinghouse')
+    commodity = request.query_params.get('commodity')
+    grade_filter = request.query_params.get('grade')
+
+    # For each season, query grade lines and aggregate by (grade, size)
+    # Structure: {(grade, size): {season: {total_qty, total_rev}}}
+    grade_size_data = defaultdict(lambda: defaultdict(lambda: {
+        'total_quantity': Decimal('0'),
+        'total_revenue': Decimal('0'),
+    }))
+
+    for season in seasons_list:
+        filters = Q(
+            settlement__pool__packinghouse__company=company,
+            settlement__pool__season=season,
+        )
+        if packinghouse_id:
+            filters &= Q(settlement__pool__packinghouse_id=packinghouse_id)
+        if commodity:
+            filters &= Q(settlement__pool__commodity__icontains=commodity)
+        if grade_filter:
+            filters &= Q(grade__icontains=grade_filter)
+
+        grade_lines = SettlementGradeLine.objects.filter(filters).exclude(size='')
+
+        for line in grade_lines:
+            key = (line.grade, line.size)
+            entry = grade_size_data[key][season]
+            entry['total_quantity'] += line.quantity or Decimal('0')
+            entry['total_revenue'] += line.total_amount or Decimal('0')
+
+    # Build response
+    grade_sizes = []
+    for (grade, size), season_data in grade_size_data.items():
+        by_season = {}
+        for season in seasons_list:
+            if season in season_data:
+                sd = season_data[season]
+                avg_fob = float(sd['total_revenue'] / sd['total_quantity']) if sd['total_quantity'] > 0 else None
+                by_season[season] = {
+                    'avg_fob': round(avg_fob, 2) if avg_fob is not None else None,
+                    'quantity': float(sd['total_quantity']),
+                    'revenue': float(sd['total_revenue']),
+                    'change_vs_prev': None,
+                }
+            else:
+                by_season[season] = {
+                    'avg_fob': None,
+                    'quantity': 0,
+                    'revenue': 0,
+                    'change_vs_prev': None,
+                }
+
+        # Calculate change between adjacent seasons (newest first)
+        for i in range(len(seasons_list) - 1):
+            current = by_season[seasons_list[i]]
+            previous = by_season[seasons_list[i + 1]]
+            if current['avg_fob'] is not None and previous['avg_fob'] is not None and previous['avg_fob'] != 0:
+                current['change_vs_prev'] = round(
+                    ((current['avg_fob'] - previous['avg_fob']) / abs(previous['avg_fob'])) * 100, 1
+                )
+
+        grade_sizes.append({
+            'grade': grade,
+            'size': size,
+            'by_season': by_season,
+        })
+
+    # Sort by grade, then numeric size
+    grade_sizes.sort(key=lambda x: (x['grade'], int(x['size']) if x['size'].isdigit() else 999))
+
+    return Response({
+        'seasons': seasons_list,
+        'grade_sizes': grade_sizes,
+        'filters_applied': {
+            'grade': grade_filter,
+            'packinghouse': packinghouse_id,
+            'commodity': commodity,
+        },
+    })
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def packinghouse_report_card(request):
+    """
+    Side-by-side packinghouse comparison showing key performance metrics.
+
+    Provides a comprehensive report card for each packinghouse including
+    average returns, deduction breakdown, pack percentages, and multi-season trends.
+
+    Query params:
+    - season: Filter by season (required for primary comparison)
+    - commodity: Filter by commodity
+    """
+    from datetime import date
+    from collections import defaultdict
+
+    user = request.user
+    if not user.current_company:
+        return Response({'error': 'No company selected'}, status=400)
+
+    company = user.current_company
+
+    # Get seasons with settlement data
+    seasons_with_settlements = PoolSettlement.objects.filter(
+        pool__packinghouse__company=company
+    ).values_list('pool__season', flat=True).distinct()
+    seasons_list = sorted(set(seasons_with_settlements), reverse=True)
+
+    # Default season
+    today = date.today()
+    current_season = get_citrus_season(today)
+    selected_season = request.query_params.get('season') or ''
+    if not selected_season:
+        selected_season = seasons_list[0] if seasons_list else current_season.label
+
+    commodity = request.query_params.get('commodity')
+
+    # Batch-query all settlements for the selected season
+    settlement_filters = Q(
+        pool__packinghouse__company=company,
+        pool__season=selected_season,
+        field__isnull=True,  # Grower summaries
+    )
+    if commodity:
+        settlement_filters &= Q(pool__commodity__icontains=commodity)
+
+    settlements = list(
+        PoolSettlement.objects.filter(settlement_filters)
+        .select_related('pool__packinghouse')
+    )
+
+    if not settlements:
+        return Response({
+            'season': selected_season,
+            'available_seasons': seasons_list,
+            'packinghouses': [],
+        })
+
+    # Group settlements by packinghouse
+    ph_settlements = defaultdict(list)
+    for s in settlements:
+        ph_settlements[s.pool.packinghouse_id].append(s)
+
+    # Batch-query all deductions for these settlements
+    settlement_ids = [s.id for s in settlements]
+    all_deductions = SettlementDeduction.objects.filter(
+        settlement_id__in=settlement_ids
+    ).select_related('settlement__pool__packinghouse')
+
+    # Group deductions by packinghouse
+    ph_deductions = defaultdict(list)
+    for ded in all_deductions:
+        ph_deductions[ded.settlement.pool.packinghouse_id].append(ded)
+
+    # Batch-query pack percentages from PackoutReport
+    packout_filters = Q(
+        pool__packinghouse__company=company,
+        pool__season=selected_season,
+    )
+    if commodity:
+        packout_filters &= Q(pool__commodity__icontains=commodity)
+
+    packout_reports = PackoutReport.objects.filter(packout_filters).select_related('pool__packinghouse')
+    ph_packouts = defaultdict(list)
+    for pr in packout_reports:
+        ph_packouts[pr.pool.packinghouse_id].append(pr)
+
+    # Build report card for each packinghouse
+    category_order = ['packing', 'assessment', 'pick_haul', 'capital', 'marketing', 'other']
+    category_labels = {
+        'packing': 'Packing Charges',
+        'assessment': 'Assessments',
+        'pick_haul': 'Pick & Haul',
+        'capital': 'Capital Funds',
+        'marketing': 'Marketing',
+        'other': 'Other',
+    }
+
+    packinghouse_cards = []
+    for ph_id, ph_setts in ph_settlements.items():
+        ph = ph_setts[0].pool.packinghouse
+
+        # Aggregate metrics
+        total_bins = sum((s.total_bins or Decimal('0')) for s in ph_setts)
+        total_credits = sum((s.total_credits or Decimal('0')) for s in ph_setts)
+        total_deductions_amt = sum((s.total_deductions or Decimal('0')) for s in ph_setts)
+        total_net = sum((s.net_return or Decimal('0')) for s in ph_setts)
+
+        # Average net_per_bin and house_avg (weighted)
+        avg_net_per_bin = float(total_net / total_bins) if total_bins > 0 else 0
+        avg_deductions_per_bin = float(total_deductions_amt / total_bins) if total_bins > 0 else 0
+
+        # Weighted house average
+        house_avg_sum = Decimal('0')
+        house_avg_bins = Decimal('0')
+        for s in ph_setts:
+            if s.house_avg_per_bin and s.total_bins:
+                house_avg_sum += s.house_avg_per_bin * s.total_bins
+                house_avg_bins += s.total_bins
+        avg_house_per_bin = float(house_avg_sum / house_avg_bins) if house_avg_bins > 0 else None
+
+        variance_vs_house = round(avg_net_per_bin - avg_house_per_bin, 2) if avg_house_per_bin is not None else None
+
+        # Average pack percentage
+        pack_pcts = [float(pr.total_packed_percent) for pr in ph_packouts.get(ph_id, []) if pr.total_packed_percent]
+        avg_pack_percent = round(sum(pack_pcts) / len(pack_pcts), 1) if pack_pcts else None
+
+        # Deduction breakdown by category
+        ded_by_cat = defaultdict(lambda: Decimal('0'))
+        for ded in ph_deductions.get(ph_id, []):
+            ded_by_cat[ded.category] += ded.amount or Decimal('0')
+
+        deduction_breakdown = []
+        for cat in category_order:
+            if cat in ded_by_cat:
+                cat_amount = ded_by_cat[cat]
+                deduction_breakdown.append({
+                    'category': cat,
+                    'label': category_labels.get(cat, cat),
+                    'total': float(cat_amount),
+                    'per_bin': round(float(cat_amount / total_bins), 2) if total_bins > 0 else 0,
+                })
+
+        # Multi-season trend (up to 5 seasons)
+        season_trend = []
+        for trend_season in seasons_list[:5]:
+            trend_filters = Q(
+                pool__packinghouse_id=ph_id,
+                pool__packinghouse__company=company,
+                pool__season=trend_season,
+                field__isnull=True,
+            )
+            if commodity:
+                trend_filters &= Q(pool__commodity__icontains=commodity)
+
+            agg = PoolSettlement.objects.filter(trend_filters).aggregate(
+                total_bins=Coalesce(Sum('total_bins'), Decimal('0')),
+                net_return=Coalesce(Sum('net_return'), Decimal('0')),
+            )
+            if agg['total_bins'] > 0:
+                season_trend.append({
+                    'season': trend_season,
+                    'net_per_bin': round(float(agg['net_return'] / agg['total_bins']), 2),
+                })
+
+        packinghouse_cards.append({
+            'id': ph.id,
+            'name': ph.name,
+            'short_code': ph.short_code,
+            'metrics': {
+                'avg_net_per_bin': round(avg_net_per_bin, 2),
+                'avg_house_per_bin': round(avg_house_per_bin, 2) if avg_house_per_bin is not None else None,
+                'variance_vs_house': variance_vs_house,
+                'total_bins': float(total_bins),
+                'total_credits': float(total_credits),
+                'total_deductions': float(total_deductions_amt),
+                'avg_pack_percent': avg_pack_percent,
+                'deductions_per_bin': round(avg_deductions_per_bin, 2),
+            },
+            'deduction_breakdown': deduction_breakdown,
+            'season_trend': season_trend,
+        })
+
+    # Sort by net_per_bin descending
+    packinghouse_cards.sort(key=lambda x: x['metrics']['avg_net_per_bin'], reverse=True)
+
+    return Response({
+        'season': selected_season,
+        'available_seasons': seasons_list,
+        'packinghouses': packinghouse_cards,
+    })
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def pack_percent_impact(request):
+    """
+    Correlate pack percentage with net return per bin to quantify impact.
+
+    Calculates a linear regression across all field-level data points
+    (where both pack % and net/bin exist) to determine how much each
+    1% improvement in pack percentage is worth in $/bin.
+
+    Query params:
+    - packinghouse: Filter by packinghouse ID
+    - commodity: Filter by commodity
+    """
+    user = request.user
+    if not user.current_company:
+        return Response({'error': 'No company selected'}, status=400)
+
+    company = user.current_company
+
+    packinghouse_id = request.query_params.get('packinghouse')
+    commodity = request.query_params.get('commodity')
+
+    # Get field-level settlements with net_per_bin
+    settlement_filters = Q(
+        pool__packinghouse__company=company,
+        field__isnull=False,
+        net_per_bin__isnull=False,
+    )
+    if packinghouse_id:
+        settlement_filters &= Q(pool__packinghouse_id=packinghouse_id)
+    if commodity:
+        settlement_filters &= Q(pool__commodity__icontains=commodity)
+
+    settlements = list(
+        PoolSettlement.objects.filter(settlement_filters)
+        .select_related('pool__packinghouse', 'field')
+    )
+
+    if not settlements:
+        return Response({
+            'data_points': [],
+            'regression': None,
+            'insight': 'No field-level settlement data available.',
+        })
+
+    # Batch-lookup matching PackoutReports by (pool_id, field_id)
+    # Use the latest report per (pool, field) pair - same pattern as block_performance
+    from django.db.models import Max
+
+    pool_field_pairs = set((s.pool_id, s.field_id) for s in settlements)
+    packout_filter = Q()
+    for pool_id, field_id in pool_field_pairs:
+        packout_filter |= Q(pool_id=pool_id, field_id=field_id)
+
+    packout_lookup = {}
+    if packout_filter:
+        for pr in PackoutReport.objects.filter(packout_filter).order_by('pool_id', 'field_id', '-report_date'):
+            key = (pr.pool_id, pr.field_id)
+            if key not in packout_lookup:
+                packout_lookup[key] = pr
+
+    # Build data points where both pack % and net/bin exist
+    data_points = []
+    for s in settlements:
+        packout = packout_lookup.get((s.pool_id, s.field_id))
+        if packout and packout.total_packed_percent:
+            data_points.append({
+                'field_name': s.field.name if s.field else 'Unknown',
+                'season': s.pool.season,
+                'pack_percent': float(packout.total_packed_percent),
+                'net_per_bin': float(s.net_per_bin),
+                'packinghouse_name': s.pool.packinghouse.name,
+                'commodity': s.pool.commodity or '',
+            })
+
+    # Sort by pack_percent ascending for display
+    data_points.sort(key=lambda x: x['pack_percent'])
+
+    # Calculate linear regression if enough data points
+    regression = None
+    insight = 'Insufficient data for regression analysis (need at least 3 data points).'
+
+    if len(data_points) >= 3:
+        n = len(data_points)
+        x_vals = [dp['pack_percent'] for dp in data_points]
+        y_vals = [dp['net_per_bin'] for dp in data_points]
+
+        sum_x = sum(x_vals)
+        sum_y = sum(y_vals)
+        sum_xy = sum(x * y for x, y in zip(x_vals, y_vals))
+        sum_x2 = sum(x * x for x in x_vals)
+        sum_y2 = sum(y * y for y in y_vals)
+
+        x_mean = sum_x / n
+        y_mean = sum_y / n
+
+        denominator = n * sum_x2 - sum_x * sum_x
+        if denominator != 0:
+            slope = (n * sum_xy - sum_x * sum_y) / denominator
+            intercept = (sum_y - slope * sum_x) / n
+
+            # R-squared
+            r_numerator = n * sum_xy - sum_x * sum_y
+            r_denom_sq = (n * sum_x2 - sum_x ** 2) * (n * sum_y2 - sum_y ** 2)
+            r_squared = (r_numerator ** 2 / r_denom_sq) if r_denom_sq > 0 else 0
+
+            regression = {
+                'slope': round(slope, 2),
+                'intercept': round(intercept, 2),
+                'r_squared': round(r_squared, 2),
+                'data_point_count': n,
+                'mean_pack_percent': round(x_mean, 1),
+                'mean_net_per_bin': round(y_mean, 2),
+            }
+
+            insight = f'Each 1% improvement in pack percentage = ${abs(round(slope, 2)):.2f}/bin {"additional" if slope > 0 else "lower"} return'
+
+    # Determine primary unit
+    from .services.season_service import get_primary_unit_for_commodity
+    if commodity:
+        unit_info = get_primary_unit_for_commodity(commodity)
+    else:
+        unit_info = get_primary_unit_for_commodity('CITRUS')
+
+    return Response({
+        'data_points': data_points,
+        'regression': regression,
+        'insight': insight,
+        'primary_unit': unit_info['unit'],
+        'primary_unit_label': unit_info['label_plural'],
+    })

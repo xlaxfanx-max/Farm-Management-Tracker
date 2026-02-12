@@ -163,6 +163,12 @@ from .packinghouse_views import (
     profitability_analysis,
     deduction_breakdown,
     season_comparison,
+    # Settlement Intelligence
+    commodity_roi_ranking,
+    deduction_creep_analysis,
+    grade_size_price_trends,
+    packinghouse_report_card,
+    pack_percent_impact,
 )
 
 # Import FSMA compliance views
@@ -473,6 +479,13 @@ urlpatterns = [
     path('packinghouse-analytics/size-pricing/', size_pricing, name='packinghouse-size-pricing'),
     path('packinghouse-analytics/dashboard/', packinghouse_dashboard, name='packinghouse-dashboard'),
     path('harvest-packing/pipeline/', harvest_packing_pipeline, name='harvest-packing-pipeline'),
+
+    # Settlement Intelligence analytics routes
+    path('packinghouse-analytics/commodity-roi/', commodity_roi_ranking, name='packinghouse-commodity-roi'),
+    path('packinghouse-analytics/deduction-creep/', deduction_creep_analysis, name='packinghouse-deduction-creep'),
+    path('packinghouse-analytics/price-trends/', grade_size_price_trends, name='packinghouse-price-trends'),
+    path('packinghouse-analytics/report-card/', packinghouse_report_card, name='packinghouse-report-card'),
+    path('packinghouse-analytics/pack-impact/', pack_percent_impact, name='packinghouse-pack-impact'),
 
     # Profitability Analytics routes
     path('harvest-analytics/profitability/', profitability_analysis, name='harvest-profitability'),

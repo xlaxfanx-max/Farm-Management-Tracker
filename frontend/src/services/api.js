@@ -2553,6 +2553,22 @@ export const packinghouseAnalyticsAPI = {
   // Unified harvest-to-packing pipeline overview
   getPipeline: (params = {}) =>
     api.get('/harvest-packing/pipeline/', { params }),
+
+  // Settlement Intelligence endpoints
+  getCommodityROI: (params = {}) =>
+    api.get('/packinghouse-analytics/commodity-roi/', { params }),
+
+  getDeductionCreep: (params = {}) =>
+    api.get('/packinghouse-analytics/deduction-creep/', { params }),
+
+  getPriceTrends: (params = {}) =>
+    api.get('/packinghouse-analytics/price-trends/', { params }),
+
+  getReportCard: (params = {}) =>
+    api.get('/packinghouse-analytics/report-card/', { params }),
+
+  getPackImpact: (params = {}) =>
+    api.get('/packinghouse-analytics/pack-impact/', { params }),
 };
 
 // =============================================================================
