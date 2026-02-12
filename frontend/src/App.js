@@ -57,6 +57,7 @@ import ComplianceReports from './components/compliance/ComplianceReports';
 import ComplianceSettings from './components/compliance/ComplianceSettings';
 import { DiseaseDashboard } from './components/disease';
 import { FSMADashboard } from './components/fsma';
+import { PrimusGFSDashboard } from './components/primusgfs';
 import Breadcrumbs from './components/navigation/Breadcrumbs';
 import YieldForecastDashboard from './components/yield-forecast/YieldForecastDashboard';
 
@@ -488,6 +489,18 @@ function AppContent() {
             <Route path="compliance/fsma/inventory" element={<FSMADashboard onNavigate={handleNavigate} initialTab="inventory" />} />
             <Route path="compliance/fsma/phi" element={<FSMADashboard onNavigate={handleNavigate} initialTab="phi" />} />
             <Route path="compliance/fsma/audit" element={<FSMADashboard onNavigate={handleNavigate} initialTab="audit" />} />
+            <Route path="compliance/primusgfs" element={<PrimusGFSDashboard onNavigate={handleNavigate} />} />
+            <Route path="compliance/primusgfs/documents" element={<PrimusGFSDashboard onNavigate={handleNavigate} initialTab="documents" />} />
+            <Route path="compliance/primusgfs/audits" element={<PrimusGFSDashboard onNavigate={handleNavigate} initialTab="audits" />} />
+            <Route path="compliance/primusgfs/corrective-actions" element={<PrimusGFSDashboard onNavigate={handleNavigate} initialTab="corrective-actions" />} />
+            <Route path="compliance/primusgfs/land" element={<PrimusGFSDashboard onNavigate={handleNavigate} initialTab="land" />} />
+            <Route path="compliance/primusgfs/suppliers" element={<PrimusGFSDashboard onNavigate={handleNavigate} initialTab="suppliers" />} />
+            <Route path="compliance/primusgfs/recalls" element={<PrimusGFSDashboard onNavigate={handleNavigate} initialTab="recalls" />} />
+            <Route path="compliance/primusgfs/food-defense" element={<PrimusGFSDashboard onNavigate={handleNavigate} initialTab="food-defense" />} />
+            <Route path="compliance/primusgfs/sanitation" element={<PrimusGFSDashboard onNavigate={handleNavigate} initialTab="sanitation" />} />
+            <Route path="compliance/primusgfs/calibration" element={<PrimusGFSDashboard onNavigate={handleNavigate} initialTab="calibration" />} />
+            <Route path="compliance/primusgfs/pest-control" element={<PrimusGFSDashboard onNavigate={handleNavigate} initialTab="pest-control" />} />
+            <Route path="compliance/primusgfs/pre-harvest" element={<PrimusGFSDashboard onNavigate={handleNavigate} initialTab="pre-harvest" />} />
             <Route path="compliance/pesticide" element={<DeadlineCalendar onNavigate={handleNavigate} />} />
             <Route path="yield-forecast" element={<YieldForecastDashboard />} />
             {/* Catch-all redirect to dashboard */}

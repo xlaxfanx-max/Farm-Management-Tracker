@@ -3006,6 +3006,138 @@ export const yieldForecastAPI = {
 };
 
 // =============================================================================
+// PRIMUS GFS COMPLIANCE API
+// =============================================================================
+
+export const primusGFSAPI = {
+  // Dashboard
+  getDashboard: () => api.get('/primusgfs/dashboard/'),
+
+  // Documents
+  getDocuments: (params = {}) => api.get('/primusgfs/documents/', { params }),
+  getDocument: (id) => api.get(`/primusgfs/documents/${id}/`),
+  createDocument: (data) => api.post('/primusgfs/documents/', data),
+  updateDocument: (id, data) => api.put(`/primusgfs/documents/${id}/`, data),
+  deleteDocument: (id) => api.delete(`/primusgfs/documents/${id}/`),
+  approveDocument: (id, data = {}) => api.post(`/primusgfs/documents/${id}/approve/`, data),
+  newRevision: (id, data) => api.post(`/primusgfs/documents/${id}/new_revision/`, data),
+  overdueReviews: () => api.get('/primusgfs/documents/overdue_reviews/'),
+
+  // Audits
+  getAudits: (params = {}) => api.get('/primusgfs/audits/', { params }),
+  getAudit: (id) => api.get(`/primusgfs/audits/${id}/`),
+  createAudit: (data) => api.post('/primusgfs/audits/', data),
+  updateAudit: (id, data) => api.put(`/primusgfs/audits/${id}/`, data),
+  deleteAudit: (id) => api.delete(`/primusgfs/audits/${id}/`),
+  completeAudit: (id, data = {}) => api.post(`/primusgfs/audits/${id}/complete/`, data),
+  auditSummary: () => api.get('/primusgfs/audits/summary/'),
+
+  // Findings
+  getFindings: (params = {}) => api.get('/primusgfs/findings/', { params }),
+  getFinding: (id) => api.get(`/primusgfs/findings/${id}/`),
+  createFinding: (data) => api.post('/primusgfs/findings/', data),
+  updateFinding: (id, data) => api.put(`/primusgfs/findings/${id}/`, data),
+  deleteFinding: (id) => api.delete(`/primusgfs/findings/${id}/`),
+
+  // Corrective Actions
+  getCorrectiveActions: (params = {}) => api.get('/primusgfs/corrective-actions/', { params }),
+  getCorrectiveAction: (id) => api.get(`/primusgfs/corrective-actions/${id}/`),
+  createCorrectiveAction: (data) => api.post('/primusgfs/corrective-actions/', data),
+  updateCorrectiveAction: (id, data) => api.put(`/primusgfs/corrective-actions/${id}/`, data),
+  deleteCorrectiveAction: (id) => api.delete(`/primusgfs/corrective-actions/${id}/`),
+  implementCA: (id, data = {}) => api.post(`/primusgfs/corrective-actions/${id}/implement/`, data),
+  verifyCA: (id, data = {}) => api.post(`/primusgfs/corrective-actions/${id}/verify/`, data),
+  overdueActions: () => api.get('/primusgfs/corrective-actions/overdue/'),
+
+  // Land Assessments
+  getLandAssessments: (params = {}) => api.get('/primusgfs/land-assessments/', { params }),
+  getLandAssessment: (id) => api.get(`/primusgfs/land-assessments/${id}/`),
+  createLandAssessment: (data) => api.post('/primusgfs/land-assessments/', data),
+  updateLandAssessment: (id, data) => api.put(`/primusgfs/land-assessments/${id}/`, data),
+  deleteLandAssessment: (id) => api.delete(`/primusgfs/land-assessments/${id}/`),
+  approveLandAssessment: (id, data = {}) => api.post(`/primusgfs/land-assessments/${id}/approve/`, data),
+
+  // Suppliers
+  getSuppliers: (params = {}) => api.get('/primusgfs/suppliers/', { params }),
+  getSupplier: (id) => api.get(`/primusgfs/suppliers/${id}/`),
+  createSupplier: (data) => api.post('/primusgfs/suppliers/', data),
+  updateSupplier: (id, data) => api.put(`/primusgfs/suppliers/${id}/`, data),
+  deleteSupplier: (id) => api.delete(`/primusgfs/suppliers/${id}/`),
+  approveSupplier: (id, data = {}) => api.post(`/primusgfs/suppliers/${id}/approve/`, data),
+  suspendSupplier: (id, data = {}) => api.post(`/primusgfs/suppliers/${id}/suspend/`, data),
+  suppliersDueForReview: () => api.get('/primusgfs/suppliers/due_for_review/'),
+
+  // Material Verifications
+  getMaterialVerifications: (params = {}) => api.get('/primusgfs/material-verifications/', { params }),
+  createMaterialVerification: (data) => api.post('/primusgfs/material-verifications/', data),
+  updateMaterialVerification: (id, data) => api.put(`/primusgfs/material-verifications/${id}/`, data),
+  deleteMaterialVerification: (id) => api.delete(`/primusgfs/material-verifications/${id}/`),
+
+  // Mock Recalls
+  getMockRecalls: (params = {}) => api.get('/primusgfs/mock-recalls/', { params }),
+  getMockRecall: (id) => api.get(`/primusgfs/mock-recalls/${id}/`),
+  createMockRecall: (data) => api.post('/primusgfs/mock-recalls/', data),
+  updateMockRecall: (id, data) => api.put(`/primusgfs/mock-recalls/${id}/`, data),
+  deleteMockRecall: (id) => api.delete(`/primusgfs/mock-recalls/${id}/`),
+  startMockRecall: (id, data = {}) => api.post(`/primusgfs/mock-recalls/${id}/start/`, data),
+  completeMockRecall: (id, data) => api.post(`/primusgfs/mock-recalls/${id}/complete/`, data),
+  scoreMockRecall: (id, data = {}) => api.post(`/primusgfs/mock-recalls/${id}/score/`, data),
+
+  // Food Defense
+  getFoodDefensePlans: (params = {}) => api.get('/primusgfs/food-defense/', { params }),
+  getFoodDefensePlan: (id) => api.get(`/primusgfs/food-defense/${id}/`),
+  createFoodDefensePlan: (data) => api.post('/primusgfs/food-defense/', data),
+  updateFoodDefensePlan: (id, data) => api.put(`/primusgfs/food-defense/${id}/`, data),
+  deleteFoodDefensePlan: (id) => api.delete(`/primusgfs/food-defense/${id}/`),
+  approveFoodDefensePlan: (id, data = {}) => api.post(`/primusgfs/food-defense/${id}/approve/`, data),
+
+  // Sanitation Logs
+  getSanitationLogs: (params = {}) => api.get('/primusgfs/sanitation-logs/', { params }),
+  getSanitationLog: (id) => api.get(`/primusgfs/sanitation-logs/${id}/`),
+  createSanitationLog: (data) => api.post('/primusgfs/sanitation-logs/', data),
+  updateSanitationLog: (id, data) => api.put(`/primusgfs/sanitation-logs/${id}/`, data),
+  deleteSanitationLog: (id) => api.delete(`/primusgfs/sanitation-logs/${id}/`),
+  todaySanitationLogs: () => api.get('/primusgfs/sanitation-logs/today/'),
+  sanitationComplianceSummary: () => api.get('/primusgfs/sanitation-logs/compliance_summary/'),
+
+  // Equipment Calibration
+  getCalibrations: (params = {}) => api.get('/primusgfs/calibrations/', { params }),
+  getCalibration: (id) => api.get(`/primusgfs/calibrations/${id}/`),
+  createCalibration: (data) => api.post('/primusgfs/calibrations/', data),
+  updateCalibration: (id, data) => api.put(`/primusgfs/calibrations/${id}/`, data),
+  deleteCalibration: (id) => api.delete(`/primusgfs/calibrations/${id}/`),
+  completeCalibration: (id, data) => api.post(`/primusgfs/calibrations/${id}/complete/`, data),
+  overdueCalibrations: () => api.get('/primusgfs/calibrations/overdue/'),
+  upcomingCalibrations: () => api.get('/primusgfs/calibrations/upcoming/'),
+
+  // Pest Control Programs
+  getPestPrograms: (params = {}) => api.get('/primusgfs/pest-programs/', { params }),
+  getPestProgram: (id) => api.get(`/primusgfs/pest-programs/${id}/`),
+  createPestProgram: (data) => api.post('/primusgfs/pest-programs/', data),
+  updatePestProgram: (id, data) => api.put(`/primusgfs/pest-programs/${id}/`, data),
+  deletePestProgram: (id) => api.delete(`/primusgfs/pest-programs/${id}/`),
+  approvePestProgram: (id, data = {}) => api.post(`/primusgfs/pest-programs/${id}/approve/`, data),
+
+  // Pest Monitoring Logs
+  getPestLogs: (params = {}) => api.get('/primusgfs/pest-logs/', { params }),
+  getPestLog: (id) => api.get(`/primusgfs/pest-logs/${id}/`),
+  createPestLog: (data) => api.post('/primusgfs/pest-logs/', data),
+  updatePestLog: (id, data) => api.put(`/primusgfs/pest-logs/${id}/`, data),
+  deletePestLog: (id) => api.delete(`/primusgfs/pest-logs/${id}/`),
+  pestTrend: () => api.get('/primusgfs/pest-logs/trend/'),
+
+  // Pre-Harvest Inspections
+  getPreHarvestInspections: (params = {}) => api.get('/primusgfs/pre-harvest/', { params }),
+  getPreHarvestInspection: (id) => api.get(`/primusgfs/pre-harvest/${id}/`),
+  createPreHarvestInspection: (data) => api.post('/primusgfs/pre-harvest/', data),
+  updatePreHarvestInspection: (id, data) => api.put(`/primusgfs/pre-harvest/${id}/`, data),
+  deletePreHarvestInspection: (id) => api.delete(`/primusgfs/pre-harvest/${id}/`),
+  completePreHarvestInspection: (id, data) => api.post(`/primusgfs/pre-harvest/${id}/complete_inspection/`, data),
+  approvePreHarvestInspection: (id, data = {}) => api.post(`/primusgfs/pre-harvest/${id}/approve/`, data),
+  upcomingHarvests: () => api.get('/primusgfs/pre-harvest/upcoming_harvests/'),
+};
+
+// =============================================================================
 // DEFAULT EXPORT
 // =============================================================================
 

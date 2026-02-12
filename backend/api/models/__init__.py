@@ -193,6 +193,25 @@ from .fsma import (
     FSMAMitigationAction,
 )
 
+# -- Primus GFS / GAP compliance ---------------------------------------------
+from .primusgfs import (
+    DOCUMENT_TYPE_CHOICES, DOCUMENT_STATUS_CHOICES, PRIMUS_MODULE_CHOICES,
+    AUDIT_TYPE_CHOICES, AUDIT_STATUS_CHOICES, FINDING_SEVERITY_CHOICES,
+    CORRECTIVE_ACTION_STATUS_CHOICES, LAND_USE_CHOICES, CONTAMINATION_RISK_CHOICES,
+    ControlledDocument, DocumentRevisionHistory,
+    InternalAudit, AuditFinding, CorrectiveAction,
+    LandHistoryAssessment,
+    SUPPLIER_STATUS_CHOICES, MATERIAL_TYPE_CHOICES,
+    RECALL_STATUS_CHOICES, THREAT_LEVEL_CHOICES,
+    ApprovedSupplier, IncomingMaterialVerification,
+    MockRecall, FoodDefensePlan, FieldSanitationLog,
+    CALIBRATION_STATUS_CHOICES, CALIBRATION_METHOD_CHOICES,
+    EQUIPMENT_TYPE_CHOICES, PEST_TYPE_CHOICES,
+    PEST_ACTIVITY_CHOICES, INSPECTION_STATUS_CHOICES,
+    EquipmentCalibration, PestControlProgram, PestMonitoringLog,
+    PreHarvestInspection,
+)
+
 # -- yield forecast / soil survey --------------------------------------------
 from .yield_forecast import (
     ExternalDataSource,
@@ -270,4 +289,15 @@ __all__ = [
     # yield forecast
     'ExternalDataSource', 'SoilSurveyData', 'YieldFeatureSnapshot',
     'YieldForecast',
+    # primus gfs
+    'DOCUMENT_TYPE_CHOICES', 'DOCUMENT_STATUS_CHOICES', 'PRIMUS_MODULE_CHOICES',
+    'AUDIT_TYPE_CHOICES', 'AUDIT_STATUS_CHOICES', 'FINDING_SEVERITY_CHOICES',
+    'CORRECTIVE_ACTION_STATUS_CHOICES', 'LAND_USE_CHOICES', 'CONTAMINATION_RISK_CHOICES',
+    'ControlledDocument', 'DocumentRevisionHistory',
+    'InternalAudit', 'AuditFinding', 'CorrectiveAction',
+    'LandHistoryAssessment',
+    'SUPPLIER_STATUS_CHOICES', 'MATERIAL_TYPE_CHOICES',
+    'RECALL_STATUS_CHOICES', 'THREAT_LEVEL_CHOICES',
+    'ApprovedSupplier', 'IncomingMaterialVerification',
+    'MockRecall', 'FoodDefensePlan', 'FieldSanitationLog',
 ]

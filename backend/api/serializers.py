@@ -22,3 +22,4 @@ from .fsma_serializers import *
 from .fsma_water_serializers import *
 from .season_serializers import *
 from .yield_serializers import *
+from .primusgfs_serializers import *

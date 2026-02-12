@@ -19,6 +19,15 @@ import {
   Package,
   Truck,
   SprayCanIcon as Spray,
+  Target,
+  ArrowRight,
+  RotateCcw,
+  ShieldAlert,
+  Droplets,
+  Wrench,
+  Bug,
+  Clipboard,
+  Map,
 } from 'lucide-react';
 import {
   complianceDashboardAPI,
@@ -27,6 +36,8 @@ import {
   licensesAPI,
   wpsTrainingAPI,
   fsmaAPI,
+  primusGFSAPI,
+  complianceProfileAPI,
 } from '../../services/api';
 
 // Utility function to format dates
@@ -98,7 +109,8 @@ const CategoryCard = ({
   metrics = [],
   status = 'good', // 'good', 'warning', 'critical'
   onClick,
-  color = 'green'
+  color = 'green',
+  certifications = [],
 }) => {
   const colorClasses = {
     green: {
@@ -124,6 +136,12 @@ const CategoryCard = ({
       icon: 'bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400',
       border: 'border-amber-200 dark:border-amber-800',
       hover: 'hover:border-amber-400 dark:hover:border-amber-600',
+    },
+    teal: {
+      bg: 'bg-teal-50 dark:bg-teal-900/20',
+      icon: 'bg-teal-100 dark:bg-teal-900/40 text-teal-600 dark:text-teal-400',
+      border: 'border-teal-200 dark:border-teal-800',
+      hover: 'hover:border-teal-400 dark:hover:border-teal-600',
     },
   };
 
@@ -156,7 +174,17 @@ const CategoryCard = ({
       </div>
 
       <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">{title}</h3>
-      <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">{description}</p>
+      <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">{description}</p>
+
+      {certifications.length > 0 && (
+        <div className="flex flex-wrap gap-1 mb-3">
+          {certifications.map(cert => (
+            <span key={cert} className="text-xs px-2 py-0.5 rounded-full bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-teal-800">
+              {cert}
+            </span>
+          ))}
+        </div>
+      )}
 
       {metrics.length > 0 && (
         <div className="grid grid-cols-2 gap-3">
@@ -211,6 +239,172 @@ const AlertBanner = ({ alerts, onDismiss }) => {
   );
 };
 
+// Primus GFS module definitions with action text derived from dashboard API response
+const PRIMUS_MODULES = [
+  { key: 'document_control', label: 'Document Control', tab: 'documents', icon: FileText,
+    getAction: (d) => d?.documents?.overdue_reviews > 0 ? `${d.documents.overdue_reviews} overdue review(s)` : null },
+  { key: 'internal_audits', label: 'Internal Audits', tab: 'audits', icon: ClipboardCheck,
+    getAction: (d) => d?.audits?.completed_this_year === 0 ? 'No audit completed this year' : null },
+  { key: 'corrective_actions', label: 'Corrective Actions', tab: 'corrective-actions', icon: AlertTriangle,
+    getAction: (d) => d?.corrective_actions?.overdue > 0 ? `${d.corrective_actions.overdue} overdue` : null },
+  { key: 'land_assessments', label: 'Land History', tab: 'land', icon: Map,
+    getAction: (d) => {
+      const unassessed = (d?.land_assessments?.fields_total || 0) - (d?.land_assessments?.fields_assessed || 0);
+      return unassessed > 0 ? `${unassessed} field(s) unassessed` : null;
+    }},
+  { key: 'suppliers', label: 'Supplier Mgmt', tab: 'suppliers', icon: Truck,
+    getAction: (d) => d?.suppliers?.review_overdue > 0 ? `${d.suppliers.review_overdue} review(s) overdue` : null },
+  { key: 'mock_recalls', label: 'Mock Recalls', tab: 'recalls', icon: RotateCcw,
+    getAction: (d) => d?.mock_recalls?.passed_this_year === 0 ? 'No recall exercise this year' : null },
+  { key: 'food_defense', label: 'Food Defense', tab: 'food-defense', icon: ShieldAlert,
+    getAction: (d) => !d?.food_defense?.plan_approved ? 'Plan not approved' : null },
+  { key: 'sanitation', label: 'Field Sanitation', tab: 'sanitation', icon: Droplets,
+    getAction: (d) => d?.sanitation?.total_logs_30d === 0 ? 'No logs in past 30 days' : null },
+  { key: 'equipment_calibration', label: 'Equipment Calibration', tab: 'calibration', icon: Wrench,
+    getAction: (d) => d?.equipment_calibration?.overdue > 0 ? `${d.equipment_calibration.overdue} overdue` : null },
+  { key: 'pest_control', label: 'Pest Control', tab: 'pest-control', icon: Bug,
+    getAction: (d) => !d?.pest_control?.program_approved ? 'Program not approved' : null },
+  { key: 'pre_harvest', label: 'Pre-Harvest', tab: 'pre-harvest', icon: Clipboard,
+    getAction: (d) => d?.pre_harvest?.this_year === 0 ? 'No inspections this year' : null },
+];
+
+// Cross-module references: existing compliance modules that contribute to Primus GFS
+const CROSS_MODULE_LINKS = [
+  { module: 'Pesticide Compliance', relevance: 'Auditors verify application records & REI compliance' },
+  { module: 'Food Safety (FSMA)', relevance: 'Covers produce safety rule requirements' },
+  { module: 'Worker Protection (WPS)', relevance: 'Auditors verify training records & safety postings' },
+];
+
+// Certification Readiness Section Component
+const CertificationReadinessSection = ({ primusData, onNavigate }) => {
+  const moduleScores = primusData?.module_scores || {};
+  const overallScore = primusData?.overall_score || 0;
+
+  const needsAttention = PRIMUS_MODULES.filter(m => (moduleScores[m.key] || 0) < 60);
+  const onTrack = PRIMUS_MODULES.filter(m => (moduleScores[m.key] || 0) >= 60);
+
+  return (
+    <div className="mb-6">
+      <div className="bg-white dark:bg-gray-800 border-2 border-teal-200 dark:border-teal-800 rounded-xl overflow-hidden">
+        {/* Header */}
+        <div className="bg-teal-50 dark:bg-teal-900/20 px-6 py-4 flex items-center justify-between border-b border-teal-200 dark:border-teal-800">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-teal-100 dark:bg-teal-900/40 rounded-lg flex items-center justify-center">
+              <Target className="w-5 h-5 text-teal-600 dark:text-teal-400" />
+            </div>
+            <div>
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Certification Readiness</h2>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Track your progress toward farm certification audits
+              </p>
+            </div>
+          </div>
+          <MiniScoreCircle score={overallScore} size={56} />
+        </div>
+
+        {/* Primus GFS content */}
+        <div className="p-6">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Shield className="w-5 h-5 text-teal-600 dark:text-teal-400" />
+              <h3 className="text-base font-semibold text-gray-900 dark:text-white">Primus GFS</h3>
+              <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                overallScore >= 80 ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' :
+                overallScore >= 60 ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400' :
+                'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
+              }`}>
+                {overallScore >= 80 ? 'Audit Ready' : overallScore >= 60 ? 'In Progress' : 'Not Ready'}
+              </span>
+            </div>
+            <button
+              onClick={() => onNavigate?.('compliance-primusgfs')}
+              className="text-sm text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300 flex items-center gap-1"
+            >
+              Full Dashboard <ArrowRight className="w-4 h-4" />
+            </button>
+          </div>
+
+          {/* Needs Attention */}
+          {needsAttention.length > 0 && (
+            <div className="mb-4">
+              <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
+                Needs Attention ({needsAttention.length})
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                {needsAttention.map(mod => {
+                  const score = moduleScores[mod.key] || 0;
+                  const actionText = mod.getAction(primusData);
+                  const ModIcon = mod.icon;
+                  return (
+                    <button
+                      key={mod.key}
+                      onClick={() => onNavigate?.(`compliance-primusgfs-${mod.tab}`)}
+                      className="flex items-center gap-2 p-2.5 rounded-lg bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800 hover:border-red-400 dark:hover:border-red-600 transition-colors text-left group"
+                    >
+                      <ModIcon className="w-4 h-4 text-red-500 dark:text-red-400 flex-shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{mod.label}</p>
+                        <p className="text-xs text-red-600 dark:text-red-400 truncate">
+                          {actionText || `Score: ${score}%`}
+                        </p>
+                      </div>
+                      <span className="text-sm font-bold text-red-600 dark:text-red-400">{score}%</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* On Track */}
+          {onTrack.length > 0 && (
+            <div className="mb-4">
+              <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
+                On Track ({onTrack.length})
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {onTrack.map(mod => {
+                  const score = moduleScores[mod.key] || 0;
+                  const ModIcon = mod.icon;
+                  return (
+                    <button
+                      key={mod.key}
+                      onClick={() => onNavigate?.(`compliance-primusgfs-${mod.tab}`)}
+                      className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800 hover:border-green-400 dark:hover:border-green-600 transition-colors"
+                    >
+                      <ModIcon className="w-3.5 h-3.5 text-green-600 dark:text-green-400" />
+                      <span className="text-sm text-gray-700 dark:text-gray-300">{mod.label}</span>
+                      <span className="text-sm font-bold text-green-600 dark:text-green-400">{score}%</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Cross-references to existing modules */}
+          <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+            <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
+              Already Covered by Your Compliance Modules
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              {CROSS_MODULE_LINKS.map(link => (
+                <div key={link.module} className="flex items-start gap-2 p-2 rounded-lg bg-gray-50 dark:bg-gray-700/50">
+                  <CheckCircle2 className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">{link.module}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{link.relevance}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // Main ComplianceDashboard Component
 export default function ComplianceDashboard({ onNavigate }) {
   const [loading, setLoading] = useState(true);
@@ -225,17 +419,21 @@ export default function ComplianceDashboard({ onNavigate }) {
   const [licenses, setLicenses] = useState([]);
   const [trainingRecords, setTrainingRecords] = useState([]);
   const [fsmaData, setFsmaData] = useState(null);
+  const [primusData, setPrimusData] = useState(null);
+  const [profileData, setProfileData] = useState(null);
 
   // Fetch all data
   const fetchData = useCallback(async () => {
     try {
-      const [dashRes, alertsRes, deadlinesRes, licensesRes, trainingRes, fsmaRes] = await Promise.all([
+      const [dashRes, alertsRes, deadlinesRes, licensesRes, trainingRes, fsmaRes, primusRes, profileRes] = await Promise.all([
         complianceDashboardAPI.get().catch(() => ({ data: null })),
         complianceAlertsAPI.getAll({ is_active: true, limit: 10 }).catch(() => ({ data: { results: [] } })),
         complianceDeadlinesAPI.getAll({ status__in: 'upcoming,due_soon,overdue', limit: 20 }).catch(() => ({ data: { results: [] } })),
         licensesAPI.getAll({ limit: 20 }).catch(() => ({ data: { results: [] } })),
         wpsTrainingAPI.getAll({ limit: 20 }).catch(() => ({ data: { results: [] } })),
         fsmaAPI.getDashboard().catch(() => ({ data: null })),
+        primusGFSAPI.getDashboard().catch(() => ({ data: null })),
+        complianceProfileAPI.get().catch(() => ({ data: null })),
       ]);
 
       setDashboardData(dashRes.data);
@@ -244,6 +442,8 @@ export default function ComplianceDashboard({ onNavigate }) {
       setLicenses(licensesRes.data?.results || licensesRes.data || []);
       setTrainingRecords(trainingRes.data?.results || trainingRes.data || []);
       setFsmaData(fsmaRes.data);
+      setPrimusData(primusRes.data);
+      setProfileData(profileRes.data);
     } catch (err) {
       console.error('Error fetching compliance data:', err);
     } finally {
@@ -323,6 +523,8 @@ export default function ComplianceDashboard({ onNavigate }) {
     return 'good';
   };
 
+  const isPrimusCertified = profileData?.primus_certified === true;
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
@@ -384,6 +586,14 @@ export default function ComplianceDashboard({ onNavigate }) {
         {/* Alert Banner */}
         {showAlerts && <AlertBanner alerts={alerts} onDismiss={() => setShowAlerts(false)} />}
 
+        {/* Certification Readiness */}
+        {primusData && (
+          <CertificationReadinessSection
+            primusData={primusData}
+            onNavigate={onNavigate}
+          />
+        )}
+
         {/* Category Cards Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Pesticide Compliance */}
@@ -394,6 +604,7 @@ export default function ComplianceDashboard({ onNavigate }) {
             color="green"
             status={getPesticideStatus()}
             onClick={() => onNavigate?.('compliance-pesticide')}
+            certifications={primusData ? ['Primus GFS'] : []}
             metrics={[
               {
                 value: pesticideMetrics.overdueDeadlines,
@@ -425,6 +636,7 @@ export default function ComplianceDashboard({ onNavigate }) {
             color="blue"
             status={getFSMAStatus()}
             onClick={() => onNavigate?.('compliance-fsma')}
+            certifications={primusData ? ['Primus GFS'] : []}
             metrics={[
               {
                 value: fsmaMetrics.visitorsToday,
@@ -455,6 +667,7 @@ export default function ComplianceDashboard({ onNavigate }) {
             color="purple"
             status={getWPSStatus()}
             onClick={() => onNavigate?.('compliance-wps')}
+            certifications={primusData ? ['Primus GFS'] : []}
             metrics={[
               {
                 value: wpsMetrics.currentTraining,

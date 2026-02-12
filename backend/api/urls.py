@@ -192,6 +192,25 @@ from .yield_views import (
     forecast_season_comparison,
 )
 
+# Import Primus GFS compliance views
+from .primusgfs_views import (
+    ControlledDocumentViewSet,
+    InternalAuditViewSet,
+    AuditFindingViewSet,
+    CorrectiveActionViewSet,
+    LandHistoryAssessmentViewSet,
+    ApprovedSupplierViewSet,
+    IncomingMaterialVerificationViewSet,
+    MockRecallViewSet,
+    FoodDefensePlanViewSet,
+    FieldSanitationLogViewSet,
+    EquipmentCalibrationViewSet,
+    PestControlProgramViewSet,
+    PestMonitoringLogViewSet,
+    PreHarvestInspectionViewSet,
+    PrimusGFSDashboardViewSet,
+)
+
 # Import FSMA Water Assessment views
 from .fsma_water_views import (
     FSMAWaterAssessmentViewSet,
@@ -309,6 +328,23 @@ router.register(r'fsma/source-assessments', FSMASourceAssessmentViewSet, basenam
 router.register(r'fsma/field-assessments', FSMAFieldAssessmentViewSet, basename='fsma-field-assessment')
 router.register(r'fsma/environmental-assessments', FSMAEnvironmentalAssessmentViewSet, basename='fsma-environmental-assessment')
 router.register(r'fsma/mitigation-actions', FSMAMitigationActionViewSet, basename='fsma-mitigation-action')
+
+# Primus GFS Compliance
+router.register(r'primusgfs/documents', ControlledDocumentViewSet, basename='primusgfs-document')
+router.register(r'primusgfs/audits', InternalAuditViewSet, basename='primusgfs-audit')
+router.register(r'primusgfs/findings', AuditFindingViewSet, basename='primusgfs-finding')
+router.register(r'primusgfs/corrective-actions', CorrectiveActionViewSet, basename='primusgfs-ca')
+router.register(r'primusgfs/land-assessments', LandHistoryAssessmentViewSet, basename='primusgfs-land-assessment')
+router.register(r'primusgfs/suppliers', ApprovedSupplierViewSet, basename='primusgfs-supplier')
+router.register(r'primusgfs/material-verifications', IncomingMaterialVerificationViewSet, basename='primusgfs-material-verification')
+router.register(r'primusgfs/mock-recalls', MockRecallViewSet, basename='primusgfs-mock-recall')
+router.register(r'primusgfs/food-defense', FoodDefensePlanViewSet, basename='primusgfs-food-defense')
+router.register(r'primusgfs/sanitation-logs', FieldSanitationLogViewSet, basename='primusgfs-sanitation-log')
+router.register(r'primusgfs/calibrations', EquipmentCalibrationViewSet, basename='primusgfs-calibration')
+router.register(r'primusgfs/pest-programs', PestControlProgramViewSet, basename='primusgfs-pest-program')
+router.register(r'primusgfs/pest-logs', PestMonitoringLogViewSet, basename='primusgfs-pest-log')
+router.register(r'primusgfs/pre-harvest', PreHarvestInspectionViewSet, basename='primusgfs-pre-harvest')
+router.register(r'primusgfs/dashboard', PrimusGFSDashboardViewSet, basename='primusgfs-dashboard')
 
 # Yield Forecast Module
 router.register(r'yield-forecast/forecasts', YieldForecastViewSet, basename='yield-forecast')
