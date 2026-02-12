@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Wrench, Plus, Search, Filter, X, Edit2, Trash2, CheckCircle,
-  AlertTriangle, Loader2, RefreshCw, Clock } from 'lucide-react';
+  AlertTriangle, Loader2, RefreshCw, Clock, Upload, Paperclip, Download } from 'lucide-react';
 import { primusGFSAPI } from '../../services/api';
 
 const formatDate = (str) => str ? new Date(str).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '-';
@@ -52,6 +52,14 @@ const INITIAL_FORM = {
 const inputCls = 'w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-green-500';
 const labelCls = 'block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1';
 
+const formatFileSize = (bytes) => {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1048576) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / 1048576).toFixed(1)} MB`;
+};
+
+const ACCEPTED_FILE_TYPES = '.pdf,.jpg,.jpeg,.png,.doc,.docx';
+
 const CalibrationModal = ({ record, onClose, onSave, completeMode }) => {
   const [formData, setFormData] = useState(() => {
     if (record) {
@@ -63,18 +71,48 @@ const CalibrationModal = ({ record, onClose, onSave, completeMode }) => {
   });
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState(null);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [dragOver, setDragOver] = useState(false);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData((prev) => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
   };
 
+  const handleFileSelect = (e) => {
+    const file = e.target.files?.[0];
+    if (file) setSelectedFile(file);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setDragOver(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) setSelectedFile(file);
+  };
+
+  const handleDragOver = (e) => { e.preventDefault(); setDragOver(true); };
+  const handleDragLeave = () => setDragOver(false);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSaving(true);
     setSaveError(null);
     try {
-      await onSave(formData, record?.id);
+      let payload;
+      if (selectedFile) {
+        payload = new FormData();
+        Object.entries(formData).forEach(([key, value]) => {
+          if (value !== '' && value !== null && value !== undefined) {
+            payload.append(key, value);
+          }
+        });
+        payload.append('certificate_file', selectedFile);
+      } else {
+        payload = formData;
+      }
+      await onSave(payload, record?.id);
+      setSelectedFile(null);
       onClose();
     } catch (error) {
       setSaveError(error.response?.data?.detail || 'Failed to save. Please try again.');
@@ -142,6 +180,54 @@ const CalibrationModal = ({ record, onClose, onSave, completeMode }) => {
             <div><label className={labelCls}>Certificate Number</label><input type="text" name="certificate_number" value={formData.certificate_number} onChange={handleChange} className={inputCls} /></div>
           </div>
           <div><label className={labelCls}>Notes</label><textarea name="notes" value={formData.notes} onChange={handleChange} rows={2} className={inputCls} /></div>
+
+          {/* Certificate File Upload */}
+          <div>
+            <label className={labelCls}>Calibration Certificate</label>
+            {record?.certificate_file_name && !selectedFile && (
+              <div className="flex items-center gap-2 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                <Paperclip className="w-4 h-4 text-green-600 dark:text-green-400 flex-shrink-0" />
+                <span className="text-sm text-green-700 dark:text-green-300 truncate flex-1">{record.certificate_file_name}</span>
+                {record.certificate_file_url && (
+                  <a href={record.certificate_file_url} target="_blank" rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-xs text-green-600 dark:text-green-400 hover:underline flex-shrink-0">
+                    <Download className="w-3 h-3" /> View
+                  </a>
+                )}
+                <label className="text-xs text-gray-500 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400 cursor-pointer flex-shrink-0">
+                  Replace
+                  <input type="file" accept={ACCEPTED_FILE_TYPES} onChange={handleFileSelect} className="hidden" />
+                </label>
+              </div>
+            )}
+            {selectedFile && (
+              <div className="flex items-center gap-2 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                <Paperclip className="w-4 h-4 text-blue-600 dark:text-blue-400 flex-shrink-0" />
+                <span className="text-sm text-blue-700 dark:text-blue-300 truncate flex-1">{selectedFile.name}</span>
+                <span className="text-xs text-blue-500 dark:text-blue-400 flex-shrink-0">{formatFileSize(selectedFile.size)}</span>
+                <button type="button" onClick={() => setSelectedFile(null)} className="p-0.5 text-blue-400 hover:text-blue-600 dark:hover:text-blue-300 flex-shrink-0">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+            {!selectedFile && !record?.certificate_file_name && (
+              <div
+                onDrop={handleDrop} onDragOver={handleDragOver} onDragLeave={handleDragLeave}
+                className={`relative border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors
+                  ${dragOver
+                    ? 'border-green-400 bg-green-50 dark:bg-green-900/20'
+                    : 'border-gray-300 dark:border-gray-600 hover:border-green-400 dark:hover:border-green-500 bg-gray-50 dark:bg-gray-700/30'}`}
+              >
+                <input type="file" accept={ACCEPTED_FILE_TYPES} onChange={handleFileSelect}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+                <Upload className="w-8 h-8 mx-auto mb-2 text-gray-400 dark:text-gray-500" />
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  <span className="font-medium text-green-600 dark:text-green-400">Click to upload</span> or drag and drop
+                </p>
+                <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">PDF, JPG, PNG, DOC, DOCX</p>
+              </div>
+            )}
+          </div>
 
           <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
             <button type="button" onClick={onClose} className="px-4 py-2 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">Cancel</button>
@@ -292,7 +378,12 @@ export default function EquipmentCalibration() {
               <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                 {calibrations.map((rec) => (
                   <tr key={rec.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
-                    <td className="px-4 py-3 font-medium text-gray-900 dark:text-white">{rec.equipment_name}</td>
+                    <td className="px-4 py-3 font-medium text-gray-900 dark:text-white">
+                      <span className="flex items-center gap-1.5">
+                        {rec.equipment_name}
+                        {rec.has_certificate && <Paperclip className="w-3.5 h-3.5 text-green-500 dark:text-green-400 flex-shrink-0" title="Certificate attached" />}
+                      </span>
+                    </td>
                     <td className="px-4 py-3 text-gray-600 dark:text-gray-400">{typeLabels[rec.equipment_type] || rec.equipment_type}</td>
                     <td className="px-4 py-3 font-mono text-xs text-gray-600 dark:text-gray-400">{rec.equipment_id || '-'}</td>
                     <td className="px-4 py-3 text-gray-600 dark:text-gray-400">{rec.location || '-'}</td>
@@ -306,6 +397,12 @@ export default function EquipmentCalibration() {
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-end gap-1">
+                        {rec.certificate_file_url && (
+                          <a href={rec.certificate_file_url} target="_blank" rel="noopener noreferrer"
+                            className="p-1.5 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded transition-colors" title="View Certificate">
+                            <Download className="w-4 h-4" />
+                          </a>
+                        )}
                         {(rec.status === 'scheduled' || rec.status === 'in_progress') && (
                           <button onClick={() => openComplete(rec)} className="p-1.5 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded transition-colors" title="Complete Calibration">
                             <CheckCircle className="w-4 h-4" />

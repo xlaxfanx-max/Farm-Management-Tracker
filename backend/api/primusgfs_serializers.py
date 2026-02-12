@@ -60,6 +60,8 @@ class ControlledDocumentSerializer(serializers.ModelSerializer):
     revision_history = DocumentRevisionHistorySerializer(
         many=True, read_only=True
     )
+    file_url = serializers.SerializerMethodField()
+    file_name = serializers.SerializerMethodField()
 
     class Meta:
         model = ControlledDocument
@@ -68,7 +70,7 @@ class ControlledDocumentSerializer(serializers.ModelSerializer):
             'document_type', 'document_type_display',
             'primus_module', 'primus_module_display',
             'version', 'revision_date', 'effective_date', 'review_due_date',
-            'description', 'file', 'content_text',
+            'description', 'file', 'file_url', 'file_name', 'content_text',
             'status', 'status_display',
             'prepared_by', 'prepared_by_name',
             'reviewed_by', 'reviewed_by_name',
@@ -81,6 +83,19 @@ class ControlledDocumentSerializer(serializers.ModelSerializer):
         read_only_fields = [
             'company', 'approved_at', 'created_at', 'updated_at',
         ]
+
+    def get_file_url(self, obj):
+        if obj.file:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.file.url)
+            return obj.file.url
+        return None
+
+    def get_file_name(self, obj):
+        if obj.file:
+            return obj.file.name.split('/')[-1]
+        return None
 
 
 class ControlledDocumentListSerializer(serializers.ModelSerializer):
@@ -96,6 +111,7 @@ class ControlledDocumentListSerializer(serializers.ModelSerializer):
     )
     is_review_overdue = serializers.BooleanField(read_only=True)
     days_until_review = serializers.IntegerField(read_only=True)
+    has_file = serializers.SerializerMethodField()
 
     class Meta:
         model = ControlledDocument
@@ -105,8 +121,11 @@ class ControlledDocumentListSerializer(serializers.ModelSerializer):
             'primus_module', 'primus_module_display',
             'version', 'status', 'status_display',
             'review_due_date', 'is_review_overdue', 'days_until_review',
-            'effective_date',
+            'effective_date', 'has_file',
         ]
+
+    def get_has_file(self, obj):
+        return bool(obj.file)
 
 
 # =============================================================================
@@ -152,6 +171,8 @@ class InternalAuditSerializer(serializers.ModelSerializer):
     total_findings = serializers.IntegerField(read_only=True)
     open_findings = serializers.IntegerField(read_only=True)
     findings = AuditFindingSerializer(many=True, read_only=True)
+    report_file_url = serializers.SerializerMethodField()
+    report_file_name = serializers.SerializerMethodField()
 
     class Meta:
         model = InternalAudit
@@ -165,11 +186,25 @@ class InternalAuditSerializer(serializers.ModelSerializer):
             'auditor_name', 'audit_team',
             'status', 'status_display',
             'overall_score', 'executive_summary',
-            'report_file', 'related_documents',
+            'report_file', 'report_file_url', 'report_file_name',
+            'related_documents',
             'total_findings', 'open_findings', 'findings',
             'notes', 'created_at', 'updated_at',
         ]
         read_only_fields = ['company', 'created_at', 'updated_at']
+
+    def get_report_file_url(self, obj):
+        if obj.report_file:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.report_file.url)
+            return obj.report_file.url
+        return None
+
+    def get_report_file_name(self, obj):
+        if obj.report_file:
+            return obj.report_file.name.split('/')[-1]
+        return None
 
 
 class InternalAuditListSerializer(serializers.ModelSerializer):
@@ -182,6 +217,7 @@ class InternalAuditListSerializer(serializers.ModelSerializer):
     )
     total_findings = serializers.IntegerField(read_only=True)
     open_findings = serializers.IntegerField(read_only=True)
+    has_report = serializers.SerializerMethodField()
 
     class Meta:
         model = InternalAudit
@@ -191,7 +227,11 @@ class InternalAuditListSerializer(serializers.ModelSerializer):
             'planned_date', 'actual_date',
             'status', 'status_display',
             'overall_score', 'total_findings', 'open_findings',
+            'has_report',
         ]
+
+    def get_has_report(self, obj):
+        return bool(obj.report_file)
 
 
 # =============================================================================
@@ -459,6 +499,8 @@ class MockRecallSerializer(serializers.ModelSerializer):
         source='led_by.get_full_name', read_only=True
     )
     within_time_limit = serializers.BooleanField(read_only=True)
+    report_file_url = serializers.SerializerMethodField()
+    report_file_name = serializers.SerializerMethodField()
 
     class Meta:
         model = MockRecall
@@ -472,13 +514,26 @@ class MockRecallSerializer(serializers.ModelSerializer):
             'lots_traced_forward', 'lots_traced_backward',
             'effectiveness_score', 'passed', 'within_time_limit',
             'led_by', 'led_by_name', 'participants',
-            'report_file',
+            'report_file', 'report_file_url', 'report_file_name',
             'notes', 'created_at', 'updated_at',
         ]
         read_only_fields = [
             'company', 'trace_duration_minutes',
             'created_at', 'updated_at',
         ]
+
+    def get_report_file_url(self, obj):
+        if obj.report_file:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.report_file.url)
+            return obj.report_file.url
+        return None
+
+    def get_report_file_name(self, obj):
+        if obj.report_file:
+            return obj.report_file.name.split('/')[-1]
+        return None
 
 
 class MockRecallListSerializer(serializers.ModelSerializer):
@@ -487,6 +542,7 @@ class MockRecallListSerializer(serializers.ModelSerializer):
         source='get_status_display', read_only=True
     )
     within_time_limit = serializers.BooleanField(read_only=True)
+    has_report = serializers.SerializerMethodField()
 
     class Meta:
         model = MockRecall
@@ -494,8 +550,11 @@ class MockRecallListSerializer(serializers.ModelSerializer):
             'id', 'recall_number', 'exercise_date',
             'target_product', 'status', 'status_display',
             'trace_duration_minutes', 'effectiveness_score',
-            'passed', 'within_time_limit',
+            'passed', 'within_time_limit', 'has_report',
         ]
+
+    def get_has_report(self, obj):
+        return bool(obj.report_file)
 
 
 # =============================================================================
@@ -609,6 +668,8 @@ class EquipmentCalibrationSerializer(serializers.ModelSerializer):
     )
     is_overdue = serializers.BooleanField(read_only=True)
     days_until_due = serializers.IntegerField(read_only=True)
+    certificate_file_url = serializers.SerializerMethodField()
+    certificate_file_name = serializers.SerializerMethodField()
 
     class Meta:
         model = EquipmentCalibration
@@ -624,12 +685,26 @@ class EquipmentCalibrationSerializer(serializers.ModelSerializer):
             'within_tolerance',
             'corrective_action_taken', 'corrective_action_ref',
             'certificate_number', 'certificate_file',
+            'certificate_file_url', 'certificate_file_name',
             'is_overdue', 'days_until_due',
             'notes', 'created_at', 'updated_at',
         ]
         read_only_fields = [
             'company', 'created_at', 'updated_at',
         ]
+
+    def get_certificate_file_url(self, obj):
+        if obj.certificate_file:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.certificate_file.url)
+            return obj.certificate_file.url
+        return None
+
+    def get_certificate_file_name(self, obj):
+        if obj.certificate_file:
+            return obj.certificate_file.name.split('/')[-1]
+        return None
 
 
 class EquipmentCalibrationListSerializer(serializers.ModelSerializer):
@@ -642,6 +717,7 @@ class EquipmentCalibrationListSerializer(serializers.ModelSerializer):
     )
     is_overdue = serializers.BooleanField(read_only=True)
     days_until_due = serializers.IntegerField(read_only=True)
+    has_certificate = serializers.SerializerMethodField()
 
     class Meta:
         model = EquipmentCalibration
@@ -651,7 +727,11 @@ class EquipmentCalibrationListSerializer(serializers.ModelSerializer):
             'calibration_date', 'next_calibration_date',
             'status', 'status_display',
             'within_tolerance', 'is_overdue', 'days_until_due',
+            'has_certificate',
         ]
+
+    def get_has_certificate(self, obj):
+        return bool(obj.certificate_file)
 
 
 # =============================================================================

@@ -13,6 +13,10 @@ import {
   RefreshCw,
   Calendar,
   ShieldCheck,
+  Upload,
+  Paperclip,
+  Download,
+  XCircle,
 } from 'lucide-react';
 import { primusGFSAPI } from '../../services/api';
 
@@ -111,6 +115,7 @@ const DocumentModal = ({ document, onClose, onSave }) => {
     }
     return { ...INITIAL_FORM };
   });
+  const [selectedFile, setSelectedFile] = useState(null);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState(null);
 
@@ -124,7 +129,23 @@ const DocumentModal = ({ document, onClose, onSave }) => {
     setSaving(true);
     setSaveError(null);
     try {
-      await onSave(formData, document?.id);
+      let payload;
+      if (selectedFile) {
+        const fd = new FormData();
+        fd.append('file', selectedFile);
+        Object.entries(formData).forEach(([key, val]) => {
+          if (typeof val === 'boolean') {
+            fd.append(key, val ? 'true' : 'false');
+          } else if (val !== '' && val !== null && val !== undefined) {
+            fd.append(key, val);
+          }
+        });
+        payload = fd;
+      } else {
+        payload = formData;
+      }
+      await onSave(payload, document?.id);
+      setSelectedFile(null);
       onClose();
     } catch (error) {
       console.error('Failed to save document:', error);
@@ -267,6 +288,74 @@ const DocumentModal = ({ document, onClose, onSave }) => {
               placeholder="Brief description of this document..."
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-green-500"
             />
+          </div>
+
+          {/* Document File Upload */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Document File
+            </label>
+
+            {/* Show existing file when editing */}
+            {document && document.file_name && !selectedFile && (
+              <div className="flex items-center gap-3 bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-lg p-3 mb-2">
+                <Paperclip className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                <span className="text-sm text-gray-700 dark:text-gray-300 truncate flex-1">
+                  {document.file_name}
+                </span>
+                <span className="text-xs text-gray-400">Current file</span>
+              </div>
+            )}
+
+            {/* Show selected new file */}
+            {selectedFile && (
+              <div className="flex items-center gap-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3 mb-2">
+                <FileText className="w-4 h-4 text-blue-500 flex-shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm text-blue-700 dark:text-blue-300 truncate">{selectedFile.name}</p>
+                  <p className="text-xs text-blue-500 dark:text-blue-400">
+                    {(selectedFile.size / 1024).toFixed(0)} KB
+                    {document && document.file_name && ' — will replace current file'}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setSelectedFile(null)}
+                  className="p-1 text-blue-400 hover:text-blue-600 dark:hover:text-blue-300"
+                >
+                  <XCircle className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+
+            {/* Drop zone / file picker */}
+            {!selectedFile && (
+              <label
+                className="flex flex-col items-center gap-2 p-6 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer hover:border-green-400 dark:hover:border-green-500 hover:bg-green-50/50 dark:hover:bg-green-900/10 transition"
+                onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  const file = e.dataTransfer.files?.[0];
+                  if (file) setSelectedFile(file);
+                }}
+              >
+                <Upload className="w-6 h-6 text-gray-400" />
+                <span className="text-sm text-gray-500 dark:text-gray-400">
+                  Drop a file here or <span className="text-green-600 dark:text-green-400 font-medium">browse</span>
+                </span>
+                <span className="text-xs text-gray-400">PDF, DOC, DOCX, XLS, XLSX, JPG, PNG</span>
+                <input
+                  type="file"
+                  className="sr-only"
+                  accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) setSelectedFile(file);
+                  }}
+                />
+              </label>
+            )}
           </div>
 
           <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
@@ -484,7 +573,12 @@ export default function DocumentControlList() {
                       {doc.document_number}
                     </td>
                     <td className="px-4 py-3 font-medium text-gray-900 dark:text-white">
-                      {doc.title}
+                      <div className="flex items-center gap-1.5">
+                        {doc.title}
+                        {doc.has_file && (
+                          <Paperclip className="w-3.5 h-3.5 text-blue-400 flex-shrink-0" title="Has attached file" />
+                        )}
+                      </div>
                     </td>
                     <td className="px-4 py-3 text-gray-600 dark:text-gray-400">
                       {doc.document_type_display || doc.document_type}
@@ -512,6 +606,17 @@ export default function DocumentControlList() {
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-end gap-1">
+                        {doc.file_url && (
+                          <a
+                            href={doc.file_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="p-1.5 text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700 rounded transition-colors"
+                            title={`Download ${doc.file_name || 'file'}`}
+                          >
+                            <Download className="w-4 h-4" />
+                          </a>
+                        )}
                         {(doc.status === 'draft' || doc.status === 'pending_review') && (
                           <button
                             onClick={() => handleApprove(doc.id)}

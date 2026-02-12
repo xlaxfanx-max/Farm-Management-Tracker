@@ -12,6 +12,9 @@ import {
   RefreshCw,
   Calendar,
   Eye,
+  Upload,
+  Paperclip,
+  Download,
 } from 'lucide-react';
 import { primusGFSAPI } from '../../services/api';
 
@@ -78,14 +81,57 @@ const INITIAL_FORM = {
   scope_description: '',
 };
 
-const AuditModal = ({ onClose, onSave }) => {
-  const [formData, setFormData] = useState({ ...INITIAL_FORM });
+const formatFileSize = (bytes) => {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+};
+
+const ACCEPTED_FILE_TYPES = '.pdf,.doc,.docx,.xls,.xlsx';
+
+const AuditModal = ({ onClose, onSave, editAudit }) => {
+  const [formData, setFormData] = useState(() => {
+    if (editAudit) {
+      return {
+        audit_number: editAudit.audit_number || '',
+        title: editAudit.title || '',
+        audit_type: editAudit.audit_type || 'internal',
+        planned_date: editAudit.planned_date || '',
+        scope_description: editAudit.scope_description || '',
+      };
+    }
+    return { ...INITIAL_FORM };
+  });
+  const [selectedFile, setSelectedFile] = useState(null);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState(null);
+  const [dragOver, setDragOver] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleFileSelect = (e) => {
+    const file = e.target.files?.[0];
+    if (file) setSelectedFile(file);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setDragOver(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) setSelectedFile(file);
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    setDragOver(true);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    setDragOver(false);
   };
 
   const handleSubmit = async (e) => {
@@ -93,22 +139,43 @@ const AuditModal = ({ onClose, onSave }) => {
     setSaving(true);
     setSaveError(null);
     try {
-      await onSave(formData);
+      let payload;
+      if (selectedFile) {
+        payload = new FormData();
+        payload.append('report_file', selectedFile);
+        Object.entries(formData).forEach(([key, value]) => {
+          if (value === null || value === undefined) return;
+          if (typeof value === 'boolean') {
+            payload.append(key, value ? 'true' : 'false');
+          } else if (Array.isArray(value)) {
+            payload.append(key, JSON.stringify(value));
+          } else {
+            payload.append(key, value);
+          }
+        });
+      } else {
+        payload = formData;
+      }
+      await onSave(payload, editAudit?.id);
       onClose();
     } catch (error) {
       console.error('Failed to save audit:', error);
-      setSaveError(error.response?.data?.detail || 'Failed to schedule audit. Please try again.');
+      setSaveError(error.response?.data?.detail || 'Failed to save audit. Please try again.');
     } finally {
       setSaving(false);
     }
   };
+
+  const isEditing = !!editAudit;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
       <div className="relative bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto">
         <div className="sticky top-0 bg-white dark:bg-gray-800 flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Schedule Audit</h2>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+            {isEditing ? 'Edit Audit' : 'Schedule Audit'}
+          </h2>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
             <X className="w-5 h-5" />
           </button>
@@ -187,6 +254,62 @@ const AuditModal = ({ onClose, onSave }) => {
             />
           </div>
 
+          {/* File Upload Section */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Audit Report File</label>
+            {isEditing && editAudit.report_file_name && !selectedFile && (
+              <div className="flex items-center gap-2 p-3 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-lg mb-2">
+                <Paperclip className="w-4 h-4 text-gray-500 dark:text-gray-400 flex-shrink-0" />
+                <span className="text-sm text-gray-700 dark:text-gray-300 truncate">{editAudit.report_file_name}</span>
+                <span className="ml-auto text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 flex-shrink-0">
+                  Current file
+                </span>
+              </div>
+            )}
+            {selectedFile ? (
+              <div className="flex items-center gap-2 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                <Paperclip className="w-4 h-4 text-green-600 dark:text-green-400 flex-shrink-0" />
+                <span className="text-sm text-green-700 dark:text-green-300 truncate">{selectedFile.name}</span>
+                <span className="text-xs text-green-600 dark:text-green-400 flex-shrink-0">
+                  ({formatFileSize(selectedFile.size)})
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setSelectedFile(null)}
+                  className="ml-auto p-0.5 text-green-600 hover:text-red-600 dark:text-green-400 dark:hover:text-red-400 transition-colors flex-shrink-0"
+                  title="Remove file"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            ) : (
+              <div
+                onDrop={handleDrop}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                className={`relative border-2 border-dashed rounded-lg p-6 text-center transition-colors cursor-pointer ${
+                  dragOver
+                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                    : 'border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500'
+                }`}
+              >
+                <input
+                  type="file"
+                  accept={ACCEPTED_FILE_TYPES}
+                  onChange={handleFileSelect}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                />
+                <Upload className="w-6 h-6 mx-auto mb-2 text-gray-400 dark:text-gray-500" />
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Drop a file here or <span className="text-blue-600 dark:text-blue-400 font-medium">browse</span>
+                </p>
+                <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                  PDF, Word, or Excel files accepted
+                </p>
+              </div>
+            )}
+          </div>
+
           <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
             <button
               type="button"
@@ -200,7 +323,7 @@ const AuditModal = ({ onClose, onSave }) => {
               disabled={saving}
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
             >
-              {saving ? 'Scheduling...' : 'Schedule Audit'}
+              {saving ? (isEditing ? 'Saving...' : 'Scheduling...') : (isEditing ? 'Save Changes' : 'Schedule Audit')}
             </button>
           </div>
         </form>
@@ -214,6 +337,8 @@ export default function InternalAuditList() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [editingAudit, setEditingAudit] = useState(null);
+  const [expandedAuditId, setExpandedAuditId] = useState(null);
   const [filterStatus, setFilterStatus] = useState('');
   const [filterYear, setFilterYear] = useState('');
 
@@ -240,8 +365,12 @@ export default function InternalAuditList() {
     fetchAudits();
   }, [fetchAudits]);
 
-  const handleSave = async (formData) => {
-    await primusGFSAPI.createAudit(formData);
+  const handleSave = async (payload, auditId) => {
+    if (auditId) {
+      await primusGFSAPI.updateAudit(auditId, payload);
+    } else {
+      await primusGFSAPI.createAudit(payload);
+    }
     fetchAudits();
   };
 
@@ -372,12 +501,18 @@ export default function InternalAuditList() {
               </thead>
               <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                 {audits.map((audit) => (
-                  <tr key={audit.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
+                  <React.Fragment key={audit.id}>
+                  <tr className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
                     <td className="px-4 py-3 font-mono text-xs text-gray-600 dark:text-gray-400">
                       {audit.audit_number}
                     </td>
                     <td className="px-4 py-3 font-medium text-gray-900 dark:text-white">
-                      {audit.title}
+                      <div className="flex items-center gap-1.5">
+                        {audit.title}
+                        {audit.has_report && (
+                          <Paperclip className="w-3.5 h-3.5 text-blue-500 dark:text-blue-400 flex-shrink-0" title="Report attached" />
+                        )}
+                      </div>
                     </td>
                     <td className="px-4 py-3 text-gray-600 dark:text-gray-400">
                       {audit.audit_type_display || audit.audit_type}
@@ -403,6 +538,20 @@ export default function InternalAuditList() {
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-end gap-1">
+                        <button
+                          onClick={() => setExpandedAuditId(expandedAuditId === audit.id ? null : audit.id)}
+                          className="p-1.5 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+                          title="View Details"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => setEditingAudit(audit)}
+                          className="p-1.5 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors"
+                          title="Edit"
+                        >
+                          <Edit2 className="w-4 h-4" />
+                        </button>
                         {audit.status === 'in_progress' && (
                           <button
                             onClick={() => handleComplete(audit.id)}
@@ -422,6 +571,48 @@ export default function InternalAuditList() {
                       </div>
                     </td>
                   </tr>
+                  {expandedAuditId === audit.id && (
+                    <tr className="bg-gray-50/50 dark:bg-gray-700/20">
+                      <td colSpan={7} className="px-4 py-4">
+                        <div className="space-y-2 text-sm">
+                          {audit.scope_description && (
+                            <div>
+                              <span className="font-medium text-gray-700 dark:text-gray-300">Scope: </span>
+                              <span className="text-gray-600 dark:text-gray-400">{audit.scope_description}</span>
+                            </div>
+                          )}
+                          {audit.completion_date && (
+                            <div>
+                              <span className="font-medium text-gray-700 dark:text-gray-300">Completed: </span>
+                              <span className="text-gray-600 dark:text-gray-400">{formatDate(audit.completion_date)}</span>
+                            </div>
+                          )}
+                          {audit.report_file_url ? (
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium text-gray-700 dark:text-gray-300">Report File:</span>
+                              <Paperclip className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
+                              <span className="text-gray-600 dark:text-gray-400">{audit.report_file_name}</span>
+                              <a
+                                href={audit.report_file_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/40 rounded transition-colors"
+                              >
+                                <Download className="w-3 h-3" />
+                                View / Download
+                              </a>
+                            </div>
+                          ) : (
+                            <div>
+                              <span className="font-medium text-gray-700 dark:text-gray-300">Report File: </span>
+                              <span className="text-gray-400 dark:text-gray-500 italic">No file attached</span>
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                  </React.Fragment>
                 ))}
               </tbody>
             </table>
@@ -433,6 +624,15 @@ export default function InternalAuditList() {
       {showCreateModal && (
         <AuditModal
           onClose={() => setShowCreateModal(false)}
+          onSave={handleSave}
+        />
+      )}
+
+      {/* Edit Modal */}
+      {editingAudit && (
+        <AuditModal
+          editAudit={editingAudit}
+          onClose={() => setEditingAudit(null)}
           onSave={handleSave}
         />
       )}

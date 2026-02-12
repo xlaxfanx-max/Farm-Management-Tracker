@@ -50,15 +50,54 @@ from .primusgfs_serializers import (
 
 
 # =============================================================================
+# MULTIPART JSON PARSING MIXIN
+# =============================================================================
+
+import json
+
+
+class MultipartJsonMixin:
+    """
+    Mixin for ViewSets that accept multipart/form-data with JSON fields.
+    Automatically parses JSON string fields when the request is multipart.
+    Subclasses should define `multipart_json_fields` as a list of field names.
+    """
+    multipart_json_fields = []
+
+    def _parse_multipart_json(self, request):
+        if (request.content_type and 'multipart' in request.content_type
+                and self.multipart_json_fields):
+            request.data._mutable = True
+            for field in self.multipart_json_fields:
+                if field in request.data and isinstance(request.data[field], str):
+                    try:
+                        request.data[field] = json.loads(request.data[field])
+                    except (json.JSONDecodeError, TypeError):
+                        pass
+            request.data._mutable = False
+
+    def create(self, request, *args, **kwargs):
+        self._parse_multipart_json(request)
+        return super().create(request, *args, **kwargs)
+
+    def update(self, request, *args, **kwargs):
+        self._parse_multipart_json(request)
+        return super().update(request, *args, **kwargs)
+
+
+# =============================================================================
 # DOCUMENT CONTROL VIEWSET
 # =============================================================================
 
-class ControlledDocumentViewSet(AuditLogMixin, viewsets.ModelViewSet):
+class ControlledDocumentViewSet(MultipartJsonMixin, AuditLogMixin, viewsets.ModelViewSet):
     """
     API endpoint for managing controlled documents (SOPs, policies, manuals).
     Supports filtering by status, type, module, and review due date.
+    Accepts multipart/form-data for file uploads.
     """
+    multipart_json_fields = ['distribution_list', 'tags']
     permission_classes = [IsAuthenticated, HasCompanyAccess]
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['document_number', 'title', 'description', 'content_text']
     ordering_fields = ['document_number', 'title', 'review_due_date', 'status', 'updated_at']
@@ -163,12 +202,15 @@ class ControlledDocumentViewSet(AuditLogMixin, viewsets.ModelViewSet):
 # INTERNAL AUDIT VIEWSET
 # =============================================================================
 
-class InternalAuditViewSet(AuditLogMixin, viewsets.ModelViewSet):
+class InternalAuditViewSet(MultipartJsonMixin, AuditLogMixin, viewsets.ModelViewSet):
     """
     API endpoint for managing internal audits.
     Supports filtering by status, type, and date range.
+    Accepts multipart/form-data for report file uploads.
     """
+    multipart_json_fields = ['primus_modules_covered', 'farms_audited', 'audit_team']
     permission_classes = [IsAuthenticated, HasCompanyAccess]
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['audit_number', 'title', 'scope_description']
     ordering_fields = ['planned_date', 'actual_date', 'status', 'created_at']
@@ -362,12 +404,13 @@ class CorrectiveActionViewSet(AuditLogMixin, viewsets.ModelViewSet):
 # LAND HISTORY ASSESSMENT VIEWSET
 # =============================================================================
 
-class LandHistoryAssessmentViewSet(AuditLogMixin, viewsets.ModelViewSet):
+class LandHistoryAssessmentViewSet(MultipartJsonMixin, AuditLogMixin, viewsets.ModelViewSet):
     """
     API endpoint for managing land history assessments.
     Supports filtering by field, farm, and risk level.
     Accepts multipart/form-data for document uploads.
     """
+    multipart_json_fields = ['land_use_history', 'soil_test_parameters_tested']
     permission_classes = [IsAuthenticated, HasCompanyAccess]
     parser_classes = [MultiPartParser, FormParser, JSONParser]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
@@ -410,32 +453,6 @@ class LandHistoryAssessmentViewSet(AuditLogMixin, viewsets.ModelViewSet):
             queryset = queryset.filter(approved=approved.lower() == 'true')
 
         return queryset
-
-    def _parse_json_fields(self, data):
-        """Parse JSON string fields from multipart form data."""
-        import json
-        json_fields = ['land_use_history', 'soil_test_parameters_tested']
-        for field in json_fields:
-            if field in data and isinstance(data[field], str):
-                try:
-                    data[field] = json.loads(data[field])
-                except (json.JSONDecodeError, TypeError):
-                    pass
-        return data
-
-    def create(self, request, *args, **kwargs):
-        if request.content_type and 'multipart' in request.content_type:
-            request.data._mutable = True
-            self._parse_json_fields(request.data)
-            request.data._mutable = False
-        return super().create(request, *args, **kwargs)
-
-    def update(self, request, *args, **kwargs):
-        if request.content_type and 'multipart' in request.content_type:
-            request.data._mutable = True
-            self._parse_json_fields(request.data)
-            request.data._mutable = False
-        return super().update(request, *args, **kwargs)
 
     def perform_create(self, serializer):
         company = require_company(self.request.user)
@@ -617,9 +634,15 @@ class IncomingMaterialVerificationViewSet(AuditLogMixin, viewsets.ModelViewSet):
 # PHASE 2 — MOCK RECALL VIEWSET
 # =============================================================================
 
-class MockRecallViewSet(AuditLogMixin, viewsets.ModelViewSet):
-    """API endpoint for managing mock recall exercises."""
+class MockRecallViewSet(MultipartJsonMixin, AuditLogMixin, viewsets.ModelViewSet):
+    """API endpoint for managing mock recall exercises.
+    Accepts multipart/form-data for report file uploads."""
+    multipart_json_fields = [
+        'target_lot_numbers', 'lots_traced_forward',
+        'lots_traced_backward', 'participants',
+    ]
     permission_classes = [IsAuthenticated, HasCompanyAccess]
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['recall_number', 'target_product', 'scenario_description']
     ordering_fields = ['exercise_date', 'status', 'created_at']
@@ -824,9 +847,11 @@ class FieldSanitationLogViewSet(AuditLogMixin, viewsets.ModelViewSet):
 # PHASE 3 — EQUIPMENT CALIBRATION VIEWSET
 # =============================================================================
 
-class EquipmentCalibrationViewSet(AuditLogMixin, viewsets.ModelViewSet):
-    """API endpoint for managing equipment calibration records."""
+class EquipmentCalibrationViewSet(MultipartJsonMixin, AuditLogMixin, viewsets.ModelViewSet):
+    """API endpoint for managing equipment calibration records.
+    Accepts multipart/form-data for certificate file uploads."""
     permission_classes = [IsAuthenticated, HasCompanyAccess]
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['equipment_name', 'equipment_id', 'location']
     ordering_fields = ['calibration_date', 'next_calibration_date', 'status', 'equipment_name']

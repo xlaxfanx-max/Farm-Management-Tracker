@@ -3009,6 +3009,20 @@ export const yieldForecastAPI = {
 // PRIMUS GFS COMPLIANCE API
 // =============================================================================
 
+// Helper: send as multipart if FormData, otherwise JSON
+const _postMaybeFile = (url, data) => {
+  if (data instanceof FormData) {
+    return api.post(url, data, { headers: { 'Content-Type': 'multipart/form-data' } });
+  }
+  return api.post(url, data);
+};
+const _putMaybeFile = (url, data) => {
+  if (data instanceof FormData) {
+    return api.put(url, data, { headers: { 'Content-Type': 'multipart/form-data' } });
+  }
+  return api.put(url, data);
+};
+
 export const primusGFSAPI = {
   // Dashboard
   getDashboard: () => api.get('/primusgfs/dashboard/'),
@@ -3016,8 +3030,8 @@ export const primusGFSAPI = {
   // Documents
   getDocuments: (params = {}) => api.get('/primusgfs/documents/', { params }),
   getDocument: (id) => api.get(`/primusgfs/documents/${id}/`),
-  createDocument: (data) => api.post('/primusgfs/documents/', data),
-  updateDocument: (id, data) => api.put(`/primusgfs/documents/${id}/`, data),
+  createDocument: (data) => _postMaybeFile('/primusgfs/documents/', data),
+  updateDocument: (id, data) => _putMaybeFile(`/primusgfs/documents/${id}/`, data),
   deleteDocument: (id) => api.delete(`/primusgfs/documents/${id}/`),
   approveDocument: (id, data = {}) => api.post(`/primusgfs/documents/${id}/approve/`, data),
   newRevision: (id, data) => api.post(`/primusgfs/documents/${id}/new_revision/`, data),
@@ -3026,8 +3040,8 @@ export const primusGFSAPI = {
   // Audits
   getAudits: (params = {}) => api.get('/primusgfs/audits/', { params }),
   getAudit: (id) => api.get(`/primusgfs/audits/${id}/`),
-  createAudit: (data) => api.post('/primusgfs/audits/', data),
-  updateAudit: (id, data) => api.put(`/primusgfs/audits/${id}/`, data),
+  createAudit: (data) => _postMaybeFile('/primusgfs/audits/', data),
+  updateAudit: (id, data) => _putMaybeFile(`/primusgfs/audits/${id}/`, data),
   deleteAudit: (id) => api.delete(`/primusgfs/audits/${id}/`),
   completeAudit: (id, data = {}) => api.post(`/primusgfs/audits/${id}/complete/`, data),
   auditSummary: () => api.get('/primusgfs/audits/summary/'),
@@ -3052,22 +3066,8 @@ export const primusGFSAPI = {
   // Land Assessments
   getLandAssessments: (params = {}) => api.get('/primusgfs/land-assessments/', { params }),
   getLandAssessment: (id) => api.get(`/primusgfs/land-assessments/${id}/`),
-  createLandAssessment: (data) => {
-    if (data instanceof FormData) {
-      return api.post('/primusgfs/land-assessments/', data, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
-    }
-    return api.post('/primusgfs/land-assessments/', data);
-  },
-  updateLandAssessment: (id, data) => {
-    if (data instanceof FormData) {
-      return api.put(`/primusgfs/land-assessments/${id}/`, data, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
-    }
-    return api.put(`/primusgfs/land-assessments/${id}/`, data);
-  },
+  createLandAssessment: (data) => _postMaybeFile('/primusgfs/land-assessments/', data),
+  updateLandAssessment: (id, data) => _putMaybeFile(`/primusgfs/land-assessments/${id}/`, data),
   deleteLandAssessment: (id) => api.delete(`/primusgfs/land-assessments/${id}/`),
   approveLandAssessment: (id, data = {}) => api.post(`/primusgfs/land-assessments/${id}/approve/`, data),
   removeLandDocument: (id) => api.post(`/primusgfs/land-assessments/${id}/remove-document/`),
@@ -3092,8 +3092,8 @@ export const primusGFSAPI = {
   // Mock Recalls
   getMockRecalls: (params = {}) => api.get('/primusgfs/mock-recalls/', { params }),
   getMockRecall: (id) => api.get(`/primusgfs/mock-recalls/${id}/`),
-  createMockRecall: (data) => api.post('/primusgfs/mock-recalls/', data),
-  updateMockRecall: (id, data) => api.put(`/primusgfs/mock-recalls/${id}/`, data),
+  createMockRecall: (data) => _postMaybeFile('/primusgfs/mock-recalls/', data),
+  updateMockRecall: (id, data) => _putMaybeFile(`/primusgfs/mock-recalls/${id}/`, data),
   deleteMockRecall: (id) => api.delete(`/primusgfs/mock-recalls/${id}/`),
   startMockRecall: (id, data = {}) => api.post(`/primusgfs/mock-recalls/${id}/start/`, data),
   completeMockRecall: (id, data) => api.post(`/primusgfs/mock-recalls/${id}/complete/`, data),
@@ -3119,8 +3119,8 @@ export const primusGFSAPI = {
   // Equipment Calibration
   getCalibrations: (params = {}) => api.get('/primusgfs/calibrations/', { params }),
   getCalibration: (id) => api.get(`/primusgfs/calibrations/${id}/`),
-  createCalibration: (data) => api.post('/primusgfs/calibrations/', data),
-  updateCalibration: (id, data) => api.put(`/primusgfs/calibrations/${id}/`, data),
+  createCalibration: (data) => _postMaybeFile('/primusgfs/calibrations/', data),
+  updateCalibration: (id, data) => _putMaybeFile(`/primusgfs/calibrations/${id}/`, data),
   deleteCalibration: (id) => api.delete(`/primusgfs/calibrations/${id}/`),
   completeCalibration: (id, data) => api.post(`/primusgfs/calibrations/${id}/complete/`, data),
   overdueCalibrations: () => api.get('/primusgfs/calibrations/overdue/'),

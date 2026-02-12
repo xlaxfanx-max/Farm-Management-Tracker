@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { ClipboardList, Plus, Search, Filter, X, Edit2, Trash2, CheckCircle, XCircle,
-  AlertTriangle, Loader2, RefreshCw, Play, Square, Award, Tag } from 'lucide-react';
+  AlertTriangle, Loader2, RefreshCw, Play, Square, Award, Tag, Upload, Paperclip, Download } from 'lucide-react';
 import { primusGFSAPI } from '../../services/api';
 
 const formatDate = (str) => {
@@ -47,6 +47,7 @@ const RecallModal = ({ recall, onClose, onSave }) => {
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState(null);
   const [lotInput, setLotInput] = useState('');
+  const [selectedFile, setSelectedFile] = useState(null);
   const handleChange = (e) => setFormData((p) => ({ ...p, [e.target.name]: e.target.value }));
   const addLot = () => {
     const t = lotInput.trim();
@@ -63,9 +64,38 @@ const RecallModal = ({ recall, onClose, onSave }) => {
   const removeParticipant = (i) => setFormData((p) => ({ ...p, participants: p.participants.filter((_, j) => j !== i) }));
   const handleSubmit = async (e) => {
     e.preventDefault(); setSaving(true); setSaveError(null);
-    try { await onSave(formData, recall?.id); onClose(); }
+    try {
+      let payload;
+      if (selectedFile) {
+        payload = new FormData();
+        Object.entries(formData).forEach(([key, value]) => {
+          if (Array.isArray(value)) payload.append(key, JSON.stringify(value));
+          else payload.append(key, value ?? '');
+        });
+        payload.append('report_file', selectedFile);
+      } else {
+        payload = formData;
+      }
+      await onSave(payload, recall?.id);
+      setSelectedFile(null);
+      onClose();
+    }
     catch (err) { setSaveError(err.response?.data?.detail || 'Failed to save. Please try again.'); }
     finally { setSaving(false); }
+  };
+  const handleFileSelect = (e) => {
+    const file = e.target.files?.[0];
+    if (file) setSelectedFile(file);
+  };
+  const handleFileDrop = (e) => {
+    e.preventDefault();
+    const file = e.dataTransfer.files?.[0];
+    if (file) setSelectedFile(file);
+  };
+  const formatFileSize = (bytes) => {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
   return (
@@ -121,8 +151,47 @@ const RecallModal = ({ recall, onClose, onSave }) => {
           </div>
           <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Notes</label>
             <textarea name="notes" value={formData.notes} onChange={handleChange} rows={2} placeholder="Additional notes..." className={inputCls} /></div>
+          {/* File Upload */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Recall Report File</label>
+            {recall?.report_file_name && !selectedFile && (
+              <div className="flex items-center gap-2 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600">
+                <Paperclip className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                <span className="text-sm text-gray-700 dark:text-gray-300 truncate flex-1">{recall.report_file_name}</span>
+                <label className="text-xs text-green-600 dark:text-green-400 hover:underline cursor-pointer">
+                  Replace
+                  <input type="file" className="hidden" accept=".pdf,.doc,.docx,.xls,.xlsx" onChange={handleFileSelect} />
+                </label>
+              </div>
+            )}
+            {selectedFile && (
+              <div className="flex items-center gap-2 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+                <Paperclip className="w-4 h-4 text-green-600 dark:text-green-400 flex-shrink-0" />
+                <span className="text-sm text-green-700 dark:text-green-300 truncate flex-1">{selectedFile.name}</span>
+                <span className="text-xs text-green-600 dark:text-green-400 flex-shrink-0">{formatFileSize(selectedFile.size)}</span>
+                <button type="button" onClick={() => setSelectedFile(null)} className="p-0.5 text-green-600 dark:text-green-400 hover:text-red-500 dark:hover:text-red-400">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+            {!selectedFile && !recall?.report_file_name && (
+              <div
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={handleFileDrop}
+                className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center hover:border-green-400 dark:hover:border-green-500 transition-colors"
+              >
+                <Upload className="w-8 h-8 mx-auto mb-2 text-gray-400" />
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Drag and drop your recall report here</p>
+                <label className="text-sm text-green-600 dark:text-green-400 hover:underline cursor-pointer">
+                  or browse files
+                  <input type="file" className="hidden" accept=".pdf,.doc,.docx,.xls,.xlsx" onChange={handleFileSelect} />
+                </label>
+                <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">.pdf, .doc, .docx, .xls, .xlsx</p>
+              </div>
+            )}
+          </div>
           <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
-            <button type="button" onClick={onClose} className="px-4 py-2 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">Cancel</button>
+            <button type="button" onClick={() => { setSelectedFile(null); onClose(); }} className="px-4 py-2 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">Cancel</button>
             <button type="submit" disabled={saving} className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50">
               {saving ? 'Saving...' : recall ? 'Update Recall' : 'Create Recall'}</button>
           </div>
@@ -173,6 +242,15 @@ const LiveExerciseView = ({ recall, onRefresh }) => {
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2"><Play className="w-5 h-5" />Live Exercise: {recall.recall_number}</h3>
         <StatusBadge status={recall.status} />
       </div>
+      {recall.report_file_url && (
+        <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600">
+          <Paperclip className="w-4 h-4 text-gray-400 flex-shrink-0" />
+          <span className="text-sm text-gray-700 dark:text-gray-300 truncate flex-1">{recall.report_file_name || 'Recall Report'}</span>
+          <a href={recall.report_file_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-sm text-green-600 dark:text-green-400 hover:underline">
+            <Download className="w-4 h-4" />View / Download
+          </a>
+        </div>
+      )}
       <div className="text-center py-4">
         {recall.trace_start_time ? (
           <div className={`text-5xl font-mono font-bold ${timerColor}`}>{String(hrs).padStart(2, '0')}:{String(mins).padStart(2, '0')}:{String(secs).padStart(2, '0')}</div>
@@ -237,6 +315,15 @@ const ResultsView = ({ recall, onRefresh }) => {
           <div className="text-3xl font-bold text-gray-900 dark:text-white">{recall.product_accounted_percent ?? '-'}%</div>
           <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">Traced</div></div>
       </div>
+      {recall.report_file_url && (
+        <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600">
+          <Paperclip className="w-4 h-4 text-gray-400 flex-shrink-0" />
+          <span className="text-sm text-gray-700 dark:text-gray-300 truncate flex-1">{recall.report_file_name || 'Recall Report'}</span>
+          <a href={recall.report_file_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-sm text-green-600 dark:text-green-400 hover:underline">
+            <Download className="w-4 h-4" />View / Download
+          </a>
+        </div>
+      )}
       {recall.effectiveness_score == null && <div className="flex justify-end">
         <button onClick={handleScore} disabled={scoring} className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 inline-flex items-center gap-2">
           <Award className="w-4 h-4" />{scoring ? 'Scoring...' : 'Score Exercise'}</button>
@@ -330,6 +417,21 @@ export default function MockRecallExercise() {
         </div>
       </div>
       {/* Active Exercise Detail */}
+      {activeRecall && activeRecall.status === 'planned' && activeRecall.report_file_url && (
+        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6 space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2"><ClipboardList className="w-5 h-5" />{activeRecall.recall_number}</h3>
+            <StatusBadge status={activeRecall.status} />
+          </div>
+          <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600">
+            <Paperclip className="w-4 h-4 text-gray-400 flex-shrink-0" />
+            <span className="text-sm text-gray-700 dark:text-gray-300 truncate flex-1">{activeRecall.report_file_name || 'Recall Report'}</span>
+            <a href={activeRecall.report_file_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-sm text-green-600 dark:text-green-400 hover:underline">
+              <Download className="w-4 h-4" />View / Download
+            </a>
+          </div>
+        </div>
+      )}
       {activeRecall && activeRecall.status === 'in_progress' && <LiveExerciseView recall={activeRecall} onRefresh={handleRefresh} />}
       {activeRecall && (activeRecall.status === 'completed' || activeRecall.status === 'failed') && <ResultsView recall={activeRecall} onRefresh={handleRefresh} />}
       {/* Error */}
@@ -362,7 +464,9 @@ export default function MockRecallExercise() {
               <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                 {recalls.map((r) => (
                   <tr key={r.id} onClick={() => handleRowClick(r)} className={`hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors cursor-pointer ${activeRecall?.id === r.id ? 'bg-green-50 dark:bg-green-900/10' : ''}`}>
-                    <td className="px-4 py-3 font-mono text-xs text-gray-600 dark:text-gray-400">{r.recall_number}</td>
+                    <td className="px-4 py-3 font-mono text-xs text-gray-600 dark:text-gray-400">
+                      <span className="inline-flex items-center gap-1">{r.recall_number}{r.has_report && <Paperclip className="w-3 h-3 text-gray-400" title="Has report file" />}</span>
+                    </td>
                     <td className="px-4 py-3 text-gray-600 dark:text-gray-400">{formatDate(r.exercise_date)}</td>
                     <td className="px-4 py-3 text-gray-900 dark:text-white max-w-[200px] truncate">{r.scenario_description || '-'}</td>
                     <td className="px-4 py-3"><StatusBadge status={r.status} /></td>
