@@ -17,6 +17,10 @@ import {
   Beaker,
   Activity,
   Info,
+  Upload,
+  Paperclip,
+  Download,
+  XCircle,
 } from 'lucide-react';
 import { primusGFSAPI, farmsAPI, fieldsAPI } from '../../services/api';
 
@@ -238,7 +242,7 @@ const LandUseTimeline = ({ entries }) => {
 // EXPANDED CARD DETAIL
 // ============================================================================
 
-const AssessmentDetail = ({ assessment }) => {
+const AssessmentDetail = ({ assessment, onRemoveDocument }) => {
   const a = assessment;
 
   return (
@@ -374,6 +378,38 @@ const AssessmentDetail = ({ assessment }) => {
         </div>
       )}
 
+      {/* Supporting Document */}
+      {(a.supporting_document_url || a.supporting_document_name) && (
+        <div>
+          <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">Supporting Document</p>
+          <div className="flex items-center gap-3 bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-lg p-3">
+            <Paperclip className="w-4 h-4 text-gray-400 flex-shrink-0" />
+            <span className="text-sm text-gray-700 dark:text-gray-300 truncate flex-1">
+              {a.supporting_document_name || 'Attached Document'}
+            </span>
+            {a.supporting_document_url && (
+              <a
+                href={a.supporting_document_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 rounded hover:bg-blue-100 dark:hover:bg-blue-900/40 transition"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <Download className="w-3 h-3" /> View
+              </a>
+            )}
+            {onRemoveDocument && (
+              <button
+                onClick={(e) => { e.stopPropagation(); onRemoveDocument(a.id); }}
+                className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 rounded hover:bg-red-100 dark:hover:bg-red-900/40 transition"
+              >
+                <XCircle className="w-3 h-3" /> Remove
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Notes */}
       {a.notes && (
         <div>
@@ -419,6 +455,8 @@ export default function LandHistoryForm() {
   const [formFields, setFormFields] = useState([]);
   const [formFarm, setFormFarm] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [selectedFile, setSelectedFile] = useState(null); // File object for upload
+  const [existingDocName, setExistingDocName] = useState(''); // existing doc when editing
 
   // Summary state
   const [summary, setSummary] = useState(null);
@@ -525,6 +563,8 @@ export default function LandHistoryForm() {
     setEditingId(null);
     setFormData({ ...EMPTY_FORM });
     setFormFarm('');
+    setSelectedFile(null);
+    setExistingDocName('');
     setShowModal(true);
   };
 
@@ -568,6 +608,8 @@ export default function LandHistoryForm() {
         const farm = farms.find((f) => f.name === a.farm_name);
         if (farm) setFormFarm(String(farm.id));
       }
+      setSelectedFile(null);
+      setExistingDocName(a.supporting_document_name || '');
       setShowModal(true);
     } catch (err) {
       setError(err.response?.data?.detail || 'Failed to load assessment for editing.');
@@ -615,19 +657,54 @@ export default function LandHistoryForm() {
     }));
   };
 
+  const buildPayload = () => {
+    // If there's a file, we must use FormData (multipart)
+    if (selectedFile) {
+      const fd = new FormData();
+      fd.append('supporting_document', selectedFile);
+
+      // Append all form fields
+      Object.entries(formData).forEach(([key, val]) => {
+        if (key === 'land_use_history' || key === 'soil_test_parameters_tested') {
+          fd.append(key, JSON.stringify(val));
+        } else if (typeof val === 'boolean') {
+          fd.append(key, val ? 'true' : 'false');
+        } else if (val !== '' && val !== null && val !== undefined) {
+          fd.append(key, val);
+        }
+      });
+      return fd;
+    }
+    return formData;
+  };
+
+  const handleRemoveDocument = async (assessmentId) => {
+    try {
+      const res = await primusGFSAPI.removeLandDocument(assessmentId);
+      // Update expanded data cache
+      setExpandedData((prev) => ({ ...prev, [assessmentId]: res.data }));
+      fetchAssessments();
+    } catch (err) {
+      setError(err.response?.data?.detail || 'Failed to remove document.');
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
     try {
+      const payload = buildPayload();
       if (editingId) {
-        await primusGFSAPI.updateLandAssessment(editingId, formData);
+        await primusGFSAPI.updateLandAssessment(editingId, payload);
         // Clear cached detail so expanded view refreshes
         setExpandedData((prev) => { const next = { ...prev }; delete next[editingId]; return next; });
       } else {
-        await primusGFSAPI.createLandAssessment(formData);
+        await primusGFSAPI.createLandAssessment(payload);
       }
       setShowModal(false);
       setFormData({ ...EMPTY_FORM });
+      setSelectedFile(null);
+      setExistingDocName('');
       setEditingId(null);
       fetchAssessments();
       fetchSummary();
@@ -778,6 +855,9 @@ export default function LandHistoryForm() {
                   </div>
 
                   <div className="flex items-center gap-3 flex-shrink-0">
+                    {a.has_document && (
+                      <Paperclip className="w-3.5 h-3.5 text-blue-400 hidden sm:block" title="Has supporting document" />
+                    )}
                     {a.remediation_required && !a.remediation_verified && (
                       <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400">
                         Remediation Pending
@@ -804,7 +884,7 @@ export default function LandHistoryForm() {
                 {/* Expanded Detail */}
                 {isExpanded && (
                   <>
-                    <AssessmentDetail assessment={expandedData[a.id] || a} />
+                    <AssessmentDetail assessment={expandedData[a.id] || a} onRemoveDocument={handleRemoveDocument} />
 
                     {/* Action buttons */}
                     <div className="px-5 pb-4 flex items-center gap-2 border-t border-gray-100 dark:border-gray-700 pt-3">
@@ -1223,6 +1303,77 @@ export default function LandHistoryForm() {
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 text-sm"
                   placeholder="Additional notes..."
                 />
+              </div>
+
+              {/* Supporting Document Upload */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Supporting Document
+                </label>
+                <p className="text-xs text-gray-400 dark:text-gray-500 mb-2">
+                  Upload supporting evidence — soil test results, county records, deed photos, site survey, etc.
+                </p>
+
+                {/* Show existing document when editing */}
+                {editingId && existingDocName && !selectedFile && (
+                  <div className="flex items-center gap-3 bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-lg p-3 mb-2">
+                    <Paperclip className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                    <span className="text-sm text-gray-700 dark:text-gray-300 truncate flex-1">
+                      {existingDocName}
+                    </span>
+                    <span className="text-xs text-gray-400">Current file</span>
+                  </div>
+                )}
+
+                {/* Show selected new file */}
+                {selectedFile && (
+                  <div className="flex items-center gap-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3 mb-2">
+                    <FileText className="w-4 h-4 text-blue-500 flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-blue-700 dark:text-blue-300 truncate">{selectedFile.name}</p>
+                      <p className="text-xs text-blue-500 dark:text-blue-400">
+                        {(selectedFile.size / 1024).toFixed(0)} KB
+                        {existingDocName && ' — will replace current file'}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedFile(null)}
+                      className="p-1 text-blue-400 hover:text-blue-600 dark:hover:text-blue-300"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
+
+                {/* Drop zone / file picker */}
+                {!selectedFile && (
+                  <label
+                    className="flex flex-col items-center gap-2 p-6 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer hover:border-blue-400 dark:hover:border-blue-500 hover:bg-blue-50/50 dark:hover:bg-blue-900/10 transition"
+                    onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      const file = e.dataTransfer.files?.[0];
+                      if (file) setSelectedFile(file);
+                    }}
+                  >
+                    <Upload className="w-6 h-6 text-gray-400" />
+                    <span className="text-sm text-gray-500 dark:text-gray-400">
+                      Drop a file here or <span className="text-blue-600 dark:text-blue-400 font-medium">browse</span>
+                    </span>
+                    <span className="text-xs text-gray-400">PDF, JPG, PNG up to 25 MB</span>
+                    <input
+                      type="file"
+                      className="sr-only"
+                      accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) setSelectedFile(file);
+                      }}
+                    />
+                  </label>
+                )}
               </div>
 
               {/* Actions */}

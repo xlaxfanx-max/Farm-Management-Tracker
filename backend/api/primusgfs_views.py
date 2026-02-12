@@ -13,6 +13,7 @@ from rest_framework import viewsets, filters, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 
 from .permissions import HasCompanyAccess
 from .audit_utils import AuditLogMixin
@@ -365,8 +366,10 @@ class LandHistoryAssessmentViewSet(AuditLogMixin, viewsets.ModelViewSet):
     """
     API endpoint for managing land history assessments.
     Supports filtering by field, farm, and risk level.
+    Accepts multipart/form-data for document uploads.
     """
     permission_classes = [IsAuthenticated, HasCompanyAccess]
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['field__name', 'risk_justification']
     ordering_fields = ['assessment_date', 'contamination_risk', 'created_at']
@@ -408,9 +411,46 @@ class LandHistoryAssessmentViewSet(AuditLogMixin, viewsets.ModelViewSet):
 
         return queryset
 
+    def _parse_json_fields(self, data):
+        """Parse JSON string fields from multipart form data."""
+        import json
+        json_fields = ['land_use_history', 'soil_test_parameters_tested']
+        for field in json_fields:
+            if field in data and isinstance(data[field], str):
+                try:
+                    data[field] = json.loads(data[field])
+                except (json.JSONDecodeError, TypeError):
+                    pass
+        return data
+
+    def create(self, request, *args, **kwargs):
+        if request.content_type and 'multipart' in request.content_type:
+            request.data._mutable = True
+            self._parse_json_fields(request.data)
+            request.data._mutable = False
+        return super().create(request, *args, **kwargs)
+
+    def update(self, request, *args, **kwargs):
+        if request.content_type and 'multipart' in request.content_type:
+            request.data._mutable = True
+            self._parse_json_fields(request.data)
+            request.data._mutable = False
+        return super().update(request, *args, **kwargs)
+
     def perform_create(self, serializer):
         company = require_company(self.request.user)
-        serializer.save(company=company, assessed_by=self.request.user)
+        extra = {'company': company, 'assessed_by': self.request.user}
+        doc = self.request.FILES.get('supporting_document')
+        if doc:
+            extra['supporting_document_name'] = doc.name
+        serializer.save(**extra)
+
+    def perform_update(self, serializer):
+        extra = {}
+        doc = self.request.FILES.get('supporting_document')
+        if doc:
+            extra['supporting_document_name'] = doc.name
+        serializer.save(**extra)
 
     @action(detail=True, methods=['post'])
     def approve(self, request, pk=None):
@@ -422,6 +462,18 @@ class LandHistoryAssessmentViewSet(AuditLogMixin, viewsets.ModelViewSet):
         assessment.save()
 
         return Response(LandHistoryAssessmentSerializer(assessment).data)
+
+    @action(detail=True, methods=['post'], url_path='remove-document')
+    def remove_document(self, request, pk=None):
+        """Remove the supporting document from an assessment."""
+        assessment = self.get_object()
+        if assessment.supporting_document:
+            assessment.supporting_document.delete(save=False)
+        assessment.supporting_document_name = ''
+        assessment.save(update_fields=['supporting_document', 'supporting_document_name'])
+        return Response(LandHistoryAssessmentSerializer(
+            assessment, context={'request': request}
+        ).data)
 
     @action(detail=False, methods=['get'])
     def summary(self, request):

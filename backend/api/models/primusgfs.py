@@ -564,7 +564,17 @@ class LandHistoryAssessment(models.Model):
     remediation_completion_date = models.DateField(null=True, blank=True)
     remediation_verified = models.BooleanField(default=False)
 
-    # Linked document
+    # Supporting documents (direct upload — soil tests, county records, deed photos, etc.)
+    supporting_document = models.FileField(
+        upload_to='land_assessments/%Y/%m/', null=True, blank=True,
+        help_text="Upload supporting evidence (soil test PDF, county record, deed photo, etc.)"
+    )
+    supporting_document_name = models.CharField(
+        max_length=255, blank=True,
+        help_text="Original filename of the uploaded document"
+    )
+
+    # Linked controlled document (formal SOP / policy link)
     related_document = models.ForeignKey(
         ControlledDocument, on_delete=models.SET_NULL, null=True, blank=True
     )

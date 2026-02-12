@@ -3052,10 +3052,25 @@ export const primusGFSAPI = {
   // Land Assessments
   getLandAssessments: (params = {}) => api.get('/primusgfs/land-assessments/', { params }),
   getLandAssessment: (id) => api.get(`/primusgfs/land-assessments/${id}/`),
-  createLandAssessment: (data) => api.post('/primusgfs/land-assessments/', data),
-  updateLandAssessment: (id, data) => api.put(`/primusgfs/land-assessments/${id}/`, data),
+  createLandAssessment: (data) => {
+    if (data instanceof FormData) {
+      return api.post('/primusgfs/land-assessments/', data, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+    }
+    return api.post('/primusgfs/land-assessments/', data);
+  },
+  updateLandAssessment: (id, data) => {
+    if (data instanceof FormData) {
+      return api.put(`/primusgfs/land-assessments/${id}/`, data, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+    }
+    return api.put(`/primusgfs/land-assessments/${id}/`, data);
+  },
   deleteLandAssessment: (id) => api.delete(`/primusgfs/land-assessments/${id}/`),
   approveLandAssessment: (id, data = {}) => api.post(`/primusgfs/land-assessments/${id}/approve/`, data),
+  removeLandDocument: (id) => api.post(`/primusgfs/land-assessments/${id}/remove-document/`),
   getLandAssessmentSummary: () => api.get('/primusgfs/land-assessments/summary/'),
 
   // Suppliers

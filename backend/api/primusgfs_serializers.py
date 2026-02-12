@@ -274,6 +274,7 @@ class LandHistoryAssessmentSerializer(serializers.ModelSerializer):
         source='field.farm.name', read_only=True
     )
     risk_factor_count = serializers.IntegerField(read_only=True)
+    supporting_document_url = serializers.SerializerMethodField()
 
     class Meta:
         model = LandHistoryAssessment
@@ -295,6 +296,8 @@ class LandHistoryAssessmentSerializer(serializers.ModelSerializer):
             'contamination_risk', 'contamination_risk_display',
             'risk_justification', 'mitigation_measures',
             'approved', 'approved_by', 'approved_by_name', 'approved_at',
+            'supporting_document', 'supporting_document_name',
+            'supporting_document_url',
             'related_document', 'risk_factor_count',
             'notes', 'created_at', 'updated_at',
         ]
@@ -302,6 +305,14 @@ class LandHistoryAssessmentSerializer(serializers.ModelSerializer):
             'company', 'approved_by', 'approved_at',
             'created_at', 'updated_at',
         ]
+
+    def get_supporting_document_url(self, obj):
+        if obj.supporting_document:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.supporting_document.url)
+            return obj.supporting_document.url
+        return None
 
 
 class LandHistoryAssessmentListSerializer(serializers.ModelSerializer):
@@ -314,6 +325,7 @@ class LandHistoryAssessmentListSerializer(serializers.ModelSerializer):
         source='field.farm.name', read_only=True
     )
     risk_factor_count = serializers.IntegerField(read_only=True)
+    has_document = serializers.SerializerMethodField()
 
     class Meta:
         model = LandHistoryAssessment
@@ -324,8 +336,12 @@ class LandHistoryAssessmentListSerializer(serializers.ModelSerializer):
             'risk_factor_count',
             'buffer_period_adequate', 'previous_animal_operations',
             'remediation_required', 'remediation_verified',
-            'information_source',
+            'information_source', 'has_document',
+            'supporting_document_name',
         ]
+
+    def get_has_document(self, obj):
+        return bool(obj.supporting_document)
 
 
 # =============================================================================
