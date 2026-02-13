@@ -1,25 +1,27 @@
 """
-YOLO-based tree detection service using DeepForest.
+Claude Vision-based tree detection service.
 
 Processes GeoTIFF imagery uploaded via TreeSurvey to detect individual
-tree crowns using DeepForest's pre-trained model (built on RetinaNet/YOLO
-architecture trained on NEON aerial data). Computes per-tree NDVI health
-scores when NIR band is available.
+tree crowns using the Anthropic Claude API with vision capabilities.
+Computes per-tree NDVI health scores when NIR band is available.
 
 Pipeline:
 1. Load GeoTIFF and extract geospatial metadata (CRS, bounds, resolution)
-2. Extract RGB bands for DeepForest input
-3. Optionally clip detections to field boundary polygon
-4. Run DeepForest predict_tile with configurable patch size/overlap
-5. Convert pixel bounding boxes to WGS84 lat/lon via affine transform
-6. Calculate canopy diameter from bbox width * ground resolution
-7. If multispectral (has NIR): compute per-tree NDVI stats from NIR+Red
-8. Assign health category based on mean NDVI thresholds
-9. Bulk-create DetectedTree records and update survey summary
+2. Tile the image into manageable chunks and convert to PNG for Claude
+3. Send each tile to Claude Vision asking for tree crown locations
+4. Convert pixel coordinates to WGS84 lat/lon via affine transform
+5. Calculate canopy diameter from estimated crown size * ground resolution
+6. If multispectral (has NIR): compute per-tree NDVI stats from NIR+Red
+7. Assign health category based on mean NDVI thresholds
+8. Bulk-create DetectedTree records and update survey summary
 """
 
+import base64
+import io
+import json
 import logging
 import os
+import re
 import tempfile
 import time
 from typing import Any, Dict, List, Optional
@@ -27,17 +29,6 @@ from typing import Any, Dict, List, Optional
 import numpy as np
 
 logger = logging.getLogger(__name__)
-
-# Guard DeepForest import — it is a heavy optional dependency
-try:
-    from deepforest import main as deepforest_main
-    DEEPFOREST_AVAILABLE = True
-except ImportError:
-    DEEPFOREST_AVAILABLE = False
-    logger.warning(
-        "deepforest is not installed. Tree detection via YOLO/DeepForest "
-        "will not be available. Install with: pip install deepforest"
-    )
 
 
 # ---------------------------------------------------------------------------
@@ -74,19 +65,6 @@ def classify_health(ndvi_mean: Optional[float]) -> str:
 def extract_geotiff_metadata(file_path: str) -> Dict[str, Any]:
     """
     Extract geospatial metadata from a GeoTIFF for storage on TreeSurvey.
-
-    Uses rasterio to read:
-        - CRS (coordinate reference system)
-        - Geographic bounds (west, east, south, north)
-        - Ground sample distance (resolution in metres)
-        - Band count and whether NIR is present (band >= 4)
-
-    Args:
-        file_path: Absolute path to a GeoTIFF file.
-
-    Returns:
-        Dict with keys: crs, bounds_west, bounds_east, bounds_south,
-        bounds_north, resolution_m, band_count, has_nir, file_size_mb.
     """
     import rasterio
 
@@ -96,11 +74,9 @@ def extract_geotiff_metadata(file_path: str) -> Dict[str, Any]:
         bounds = src.bounds
         transform = src.transform
 
-        # Resolution in native CRS units
         res_x = abs(transform.a)
         res_y = abs(transform.e)
 
-        # Convert to metres if CRS is geographic (degrees)
         if src.crs and src.crs.is_geographic:
             mid_lat = (bounds.top + bounds.bottom) / 2.0
             lat_m = 111_000.0
@@ -130,21 +106,12 @@ def extract_geotiff_metadata(file_path: str) -> Dict[str, Any]:
 # ---------------------------------------------------------------------------
 
 def _pixel_to_latlon(row: int, col: int, transform, src_crs):
-    """
-    Convert pixel (row, col) to WGS-84 (latitude, longitude).
-
-    Uses the rasterio affine *transform* to go from pixel to map
-    coordinates, then reprojects to EPSG:4326 if the source CRS
-    is projected.
-    """
-    # Pixel centre -> map coordinates in source CRS
+    """Convert pixel (row, col) to WGS-84 (latitude, longitude)."""
     x_map, y_map = transform * (col + 0.5, row + 0.5)
 
     if src_crs is None or src_crs.is_geographic:
-        # Already in lon/lat
         return y_map, x_map  # lat, lon
 
-    # Reproject to WGS-84
     from pyproj import CRS, Transformer
 
     dst_crs = CRS.from_epsg(4326)
@@ -157,35 +124,23 @@ def _pixel_to_latlon(row: int, col: int, transform, src_crs):
 
 def _prepare_rgb_image(file_path: str):
     """
-    Read the GeoTIFF and return a uint8 RGB numpy array suitable for
-    DeepForest, plus the rasterio dataset metadata needed later.
-
-    DeepForest expects an (H, W, 3) uint8 BGR or RGB array. We read
-    the first three bands and assume they are in R-G-B or B-G-R order
-    (DeepForest is tolerant of both since its backbone was trained on
-    natural images).
-
-    If the raster has more than 8-bit depth we rescale to 0-255.
+    Read the GeoTIFF and return a uint8 RGB numpy array,
+    plus the rasterio dataset metadata needed later.
 
     Returns:
         (rgb_array, transform, crs, src_height, src_width, full_image)
-        where *full_image* is the raw rasterio read (all bands, float32)
-        needed for NDVI computation.
     """
     import rasterio
 
     with rasterio.open(file_path) as src:
-        # Read all bands as float32 for later NDVI
         full_image = src.read().astype(np.float32)  # (bands, H, W)
         transform = src.transform
         crs = src.crs
         height = src.height
         width = src.width
 
-    # Extract first 3 bands for RGB
     rgb = full_image[:3]  # (3, H, W)
 
-    # Rescale to uint8 if needed
     band_max = rgb.max()
     if band_max <= 0:
         rgb_uint8 = np.zeros((height, width, 3), dtype=np.uint8)
@@ -193,7 +148,6 @@ def _prepare_rgb_image(file_path: str):
         rgb_uint8 = (rgb * 255).clip(0, 255).astype(np.uint8)
         rgb_uint8 = np.transpose(rgb_uint8, (1, 2, 0))  # (H, W, 3)
     else:
-        # Scale to 0-255
         rgb_scaled = (rgb / band_max * 255).clip(0, 255).astype(np.uint8)
         rgb_uint8 = np.transpose(rgb_scaled, (1, 2, 0))  # (H, W, 3)
 
@@ -202,42 +156,32 @@ def _prepare_rgb_image(file_path: str):
 
 def _compute_tree_ndvi(
     full_image: np.ndarray,
-    xmin: int,
-    ymin: int,
-    xmax: int,
-    ymax: int,
+    cx: int,
+    cy: int,
+    radius_px: int = 10,
 ) -> Dict[str, Optional[float]]:
     """
-    Compute NDVI statistics within a bounding box.
+    Compute NDVI statistics in a circular region around a tree centre.
 
-    Assumes band ordering: band 0 = Red (or Blue), band 2 = Red, band 3 = NIR.
-    We use band index 2 for Red and band index 3 for NIR, matching the
-    common B-G-R-NIR convention used by SkyWatch / Planet imagery and
-    consistent with the existing tree_detection.py service.
-
-    NDVI = (NIR - Red) / (NIR + Red + 1e-10)
-
-    Returns dict with ndvi_mean, ndvi_min, ndvi_max (all float or None).
+    Uses band index 2 for Red and band index 3 for NIR (B-G-R-NIR convention).
     """
     if full_image.shape[0] < 4:
         return {"ndvi_mean": None, "ndvi_min": None, "ndvi_max": None}
 
-    # Clamp bbox to image bounds
     h, w = full_image.shape[1], full_image.shape[2]
-    ymin_c = max(0, ymin)
-    xmin_c = max(0, xmin)
-    ymax_c = min(h, ymax)
-    xmax_c = min(w, xmax)
+    ymin = max(0, cy - radius_px)
+    xmin = max(0, cx - radius_px)
+    ymax = min(h, cy + radius_px)
+    xmax = min(w, cx + radius_px)
 
-    if ymax_c <= ymin_c or xmax_c <= xmin_c:
+    if ymax <= ymin or xmax <= xmin:
         return {"ndvi_mean": None, "ndvi_min": None, "ndvi_max": None}
 
-    red = full_image[2, ymin_c:ymax_c, xmin_c:xmax_c]
-    nir = full_image[3, ymin_c:ymax_c, xmin_c:xmax_c]
+    red = full_image[2, ymin:ymax, xmin:xmax]
+    nir = full_image[3, ymin:ymax, xmin:xmax]
 
     ndvi = (nir - red) / (nir + red + 1e-10)
 
-    # Mask out invalid pixels (both bands zero)
     valid = (nir + red) > 0
     if not np.any(valid):
         return {"ndvi_mean": None, "ndvi_min": None, "ndvi_max": None}
@@ -250,38 +194,140 @@ def _compute_tree_ndvi(
     }
 
 
-def _filter_detections_to_boundary(
-    detections_df,
-    transform,
-    src_crs,
-    boundary_geojson: Dict,
-):
+def _tile_image_to_pngs(rgb_array: np.ndarray, tile_size: int = 1024, overlap: int = 64):
     """
-    Remove detections whose centre falls outside the field boundary.
+    Split a large RGB image into overlapping tiles and encode each as PNG.
 
-    *boundary_geojson* is expected in WGS-84 (EPSG:4326). We convert
-    each detection centre to WGS-84 and test containment.
-
-    Returns a filtered copy of the DataFrame.
+    Returns list of dicts: {x_offset, y_offset, width, height, png_b64}
     """
-    from shapely.geometry import Point, shape
+    from PIL import Image
 
-    boundary = shape(boundary_geojson)
+    h, w = rgb_array.shape[:2]
+    tiles = []
+    step = tile_size - overlap
 
-    keep = []
-    for idx, row in detections_df.iterrows():
-        cx = int((row["xmin"] + row["xmax"]) / 2)
-        cy = int((row["ymin"] + row["ymax"]) / 2)
-        lat, lon = _pixel_to_latlon(cy, cx, transform, src_crs)
-        if boundary.contains(Point(lon, lat)):
-            keep.append(idx)
+    y = 0
+    while y < h:
+        x = 0
+        tile_h = min(tile_size, h - y)
+        while x < w:
+            tile_w = min(tile_size, w - x)
+            tile_arr = rgb_array[y:y + tile_h, x:x + tile_w]
 
-    logger.info(
-        "Boundary filter: kept %d of %d detections",
-        len(keep),
-        len(detections_df),
+            img = Image.fromarray(tile_arr)
+            buf = io.BytesIO()
+            img.save(buf, format="PNG", optimize=True)
+            png_b64 = base64.standard_b64encode(buf.getvalue()).decode("ascii")
+
+            tiles.append({
+                "x_offset": x,
+                "y_offset": y,
+                "width": tile_w,
+                "height": tile_h,
+                "png_b64": png_b64,
+            })
+            x += step
+        y += step
+
+    return tiles
+
+
+def _call_claude_vision(png_b64: str, tile_width: int, tile_height: int, api_key: str) -> List[Dict]:
+    """
+    Send a single image tile to Claude Vision and ask it to locate trees.
+
+    Returns a list of dicts with keys: x, y, crown_radius_px, confidence, health_visual
+    """
+    import anthropic
+
+    client = anthropic.Anthropic(api_key=api_key)
+
+    prompt = f"""You are analyzing an aerial/satellite image tile ({tile_width}x{tile_height} pixels) of agricultural land that may contain trees (e.g., citrus, avocado, or other orchard trees).
+
+Your task: identify every individual tree crown visible in this image.
+
+For each tree, provide:
+- "x": the x pixel coordinate of the tree center (0 = left edge, {tile_width} = right edge)
+- "y": the y pixel coordinate of the tree center (0 = top edge, {tile_height} = bottom edge)
+- "crown_radius_px": estimated crown radius in pixels
+- "confidence": your confidence from 0.0 to 1.0
+- "health_visual": one of "healthy", "moderate", "stressed", "critical" based on the visual color/canopy appearance (green and full = healthy, yellowish = moderate, sparse/brown = stressed, bare/dead = critical)
+
+Return ONLY a JSON array. No explanation, no markdown, just the raw JSON array.
+If there are no trees, return an empty array: []
+
+Example format:
+[{{"x": 150, "y": 200, "crown_radius_px": 12, "confidence": 0.9, "health_visual": "healthy"}}]
+
+Be thorough - identify ALL visible trees, even small or partially visible ones at edges. In dense orchards, trees are planted in regular grid patterns, so look for individual crowns even when canopies overlap."""
+
+    response = client.messages.create(
+        model="claude-sonnet-4-20250514",
+        max_tokens=16000,
+        messages=[
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "image",
+                        "source": {
+                            "type": "base64",
+                            "media_type": "image/png",
+                            "data": png_b64,
+                        },
+                    },
+                    {
+                        "type": "text",
+                        "text": prompt,
+                    },
+                ],
+            }
+        ],
     )
-    return detections_df.loc[keep].reset_index(drop=True)
+
+    # Parse JSON from Claude's response
+    response_text = response.content[0].text.strip()
+
+    # Try to extract JSON array from the response
+    # Sometimes Claude wraps it in markdown code blocks
+    json_match = re.search(r'\[.*\]', response_text, re.DOTALL)
+    if json_match:
+        try:
+            trees = json.loads(json_match.group())
+            if isinstance(trees, list):
+                return trees
+        except json.JSONDecodeError:
+            logger.warning("Failed to parse Claude response as JSON: %s", response_text[:200])
+
+    return []
+
+
+def _deduplicate_trees(all_trees: List[Dict], min_distance_px: int = 15) -> List[Dict]:
+    """
+    Remove duplicate tree detections from overlapping tiles.
+
+    Uses simple distance-based deduplication: if two detections are within
+    min_distance_px of each other, keep the one with higher confidence.
+    """
+    if not all_trees:
+        return []
+
+    # Sort by confidence descending so we keep the best detections
+    sorted_trees = sorted(all_trees, key=lambda t: t.get("confidence", 0), reverse=True)
+    kept = []
+
+    for tree in sorted_trees:
+        tx, ty = tree["x"], tree["y"]
+        is_dup = False
+        for existing in kept:
+            dist = ((tx - existing["x"]) ** 2 + (ty - existing["y"]) ** 2) ** 0.5
+            if dist < min_distance_px:
+                is_dup = True
+                break
+        if not is_dup:
+            kept.append(tree)
+
+    return kept
 
 
 # ---------------------------------------------------------------------------
@@ -290,45 +336,39 @@ def _filter_detections_to_boundary(
 
 def run_tree_detection(survey_id: int) -> None:
     """
-    Run DeepForest tree detection on a TreeSurvey image.
+    Run Claude Vision tree detection on a TreeSurvey image.
 
-    This is the main entry point called (typically asynchronously) after a
-    GeoTIFF has been uploaded. It:
-
+    Pipeline:
     1. Marks the survey as 'processing'.
-    2. Reads the GeoTIFF and extracts an RGB array for DeepForest.
-    3. Optionally clips detections to the associated field boundary.
-    4. Runs ``deepforest.main.deepforest().predict_tile()``.
-    5. Converts pixel bboxes to lat/lon; computes canopy diameter.
-    6. If the image has a NIR band, computes per-tree NDVI and health.
-    7. Bulk-creates ``DetectedTree`` records.
-    8. Updates the survey summary fields and sets status='completed'.
-
-    On any unhandled exception the survey is marked 'failed' with the
-    error message stored for debugging.
-
-    Args:
-        survey_id: Primary key of the ``TreeSurvey`` to process.
+    2. Reads the GeoTIFF and extracts an RGB array.
+    3. Tiles the image into chunks suitable for Claude Vision.
+    4. Sends each tile to Claude for tree identification.
+    5. Deduplicates detections from overlapping tiles.
+    6. Converts pixel coords to lat/lon; computes canopy diameter.
+    7. If the image has a NIR band, computes per-tree NDVI and health.
+    8. Bulk-creates DetectedTree records.
+    9. Updates the survey summary fields and sets status='completed'.
     """
-    if not DEEPFOREST_AVAILABLE:
-        raise RuntimeError(
-            "deepforest is not installed. "
-            "Install with: pip install deepforest"
-        )
-
-    # Late imports so the module can be loaded without Django configured
-    # (e.g. for unit tests that mock the models).
+    from django.conf import settings
     from django.utils import timezone
 
     from api.models.tree_detection import DetectedTree, TreeSurvey
 
     survey = TreeSurvey.objects.select_related("field").get(pk=survey_id)
 
+    # Get API key
+    api_key = os.environ.get('ANTHROPIC_API_KEY') or getattr(settings, 'ANTHROPIC_API_KEY', '')
+    if not api_key:
+        survey.status = "failed"
+        survey.error_message = "ANTHROPIC_API_KEY not configured."
+        survey.save(update_fields=["status", "error_message"])
+        return
+
     # ---- Mark as processing ------------------------------------------------
     survey.status = "processing"
     survey.error_message = ""
     survey.save(update_fields=["status", "error_message"])
-    logger.info("Starting YOLO/DeepForest detection for survey %s", survey_id)
+    logger.info("Starting Claude Vision tree detection for survey %s", survey_id)
 
     t_start = time.perf_counter()
 
@@ -344,7 +384,6 @@ def run_tree_detection(survey_id: int) -> None:
         has_nir = full_image.shape[0] >= 4
         resolution_m = survey.resolution_m
         if resolution_m is None or resolution_m <= 0:
-            # Fallback: compute from transform
             meta = extract_geotiff_metadata(file_path)
             resolution_m = meta["resolution_m"]
 
@@ -353,96 +392,55 @@ def run_tree_detection(survey_id: int) -> None:
             img_w, img_h, full_image.shape[0], resolution_m, has_nir,
         )
 
-        # ---- Write RGB to a temp file for DeepForest -----------------------
-        # DeepForest's predict_tile expects a file path to a raster.
-        # We write the uint8 RGB to a temporary GeoTIFF so the spatial
-        # reference is preserved for tiled reading.
-        import rasterio
-        from rasterio.transform import from_bounds
+        # ---- Tile the image ------------------------------------------------
+        tile_size = survey.detection_params.get("tile_size", 1024)
+        tile_overlap = survey.detection_params.get("tile_overlap", 64)
 
-        tmp_dir = tempfile.mkdtemp(prefix="yolo_tree_")
-        tmp_rgb_path = os.path.join(tmp_dir, "rgb_for_deepforest.tif")
+        tiles = _tile_image_to_pngs(rgb_array, tile_size=tile_size, overlap=tile_overlap)
+        logger.info("Created %d tiles (size=%d, overlap=%d)", len(tiles), tile_size, tile_overlap)
 
-        # Transpose back to (3, H, W) for rasterio write
-        rgb_bands = np.transpose(rgb_array, (2, 0, 1))  # (3, H, W)
+        # ---- Send each tile to Claude Vision -------------------------------
+        all_trees_global = []  # Trees in global (full-image) pixel coords
 
-        with rasterio.open(
-            tmp_rgb_path,
-            "w",
-            driver="GTiff",
-            height=img_h,
-            width=img_w,
-            count=3,
-            dtype="uint8",
-            crs=src_crs,
-            transform=transform,
-        ) as dst:
-            dst.write(rgb_bands)
-
-        logger.info("Wrote temporary RGB raster: %s", tmp_rgb_path)
-
-        # ---- Run DeepForest ------------------------------------------------
-        patch_size = survey.detection_params.get("patch_size", 200)
-        patch_overlap = survey.detection_params.get("patch_overlap", 0.6)
-        iou_threshold = survey.detection_params.get("iou_threshold", 0.5)
-        score_thresh = survey.detection_params.get("score_thresh", 0.05)
-
-        model = deepforest_main.deepforest()
-        model.use_release()  # Load pre-trained weights
-
-        # Override the score threshold if provided
-        if score_thresh:
-            model.config["score_thresh"] = score_thresh
-
-        logger.info(
-            "Running DeepForest predict_tile (patch_size=%d, overlap=%.2f)",
-            patch_size, patch_overlap,
-        )
-
-        detections = model.predict_tile(
-            raster_path=tmp_rgb_path,
-            patch_size=patch_size,
-            patch_overlap=patch_overlap,
-            iou_threshold=iou_threshold,
-            return_plot=False,
-        )
-
-        # Clean up temp file
-        try:
-            os.remove(tmp_rgb_path)
-            os.rmdir(tmp_dir)
-        except OSError:
-            pass
-
-        if detections is None or len(detections) == 0:
-            logger.info("DeepForest returned no detections for survey %s", survey_id)
-            survey.status = "completed"
-            survey.tree_count = 0
-            survey.trees_per_acre = 0
-            survey.avg_confidence = None
-            survey.avg_ndvi = None
-            survey.canopy_coverage_percent = 0
-            survey.processing_time_seconds = time.perf_counter() - t_start
-            survey.completed_at = timezone.now()
-            survey.save()
-            return
-
-        logger.info("DeepForest raw detections: %d", len(detections))
-
-        # ---- Clip to field boundary if available ---------------------------
-        field = survey.field
-        boundary_geojson = getattr(field, "boundary_geojson", None)
-
-        if boundary_geojson:
-            detections = _filter_detections_to_boundary(
-                detections, transform, src_crs, boundary_geojson
-            )
-
-        if len(detections) == 0:
+        for i, tile in enumerate(tiles):
             logger.info(
-                "All detections fell outside field boundary for survey %s",
-                survey_id,
+                "Processing tile %d/%d (offset=%d,%d size=%dx%d)",
+                i + 1, len(tiles),
+                tile["x_offset"], tile["y_offset"],
+                tile["width"], tile["height"],
             )
+
+            try:
+                tile_trees = _call_claude_vision(
+                    tile["png_b64"],
+                    tile["width"],
+                    tile["height"],
+                    api_key,
+                )
+            except Exception as e:
+                logger.warning("Claude Vision call failed for tile %d: %s", i + 1, e)
+                continue
+
+            # Convert tile-local coords to global image coords
+            for tree in tile_trees:
+                tree["x"] = tree.get("x", 0) + tile["x_offset"]
+                tree["y"] = tree.get("y", 0) + tile["y_offset"]
+                # Validate the detection is within image bounds
+                if 0 <= tree["x"] < img_w and 0 <= tree["y"] < img_h:
+                    all_trees_global.append(tree)
+
+            logger.info("Tile %d/%d: %d trees detected", i + 1, len(tiles), len(tile_trees))
+
+        logger.info("Total raw detections across all tiles: %d", len(all_trees_global))
+
+        # ---- Deduplicate overlapping tile detections -----------------------
+        dedup_distance = survey.detection_params.get("dedup_distance_px", 15)
+        all_trees_global = _deduplicate_trees(all_trees_global, min_distance_px=dedup_distance)
+        logger.info("After deduplication: %d trees", len(all_trees_global))
+
+        # ---- Handle no detections ------------------------------------------
+        if len(all_trees_global) == 0:
+            logger.info("No trees detected for survey %s", survey_id)
             survey.status = "completed"
             survey.tree_count = 0
             survey.trees_per_acre = 0
@@ -459,37 +457,38 @@ def run_tree_detection(survey_id: int) -> None:
         ndvi_values: List[float] = []
         total_canopy_area_m2 = 0.0
 
-        for _, row in detections.iterrows():
-            xmin = int(row["xmin"])
-            ymin = int(row["ymin"])
-            xmax = int(row["xmax"])
-            ymax = int(row["ymax"])
-            confidence = float(row["score"])
+        for tree_data in all_trees_global:
+            cx = int(tree_data["x"])
+            cy = int(tree_data["y"])
+            crown_radius_px = int(tree_data.get("crown_radius_px", 10))
+            confidence = float(tree_data.get("confidence", 0.7))
+            health_visual = tree_data.get("health_visual", "unknown")
 
-            # Centre pixel
-            cx = int((xmin + xmax) / 2)
-            cy = int((ymin + ymax) / 2)
+            # Compute bounding box from centre + radius
+            bbox_x_min = max(0, cx - crown_radius_px)
+            bbox_y_min = max(0, cy - crown_radius_px)
+            bbox_x_max = min(img_w, cx + crown_radius_px)
+            bbox_y_max = min(img_h, cy + crown_radius_px)
 
             # Convert to lat/lon
             lat, lon = _pixel_to_latlon(cy, cx, transform, src_crs)
 
-            # Canopy diameter from bbox width (use the larger dimension)
-            bbox_w_px = xmax - xmin
-            bbox_h_px = ymax - ymin
-            canopy_diameter_m = max(bbox_w_px, bbox_h_px) * resolution_m
+            # Canopy diameter
+            canopy_diameter_m = (crown_radius_px * 2) * resolution_m
 
             # Canopy area (approximate as circle)
             canopy_radius_m = canopy_diameter_m / 2.0
             canopy_area_m2 = np.pi * canopy_radius_m ** 2
             total_canopy_area_m2 += canopy_area_m2
 
-            # NDVI if NIR available
+            # NDVI if NIR available, otherwise use Claude's visual assessment
             ndvi_stats = {"ndvi_mean": None, "ndvi_min": None, "ndvi_max": None}
-            health = "unknown"
+            health = health_visual  # Default to Claude's visual assessment
+
             if has_nir:
-                ndvi_stats = _compute_tree_ndvi(full_image, xmin, ymin, xmax, ymax)
-                health = classify_health(ndvi_stats["ndvi_mean"])
+                ndvi_stats = _compute_tree_ndvi(full_image, cx, cy, radius_px=crown_radius_px)
                 if ndvi_stats["ndvi_mean"] is not None:
+                    health = classify_health(ndvi_stats["ndvi_mean"])
                     ndvi_values.append(ndvi_stats["ndvi_mean"])
 
             tree_objects.append(
@@ -497,10 +496,10 @@ def run_tree_detection(survey_id: int) -> None:
                     survey=survey,
                     latitude=lat,
                     longitude=lon,
-                    bbox_x_min=xmin,
-                    bbox_y_min=ymin,
-                    bbox_x_max=xmax,
-                    bbox_y_max=ymax,
+                    bbox_x_min=bbox_x_min,
+                    bbox_y_min=bbox_y_min,
+                    bbox_x_max=bbox_x_max,
+                    bbox_y_max=bbox_y_max,
                     confidence=confidence,
                     canopy_diameter_m=canopy_diameter_m,
                     ndvi_mean=ndvi_stats["ndvi_mean"],
@@ -519,20 +518,15 @@ def run_tree_detection(survey_id: int) -> None:
         tree_count = len(tree_objects)
         avg_confidence = float(np.mean([t.confidence for t in tree_objects]))
 
-        # Trees per acre
+        field = survey.field
         field_acres = float(getattr(field, "total_acres", 0) or 0)
-        if field_acres and field_acres > 0:
-            trees_per_acre = tree_count / field_acres
-        else:
-            trees_per_acre = None
+        trees_per_acre = tree_count / field_acres if field_acres > 0 else None
 
-        # Average NDVI
         avg_ndvi = float(np.mean(ndvi_values)) if ndvi_values else None
 
-        # Canopy coverage percent
         canopy_coverage_percent = None
-        if field_acres and field_acres > 0:
-            field_area_m2 = field_acres * 4046.86  # 1 acre = 4046.86 m^2
+        if field_acres > 0:
+            field_area_m2 = field_acres * 4046.86
             canopy_coverage_percent = min(
                 (total_canopy_area_m2 / field_area_m2) * 100.0, 100.0
             )
@@ -540,6 +534,7 @@ def run_tree_detection(survey_id: int) -> None:
         processing_time = time.perf_counter() - t_start
 
         survey.status = "completed"
+        survey.detection_model = "claude-sonnet-4-20250514"
         survey.tree_count = tree_count
         survey.trees_per_acre = trees_per_acre
         survey.avg_confidence = round(avg_confidence, 4)
@@ -564,13 +559,12 @@ def run_tree_detection(survey_id: int) -> None:
         )
 
     except Exception:
-        # ---- Failure path ---------------------------------------------------
         import traceback
 
         error_msg = traceback.format_exc()
         logger.exception("Tree detection failed for survey %s", survey_id)
 
         survey.status = "failed"
-        survey.error_message = error_msg[-2000:]  # Truncate to fit TextField
+        survey.error_message = error_msg[-2000:]
         survey.processing_time_seconds = round(time.perf_counter() - t_start, 2)
         survey.save(update_fields=["status", "error_message", "processing_time_seconds"])
