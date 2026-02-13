@@ -12,9 +12,7 @@ from .well_serializers import *
 from .nutrient_serializers import *
 from .quarantine_serializers import *
 from .irrigation_serializers import *
-from .imagery_serializers import *
-from .lidar_serializers import *
-from .tree_serializers import *
+from .tree_detection_serializers import *
 from .compliance_serializers import *
 from .disease_serializers import *
 from .packinghouse_serializers import *

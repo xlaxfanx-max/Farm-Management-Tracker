@@ -90,7 +90,6 @@ class DiseaseAnalysisRunSerializer(serializers.ModelSerializer):
         model = DiseaseAnalysisRun
         fields = [
             'id', 'company', 'field', 'field_name', 'farm_name',
-            'satellite_image', 'tree_detection_run',
             'status', 'status_display', 'error_message',
             'analysis_type', 'analysis_type_display', 'parameters',
             'avg_ndvi', 'ndvi_change_30d', 'ndvi_change_90d',
@@ -245,7 +244,7 @@ class TreeHealthRecordSerializer(serializers.ModelSerializer):
             'id', 'company', 'field', 'field_name',
             'tree_id', 'latitude', 'longitude',
             'current_ndvi', 'current_canopy_diameter_m',
-            'last_detection_run', 'last_updated',
+            'last_updated',
             'ndvi_history', 'canopy_history',
             'ndvi_trend', 'ndvi_trend_display',
             'health_status', 'health_status_display',
@@ -255,6 +254,6 @@ class TreeHealthRecordSerializer(serializers.ModelSerializer):
         read_only_fields = [
             'company', 'tree_id', 'latitude', 'longitude',
             'current_ndvi', 'current_canopy_diameter_m',
-            'last_detection_run', 'last_updated',
+            'last_updated',
             'ndvi_history', 'canopy_history', 'ndvi_trend', 'health_status'
         ]

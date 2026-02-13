@@ -344,20 +344,17 @@ class SatelliteKcAdjuster:
         """
         Calculate average NDVI for active trees in the zone's field.
 
-        Note: Currently calculated at field level. Future enhancement
-        could support zone-level spatial boundaries.
+        Uses the most recent completed TreeSurvey for this field.
         """
-        # Get active trees from the latest detection run
-        if not self.field.latest_detection_run_id:
+        from api.models import TreeSurvey
+
+        latest_survey = (
+            TreeSurvey.objects
+            .filter(field=self.field, status='completed', avg_ndvi__isnull=False)
+            .order_by('-capture_date')
+            .first()
+        )
+        if not latest_survey:
             return None
 
-        # Import here to avoid circular imports
-        from api.models import DetectedTree
-
-        result = DetectedTree.objects.filter(
-            detection_run_id=self.field.latest_detection_run_id,
-            status='active',
-            ndvi_value__isnull=False
-        ).aggregate(avg_ndvi=Avg('ndvi_value'))
-
-        return result.get('avg_ndvi')
+        return latest_survey.avg_ndvi

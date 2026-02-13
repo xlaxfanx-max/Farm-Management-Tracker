@@ -258,69 +258,49 @@ class YieldFeatureEngine:
             'tree_height_avg_m': None,
         }
 
-        # Satellite data
-        if field_obj.satellite_canopy_coverage_percent is not None:
-            features['canopy_coverage_pct'] = Decimal(
-                str(field_obj.satellite_canopy_coverage_percent)
-            )
-
-        # LiDAR data
-        if field_obj.lidar_avg_tree_height_m is not None:
-            features['tree_height_avg_m'] = Decimal(
-                str(field_obj.lidar_avg_tree_height_m)
-            )
-
-        # Use LiDAR canopy if satellite not available
-        if features['canopy_coverage_pct'] is None and field_obj.lidar_canopy_coverage_percent is not None:
-            features['canopy_coverage_pct'] = Decimal(
-                str(field_obj.lidar_canopy_coverage_percent)
-            )
-
-        # NDVI from detected trees
+        # Tree survey data (from latest completed TreeSurvey)
         try:
-            from api.models import DetectedTree
-            if field_obj.latest_detection_run_id:
-                ndvi_values = DetectedTree.objects.filter(
-                    detection_run_id=field_obj.latest_detection_run_id,
-                    ndvi_value__isnull=False,
-                    status='active',
-                ).values_list('ndvi_value', flat=True)
+            from api.models import TreeSurvey
 
-                ndvi_list = list(ndvi_values)
-                if ndvi_list:
+            latest_survey = (
+                TreeSurvey.objects
+                .filter(field=field_obj, status='completed')
+                .order_by('-capture_date')
+                .first()
+            )
+
+            if latest_survey:
+                if latest_survey.canopy_coverage_percent is not None:
+                    features['canopy_coverage_pct'] = Decimal(
+                        str(latest_survey.canopy_coverage_percent)
+                    )
+                if latest_survey.avg_ndvi is not None:
                     features['ndvi_mean'] = Decimal(
-                        str(sum(ndvi_list) / len(ndvi_list))
+                        str(latest_survey.avg_ndvi)
                     ).quantize(Decimal('0.001'))
 
-                    # NDVI trend: compare to previous run if available
                     features['ndvi_trend'] = self._compute_ndvi_trend(field_obj)
 
         except Exception as e:
-            logger.warning(f"NDVI features failed for field {field_obj.id}: {e}")
+            logger.warning(f"Tree survey features failed for field {field_obj.id}: {e}")
 
         return features
 
     def _compute_ndvi_trend(self, field_obj) -> Optional[Decimal]:
-        """Compute NDVI trend by comparing latest two detection runs."""
-        from api.models import TreeDetectionRun, DetectedTree
-        from django.db.models import Avg
+        """Compute NDVI trend by comparing latest two tree surveys."""
+        from api.models import TreeSurvey
 
-        runs = TreeDetectionRun.objects.filter(
-            field_id=field_obj.id,
-            status='completed',
-        ).order_by('-satellite_image__capture_date')[:2]
+        surveys = list(
+            TreeSurvey.objects
+            .filter(field=field_obj, status='completed', avg_ndvi__isnull=False)
+            .order_by('-capture_date')[:2]
+        )
 
-        runs_list = list(runs)
-        if len(runs_list) < 2:
+        if len(surveys) < 2:
             return None
 
-        current_avg = DetectedTree.objects.filter(
-            detection_run=runs_list[0], ndvi_value__isnull=False, status='active'
-        ).aggregate(avg=Avg('ndvi_value'))['avg']
-
-        previous_avg = DetectedTree.objects.filter(
-            detection_run=runs_list[1], ndvi_value__isnull=False, status='active'
-        ).aggregate(avg=Avg('ndvi_value'))['avg']
+        current_avg = surveys[0].avg_ndvi
+        previous_avg = surveys[1].avg_ndvi
 
         if current_avg is not None and previous_avg is not None:
             trend = Decimal(str(current_avg - previous_avg))
@@ -370,12 +350,22 @@ class YieldFeatureEngine:
             if age is not None:
                 features['tree_age_years'] = age
 
-        # Trees per acre
+        # Trees per acre (fall back to latest tree survey)
         tpa = field_obj.trees_per_acre
-        if tpa is None and field_obj.latest_satellite_trees_per_acre:
-            tpa = Decimal(str(field_obj.latest_satellite_trees_per_acre))
-        if tpa is None and field_obj.lidar_trees_per_acre:
-            tpa = Decimal(str(field_obj.lidar_trees_per_acre))
+        if tpa is None:
+            try:
+                from api.models import TreeSurvey
+                latest = (
+                    TreeSurvey.objects
+                    .filter(field=field_obj, status='completed', trees_per_acre__isnull=False)
+                    .order_by('-capture_date')
+                    .values_list('trees_per_acre', flat=True)
+                    .first()
+                )
+                if latest is not None:
+                    tpa = Decimal(str(latest))
+            except Exception:
+                pass
         features['trees_per_acre'] = tpa
 
         # Simple string features

@@ -2,12 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Polygon, FeatureGroup, LayersControl } from 'react-leaflet';
 import { EditControl } from 'react-leaflet-draw';
 import L from 'leaflet';
-import { MapPin, Maximize2, Minimize2, Layers, Pencil, Save, X, Locate, AlertTriangle, TreeDeciduous, Mountain } from 'lucide-react';
+import { MapPin, Maximize2, Minimize2, Layers, Pencil, Save, X, Locate, AlertTriangle } from 'lucide-react';
 import QuarantineLayer from './QuarantineLayer';
-import { TreeMapLayer, TreeMapLegend, TreeLayerPanel } from './imagery';
-import LiDARTreeMapLayer, { LiDARTreeMapLegend } from './imagery/LiDARTreeMapLayer';
-import UnifiedTreeMapLayer, { UnifiedTreeMapLegend } from './imagery/UnifiedTreeMapLayer';
-import TreeDetailModal from './imagery/TreeDetailModal';
 
 // Fix for default marker icons in React-Leaflet
 delete L.Icon.Default.prototype._getIconUrl;
@@ -119,11 +115,6 @@ const FarmMap = ({
   const [showLayerMenu, setShowLayerMenu] = useState(false);
   const [pendingBoundary, setPendingBoundary] = useState(null);
   const [showQuarantineLayer, setShowQuarantineLayer] = useState(true);
-  const [showTreeLayer, setShowTreeLayer] = useState(false);
-  const [showLiDARLayer, setShowLiDARLayer] = useState(false);
-  const [showUnifiedTrees, setShowUnifiedTrees] = useState(false);
-  const [unifiedColorBy, setUnifiedColorBy] = useState('source');
-  const [selectedTreeForModal, setSelectedTreeForModal] = useState(null);
   const featureGroupRef = useRef(null);
   const mapRef = useRef(null);
 
@@ -237,8 +228,6 @@ const FarmMap = ({
 
   const mapHeight = isExpanded ? '100vh' : height;
   const center = getMapCenter();
-  const selectedField = fields.find((field) => field.id === selectedFieldId);
-
   // Auto-start drawing when drawingField prop is passed
   useEffect(() => {
     if (drawingField && drawingField.id && drawingField.name) {
@@ -366,45 +355,6 @@ const FarmMap = ({
                   </span>
                   {showQuarantineLayer && <span className="text-red-500">✓</span>}
                 </button>
-                <button
-                  onClick={() => setShowTreeLayer(!showTreeLayer)}
-                  className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-50 flex items-center justify-between ${
-                    showTreeLayer ? 'text-green-600 font-medium' : 'text-gray-700'
-                  }`}
-                >
-                  <span className="flex items-center gap-2">
-                    <TreeDeciduous className="w-4 h-4" />
-                    Satellite Trees
-                  </span>
-                  {showTreeLayer && <span className="text-green-500">✓</span>}
-                </button>
-                <button
-                  onClick={() => setShowLiDARLayer(!showLiDARLayer)}
-                  className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-50 flex items-center justify-between ${
-                    showLiDARLayer ? 'text-emerald-600 font-medium' : 'text-gray-700'
-                  }`}
-                >
-                  <span className="flex items-center gap-2">
-                    <Mountain className="w-4 h-4" />
-                    LiDAR Trees
-                  </span>
-                  {showLiDARLayer && <span className="text-emerald-500">✓</span>}
-                </button>
-                <div className="border-t border-gray-100 my-1"></div>
-                <button
-                  onClick={() => setShowUnifiedTrees(!showUnifiedTrees)}
-                  className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-50 flex items-center justify-between ${
-                    showUnifiedTrees ? 'text-purple-600 font-medium' : 'text-gray-700'
-                  }`}
-                >
-                  <span className="flex items-center gap-2">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                    </svg>
-                    Unified Trees
-                  </span>
-                  {showUnifiedTrees && <span className="text-purple-500">✓</span>}
-                </button>
               </div>
             </div>
           )}
@@ -499,41 +449,7 @@ const FarmMap = ({
                 <span className="text-red-700">HLB Quarantine Zone</span>
               </div>
             )}
-            {showTreeLayer && (
-              <div className="pt-1 border-t border-gray-200 mt-1">
-                <TreeMapLegend />
-              </div>
-            )}
-            {showLiDARLayer && (
-              <div className="pt-1 border-t border-gray-200 mt-1">
-                <LiDARTreeMapLegend />
-              </div>
-            )}
-            {showUnifiedTrees && (
-              <div className="pt-1 border-t border-gray-200 mt-1">
-                <UnifiedTreeMapLegend
-                  colorBy={unifiedColorBy}
-                  onColorByChange={setUnifiedColorBy}
-                />
-              </div>
-            )}
           </div>
-        </div>
-      )}
-
-      {/* Tree Layers Panel */}
-      {!isDrawing && selectedFieldId && (
-        <div className="absolute top-4 left-4 z-[1000]">
-          <TreeLayerPanel
-            fieldId={selectedFieldId}
-            fieldName={selectedField?.name}
-            showSatellite={showTreeLayer}
-            showLidar={showLiDARLayer}
-            showUnified={showUnifiedTrees}
-            onToggleSatellite={() => setShowTreeLayer(!showTreeLayer)}
-            onToggleLidar={() => setShowLiDARLayer(!showLiDARLayer)}
-            onToggleUnified={() => setShowUnifiedTrees(!showUnifiedTrees)}
-          />
         </div>
       )}
 
@@ -561,26 +477,6 @@ const FarmMap = ({
 
         {/* Quarantine Zone Overlay - rendered below farms/fields */}
         <QuarantineLayer visible={showQuarantineLayer} />
-
-        {/* Tree Detection Layer - show satellite trees for selected field */}
-        {showTreeLayer && selectedFieldId && (
-          <TreeMapLayer fieldId={selectedFieldId} visible={showTreeLayer} />
-        )}
-
-        {/* LiDAR Tree Layer - show LiDAR-detected trees for selected field */}
-        {showLiDARLayer && selectedFieldId && (
-          <LiDARTreeMapLayer fieldId={selectedFieldId} visible={showLiDARLayer} />
-        )}
-
-        {/* Unified Tree Layer - correlated trees from both sources */}
-        {showUnifiedTrees && selectedFieldId && (
-          <UnifiedTreeMapLayer
-            fieldId={selectedFieldId}
-            visible={showUnifiedTrees}
-            colorBy={unifiedColorBy}
-            onTreeClick={(tree) => setSelectedTreeForModal(tree)}
-          />
-        )}
 
         {/* Farm Markers */}
         {farms.map((farm) => {
@@ -735,17 +631,6 @@ const FarmMap = ({
           </FeatureGroup>
         )}
       </MapContainer>
-
-      {/* Tree Detail Modal */}
-      {selectedTreeForModal && (
-        <TreeDetailModal
-          tree={selectedTreeForModal}
-          onClose={() => setSelectedTreeForModal(null)}
-          onTreeUpdate={() => {
-            // Optionally trigger a refresh of the tree layer
-          }}
-        />
-      )}
     </div>
   );
 };

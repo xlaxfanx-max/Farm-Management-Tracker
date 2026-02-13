@@ -22,6 +22,7 @@ import {
   Sun,
   Moon,
   TrendingUp,
+  TreePine,
 } from 'lucide-react';
 
 // Contexts
@@ -60,6 +61,7 @@ import { FSMADashboard } from './components/fsma';
 import { PrimusGFSDashboard } from './components/primusgfs';
 import Breadcrumbs from './components/navigation/Breadcrumbs';
 import YieldForecastDashboard from './components/yield-forecast/YieldForecastDashboard';
+import { TreeDetectionPage } from './components/tree-detection';
 
 import ErrorBoundary from './components/ui/ErrorBoundary';
 import { onboardingAPI } from './services/api';
@@ -212,6 +214,7 @@ function AppContent() {
     { id: 'harvests', label: 'Harvest & Packing', icon: Wheat },
     { id: 'yield-forecast', label: 'Yield Forecast', icon: TrendingUp },
     { id: 'compliance', label: 'Compliance', icon: Shield },
+    { id: 'tree-detection', label: 'Tree Detection', icon: TreePine },
     { id: 'disease', label: 'Disease Prevention', icon: Bug },
     { id: 'reports', label: 'Reports', icon: FileText },
     { id: 'activity', label: 'Activity Log', icon: Activity },
@@ -481,6 +484,7 @@ function AppContent() {
             <Route path="compliance/wps" element={<WPSCompliance onNavigate={handleNavigate} />} />
             <Route path="compliance/reports" element={<ComplianceReports onNavigate={handleNavigate} />} />
             <Route path="compliance/settings" element={<ComplianceSettings onNavigate={handleNavigate} />} />
+            <Route path="tree-detection" element={<TreeDetectionPage />} />
             <Route path="disease" element={<DiseaseDashboard onNavigate={handleNavigate} />} />
             <Route path="compliance/fsma" element={<FSMADashboard onNavigate={handleNavigate} />} />
             <Route path="compliance/fsma/visitors" element={<FSMADashboard onNavigate={handleNavigate} initialTab="visitors" />} />

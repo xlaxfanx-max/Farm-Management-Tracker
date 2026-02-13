@@ -103,20 +103,15 @@ from .nutrients import (
     get_common_fertilizers,
 )
 
-# -- imagery / satellite / trees / LiDAR -------------------------------------
+# -- imagery / quarantine ----------------------------------------------------
 from .imagery import (
     QuarantineStatus,
-    SatelliteImage,
-    TreeDetectionRun,
+)
+
+# -- tree detection (YOLO/DeepForest) ----------------------------------------
+from .tree_detection import (
+    TreeSurvey,
     DetectedTree,
-    LiDARDataset,
-    LiDARProcessingRun,
-    LiDARDetectedTree,
-    TerrainAnalysis,
-    Tree,
-    TreeObservation,
-    TreeMatchingRun,
-    TreeFeedback,
 )
 
 # -- compliance / notifications ----------------------------------------------
@@ -255,11 +250,10 @@ __all__ = [
     'NUTRIENT_APPLICATION_METHOD_CHOICES', 'FertilizerProduct',
     'NutrientApplication', 'NutrientPlan', 'WeatherCache',
     'get_common_fertilizers',
-    # imagery
-    'QuarantineStatus', 'SatelliteImage', 'TreeDetectionRun',
-    'DetectedTree', 'LiDARDataset', 'LiDARProcessingRun',
-    'LiDARDetectedTree', 'TerrainAnalysis', 'Tree', 'TreeObservation',
-    'TreeMatchingRun', 'TreeFeedback',
+    # imagery / quarantine
+    'QuarantineStatus',
+    # tree detection
+    'TreeSurvey', 'DetectedTree',
     # compliance
     'ComplianceProfile', 'ComplianceDeadline', 'ComplianceAlert',
     'License', 'WPSTrainingRecord', 'CentralPostingLocation',

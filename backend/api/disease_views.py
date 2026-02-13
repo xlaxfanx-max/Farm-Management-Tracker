@@ -441,7 +441,7 @@ class DiseaseAnalysisRunViewSet(AuditLogMixin, viewsets.ModelViewSet):
         if risk_level:
             queryset = queryset.filter(risk_level=risk_level)
 
-        return queryset.select_related('field', 'field__farm', 'satellite_image')
+        return queryset.select_related('field', 'field__farm')
 
     def get_serializer_class(self):
         if self.action == 'list':

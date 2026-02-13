@@ -106,10 +106,6 @@ class FieldSerializer(serializers.ModelSerializer):
             # Certification
             'organic_status', 'organic_status_display',
             'organic_certifier', 'organic_cert_number', 'organic_cert_expiration',
-            # Satellite tree detection data
-            'latest_satellite_tree_count', 'latest_satellite_trees_per_acre',
-            'satellite_canopy_coverage_percent', 'latest_detection_date',
-            'latest_detection_run',
             # Notes & status
             'notes', 'active',
             'created_at', 'updated_at', 'application_count'

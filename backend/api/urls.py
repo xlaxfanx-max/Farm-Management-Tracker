@@ -87,37 +87,8 @@ from .season_views import (
     GrowingCycleViewSet,
 )
 
-# Import imagery/tree detection views
-from .imagery_views import (
-    SatelliteImageViewSet,
-    TreeDetectionRunViewSet,
-    DetectedTreeViewSet,
-    field_trees,
-    field_tree_summary,
-    field_detection_history,
-    export_trees_geojson,
-)
-
-# Import LiDAR views
-from .lidar_views import (
-    LiDARDatasetViewSet,
-    LiDARProcessingRunViewSet,
-    LiDARDetectedTreeViewSet,
-    field_lidar_trees,
-    field_lidar_summary,
-    field_terrain,
-    field_frost_risk,
-    field_lidar_history,
-    export_lidar_trees_geojson,
-)
-
-# Import unified tree identity views
-from .tree_views import (
-    TreeViewSet,
-    FieldTreeViewSet,
-    TreeMatchingRunViewSet,
-    TreeFeedbackViewSet,
-)
+# Import tree detection views (YOLO/DeepForest)
+from .tree_detection_views import TreeSurveyViewSet
 
 # Import compliance views
 from .compliance_views import (
@@ -269,20 +240,8 @@ router.register(r'rootstocks', RootstockViewSet, basename='rootstock')
 router.register(r'season-templates', SeasonTemplateViewSet, basename='season-template')
 router.register(r'growing-cycles', GrowingCycleViewSet, basename='growing-cycle')
 
-# Satellite Imagery & Tree Detection
-router.register(r'satellite-images', SatelliteImageViewSet, basename='satellite-image')
-router.register(r'detection-runs', TreeDetectionRunViewSet, basename='detection-run')
-router.register(r'detected-trees', DetectedTreeViewSet, basename='detected-tree')
-
-# LiDAR Processing
-router.register(r'lidar-datasets', LiDARDatasetViewSet, basename='lidar-dataset')
-router.register(r'lidar-runs', LiDARProcessingRunViewSet, basename='lidar-run')
-router.register(r'lidar-trees', LiDARDetectedTreeViewSet, basename='lidar-tree')
-
-# Unified Tree Identity
-router.register(r'trees', TreeViewSet, basename='tree')
-router.register(r'tree-matching-runs', TreeMatchingRunViewSet, basename='tree-matching-run')
-router.register(r'tree-feedback', TreeFeedbackViewSet, basename='tree-feedback')
+# Tree Detection (YOLO/DeepForest)
+router.register(r'tree-surveys', TreeSurveyViewSet, basename='tree-survey')
 
 # Compliance Management
 router.register(r'compliance/profile', ComplianceProfileViewSet, basename='compliance-profile')
@@ -450,26 +409,6 @@ urlpatterns = [
     # Irrigation scheduling routes
     path('irrigation/dashboard/', irrigation_dashboard, name='irrigation-dashboard'),
     path('irrigation/cimis-stations/', cimis_stations, name='cimis-stations'),
-
-    # Tree detection routes (field-centric)
-    path('fields/<int:field_id>/trees/', field_trees, name='field-trees'),
-    path('fields/<int:field_id>/tree-summary/', field_tree_summary, name='field-tree-summary'),
-    path('fields/<int:field_id>/detection-history/', field_detection_history, name='field-detection-history'),
-    path('fields/<int:field_id>/trees/export/', export_trees_geojson, name='field-trees-export'),
-
-    # LiDAR routes (field-centric)
-    path('fields/<int:field_id>/lidar-trees/', field_lidar_trees, name='field-lidar-trees'),
-    path('fields/<int:field_id>/lidar-summary/', field_lidar_summary, name='field-lidar-summary'),
-    path('fields/<int:field_id>/terrain/', field_terrain, name='field-terrain'),
-    path('fields/<int:field_id>/frost-risk/', field_frost_risk, name='field-frost-risk'),
-    path('fields/<int:field_id>/lidar-history/', field_lidar_history, name='field-lidar-history'),
-    path('fields/<int:field_id>/lidar-trees/export/', export_lidar_trees_geojson, name='field-lidar-trees-export'),
-
-    # Unified Tree Identity routes (field-centric)
-    path('fields/<int:pk>/unified-trees/', FieldTreeViewSet.as_view({'get': 'unified_trees'}), name='field-unified-trees'),
-    path('fields/<int:pk>/tree-summary/', FieldTreeViewSet.as_view({'get': 'tree_summary'}), name='field-tree-summary-unified'),
-    path('fields/<int:pk>/tree-timeline/', FieldTreeViewSet.as_view({'get': 'tree_timeline'}), name='field-tree-timeline'),
-    path('fields/<int:pk>/match-trees/', FieldTreeViewSet.as_view({'post': 'match_trees'}), name='field-match-trees'),
 
     # Packinghouse Pool Tracking analytics routes
     path('packinghouse-analytics/block-performance/', block_performance, name='packinghouse-block-performance'),

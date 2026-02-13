@@ -1,11 +1,10 @@
 import React, { useState, useMemo } from 'react';
-import { Home, Plus, MapPin, Locate, Search, X, Mountain } from 'lucide-react';
+import { Home, Plus, MapPin, Locate, Search, X } from 'lucide-react';
 import FarmMap from './FarmMap';
 import FarmCard from './FarmCard';
 import FarmToolbar from './FarmToolbar';
 import FarmInsightsPanel from './FarmInsightsPanel';
 import GeocodePreviewModal from './GeocodePreviewModal';
-import { TreeSummaryCard, TreeDetectionPanel, SatelliteImageUpload, LiDARSummaryCard, LiDARUploadPanel } from './imagery';
 import { mapAPI, farmsAPI } from '../services/api';
 import { useData } from '../contexts/DataContext';
 import { useModal } from '../contexts/ModalContext';
@@ -19,11 +18,6 @@ function Farms() {
   const [selectedFieldId, setSelectedFieldId] = useState(null);
   const [geocodingFarmId, setGeocodingFarmId] = useState(null);
   const [drawingField, setDrawingField] = useState(null); // { id, name } - field to start drawing for
-  const [showImageUpload, setShowImageUpload] = useState(null); // farmId to upload for
-  const [showTreeDetection, setShowTreeDetection] = useState(null); // { imageId, farmId, fields }
-  const [showTreeSummary, setShowTreeSummary] = useState(null); // fieldId to show summary for
-  const [showLiDARSummary, setShowLiDARSummary] = useState(null); // fieldId to show LiDAR summary for
-  const [showLiDARUpload, setShowLiDARUpload] = useState(null); // fieldId to upload LiDAR for
 
   // Geocoding preview state
   const [geocodePreview, setGeocodePreview] = useState({
@@ -377,7 +371,6 @@ function Farms() {
                   onDelete={handleDeleteFarm}
                   onAddField={handleNewField}
                   onGeocode={handleGeocodeFarm}
-                  onUploadImagery={setShowImageUpload}
                   isGeocoding={geocodingFarmId === farm.id}
                   selectedFieldId={selectedFieldId}
                   onFieldSelect={handleFieldSelect}
@@ -395,8 +388,6 @@ function Farms() {
                       setDrawingField({ id: field.id, name: field.name });
                     }, 300);
                   }}
-                  onFieldTreeSummary={setShowTreeSummary}
-                  onFieldLiDARSummary={setShowLiDARSummary}
                   getFieldApplicationCount={getFieldApplicationCount}
                 />
               );
@@ -440,137 +431,6 @@ function Farms() {
           </div>
         )}
       </div>
-
-      {/* Satellite Image Upload Modal */}
-      {showImageUpload && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-xl w-full max-h-[90vh] overflow-y-auto">
-            <SatelliteImageUpload
-              farms={safeFarms}
-              selectedFarmId={showImageUpload}
-              onUploadComplete={(imageData) => {
-                setShowImageUpload(null);
-                // Always show tree detection panel after upload so user can see status
-                if (imageData && imageData.id) {
-                  const farmFields = getFarmFields(showImageUpload);
-                  setShowTreeDetection({
-                    imageId: imageData.id,
-                    farmId: showImageUpload,
-                    fields: farmFields
-                  });
-                }
-              }}
-              onCancel={() => setShowImageUpload(null)}
-            />
-          </div>
-        </div>
-      )}
-
-      {/* Tree Detection Panel Modal */}
-      {showTreeDetection && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-lg w-full max-h-[90vh] overflow-y-auto">
-            <TreeDetectionPanel
-              satelliteImageId={showTreeDetection.imageId}
-              fields={showTreeDetection.fields}
-              onDetectionComplete={(runs) => {
-                console.log('Detection complete:', runs);
-                // Reload data to refresh field tree counts
-                if (loadData) loadData();
-                // Don't close panel - let user see results and close manually
-              }}
-              onClose={() => setShowTreeDetection(null)}
-            />
-          </div>
-        </div>
-      )}
-
-      {/* Tree Summary Modal */}
-      {showTreeSummary && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-md w-full">
-            <div className="p-4 border-b flex justify-between items-center">
-              <h3 className="font-semibold">Tree Detection Summary</h3>
-              <button
-                onClick={() => setShowTreeSummary(null)}
-                className="text-gray-400 hover:text-gray-600"
-              >
-                &times;
-              </button>
-            </div>
-            <div className="p-4">
-              <TreeSummaryCard
-                fieldId={showTreeSummary}
-                onRunDetection={() => {
-                  // Find the field and its farm to set up detection
-                  const field = fields.find(f => f.id === showTreeSummary);
-                  if (field) {
-                    setShowTreeSummary(null);
-                    setShowImageUpload(parseInt(field.farm));
-                  }
-                }}
-              />
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* LiDAR Summary Modal */}
-      {showLiDARSummary && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="bg-white rounded-lg max-w-md w-full">
-            <div className="p-4 border-b flex justify-between items-center">
-              <h3 className="font-semibold flex items-center">
-                <Mountain className="w-5 h-5 mr-2 text-emerald-600" />
-                LiDAR Analysis Summary
-              </h3>
-              <button
-                onClick={() => setShowLiDARSummary(null)}
-                className="text-gray-400 hover:text-gray-600"
-              >
-                &times;
-              </button>
-            </div>
-            <div className="p-4">
-              <LiDARSummaryCard
-                fieldId={showLiDARSummary}
-                onUploadLiDAR={() => {
-                  setShowLiDARSummary(null);
-                  setShowLiDARUpload(showLiDARSummary);
-                }}
-                onViewTrees={() => {
-                  setShowLiDARSummary(null);
-                  setSelectedFieldId(showLiDARSummary);
-                  setViewMode('map');
-                }}
-              />
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* LiDAR Upload Modal */}
-      {showLiDARUpload && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="max-w-lg w-full mx-4">
-            <LiDARUploadPanel
-              fields={fields}
-              selectedFieldId={showLiDARUpload}
-              onUploadComplete={(dataset) => {
-                console.log('LiDAR dataset uploaded:', dataset);
-                loadData();
-              }}
-              onProcessingComplete={(run) => {
-                console.log('LiDAR processing complete:', run);
-                setShowLiDARUpload(null);
-                setShowLiDARSummary(showLiDARUpload);
-                loadData();
-              }}
-              onCancel={() => setShowLiDARUpload(null)}
-            />
-          </div>
-        </div>
-      )}
 
       {/* Geocode Preview Modal */}
       <GeocodePreviewModal

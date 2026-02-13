@@ -247,21 +247,6 @@ class DiseaseAnalysisRun(models.Model):
         related_name='disease_analyses'
     )
 
-    satellite_image = models.ForeignKey(
-        'SatelliteImage',
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='disease_analyses'
-    )
-    tree_detection_run = models.ForeignKey(
-        'TreeDetectionRun',
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='disease_analyses'
-    )
-
     # Processing status
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     error_message = models.TextField(blank=True)
@@ -623,13 +608,6 @@ class TreeHealthRecord(models.Model):
     # Current state
     current_ndvi = models.DecimalField(max_digits=4, decimal_places=3, null=True)
     current_canopy_diameter_m = models.DecimalField(max_digits=4, decimal_places=2, null=True)
-    last_detection_run = models.ForeignKey(
-        'TreeDetectionRun',
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='+'
-    )
     last_updated = models.DateTimeField(auto_now=True)
 
     # Trend data
