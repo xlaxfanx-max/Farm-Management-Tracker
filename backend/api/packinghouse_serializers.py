@@ -224,7 +224,7 @@ class SettlementGradeLineSerializer(serializers.ModelSerializer):
     class Meta:
         model = SettlementGradeLine
         fields = [
-            'id', 'grade', 'size', 'unit_of_measure', 'unit_display',
+            'id', 'block_id', 'grade', 'size', 'unit_of_measure', 'unit_display',
             'quantity', 'percent_of_total', 'fob_rate', 'total_amount'
         ]
 
@@ -236,7 +236,7 @@ class SettlementDeductionSerializer(serializers.ModelSerializer):
     class Meta:
         model = SettlementDeduction
         fields = [
-            'id', 'category', 'category_display', 'description',
+            'id', 'block_id', 'category', 'category_display', 'description',
             'quantity', 'unit_of_measure', 'rate', 'amount'
         ]
 

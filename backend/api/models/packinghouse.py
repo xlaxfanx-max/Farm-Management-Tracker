@@ -693,6 +693,13 @@ class SettlementGradeLine(models.Model):
         related_name='grade_lines'
     )
 
+    block_id = models.CharField(
+        max_length=20,
+        blank=True,
+        default='',
+        help_text='Block/grove ID this line belongs to (e.g., "002", "003"). Blank if no block breakdown.'
+    )
+
     grade = models.CharField(
         max_length=20,
         help_text='Grade designation (e.g., "SK DOMESTIC", "CH DOMESTIC", "JUICE")'
@@ -759,6 +766,13 @@ class SettlementDeduction(models.Model):
         PoolSettlement,
         on_delete=models.CASCADE,
         related_name='deductions'
+    )
+
+    block_id = models.CharField(
+        max_length=20,
+        blank=True,
+        default='',
+        help_text='Block/grove ID this deduction belongs to (e.g., "002", "003"). Blank if not block-specific.'
     )
 
     category = models.CharField(
@@ -910,6 +924,7 @@ class PackinghouseStatement(models.Model):
     PACKINGHOUSE_FORMAT_CHOICES = [
         ('vpoa', 'Villa Park Orchards (VPOA)'),
         ('sla', 'Saticoy Lemon Association (SLA)'),
+        ('mission', 'Mission Produce'),
         ('generic', 'Generic/Other'),
     ]
 

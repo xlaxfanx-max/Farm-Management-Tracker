@@ -462,6 +462,7 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
                   <option value="">Auto-detect</option>
                   <option value="vpoa">Villa Park Orchards (VPOA)</option>
                   <option value="sla">Saticoy Lemon Association (SLA)</option>
+                  <option value="mission">Mission Produce</option>
                   <option value="generic">Generic/Other</option>
                 </select>
               </div>

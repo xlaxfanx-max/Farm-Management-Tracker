@@ -22,6 +22,7 @@ const ExtractedDataPreview = ({ data, statementType, onChange }) => {
   const unitLabel = isWeightBased ? 'Lb' : 'Bin';
   const [expandedSections, setExpandedSections] = useState({
     header: true,
+    blocks: true,
     summary: true,
     gradeLines: true,
     financials: statementType === 'settlement' || statementType === 'grower_statement',
@@ -230,6 +231,49 @@ const ExtractedDataPreview = ({ data, statementType, onChange }) => {
         )}
       </div>
 
+      {/* Blocks Section (for multi-block statements like Mission Produce) */}
+      {data.blocks && data.blocks.length > 0 && (
+        <div className="border border-gray-200 rounded-lg overflow-hidden">
+          <SectionHeader title={`Blocks (${data.blocks.length})`} section="blocks" icon={Package} />
+          {expandedSections.blocks && (
+            <div className="p-4 overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-left text-gray-600 border-b">
+                    <th className="pb-2 font-medium">Block ID</th>
+                    <th className="pb-2 font-medium">Name</th>
+                    {data.blocks[0]?.weight_lbs != null && <th className="pb-2 font-medium text-right">Weight (lbs)</th>}
+                    {data.blocks[0]?.bins != null && <th className="pb-2 font-medium text-right">Bins</th>}
+                    {data.blocks[0]?.gross_dollars != null && <th className="pb-2 font-medium text-right">Gross $</th>}
+                    {data.blocks[0]?.net_dollars != null && <th className="pb-2 font-medium text-right">Net $</th>}
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.blocks.map((block, i) => (
+                    <tr key={i} className="border-b border-gray-100">
+                      <td className="py-2 font-medium">{block.block_id}</td>
+                      <td className="py-2 text-gray-600">{block.block_name || '-'}</td>
+                      {data.blocks[0]?.weight_lbs != null && (
+                        <td className="py-2 text-right">{block.weight_lbs?.toLocaleString() ?? '-'}</td>
+                      )}
+                      {data.blocks[0]?.bins != null && (
+                        <td className="py-2 text-right">{block.bins?.toLocaleString() ?? '-'}</td>
+                      )}
+                      {data.blocks[0]?.gross_dollars != null && (
+                        <td className="py-2 text-right">{block.gross_dollars != null ? `$${block.gross_dollars.toLocaleString(undefined, {minimumFractionDigits: 2})}` : '-'}</td>
+                      )}
+                      {data.blocks[0]?.net_dollars != null && (
+                        <td className="py-2 text-right">{block.net_dollars != null ? `$${block.net_dollars.toLocaleString(undefined, {minimumFractionDigits: 2})}` : '-'}</td>
+                      )}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Summary Section */}
       <div className="border border-gray-200 rounded-lg overflow-hidden">
         <SectionHeader title="Summary" section="summary" icon={Package} />
@@ -249,99 +293,140 @@ const ExtractedDataPreview = ({ data, statementType, onChange }) => {
 
       {/* Grade Lines Section */}
       <div className="border border-gray-200 rounded-lg overflow-hidden">
-        <SectionHeader title="Grade Breakdown" section="gradeLines" icon={Percent} />
+        <SectionHeader
+          title={`Grade Breakdown${data.grade_lines?.length ? ` (${data.grade_lines.length} lines)` : ''}`}
+          section="gradeLines"
+          icon={Percent}
+        />
         {expandedSections.gradeLines && (
           <div className="p-4">
-            {data.grade_lines && data.grade_lines.length > 0 ? (
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="text-left text-gray-600 border-b">
-                      <th className="pb-2 font-medium">Grade</th>
-                      <th className="pb-2 font-medium">Size</th>
-                      <th className="pb-2 font-medium text-right">Qty</th>
-                      <th className="pb-2 font-medium text-right">%</th>
-                      {(statementType === 'settlement' || statementType === 'grower_statement') && (
-                        <>
-                          <th className="pb-2 font-medium text-right">FOB Rate</th>
-                          <th className="pb-2 font-medium text-right">Total</th>
-                        </>
-                      )}
-                      <th className="pb-2 w-8"></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {data.grade_lines.map((line, index) => (
-                      <tr key={index} className="border-b border-gray-100">
-                        <td className="py-2">
-                          <input
-                            type="text"
-                            value={line.grade || ''}
-                            onChange={(e) => updateGradeLine(index, 'grade', e.target.value)}
-                            className="w-24 px-2 py-1 border border-gray-200 rounded text-sm focus:border-green-500 focus:outline-none"
-                          />
-                        </td>
-                        <td className="py-2">
-                          <input
-                            type="text"
-                            value={line.size || ''}
-                            onChange={(e) => updateGradeLine(index, 'size', e.target.value)}
-                            className="w-16 px-2 py-1 border border-gray-200 rounded text-sm focus:border-green-500 focus:outline-none"
-                          />
-                        </td>
-                        <td className="py-2 text-right">
-                          <input
-                            type="number"
-                            value={line.quantity || ''}
-                            onChange={(e) => updateGradeLine(index, 'quantity', parseFloat(e.target.value) || 0)}
-                            className="w-20 px-2 py-1 border border-gray-200 rounded text-sm text-right focus:border-green-500 focus:outline-none"
-                          />
-                        </td>
-                        <td className="py-2 text-right">
-                          <input
-                            type="number"
-                            value={line.percent || ''}
-                            onChange={(e) => updateGradeLine(index, 'percent', parseFloat(e.target.value) || 0)}
-                            step="0.01"
-                            className="w-16 px-2 py-1 border border-gray-200 rounded text-sm text-right focus:border-green-500 focus:outline-none"
-                          />
-                        </td>
+            {data.grade_lines && data.grade_lines.length > 0 ? (() => {
+              // Check if grade lines have block_id grouping
+              const hasBlocks = data.grade_lines.some(l => l.block_id);
+              // Build ordered list of unique block IDs preserving document order
+              const blockIds = hasBlocks
+                ? [...new Map(data.grade_lines.filter(l => l.block_id).map(l => [l.block_id, true])).keys()]
+                : [null];
+              // Find matching block name from blocks array
+              const getBlockLabel = (blockId) => {
+                if (!blockId) return null;
+                const block = (data.blocks || []).find(b => b.block_id === blockId);
+                return block?.block_name ? `${blockId} - ${block.block_name}` : `Block ${blockId}`;
+              };
+
+              return (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="text-left text-gray-600 border-b">
+                        {hasBlocks && <th className="pb-2 font-medium">Block</th>}
+                        <th className="pb-2 font-medium">Grade</th>
+                        <th className="pb-2 font-medium">Size</th>
+                        <th className="pb-2 font-medium text-right">Qty</th>
+                        <th className="pb-2 font-medium text-right">%</th>
                         {(statementType === 'settlement' || statementType === 'grower_statement') && (
                           <>
-                            <td className="py-2 text-right">
-                              <input
-                                type="number"
-                                value={line.fob_rate || ''}
-                                onChange={(e) => updateGradeLine(index, 'fob_rate', parseFloat(e.target.value) || null)}
-                                step="0.000001"
-                                className="w-24 px-2 py-1 border border-gray-200 rounded text-sm text-right focus:border-green-500 focus:outline-none"
-                              />
-                            </td>
-                            <td className="py-2 text-right">
-                              <input
-                                type="number"
-                                value={line.total_amount || ''}
-                                onChange={(e) => updateGradeLine(index, 'total_amount', parseFloat(e.target.value) || null)}
-                                step="0.01"
-                                className="w-24 px-2 py-1 border border-gray-200 rounded text-sm text-right focus:border-green-500 focus:outline-none"
-                              />
-                            </td>
+                            <th className="pb-2 font-medium text-right">FOB Rate</th>
+                            <th className="pb-2 font-medium text-right">Total</th>
                           </>
                         )}
-                        <td className="py-2">
-                          <button
-                            onClick={() => removeGradeLine(index)}
-                            className="p-1 text-red-400 hover:text-red-600 hover:bg-red-50 rounded"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </td>
+                        <th className="pb-2 w-8"></th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ) : (
+                    </thead>
+                    <tbody>
+                      {blockIds.map((blockId) => {
+                        const blockLines = hasBlocks
+                          ? data.grade_lines.map((line, idx) => ({ line, idx })).filter(({ line }) => line.block_id === blockId)
+                          : data.grade_lines.map((line, idx) => ({ line, idx }));
+                        const blockLabel = getBlockLabel(blockId);
+
+                        return (
+                          <React.Fragment key={blockId || 'all'}>
+                            {hasBlocks && blockLabel && (
+                              <tr className="bg-gray-50">
+                                <td colSpan={99} className="py-2 px-2 font-medium text-gray-700 text-xs uppercase tracking-wide">
+                                  {blockLabel}
+                                </td>
+                              </tr>
+                            )}
+                            {blockLines.map(({ line, idx: index }) => (
+                              <tr key={index} className="border-b border-gray-100">
+                                {hasBlocks && (
+                                  <td className="py-2 text-xs text-gray-400">{line.block_id || ''}</td>
+                                )}
+                                <td className="py-2">
+                                  <input
+                                    type="text"
+                                    value={line.grade || ''}
+                                    onChange={(e) => updateGradeLine(index, 'grade', e.target.value)}
+                                    className="w-24 px-2 py-1 border border-gray-200 rounded text-sm focus:border-green-500 focus:outline-none"
+                                  />
+                                </td>
+                                <td className="py-2">
+                                  <input
+                                    type="text"
+                                    value={line.size || ''}
+                                    onChange={(e) => updateGradeLine(index, 'size', e.target.value)}
+                                    className="w-16 px-2 py-1 border border-gray-200 rounded text-sm focus:border-green-500 focus:outline-none"
+                                  />
+                                </td>
+                                <td className="py-2 text-right">
+                                  <input
+                                    type="number"
+                                    value={line.quantity || ''}
+                                    onChange={(e) => updateGradeLine(index, 'quantity', parseFloat(e.target.value) || 0)}
+                                    className="w-20 px-2 py-1 border border-gray-200 rounded text-sm text-right focus:border-green-500 focus:outline-none"
+                                  />
+                                </td>
+                                <td className="py-2 text-right">
+                                  <input
+                                    type="number"
+                                    value={line.percent || ''}
+                                    onChange={(e) => updateGradeLine(index, 'percent', parseFloat(e.target.value) || 0)}
+                                    step="0.01"
+                                    className="w-16 px-2 py-1 border border-gray-200 rounded text-sm text-right focus:border-green-500 focus:outline-none"
+                                  />
+                                </td>
+                                {(statementType === 'settlement' || statementType === 'grower_statement') && (
+                                  <>
+                                    <td className="py-2 text-right">
+                                      <input
+                                        type="number"
+                                        value={line.fob_rate || ''}
+                                        onChange={(e) => updateGradeLine(index, 'fob_rate', parseFloat(e.target.value) || null)}
+                                        step="0.000001"
+                                        className="w-24 px-2 py-1 border border-gray-200 rounded text-sm text-right focus:border-green-500 focus:outline-none"
+                                      />
+                                    </td>
+                                    <td className="py-2 text-right">
+                                      <input
+                                        type="number"
+                                        value={line.total_amount || ''}
+                                        onChange={(e) => updateGradeLine(index, 'total_amount', parseFloat(e.target.value) || null)}
+                                        step="0.01"
+                                        className="w-24 px-2 py-1 border border-gray-200 rounded text-sm text-right focus:border-green-500 focus:outline-none"
+                                      />
+                                    </td>
+                                  </>
+                                )}
+                                <td className="py-2">
+                                  <button
+                                    onClick={() => removeGradeLine(index)}
+                                    className="p-1 text-red-400 hover:text-red-600 hover:bg-red-50 rounded"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </button>
+                                </td>
+                              </tr>
+                            ))}
+                          </React.Fragment>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              );
+            })() : (
               <p className="text-sm text-gray-500 text-center py-2">No grade lines</p>
             )}
             <button

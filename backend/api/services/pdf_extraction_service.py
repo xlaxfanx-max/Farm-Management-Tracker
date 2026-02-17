@@ -240,7 +240,7 @@ class PDFExtractionService:
         logger.info(f"Sending {len(images)} page(s) to Claude for extraction")
         response = self.client.messages.create(
             model=self.MODEL,
-            max_tokens=4096,
+            max_tokens=8192,
             messages=[
                 {
                     "role": "user",
@@ -271,6 +271,18 @@ SLA formats include:
 - Wash reports with run numbers, ticket numbers, bins, and grade percentages
 - Grower pool statements with grade/size/rate breakdowns and capital fund info
 """
+        elif packinghouse_format == 'mission':
+            format_hint = """
+This appears to be from Mission Produce.
+Mission Produce grower statements typically include:
+- Multiple blocks (ranch/grove sections) on a single statement
+- A top payment summary table showing per-block harvest payments with gross pounds, gross dollars, deductions (Picking, CAC, HAB, Hauling, Other), net dollars, check number, and check date
+- A size breakdown table showing per-block detail: size (32, 36, 40, 48, 60, 70, 84, 96, 120, 2LG, 2ME, 2SM), net pounds, avg price, gross dollars
+- Subtotals per block and a Grand Total row
+- Variety is typically HassConv (Hass Conventional) for avocados
+- Data may span multiple pages — extract ALL blocks from ALL pages
+IMPORTANT: Each block may have multiple payment lines in the top table. Each grade/size line in the bottom table belongs to a specific block. You MUST extract data from ALL blocks, not just the first one.
+"""
 
         return f"""Analyze this packinghouse statement PDF and extract all data into structured JSON format.
 {format_hint}
@@ -283,7 +295,7 @@ First, identify:
 Then extract ALL relevant data. Return a JSON object with this structure:
 
 {{
-    "packinghouse_format": "vpoa" | "sla" | "generic",
+    "packinghouse_format": "vpoa" | "sla" | "mission" | "generic",
     "packinghouse_name": "string - the full packinghouse name as shown on the document (e.g., 'Villa Park Orchards Association', 'Saticoy Lemon Association')",
     "packinghouse_short_code": "string or null - any abbreviation shown (e.g., 'VPOA', 'SLA')",
     "statement_type": "packout" | "settlement" | "wash_report" | "grower_statement",
@@ -305,18 +317,21 @@ Then extract ALL relevant data. Return a JSON object with this structure:
 
     "blocks": [
         {{
-            "block_id": "string",
-            "block_name": "string or null",
-            "bins": number,
+            "block_id": "string (e.g., '002', '003')",
+            "block_name": "string or null (e.g., 'SATICOY 02')",
+            "bins": number or null,
             "cartons": number or null,
-            "weight_lbs": number or null
+            "weight_lbs": number or null,
+            "gross_dollars": number or null,
+            "net_dollars": number or null
         }}
     ],
 
     "grade_lines": [
         {{
-            "grade": "string (e.g., SUNKIST, CHOICE, STANDARD, JUICE)",
-            "size": "string or null (e.g., 048, 056, 075)",
+            "block_id": "string or null - the block/grove ID this line belongs to (e.g., '002', '003'). Use null if the statement has no block-level breakdown.",
+            "grade": "string (e.g., SUNKIST, CHOICE, STANDARD, JUICE, HassConv)",
+            "size": "string or null (e.g., 048, 056, 075, 32, 36, 40, 48, 60, 70, 84)",
             "quantity": number,
             "percent": number,
             "unit": "CARTON" | "BIN" | "LBS",
@@ -353,6 +368,7 @@ Then extract ALL relevant data. Return a JSON object with this structure:
 
     "deductions": [
         {{
+            "block_id": "string or null - the block/grove ID this deduction belongs to (e.g., '002', '003'). Use null if deductions are not broken out by block.",
             "category": "packing" | "assessment" | "pick_haul" | "capital" | "marketing" | "other",
             "description": "string",
             "quantity": number or null,
@@ -366,18 +382,21 @@ Then extract ALL relevant data. Return a JSON object with this structure:
 }}
 
 Important:
-- Extract ALL grade lines visible in the document
+- Extract ALL grade lines visible in the document from ALL blocks/sections and ALL pages
 - Extract ALL deduction line items
 - Use null for fields that aren't present in the document
 - Parse dates in YYYY-MM-DD format
 - Parse numbers without currency symbols or commas
 - For percentages, use decimal values (e.g., 85.5 not "85.5%")
-- Be precise with grade names (SK DOMESTIC, CH DOMESTIC, STANDARD, JUICE, etc.)
-- Include size codes exactly as shown (048, 056, 072, 075, 088, 095, etc.)
+- Be precise with grade names (SK DOMESTIC, CH DOMESTIC, STANDARD, JUICE, HassConv, etc.)
+- Include size codes exactly as shown (048, 056, 072, 075, 088, 095, 32, 36, 40, 48, 60, 70, 84, etc.)
+- CRITICAL for multi-block statements: If the document shows data broken out by block/grove (e.g., "002 - SATICOY 02", "003 - SATICOY 03"), include the block_id on EVERY grade line and deduction. Use just the numeric block code (e.g., "002", "003"). Extract grade lines from ALL blocks, not just the first one. The document may span multiple pages — check ALL pages for block data.
+- For Mission Produce statements: The grade/size breakdown table continues across pages. Each block has a subtotal row — extract every size line under each block, tagging each with the block_id. Use "AVOCADOS" for commodity. Map deductions from the payment summary table (CAC, HAB columns) as deductions with block_id.
 - CRITICAL for bins: Wash reports often show TWO bin values - "This Date" (incremental for the period) and "Pool-to-Date" or "Block-to-Date" (cumulative). Extract BOTH:
   * bins_this_period = the "This Date" or period-specific incremental value
   * bins_cumulative = the "Pool-to-Date", "Block-to-Date", or cumulative running total
   * total_bins = use bins_this_period if available, otherwise the main bin count shown
+- For summary totals: Use the Grand Total row values, not subtotals from a single block
 
 Return ONLY the JSON object, no additional text."""
 
@@ -391,7 +410,7 @@ Return ONLY the JSON object, no additional text."""
         warnings = []
 
         # Validate packinghouse_format
-        valid_formats = ('vpoa', 'sla', 'generic')
+        valid_formats = ('vpoa', 'sla', 'mission', 'generic')
         fmt = data.get('packinghouse_format', 'generic')
         if fmt not in valid_formats:
             data['packinghouse_format'] = 'generic'
@@ -670,6 +689,7 @@ Return ONLY the JSON object, no additional text."""
                 'grade': (line.get('grade') or 'UNKNOWN')[:20],
                 'size': (line.get('size') or '')[:10],  # Handle None values, truncate to model max_length
                 'unit_of_measure': (line.get('unit') or 'CARTON')[:20],
+                'block_id': (line.get('block_id') or '')[:20],
             }
 
             if for_settlement:
@@ -710,6 +730,7 @@ Return ONLY the JSON object, no additional text."""
                 'unit_of_measure': ded.get('unit') or 'UNIT',
                 'rate': self._to_decimal(ded.get('rate'), default=Decimal('0')),
                 'amount': self._to_decimal(ded.get('amount'), default=Decimal('0')),
+                'block_id': (ded.get('block_id') or '')[:20],
             }
             result.append(ded_data)
 
