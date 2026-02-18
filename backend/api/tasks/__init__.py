@@ -1,13 +1,5 @@
-# Tree detection and imagery processing tasks
-from .imagery_tasks import process_tree_detection
-
-# LiDAR processing tasks
-from .lidar_tasks import (
-    process_lidar_for_field,
-    validate_lidar_dataset,
-    cleanup_old_lidar_runs,
-    approve_lidar_run_and_update_field,
-)
+# Tree detection tasks
+from .tree_detection_tasks import run_tree_detection_task
 
 # Compliance management tasks
 from .compliance_tasks import (

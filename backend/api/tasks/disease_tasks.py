@@ -33,7 +33,7 @@ def analyze_field_health(self, field_id: int, analysis_id: int = None):
     """
     from api.models import (
         Field, DiseaseAnalysisRun, DiseaseAlert,
-        TreeDetectionRun, DetectedTree
+        TreeSurvey, DetectedTree
     )
 
     try:
@@ -53,20 +53,20 @@ def analyze_field_health(self, field_id: int, analysis_id: int = None):
         analysis.status = 'processing'
         analysis.save()
 
-        # Get latest tree detection data
-        latest_run = field.detection_runs.filter(
+        # Get latest tree survey data
+        latest_survey = TreeSurvey.objects.filter(
+            field=field,
             status='completed',
-            is_approved=True
-        ).order_by('-completed_at').first()
+        ).order_by('-capture_date').first()
 
-        if not latest_run:
+        if not latest_survey:
             analysis.status = 'failed'
-            analysis.error_message = "No approved tree detection run found for this field"
+            analysis.error_message = "No completed tree survey found for this field"
             analysis.save()
             return {'status': 'failed', 'error': analysis.error_message}
 
         # Get tree-level NDVI data
-        trees = latest_run.trees.filter(status='active')
+        trees = DetectedTree.objects.filter(survey=latest_survey)
         tree_stats = trees.aggregate(
             avg_ndvi=Avg('ndvi_value'),
             total_count=Count('id')
@@ -115,9 +115,7 @@ def analyze_field_health(self, field_id: int, analysis_id: int = None):
         # Update analysis record
         analysis.status = 'completed'
         analysis.completed_at = timezone.now()
-        analysis.tree_detection_run = latest_run
         analysis.avg_ndvi = Decimal(str(round(avg_ndvi, 3)))
-        analysis.canopy_coverage_percent = latest_run.canopy_coverage_percent
         analysis.total_trees_analyzed = total_trees
         analysis.trees_healthy = trees_healthy
         analysis.trees_mild_stress = trees_mild_stress
@@ -138,7 +136,6 @@ def analyze_field_health(self, field_id: int, analysis_id: int = None):
         # Set baseline if not established
         if not field.baseline_ndvi:
             field.baseline_ndvi = Decimal(str(round(avg_ndvi, 3)))
-            field.baseline_canopy_coverage = latest_run.canopy_coverage_percent
             field.baseline_established_date = timezone.now().date()
 
         field.save()
