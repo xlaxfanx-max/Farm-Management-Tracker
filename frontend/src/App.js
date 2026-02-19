@@ -505,6 +505,24 @@ function AppContent() {
             <Route path="compliance/primusgfs/calibration" element={<PrimusGFSDashboard onNavigate={handleNavigate} initialTab="calibration" />} />
             <Route path="compliance/primusgfs/pest-control" element={<PrimusGFSDashboard onNavigate={handleNavigate} initialTab="pest-control" />} />
             <Route path="compliance/primusgfs/pre-harvest" element={<PrimusGFSDashboard onNavigate={handleNavigate} initialTab="pre-harvest" />} />
+            {/* CAC Food Safety Manual V5.0 tab routes */}
+            <Route path="compliance/primusgfs/profile" element={<PrimusGFSDashboard onNavigate={handleNavigate} initialTab="profile" />} />
+            <Route path="compliance/primusgfs/org-roles" element={<PrimusGFSDashboard onNavigate={handleNavigate} initialTab="org-roles" />} />
+            <Route path="compliance/primusgfs/committee" element={<PrimusGFSDashboard onNavigate={handleNavigate} initialTab="committee" />} />
+            <Route path="compliance/primusgfs/mgmt-review" element={<PrimusGFSDashboard onNavigate={handleNavigate} initialTab="mgmt-review" />} />
+            <Route path="compliance/primusgfs/training-matrix" element={<PrimusGFSDashboard onNavigate={handleNavigate} initialTab="training-matrix" />} />
+            <Route path="compliance/primusgfs/training-sessions" element={<PrimusGFSDashboard onNavigate={handleNavigate} initialTab="training-sessions" />} />
+            <Route path="compliance/primusgfs/perimeter" element={<PrimusGFSDashboard onNavigate={handleNavigate} initialTab="perimeter" />} />
+            <Route path="compliance/primusgfs/pre-season" element={<PrimusGFSDashboard onNavigate={handleNavigate} initialTab="pre-season" />} />
+            <Route path="compliance/primusgfs/field-risk" element={<PrimusGFSDashboard onNavigate={handleNavigate} initialTab="field-risk" />} />
+            <Route path="compliance/primusgfs/non-conformance" element={<PrimusGFSDashboard onNavigate={handleNavigate} initialTab="non-conformance" />} />
+            <Route path="compliance/primusgfs/product-holds" element={<PrimusGFSDashboard onNavigate={handleNavigate} initialTab="product-holds" />} />
+            <Route path="compliance/primusgfs/supplier-verify" element={<PrimusGFSDashboard onNavigate={handleNavigate} initialTab="supplier-verify" />} />
+            <Route path="compliance/primusgfs/food-fraud" element={<PrimusGFSDashboard onNavigate={handleNavigate} initialTab="food-fraud" />} />
+            <Route path="compliance/primusgfs/emergency" element={<PrimusGFSDashboard onNavigate={handleNavigate} initialTab="emergency" />} />
+            <Route path="compliance/primusgfs/chemical-inv" element={<PrimusGFSDashboard onNavigate={handleNavigate} initialTab="chemical-inv" />} />
+            <Route path="compliance/primusgfs/sanitation-maint" element={<PrimusGFSDashboard onNavigate={handleNavigate} initialTab="sanitation-maint" />} />
+            <Route path="compliance/primusgfs/cac-manual" element={<PrimusGFSDashboard onNavigate={handleNavigate} initialTab="cac-manual" />} />
             <Route path="compliance/pesticide" element={<DeadlineCalendar onNavigate={handleNavigate} />} />
             <Route path="yield-forecast" element={<YieldForecastDashboard />} />
             {/* Catch-all redirect to dashboard */}

@@ -2664,6 +2664,134 @@ export const primusGFSAPI = {
   completePreHarvestInspection: (id, data) => api.post(`/primusgfs/pre-harvest/${id}/complete_inspection/`, data),
   approvePreHarvestInspection: (id, data = {}) => api.post(`/primusgfs/pre-harvest/${id}/approve/`, data),
   upcomingHarvests: () => api.get('/primusgfs/pre-harvest/upcoming_harvests/'),
+
+  // === CAC Food Safety Manual V5.0 additions ===
+
+  // Food Safety Profile (singleton)
+  getFoodSafetyProfile: () => api.get('/primusgfs/food-safety-profile/'),
+  updateFoodSafetyProfile: (id, data) => _putMaybeFile(`/primusgfs/food-safety-profile/${id}/`, data),
+
+  // Org Roles
+  getOrgRoles: (params = {}) => api.get('/primusgfs/org-roles/', { params }),
+  createOrgRole: (data) => api.post('/primusgfs/org-roles/', data),
+  updateOrgRole: (id, data) => api.put(`/primusgfs/org-roles/${id}/`, data),
+  deleteOrgRole: (id) => api.delete(`/primusgfs/org-roles/${id}/`),
+
+  // Committee Meetings
+  getCommitteeMeetings: (params = {}) => api.get('/primusgfs/committee-meetings/', { params }),
+  getCommitteeMeeting: (id) => api.get(`/primusgfs/committee-meetings/${id}/`),
+  createCommitteeMeeting: (data) => api.post('/primusgfs/committee-meetings/', data),
+  updateCommitteeMeeting: (id, data) => api.put(`/primusgfs/committee-meetings/${id}/`, data),
+  deleteCommitteeMeeting: (id) => api.delete(`/primusgfs/committee-meetings/${id}/`),
+  quarterlyStatus: () => api.get('/primusgfs/committee-meetings/quarterly_status/'),
+
+  // Management Reviews
+  getManagementReviews: (params = {}) => api.get('/primusgfs/management-reviews/', { params }),
+  getManagementReview: (id) => api.get(`/primusgfs/management-reviews/${id}/`),
+  createManagementReview: (data) => _postMaybeFile('/primusgfs/management-reviews/', data),
+  updateManagementReview: (id, data) => _putMaybeFile(`/primusgfs/management-reviews/${id}/`, data),
+  deleteManagementReview: (id) => api.delete(`/primusgfs/management-reviews/${id}/`),
+  currentYearReview: () => api.get('/primusgfs/management-reviews/current_year/'),
+
+  // Training Matrix
+  getTrainingRecords: (params = {}) => api.get('/primusgfs/training-matrix/', { params }),
+  getTrainingRecord: (id) => api.get(`/primusgfs/training-matrix/${id}/`),
+  createTrainingRecord: (data) => api.post('/primusgfs/training-matrix/', data),
+  updateTrainingRecord: (id, data) => api.put(`/primusgfs/training-matrix/${id}/`, data),
+  deleteTrainingRecord: (id) => api.delete(`/primusgfs/training-matrix/${id}/`),
+  trainingMatrixSummary: () => api.get('/primusgfs/training-matrix/matrix_summary/'),
+  trainingExpiringSoon: () => api.get('/primusgfs/training-matrix/expiring_soon/'),
+
+  // Training Sessions
+  getTrainingSessions: (params = {}) => api.get('/primusgfs/training-sessions/', { params }),
+  getTrainingSession: (id) => api.get(`/primusgfs/training-sessions/${id}/`),
+  createTrainingSession: (data) => _postMaybeFile('/primusgfs/training-sessions/', data),
+  updateTrainingSession: (id, data) => _putMaybeFile(`/primusgfs/training-sessions/${id}/`, data),
+  deleteTrainingSession: (id) => api.delete(`/primusgfs/training-sessions/${id}/`),
+
+  // Perimeter Monitoring Logs
+  getPerimeterLogs: (params = {}) => api.get('/primusgfs/perimeter-logs/', { params }),
+  getPerimeterLog: (id) => api.get(`/primusgfs/perimeter-logs/${id}/`),
+  createPerimeterLog: (data) => api.post('/primusgfs/perimeter-logs/', data),
+  updatePerimeterLog: (id, data) => api.put(`/primusgfs/perimeter-logs/${id}/`, data),
+  deletePerimeterLog: (id) => api.delete(`/primusgfs/perimeter-logs/${id}/`),
+  perimeterWeeklyCompliance: () => api.get('/primusgfs/perimeter-logs/weekly_compliance/'),
+
+  // Pre-Season Checklists
+  getPreSeasonChecklists: (params = {}) => api.get('/primusgfs/pre-season-checklists/', { params }),
+  getPreSeasonChecklist: (id) => api.get(`/primusgfs/pre-season-checklists/${id}/`),
+  createPreSeasonChecklist: (data) => api.post('/primusgfs/pre-season-checklists/', data),
+  updatePreSeasonChecklist: (id, data) => api.put(`/primusgfs/pre-season-checklists/${id}/`, data),
+  deletePreSeasonChecklist: (id) => api.delete(`/primusgfs/pre-season-checklists/${id}/`),
+  currentSeasonChecklist: () => api.get('/primusgfs/pre-season-checklists/current_season/'),
+
+  // Field Risk Assessments
+  getFieldRiskAssessments: (params = {}) => api.get('/primusgfs/field-risk-assessments/', { params }),
+  getFieldRiskAssessment: (id) => api.get(`/primusgfs/field-risk-assessments/${id}/`),
+  createFieldRiskAssessment: (data) => _postMaybeFile('/primusgfs/field-risk-assessments/', data),
+  updateFieldRiskAssessment: (id, data) => _putMaybeFile(`/primusgfs/field-risk-assessments/${id}/`, data),
+  deleteFieldRiskAssessment: (id) => api.delete(`/primusgfs/field-risk-assessments/${id}/`),
+  riskSummary: () => api.get('/primusgfs/field-risk-assessments/risk_summary/'),
+
+  // Non-Conformances
+  getNonConformances: (params = {}) => api.get('/primusgfs/non-conformances/', { params }),
+  getNonConformance: (id) => api.get(`/primusgfs/non-conformances/${id}/`),
+  createNonConformance: (data) => api.post('/primusgfs/non-conformances/', data),
+  updateNonConformance: (id, data) => api.put(`/primusgfs/non-conformances/${id}/`, data),
+  deleteNonConformance: (id) => api.delete(`/primusgfs/non-conformances/${id}/`),
+
+  // Product Holds
+  getProductHolds: (params = {}) => api.get('/primusgfs/product-holds/', { params }),
+  getProductHold: (id) => api.get(`/primusgfs/product-holds/${id}/`),
+  createProductHold: (data) => api.post('/primusgfs/product-holds/', data),
+  updateProductHold: (id, data) => api.put(`/primusgfs/product-holds/${id}/`, data),
+  deleteProductHold: (id) => api.delete(`/primusgfs/product-holds/${id}/`),
+  activeHolds: () => api.get('/primusgfs/product-holds/active_holds/'),
+
+  // Supplier Verifications
+  getSupplierVerifications: (params = {}) => api.get('/primusgfs/supplier-verifications/', { params }),
+  getSupplierVerification: (id) => api.get(`/primusgfs/supplier-verifications/${id}/`),
+  createSupplierVerification: (data) => api.post('/primusgfs/supplier-verifications/', data),
+  updateSupplierVerification: (id, data) => api.put(`/primusgfs/supplier-verifications/${id}/`, data),
+  deleteSupplierVerification: (id) => api.delete(`/primusgfs/supplier-verifications/${id}/`),
+
+  // Food Fraud Assessments
+  getFoodFraudAssessments: (params = {}) => api.get('/primusgfs/food-fraud-assessments/', { params }),
+  getFoodFraudAssessment: (id) => api.get(`/primusgfs/food-fraud-assessments/${id}/`),
+  createFoodFraudAssessment: (data) => api.post('/primusgfs/food-fraud-assessments/', data),
+  updateFoodFraudAssessment: (id, data) => api.put(`/primusgfs/food-fraud-assessments/${id}/`, data),
+  deleteFoodFraudAssessment: (id) => api.delete(`/primusgfs/food-fraud-assessments/${id}/`),
+
+  // Emergency Contacts
+  getEmergencyContacts: (params = {}) => api.get('/primusgfs/emergency-contacts/', { params }),
+  getEmergencyContact: (id) => api.get(`/primusgfs/emergency-contacts/${id}/`),
+  createEmergencyContact: (data) => api.post('/primusgfs/emergency-contacts/', data),
+  updateEmergencyContact: (id, data) => api.put(`/primusgfs/emergency-contacts/${id}/`, data),
+  deleteEmergencyContact: (id) => api.delete(`/primusgfs/emergency-contacts/${id}/`),
+
+  // Chemical Inventory
+  getChemicalInventory: (params = {}) => api.get('/primusgfs/chemical-inventory/', { params }),
+  getChemicalInventoryItem: (id) => api.get(`/primusgfs/chemical-inventory/${id}/`),
+  createChemicalInventory: (data) => api.post('/primusgfs/chemical-inventory/', data),
+  updateChemicalInventory: (id, data) => api.put(`/primusgfs/chemical-inventory/${id}/`, data),
+  deleteChemicalInventory: (id) => api.delete(`/primusgfs/chemical-inventory/${id}/`),
+  chemicalMonthlySummary: () => api.get('/primusgfs/chemical-inventory/monthly_summary/'),
+
+  // Sanitation Maintenance
+  getSanitationMaintenance: (params = {}) => api.get('/primusgfs/sanitation-maintenance/', { params }),
+  getSanitationMaintenanceItem: (id) => api.get(`/primusgfs/sanitation-maintenance/${id}/`),
+  createSanitationMaintenance: (data) => api.post('/primusgfs/sanitation-maintenance/', data),
+  updateSanitationMaintenance: (id, data) => api.put(`/primusgfs/sanitation-maintenance/${id}/`, data),
+  deleteSanitationMaintenance: (id) => api.delete(`/primusgfs/sanitation-maintenance/${id}/`),
+
+  // CAC Food Safety Manual PDF
+  getCACManualFull: () => api.get('/primusgfs/cac-pdf/full/', { responseType: 'blob' }),
+  getCACManualSection: (doc) => api.get(`/primusgfs/cac-pdf/section/`, { params: { doc }, responseType: 'blob' }),
+  getCACManualPreview: (doc, page) => api.get('/primusgfs/cac-pdf/preview/', { params: { doc, page }, responseType: 'blob' }),
+  getCACManualStatus: (params = {}) => api.get('/primusgfs/cac-pdf/status/', { params }),
+  signCACPage: (data) => api.post('/primusgfs/cac-pdf/sign/', data),
+  getCACSignatures: (params = {}) => api.get('/primusgfs/cac-pdf/signatures/', { params }),
+  deleteCACSignature: (id) => api.delete(`/primusgfs/cac-pdf/${id}/signatures/`),
 };
 
 // =============================================================================

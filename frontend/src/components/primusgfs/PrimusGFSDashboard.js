@@ -13,10 +13,22 @@ import {
   Truck,
   RotateCcw,
   ShieldAlert,
+  ShieldOff,
   Droplets,
   Wrench,
   Bug,
   Clipboard,
+  Users,
+  GraduationCap,
+  BookOpen,
+  Eye,
+  ListChecks,
+  UserX,
+  PackageX,
+  Phone,
+  FlaskConical,
+  ClipboardList,
+  FileDown,
 } from 'lucide-react';
 import { primusGFSAPI } from '../../services/api';
 import DocumentControlList from './DocumentControlList';
@@ -30,9 +42,24 @@ import FieldSanitationTracker from './FieldSanitationTracker';
 import EquipmentCalibrationView from './EquipmentCalibration';
 import PestControlProgramView from './PestControlProgram';
 import PreHarvestInspectionView from './PreHarvestInspection';
-
-// Dark mode placeholder - replace with useTheme() hook when available
-const isDarkMode = false;
+// CAC Food Safety Manual V5.0 additions
+import FoodSafetyProfile from './FoodSafetyProfile';
+import OrgRoles from './OrgRoles';
+import CommitteeMeetings from './CommitteeMeetings';
+import ManagementReview from './ManagementReview';
+import TrainingMatrix from './TrainingMatrix';
+import TrainingSessions from './TrainingSessions';
+import PerimeterMonitoring from './PerimeterMonitoring';
+import PreSeasonChecklist from './PreSeasonChecklist';
+import FieldRiskAssessment from './FieldRiskAssessment';
+import NonConformanceLog from './NonConformanceLog';
+import ProductHolds from './ProductHolds';
+import SupplierVerification from './SupplierVerification';
+import FoodFraudAssessment from './FoodFraudAssessment';
+import EmergencyContacts from './EmergencyContacts';
+import ChemicalInventory from './ChemicalInventory';
+import SanitationMaintenance from './SanitationMaintenance';
+import CACManualViewer from './CACManualViewer';
 
 /**
  * PrimusGFSDashboard Component
@@ -77,14 +104,31 @@ const PrimusGFSDashboard = ({ onNavigate, initialTab = 'overview' }) => {
 
   const tabs = [
     { id: 'overview', label: 'Overview', icon: Shield },
+    { id: 'cac-manual', label: 'CAC Manual', icon: FileDown },
+    { id: 'profile', label: 'Profile', icon: Shield },
+    { id: 'org-roles', label: 'Org Roles', icon: Users },
+    { id: 'committee', label: 'Committee', icon: Users },
+    { id: 'mgmt-review', label: 'Mgmt Review', icon: ClipboardList },
     { id: 'documents', label: 'Documents', icon: FileText },
     { id: 'audits', label: 'Audits', icon: ClipboardCheck },
-    { id: 'corrective-actions', label: 'Corrective Actions', icon: AlertTriangle },
+    { id: 'corrective-actions', label: 'CAs', icon: AlertTriangle },
+    { id: 'non-conformance', label: 'Non-Conform.', icon: UserX },
+    { id: 'product-holds', label: 'Holds', icon: PackageX },
+    { id: 'training-matrix', label: 'Training', icon: GraduationCap },
+    { id: 'training-sessions', label: 'Sessions', icon: BookOpen },
     { id: 'land', label: 'Land History', icon: Map },
     { id: 'suppliers', label: 'Suppliers', icon: Truck },
+    { id: 'supplier-verify', label: 'Supplier Verify', icon: ClipboardCheck },
     { id: 'recalls', label: 'Mock Recalls', icon: RotateCcw },
     { id: 'food-defense', label: 'Food Defense', icon: ShieldAlert },
+    { id: 'food-fraud', label: 'Food Fraud', icon: ShieldOff },
+    { id: 'emergency', label: 'Emergency', icon: Phone },
+    { id: 'pre-season', label: 'Pre-Season', icon: ListChecks },
+    { id: 'field-risk', label: 'Field Risk', icon: ShieldAlert },
+    { id: 'perimeter', label: 'Perimeter', icon: Eye },
     { id: 'sanitation', label: 'Sanitation', icon: Droplets },
+    { id: 'sanitation-maint', label: 'San. Maint.', icon: Wrench },
+    { id: 'chemical-inv', label: 'Chemicals', icon: FlaskConical },
     { id: 'calibration', label: 'Calibration', icon: Wrench },
     { id: 'pest-control', label: 'Pest Control', icon: Bug },
     { id: 'pre-harvest', label: 'Pre-Harvest', icon: Clipboard },
@@ -150,17 +194,34 @@ const PrimusGFSDashboard = ({ onNavigate, initialTab = 'overview' }) => {
           onRefresh={loadDashboardData}
         />
       )}
+      {activeTab === 'profile' && <FoodSafetyProfile />}
+      {activeTab === 'org-roles' && <OrgRoles />}
+      {activeTab === 'committee' && <CommitteeMeetings />}
+      {activeTab === 'mgmt-review' && <ManagementReview />}
       {activeTab === 'documents' && <DocumentControlList />}
       {activeTab === 'audits' && <InternalAuditList />}
       {activeTab === 'corrective-actions' && <CorrectiveActionTracker />}
+      {activeTab === 'non-conformance' && <NonConformanceLog />}
+      {activeTab === 'product-holds' && <ProductHolds />}
+      {activeTab === 'training-matrix' && <TrainingMatrix />}
+      {activeTab === 'training-sessions' && <TrainingSessions />}
       {activeTab === 'land' && <LandHistoryForm />}
       {activeTab === 'suppliers' && <SupplierManagement />}
+      {activeTab === 'supplier-verify' && <SupplierVerification />}
       {activeTab === 'recalls' && <MockRecallExercise />}
       {activeTab === 'food-defense' && <FoodDefensePlanView />}
+      {activeTab === 'food-fraud' && <FoodFraudAssessment />}
+      {activeTab === 'emergency' && <EmergencyContacts />}
+      {activeTab === 'pre-season' && <PreSeasonChecklist />}
+      {activeTab === 'field-risk' && <FieldRiskAssessment />}
+      {activeTab === 'perimeter' && <PerimeterMonitoring />}
       {activeTab === 'sanitation' && <FieldSanitationTracker />}
+      {activeTab === 'sanitation-maint' && <SanitationMaintenance />}
+      {activeTab === 'chemical-inv' && <ChemicalInventory />}
       {activeTab === 'calibration' && <EquipmentCalibrationView />}
       {activeTab === 'pest-control' && <PestControlProgramView />}
       {activeTab === 'pre-harvest' && <PreHarvestInspectionView />}
+      {activeTab === 'cac-manual' && <CACManualViewer />}
     </div>
   );
 };
@@ -278,17 +339,20 @@ const OverviewTab = ({ data, error, onTabChange, onRefresh }) => {
 
   const overallScore = data.overall_score ?? 0;
 
+  const ms = data.module_scores || {};
+
   const modules = [
+    // Original 11 modules (scores now read from module_scores)
     {
       key: 'document_control',
       label: 'Document Control',
       icon: FileText,
       tab: 'documents',
-      score: data.document_control_score ?? 0,
+      score: ms.document_control ?? 0,
       stats: [
-        { label: 'Total Documents', value: data.total_documents ?? 0 },
-        { label: 'Pending Review', value: data.pending_reviews ?? 0 },
-        { label: 'Overdue', value: data.overdue_documents ?? 0 },
+        { label: 'Total', value: data.documents?.total ?? 0 },
+        { label: 'Approved', value: data.documents?.approved ?? 0 },
+        { label: 'Overdue', value: data.documents?.overdue_reviews ?? 0 },
       ],
     },
     {
@@ -296,11 +360,10 @@ const OverviewTab = ({ data, error, onTabChange, onRefresh }) => {
       label: 'Internal Audits',
       icon: ClipboardCheck,
       tab: 'audits',
-      score: data.audit_score ?? 0,
+      score: ms.internal_audits ?? 0,
       stats: [
-        { label: 'Completed', value: data.audits_completed ?? 0 },
-        { label: 'Scheduled', value: data.audits_scheduled ?? 0 },
-        { label: 'Open Findings', value: data.open_findings ?? 0 },
+        { label: 'This Year', value: data.audits?.this_year ?? 0 },
+        { label: 'Completed', value: data.audits?.completed_this_year ?? 0 },
       ],
     },
     {
@@ -308,11 +371,11 @@ const OverviewTab = ({ data, error, onTabChange, onRefresh }) => {
       label: 'Corrective Actions',
       icon: AlertTriangle,
       tab: 'corrective-actions',
-      score: data.corrective_action_score ?? 0,
+      score: ms.corrective_actions ?? 0,
       stats: [
-        { label: 'Open', value: data.open_actions ?? 0 },
-        { label: 'In Progress', value: data.in_progress_actions ?? 0 },
-        { label: 'Overdue', value: data.overdue_actions ?? 0 },
+        { label: 'Open', value: data.corrective_actions?.open ?? 0 },
+        { label: 'Overdue', value: data.corrective_actions?.overdue ?? 0 },
+        { label: 'Verified', value: data.corrective_actions?.verified ?? 0 },
       ],
     },
     {
@@ -320,23 +383,23 @@ const OverviewTab = ({ data, error, onTabChange, onRefresh }) => {
       label: 'Land Assessments',
       icon: Map,
       tab: 'land',
-      score: data.land_assessment_score ?? 0,
+      score: ms.land_assessments ?? 0,
       stats: [
-        { label: 'Assessed', value: data.assessed_fields ?? 0 },
-        { label: 'Pending', value: data.pending_assessments ?? 0 },
-        { label: 'Expired', value: data.expired_assessments ?? 0 },
+        { label: 'Fields', value: data.land_assessments?.fields_total ?? 0 },
+        { label: 'Assessed', value: data.land_assessments?.fields_assessed ?? 0 },
+        { label: 'Approved', value: data.land_assessments?.fields_approved ?? 0 },
       ],
     },
     {
-      key: 'supplier_control',
+      key: 'suppliers',
       label: 'Supplier Control',
       icon: Truck,
       tab: 'suppliers',
-      score: data.supplier_score ?? 0,
+      score: ms.suppliers ?? 0,
       stats: [
-        { label: 'Approved', value: data.approved_suppliers ?? 0 },
-        { label: 'Pending', value: data.pending_suppliers ?? 0 },
-        { label: 'Due Review', value: data.suppliers_due_review ?? 0 },
+        { label: 'Total', value: data.suppliers?.total ?? 0 },
+        { label: 'Approved', value: data.suppliers?.approved ?? 0 },
+        { label: 'Overdue', value: data.suppliers?.review_overdue ?? 0 },
       ],
     },
     {
@@ -344,11 +407,10 @@ const OverviewTab = ({ data, error, onTabChange, onRefresh }) => {
       label: 'Mock Recalls',
       icon: RotateCcw,
       tab: 'recalls',
-      score: data.recall_score ?? 0,
+      score: ms.mock_recalls ?? 0,
       stats: [
-        { label: 'Completed', value: data.recalls_completed ?? 0 },
-        { label: 'Passed', value: data.recalls_passed ?? 0 },
-        { label: 'Planned', value: data.recalls_planned ?? 0 },
+        { label: 'This Year', value: data.mock_recalls?.this_year ?? 0 },
+        { label: 'Passed', value: data.mock_recalls?.passed_this_year ?? 0 },
       ],
     },
     {
@@ -356,23 +418,21 @@ const OverviewTab = ({ data, error, onTabChange, onRefresh }) => {
       label: 'Food Defense',
       icon: ShieldAlert,
       tab: 'food-defense',
-      score: data.food_defense_score ?? 0,
+      score: ms.food_defense ?? 0,
       stats: [
-        { label: 'Plans', value: data.food_defense_plans ?? 0 },
-        { label: 'Approved', value: data.food_defense_approved ?? 0 },
-        { label: 'Review Due', value: data.food_defense_review_due ?? 0 },
+        { label: 'Plan', value: data.food_defense?.has_current_plan ? 'Yes' : 'No' },
+        { label: 'Approved', value: data.food_defense?.plan_approved ? 'Yes' : 'No' },
       ],
     },
     {
-      key: 'field_sanitation',
+      key: 'sanitation',
       label: 'Field Sanitation',
       icon: Droplets,
       tab: 'sanitation',
-      score: data.sanitation_score ?? 0,
+      score: ms.sanitation ?? 0,
       stats: [
-        { label: 'Total Logs', value: data.sanitation_logs ?? 0 },
-        { label: 'Compliant', value: data.sanitation_compliant ?? 0 },
-        { label: 'Issues', value: data.sanitation_non_compliant ?? 0 },
+        { label: 'Logs 30d', value: data.sanitation?.total_logs_30d ?? 0 },
+        { label: 'Compliant', value: data.sanitation?.compliant_30d ?? 0 },
       ],
     },
     {
@@ -380,11 +440,11 @@ const OverviewTab = ({ data, error, onTabChange, onRefresh }) => {
       label: 'Equipment Calibration',
       icon: Wrench,
       tab: 'calibration',
-      score: data.calibration_score ?? 0,
+      score: ms.equipment_calibration ?? 0,
       stats: [
-        { label: 'Total', value: data.calibrations_total ?? 0 },
-        { label: 'Current', value: data.calibrations_current ?? 0 },
-        { label: 'Overdue', value: data.calibrations_overdue ?? 0 },
+        { label: 'Total', value: data.equipment_calibration?.total ?? 0 },
+        { label: 'Current', value: data.equipment_calibration?.current ?? 0 },
+        { label: 'Overdue', value: data.equipment_calibration?.overdue ?? 0 },
       ],
     },
     {
@@ -392,11 +452,10 @@ const OverviewTab = ({ data, error, onTabChange, onRefresh }) => {
       label: 'Pest Control',
       icon: Bug,
       tab: 'pest-control',
-      score: data.pest_control_score ?? 0,
+      score: ms.pest_control ?? 0,
       stats: [
-        { label: 'Program', value: data.has_pest_program ? 'Yes' : 'No' },
-        { label: 'Approved', value: data.pest_program_approved ? 'Yes' : 'No' },
-        { label: 'Logs 30d', value: data.pest_inspections_30d ?? 0 },
+        { label: 'Program', value: data.pest_control?.program_approved ? 'Yes' : 'No' },
+        { label: 'Logs 30d', value: data.pest_control?.inspections_30d ?? 0 },
       ],
     },
     {
@@ -404,11 +463,189 @@ const OverviewTab = ({ data, error, onTabChange, onRefresh }) => {
       label: 'Pre-Harvest',
       icon: Clipboard,
       tab: 'pre-harvest',
-      score: data.pre_harvest_score ?? 0,
+      score: ms.pre_harvest ?? 0,
       stats: [
-        { label: 'This Year', value: data.pre_harvest_this_year ?? 0 },
-        { label: 'Passed', value: data.pre_harvest_passed ?? 0 },
-        { label: 'Failed', value: data.pre_harvest_failed ?? 0 },
+        { label: 'This Year', value: data.pre_harvest?.this_year ?? 0 },
+        { label: 'Passed', value: data.pre_harvest?.passed ?? 0 },
+        { label: 'Failed', value: data.pre_harvest?.failed ?? 0 },
+      ],
+    },
+    // CAC Food Safety Manual V5.0 modules
+    {
+      key: 'food_safety_profile',
+      label: 'Food Safety Profile',
+      icon: Shield,
+      tab: 'profile',
+      score: ms.food_safety_profile ?? 0,
+      stats: [
+        { label: 'Coordinator', value: data.food_safety_profile?.has_coordinator ? 'Yes' : 'No' },
+        { label: 'Policy', value: data.food_safety_profile?.has_policy ? 'Yes' : 'No' },
+        { label: 'Map', value: data.food_safety_profile?.has_map ? 'Yes' : 'No' },
+      ],
+    },
+    {
+      key: 'org_roles',
+      label: 'Org Roles',
+      icon: Users,
+      tab: 'org-roles',
+      score: ms.org_roles ?? 0,
+      stats: [
+        { label: 'Coordinator', value: data.org_roles?.has_coordinator ? 'Yes' : 'No' },
+        { label: 'Owner', value: data.org_roles?.has_owner ? 'Yes' : 'No' },
+        { label: 'Roles', value: data.org_roles?.total_roles ?? 0 },
+      ],
+    },
+    {
+      key: 'committee_meetings',
+      label: 'Committee Meetings',
+      icon: ClipboardList,
+      tab: 'committee',
+      score: ms.committee_meetings ?? 0,
+      stats: [
+        { label: 'Completed', value: `${data.committee_meetings?.quarters_completed ?? 0}/4` },
+      ],
+    },
+    {
+      key: 'management_review',
+      label: 'Mgmt Review',
+      icon: ClipboardCheck,
+      tab: 'mgmt-review',
+      score: ms.management_review ?? 0,
+      stats: [
+        { label: 'Exists', value: data.management_review?.exists ? 'Yes' : 'No' },
+        { label: 'Approved', value: data.management_review?.approved ? 'Yes' : 'No' },
+        { label: 'Sections', value: `${data.management_review?.sections_reviewed ?? 0}/12` },
+      ],
+    },
+    {
+      key: 'training_matrix',
+      label: 'Training Matrix',
+      icon: GraduationCap,
+      tab: 'training-matrix',
+      score: ms.training_matrix ?? 0,
+      stats: [
+        { label: 'Employees', value: data.training_matrix?.total_employees ?? 0 },
+        { label: 'Avg Compliance', value: `${data.training_matrix?.average_compliance ?? 0}%` },
+      ],
+    },
+    {
+      key: 'training_sessions',
+      label: 'Training Sessions',
+      icon: BookOpen,
+      tab: 'training-sessions',
+      score: ms.training_sessions ?? 0,
+      stats: [
+        { label: 'This Year', value: `${data.training_sessions?.sessions_this_year ?? 0}/4` },
+      ],
+    },
+    {
+      key: 'perimeter_monitoring',
+      label: 'Perimeter',
+      icon: Eye,
+      tab: 'perimeter',
+      score: ms.perimeter_monitoring ?? 0,
+      stats: [
+        { label: 'Weeks (30d)', value: `${data.perimeter_monitoring?.weeks_logged_30d ?? 0}/4` },
+      ],
+    },
+    {
+      key: 'pre_season_checklist',
+      label: 'Pre-Season',
+      icon: ListChecks,
+      tab: 'pre-season',
+      score: ms.pre_season_checklist ?? 0,
+      stats: [
+        { label: 'Farms', value: data.pre_season_checklist?.farms_total ?? 0 },
+        { label: 'Approved', value: data.pre_season_checklist?.approved_count ?? 0 },
+      ],
+    },
+    {
+      key: 'field_risk_assessment',
+      label: 'Field Risk',
+      icon: ShieldAlert,
+      tab: 'field-risk',
+      score: ms.field_risk_assessment ?? 0,
+      stats: [
+        { label: 'Farms', value: data.field_risk_assessment?.farms_total ?? 0 },
+        { label: 'Assessed', value: data.field_risk_assessment?.farms_assessed ?? 0 },
+        { label: 'Approved', value: data.field_risk_assessment?.farms_approved ?? 0 },
+      ],
+    },
+    {
+      key: 'non_conformance',
+      label: 'Non-Conformance',
+      icon: UserX,
+      tab: 'non-conformance',
+      score: ms.non_conformance ?? 0,
+      stats: [
+        { label: 'Total', value: data.non_conformance?.total ?? 0 },
+        { label: 'Open', value: data.non_conformance?.open ?? 0 },
+      ],
+    },
+    {
+      key: 'product_holds',
+      label: 'Product Holds',
+      icon: PackageX,
+      tab: 'product-holds',
+      score: ms.product_holds ?? 0,
+      stats: [
+        { label: 'Total', value: data.product_holds?.total ?? 0 },
+        { label: 'Active', value: data.product_holds?.active ?? 0 },
+      ],
+    },
+    {
+      key: 'supplier_verification',
+      label: 'Supplier Verify',
+      icon: Truck,
+      tab: 'supplier-verify',
+      score: ms.supplier_verification ?? 0,
+      stats: [
+        { label: 'Verified', value: data.supplier_verification?.suppliers_verified ?? 0 },
+        { label: 'Total', value: data.supplier_verification?.total_approved_suppliers ?? 0 },
+      ],
+    },
+    {
+      key: 'food_fraud',
+      label: 'Food Fraud',
+      icon: ShieldOff,
+      tab: 'food-fraud',
+      score: ms.food_fraud ?? 0,
+      stats: [
+        { label: 'Assessment', value: data.food_fraud?.has_assessment ? 'Yes' : 'No' },
+        { label: 'Approved', value: data.food_fraud?.approved ? 'Yes' : 'No' },
+      ],
+    },
+    {
+      key: 'emergency_contacts',
+      label: 'Emergency Contacts',
+      icon: Phone,
+      tab: 'emergency',
+      score: ms.emergency_contacts ?? 0,
+      stats: [
+        { label: 'Key Types', value: `${data.emergency_contacts?.key_types_present ?? 0}/5` },
+        { label: 'Total', value: data.emergency_contacts?.total_contacts ?? 0 },
+      ],
+    },
+    {
+      key: 'chemical_inventory',
+      label: 'Chemical Inventory',
+      icon: FlaskConical,
+      tab: 'chemical-inv',
+      score: ms.chemical_inventory ?? 0,
+      stats: [
+        { label: 'This Month', value: data.chemical_inventory?.logged_this_month ? 'Yes' : 'No' },
+        { label: 'Entries', value: data.chemical_inventory?.entries_this_month ?? 0 },
+      ],
+    },
+    {
+      key: 'sanitation_maintenance',
+      label: 'San. Maintenance',
+      icon: Wrench,
+      tab: 'sanitation-maint',
+      score: ms.sanitation_maintenance ?? 0,
+      stats: [
+        { label: 'Logs 30d', value: data.sanitation_maintenance?.logs_30d ?? 0 },
+        { label: 'Acceptable', value: data.sanitation_maintenance?.acceptable_30d ?? 0 },
       ],
     },
   ];

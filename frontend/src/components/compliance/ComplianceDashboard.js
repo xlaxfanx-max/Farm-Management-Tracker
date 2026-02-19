@@ -9,6 +9,7 @@ import {
   Award,
   Users,
   ChevronRight,
+  ChevronDown,
   Bell,
   RefreshCw,
   Settings,
@@ -28,6 +29,14 @@ import {
   Bug,
   Clipboard,
   Map,
+  GraduationCap,
+  BookOpen,
+  Eye,
+  ListChecks,
+  UserX,
+  Phone,
+  FlaskConical,
+  ClipboardList,
 } from 'lucide-react';
 import {
   complianceDashboardAPI,
@@ -239,33 +248,129 @@ const AlertBanner = ({ alerts, onDismiss }) => {
   );
 };
 
-// Primus GFS module definitions with action text derived from dashboard API response
+// Primus GFS module definitions grouped by audit category
 const PRIMUS_MODULES = [
-  { key: 'document_control', label: 'Document Control', tab: 'documents', icon: FileText,
+  // Management & Organization
+  { key: 'food_safety_profile', label: 'Food Safety Profile', tab: 'profile', icon: Shield, category: 'management',
+    getAction: (d) => {
+      const p = d?.food_safety_profile;
+      if (!p) return 'Profile not started';
+      const missing = [!p.has_coordinator && 'coordinator', !p.has_policy && 'policy', !p.has_map && 'map'].filter(Boolean);
+      return missing.length > 0 ? `Missing: ${missing.join(', ')}` : null;
+    }},
+  { key: 'org_roles', label: 'Org Roles', tab: 'org-roles', icon: Users, category: 'management',
+    getAction: (d) => !d?.org_roles?.has_coordinator ? 'No coordinator assigned' : null },
+  { key: 'committee_meetings', label: 'Committee Meetings', tab: 'committee', icon: ClipboardList, category: 'management',
+    getAction: (d) => {
+      const q = d?.committee_meetings?.quarters_completed || 0;
+      return q < 4 ? `${q}/4 quarterly meetings` : null;
+    }},
+  { key: 'management_review', label: 'Mgmt Review', tab: 'mgmt-review', icon: ClipboardCheck, category: 'management',
+    getAction: (d) => !d?.management_review?.exists ? 'No review this year' :
+      !d?.management_review?.approved ? 'Review not approved' : null },
+  { key: 'document_control', label: 'Document Control', tab: 'documents', icon: FileText, category: 'management',
     getAction: (d) => d?.documents?.overdue_reviews > 0 ? `${d.documents.overdue_reviews} overdue review(s)` : null },
-  { key: 'internal_audits', label: 'Internal Audits', tab: 'audits', icon: ClipboardCheck,
-    getAction: (d) => d?.audits?.completed_this_year === 0 ? 'No audit completed this year' : null },
-  { key: 'corrective_actions', label: 'Corrective Actions', tab: 'corrective-actions', icon: AlertTriangle,
-    getAction: (d) => d?.corrective_actions?.overdue > 0 ? `${d.corrective_actions.overdue} overdue` : null },
-  { key: 'land_assessments', label: 'Land History', tab: 'land', icon: Map,
+
+  // Training & People
+  { key: 'training_matrix', label: 'Training Matrix', tab: 'training-matrix', icon: GraduationCap, category: 'training',
+    getAction: (d) => {
+      const avg = d?.training_matrix?.average_compliance;
+      return avg !== undefined && avg < 80 ? `${Math.round(avg)}% avg compliance` : null;
+    }},
+  { key: 'training_sessions', label: 'Training Sessions', tab: 'training-sessions', icon: BookOpen, category: 'training',
+    getAction: (d) => {
+      const s = d?.training_sessions?.sessions_this_year || 0;
+      return s < 4 ? `${s}/4 sessions this year` : null;
+    }},
+  { key: 'non_conformance', label: 'Non-Conformance', tab: 'non-conformance', icon: UserX, category: 'training',
+    getAction: (d) => {
+      const open = d?.non_conformance?.open || 0;
+      return open > 0 ? `${open} unresolved` : null;
+    }},
+  { key: 'product_holds', label: 'Product Holds', tab: 'product-holds', icon: Package, category: 'training',
+    getAction: (d) => {
+      const active = d?.product_holds?.active || 0;
+      return active > 0 ? `${active} active hold(s)` : null;
+    }},
+
+  // Field Operations
+  { key: 'pre_harvest', label: 'Pre-Harvest', tab: 'pre-harvest', icon: Clipboard, category: 'field_ops',
+    getAction: (d) => d?.pre_harvest?.this_year === 0 ? 'No inspections this year' : null },
+  { key: 'pre_season_checklist', label: 'Pre-Season', tab: 'pre-season', icon: ListChecks, category: 'field_ops',
+    getAction: (d) => {
+      const a = d?.pre_season_checklist?.approved_count || 0;
+      const t = d?.pre_season_checklist?.farms_total || 0;
+      return a < t ? `${a}/${t} farms approved` : null;
+    }},
+  { key: 'field_risk_assessment', label: 'Field Risk', tab: 'field-risk', icon: ShieldAlert, category: 'field_ops',
+    getAction: (d) => {
+      const a = d?.field_risk_assessment?.farms_approved || 0;
+      const t = d?.field_risk_assessment?.farms_total || 0;
+      return a < t ? `${a}/${t} farms assessed` : null;
+    }},
+  { key: 'land_assessments', label: 'Land History', tab: 'land', icon: Map, category: 'field_ops',
     getAction: (d) => {
       const unassessed = (d?.land_assessments?.fields_total || 0) - (d?.land_assessments?.fields_assessed || 0);
       return unassessed > 0 ? `${unassessed} field(s) unassessed` : null;
     }},
-  { key: 'suppliers', label: 'Supplier Mgmt', tab: 'suppliers', icon: Truck,
+  { key: 'perimeter_monitoring', label: 'Perimeter', tab: 'perimeter', icon: Eye, category: 'field_ops',
+    getAction: (d) => {
+      const w = d?.perimeter_monitoring?.weeks_logged_30d || 0;
+      return w < 4 ? `${w}/4 weeks logged (30d)` : null;
+    }},
+
+  // Suppliers & Traceability
+  { key: 'suppliers', label: 'Supplier Mgmt', tab: 'suppliers', icon: Truck, category: 'suppliers',
     getAction: (d) => d?.suppliers?.review_overdue > 0 ? `${d.suppliers.review_overdue} review(s) overdue` : null },
-  { key: 'mock_recalls', label: 'Mock Recalls', tab: 'recalls', icon: RotateCcw,
+  { key: 'supplier_verification', label: 'Supplier Verify', tab: 'supplier-verify', icon: Truck, category: 'suppliers',
+    getAction: (d) => {
+      const v = d?.supplier_verification?.suppliers_verified || 0;
+      const t = d?.supplier_verification?.total_approved_suppliers || 0;
+      return t > 0 && v < t ? `${v}/${t} suppliers verified` : null;
+    }},
+  { key: 'food_fraud', label: 'Food Fraud', tab: 'food-fraud', icon: AlertTriangle, category: 'suppliers',
+    getAction: (d) => !d?.food_fraud?.has_assessment ? 'No assessment this year' :
+      !d?.food_fraud?.approved ? 'Assessment not approved' : null },
+  { key: 'mock_recalls', label: 'Mock Recalls', tab: 'recalls', icon: RotateCcw, category: 'suppliers',
     getAction: (d) => d?.mock_recalls?.passed_this_year === 0 ? 'No recall exercise this year' : null },
-  { key: 'food_defense', label: 'Food Defense', tab: 'food-defense', icon: ShieldAlert,
-    getAction: (d) => !d?.food_defense?.plan_approved ? 'Plan not approved' : null },
-  { key: 'sanitation', label: 'Field Sanitation', tab: 'sanitation', icon: Droplets,
+
+  // Monitoring & Records
+  { key: 'sanitation', label: 'Field Sanitation', tab: 'sanitation', icon: Droplets, category: 'monitoring',
     getAction: (d) => d?.sanitation?.total_logs_30d === 0 ? 'No logs in past 30 days' : null },
-  { key: 'equipment_calibration', label: 'Equipment Calibration', tab: 'calibration', icon: Wrench,
+  { key: 'sanitation_maintenance', label: 'San. Maintenance', tab: 'sanitation-maint', icon: Wrench, category: 'monitoring',
+    getAction: (d) => {
+      const logs = d?.sanitation_maintenance?.logs_30d || 0;
+      return logs === 0 ? 'No logs in past 30 days' : null;
+    }},
+  { key: 'equipment_calibration', label: 'Equipment Calibration', tab: 'calibration', icon: Wrench, category: 'monitoring',
     getAction: (d) => d?.equipment_calibration?.overdue > 0 ? `${d.equipment_calibration.overdue} overdue` : null },
-  { key: 'pest_control', label: 'Pest Control', tab: 'pest-control', icon: Bug,
+  { key: 'pest_control', label: 'Pest Control', tab: 'pest-control', icon: Bug, category: 'monitoring',
     getAction: (d) => !d?.pest_control?.program_approved ? 'Program not approved' : null },
-  { key: 'pre_harvest', label: 'Pre-Harvest', tab: 'pre-harvest', icon: Clipboard,
-    getAction: (d) => d?.pre_harvest?.this_year === 0 ? 'No inspections this year' : null },
+  { key: 'chemical_inventory', label: 'Chemical Inventory', tab: 'chemical-inv', icon: FlaskConical, category: 'monitoring',
+    getAction: (d) => !d?.chemical_inventory?.logged_this_month ? 'No inventory this month' : null },
+
+  // Safety & Response
+  { key: 'food_defense', label: 'Food Defense', tab: 'food-defense', icon: ShieldAlert, category: 'safety',
+    getAction: (d) => !d?.food_defense?.plan_approved ? 'Plan not approved' : null },
+  { key: 'emergency_contacts', label: 'Emergency Contacts', tab: 'emergency', icon: Phone, category: 'safety',
+    getAction: (d) => {
+      const k = d?.emergency_contacts?.key_types_present || 0;
+      return k < 5 ? `${k}/5 key contacts` : null;
+    }},
+  { key: 'corrective_actions', label: 'Corrective Actions', tab: 'corrective-actions', icon: AlertTriangle, category: 'safety',
+    getAction: (d) => d?.corrective_actions?.overdue > 0 ? `${d.corrective_actions.overdue} overdue` : null },
+  { key: 'internal_audits', label: 'Internal Audits', tab: 'audits', icon: ClipboardCheck, category: 'safety',
+    getAction: (d) => d?.audits?.completed_this_year === 0 ? 'No audit completed this year' : null },
+];
+
+// Category definitions with display order
+const PRIMUS_CATEGORIES = [
+  { key: 'management', label: 'Management & Organization' },
+  { key: 'training', label: 'Training & People' },
+  { key: 'field_ops', label: 'Field Operations' },
+  { key: 'suppliers', label: 'Suppliers & Traceability' },
+  { key: 'monitoring', label: 'Monitoring & Records' },
+  { key: 'safety', label: 'Safety & Response' },
 ];
 
 // Cross-module references: existing compliance modules that contribute to Primus GFS
@@ -275,13 +380,113 @@ const CROSS_MODULE_LINKS = [
   { module: 'Worker Protection (WPS)', relevance: 'Auditors verify training records & safety postings' },
 ];
 
+// Category accordion row for Certification Readiness
+const CategorySection = ({ category, modules, moduleScores, primusData, onNavigate, isOpen, onToggle }) => {
+  const catModules = modules.filter(m => m.category === category.key);
+  const catNeedsAttention = catModules.filter(m => (moduleScores[m.key] || 0) < 60);
+  const catOnTrack = catModules.filter(m => (moduleScores[m.key] || 0) >= 60);
+  const readyCount = catOnTrack.length;
+  const totalCount = catModules.length;
+  const avgScore = totalCount > 0
+    ? Math.round(catModules.reduce((sum, m) => sum + (moduleScores[m.key] || 0), 0) / totalCount)
+    : 0;
+  const barColor = avgScore >= 80 ? 'bg-green-500' : avgScore >= 60 ? 'bg-amber-500' : 'bg-red-400';
+  const allGood = catNeedsAttention.length === 0;
+
+  return (
+    <div className={`rounded-lg border ${allGood
+      ? 'border-green-200 dark:border-green-800 bg-green-50/50 dark:bg-green-900/10'
+      : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800'
+    }`}>
+      {/* Category header — always visible */}
+      <button
+        onClick={onToggle}
+        className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors rounded-lg"
+      >
+        {isOpen
+          ? <ChevronDown className="w-4 h-4 text-gray-400 flex-shrink-0" />
+          : <ChevronRight className="w-4 h-4 text-gray-400 flex-shrink-0" />
+        }
+        <span className="text-sm font-semibold text-gray-900 dark:text-white flex-1">
+          {category.label}
+        </span>
+        <span className="text-xs text-gray-500 dark:text-gray-400 mr-2">
+          {readyCount}/{totalCount}
+        </span>
+        {/* Mini progress bar */}
+        <div className="w-20 h-1.5 bg-gray-200 dark:bg-gray-600 rounded-full overflow-hidden mr-2">
+          <div className={`h-full rounded-full transition-all ${barColor}`} style={{ width: `${avgScore}%` }} />
+        </div>
+        <span className={`text-xs font-bold min-w-[32px] text-right ${
+          avgScore >= 80 ? 'text-green-600 dark:text-green-400' :
+          avgScore >= 60 ? 'text-amber-600 dark:text-amber-400' :
+          'text-red-600 dark:text-red-400'
+        }`}>
+          {avgScore}%
+        </span>
+      </button>
+
+      {/* Expanded content */}
+      {isOpen && (
+        <div className="px-4 pb-3 space-y-1.5">
+          {/* Modules needing attention */}
+          {catNeedsAttention.map(mod => {
+            const score = moduleScores[mod.key] || 0;
+            const actionText = mod.getAction(primusData);
+            const ModIcon = mod.icon;
+            return (
+              <button
+                key={mod.key}
+                onClick={() => onNavigate?.(`compliance-primusgfs-${mod.tab}`)}
+                className="w-full flex items-center gap-2 px-3 py-2 rounded-md bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/30 hover:border-red-300 dark:hover:border-red-700 transition-colors text-left"
+              >
+                <ModIcon className="w-3.5 h-3.5 text-red-500 dark:text-red-400 flex-shrink-0" />
+                <span className="text-sm text-gray-900 dark:text-white flex-1 truncate">{mod.label}</span>
+                <span className="text-xs text-red-600 dark:text-red-400 truncate max-w-[180px]">
+                  {actionText || `Score: ${score}%`}
+                </span>
+              </button>
+            );
+          })}
+          {/* On-track modules as compact pills */}
+          {catOnTrack.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 pt-1">
+              {catOnTrack.map(mod => {
+                const score = moduleScores[mod.key] || 0;
+                const ModIcon = mod.icon;
+                return (
+                  <button
+                    key={mod.key}
+                    onClick={() => onNavigate?.(`compliance-primusgfs-${mod.tab}`)}
+                    className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 hover:border-green-400 dark:hover:border-green-600 transition-colors"
+                  >
+                    <ModIcon className="w-3 h-3 text-green-600 dark:text-green-400" />
+                    <span className="text-xs text-gray-700 dark:text-gray-300">{mod.label}</span>
+                    <span className="text-xs font-bold text-green-600 dark:text-green-400">{score}%</span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
 // Certification Readiness Section Component
 const CertificationReadinessSection = ({ primusData, onNavigate }) => {
   const moduleScores = primusData?.module_scores || {};
   const overallScore = primusData?.overall_score || 0;
+  const totalModules = PRIMUS_MODULES.length;
+  const readyModules = PRIMUS_MODULES.filter(m => (moduleScores[m.key] || 0) >= 60).length;
 
-  const needsAttention = PRIMUS_MODULES.filter(m => (moduleScores[m.key] || 0) < 60);
-  const onTrack = PRIMUS_MODULES.filter(m => (moduleScores[m.key] || 0) >= 60);
+  // All categories start collapsed — user expands what they need
+  const [expandedCats, setExpandedCats] = useState({});
+
+  const toggleCat = useCallback((catKey) => {
+    setExpandedCats(prev => ({ ...prev, [catKey]: !prev[catKey] }));
+  }, []);
 
   return (
     <div className="mb-6">
@@ -304,7 +509,8 @@ const CertificationReadinessSection = ({ primusData, onNavigate }) => {
 
         {/* Primus GFS content */}
         <div className="p-6">
-          <div className="flex items-center justify-between mb-4">
+          {/* Top bar: status + progress + link */}
+          <div className="flex items-center justify-between mb-1">
             <div className="flex items-center gap-2">
               <Shield className="w-5 h-5 text-teal-600 dark:text-teal-400" />
               <h3 className="text-base font-semibold text-gray-900 dark:text-white">Primus GFS</h3>
@@ -324,66 +530,39 @@ const CertificationReadinessSection = ({ primusData, onNavigate }) => {
             </button>
           </div>
 
-          {/* Needs Attention */}
-          {needsAttention.length > 0 && (
-            <div className="mb-4">
-              <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
-                Needs Attention ({needsAttention.length})
-              </p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-                {needsAttention.map(mod => {
-                  const score = moduleScores[mod.key] || 0;
-                  const actionText = mod.getAction(primusData);
-                  const ModIcon = mod.icon;
-                  return (
-                    <button
-                      key={mod.key}
-                      onClick={() => onNavigate?.(`compliance-primusgfs-${mod.tab}`)}
-                      className="flex items-center gap-2 p-2.5 rounded-lg bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800 hover:border-red-400 dark:hover:border-red-600 transition-colors text-left group"
-                    >
-                      <ModIcon className="w-4 h-4 text-red-500 dark:text-red-400 flex-shrink-0" />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{mod.label}</p>
-                        <p className="text-xs text-red-600 dark:text-red-400 truncate">
-                          {actionText || `Score: ${score}%`}
-                        </p>
-                      </div>
-                      <span className="text-sm font-bold text-red-600 dark:text-red-400">{score}%</span>
-                    </button>
-                  );
-                })}
-              </div>
+          {/* Overall progress bar */}
+          <div className="flex items-center gap-3 mb-5">
+            <div className="flex-1 h-2 bg-gray-200 dark:bg-gray-600 rounded-full overflow-hidden">
+              <div
+                className={`h-full rounded-full transition-all ${
+                  overallScore >= 80 ? 'bg-green-500' : overallScore >= 60 ? 'bg-amber-500' : 'bg-red-400'
+                }`}
+                style={{ width: `${overallScore}%` }}
+              />
             </div>
-          )}
+            <span className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
+              {readyModules}/{totalModules} ready
+            </span>
+          </div>
 
-          {/* On Track */}
-          {onTrack.length > 0 && (
-            <div className="mb-4">
-              <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
-                On Track ({onTrack.length})
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {onTrack.map(mod => {
-                  const score = moduleScores[mod.key] || 0;
-                  const ModIcon = mod.icon;
-                  return (
-                    <button
-                      key={mod.key}
-                      onClick={() => onNavigate?.(`compliance-primusgfs-${mod.tab}`)}
-                      className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800 hover:border-green-400 dark:hover:border-green-600 transition-colors"
-                    >
-                      <ModIcon className="w-3.5 h-3.5 text-green-600 dark:text-green-400" />
-                      <span className="text-sm text-gray-700 dark:text-gray-300">{mod.label}</span>
-                      <span className="text-sm font-bold text-green-600 dark:text-green-400">{score}%</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
+          {/* Category accordion */}
+          <div className="space-y-2">
+            {PRIMUS_CATEGORIES.map(cat => (
+              <CategorySection
+                key={cat.key}
+                category={cat}
+                modules={PRIMUS_MODULES}
+                moduleScores={moduleScores}
+                primusData={primusData}
+                onNavigate={onNavigate}
+                isOpen={expandedCats[cat.key] || false}
+                onToggle={() => toggleCat(cat.key)}
+              />
+            ))}
+          </div>
 
           {/* Cross-references to existing modules */}
-          <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+          <div className="pt-4 mt-4 border-t border-gray-200 dark:border-gray-700">
             <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
               Already Covered by Your Compliance Modules
             </p>
