@@ -8,7 +8,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('api', '0068_correctiveaction_is_nuoca_and_more'),
+        ('api', '0069_correctiveaction_is_nuoca_and_more'),
     ]
 
     operations = [

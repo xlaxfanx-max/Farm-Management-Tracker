@@ -8,7 +8,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('api', '0067_rename_api_dettree_survey_idx_api_detecte_survey__2ce87c_idx_and_more'),
+        ('api', '0068_merge_20260218_0919'),
     ]
 
     operations = [
