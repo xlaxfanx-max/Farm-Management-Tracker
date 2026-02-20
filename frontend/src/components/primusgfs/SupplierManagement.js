@@ -16,6 +16,7 @@ import {
   ClipboardCheck,
 } from 'lucide-react';
 import { primusGFSAPI } from '../../services/api';
+import PrefillBanner from './PrefillBanner';
 
 const formatDate = (str) => {
   if (!str) return '-';
@@ -473,6 +474,35 @@ export default function SupplierManagement() {
           <button onClick={() => setActiveTab('verifications')} className={tabCls('verifications')}>Material Verifications</button>
         </div>
       </div>
+
+      {/* Prefill from Product Suppliers & Labor Contractors */}
+      {activeTab === 'suppliers' && (
+        <PrefillBanner
+          module="suppliers"
+          sourceLabel="Product Suppliers & Labor Contractors"
+          onImport={async (items) => {
+            let count = 0;
+            for (const item of items) {
+              try {
+                await primusGFSAPI.createSupplier({
+                  supplier_name: item.supplier_name,
+                  contact_name: item.contact_name || '',
+                  contact_phone: item.contact_phone || '',
+                  contact_email: item.contact_email || '',
+                  material_types: item.material_types || [],
+                  status: 'pending_approval',
+                  notes: `Imported from ${item.source}.${item.product_count > 0 ? ' ' + item.product_count + ' product(s) on record.' : ''}`,
+                });
+                count++;
+              } catch (err) {
+                console.error('Failed to import supplier:', err);
+              }
+            }
+            fetchSuppliers();
+            return { count };
+          }}
+        />
+      )}
 
       {/* Due for Review Alert */}
       {activeTab === 'suppliers' && dueForReview.length > 0 && (

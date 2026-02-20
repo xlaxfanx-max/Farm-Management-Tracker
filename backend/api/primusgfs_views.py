@@ -6,8 +6,11 @@ Phase 2: Supplier Control, Mock Recall, Food Defense, Field Sanitation
 Dashboard aggregation.
 """
 
+import logging
 from datetime import date, timedelta
 from django.db.models import Count, Q
+
+logger = logging.getLogger(__name__)
 from django.utils import timezone
 from rest_framework import viewsets, filters, status
 from rest_framework.decorators import action
@@ -1846,6 +1849,1109 @@ class PrimusGFSDashboardViewSet(viewsets.ViewSet):
             'upcoming_deadlines': list(upcoming_deadlines),
         })
 
+    # -----------------------------------------------------------------
+    # Helper: compute module scores + detail data (shared by list & whats_next)
+    # -----------------------------------------------------------------
+    def _compute_module_scores(self, company):
+        """
+        Compute all 27 module scores and detail objects.
+        Returns (scores_dict, details_dict) where:
+          scores_dict = { module_key: int_score, ... }
+          details_dict = { module_key: { ...detail... }, ... }
+        """
+        today = date.today()
+        current_year = today.year
+        thirty_days_ago = today - timedelta(days=30)
+        farms_total = Farm.objects.filter(company=company, active=True).count()
+
+        scores = {}
+        details = {}
+
+        # --- Documents ---
+        docs = ControlledDocument.objects.filter(company=company)
+        total_docs = docs.count()
+        approved_docs = docs.filter(status='approved').count()
+        overdue_reviews = docs.filter(
+            status='approved', review_due_date__lt=today
+        ).count()
+        scores['document_control'] = int((approved_docs / total_docs) * 100) if total_docs > 0 else 0
+        details['document_control'] = {
+            'total': total_docs, 'approved': approved_docs,
+            'overdue_reviews': overdue_reviews,
+        }
+
+        # --- Audits ---
+        audits = InternalAudit.objects.filter(company=company)
+        completed_this_year = audits.filter(
+            planned_date__year=current_year, status='completed'
+        ).count()
+        scores['internal_audits'] = 100 if completed_this_year >= 1 else 0
+        details['internal_audits'] = {
+            'this_year': audits.filter(planned_date__year=current_year).count(),
+            'completed_this_year': completed_this_year,
+        }
+
+        # --- Corrective Actions ---
+        cas = CorrectiveAction.objects.filter(company=company)
+        total_cas = cas.count()
+        overdue_cas = cas.filter(
+            status__in=['open', 'in_progress', 'overdue'],
+            due_date__lt=today
+        ).count()
+        open_cas = cas.filter(status__in=['open', 'in_progress', 'overdue']).count()
+        scores['corrective_actions'] = int(((total_cas - overdue_cas) / total_cas) * 100) if total_cas > 0 else 100
+        details['corrective_actions'] = {
+            'total': total_cas, 'open': open_cas, 'overdue': overdue_cas,
+            'verified': cas.filter(status='verified').count(),
+        }
+
+        # --- Land ---
+        land = LandHistoryAssessment.objects.filter(company=company)
+        fields_total_all = Field.objects.filter(farm__company=company).count()
+        fields_approved = land.filter(approved=True).values('field').distinct().count()
+        scores['land_assessments'] = int((fields_approved / fields_total_all) * 100) if fields_total_all > 0 else 100
+        details['land_assessments'] = {
+            'fields_total': fields_total_all,
+            'fields_assessed': land.values('field').distinct().count(),
+            'fields_approved': fields_approved,
+        }
+
+        # --- Suppliers ---
+        suppliers = ApprovedSupplier.objects.filter(company=company)
+        total_suppliers = suppliers.count()
+        approved_suppliers = suppliers.filter(status='approved').count()
+        scores['suppliers'] = int((approved_suppliers / total_suppliers) * 100) if total_suppliers > 0 else 0
+        details['suppliers'] = {
+            'total': total_suppliers, 'approved': approved_suppliers,
+            'review_overdue': suppliers.filter(
+                status__in=['approved', 'conditional'],
+                next_review_date__lt=today,
+            ).count(),
+        }
+
+        # --- Mock Recalls ---
+        recalls = MockRecall.objects.filter(company=company)
+        passed_recalls = recalls.filter(
+            exercise_date__year=current_year, passed=True
+        ).count()
+        scores['mock_recalls'] = 100 if passed_recalls >= 1 else 0
+        details['mock_recalls'] = {
+            'this_year': recalls.filter(exercise_date__year=current_year).count(),
+            'passed_this_year': passed_recalls,
+        }
+
+        # --- Food Defense ---
+        current_plan = FoodDefensePlan.objects.filter(
+            company=company, plan_year=current_year
+        ).first()
+        has_plan = current_plan is not None
+        plan_approved = current_plan.approved if current_plan else False
+        scores['food_defense'] = 100 if plan_approved else (50 if has_plan else 0)
+        details['food_defense'] = {
+            'has_current_plan': has_plan,
+            'plan_approved': plan_approved,
+        }
+
+        # --- Sanitation ---
+        sanitation = FieldSanitationLog.objects.filter(
+            company=company, log_date__gte=thirty_days_ago
+        )
+        san_total = sanitation.count()
+        san_compliant = sanitation.filter(compliant=True).count()
+        scores['sanitation'] = int((san_compliant / san_total) * 100) if san_total > 0 else 0
+        details['sanitation'] = {
+            'total_logs_30d': san_total, 'compliant_30d': san_compliant,
+        }
+
+        # --- Equipment Calibration ---
+        calibrations = EquipmentCalibration.objects.filter(company=company)
+        total_cal = calibrations.count()
+        cal_current = calibrations.filter(
+            status='passed', next_calibration_date__gte=today
+        ).count()
+        cal_overdue = calibrations.filter(
+            next_calibration_date__lt=today,
+            status__in=['scheduled', 'overdue'],
+        ).count()
+        scores['equipment_calibration'] = int((cal_current / total_cal) * 100) if total_cal > 0 else 0
+        details['equipment_calibration'] = {
+            'total': total_cal, 'current': cal_current, 'overdue': cal_overdue,
+        }
+
+        # --- Pest Control ---
+        current_pest = PestControlProgram.objects.filter(
+            company=company, program_year=current_year
+        ).first()
+        has_pest = current_pest is not None
+        pest_approved = current_pest.approved if current_pest else False
+        pest_logs = PestMonitoringLog.objects.filter(
+            company=company, inspection_date__gte=thirty_days_ago
+        ).count()
+        pest_score = 0
+        if pest_approved:
+            pest_score += 60
+        elif has_pest:
+            pest_score += 30
+        if pest_logs >= 1:
+            pest_score += 40
+        scores['pest_control'] = min(pest_score, 100)
+        details['pest_control'] = {
+            'has_program': has_pest, 'program_approved': pest_approved,
+            'inspections_30d': pest_logs,
+        }
+
+        # --- Pre-Harvest ---
+        pre_harvest = PreHarvestInspection.objects.filter(
+            company=company, inspection_date__year=current_year
+        )
+        ph_total = pre_harvest.count()
+        ph_passed = pre_harvest.filter(passed=True).count()
+        scores['pre_harvest'] = int((ph_passed / ph_total) * 100) if ph_total > 0 else 0
+        details['pre_harvest'] = {
+            'this_year': ph_total, 'passed': ph_passed,
+            'failed': pre_harvest.filter(passed=False).count(),
+        }
+
+        # --- Food Safety Profile ---
+        profile = FoodSafetyProfile.objects.filter(company=company).first()
+        ps = 0
+        p_coord = p_policy = p_map = False
+        if profile:
+            if profile.coordinator_name and profile.coordinator_phone:
+                ps += 33; p_coord = True
+            if profile.policy_statement and profile.policy_effective_date:
+                ps += 34; p_policy = True
+            if profile.ranch_map_file:
+                ps += 33; p_map = True
+        scores['food_safety_profile'] = ps
+        details['food_safety_profile'] = {
+            'has_coordinator': p_coord, 'has_policy': p_policy, 'has_map': p_map,
+        }
+
+        # --- Org Roles ---
+        roles = FoodSafetyRoleAssignment.objects.filter(company=company, active=True)
+        r_coord = roles.filter(role_category='coordinator').exists()
+        r_owner = roles.filter(role_category='owner').exists()
+        r_total = roles.count()
+        org_s = 0
+        if r_coord: org_s += 40
+        if r_owner: org_s += 30
+        if r_total >= 3: org_s += 30
+        elif r_total >= 1: org_s += 15
+        scores['org_roles'] = org_s
+        details['org_roles'] = {
+            'has_coordinator': r_coord, 'has_owner': r_owner, 'total_roles': r_total,
+        }
+
+        # --- Committee Meetings ---
+        committee = FoodSafetyCommitteeMeeting.objects.filter(
+            company=company, meeting_year=current_year, status='completed'
+        )
+        quarters_done = committee.values('meeting_quarter').distinct().count()
+        scores['committee_meetings'] = min(quarters_done * 25, 100)
+        details['committee_meetings'] = {
+            'quarters_completed': quarters_done, 'target': 4,
+        }
+
+        # --- Management Review ---
+        mgmt = ManagementVerificationReview.objects.filter(
+            company=company, review_year=current_year
+        ).first()
+        if mgmt:
+            sections = mgmt.sections_reviewed_count
+            if mgmt.approved:
+                scores['management_review'] = 100
+            else:
+                scores['management_review'] = min(int((sections / 12) * 80), 80)
+        else:
+            sections = 0
+            scores['management_review'] = 0
+        details['management_review'] = {
+            'exists': mgmt is not None,
+            'approved': mgmt.approved if mgmt else False,
+            'sections_reviewed': sections, 'total_sections': 12,
+        }
+
+        # --- Training Matrix ---
+        training = TrainingRecord.objects.filter(company=company, active=True)
+        t_total = training.count()
+        t_avg = 0.0
+        if t_total > 0:
+            t_avg = sum(r.compliance_percentage for r in training) / t_total
+        scores['training_matrix'] = int(t_avg)
+        details['training_matrix'] = {
+            'total_employees': t_total, 'average_compliance': round(t_avg, 1),
+        }
+
+        # --- Training Sessions ---
+        sessions = WorkerTrainingSession.objects.filter(
+            company=company, training_date__year=current_year
+        ).count()
+        scores['training_sessions'] = min(sessions * 25, 100)
+        details['training_sessions'] = {
+            'sessions_this_year': sessions, 'target': 4,
+        }
+
+        # --- Perimeter Monitoring ---
+        peri = PerimeterMonitoringLog.objects.filter(
+            company=company, log_date__gte=thirty_days_ago
+        )
+        peri_weeks = peri.values('week_number').distinct().count()
+        scores['perimeter_monitoring'] = min(int((peri_weeks / 4) * 100), 100)
+        details['perimeter_monitoring'] = {
+            'weeks_logged_30d': peri_weeks, 'target_weeks': 4,
+        }
+
+        # --- Pre-Season Checklist ---
+        psc = PreSeasonChecklist.objects.filter(
+            company=company, season_year=current_year
+        )
+        psc_approved = psc.filter(approved_for_season=True).count()
+        scores['pre_season_checklist'] = min(int((psc_approved / farms_total) * 100), 100) if farms_total > 0 else 0
+        details['pre_season_checklist'] = {
+            'farms_total': farms_total, 'approved_count': psc_approved,
+            'total_checklists': psc.count(),
+        }
+
+        # --- Field Risk Assessment ---
+        fra = FieldRiskAssessment.objects.filter(
+            company=company, season_year=current_year
+        )
+        fra_approved = fra.filter(approved=True).values('farm').distinct().count()
+        scores['field_risk_assessment'] = min(int((fra_approved / farms_total) * 100), 100) if farms_total > 0 else 0
+        details['field_risk_assessment'] = {
+            'farms_total': farms_total,
+            'farms_assessed': fra.values('farm').distinct().count(),
+            'farms_approved': fra_approved,
+        }
+
+        # --- Non-Conformance ---
+        ncs = EmployeeNonConformance.objects.filter(company=company)
+        nc_total = ncs.count()
+        nc_open = ncs.filter(resolved=False).count()
+        scores['non_conformance'] = int(((nc_total - nc_open) / nc_total) * 100) if nc_total > 0 else 100
+        details['non_conformance'] = {
+            'total': nc_total, 'open': nc_open, 'resolved': nc_total - nc_open,
+        }
+
+        # --- Product Holds ---
+        holds = ProductHoldRelease.objects.filter(company=company)
+        h_total = holds.count()
+        h_active = holds.filter(status='on_hold').count()
+        scores['product_holds'] = int(((h_total - h_active) / h_total) * 100) if h_total > 0 else 100
+        details['product_holds'] = {
+            'total': h_total, 'active': h_active, 'resolved': h_total - h_active,
+        }
+
+        # --- Supplier Verification ---
+        sv = SupplierVerificationLog.objects.filter(
+            company=company, verification_date__year=current_year
+        )
+        sv_done = sv.values('supplier').distinct().count()
+        sv_target = ApprovedSupplier.objects.filter(
+            company=company, status__in=['approved', 'conditional']
+        ).count()
+        scores['supplier_verification'] = min(int((sv_done / sv_target) * 100), 100) if sv_target > 0 else 0
+        details['supplier_verification'] = {
+            'suppliers_verified': sv_done, 'total_approved_suppliers': sv_target,
+        }
+
+        # --- Food Fraud ---
+        fraud = FoodFraudAssessment.objects.filter(
+            company=company, assessment_year=current_year
+        ).first()
+        if fraud:
+            scores['food_fraud'] = 100 if fraud.approved else 50
+        else:
+            scores['food_fraud'] = 0
+        details['food_fraud'] = {
+            'has_assessment': fraud is not None,
+            'approved': fraud.approved if fraud else False,
+        }
+
+        # --- Emergency Contacts ---
+        contacts = EmergencyContact.objects.filter(company=company, active=True)
+        key_types = ['fire', 'police', 'hospital', 'poison_control', 'county_ag']
+        key_present = contacts.filter(
+            contact_type__in=key_types
+        ).values('contact_type').distinct().count()
+        scores['emergency_contacts'] = min(int((key_present / 5) * 100), 100)
+        details['emergency_contacts'] = {
+            'key_types_present': key_present, 'target': 5,
+            'total_contacts': contacts.count(),
+        }
+
+        # --- Chemical Inventory ---
+        current_month = today.month
+        chem_this = ChemicalInventoryLog.objects.filter(
+            company=company, inventory_year=current_year,
+            inventory_month=current_month,
+        ).count()
+        if chem_this > 0:
+            scores['chemical_inventory'] = 100
+        else:
+            last_m = current_month - 1 if current_month > 1 else 12
+            last_y = current_year if current_month > 1 else current_year - 1
+            chem_last = ChemicalInventoryLog.objects.filter(
+                company=company, inventory_year=last_y, inventory_month=last_m,
+            ).count()
+            scores['chemical_inventory'] = 50 if chem_last > 0 else 0
+        details['chemical_inventory'] = {
+            'logged_this_month': chem_this > 0,
+            'entries_this_month': chem_this,
+        }
+
+        # --- Sanitation Maintenance ---
+        sm = SanitationMaintenanceLog.objects.filter(
+            company=company, log_date__gte=thirty_days_ago
+        )
+        sm_count = sm.count()
+        sm_ok = sm.filter(condition_acceptable=True).count()
+        scores['sanitation_maintenance'] = int((sm_ok / sm_count) * 100) if sm_count > 0 else 0
+        details['sanitation_maintenance'] = {
+            'logs_30d': sm_count, 'acceptable_30d': sm_ok,
+        }
+
+        return scores, details
+
+    # -----------------------------------------------------------------
+    # What's Next — prioritized action dashboard
+    # -----------------------------------------------------------------
+    @action(detail=False, methods=['get'], url_path='whats-next')
+    def whats_next(self, request):
+        """
+        Return prioritized "what's next" actions based on module scores,
+        cross-platform data availability, and quick wins.
+
+        Response:
+          needs_attention[] — modules <60 or with overdue items, sorted by urgency
+          quick_wins[]      — modules close to 100% with small effort to complete
+          auto_populated[]  — cross-data available from other platform modules
+          progress_pipeline — { not_started, in_progress, compliant } counts
+          upcoming_deadlines — next 5 Primus deadlines
+        """
+        company = require_company(request.user)
+        today = date.today()
+        current_year = today.year
+
+        scores, details = self._compute_module_scores(company)
+
+        # Module metadata: label, tab id, suggested action per state
+        MODULE_META = {
+            'food_safety_profile': {
+                'label': 'Food Safety Profile', 'tab': 'profile',
+                'action_zero': 'Set up your ranch food safety profile with coordinator, policy, and map.',
+                'action_low': 'Complete missing profile fields (coordinator, policy, or ranch map).',
+                'effort': '10 min',
+            },
+            'org_roles': {
+                'label': 'Organization Roles', 'tab': 'org-roles',
+                'action_zero': 'Define food safety roles: coordinator, owner/operator, and team leads.',
+                'action_low': 'Add missing key roles (coordinator or owner/operator).',
+                'effort': '5 min',
+            },
+            'emergency_contacts': {
+                'label': 'Emergency Contacts', 'tab': 'emergency',
+                'action_zero': 'Add emergency contacts: fire, police, hospital, poison control, county ag.',
+                'action_low': 'Add remaining emergency contact types to reach all 5 required.',
+                'effort': '10 min',
+            },
+            'pre_season_checklist': {
+                'label': 'Pre-Season Checklist', 'tab': 'pre-season',
+                'action_zero': 'Create pre-season checklists for each farm before the growing season.',
+                'action_low': 'Complete and approve remaining farm pre-season checklists.',
+                'effort': '20 min/farm',
+            },
+            'field_risk_assessment': {
+                'label': 'Field Risk Assessment', 'tab': 'field-risk',
+                'action_zero': 'Conduct field risk assessments for each farm this season.',
+                'action_low': 'Complete risk assessments for remaining farms.',
+                'effort': '15 min/farm',
+            },
+            'land_assessments': {
+                'label': 'Land History', 'tab': 'land',
+                'action_zero': 'Document land history assessments for your fields.',
+                'action_low': 'Complete land history for unassessed fields.',
+                'effort': '10 min/field',
+            },
+            'perimeter_monitoring': {
+                'label': 'Perimeter Monitoring', 'tab': 'perimeter',
+                'action_zero': 'Start weekly perimeter monitoring logs.',
+                'action_low': 'Log perimeter inspections for missing weeks this month.',
+                'effort': '5 min/week',
+            },
+            'chemical_inventory': {
+                'label': 'Chemical Inventory', 'tab': 'chemical-inv',
+                'action_zero': 'Log this month\'s chemical inventory.',
+                'action_low': 'Update chemical inventory for the current month.',
+                'effort': '15 min',
+            },
+            'pest_control': {
+                'label': 'Pest Control', 'tab': 'pest-control',
+                'action_zero': 'Create and approve a pest control program for this year.',
+                'action_low': 'Approve your pest control program or log recent monitoring.',
+                'effort': '20 min',
+            },
+            'sanitation': {
+                'label': 'Field Sanitation', 'tab': 'sanitation',
+                'action_zero': 'Begin logging daily field sanitation checks.',
+                'action_low': 'Address non-compliant sanitation logs from the last 30 days.',
+                'effort': '5 min/day',
+            },
+            'sanitation_maintenance': {
+                'label': 'Sanitation Maintenance', 'tab': 'sanitation-maint',
+                'action_zero': 'Start logging sanitation facility maintenance inspections.',
+                'action_low': 'Resolve unacceptable sanitation maintenance findings.',
+                'effort': '10 min',
+            },
+            'equipment_calibration': {
+                'label': 'Equipment Calibration', 'tab': 'calibration',
+                'action_zero': 'Register equipment and schedule calibrations.',
+                'action_low': 'Complete overdue equipment calibrations.',
+                'effort': '15 min/item',
+            },
+            'pre_harvest': {
+                'label': 'Pre-Harvest Inspection', 'tab': 'pre-harvest',
+                'action_zero': 'Conduct pre-harvest inspections before picking begins.',
+                'action_low': 'Address failed pre-harvest inspections.',
+                'effort': '30 min',
+            },
+            'training_matrix': {
+                'label': 'Training Matrix', 'tab': 'training-matrix',
+                'action_zero': 'Set up employee training records.',
+                'action_low': 'Bring training compliance above 80% — schedule refresher courses.',
+                'effort': '15 min',
+            },
+            'training_sessions': {
+                'label': 'Training Sessions', 'tab': 'training-sessions',
+                'action_zero': 'Schedule and conduct food safety training sessions.',
+                'action_low': 'Conduct additional training sessions (target: 4/year).',
+                'effort': '1 hr/session',
+            },
+            'non_conformance': {
+                'label': 'Non-Conformance', 'tab': 'non-conformance',
+                'action_zero': 'No action needed — no non-conformance events.',
+                'action_low': 'Resolve open non-conformance events.',
+                'effort': '10 min/event',
+            },
+            'committee_meetings': {
+                'label': 'Committee Meetings', 'tab': 'committee',
+                'action_zero': 'Schedule your first quarterly food safety committee meeting.',
+                'action_low': 'Complete remaining quarterly committee meetings.',
+                'effort': '1 hr/quarter',
+            },
+            'management_review': {
+                'label': 'Management Review', 'tab': 'mgmt-review',
+                'action_zero': 'Create the annual management verification review.',
+                'action_low': 'Review remaining sections and get management approval.',
+                'effort': '2 hrs',
+            },
+            'suppliers': {
+                'label': 'Suppliers', 'tab': 'suppliers',
+                'action_zero': 'Register and approve your material suppliers.',
+                'action_low': 'Approve pending suppliers or address overdue reviews.',
+                'effort': '10 min/supplier',
+            },
+            'supplier_verification': {
+                'label': 'Supplier Verification', 'tab': 'supplier-verify',
+                'action_zero': 'Verify approved suppliers for this year.',
+                'action_low': 'Complete verification for remaining suppliers.',
+                'effort': '10 min/supplier',
+            },
+            'product_holds': {
+                'label': 'Product Holds', 'tab': 'product-holds',
+                'action_zero': 'No action needed — no product holds.',
+                'action_low': 'Resolve active product holds.',
+                'effort': '15 min/hold',
+            },
+            'mock_recalls': {
+                'label': 'Mock Recalls', 'tab': 'recalls',
+                'action_zero': 'Conduct a mock recall exercise this year.',
+                'action_low': 'Review and pass a mock recall exercise.',
+                'effort': '2 hrs',
+            },
+            'document_control': {
+                'label': 'Documents', 'tab': 'documents',
+                'action_zero': 'Upload and register your food safety SOPs.',
+                'action_low': 'Approve pending documents or complete overdue reviews.',
+                'effort': '10 min/doc',
+            },
+            'internal_audits': {
+                'label': 'Internal Audits', 'tab': 'audits',
+                'action_zero': 'Schedule and complete an internal audit this year.',
+                'action_low': 'Complete your scheduled internal audit.',
+                'effort': '4 hrs',
+            },
+            'corrective_actions': {
+                'label': 'Corrective Actions', 'tab': 'corrective-actions',
+                'action_zero': 'No action needed — no corrective actions pending.',
+                'action_low': 'Address overdue corrective actions.',
+                'effort': '15 min/CA',
+            },
+            'food_defense': {
+                'label': 'Food Defense', 'tab': 'food-defense',
+                'action_zero': 'Create a food defense plan for this year.',
+                'action_low': 'Get your food defense plan approved.',
+                'effort': '30 min',
+            },
+            'food_fraud': {
+                'label': 'Food Fraud', 'tab': 'food-fraud',
+                'action_zero': 'Complete a food fraud vulnerability assessment.',
+                'action_low': 'Get your food fraud assessment approved.',
+                'effort': '30 min',
+            },
+        }
+
+        # ----- Needs Attention: score < 60 or has overdue items -----
+        needs_attention = []
+        for key, score in scores.items():
+            meta = MODULE_META.get(key, {})
+            detail = details.get(key, {})
+            urgency = 0
+
+            # Overdue items get highest urgency
+            has_overdue = (
+                detail.get('overdue', 0) > 0 or
+                detail.get('overdue_reviews', 0) > 0 or
+                detail.get('open', 0) > 0 or
+                detail.get('active', 0) > 0
+            )
+
+            if score < 60 or has_overdue:
+                if score == 0:
+                    urgency = 3  # Not started
+                elif has_overdue:
+                    urgency = 3  # Has overdue items
+                elif score < 30:
+                    urgency = 2  # Very low
+                else:
+                    urgency = 1  # Below threshold
+
+                action_text = meta.get('action_zero', 'Get started on this module.') if score == 0 \
+                    else meta.get('action_low', 'Improve this module\'s score.')
+
+                needs_attention.append({
+                    'module': key,
+                    'label': meta.get('label', key.replace('_', ' ').title()),
+                    'tab': meta.get('tab', key.replace('_', '-')),
+                    'score': score,
+                    'urgency': urgency,
+                    'action': action_text,
+                    'effort': meta.get('effort', ''),
+                    'has_overdue': has_overdue,
+                    'details': detail,
+                })
+
+        # Sort: highest urgency first, then lowest score
+        needs_attention.sort(key=lambda x: (-x['urgency'], x['score']))
+
+        # ----- Quick Wins: score 60-99 with small effort to complete -----
+        quick_wins = []
+        for key, score in scores.items():
+            meta = MODULE_META.get(key, {})
+            detail = details.get(key, {})
+            if 60 <= score < 100:
+                quick_wins.append({
+                    'module': key,
+                    'label': meta.get('label', key.replace('_', ' ').title()),
+                    'tab': meta.get('tab', key.replace('_', '-')),
+                    'score': score,
+                    'action': meta.get('action_low', 'Finalize this module.'),
+                    'effort': meta.get('effort', ''),
+                    'details': detail,
+                })
+        # Sort by score descending (closest to 100 first = easiest wins)
+        quick_wins.sort(key=lambda x: -x['score'])
+
+        # ----- Auto-populated: cross-platform data availability -----
+        auto_populated = []
+        try:
+            from .models import PesticideApplication, PesticideProduct
+            pesticide_apps = PesticideApplication.objects.filter(
+                field__farm__company=company
+            ).count()
+            if pesticide_apps > 0:
+                auto_populated.append({
+                    'module': 'chemical_inventory',
+                    'tab': 'chemical-inv',
+                    'source': 'Pesticide Records',
+                    'message': f'{pesticide_apps} pesticide applications available for chemical inventory.',
+                    'count': pesticide_apps,
+                })
+
+            unique_suppliers_from_products = PesticideProduct.objects.filter(
+                pesticideapplication__field__farm__company=company
+            ).values('manufacturer').distinct().count()
+            if unique_suppliers_from_products > 0:
+                auto_populated.append({
+                    'module': 'suppliers',
+                    'tab': 'suppliers',
+                    'source': 'Product Suppliers',
+                    'message': f'{unique_suppliers_from_products} unique manufacturers from pesticide products.',
+                    'count': unique_suppliers_from_products,
+                })
+        except Exception:
+            pass
+
+        try:
+            from .models import WPSTrainingRecord
+            wps_records = WPSTrainingRecord.objects.filter(
+                company=company
+            ).count()
+            if wps_records > 0:
+                auto_populated.append({
+                    'module': 'training_matrix',
+                    'tab': 'training-matrix',
+                    'source': 'WPS Training Records',
+                    'message': f'{wps_records} WPS training records available for training matrix.',
+                    'count': wps_records,
+                })
+        except Exception:
+            pass
+
+        try:
+            from .models import LaborContractor
+            contractors = LaborContractor.objects.filter(company=company).count()
+            if contractors > 0:
+                auto_populated.append({
+                    'module': 'suppliers',
+                    'tab': 'suppliers',
+                    'source': 'Labor Contractors',
+                    'message': f'{contractors} labor contractors available for supplier list.',
+                    'count': contractors,
+                })
+        except Exception:
+            pass
+
+        try:
+            from .models import IncidentReport
+            incidents = IncidentReport.objects.filter(
+                company=company, status__in=['open', 'investigating']
+            ).count()
+            if incidents > 0:
+                auto_populated.append({
+                    'module': 'non_conformance',
+                    'tab': 'non-conformance',
+                    'source': 'Incident Reports',
+                    'message': f'{incidents} open incidents that may need non-conformance records.',
+                    'count': incidents,
+                })
+        except Exception:
+            pass
+
+        try:
+            from .models import WaterTest
+            water_tests = WaterTest.objects.filter(
+                water_source__farm__company=company,
+                test_date__year=current_year,
+            ).count()
+            if water_tests > 0:
+                auto_populated.append({
+                    'module': 'pre_season_checklist',
+                    'tab': 'pre-season',
+                    'source': 'Water Tests',
+                    'message': f'{water_tests} water test results available for pre-season review.',
+                    'count': water_tests,
+                })
+        except Exception:
+            pass
+
+        # ----- Progress Pipeline -----
+        not_started = sum(1 for s in scores.values() if s == 0)
+        in_progress = sum(1 for s in scores.values() if 0 < s < 80)
+        compliant = sum(1 for s in scores.values() if s >= 80)
+
+        # ----- Upcoming Deadlines -----
+        upcoming = ComplianceDeadline.objects.filter(
+            company=company,
+            regulation__icontains='Primus',
+            status__in=['upcoming', 'due_soon'],
+            due_date__gte=today,
+            due_date__lte=today + timedelta(days=30),
+        ).values('id', 'name', 'due_date', 'status', 'category')[:5]
+
+        # ----- Overall score -----
+        all_scores = list(scores.values())
+        overall = int(sum(all_scores) / len(all_scores)) if all_scores else 0
+
+        return Response({
+            'overall_score': overall,
+            'needs_attention': needs_attention[:10],
+            'quick_wins': quick_wins[:8],
+            'auto_populated': auto_populated,
+            'progress_pipeline': {
+                'not_started': not_started,
+                'in_progress': in_progress,
+                'compliant': compliant,
+                'total': len(scores),
+            },
+            'upcoming_deadlines': list(upcoming),
+        })
+
+    # -----------------------------------------------------------------
+    # Prefill — cross-platform data for auto-import
+    # -----------------------------------------------------------------
+    @action(detail=False, methods=['get'], url_path='prefill/(?P<module>[a-z_-]+)')
+    def prefill(self, request, module=None):
+        """
+        Return cross-platform prefill data for a specific PrimusGFS module.
+
+        Supported modules:
+          chemical-inventory, training-records, suppliers,
+          non-conformance, committee-agenda, pre-season,
+          management-review
+        """
+        from api.services.primusgfs.cross_data_linker import CrossDataLinker
+
+        company = require_company(request.user)
+        linker = CrossDataLinker(company)
+
+        module_map = {
+            'chemical-inventory': linker.get_chemical_inventory_prefill,
+            'training-records': linker.get_training_records_prefill,
+            'suppliers': linker.get_supplier_prefill,
+            'non-conformance': linker.get_non_conformance_prefill,
+            'committee-agenda': lambda: linker.get_committee_agenda_data(
+                request.query_params.get('quarter')
+            ),
+            'pre-season': lambda: linker.get_pre_season_prefill(
+                request.query_params.get('farm_id')
+            ),
+            'management-review': linker.get_management_review_summary,
+        }
+
+        handler = module_map.get(module)
+        if not handler:
+            return Response(
+                {'error': f'Unknown module: {module}'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            data = handler()
+            return Response(data)
+        except Exception as e:
+            logger.exception(f"Error generating prefill for {module}")
+            return Response(
+                {'error': str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+    # -----------------------------------------------------------------
+    # Copy Forward — clone records from a previous season/year
+    # -----------------------------------------------------------------
+    @action(detail=False, methods=['post'], url_path='copy-forward')
+    def copy_forward(self, request):
+        """
+        Clone PrimusGFS records from one year to another.
+
+        POST body:
+          source_year: int (year to copy from)
+          target_year: int (year to copy to)
+          modules: list[str] (module keys to copy)
+
+        Returns per-module record counts of cloned items.
+        """
+        company = require_company(request.user)
+        source_year = request.data.get('source_year')
+        target_year = request.data.get('target_year')
+        modules = request.data.get('modules', [])
+
+        if not source_year or not target_year:
+            return Response(
+                {'error': 'source_year and target_year are required.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            source_year = int(source_year)
+            target_year = int(target_year)
+        except (ValueError, TypeError):
+            return Response(
+                {'error': 'source_year and target_year must be integers.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if source_year == target_year:
+            return Response(
+                {'error': 'Source and target years must be different.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if not modules:
+            return Response(
+                {'error': 'At least one module must be selected.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        results = {}
+
+        # --- Food Defense Plan ---
+        if 'food_defense' in modules:
+            count = 0
+            for plan in FoodDefensePlan.objects.filter(
+                company=company, plan_year=source_year
+            ):
+                if FoodDefensePlan.objects.filter(
+                    company=company, plan_year=target_year
+                ).exists():
+                    break
+                plan.pk = None
+                plan.plan_year = target_year
+                plan.approved = False
+                plan.approved_by = None
+                plan.approved_at = None
+                plan.created_at = None
+                plan.updated_at = None
+                plan.related_document = None
+                plan.save()
+                count += 1
+            results['food_defense'] = count
+
+        # --- Food Fraud Assessment ---
+        if 'food_fraud' in modules:
+            count = 0
+            for assessment in FoodFraudAssessment.objects.filter(
+                company=company, assessment_year=source_year
+            ):
+                if FoodFraudAssessment.objects.filter(
+                    company=company, assessment_year=target_year
+                ).exists():
+                    break
+                assessment.pk = None
+                assessment.assessment_year = target_year
+                assessment.approved = False
+                assessment.reviewed_date = None
+                assessment.related_document = None
+                assessment.created_at = None
+                assessment.updated_at = None
+                assessment.save()
+                count += 1
+            results['food_fraud'] = count
+
+        # --- Pest Control Program ---
+        if 'pest_control' in modules:
+            count = 0
+            for program in PestControlProgram.objects.filter(
+                company=company, program_year=source_year
+            ):
+                if PestControlProgram.objects.filter(
+                    company=company, program_year=target_year
+                ).exists():
+                    break
+                program.pk = None
+                program.program_year = target_year
+                program.approved = False
+                program.approved_by = None
+                program.approved_at = None
+                program.related_document = None
+                program.created_at = None
+                program.updated_at = None
+                program.save()
+                count += 1
+            results['pest_control'] = count
+
+        # --- Pre-Season Checklist ---
+        if 'pre_season' in modules:
+            count = 0
+            for checklist in PreSeasonChecklist.objects.filter(
+                company=company, season_year=source_year
+            ):
+                if PreSeasonChecklist.objects.filter(
+                    company=company, farm=checklist.farm,
+                    season_year=target_year,
+                ).exists():
+                    continue
+                checklist.pk = None
+                checklist.season_year = target_year
+                checklist.approved_for_season = False
+                checklist.approved_by = ''
+                checklist.approval_date = None
+                checklist.deficiencies_found = False
+                checklist.deficiency_list = []
+                checklist.created_at = None
+                checklist.updated_at = None
+                checklist.save()
+                count += 1
+            results['pre_season'] = count
+
+        # --- Field Risk Assessment ---
+        if 'field_risk' in modules:
+            count = 0
+            for assessment in FieldRiskAssessment.objects.filter(
+                company=company, season_year=source_year
+            ):
+                if FieldRiskAssessment.objects.filter(
+                    company=company, farm=assessment.farm,
+                    season_year=target_year,
+                ).exists():
+                    continue
+                assessment.pk = None
+                assessment.season_year = target_year
+                assessment.approved = False
+                assessment.review_date = None
+                assessment.reviewed_by = ''
+                assessment.report_file = None
+                assessment.created_at = None
+                assessment.updated_at = None
+                assessment.save()
+                count += 1
+            results['field_risk'] = count
+
+        # --- Emergency Contacts (not year-scoped, just clone missing types) ---
+        if 'emergency_contacts' in modules:
+            count = 0
+            existing_types = set(
+                EmergencyContact.objects.filter(
+                    company=company, active=True
+                ).values_list('contact_type', flat=True)
+            )
+            # Emergency contacts don't have a year — nothing to copy.
+            # But we include it for completeness so the UI doesn't break.
+            results['emergency_contacts'] = 0
+
+        total_copied = sum(results.values())
+
+        return Response({
+            'source_year': source_year,
+            'target_year': target_year,
+            'results': results,
+            'total_copied': total_copied,
+        })
+
+    # -----------------------------------------------------------------
+    # Setup Status — guided wizard step completion
+    # -----------------------------------------------------------------
+    @action(detail=False, methods=['get'], url_path='setup-status')
+    def setup_status(self, request):
+        """
+        Return 6 setup steps with completion status and prefill availability.
+        Used by the SetupWizard to guide first-time configuration.
+        """
+        company = require_company(request.user)
+        current_year = date.today().year
+
+        steps = []
+
+        # Step 1: Food Safety Profile
+        profile = FoodSafetyProfile.objects.filter(company=company).first()
+        profile_complete = bool(
+            profile and profile.coordinator_name and
+            profile.policy_statement and profile.ranch_map_file
+        )
+        steps.append({
+            'key': 'profile',
+            'label': 'Food Safety Profile',
+            'description': 'Set up your ranch profile with coordinator info, food safety policy, and ranch map.',
+            'tab': 'profile',
+            'completed': profile_complete,
+            'partial': bool(profile),
+            'prefill_available': False,
+        })
+
+        # Step 2: Organization Roles
+        roles = FoodSafetyRoleAssignment.objects.filter(
+            company=company, active=True
+        )
+        has_coordinator = roles.filter(role_category='coordinator').exists()
+        has_owner = roles.filter(role_category='owner').exists()
+        roles_complete = has_coordinator and has_owner and roles.count() >= 3
+        steps.append({
+            'key': 'org-roles',
+            'label': 'Organization Roles',
+            'description': 'Define food safety roles: coordinator, owner/operator, and team leads.',
+            'tab': 'org-roles',
+            'completed': roles_complete,
+            'partial': roles.exists(),
+            'prefill_available': False,
+        })
+
+        # Step 3: Emergency Contacts
+        contacts = EmergencyContact.objects.filter(
+            company=company, active=True
+        )
+        key_types = ['fire', 'police', 'hospital', 'poison_control', 'county_ag']
+        key_present = contacts.filter(
+            contact_type__in=key_types
+        ).values('contact_type').distinct().count()
+        contacts_complete = key_present >= 5
+        steps.append({
+            'key': 'emergency',
+            'label': 'Emergency Contacts',
+            'description': 'Add emergency contacts: fire, police, hospital, poison control, county ag.',
+            'tab': 'emergency',
+            'completed': contacts_complete,
+            'partial': contacts.exists(),
+            'prefill_available': False,
+        })
+
+        # Step 4: Core Documents (SOPs uploaded)
+        docs = ControlledDocument.objects.filter(company=company)
+        approved_docs = docs.filter(status='approved').count()
+        docs_complete = approved_docs >= 3
+        steps.append({
+            'key': 'documents',
+            'label': 'Core Documents',
+            'description': 'Upload and approve your food safety SOPs and procedures.',
+            'tab': 'documents',
+            'completed': docs_complete,
+            'partial': docs.exists(),
+            'prefill_available': False,
+        })
+
+        # Step 5: Approved Suppliers
+        suppliers = ApprovedSupplier.objects.filter(company=company)
+        approved_suppliers = suppliers.filter(status='approved').count()
+        suppliers_complete = approved_suppliers >= 1
+
+        # Check prefill availability
+        supplier_prefill = False
+        try:
+            from api.models.farm import PesticideProduct
+            supplier_prefill = PesticideProduct.objects.filter(
+                pesticideapplication__field__farm__company=company,
+                active=True,
+            ).values('manufacturer').distinct().filter(
+                manufacturer__gt=''
+            ).exists()
+        except Exception:
+            pass
+
+        steps.append({
+            'key': 'suppliers',
+            'label': 'Approved Suppliers',
+            'description': 'Register and approve your material suppliers.',
+            'tab': 'suppliers',
+            'completed': suppliers_complete,
+            'partial': suppliers.exists(),
+            'prefill_available': supplier_prefill,
+        })
+
+        # Step 6: Food Defense Plan
+        plan = FoodDefensePlan.objects.filter(
+            company=company, plan_year=current_year
+        ).first()
+        plan_complete = bool(plan and plan.approved)
+        steps.append({
+            'key': 'food-defense',
+            'label': 'Food Defense Plan',
+            'description': 'Create and approve a food defense plan for this year.',
+            'tab': 'food-defense',
+            'completed': plan_complete,
+            'partial': plan is not None,
+            'prefill_available': False,
+        })
+
+        completed_count = sum(1 for s in steps if s['completed'])
+        show_wizard = completed_count < 4
+
+        return Response({
+            'steps': steps,
+            'completed_count': completed_count,
+            'total_steps': len(steps),
+            'show_wizard': show_wizard,
+        })
+
 
 # =============================================================================
 # CAC DOC 01 — FOOD SAFETY PROFILE
@@ -2488,8 +3594,10 @@ class CACManualPDFViewSet(viewsets.ViewSet):
         except ValueError as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         response = HttpResponse(pdf_bytes.read(), content_type='application/pdf')
+        # Use 'inline' so the PDF renders in embedded viewers (iframe)
+        # instead of triggering a download.
         response['Content-Disposition'] = (
-            f'attachment; filename="CAC_Doc_{doc}_{gen.season_year}.pdf"'
+            f'inline; filename="CAC_Doc_{doc}_{gen.season_year}.pdf"'
         )
         return response
 

@@ -15,6 +15,7 @@ import {
   Paperclip,
   Download,
   AlertTriangle,
+  Sparkles,
 } from 'lucide-react';
 import { primusGFSAPI } from '../../services/api';
 
@@ -265,6 +266,8 @@ const ReviewModal = ({ editReview, onClose, onSave }) => {
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState(null);
   const [dragOver, setDragOver] = useState(false);
+  const [generatingSummary, setGeneratingSummary] = useState(false);
+  const [summaryResult, setSummaryResult] = useState(null);
 
   const isEditing = !!editReview;
 
@@ -287,6 +290,55 @@ const ReviewModal = ({ editReview, onClose, onSave }) => {
     setDragOver(false);
     const file = e.dataTransfer.files?.[0];
     if (file) setSelectedFile(file);
+  };
+
+  // Map backend CrossDataLinker sections → frontend REVIEW_SECTIONS keys
+  const SECTION_MAP = {
+    internal_audits: 'audit_results',
+    corrective_actions: 'corrective_actions',
+    incidents: 'customer_complaints',
+    training: 'training_effectiveness',
+    suppliers: 'supplier_performance',
+    documents: 'regulatory_compliance',
+    equipment: 'management_of_change',
+    pest_control: 'pest_control_effectiveness',
+    water_testing: 'food_safety_policy',
+    mock_recalls: 'recall_effectiveness',
+    sanitation: 'sanitation_effectiveness',
+    food_defense: 'food_safety_objectives',
+  };
+
+  const generateSummary = async () => {
+    setGeneratingSummary(true);
+    setSummaryResult(null);
+    try {
+      const res = await primusGFSAPI.getPrefill('management-review');
+      const data = res.data;
+      const updates = {};
+      let filled = 0;
+
+      Object.entries(data.sections || {}).forEach(([backendKey, section]) => {
+        const frontendKey = SECTION_MAP[backendKey];
+        if (!frontendKey) return;
+        if (section.has_data && section.summary) {
+          updates[`${frontendKey}_analysis`] = section.summary;
+          updates[`${frontendKey}_reviewed`] = true;
+          filled++;
+        }
+      });
+
+      setFormData((prev) => ({ ...prev, ...updates }));
+      setSummaryResult({
+        filled,
+        total: 12,
+        manual: 12 - filled,
+      });
+    } catch (err) {
+      console.error('Failed to generate summaries:', err);
+      setSummaryResult({ error: 'Failed to generate summaries. Please try again.' });
+    } finally {
+      setGeneratingSummary(false);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -443,6 +495,38 @@ const ReviewModal = ({ editReview, onClose, onSave }) => {
                 style={{ width: `${(reviewedCount / REVIEW_SECTIONS.length) * 100}%` }}
               />
             </div>
+
+            {/* Auto-Generate Summaries button */}
+            <button
+              type="button"
+              onClick={generateSummary}
+              disabled={generatingSummary}
+              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 mb-4 text-sm font-medium text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-colors disabled:opacity-50"
+            >
+              {generatingSummary ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Sparkles className="w-4 h-4" />
+              )}
+              {generatingSummary ? 'Generating Summaries...' : 'Auto-Generate Summaries from Platform Data'}
+            </button>
+
+            {/* Summary result banner */}
+            {summaryResult && !summaryResult.error && (
+              <div className="flex items-start gap-2 p-3 mb-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg text-sm text-green-700 dark:text-green-300">
+                <CheckCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                <span>
+                  {summaryResult.filled} of {summaryResult.total} sections auto-filled.
+                  {summaryResult.manual > 0 && ` ${summaryResult.manual} sections need manual review.`}
+                </span>
+              </div>
+            )}
+            {summaryResult?.error && (
+              <div className="flex items-start gap-2 p-3 mb-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-sm text-red-700 dark:text-red-400">
+                <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                <span>{summaryResult.error}</span>
+              </div>
+            )}
 
             <div className="space-y-2">
               {REVIEW_SECTIONS.map(({ key, label, description }) => (

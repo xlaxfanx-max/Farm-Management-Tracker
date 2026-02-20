@@ -12,6 +12,7 @@ import {
   CheckCircle,
 } from 'lucide-react';
 import { primusGFSAPI } from '../../services/api';
+import PrefillBanner from './PrefillBanner';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -570,6 +571,36 @@ export default function ChemicalInventory() {
           </button>
         </div>
       </div>
+
+      {/* Prefill from Pesticide Records */}
+      <PrefillBanner
+        module="chemical-inventory"
+        sourceLabel="Pesticide Records"
+        onImport={async (items) => {
+          let count = 0;
+          for (const item of items) {
+            try {
+              await primusGFSAPI.createChemicalInventory({
+                chemical_name: item.product_name,
+                epa_registration_number: item.epa_registration_number || '',
+                chemical_type: item.chemical_type || 'pesticide',
+                unit_of_measure: item.unit || 'gallons',
+                inventory_date: new Date().toISOString().split('T')[0],
+                inventory_month: new Date().getMonth() + 1,
+                inventory_year: new Date().getFullYear(),
+                stock_on_hand: 0,
+                counted_by: '',
+                notes: `Imported from pesticide records. ${item.manufacturer ? 'Manufacturer: ' + item.manufacturer : ''}`,
+              });
+              count++;
+            } catch (err) {
+              console.error('Failed to import chemical:', err);
+            }
+          }
+          fetchAll();
+          return { count };
+        }}
+      />
 
       {/* Summary cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">

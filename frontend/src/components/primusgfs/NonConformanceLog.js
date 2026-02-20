@@ -3,6 +3,7 @@ import {
   UserX, Plus, X, Edit2, Trash2, Loader2, RefreshCw, AlertTriangle,
 } from 'lucide-react';
 import { primusGFSAPI } from '../../services/api';
+import PrefillBanner from './PrefillBanner';
 
 const formatDate = (str) => {
   if (!str) return '-';
@@ -457,6 +458,33 @@ export default function NonConformanceLog() {
           <Plus className="w-4 h-4" /> New Record
         </button>
       </div>
+
+      {/* Prefill from Incident Reports */}
+      <PrefillBanner
+        module="non-conformance"
+        sourceLabel="Incident Reports"
+        onImport={async (items) => {
+          let count = 0;
+          for (const item of items) {
+            try {
+              await primusGFSAPI.createNonConformance({
+                employee_name: item.affected_persons?.[0]?.name || 'Unknown',
+                violation_date: item.incident_date ? item.incident_date.split('T')[0] : new Date().toISOString().split('T')[0],
+                violation_type: item.incident_type === 'injury' ? 'safety' : 'hygiene',
+                violation_description: `[From Incident #${item.incident_id}] ${item.title}: ${item.description}`,
+                supervisor_name: '',
+                warning_level: item.severity === 'critical' ? 3 : item.severity === 'serious' ? 2 : 1,
+                notes: `Imported from incident report. Severity: ${item.severity}. Status: ${item.status}.`,
+              });
+              count++;
+            } catch (err) {
+              console.error('Failed to import non-conformance:', err);
+            }
+          }
+          fetchRecords();
+          return { count };
+        }}
+      />
 
       {/* Summary Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

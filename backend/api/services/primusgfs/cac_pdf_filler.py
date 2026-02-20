@@ -49,6 +49,46 @@ class CACPDFFieldFiller:
         self._checkbox_updates = {}
         self._signature_overlays = []
 
+        # Copy the AcroForm from the reader into the writer so that
+        # form fields stay interactive after writing.  PyPDF2's
+        # append_pages_from_reader copies pages but not the AcroForm.
+        self._copy_acroform_to_writer()
+
+    def _copy_acroform_to_writer(self):
+        """Copy the AcroForm dictionary from the template reader to the writer."""
+        try:
+            source_root = self.reader.trailer['/Root']
+            if isinstance(source_root, IndirectObject):
+                source_root = source_root.get_object()
+            if '/AcroForm' not in source_root:
+                return
+
+            source_acroform = source_root['/AcroForm']
+            if isinstance(source_acroform, IndirectObject):
+                source_acroform = source_acroform.get_object()
+
+            # Build a new AcroForm dict for the writer with
+            # NeedAppearances=True so viewers regenerate field visuals.
+            from PyPDF2.generic import DictionaryObject
+            new_acroform = DictionaryObject()
+            new_acroform[NameObject('/NeedAppearances')] = BooleanObject(True)
+
+            # Copy over font resources (/DR) if present — needed for
+            # text field rendering in many PDF viewers.
+            if '/DR' in source_acroform:
+                new_acroform[NameObject('/DR')] = source_acroform['/DR']
+            if '/DA' in source_acroform:
+                new_acroform[NameObject('/DA')] = source_acroform['/DA']
+
+            if hasattr(self.writer, '_root_object'):
+                writer_root = self.writer._root_object
+            else:
+                writer_root = self.writer._root
+            writer_root[NameObject('/AcroForm')] = new_acroform
+
+        except Exception as e:
+            logger.warning(f"Could not copy AcroForm to writer: {e}")
+
     # ------------------------------------------------------------------
     # Text fields
     # ------------------------------------------------------------------
@@ -100,16 +140,9 @@ class CACPDFFieldFiller:
     # ------------------------------------------------------------------
     def _apply_form_fields(self):
         """Write all queued text field and checkbox values into the PDF."""
-        if not self._field_updates and not self._checkbox_updates:
-            return
-
-        # Update AcroForm fields via the writer
-        writer_fields = {}
-
-        for field_name, value in self._field_updates.items():
-            writer_fields[field_name] = value
-
-        # Use PyPDF2's update_page_form_field_values for text fields
+        # Process ALL pages to ensure every field is editable, even if
+        # no data updates were queued (user may want to fill fields in
+        # the PDF viewer directly).
         for page_num in range(len(self.writer.pages)):
             page = self.writer.pages[page_num]
             if '/Annots' not in page:
@@ -123,18 +156,26 @@ class CACPDFFieldFiller:
                     continue
                 field_name = str(field_name)
 
-                # Handle text fields
+                # Clear ReadOnly bit on EVERY field so the PDF is fully
+                # editable in any viewer (Chrome, Acrobat, Preview, etc.)
+                if '/Ff' in annot:
+                    ff = int(annot['/Ff'])
+                    if ff & 1:  # ReadOnly bit is set
+                        annot.update({
+                            NameObject('/Ff'): NumberObject(ff & ~1),
+                        })
+
+                # Handle text fields that have queued values
                 if field_name in self._field_updates:
                     value = self._field_updates[field_name]
                     annot.update({
                         NameObject('/V'): TextStringObject(value),
-                        NameObject('/Ff'): NumberObject(1),  # ReadOnly
                     })
-                    # Set appearance to show value
+                    # Delete cached appearance so the viewer regenerates it
                     if '/AP' in annot:
                         del annot['/AP']
 
-                # Handle checkboxes
+                # Handle checkboxes that have queued values
                 if field_name in self._checkbox_updates:
                     checked = self._checkbox_updates[field_name]
                     if checked:
@@ -269,7 +310,9 @@ class CACPDFFieldFiller:
     # ------------------------------------------------------------------
     def get_pages_as_pdf(self, page_numbers):
         """
-        Extract specific pages from the filled PDF into a new PDF.
+        Extract specific pages from the filled PDF into a new PDF,
+        preserving the AcroForm dictionary so form fields remain
+        interactive and editable in PDF viewers.
 
         Args:
             page_numbers: List of 1-based page numbers.
@@ -277,17 +320,44 @@ class CACPDFFieldFiller:
         Returns:
             BytesIO containing the subset PDF.
         """
-        filled_pdf = self.get_filled_pdf()
-        reader = PdfReader(filled_pdf)
-        writer = PdfWriter()
+        # Apply all updates first (field values, ReadOnly clearing, etc.)
+        self._apply_form_fields()
+        self._apply_signature_overlays()
+
+        # Build section writer with only the requested pages
+        from PyPDF2.generic import DictionaryObject
+        section_writer = PdfWriter()
 
         for pn in page_numbers:
             idx = pn - 1
-            if 0 <= idx < len(reader.pages):
-                writer.add_page(reader.pages[idx])
+            if 0 <= idx < len(self.writer.pages):
+                section_writer.add_page(self.writer.pages[idx])
+
+        # Copy AcroForm from the main writer into the section writer
+        # so form fields remain interactive and editable.
+        try:
+            if hasattr(self.writer, '_root_object'):
+                main_root = self.writer._root_object
+            else:
+                main_root = self.writer._root
+
+            if hasattr(section_writer, '_root_object'):
+                sec_root = section_writer._root_object
+            else:
+                sec_root = section_writer._root
+
+            if '/AcroForm' in main_root:
+                sec_root[NameObject('/AcroForm')] = main_root['/AcroForm']
+            else:
+                # Build a minimal AcroForm so viewers treat this as a form
+                new_acroform = DictionaryObject()
+                new_acroform[NameObject('/NeedAppearances')] = BooleanObject(True)
+                sec_root[NameObject('/AcroForm')] = new_acroform
+        except Exception as e:
+            logger.warning(f"Could not copy AcroForm to section PDF: {e}")
 
         output = io.BytesIO()
-        writer.write(output)
+        section_writer.write(output)
         output.seek(0)
         return output
 

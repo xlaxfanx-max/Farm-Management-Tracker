@@ -34,3 +34,8 @@ build/
 
 # Misc
 backend/nul
+nul
+
+# ML training logs
+lightning_logs/
+backend/lightning_logs/

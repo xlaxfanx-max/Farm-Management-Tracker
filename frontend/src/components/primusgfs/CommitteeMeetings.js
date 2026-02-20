@@ -9,6 +9,7 @@ import {
   RefreshCw,
   Calendar,
   CheckCircle,
+  Sparkles,
 } from 'lucide-react';
 import { primusGFSAPI } from '../../services/api';
 
@@ -152,6 +153,48 @@ const MeetingModal = ({ editMeeting, onClose, onSave }) => {
 
   const handleBoolChange = (key) => {
     set(key, !form[key]);
+  };
+
+  const [generatingAgenda, setGeneratingAgenda] = useState(false);
+
+  const generateAgenda = async () => {
+    const quarter = form.meeting_quarter ? `Q${form.meeting_quarter}` : undefined;
+    try {
+      setGeneratingAgenda(true);
+      const res = await primusGFSAPI.getPrefill('committee-agenda', { quarter });
+      const agenda = res.data;
+
+      // Build meeting minutes from platform data
+      const sections = [];
+      if (agenda.pesticide_apps_notes) sections.push(`Pesticide Applications: ${agenda.pesticide_apps_notes}`);
+      if (agenda.fertilizer_apps_notes) sections.push(`Fertilizer Applications: ${agenda.fertilizer_apps_notes}`);
+      if (agenda.water_testing_notes) sections.push(`Water Testing: ${agenda.water_testing_notes}`);
+      if (agenda.worker_training_notes) sections.push(`Worker Training: ${agenda.worker_training_notes}`);
+      if (agenda.animal_activity_notes) sections.push(`Animal Activity: ${agenda.animal_activity_notes}`);
+      if (agenda.additional_topics) sections.push(`Additional Topics:\n${agenda.additional_topics}`);
+
+      const minutes = sections.length > 0
+        ? `Auto-generated agenda for ${agenda.quarter} (${agenda.date_range}):\n\n${sections.join('\n\n')}`
+        : form.meeting_minutes;
+
+      setForm(prev => ({
+        ...prev,
+        meeting_minutes: minutes,
+        // Check all review topics since we've covered them
+        food_safety_policy_reviewed: true,
+        audit_results_reviewed: true,
+        corrective_actions_reviewed: true,
+        training_needs_reviewed: true,
+        // Import action items if available
+        action_items: agenda.action_items?.length > 0
+          ? [...prev.action_items, ...agenda.action_items.map(ai => ai.item)]
+          : prev.action_items,
+      }));
+    } catch (err) {
+      console.error('Failed to generate agenda:', err);
+    } finally {
+      setGeneratingAgenda(false);
+    }
   };
 
   const addAttendee = () => {
@@ -323,6 +366,21 @@ const MeetingModal = ({ editMeeting, onClose, onSave }) => {
               <p className="text-xs text-gray-400 dark:text-gray-500">No attendees added yet.</p>
             )}
           </div>
+
+          {/* Generate Agenda from Platform Data */}
+          <button
+            type="button"
+            onClick={generateAgenda}
+            disabled={generatingAgenda}
+            className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors disabled:opacity-50"
+          >
+            {generatingAgenda ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Sparkles className="w-4 h-4" />
+            )}
+            {generatingAgenda ? 'Generating...' : 'Generate Agenda from Platform Data'}
+          </button>
 
           {/* Review Topics */}
           <div>

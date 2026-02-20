@@ -1010,3 +1010,218 @@ def cleanup_old_alerts(days_old: int = 90):
 
     logger.info(f"Cleaned up {deleted} old compliance alerts")
     return {'deleted_alerts': deleted}
+
+
+@shared_task
+def check_primusgfs_deadlines():
+    """
+    Daily task to create PrimusGFS-specific ComplianceDeadline entries.
+
+    Checks for:
+    - Quarterly committee meetings not completed
+    - Pre-season checklists due before March 1
+    - Equipment calibrations expiring within 30 days
+    - Training records below 80% compliance
+    - Food defense plan not approved by Jan 31
+    - Annual management review due
+    - Mock recall exercise not conducted this year
+    """
+    from api.models import Company
+    from api.models.compliance import ComplianceDeadline
+    from api.models.primusgfs import (
+        FoodSafetyCommitteeMeeting,
+        PreSeasonChecklist,
+        EquipmentCalibration,
+        TrainingRecord,
+        FoodDefensePlan,
+        ManagementVerificationReview,
+        MockRecall,
+    )
+    from api.models.farm import Farm
+
+    today = timezone.now().date()
+    current_year = today.year
+    created_count = 0
+
+    for company in Company.objects.filter(is_active=True):
+        # --- Quarterly Committee Meetings ---
+        current_quarter = (today.month - 1) // 3 + 1
+        for q in range(1, current_quarter + 1):
+            quarter_label = f'Q{q}'
+            has_meeting = FoodSafetyCommitteeMeeting.objects.filter(
+                company=company,
+                meeting_year=current_year,
+                meeting_quarter=quarter_label,
+                status='completed',
+            ).exists()
+
+            if not has_meeting:
+                # Quarter end date
+                q_end_month = q * 3
+                if q_end_month > 12:
+                    q_end_month = 12
+                from calendar import monthrange
+                q_end_day = monthrange(current_year, q_end_month)[1]
+                from datetime import date as date_cls
+                due = date_cls(current_year, q_end_month, q_end_day)
+
+                _, created = ComplianceDeadline.objects.get_or_create(
+                    company=company,
+                    name=f'PrimusGFS: {quarter_label} Committee Meeting',
+                    category='audit',
+                    defaults={
+                        'description': f'Conduct {quarter_label} food safety committee meeting.',
+                        'due_date': due,
+                        'regulation': 'PrimusGFS CAC v5.0',
+                        'status': 'overdue' if due < today else 'due_soon' if (due - today).days <= 30 else 'upcoming',
+                        'auto_generated': True,
+                    },
+                )
+                if created:
+                    created_count += 1
+
+        # --- Pre-Season Checklists (due before March 1) ---
+        farms = Farm.objects.filter(company=company, active=True)
+        for farm in farms:
+            has_checklist = PreSeasonChecklist.objects.filter(
+                company=company,
+                farm=farm,
+                season_year=current_year,
+                approved_for_season=True,
+            ).exists()
+
+            if not has_checklist and today.month <= 6:
+                from datetime import date as date_cls
+                due = date_cls(current_year, 3, 1)
+                _, created = ComplianceDeadline.objects.get_or_create(
+                    company=company,
+                    name=f'PrimusGFS: Pre-Season Checklist — {farm.name}',
+                    category='inspection',
+                    related_farm=farm,
+                    defaults={
+                        'description': f'Complete and approve pre-season checklist for {farm.name}.',
+                        'due_date': due,
+                        'regulation': 'PrimusGFS CAC v5.0',
+                        'status': 'overdue' if due < today else 'due_soon' if (due - today).days <= 30 else 'upcoming',
+                        'auto_generated': True,
+                    },
+                )
+                if created:
+                    created_count += 1
+
+        # --- Equipment Calibrations expiring within 30 days ---
+        expiring_cals = EquipmentCalibration.objects.filter(
+            company=company,
+            next_calibration_date__lte=today + timedelta(days=30),
+            next_calibration_date__gte=today,
+            status__in=['scheduled', 'passed'],
+        )
+        for cal in expiring_cals:
+            _, created = ComplianceDeadline.objects.get_or_create(
+                company=company,
+                name=f'PrimusGFS: Calibrate {cal.equipment_name}',
+                category='inspection',
+                defaults={
+                    'description': f'Equipment calibration due for {cal.equipment_name} (ID: {cal.equipment_id}).',
+                    'due_date': cal.next_calibration_date,
+                    'regulation': 'PrimusGFS CAC v5.0',
+                    'status': 'due_soon',
+                    'auto_generated': True,
+                },
+            )
+            if created:
+                created_count += 1
+
+        # --- Training below 80% compliance ---
+        low_training = TrainingRecord.objects.filter(
+            company=company,
+            active=True,
+            compliance_percentage__lt=80,
+        )
+        if low_training.exists():
+            _, created = ComplianceDeadline.objects.get_or_create(
+                company=company,
+                name='PrimusGFS: Training Compliance Below 80%',
+                category='training',
+                defaults={
+                    'description': f'{low_training.count()} employees below 80% training compliance. Schedule refresher courses.',
+                    'due_date': today + timedelta(days=30),
+                    'regulation': 'PrimusGFS CAC v5.0',
+                    'status': 'due_soon',
+                    'auto_generated': True,
+                },
+            )
+            if created:
+                created_count += 1
+
+        # --- Food Defense Plan not approved ---
+        plan = FoodDefensePlan.objects.filter(
+            company=company,
+            plan_year=current_year,
+        ).first()
+        if not plan or not plan.approved:
+            from datetime import date as date_cls
+            due = date_cls(current_year, 1, 31)
+            _, created = ComplianceDeadline.objects.get_or_create(
+                company=company,
+                name=f'PrimusGFS: {current_year} Food Defense Plan',
+                category='documentation',
+                defaults={
+                    'description': 'Create and approve a food defense plan for the current year.',
+                    'due_date': due,
+                    'regulation': 'PrimusGFS CAC v5.0',
+                    'status': 'overdue' if due < today else 'due_soon',
+                    'auto_generated': True,
+                },
+            )
+            if created:
+                created_count += 1
+
+        # --- Annual Management Review ---
+        review = ManagementVerificationReview.objects.filter(
+            company=company,
+            review_year=current_year,
+        ).first()
+        if not review or not review.approved:
+            from datetime import date as date_cls
+            due = date_cls(current_year, 12, 31)
+            _, created = ComplianceDeadline.objects.get_or_create(
+                company=company,
+                name=f'PrimusGFS: {current_year} Annual Management Review',
+                category='audit',
+                defaults={
+                    'description': 'Complete and approve the annual management verification review.',
+                    'due_date': due,
+                    'regulation': 'PrimusGFS CAC v5.0',
+                    'status': 'upcoming' if (due - today).days > 30 else 'due_soon',
+                    'auto_generated': True,
+                },
+            )
+            if created:
+                created_count += 1
+
+        # --- Mock Recall not conducted ---
+        has_recall = MockRecall.objects.filter(
+            company=company,
+            exercise_date__year=current_year,
+        ).exists()
+        if not has_recall:
+            from datetime import date as date_cls
+            due = date_cls(current_year, 12, 31)
+            _, created = ComplianceDeadline.objects.get_or_create(
+                company=company,
+                name=f'PrimusGFS: {current_year} Mock Recall Exercise',
+                category='audit',
+                defaults={
+                    'description': 'Conduct a mock recall exercise this year to verify traceability.',
+                    'due_date': due,
+                    'regulation': 'PrimusGFS CAC v5.0',
+                    'status': 'upcoming' if (due - today).days > 30 else 'due_soon',
+                    'auto_generated': True,
+                },
+            )
+            if created:
+                created_count += 1
+
+    logger.info(f"PrimusGFS deadline check complete: {created_count} new deadlines created")
+    return {'created_deadlines': created_count}

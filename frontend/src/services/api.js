@@ -2539,6 +2539,10 @@ const _putMaybeFile = (url, data) => {
 export const primusGFSAPI = {
   // Dashboard
   getDashboard: () => api.get('/primusgfs/dashboard/'),
+  getWhatsNext: () => api.get('/primusgfs/dashboard/whats-next/'),
+  getPrefill: (module, params = {}) => api.get(`/primusgfs/dashboard/prefill/${module}/`, { params }),
+  copyForward: (data) => api.post('/primusgfs/dashboard/copy-forward/', data),
+  getSetupStatus: () => api.get('/primusgfs/dashboard/setup-status/'),
 
   // Documents
   getDocuments: (params = {}) => api.get('/primusgfs/documents/', { params }),

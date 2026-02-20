@@ -11,6 +11,7 @@ import {
   CheckCircle,
 } from 'lucide-react';
 import { primusGFSAPI } from '../../services/api';
+import PrefillBanner from './PrefillBanner';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -467,6 +468,30 @@ export default function TrainingMatrix() {
           <Plus className="w-4 h-4" /> Add Employee
         </button>
       </div>
+
+      {/* Prefill from WPS Training & Team Members */}
+      <PrefillBanner
+        module="training-records"
+        sourceLabel="WPS Training & Team Members"
+        onImport={async (items) => {
+          let count = 0;
+          for (const item of items) {
+            try {
+              await primusGFSAPI.createTrainingRecord({
+                employee_name: item.employee_name,
+                employee_id: item.employee_id || '',
+                active: true,
+                notes: `Imported from ${item.source}.${item.training_type ? ' WPS type: ' + item.training_type : ''}`,
+              });
+              count++;
+            } catch (err) {
+              console.error('Failed to import training record:', err);
+            }
+          }
+          fetchData();
+          return { count };
+        }}
+      />
 
       {/* Summary Bar */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">

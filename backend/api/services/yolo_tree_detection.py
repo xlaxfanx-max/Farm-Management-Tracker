@@ -392,6 +392,53 @@ def run_tree_detection(survey_id: int) -> None:
             img_w, img_h, full_image.shape[0], resolution_m, has_nir,
         )
 
+        # ---- Crop to field boundary if available ---------------------------
+        # Instead of analyzing the entire satellite scene and filtering after,
+        # crop the image to just the field area. This focuses Claude on the
+        # right region, saves API calls, and produces more precise results.
+        field = survey.field
+        boundary_geojson = getattr(field, "boundary_geojson", None)
+
+        # Pixel offsets for the crop region (default: full image)
+        crop_x_offset = 0
+        crop_y_offset = 0
+
+        if boundary_geojson:
+            from shapely.geometry import shape as shp_shape
+            try:
+                boundary_poly = shp_shape(boundary_geojson)
+                minx, miny, maxx, maxy = boundary_poly.bounds  # lon/lat bounds
+
+                # Convert boundary corners to pixel coordinates
+                inv_transform = ~transform
+                px_min, py_min = inv_transform * (minx, maxy)  # top-left (max lat = min row)
+                px_max, py_max = inv_transform * (maxx, miny)  # bottom-right
+
+                # Add padding (10% of each dimension)
+                pad_x = int((px_max - px_min) * 0.1)
+                pad_y = int((py_max - py_min) * 0.1)
+
+                crop_x1 = max(0, int(px_min) - pad_x)
+                crop_y1 = max(0, int(py_min) - pad_y)
+                crop_x2 = min(img_w, int(px_max) + pad_x)
+                crop_y2 = min(img_h, int(py_max) + pad_y)
+
+                logger.info(
+                    "Cropping image to field boundary: pixel (%d,%d)-(%d,%d) from %dx%d",
+                    crop_x1, crop_y1, crop_x2, crop_y2, img_w, img_h,
+                )
+
+                rgb_array = rgb_array[crop_y1:crop_y2, crop_x1:crop_x2]
+                # Also crop the full image for NDVI computation
+                full_image = full_image[:, crop_y1:crop_y2, crop_x1:crop_x2]
+                crop_x_offset = crop_x1
+                crop_y_offset = crop_y1
+                img_h, img_w = rgb_array.shape[:2]
+
+                logger.info("Cropped image size: %dx%d", img_w, img_h)
+            except Exception as e:
+                logger.warning("Failed to crop to field boundary: %s", e)
+
         # ---- Tile the image ------------------------------------------------
         tile_size = survey.detection_params.get("tile_size", 1024)
         tile_overlap = survey.detection_params.get("tile_overlap", 64)
@@ -421,12 +468,15 @@ def run_tree_detection(survey_id: int) -> None:
                 logger.warning("Claude Vision call failed for tile %d: %s", i + 1, e)
                 continue
 
-            # Convert tile-local coords to global image coords
+            # Convert tile-local coords to global (full-image) pixel coords
+            # by adding both the tile offset within the crop AND the crop offset
             for tree in tile_trees:
-                tree["x"] = tree.get("x", 0) + tile["x_offset"]
-                tree["y"] = tree.get("y", 0) + tile["y_offset"]
-                # Validate the detection is within image bounds
-                if 0 <= tree["x"] < img_w and 0 <= tree["y"] < img_h:
+                tree["x"] = tree.get("x", 0) + tile["x_offset"] + crop_x_offset
+                tree["y"] = tree.get("y", 0) + tile["y_offset"] + crop_y_offset
+                # Validate the detection is within the crop region bounds
+                gx, gy = tree["x"], tree["y"]
+                if (crop_x_offset <= gx < crop_x_offset + img_w and
+                        crop_y_offset <= gy < crop_y_offset + img_h):
                     all_trees_global.append(tree)
 
             logger.info("Tile %d/%d: %d trees detected", i + 1, len(tiles), len(tile_trees))
@@ -458,19 +508,25 @@ def run_tree_detection(survey_id: int) -> None:
         total_canopy_area_m2 = 0.0
 
         for tree_data in all_trees_global:
+            # cx, cy are in GLOBAL (full-image) pixel space
             cx = int(tree_data["x"])
             cy = int(tree_data["y"])
             crown_radius_px = int(tree_data.get("crown_radius_px", 10))
             confidence = float(tree_data.get("confidence", 0.7))
             health_visual = tree_data.get("health_visual", "unknown")
 
-            # Compute bounding box from centre + radius
-            bbox_x_min = max(0, cx - crown_radius_px)
-            bbox_y_min = max(0, cy - crown_radius_px)
-            bbox_x_max = min(img_w, cx + crown_radius_px)
-            bbox_y_max = min(img_h, cy + crown_radius_px)
+            # For bbox and NDVI we need crop-local coords since
+            # full_image and img_w/img_h are relative to the crop
+            cx_local = cx - crop_x_offset
+            cy_local = cy - crop_y_offset
 
-            # Convert to lat/lon
+            # Compute bounding box in crop-local space
+            bbox_x_min = max(0, cx_local - crown_radius_px)
+            bbox_y_min = max(0, cy_local - crown_radius_px)
+            bbox_x_max = min(img_w, cx_local + crown_radius_px)
+            bbox_y_max = min(img_h, cy_local + crown_radius_px)
+
+            # Convert to lat/lon using GLOBAL coords + original transform
             lat, lon = _pixel_to_latlon(cy, cx, transform, src_crs)
 
             # Canopy diameter
@@ -486,7 +542,8 @@ def run_tree_detection(survey_id: int) -> None:
             health = health_visual  # Default to Claude's visual assessment
 
             if has_nir:
-                ndvi_stats = _compute_tree_ndvi(full_image, cx, cy, radius_px=crown_radius_px)
+                # Use crop-local coords since full_image is cropped
+                ndvi_stats = _compute_tree_ndvi(full_image, cx_local, cy_local, radius_px=crown_radius_px)
                 if ndvi_stats["ndvi_mean"] is not None:
                     health = classify_health(ndvi_stats["ndvi_mean"])
                     ndvi_values.append(ndvi_stats["ndvi_mean"])

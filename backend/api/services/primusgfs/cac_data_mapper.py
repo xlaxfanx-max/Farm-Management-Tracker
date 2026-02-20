@@ -187,6 +187,18 @@ class CACDataMapper:
     # ------------------------------------------------------------------
     # Lazy model imports (avoids circular import issues at module level)
     # ------------------------------------------------------------------
+    # Role codename → food safety role title mapping
+    ROLE_TO_FS_TITLE = {
+        'owner': 'Owner / Grower',
+        'admin': 'Administrator',
+        'manager': 'Manager / Foreman',
+        'applicator': 'Pesticide Applicator',
+        'worker': 'Worker',
+        'viewer': 'View Only',
+        'pca': 'PCA / QAL',
+        'accountant': 'Accountant',
+    }
+
     @staticmethod
     def _get_models():
         """Import and return all needed model classes."""
@@ -215,6 +227,12 @@ class CACDataMapper:
             SanitationMaintenanceLog,
         )
         from api.models.nutrients import NutrientApplication
+        from api.models.farm import (
+            PesticideApplication, PesticideProduct, Field,
+        )
+        from api.models.water import WaterTest, WaterSource
+        from api.models.harvest import Harvest, HarvestLabor, LaborContractor
+        from api.models.auth import CompanyMembership, Role
         return {
             'FoodSafetyProfile': FoodSafetyProfile,
             'FoodSafetyRoleAssignment': FoodSafetyRoleAssignment,
@@ -239,6 +257,17 @@ class CACDataMapper:
             'FieldRiskAssessment': FieldRiskAssessment,
             'SanitationMaintenanceLog': SanitationMaintenanceLog,
             'NutrientApplication': NutrientApplication,
+            # Cross-data models for auto-population
+            'PesticideApplication': PesticideApplication,
+            'PesticideProduct': PesticideProduct,
+            'Field': Field,
+            'WaterTest': WaterTest,
+            'WaterSource': WaterSource,
+            'Harvest': Harvest,
+            'HarvestLabor': HarvestLabor,
+            'LaborContractor': LaborContractor,
+            'CompanyMembership': CompanyMembership,
+            'Role': Role,
         }
 
     # ==================================================================
@@ -343,9 +372,41 @@ class CACDataMapper:
     # ==================================================================
     # Doc 02 — Organizational Structure (Pages 11-12)
     # ==================================================================
+    def _get_team_as_roles(self):
+        """
+        Fallback: derive org-chart rows from CompanyMembership when no
+        FoodSafetyRoleAssignment records exist.  Returns a list of dicts
+        with keys matching what the doc02 mapper expects.
+        """
+        models = self._get_models()
+        memberships = list(
+            models['CompanyMembership'].objects
+            .filter(company=self.company, is_active=True)
+            .select_related('user', 'role')
+            .order_by('role__codename', 'user__last_name')
+        )
+
+        rows = []
+        for m in memberships:
+            user = m.user
+            full_name = f"{user.first_name} {user.last_name}".strip() or user.email
+            title = self.ROLE_TO_FS_TITLE.get(
+                m.role.codename, m.role.name
+            )
+            rows.append({
+                'role_title': title,
+                'person_name': full_name,
+                'alternate_name': '',
+                'role_category': m.role.codename,
+                'responsibilities': [],
+            })
+        return rows
+
     def get_doc02_fields(self):
         """
         Map FoodSafetyRoleAssignment data to Doc 02 fields.
+        Falls back to CompanyMembership (team) data when no dedicated
+        role assignments have been created.
 
         Page 11 fields (a21122-1 through a21122-19):
             a21122-1=Date, then role rows:
@@ -363,6 +424,13 @@ class CACDataMapper:
             .order_by('display_order', 'role_category')
         )
 
+        # Fallback: auto-populate from team if no role assignments exist
+        use_team_fallback = len(roles) == 0
+        if use_team_fallback:
+            team_rows = self._get_team_as_roles()
+        else:
+            team_rows = []
+
         fields = {}
 
         # Date
@@ -371,28 +439,48 @@ class CACDataMapper:
         # Fill role rows: fields 2-19 = 6 rows x 3 cols (title, name, alternate)
         field_idx = 2
         for i in range(6):
-            role = roles[i] if i < len(roles) else None
-            fields[f'a21122-{field_idx}'] = _safe_str(
-                role.role_title if role else ''
-            )
-            fields[f'a21122-{field_idx + 1}'] = _safe_str(
-                role.person_name if role else ''
-            )
-            fields[f'a21122-{field_idx + 2}'] = _safe_str(
-                role.alternate_name if role else ''
-            )
+            if use_team_fallback:
+                row = team_rows[i] if i < len(team_rows) else None
+                fields[f'a21122-{field_idx}'] = _safe_str(
+                    row['role_title'] if row else ''
+                )
+                fields[f'a21122-{field_idx + 1}'] = _safe_str(
+                    row['person_name'] if row else ''
+                )
+                fields[f'a21122-{field_idx + 2}'] = _safe_str(
+                    row['alternate_name'] if row else ''
+                )
+            else:
+                role = roles[i] if i < len(roles) else None
+                fields[f'a21122-{field_idx}'] = _safe_str(
+                    role.role_title if role else ''
+                )
+                fields[f'a21122-{field_idx + 1}'] = _safe_str(
+                    role.person_name if role else ''
+                )
+                fields[f'a21122-{field_idx + 2}'] = _safe_str(
+                    role.alternate_name if role else ''
+                )
             field_idx += 3
 
         # Page 12 — additional worker description rows (a21122-20 through 24)
-        worker_roles = [r for r in roles if r.role_category == 'worker']
-        for i in range(5):
-            role = worker_roles[i] if i < len(worker_roles) else None
-            resp_str = ''
-            if role and role.responsibilities:
-                resp_str = _fmt_json_list(role.responsibilities)
-            fields[f'a21122-{20 + i}'] = _safe_str(
-                f"{role.person_name}: {resp_str}" if role else ''
-            )
+        if use_team_fallback:
+            worker_rows = [r for r in team_rows if r['role_category'] == 'worker']
+            for i in range(5):
+                row = worker_rows[i] if i < len(worker_rows) else None
+                fields[f'a21122-{20 + i}'] = _safe_str(
+                    row['person_name'] if row else ''
+                )
+        else:
+            worker_roles = [r for r in roles if r.role_category == 'worker']
+            for i in range(5):
+                role = worker_roles[i] if i < len(worker_roles) else None
+                resp_str = ''
+                if role and role.responsibilities:
+                    resp_str = _fmt_json_list(role.responsibilities)
+                fields[f'a21122-{20 + i}'] = _safe_str(
+                    f"{role.person_name}: {resp_str}" if role else ''
+                )
 
         return fields
 
@@ -406,6 +494,8 @@ class CACDataMapper:
     def get_doc03_fields(self):
         """
         Map FoodSafetyRoleAssignment (committee members) to Doc 03.
+        Falls back to CompanyMembership (owner, manager roles) if no
+        role assignments exist.
 
         Page 13: 3-a-100 = comma-separated list of committee members.
         """
@@ -420,14 +510,157 @@ class CACDataMapper:
             .order_by('display_order')
         )
 
-        members_str = ', '.join(
-            f"{r.person_name} ({r.role_title})" for r in roles
-        )
+        if roles:
+            members_str = ', '.join(
+                f"{r.person_name} ({r.role_title})" for r in roles
+            )
+        else:
+            # Fallback: pull from team members with leadership roles
+            team_rows = self._get_team_as_roles()
+            committee_cats = {'owner', 'admin', 'manager', 'pca'}
+            committee_rows = [r for r in team_rows if r['role_category'] in committee_cats]
+            members_str = ', '.join(
+                f"{r['person_name']} ({r['role_title']})" for r in committee_rows
+            )
 
         return {'3-a-100': members_str}
 
     def get_doc03_checkboxes(self):
         return {}
+
+    # ------------------------------------------------------------------
+    # Auto-population helpers — build summaries from existing platform data
+    # ------------------------------------------------------------------
+    def _build_pesticide_summary(self):
+        """Summarize recent pesticide applications for committee notes."""
+        models = self._get_models()
+        filters = {'field__farm__company': self.company}
+        if self.farm:
+            filters['field__farm'] = self.farm
+        apps = list(
+            models['PesticideApplication'].objects
+            .filter(**filters, application_date__year=self.season_year)
+            .select_related('product', 'field')
+            .order_by('-application_date')[:10]
+        )
+        if not apps:
+            return ''
+        lines = [f"{len(apps)} pesticide application(s) this season:"]
+        for a in apps[:5]:
+            lines.append(
+                f"  {_fmt_date(a.application_date)} - {a.product.product_name} "
+                f"on {a.field.name} ({a.acres_treated} ac, {a.applicator_name})"
+            )
+        if len(apps) > 5:
+            lines.append(f"  ... and {len(apps) - 5} more")
+        return '\n'.join(lines)
+
+    def _build_fertilizer_summary(self):
+        """Summarize recent nutrient applications for committee notes."""
+        models = self._get_models()
+        filters = {}
+        if self.farm:
+            field_ids = models['Field'].objects.filter(
+                farm=self.farm
+            ).values_list('id', flat=True)
+            filters['field__in'] = field_ids
+        apps = list(
+            models['NutrientApplication'].objects
+            .filter(**filters, application_date__year=self.season_year)
+            .select_related('field', 'product')
+            .order_by('-application_date')[:10]
+        )
+        if not apps:
+            return ''
+        lines = [f"{len(apps)} fertilizer application(s) this season:"]
+        for a in apps[:5]:
+            product_name = a.product.name if a.product else 'Unknown'
+            field_name = a.field.name if a.field else ''
+            lines.append(
+                f"  {_fmt_date(a.application_date)} - {product_name} on {field_name}"
+            )
+        if len(apps) > 5:
+            lines.append(f"  ... and {len(apps) - 5} more")
+        return '\n'.join(lines)
+
+    def _build_water_test_summary(self):
+        """Summarize recent water test results for committee notes."""
+        models = self._get_models()
+        filters = {}
+        if self.farm:
+            filters['water_source__farm'] = self.farm
+        tests = list(
+            models['WaterTest'].objects
+            .filter(**filters, test_date__year=self.season_year)
+            .select_related('water_source')
+            .order_by('-test_date')[:10]
+        )
+        if not tests:
+            return ''
+        pass_count = sum(1 for t in tests if t.status == 'pass')
+        fail_count = sum(1 for t in tests if t.status == 'fail')
+        lines = [
+            f"{len(tests)} water test(s) this season: "
+            f"{pass_count} passed, {fail_count} failed"
+        ]
+        for t in tests[:3]:
+            lines.append(
+                f"  {_fmt_date(t.test_date)} - {t.water_source.name}: {t.status}"
+            )
+        return '\n'.join(lines)
+
+    def _get_latest_water_test_date(self):
+        """Return the most recent water test date for the farm."""
+        models = self._get_models()
+        filters = {}
+        if self.farm:
+            filters['water_source__farm'] = self.farm
+        test = _get_first_or_none(
+            models['WaterTest'].objects
+            .filter(**filters, test_date__year=self.season_year)
+            .order_by('-test_date')
+        )
+        return test.test_date if test else None
+
+    def _build_training_summary(self):
+        """Summarize recent worker training sessions for committee notes."""
+        models = self._get_models()
+        filters = {'company': self.company}
+        if self.farm:
+            filters['farm'] = self.farm
+        sessions = list(
+            models['WorkerTrainingSession'].objects
+            .filter(**filters, training_date__year=self.season_year)
+            .order_by('-training_date')[:10]
+        )
+        if not sessions:
+            return ''
+        total_attendees = sum(s.attendee_count for s in sessions)
+        lines = [
+            f"{len(sessions)} training session(s) this season, "
+            f"{total_attendees} total attendees:"
+        ]
+        for s in sessions[:3]:
+            lines.append(
+                f"  {_fmt_date(s.training_date)} - {s.training_topic} "
+                f"({s.attendee_count} attendees, {s.instructor_name})"
+            )
+        return '\n'.join(lines)
+
+    def _check_phi_compliance(self):
+        """Check if all harvests this season had PHI verified."""
+        models = self._get_models()
+        filters = {'field__farm__company': self.company}
+        if self.farm:
+            filters['field__farm'] = self.farm
+        harvests = models['Harvest'].objects.filter(
+            **filters, harvest_date__year=self.season_year
+        )
+        total = harvests.count()
+        if total == 0:
+            return None  # No harvests = can't determine
+        verified = harvests.filter(phi_verified=True).count()
+        return verified == total
 
     # ==================================================================
     # Doc 04 — Committee Meeting Log (Pages 15-16)
@@ -435,6 +668,8 @@ class CACDataMapper:
     def get_doc04_fields(self):
         """
         Map FoodSafetyCommitteeMeeting to Doc 04 fields.
+        Empty notes fields are auto-populated from existing platform data
+        (pesticide apps, water tests, fertilizer, training).
 
         Page 15 fields (4-a-100 through 4-a-112):
             100=Date, 101=Time, 102=Ranch,
@@ -471,20 +706,52 @@ class CACDataMapper:
                 )
             )
             fields['4-a-103'] = _safe_str(meeting.animal_activity_notes)
-            fields['4-a-104'] = _safe_str(meeting.pesticide_apps_notes)
+
+            # Pesticide notes — auto-fill from PUR data if empty
+            pest_notes = _safe_str(meeting.pesticide_apps_notes)
+            if not pest_notes:
+                pest_notes = self._build_pesticide_summary()
+            fields['4-a-104'] = pest_notes
+
             fields['4-a-105'] = _fmt_bool(meeting.pesticide_records_in_binder)
-            fields['4-a-106'] = _fmt_bool(meeting.phi_followed)
-            fields['4-a-107'] = _safe_str(meeting.fertilizer_apps_notes)
+
+            # PHI — auto-check from harvest records if not set
+            phi_val = meeting.phi_followed
+            if phi_val is None:
+                phi_val = self._check_phi_compliance()
+            fields['4-a-106'] = _fmt_bool(phi_val)
+
+            # Fertilizer notes — auto-fill if empty
+            fert_notes = _safe_str(meeting.fertilizer_apps_notes)
+            if not fert_notes:
+                fert_notes = self._build_fertilizer_summary()
+            fields['4-a-107'] = fert_notes
+
             fields['4-a-108'] = _fmt_bool(meeting.fertilizer_records_in_binder)
-            fields['4-a-109'] = _safe_str(meeting.water_testing_notes)
-            fields['4-a-110'] = _fmt_date(meeting.last_irrigation_water_test)
-            fields['4-a-111'] = _safe_str(meeting.worker_training_notes)
+
+            # Water testing notes — auto-fill if empty
+            water_notes = _safe_str(meeting.water_testing_notes)
+            if not water_notes:
+                water_notes = self._build_water_test_summary()
+            fields['4-a-109'] = water_notes
+
+            # Last irrigation water test — auto-fill if empty
+            last_test = meeting.last_irrigation_water_test
+            if not last_test:
+                last_test = self._get_latest_water_test_date()
+            fields['4-a-110'] = _fmt_date(last_test)
+
+            # Worker training notes — auto-fill if empty
+            training_notes = _safe_str(meeting.worker_training_notes)
+            if not training_notes:
+                training_notes = self._build_training_summary()
+            fields['4-a-111'] = training_notes
+
             fields['4-a-112'] = _safe_str(meeting.additional_topics)
 
             # Page 16 — Coordinator signature name
-            models_p = self._get_models()
             profile = _get_first_or_none(
-                models_p['FoodSafetyProfile'].objects.filter(
+                models['FoodSafetyProfile'].objects.filter(
                     company=self.company
                 )
             )
@@ -500,9 +767,35 @@ class CACDataMapper:
                 name = att.get('name', '') if isinstance(att, dict) else str(att)
                 fields[f'4-a-{114 + i}'] = _safe_str(name)
         else:
-            # Empty fields
-            for fnum in range(100, 124):
-                fields[f'4-a-{fnum}'] = ''
+            # No meeting exists — still auto-populate data summaries
+            fields['4-a-100'] = ''
+            fields['4-a-101'] = ''
+            fields['4-a-102'] = _safe_str(
+                self.farm.name if self.farm else self.company.name
+            )
+            fields['4-a-103'] = ''
+            fields['4-a-104'] = self._build_pesticide_summary()
+            fields['4-a-105'] = ''
+            phi_val = self._check_phi_compliance()
+            fields['4-a-106'] = _fmt_bool(phi_val)
+            fields['4-a-107'] = self._build_fertilizer_summary()
+            fields['4-a-108'] = ''
+            fields['4-a-109'] = self._build_water_test_summary()
+            fields['4-a-110'] = _fmt_date(self._get_latest_water_test_date())
+            fields['4-a-111'] = self._build_training_summary()
+            fields['4-a-112'] = ''
+            # Coordinator from profile
+            profile = _get_first_or_none(
+                models['FoodSafetyProfile'].objects.filter(
+                    company=self.company
+                )
+            )
+            fields['4-a-113'] = _safe_str(
+                profile.coordinator_name if profile else ''
+            )
+            fields['4-a-123'] = ''
+            for i in range(9):
+                fields[f'4-a-{114 + i}'] = ''
 
         return fields
 
@@ -1191,8 +1484,10 @@ class CACDataMapper:
         """
         Map to Doc 20 visitor log fields.
 
-        Page 57: 3 text fields (Ranch name, Coordinator, Date).
-        Actual visitor entries are filled at the farm daily, not pre-filled.
+        Page 57: Header (Ranch name, Coordinator, Date) + visitor rows.
+        Auto-populates visitor entries from HarvestLabor records —
+        harvest crews visiting the farm are documented visitors.
+        Each row: Date, Name/Company, Purpose, Time In, Time Out, # People.
         """
         models = self._get_models()
         profile = _get_first_or_none(
@@ -1202,12 +1497,46 @@ class CACDataMapper:
         farm_name = self.farm.name if self.farm else self.company.name
         coordinator = profile.coordinator_name if profile else ''
 
+        values = [
+            _safe_str(farm_name),
+            _safe_str(coordinator),
+            _fmt_date(date.today()),
+        ]
+
+        # Auto-populate visitor entries from harvest labor records
+        labor_filters = {'harvest__field__farm__company': self.company}
+        if self.farm:
+            labor_filters['harvest__field__farm'] = self.farm
+
+        labor_records = list(
+            models['HarvestLabor'].objects
+            .filter(**labor_filters, harvest__harvest_date__year=self.season_year)
+            .select_related('harvest', 'harvest__field', 'contractor')
+            .order_by('-harvest__harvest_date')[:10]
+        )
+
+        for lr in labor_records:
+            harvest_date = lr.harvest.harvest_date if lr.harvest else None
+            contractor_name = ''
+            if lr.contractor:
+                contractor_name = lr.contractor.company_name
+            elif lr.crew_name:
+                contractor_name = lr.crew_name
+            visitor_name = lr.foreman_name or contractor_name or 'Harvest Crew'
+            if contractor_name and lr.foreman_name:
+                visitor_name = f"{lr.foreman_name} ({contractor_name})"
+
+            values.extend([
+                _fmt_date(harvest_date),
+                _safe_str(visitor_name),
+                'Harvest',
+                _fmt_time(lr.start_time.time() if lr.start_time else None),
+                _fmt_time(lr.end_time.time() if lr.end_time else None),
+                str(lr.worker_count),
+            ])
+
         return {
-            '_doc20_positional_values': [
-                _safe_str(farm_name),
-                _safe_str(coordinator),
-                _fmt_date(date.today()),
-            ],
+            '_doc20_positional_values': values,
         }
 
     def get_doc20_positional_fields(self, field_names):
@@ -1576,6 +1905,74 @@ class CACDataMapper:
         return {}
 
     # ==================================================================
+    # Doc 27 — Pesticide Application Log (Page ~75)
+    # Auto-populated from PesticideApplication records (PUR data)
+    # ==================================================================
+    def get_doc27_fields(self):
+        """
+        Map PesticideApplication records to the crop protection / pesticide
+        use log section.  This was previously unmapped — the platform already
+        tracks every pesticide application for PUR compliance, so we
+        auto-populate the CAC log directly.
+
+        Columns: Date, Field, Product, EPA Reg#, Amount, Unit, Method,
+        Applicator, License#, Target Pest, Weather (temp/wind).
+        Up to 10 rows × 11 columns = 110 values.
+        """
+        models = self._get_models()
+        filters = {'field__farm__company': self.company}
+        if self.farm:
+            filters['field__farm'] = self.farm
+
+        apps = list(
+            models['PesticideApplication'].objects
+            .filter(**filters, application_date__year=self.season_year)
+            .select_related('product', 'field')
+            .order_by('-application_date')[:10]
+        )
+
+        values = []
+        for a in apps:
+            weather = ''
+            if a.temperature:
+                weather = f"{a.temperature}°F"
+            if a.wind_speed:
+                weather += f", {a.wind_speed} mph {a.wind_direction or ''}"
+            weather = weather.strip().strip(',').strip()
+
+            values.extend([
+                _fmt_date(a.application_date),
+                _safe_str(a.field.name if a.field else ''),
+                _safe_str(a.product.product_name if a.product else ''),
+                _safe_str(a.product.epa_registration_number if a.product else ''),
+                _fmt_decimal(a.amount_used),
+                a.get_unit_of_measure_display() if hasattr(a, 'get_unit_of_measure_display') else _safe_str(a.unit_of_measure),
+                a.get_application_method_display() if hasattr(a, 'get_application_method_display') else _safe_str(a.application_method),
+                _safe_str(a.applicator_name),
+                _safe_str(a.applicator_license_no),
+                _safe_str(a.target_pest),
+                weather,
+            ])
+
+        while len(values) < 110:
+            values.append('')
+        values = values[:110]
+
+        return {'_doc27_positional_values': values}
+
+    def get_doc27_positional_fields(self, field_names):
+        """Map pesticide application log values to discovered PDF field names."""
+        data = self.get_doc27_fields()
+        values = data.get('_doc27_positional_values', [])
+        fields = {}
+        for i, name in enumerate(field_names):
+            fields[name] = values[i] if i < len(values) else ''
+        return fields
+
+    def get_doc27_checkboxes(self):
+        return {}
+
+    # ==================================================================
     # Doc 28A — Sprayer Calibration (Page 83)
     # ==================================================================
     def get_doc28a_fields(self):
@@ -1638,6 +2035,8 @@ class CACDataMapper:
     def get_doc29_fields(self):
         """
         Map ChemicalInventoryLog to Doc 29 fields.
+        Falls back to PesticideProduct records (chemicals used in applications)
+        when no manual inventory log entries exist.
 
         Page 85: 84 text fields (table: ~7 columns x 12 rows).
         Columns: Chemical Name, EPA Reg#, Type, Storage, Unit, Stock, Counted By.
@@ -1660,16 +2059,47 @@ class CACDataMapper:
                 break
 
         values = []
-        for inv in unique_entries:
-            values.extend([
-                _safe_str(inv.chemical_name),
-                _safe_str(inv.epa_registration_number),
-                inv.get_chemical_type_display() if hasattr(inv, 'get_chemical_type_display') else _safe_str(inv.chemical_type),
-                _safe_str(inv.storage_location),
-                inv.get_unit_of_measure_display() if hasattr(inv, 'get_unit_of_measure_display') else _safe_str(inv.unit_of_measure),
-                _fmt_decimal(inv.stock_on_hand),
-                _safe_str(inv.counted_by),
-            ])
+        if unique_entries:
+            for inv in unique_entries:
+                values.extend([
+                    _safe_str(inv.chemical_name),
+                    _safe_str(inv.epa_registration_number),
+                    inv.get_chemical_type_display() if hasattr(inv, 'get_chemical_type_display') else _safe_str(inv.chemical_type),
+                    _safe_str(inv.storage_location),
+                    inv.get_unit_of_measure_display() if hasattr(inv, 'get_unit_of_measure_display') else _safe_str(inv.unit_of_measure),
+                    _fmt_decimal(inv.stock_on_hand),
+                    _safe_str(inv.counted_by),
+                ])
+        else:
+            # Fallback: derive from PesticideProduct used in applications
+            app_filters = {'field__farm__company': self.company}
+            if self.farm:
+                app_filters['field__farm'] = self.farm
+
+            product_ids = (
+                models['PesticideApplication'].objects
+                .filter(**app_filters, application_date__year=self.season_year)
+                .values_list('product_id', flat=True)
+                .distinct()
+            )
+            products = list(
+                models['PesticideProduct'].objects
+                .filter(id__in=product_ids)
+                .order_by('product_name')[:12]
+            )
+            for p in products:
+                product_type = ''
+                if hasattr(p, 'get_product_type_display') and p.product_type:
+                    product_type = p.get_product_type_display()
+                values.extend([
+                    _safe_str(p.product_name),
+                    _safe_str(p.epa_registration_number),
+                    product_type,
+                    '',  # storage location — not tracked on product
+                    '',  # unit
+                    '',  # stock — not tracked on product
+                    '',  # counted by
+                ])
 
         while len(values) < 84:
             values.append('')
@@ -1750,9 +2180,34 @@ class CACDataMapper:
     # ==================================================================
     # Doc 38 — Pre-Season Self-Assessment (Pages 113-114)
     # ==================================================================
+    def _get_water_sources_for_farm(self):
+        """Return list of water source type names for this farm."""
+        models = self._get_models()
+        filters = {}
+        if self.farm:
+            filters['farm'] = self.farm
+        else:
+            filters['farm__company'] = self.company
+        sources = models['WaterSource'].objects.filter(**filters, active=True)
+        types = set()
+        for s in sources:
+            if hasattr(s, 'source_type') and s.source_type:
+                types.add(s.source_type)
+        return list(types)
+
+    def _check_data_exists(self, model_key, extra_filters=None):
+        """Check if any records exist for the company/season."""
+        models = self._get_models()
+        filters = {}
+        if extra_filters:
+            filters.update(extra_filters)
+        return models[model_key].objects.filter(**filters).exists()
+
     def get_doc38_fields(self):
         """
         Map PreSeasonChecklist to Doc 38 fields.
+        Auto-populates water sources and notes from existing platform data
+        when the checklist is missing or fields are empty.
 
         Pages 113-114: 29+19=48 text fields + 88 checkboxes.
         Text fields cover header info and notes for each section.
@@ -1767,8 +2222,17 @@ class CACDataMapper:
             models['PreSeasonChecklist'].objects.filter(**filters)
         )
 
+        # Auto-derive water sources from WaterSource model
+        auto_water_sources = self._get_water_sources_for_farm()
+        auto_water_sources_str = ', '.join(auto_water_sources) if auto_water_sources else ''
+
         values = []
         if checklist:
+            # Water sources — auto-fill if empty
+            water_sources_val = _fmt_json_list(checklist.water_sources)
+            if not water_sources_val:
+                water_sources_val = auto_water_sources_str
+
             values = [
                 # Header
                 _safe_str(checklist.farm.name if checklist.farm else ''),
@@ -1779,12 +2243,12 @@ class CACDataMapper:
                 _safe_str(checklist.ground_history_notes),
                 # Adjacent Land notes
                 _safe_str(checklist.adjacent_land_notes),
-                # Fertilizer notes
-                _safe_str(checklist.fertilizer_notes),
+                # Fertilizer notes — auto-fill if empty
+                _safe_str(checklist.fertilizer_notes) or self._build_fertilizer_summary(),
                 # Water notes
-                _safe_str(checklist.water_notes),
+                _safe_str(checklist.water_notes) or self._build_water_test_summary(),
                 _safe_str(checklist.water_risk_factors_detail),
-                _fmt_json_list(checklist.water_sources),
+                water_sources_val,
                 # Hygiene notes
                 _safe_str(checklist.hygiene_notes),
                 # Records notes
@@ -1798,7 +2262,28 @@ class CACDataMapper:
                 _safe_str(checklist.notes),
             ]
         else:
-            values = []
+            # No checklist — auto-populate what we can
+            values = [
+                # Header
+                _safe_str(self.farm.name if self.farm else self.company.name),
+                str(self.season_year),
+                '',  # assessment_date
+                '',  # assessed_by
+                '',  # ground_history_notes
+                '',  # adjacent_land_notes
+                self._build_fertilizer_summary(),
+                self._build_water_test_summary(),
+                '',  # water_risk_factors_detail
+                auto_water_sources_str,
+                '',  # hygiene_notes
+                '',  # records_notes
+                '',  # deficiencies_found
+                '',  # deficiency_list
+                '',  # approved_for_season
+                '',  # approved_by
+                '',  # approval_date
+                '',  # notes
+            ]
 
         while len(values) < 48:
             values.append('')
@@ -1819,7 +2304,8 @@ class CACDataMapper:
         """
         Doc 38: 88 checkboxes across sections.
         Maps PreSeasonChecklist boolean fields to checkbox values.
-        Returns a list of boolean values in positional order.
+        When no checklist exists, auto-derives checkboxes from existing
+        platform data (water tests, training, PUR submissions, etc.).
         """
         models = self._get_models()
 
@@ -1860,39 +2346,125 @@ class CACDataMapper:
                 bool(checklist.fertilizer_storage_safe),
             ])
 
-            # Water section
+            # Water section — auto-derive microbial_tests if not set
+            microbial = checklist.microbial_tests_conducted
+            if microbial is None:
+                wt_filters = {'test_date__year': self.season_year}
+                if self.farm:
+                    wt_filters['water_source__farm'] = self.farm
+                microbial = models['WaterTest'].objects.filter(**wt_filters).exists()
             cb_values.extend([
-                bool(checklist.microbial_tests_conducted),
+                bool(microbial),
                 bool(checklist.backflow_prevention_in_use),
                 bool(checklist.water_delivery_good_condition),
                 bool(checklist.water_risk_factors_identified),
             ])
 
-            # Worker Hygiene section
+            # Worker Hygiene section — auto-derive workers_trained if not set
+            workers_trained = checklist.workers_trained
+            if workers_trained is None:
+                ws_filters = {'company': self.company, 'training_date__year': self.season_year}
+                if self.farm:
+                    ws_filters['farm'] = self.farm
+                workers_trained = models['WorkerTrainingSession'].objects.filter(**ws_filters).exists()
             cb_values.extend([
                 bool(checklist.toilet_facilities_available),
                 bool(checklist.toilet_facilities_maintained),
-                bool(checklist.workers_trained),
+                bool(workers_trained),
                 bool(checklist.first_aid_current),
                 bool(checklist.access_roads_safe),
                 bool(checklist.toilet_location_suitable),
                 bool(checklist.service_company_procedures),
             ])
 
-            # Necessary Records section
+            # Necessary Records section — auto-derive from existing data
+            # PCA/QAL license — check if team has PCA role member
+            pca_current = checklist.pca_qal_license_current
+            if pca_current is None:
+                pca_current = models['CompanyMembership'].objects.filter(
+                    company=self.company, is_active=True, role__codename='pca'
+                ).exists()
+
+            # PUR reports — check if submitted applications exist
+            pur_current = checklist.pesticide_use_reports_current
+            if pur_current is None:
+                pur_filters = {'field__farm__company': self.company, 'submitted_to_pur': True}
+                if self.farm:
+                    pur_filters['field__farm'] = self.farm
+                pur_current = models['PesticideApplication'].objects.filter(**pur_filters).exists()
+
+            # Water tests current
+            water_current = checklist.water_tests_current
+            if water_current is None:
+                wt_filters = {'test_date__year': self.season_year, 'status': 'pass'}
+                if self.farm:
+                    wt_filters['water_source__farm'] = self.farm
+                water_current = models['WaterTest'].objects.filter(**wt_filters).exists()
+
+            # Perimeter monitoring
+            perim_current = checklist.perimeter_monitoring_log_current
+            if perim_current is None:
+                pm_filters = {'company': self.company}
+                if self.farm:
+                    pm_filters['farm'] = self.farm
+                perim_current = models['PerimeterMonitoringLog'].objects.filter(**pm_filters).exists()
+
+            # Restroom maintenance
+            restroom_current = checklist.restroom_maintenance_log_current
+            if restroom_current is None:
+                sm_filters = {'company': self.company}
+                if self.farm:
+                    sm_filters['farm'] = self.farm
+                restroom_current = models['SanitationMaintenanceLog'].objects.filter(**sm_filters).exists()
+
+            # Training log
+            training_current = checklist.training_log_current
+            if training_current is None:
+                training_current = bool(workers_trained)
+
+            # Committee log
+            committee_current = checklist.committee_log_current
+            if committee_current is None:
+                committee_current = models['FoodSafetyCommitteeMeeting'].objects.filter(
+                    company=self.company, meeting_year=self.season_year
+                ).exists()
+
+            # Management review
+            mgmt_current = checklist.management_review_current
+            if mgmt_current is None:
+                mgmt_current = models['ManagementVerificationReview'].objects.filter(
+                    company=self.company, review_year=self.season_year
+                ).exists()
+
+            # Fertilizer log
+            fert_current = checklist.fertilizer_log_current
+            if fert_current is None:
+                fert_filters = {'application_date__year': self.season_year}
+                if self.farm:
+                    field_ids = models['Field'].objects.filter(farm=self.farm).values_list('id', flat=True)
+                    fert_filters['field__in'] = field_ids
+                fert_current = models['NutrientApplication'].objects.filter(**fert_filters).exists()
+
+            # Chemical inventory
+            chem_current = checklist.chemical_inventory_current
+            if chem_current is None:
+                chem_current = models['ChemicalInventoryLog'].objects.filter(
+                    company=self.company, inventory_year=self.season_year
+                ).exists()
+
             cb_values.extend([
-                bool(checklist.pca_qal_license_current),
+                bool(pca_current),
                 bool(checklist.letters_of_guarantee_current),
-                bool(checklist.pesticide_use_reports_current),
-                bool(checklist.water_tests_current),
-                bool(checklist.perimeter_monitoring_log_current),
-                bool(checklist.restroom_maintenance_log_current),
-                bool(checklist.training_log_current),
-                bool(checklist.committee_log_current),
-                bool(checklist.management_review_current),
-                bool(checklist.fertilizer_log_current),
+                bool(pur_current),
+                bool(water_current),
+                bool(perim_current),
+                bool(restroom_current),
+                bool(training_current),
+                bool(committee_current),
+                bool(mgmt_current),
+                bool(fert_current),
                 bool(checklist.nuoca_forms_current),
-                bool(checklist.chemical_inventory_current),
+                bool(chem_current),
             ])
 
             # Overall
@@ -1929,6 +2501,71 @@ class CACDataMapper:
 
         values = []
         if assessment:
+            # Auto-fill empty fields from existing data
+            water_desc = _safe_str(assessment.water_sources_description)
+            if not water_desc:
+                ws_types = self._get_water_sources_for_farm()
+                water_desc = ', '.join(ws_types) if ws_types else ''
+
+            fert_suppliers = _safe_str(assessment.fertilizer_suppliers)
+            if not fert_suppliers:
+                fert_sups = list(
+                    models['ApprovedSupplier'].objects
+                    .filter(company=self.company, status='approved')
+                    .order_by('supplier_name')
+                )
+                fert_list = [
+                    s.supplier_name for s in fert_sups
+                    if s.material_types and any(
+                        'fert' in str(mt).lower() for mt in s.material_types
+                    )
+                ]
+                fert_suppliers = ', '.join(fert_list)
+
+            pest_suppliers = _safe_str(assessment.pesticide_suppliers)
+            if not pest_suppliers:
+                pest_list = [
+                    s.supplier_name for s in fert_sups
+                    if s.material_types and any(
+                        'pest' in str(mt).lower() or 'chem' in str(mt).lower()
+                        for mt in s.material_types
+                    )
+                ]
+                pest_suppliers = ', '.join(pest_list)
+
+            # Total acres — auto-derive from field/farm if empty
+            total_acres = assessment.total_acres
+            if not total_acres and self.farm:
+                farm_fields = models['Field'].objects.filter(farm=self.farm)
+                total_acres = sum(
+                    float(f.total_acres) for f in farm_fields if f.total_acres
+                )
+
+            # Crops — auto-derive from field data if empty
+            crops = assessment.crops_grown
+            if not crops and self.farm:
+                farm_fields = models['Field'].objects.filter(farm=self.farm)
+                crop_set = set()
+                for f in farm_fields:
+                    if hasattr(f, 'crop') and f.crop:
+                        crop_set.add(str(f.crop))
+                crops = list(crop_set)
+
+            # Harvest crew certification — auto-check
+            harvest_arranged = _safe_str(assessment.harvest_arranged_by)
+            if not harvest_arranged:
+                labor_filters = {'harvest__field__farm__company': self.company}
+                if self.farm:
+                    labor_filters['harvest__field__farm'] = self.farm
+                recent_labor = _get_first_or_none(
+                    models['HarvestLabor'].objects
+                    .filter(**labor_filters, harvest__harvest_date__year=self.season_year)
+                    .select_related('contractor')
+                    .order_by('-harvest__harvest_date')
+                )
+                if recent_labor and recent_labor.contractor:
+                    harvest_arranged = recent_labor.contractor.company_name
+
             values = [
                 # Header
                 _safe_str(assessment.farm.name if assessment.farm else ''),
@@ -1936,21 +2573,21 @@ class CACDataMapper:
                 str(assessment.season_year),
                 _fmt_date(assessment.assessment_date),
                 _safe_str(assessment.assessed_by),
-                _fmt_decimal(assessment.total_acres),
-                _fmt_json_list(assessment.crops_grown),
+                _fmt_decimal(total_acres),
+                _fmt_json_list(crops),
                 _safe_str(assessment.structures_on_property),
                 _safe_str(assessment.previous_land_use),
                 _safe_str(assessment.adjacent_land_use),
                 # Water sources detail
-                _safe_str(assessment.water_sources_description),
+                water_desc,
                 # Inputs detail
-                _safe_str(assessment.fertilizer_suppliers),
-                _safe_str(assessment.pesticide_suppliers),
+                fert_suppliers,
+                pest_suppliers,
                 # Worker detail
                 _safe_str(assessment.toilet_type),
                 _safe_str(assessment.maintenance_provider),
                 _safe_str(assessment.labor_hired_by),
-                _safe_str(assessment.harvest_arranged_by),
+                harvest_arranged,
                 # Risk summary JSON excerpts
                 _fmt_json_list(assessment.land_contamination_risks, key='hazard', separator='; ')[:300],
                 _fmt_json_list(assessment.water_source_risks, key='hazard', separator='; ')[:300],
@@ -1967,7 +2604,74 @@ class CACDataMapper:
                 _safe_str(assessment.notes),
             ]
         else:
-            values = [''] * 28
+            # No assessment — auto-populate from existing data
+            farm_name = self.farm.name if self.farm else self.company.name
+            total_acres = 0
+            crops = []
+            if self.farm:
+                farm_fields = list(models['Field'].objects.filter(farm=self.farm))
+                total_acres = sum(
+                    float(f.total_acres) for f in farm_fields if f.total_acres
+                )
+                crop_set = set()
+                for f in farm_fields:
+                    if hasattr(f, 'crop') and f.crop:
+                        crop_set.add(str(f.crop))
+                crops = list(crop_set)
+
+            ws_types = self._get_water_sources_for_farm()
+            water_desc = ', '.join(ws_types) if ws_types else ''
+
+            # Suppliers
+            suppliers = list(
+                models['ApprovedSupplier'].objects
+                .filter(company=self.company, status='approved')
+                .order_by('supplier_name')
+            )
+            fert_suppliers = ', '.join(
+                s.supplier_name for s in suppliers
+                if s.material_types and any(
+                    'fert' in str(mt).lower() for mt in s.material_types
+                )
+            )
+            pest_suppliers = ', '.join(
+                s.supplier_name for s in suppliers
+                if s.material_types and any(
+                    'pest' in str(mt).lower() or 'chem' in str(mt).lower()
+                    for mt in s.material_types
+                )
+            )
+
+            values = [
+                farm_name,
+                '',  # field name
+                str(self.season_year),
+                '',  # assessment_date
+                '',  # assessed_by
+                _fmt_decimal(total_acres) if total_acres else '',
+                _fmt_json_list(crops),
+                '',  # structures
+                '',  # previous_land_use
+                '',  # adjacent_land_use
+                water_desc,
+                fert_suppliers,
+                pest_suppliers,
+                '',  # toilet_type
+                '',  # maintenance_provider
+                '',  # labor_hired_by
+                '',  # harvest_arranged_by
+                '',  # land risks
+                '',  # water risks
+                '',  # input risks
+                '',  # hygiene risks
+                '',  # labor risks
+                '',  # overall risk
+                '',  # critical count
+                '',  # high count
+                '',  # reviewed_by
+                '',  # review_date
+                '',  # notes
+            ]
 
         return {'_doc39_positional_values': values}
 
@@ -2068,6 +2772,7 @@ class CACDataMapper:
         fields.update(self.get_doc23_fields())
         fields.update(self.get_doc24_fields())
         fields.update(self.get_doc26_fields())
+        fields.update(self.get_doc27_fields())
         fields.update(self.get_doc28a_fields())
         fields.update(self.get_doc29_fields())
         fields.update(self.get_doc37_fields())
@@ -2107,6 +2812,7 @@ class CACDataMapper:
         checkboxes.update(self.get_doc23_checkboxes())
         checkboxes.update(self.get_doc24_checkboxes())
         checkboxes.update(self.get_doc26_checkboxes())
+        checkboxes.update(self.get_doc27_checkboxes())
         checkboxes.update(self.get_doc28a_checkboxes())
         checkboxes.update(self.get_doc29_checkboxes())
         checkboxes.update(self.get_doc37_checkboxes())

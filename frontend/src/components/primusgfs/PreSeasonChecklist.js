@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   ListChecks, Plus, X, Edit2, Trash2, Loader2, RefreshCw, CheckCircle, XCircle,
-  ChevronDown, ChevronRight,
+  ChevronDown, ChevronRight, Sparkles, Database,
 } from 'lucide-react';
 import { primusGFSAPI } from '../../services/api';
 
@@ -207,11 +207,72 @@ const ChecklistForm = ({ initial, onClose, onSave }) => {
 
   const pct = calcCompletion(fd);
 
+  const [autoFilling, setAutoFilling] = useState(false);
+  const [autoFillResult, setAutoFillResult] = useState(null);
+
   const ch = (e) => {
     const { name, value } = e.target;
     setFd((p) => ({ ...p, [name]: value }));
   };
   const chk = (key, val) => setFd((p) => ({ ...p, [key]: val }));
+
+  const autoFillFromPlatform = async () => {
+    try {
+      setAutoFilling(true);
+      setAutoFillResult(null);
+      const params = {};
+      if (fd.farm) params.farm_id = fd.farm;
+      const res = await primusGFSAPI.getPrefill('pre-season', params);
+      const prefill = res.data;
+
+      // Map prefill checks to form keys — the CrossDataLinker uses model field names
+      // but we need to map to the frontend form field names
+      const mapping = {
+        water_tests_current: 'water_sources_tested',
+        microbial_tests_conducted: 'water_sources_tested',
+        workers_trained: 'hygiene_training_scheduled',
+        training_log_current: 'hygiene_training_scheduled',
+        pca_qal_license_current: 'chemical_training_completed',
+        pesticide_use_reports_current: 'chemical_training_completed',
+        chemical_inventory_current: 'chemical_inventory_current',
+        perimeter_monitoring_log_current: 'wildlife_barriers_inspected',
+        committee_log_current: 'committee_scheduled',
+        management_review_current: 'document_control_current',
+        first_aid_current: 'first_aid_kits_stocked',
+      };
+
+      const updates = {};
+      const sources = {};
+      for (const [backendKey, frontendKey] of Object.entries(mapping)) {
+        if (prefill.checks?.[backendKey]) {
+          updates[frontendKey] = true;
+          sources[frontendKey] = prefill.sources?.[backendKey] || 'Platform data';
+        }
+      }
+
+      // Direct name matches
+      if (prefill.checks) {
+        for (const [key, val] of Object.entries(prefill.checks)) {
+          if (val && ALL_CHECK_KEYS.includes(key)) {
+            updates[key] = true;
+            sources[key] = prefill.sources?.[key] || 'Platform data';
+          }
+        }
+      }
+
+      setFd(prev => ({ ...prev, ...updates }));
+      setAutoFillResult({
+        checked: Object.keys(updates).length,
+        total: TOTAL_ITEMS,
+        percent: prefill.percent_prefilled || Math.round((Object.keys(updates).length / TOTAL_ITEMS) * 100),
+      });
+    } catch (error) {
+      console.error('Failed to auto-fill:', error);
+      setAutoFillResult({ error: 'Failed to load platform data.' });
+    } finally {
+      setAutoFilling(false);
+    }
+  };
   const togSection = (key) => setOpenSections((p) => ({ ...p, [key]: !p[key] }));
 
   const submit = async (e) => {
@@ -314,6 +375,34 @@ const ChecklistForm = ({ initial, onClose, onSave }) => {
               {ALL_CHECK_KEYS.filter((k) => fd[k] === true).length} of {TOTAL_ITEMS} items checked
             </p>
           </div>
+
+          {/* Auto-Fill from Platform Data */}
+          <button
+            type="button"
+            onClick={autoFillFromPlatform}
+            disabled={autoFilling}
+            className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors disabled:opacity-50"
+          >
+            {autoFilling ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Sparkles className="w-4 h-4" />
+            )}
+            {autoFilling ? 'Checking platform data...' : 'Auto-Fill from Platform Data'}
+          </button>
+          {autoFillResult && !autoFillResult.error && (
+            <div className="flex items-center gap-2 px-3 py-2 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg text-sm">
+              <Database className="w-4 h-4 text-green-600 dark:text-green-400" />
+              <span className="text-green-700 dark:text-green-400">
+                {autoFillResult.checked} items pre-filled ({autoFillResult.percent}%). {TOTAL_ITEMS - autoFillResult.checked} items need manual review.
+              </span>
+            </div>
+          )}
+          {autoFillResult?.error && (
+            <div className="px-3 py-2 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 text-sm rounded-lg">
+              {autoFillResult.error}
+            </div>
+          )}
 
           {/* Checklist sections */}
           <div className="space-y-3">
