@@ -117,6 +117,10 @@ class ComplianceProfile(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    deadlines_auto_populated = models.BooleanField(
+        default=False,
+        help_text="True after deadlines have been auto-generated on first dashboard visit"
+    )
 
     class Meta:
         verbose_name = "Compliance Profile"

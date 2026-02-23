@@ -62,6 +62,7 @@ import { PrimusGFSDashboard } from './components/primusgfs';
 import Breadcrumbs from './components/navigation/Breadcrumbs';
 import YieldForecastDashboard from './components/yield-forecast/YieldForecastDashboard';
 import { TreeDetectionPage } from './components/tree-detection';
+import InspectorChecklist from './components/compliance/InspectorChecklist';
 
 import ErrorBoundary from './components/ui/ErrorBoundary';
 import { onboardingAPI } from './services/api';
@@ -563,6 +564,7 @@ function AppContent() {
             <Route path="compliance/primusgfs/sanitation-maint" element={<PrimusGFSDashboard onNavigate={handleNavigate} initialTab="sanitation-maint" />} />
             <Route path="compliance/primusgfs/cac-manual" element={<PrimusGFSDashboard onNavigate={handleNavigate} initialTab="cac-manual" />} />
             <Route path="compliance/pesticide" element={<DeadlineCalendar onNavigate={handleNavigate} />} />
+            <Route path="compliance/inspector-checklist" element={<InspectorChecklist onNavigate={handleNavigate} />} />
             <Route path="yield-forecast" element={<YieldForecastDashboard />} />
             {/* Catch-all redirect to dashboard */}
             <Route path="*" element={<Dashboard onNavigate={handleNavigate} />} />

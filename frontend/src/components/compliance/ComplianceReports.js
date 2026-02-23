@@ -20,8 +20,9 @@ import {
   FileCheck,
   Upload,
 } from 'lucide-react';
-import { complianceReportsAPI, COMPLIANCE_CONSTANTS } from '../../services/api';
+import api, { complianceReportsAPI, COMPLIANCE_CONSTANTS } from '../../services/api';
 import { useConfirm } from '../../contexts/ConfirmContext';
+import PURReportPreview from './PURReportPreview';
 
 // Format date for display
 const formatDate = (dateString) => {
@@ -391,6 +392,9 @@ const GenerateReportModal = ({ onClose, onGenerate }) => {
     reporting_period_end: '',
   });
   const [generating, setGenerating] = useState(false);
+  const [purPreviewData, setPurPreviewData] = useState(null);
+  const [purLoading, setPurLoading] = useState(false);
+  const [createdReportId, setCreatedReportId] = useState(null);
 
   // Auto-set period based on report type
   useEffect(() => {
@@ -399,7 +403,6 @@ const GenerateReportModal = ({ onClose, onGenerate }) => {
     const month = now.getMonth();
 
     if (formData.report_type === 'pur_monthly') {
-      // Previous month
       const start = new Date(year, month - 1, 1);
       const end = new Date(year, month, 0);
       setFormData(prev => ({
@@ -408,36 +411,41 @@ const GenerateReportModal = ({ onClose, onGenerate }) => {
         reporting_period_end: end.toISOString().split('T')[0],
       }));
     } else if (formData.report_type === 'sgma_semi_annual') {
-      // Current half-year
       if (month < 6) {
-        setFormData(prev => ({
-          ...prev,
-          reporting_period_start: `${year}-01-01`,
-          reporting_period_end: `${year}-06-30`,
-        }));
+        setFormData(prev => ({ ...prev, reporting_period_start: `${year}-01-01`, reporting_period_end: `${year}-06-30` }));
       } else {
-        setFormData(prev => ({
-          ...prev,
-          reporting_period_start: `${year}-07-01`,
-          reporting_period_end: `${year}-12-31`,
-        }));
+        setFormData(prev => ({ ...prev, reporting_period_start: `${year}-07-01`, reporting_period_end: `${year}-12-31` }));
       }
     } else if (formData.report_type.includes('annual')) {
-      // Previous year
-      setFormData(prev => ({
-        ...prev,
-        reporting_period_start: `${year - 1}-01-01`,
-        reporting_period_end: `${year - 1}-12-31`,
-      }));
+      setFormData(prev => ({ ...prev, reporting_period_start: `${year - 1}-01-01`, reporting_period_end: `${year - 1}-12-31` }));
     }
+    setPurPreviewData(null);
+    setCreatedReportId(null);
   }, [formData.report_type]);
+
+  const handleAutoFillPUR = async () => {
+    if (!formData.reporting_period_start || !formData.reporting_period_end) return;
+    setPurLoading(true);
+    try {
+      const res = await api.post('/compliance/reports/generate-pur/', {
+        period_start: formData.reporting_period_start,
+        period_end: formData.reporting_period_end,
+      });
+      setPurPreviewData(res.data);
+    } catch {
+      // silently show nothing
+    } finally {
+      setPurLoading(false);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setGenerating(true);
     try {
-      await onGenerate(formData);
-      onClose();
+      const result = await onGenerate(formData);
+      if (result?.id) setCreatedReportId(result.id);
+      if (!purPreviewData) onClose();
     } catch (error) {
       console.error('Failed to generate report:', error);
     } finally {
@@ -445,25 +453,28 @@ const GenerateReportModal = ({ onClose, onGenerate }) => {
     }
   };
 
+  const isPUR = formData.report_type === 'pur_monthly';
+  const maxWidth = purPreviewData ? 'max-w-4xl' : 'max-w-md';
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative bg-white rounded-lg shadow-xl w-full max-w-md mx-4">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">Generate Report</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+      <div className={`relative bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full ${maxWidth} overflow-y-auto max-h-[90vh]`}>
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Generate Report</h2>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
             <X className="w-5 h-5" />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Report Type *</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Report Type *</label>
             <select
               required
               value={formData.report_type}
               onChange={(e) => setFormData({ ...formData, report_type: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
             >
               {COMPLIANCE_CONSTANTS.REPORT_TYPES.map(type => (
                 <option key={type.value} value={type.value}>{type.label}</option>
@@ -473,39 +484,63 @@ const GenerateReportModal = ({ onClose, onGenerate }) => {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Period Start *</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Period Start *</label>
               <input
                 type="date"
                 required
                 value={formData.reporting_period_start}
                 onChange={(e) => setFormData({ ...formData, reporting_period_start: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
               />
             </div>
-
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Period End *</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Period End *</label>
               <input
                 type="date"
                 required
                 value={formData.reporting_period_end}
                 onChange={(e) => setFormData({ ...formData, reporting_period_end: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
               />
             </div>
           </div>
 
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-            <p className="text-sm text-blue-700">
-              The report will be generated based on pesticide application data within the selected period.
-            </p>
-          </div>
+          {/* PUR auto-fill */}
+          {isPUR && (
+            <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg p-3 space-y-2">
+              <div className="flex items-center justify-between">
+                <p className="text-sm text-purple-800 dark:text-purple-200 font-medium">
+                  Auto-fill from Application Records
+                </p>
+                <button
+                  type="button"
+                  onClick={handleAutoFillPUR}
+                  disabled={purLoading || !formData.reporting_period_start}
+                  className="text-xs px-3 py-1 bg-purple-600 hover:bg-purple-700 text-white rounded-md disabled:opacity-50 transition-colors"
+                >
+                  {purLoading ? 'Loading...' : 'Preview Applications'}
+                </button>
+              </div>
+              <p className="text-xs text-purple-600 dark:text-purple-400">
+                Pulls pesticide application records for the selected period and maps to PUR format.
+              </p>
+            </div>
+          )}
 
-          <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
+          {/* PUR Preview */}
+          {purPreviewData && (
+            <PURReportPreview
+              data={purPreviewData}
+              reportId={createdReportId}
+              onMarkSubmitted={onClose}
+            />
+          )}
+
+          <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+              className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
             >
               Cancel
             </button>

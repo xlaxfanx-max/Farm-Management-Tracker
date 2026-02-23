@@ -786,8 +786,82 @@ class ComplianceReportViewSet(AuditLogMixin, viewsets.ModelViewSet):
 
         return Response(ComplianceReportSerializer(report).data)
 
+    @action(detail=False, methods=['post'])
+    def generate_pur(self, request):
+        """Auto-generate a PUR report from existing pesticide application records."""
+        company = require_company(request.user)
+        period_start_str = request.data.get('period_start')
+        period_end_str = request.data.get('period_end')
+
+        if not period_start_str or not period_end_str:
+            return Response(
+                {'error': 'period_start and period_end are required (YYYY-MM-DD format)'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            period_start = datetime.strptime(period_start_str, '%Y-%m-%d').date()
+            period_end = datetime.strptime(period_end_str, '%Y-%m-%d').date()
+        except ValueError:
+            return Response({'error': 'Invalid date format. Use YYYY-MM-DD.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        applications = PesticideApplication.objects.filter(
+            field__farm__company=company,
+            application_date__gte=period_start,
+            application_date__lte=period_end,
+        ).select_related('field', 'field__farm', 'product', 'product__active_ingredient')
+
+        app_data = []
+        validation_errors = []
+        validation_warnings = []
+
+        for app in applications:
+            row = {
+                'id': app.id,
+                'date': app.application_date.isoformat(),
+                'field_name': str(app.field),
+                'farm_name': str(app.field.farm),
+                'product_name': getattr(app.product, 'product_name', 'Unknown'),
+                'epa_reg_number': getattr(app.product, 'epa_registration_number', '') or '',
+                'active_ingredient': getattr(getattr(app.product, 'active_ingredient', None), 'name', '') or '',
+                'amount_applied': str(app.amount_used or ''),
+                'unit': app.unit_of_measure or '',
+                'acres_treated': str(app.acres_treated or ''),
+                'applicator_name': app.applicator_name or '',
+                'applicator_license': app.applicator_license_no or '',
+                'start_time': app.start_time.strftime('%H:%M') if app.start_time else '',
+                'end_time': app.end_time.strftime('%H:%M') if app.end_time else '',
+            }
+            # Flag missing required fields
+            missing = []
+            if not row['epa_reg_number']:
+                missing.append('EPA registration number')
+            if not row['applicator_license']:
+                missing.append('applicator license')
+            if not row['acres_treated']:
+                missing.append('acres treated')
+            if missing:
+                validation_warnings.append(f"Application {app.id} ({row['date']} - {row['field_name']}): missing {", ".join(missing)}")
+                row['has_warnings'] = True
+                row['missing_fields'] = missing
+            else:
+                row['has_warnings'] = False
+                row['missing_fields'] = []
+            app_data.append(row)
+
+        return Response({
+            'period_start': period_start_str,
+            'period_end': period_end_str,
+            'application_count': len(app_data),
+            'applications': app_data,
+            'validation_errors': validation_errors,
+            'validation_warnings': validation_warnings,
+            'ready_for_report': len(validation_errors) == 0,
+        })
+
 
 # =============================================================================
+
 # INCIDENT REPORT VIEWSET
 # =============================================================================
 
@@ -898,6 +972,21 @@ class ComplianceDashboardViewSet(viewsets.ViewSet):
         """Get comprehensive compliance dashboard data."""
         company = require_company(request.user)
         today = date.today()
+
+        # Auto-generate deadlines on first visit if not yet done
+        try:
+            profile = ComplianceProfile.objects.get(company=company)
+            if not profile.deadlines_auto_populated:
+                deadline_count = ComplianceDeadline.objects.filter(company=company).count()
+                if deadline_count == 0:
+                    from .tasks.compliance_tasks import generate_recurring_deadlines
+                    generate_recurring_deadlines(company_id=company.id)
+                profile.deadlines_auto_populated = True
+                profile.save(update_fields=["deadlines_auto_populated"])
+        except ComplianceProfile.DoesNotExist:
+            pass
+        except Exception:
+            pass  # Never crash the dashboard due to deadline generation failure
 
         # Deadline statistics
         deadlines = ComplianceDeadline.objects.filter(company=company)
@@ -1046,8 +1135,455 @@ class ComplianceDashboardViewSet(viewsets.ViewSet):
 
         return Response(list(calendar_data.values()))
 
+    @action(detail=False, methods=['get'])
+    def smart_score(self, request):
+        """Additive compliance score - starts at 0, earns points for completeness."""
+        company = require_company(request.user)
+        today = date.today()
+
+        breakdown = []
+        total_score = 0
+
+        # Licenses exist (15 pts)
+        licenses = License.objects.filter(company=company)
+        active_licenses = licenses.filter(status__in=['active', 'expiring_soon'])
+        passed = active_licenses.exists()
+        earned = 15 if passed else 0
+        total_score += earned
+        breakdown.append({
+            'key': 'licenses_exist', 'label': 'Active Licenses',
+            'earned': earned, 'possible': 15, 'passed': passed,
+            'action': None if passed else 'Add your QAL or PCA license',
+            'action_key': None if passed else 'compliance-licenses',
+        })
+
+        # Licenses current (10 pts)
+        expired_licenses = licenses.filter(status='expired').count()
+        passed = active_licenses.exists() and expired_licenses == 0
+        earned = 10 if passed else 0
+        total_score += earned
+        breakdown.append({
+            'key': 'licenses_current', 'label': 'No Expired Licenses',
+            'earned': earned, 'possible': 10, 'passed': passed,
+            'action': None if passed else f'{expired_licenses} expired license(s)',
+            'action_key': None if passed else 'compliance-licenses',
+        })
+
+        # WPS training exists (10 pts)
+        training = WPSTrainingRecord.objects.filter(company=company)
+        passed = training.exists()
+        earned = 10 if passed else 0
+        total_score += earned
+        breakdown.append({
+            'key': 'wps_training_exist', 'label': 'WPS Training Records',
+            'earned': earned, 'possible': 10, 'passed': passed,
+            'action': None if passed else 'Add worker safety training records',
+            'action_key': None if passed else 'compliance-wps',
+        })
+
+        # WPS training current (10 pts)
+        expired_training = training.filter(expiration_date__lt=today).count()
+        passed = training.exists() and expired_training == 0
+        earned = 10 if passed else 0
+        total_score += earned
+        breakdown.append({
+            'key': 'wps_current', 'label': 'WPS Training Current',
+            'earned': earned, 'possible': 10, 'passed': passed,
+            'action': None if passed else f'{expired_training} expired training record(s)',
+            'action_key': None if passed else 'compliance-wps',
+        })
+
+        # Deadlines populated (10 pts)
+        deadlines = ComplianceDeadline.objects.filter(company=company)
+        passed = deadlines.exists()
+        earned = 10 if passed else 0
+        total_score += earned
+        breakdown.append({
+            'key': 'deadlines_populated', 'label': 'Compliance Calendar',
+            'earned': earned, 'possible': 10, 'passed': passed,
+            'action': None if passed else 'Generate your compliance calendar',
+            'action_key': None if passed else 'compliance-deadlines',
+        })
+
+        # No overdue deadlines (15 pts)
+        overdue_count = deadlines.filter(status='overdue').count()
+        passed = overdue_count == 0
+        earned = 15 if passed else 0
+        total_score += earned
+        breakdown.append({
+            'key': 'no_overdue', 'label': 'No Overdue Deadlines',
+            'earned': earned, 'possible': 15, 'passed': passed,
+            'action': None if passed else f'{overdue_count} overdue deadline(s)',
+            'action_key': None if passed else 'compliance-deadlines',
+        })
+
+        # PUR current - last month submitted (10 pts)
+        first_of_month = today.replace(day=1)
+        if first_of_month.month == 1:
+            last_month_start = date(first_of_month.year - 1, 12, 1)
+        else:
+            last_month_start = date(first_of_month.year, first_of_month.month - 1, 1)
+        last_month_end = first_of_month - timedelta(days=1)
+        pur_submitted = ComplianceReport.objects.filter(
+            company=company,
+            report_type='pur_monthly',
+            status__in=['submitted', 'accepted'],
+            reporting_period_start__gte=last_month_start,
+            reporting_period_end__lte=last_month_end,
+        ).exists()
+        passed = pur_submitted
+        earned = 10 if passed else 0
+        total_score += earned
+        breakdown.append({
+            'key': 'pur_current', 'label': 'PUR Reports Current',
+            'earned': earned, 'possible': 10, 'passed': passed,
+            'action': None if passed else f'{last_month_start.strftime("%B %Y")} PUR not submitted',
+            'action_key': None if passed else 'compliance-reports',
+        })
+
+        # FSMA setup (5 pts)
+        try:
+            from .models.fsma import FSMAFacility, WaterAssessment
+            has_fsma = FSMAFacility.objects.filter(company=company).exists() or \
+                       WaterAssessment.objects.filter(company=company).exists()
+        except Exception:
+            has_fsma = False
+        passed = has_fsma
+        earned = 5 if passed else 0
+        total_score += earned
+        breakdown.append({
+            'key': 'fsma_setup', 'label': 'FSMA Setup',
+            'earned': earned, 'possible': 5, 'passed': passed,
+            'action': None if passed else 'Set up FSMA facilities or water assessment',
+            'action_key': None if passed else 'compliance-fsma',
+        })
+
+        # Water testing current (5 pts)
+        try:
+            from .models.water import WaterSample
+            ninety_days_ago = today - timedelta(days=90)
+            has_recent_water = WaterSample.objects.filter(
+                farm__company=company,
+                sample_date__gte=ninety_days_ago
+            ).exists()
+        except Exception:
+            has_recent_water = False
+        passed = has_recent_water
+        earned = 5 if passed else 0
+        total_score += earned
+        breakdown.append({
+            'key': 'water_testing', 'label': 'Water Testing Current',
+            'earned': earned, 'possible': 5, 'passed': passed,
+            'action': None if passed else 'No water tests in the last 90 days',
+            'action_key': None if passed else 'water-management',
+        })
+
+        # Posting locations configured (5 pts)
+        has_posting = CentralPostingLocation.objects.filter(company=company).exists()
+        passed = has_posting
+        earned = 5 if passed else 0
+        total_score += earned
+        breakdown.append({
+            'key': 'posting_locations', 'label': 'Posting Locations',
+            'earned': earned, 'possible': 5, 'passed': passed,
+            'action': None if passed else 'Set up central WPS posting locations',
+            'action_key': None if passed else 'compliance-settings',
+        })
+
+        gap_items = [
+            {'key': b['key'], 'action': b['action'], 'action_key': b['action_key'], 'points': b['possible']}
+            for b in breakdown if not b['passed']
+        ]
+        gap_items.sort(key=lambda x: -x['points'])
+
+        passed_count = sum(1 for b in breakdown if b['passed'])
+        total_count = len(breakdown)
+
+        return Response({
+            'score': total_score,
+            'setup_completeness': int((passed_count / total_count) * 100),
+            'passed_count': passed_count,
+            'total_count': total_count,
+            'score_breakdown': breakdown,
+            'gap_items': gap_items,
+        })
+
+    @action(detail=False, methods=['get'])
+    def today(self, request):
+        """Everything the farmer needs to know and do today."""
+        company = require_company(request.user)
+        today = date.today()
+
+        # Overdue deadlines
+        overdue = ComplianceDeadline.objects.filter(
+            company=company, status='overdue'
+        ).order_by('due_date')[:10]
+
+        # Due today
+        due_today = ComplianceDeadline.objects.filter(
+            company=company,
+            due_date=today,
+            status__in=['upcoming', 'due_soon']
+        ).order_by('title')[:10]
+
+        # Due this week
+        week_from_now = today + timedelta(days=7)
+        due_this_week = ComplianceDeadline.objects.filter(
+            company=company,
+            due_date__gt=today,
+            due_date__lte=week_from_now,
+            status__in=['upcoming', 'due_soon']
+        ).order_by('due_date')[:10]
+
+        # Expired licenses
+        expired_lic = License.objects.filter(
+            company=company, status='expired'
+        ).order_by('expiration_date')[:5]
+
+        # Expiring training (30 days)
+        thirty_days = today + timedelta(days=30)
+        expiring_training = WPSTrainingRecord.objects.filter(
+            company=company,
+            expiration_date__gte=today,
+            expiration_date__lte=thirty_days
+        ).order_by('expiration_date')[:5]
+
+        # Active REIs
+        active_reis = REIPostingRecord.objects.filter(
+            company=company,
+            rei_end_datetime__gt=timezone.now(),
+            removed_at__isnull=True
+        ).select_related('application__field', 'application__product')[:10]
+
+        # PHI blocked fields - applications where PHI end date is in future
+        from .models import PesticideApplication, Field
+        today_dt = timezone.now()
+        phi_apps = PesticideApplication.objects.filter(
+            field__farm__company=company,
+            phi_end_date__gt=today
+        ).select_related('field', 'product')[:10]
+
+        # Pending PUR month
+        first_of_month = today.replace(day=1)
+        if first_of_month.month == 1:
+            last_month_start = date(first_of_month.year - 1, 12, 1)
+        else:
+            last_month_start = date(first_of_month.year, first_of_month.month - 1, 1)
+        last_month_end = first_of_month - timedelta(days=1)
+        pur_submitted = ComplianceReport.objects.filter(
+            company=company,
+            report_type='pur_monthly',
+            status__in=['submitted', 'accepted'],
+            reporting_period_start__gte=last_month_start,
+        ).exists()
+        pending_pur = None if pur_submitted else last_month_start.strftime('%B %Y')
+
+        # Pending NOI count
+        from .models import NOISubmission
+        pending_noi_count = NOISubmission.objects.filter(
+            company=company, status='pending'
+        ).count()
+
+        # Build quick_wins
+        quick_wins = []
+        if pending_pur:
+            quick_wins.append({
+                'action': f'Submit {pending_pur} PUR Report',
+                'url_key': 'compliance-reports',
+                'priority': 'high',
+                'icon': 'FileText',
+            })
+        if expired_lic.exists():
+            quick_wins.append({
+                'action': 'Renew expired licenses',
+                'url_key': 'compliance-licenses',
+                'priority': 'high',
+                'icon': 'Award',
+            })
+        if overdue.exists():
+            quick_wins.append({
+                'action': f'Address {overdue.count()} overdue deadline(s)',
+                'url_key': 'compliance-deadlines',
+                'priority': 'high',
+                'icon': 'AlertTriangle',
+            })
+        if pending_noi_count > 0:
+            quick_wins.append({
+                'action': f'File {pending_noi_count} pending NOI(s)',
+                'url_key': 'compliance-reports',
+                'priority': 'medium',
+                'icon': 'ClipboardCheck',
+            })
+
+        all_clear = (
+            not overdue.exists() and
+            not due_today.exists() and
+            not expired_lic.exists() and
+            not expiring_training.exists() and
+            not active_reis.exists() and
+            not phi_apps.exists() and
+            pending_pur is None and
+            pending_noi_count == 0
+        )
+
+        def serialize_deadline(d):
+            return {
+                'id': d.id,
+                'title': d.title,
+                'due_date': d.due_date.isoformat(),
+                'category': d.category,
+                'days_overdue': (today - d.due_date).days if d.due_date < today else 0,
+            }
+
+        def serialize_rei(r):
+            remaining = (r.rei_end_datetime - timezone.now()).total_seconds()
+            return {
+                'id': r.id,
+                'field_name': str(r.application.field) if r.application else 'Unknown',
+                'product_name': str(r.application.product) if r.application else 'Unknown',
+                'rei_end_datetime': r.rei_end_datetime.isoformat(),
+                'time_remaining_seconds': max(0, int(remaining)),
+                'is_active': remaining > 0,
+            }
+
+        def serialize_phi(app):
+            return {
+                'field_name': str(app.field),
+                'product_name': str(app.product) if hasattr(app, 'product') else 'Unknown',
+                'clear_date': app.phi_end_date.isoformat() if app.phi_end_date else None,
+                'days_remaining': (app.phi_end_date - today).days if app.phi_end_date else 0,
+            }
+
+        return Response({
+            'date': today.isoformat(),
+            'all_clear': all_clear,
+            'overdue_deadlines': [serialize_deadline(d) for d in overdue],
+            'due_today': [serialize_deadline(d) for d in due_today],
+            'due_this_week': [serialize_deadline(d) for d in due_this_week],
+            'expired_licenses': LicenseListSerializer(expired_lic, many=True).data,
+            'expiring_training': WPSTrainingRecordListSerializer(expiring_training, many=True).data,
+            'active_reis': [serialize_rei(r) for r in active_reis],
+            'phi_blocked_fields': [serialize_phi(a) for a in phi_apps],
+            'pending_pur_month': pending_pur,
+            'pending_noi_count': pending_noi_count,
+            'quick_wins': quick_wins,
+        })
+
+    @action(detail=False, methods=['get'])
+    def suggestions(self, request):
+        """Proactive compliance suggestions based on farm data."""
+        company = require_company(request.user)
+        today = date.today()
+        suggestions = []
+
+        # PUR not submitted last month
+        first_of_month = today.replace(day=1)
+        if first_of_month.month == 1:
+            last_month_start = date(first_of_month.year - 1, 12, 1)
+        else:
+            last_month_start = date(first_of_month.year, first_of_month.month - 1, 1)
+        pur_submitted = ComplianceReport.objects.filter(
+            company=company,
+            report_type='pur_monthly',
+            status__in=['submitted', 'accepted'],
+            reporting_period_start__gte=last_month_start,
+        ).exists()
+        if not pur_submitted:
+            app_count = PesticideApplication.objects.filter(
+                field__farm__company=company,
+                application_date__gte=last_month_start,
+                application_date__lt=first_of_month,
+            ).count()
+            if app_count > 0:
+                suggestions.append({
+                    'id': 'pur_pending',
+                    'priority': 'high',
+                    'icon': 'FileText',
+                    'title': f'{last_month_start.strftime("%B %Y")} PUR Not Submitted',
+                    'detail': f'{app_count} application(s) recorded - generate report now',
+                    'action_label': 'Generate PUR',
+                    'action_key': 'compliance-reports',
+                })
+
+        # Expiring licenses in 60 days
+        sixty_days = today + timedelta(days=60)
+        expiring_lic = License.objects.filter(
+            company=company,
+            expiration_date__gte=today,
+            expiration_date__lte=sixty_days,
+            status__in=['active', 'expiring_soon']
+        ).order_by('expiration_date')[:3]
+        for lic in expiring_lic:
+            days = (lic.expiration_date - today).days
+            suggestions.append({
+                'id': f'license_expiring_{lic.id}',
+                'priority': 'high' if days <= 30 else 'medium',
+                'icon': 'Award',
+                'title': f'{lic.get_license_type_display()} Expiring Soon',
+                'detail': f'{lic.holder_name} - expires in {days} days',
+                'action_label': 'Renew License',
+                'action_key': 'compliance-licenses',
+            })
+
+        # WPS training expiring in 30 days
+        thirty_days = today + timedelta(days=30)
+        expiring_training = WPSTrainingRecord.objects.filter(
+            company=company,
+            expiration_date__gte=today,
+            expiration_date__lte=thirty_days
+        ).order_by('expiration_date')[:3]
+        for rec in expiring_training:
+            days = (rec.expiration_date - today).days
+            suggestions.append({
+                'id': f'training_expiring_{rec.id}',
+                'priority': 'medium',
+                'icon': 'Users',
+                'title': 'WPS Training Expiring Soon',
+                'detail': f'{rec.worker_name} - expires in {days} days',
+                'action_label': 'Update Training',
+                'action_key': 'compliance-wps',
+            })
+
+        # Overdue deadlines
+        overdue_count = ComplianceDeadline.objects.filter(
+            company=company, status='overdue'
+        ).count()
+        if overdue_count > 0:
+            suggestions.append({
+                'id': 'overdue_deadlines',
+                'priority': 'high',
+                'icon': 'AlertTriangle',
+                'title': f'{overdue_count} Overdue Deadline(s)',
+                'detail': 'Address overdue compliance items',
+                'action_label': 'View Deadlines',
+                'action_key': 'compliance-deadlines',
+            })
+
+        # Water testing overdue (90+ days)
+        try:
+            from .models.water import WaterSample
+            ninety_days_ago = today - timedelta(days=90)
+            stale_sources = WaterSample.objects.filter(
+                farm__company=company
+            ).values('source_id').annotate(last=Max('sample_date')).filter(last__lt=ninety_days_ago)
+            if stale_sources.exists():
+                suggestions.append({
+                    'id': 'water_overdue',
+                    'priority': 'medium',
+                    'icon': 'Droplets',
+                    'title': 'Water Testing Overdue',
+                    'detail': f'{stale_sources.count()} source(s) not tested in 90+ days',
+                    'action_label': 'View Water',
+                    'action_key': 'water-management',
+                })
+        except Exception:
+            pass
+
+        return Response({'suggestions': suggestions})
+
 
 # =============================================================================
+
 # INSPECTOR REPORT VIEWSET
 # =============================================================================
 
@@ -1084,8 +1620,158 @@ class InspectorReportViewSet(viewsets.ViewSet):
         )
         return response
 
+    @action(detail=False, methods=['get'])
+    def checklist(self, request):
+        company = require_company(request.user)
+        today = date.today()
+        sections = []
+
+        # SECTION 1: Licenses & Permits
+        licenses = License.objects.filter(company=company)
+        active_lic = licenses.filter(status__in=['active', 'expiring_soon'])
+        expired_lic = licenses.filter(status='expired')
+        sections.append({
+            'title': 'Licenses & Permits',
+            'icon': 'Award',
+            'items': [
+                {
+                    'label': 'Active applicator license on file (QAL/PCA)',
+                    'is_passed': active_lic.exists(),
+                    'detail': f"{active_lic.count()} active license(s)" if active_lic.exists() else 'No active licenses found',
+                    'action_label': 'Add License' if not active_lic.exists() else None,
+                    'action_key': 'compliance-licenses',
+                },
+                {
+                    'label': 'No expired licenses',
+                    'is_passed': expired_lic.count() == 0,
+                    'detail': 'All licenses current' if expired_lic.count() == 0 else f"{expired_lic.count()} expired",
+                    'action_label': 'Renew Licenses' if expired_lic.count() > 0 else None,
+                    'action_key': 'compliance-licenses',
+                },
+            ],
+        })
+
+        # SECTION 2: Pesticide Use Records
+        first_of_month = today.replace(day=1)
+        if first_of_month.month == 1:
+            last_month_start = date(first_of_month.year - 1, 12, 1)
+        else:
+            last_month_start = date(first_of_month.year, first_of_month.month - 1, 1)
+        last_month_end = first_of_month - timedelta(days=1)
+        pur_ok = ComplianceReport.objects.filter(
+            company=company,
+            report_type='pur_monthly',
+            status__in=['submitted', 'accepted'],
+            reporting_period_start__gte=last_month_start,
+        ).exists()
+        apps_missing_epa = PesticideApplication.objects.filter(
+            field__farm__company=company,
+        ).exclude(product__epa_registration_number__isnull=False).count()
+        apps_missing_license = PesticideApplication.objects.filter(
+            field__farm__company=company,
+            applicator_license_no=''
+        ).count()
+
+        sections.append({
+            'title': 'Pesticide Use Records',
+            'icon': 'FileText',
+            'items': [
+                {
+                    'label': f"PUR submitted for {last_month_start.strftime("%B %Y")}",
+                    'is_passed': pur_ok,
+                    'detail': 'Submitted' if pur_ok else 'Not submitted',
+                    'action_label': 'Generate PUR' if not pur_ok else None,
+                    'action_key': 'compliance-reports',
+                },
+                {
+                    'label': 'All applications have EPA registration numbers',
+                    'is_passed': apps_missing_epa == 0,
+                    'detail': 'All complete' if apps_missing_epa == 0 else f"{apps_missing_epa} application(s) missing",
+                    'action_label': 'Review Applications' if apps_missing_epa > 0 else None,
+                    'action_key': 'compliance-reports',
+                },
+                {
+                    'label': 'All applications have applicator license numbers',
+                    'is_passed': apps_missing_license == 0,
+                    'detail': 'All complete' if apps_missing_license == 0 else f"{apps_missing_license} missing",
+                    'action_label': 'Review Applications' if apps_missing_license > 0 else None,
+                    'action_key': 'compliance-reports',
+                },
+            ],
+        })
+
+        # SECTION 3: Worker Protection
+        wps_training = WPSTrainingRecord.objects.filter(company=company)
+        expired_wps = wps_training.filter(expiration_date__lt=today).count()
+        posting_locs = CentralPostingLocation.objects.filter(company=company)
+        sections.append({
+            'title': 'Worker Protection Standard',
+            'icon': 'Users',
+            'items': [
+                {
+                    'label': 'WPS training records on file',
+                    'is_passed': wps_training.exists(),
+                    'detail': f"{wps_training.count()} training record(s)" if wps_training.exists() else 'No records found',
+                    'action_label': 'Add Training' if not wps_training.exists() else None,
+                    'action_key': 'compliance-wps',
+                },
+                {
+                    'label': 'All WPS training current (not expired)',
+                    'is_passed': expired_wps == 0,
+                    'detail': 'All current' if expired_wps == 0 else f"{expired_wps} expired",
+                    'action_label': 'Update Training' if expired_wps > 0 else None,
+                    'action_key': 'compliance-wps',
+                },
+                {
+                    'label': 'Central posting locations configured',
+                    'is_passed': posting_locs.exists(),
+                    'detail': f"{posting_locs.count()} location(s)" if posting_locs.exists() else 'No posting locations',
+                    'action_label': 'Add Locations' if not posting_locs.exists() else None,
+                    'action_key': 'compliance-settings',
+                },
+            ],
+        })
+
+        # SECTION 4: Deadlines & Records
+        overdue_count = ComplianceDeadline.objects.filter(company=company, status='overdue').count()
+        has_deadlines = ComplianceDeadline.objects.filter(company=company).exists()
+        sections.append({
+            'title': 'Deadlines & Records',
+            'icon': 'Calendar',
+            'items': [
+                {
+                    'label': 'No overdue compliance deadlines',
+                    'is_passed': overdue_count == 0,
+                    'detail': 'All deadlines on track' if overdue_count == 0 else f"{overdue_count} overdue",
+                    'action_label': 'View Deadlines' if overdue_count > 0 else None,
+                    'action_key': 'compliance-deadlines',
+                },
+                {
+                    'label': 'Compliance calendar populated',
+                    'is_passed': has_deadlines,
+                    'detail': 'Calendar has deadlines',
+                    'action_label': 'Generate Calendar' if not has_deadlines else None,
+                    'action_key': 'compliance-deadlines',
+                },
+            ],
+        })
+
+        all_items = [item for section in sections for item in section['items']]
+        passed_count = sum(1 for item in all_items if item['is_passed'])
+        total_count = len(all_items)
+        readiness_pct = int((passed_count / total_count) * 100) if total_count > 0 else 0
+
+        return Response({
+            'sections': sections,
+            'passed_count': passed_count,
+            'total_count': total_count,
+            'readiness_pct': readiness_pct,
+            'all_passed': readiness_pct == 100,
+        })
+
 
 # =============================================================================
+
 # NOI SUBMISSION VIEWSET
 # =============================================================================
 

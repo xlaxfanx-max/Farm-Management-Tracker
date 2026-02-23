@@ -1453,6 +1453,10 @@ export const complianceReportsAPI = {
 
   /** Submit report */
   submit: (id, data = {}) => api.post(`/compliance/reports/${id}/submit/`, data),
+
+  /** Auto-generate PUR data from application records */
+  generatePUR: (periodStart, periodEnd) =>
+    api.post('/compliance/reports/generate-pur/', { period_start: periodStart, period_end: periodEnd }),
 };
 
 /**
@@ -1499,6 +1503,15 @@ export const complianceDashboardAPI = {
   /** Get dashboard data */
   get: () => api.get('/compliance/dashboard/'),
 
+  /** Get additive compliance score with breakdown */
+  getSmartScore: () => api.get('/compliance/dashboard/smart-score/'),
+
+  /** Get today's priority compliance actions */
+  getToday: () => api.get('/compliance/dashboard/today/'),
+
+  /** Get proactive smart suggestions */
+  getSuggestions: () => api.get('/compliance/dashboard/suggestions/'),
+
   /** Get calendar data */
   calendar: (params = {}) => api.get('/compliance/dashboard/calendar/', { params }),
 };
@@ -1515,6 +1528,9 @@ export const inspectorReportAPI = {
     params,
     responseType: 'blob',
   }),
+
+  /** Get inspector readiness checklist */
+  getChecklist: () => api.get('/compliance/inspector-report/checklist/'),
 };
 
 /**

@@ -50,6 +50,14 @@ import {
   complianceProfileAPI,
   inspectorReportAPI,
 } from '../../services/api';
+import TodayActionList from './TodayActionList';
+import ComplianceScoreBreakdown from './ComplianceScoreBreakdown';
+import ActiveREITicker from './ActiveREITicker';
+import PHIStatusBar from './PHIStatusBar';
+import SetupChecklist from './SetupChecklist';
+import QuickLogVisitor from './QuickLogVisitor';
+import QuickLogCleaning from './QuickLogCleaning';
+import SuggestionsPanel from './SuggestionsPanel';
 
 // Utility function to format dates
 const formatDate = (dateString) => {
@@ -590,8 +598,10 @@ const CertificationReadinessSection = ({ primusData, onNavigate }) => {
 export default function ComplianceDashboard({ onNavigate }) {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [notification, setNotification] = useState(null);
   const [showAlerts, setShowAlerts] = useState(true);
+  const [checklistDismissed, setChecklistDismissed] = useState(false);
+  const [showVisitorModal, setShowVisitorModal] = useState(false);
+  const [showCleaningModal, setShowCleaningModal] = useState(false);
 
   // Data state
   const [dashboardData, setDashboardData] = useState(null);
@@ -602,11 +612,13 @@ export default function ComplianceDashboard({ onNavigate }) {
   const [fsmaData, setFsmaData] = useState(null);
   const [primusData, setPrimusData] = useState(null);
   const [profileData, setProfileData] = useState(null);
+  const [smartScoreData, setSmartScoreData] = useState(null);
+  const [todayData, setTodayData] = useState(null);
 
   // Fetch all data
   const fetchData = useCallback(async () => {
     try {
-      const [dashRes, alertsRes, deadlinesRes, licensesRes, trainingRes, fsmaRes, primusRes, profileRes] = await Promise.all([
+      const [dashRes, alertsRes, deadlinesRes, licensesRes, trainingRes, fsmaRes, primusRes, profileRes, smartScoreRes, todayRes] = await Promise.all([
         complianceDashboardAPI.get().catch(() => ({ data: null })),
         complianceAlertsAPI.getAll({ is_active: true, limit: 10 }).catch(() => ({ data: { results: [] } })),
         complianceDeadlinesAPI.getAll({ status__in: 'upcoming,due_soon,overdue', limit: 20 }).catch(() => ({ data: { results: [] } })),
@@ -615,6 +627,8 @@ export default function ComplianceDashboard({ onNavigate }) {
         fsmaAPI.getDashboard().catch(() => ({ data: null })),
         primusGFSAPI.getDashboard().catch(() => ({ data: null })),
         complianceProfileAPI.get().catch(() => ({ data: null })),
+        complianceDashboardAPI.getSmartScore().catch(() => ({ data: null })),
+        complianceDashboardAPI.getToday().catch(() => ({ data: null })),
       ]);
 
       setDashboardData(dashRes.data);
@@ -625,6 +639,8 @@ export default function ComplianceDashboard({ onNavigate }) {
       setFsmaData(fsmaRes.data);
       setPrimusData(primusRes.data);
       setProfileData(profileRes.data);
+      setSmartScoreData(smartScoreRes.data);
+      setTodayData(todayRes.data);
     } catch (err) {
       console.error('Error fetching compliance data:', err);
     } finally {
@@ -704,8 +720,6 @@ export default function ComplianceDashboard({ onNavigate }) {
     return 'good';
   };
 
-  const isPrimusCertified = profileData?.primus_certified === true;
-
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
@@ -763,177 +777,45 @@ export default function ComplianceDashboard({ onNavigate }) {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 py-6">
-        {/* Alert Banner */}
-        {showAlerts && <AlertBanner alerts={alerts} onDismiss={() => setShowAlerts(false)} />}
+      <div className="max-w-7xl mx-auto px-6 py-6 space-y-4">
 
-        {/* Certification Readiness */}
-        {primusData && (
-          <CertificationReadinessSection
-            primusData={primusData}
+        {/* 1. Setup Checklist — shows when setup is incomplete */}
+        {!checklistDismissed && (
+          <SetupChecklist
+            scoreData={smartScoreData}
             onNavigate={onNavigate}
+            onDismiss={() => setChecklistDismissed(true)}
           />
         )}
 
-        {/* Category Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Pesticide Compliance */}
-          <CategoryCard
-            title="Pesticide Compliance"
-            description="Deadlines, PUR reports, REI tracking, and application records"
-            icon={Leaf}
-            color="green"
-            status={getPesticideStatus()}
-            onClick={() => onNavigate?.('compliance-pesticide')}
-            certifications={primusData ? ['Primus GFS'] : []}
-            metrics={[
-              {
-                value: pesticideMetrics.overdueDeadlines,
-                label: 'Overdue',
-                status: pesticideMetrics.overdueDeadlines > 0 ? 'critical' : 'good'
-              },
-              {
-                value: pesticideMetrics.dueSoon,
-                label: 'Due Soon',
-                status: pesticideMetrics.dueSoon > 2 ? 'warning' : 'good'
-              },
-              {
-                value: pesticideMetrics.activeREIs,
-                label: 'Active REIs',
-                status: pesticideMetrics.activeREIs > 0 ? 'warning' : 'good'
-              },
-              {
-                value: pesticideMetrics.upcomingReports,
-                label: 'Reports Due'
-              },
-            ]}
-          />
+        {/* 2. Alert Banner — critical compliance alerts */}
+        {showAlerts && <AlertBanner alerts={alerts} onDismiss={() => setShowAlerts(false)} />}
 
-          {/* Food Safety (FSMA) */}
-          <CategoryCard
-            title="Food Safety (FSMA)"
-            description="Visitor logs, facility cleaning, safety meetings, and PHI compliance"
-            icon={ClipboardCheck}
-            color="blue"
-            status={getFSMAStatus()}
-            onClick={() => onNavigate?.('compliance-fsma')}
-            certifications={primusData ? ['Primus GFS'] : []}
-            metrics={[
-              {
-                value: fsmaMetrics.visitorsToday,
-                label: 'Visitors Today'
-              },
-              {
-                value: `${fsmaMetrics.facilitiesCleaned}/${fsmaMetrics.facilitiesTotal}`,
-                label: 'Cleaned Today',
-                status: fsmaMetrics.facilitiesCleaned < fsmaMetrics.facilitiesTotal ? 'warning' : 'good'
-              },
-              {
-                value: fsmaMetrics.phiIssues,
-                label: 'PHI Issues',
-                status: fsmaMetrics.phiIssues > 0 ? 'critical' : 'good'
-              },
-              {
-                value: fsmaMetrics.meetingsThisQuarter,
-                label: 'Meetings (Q)'
-              },
-            ]}
-          />
+        {/* 3. Active REI Ticker */}
+        <ActiveREITicker />
 
-          {/* Worker Protection (WPS) */}
-          <CategoryCard
-            title="Worker Protection"
-            description="WPS training records, safety certifications, and handler requirements"
-            icon={Users}
-            color="purple"
-            status={getWPSStatus()}
-            onClick={() => onNavigate?.('compliance-wps')}
-            certifications={primusData ? ['Primus GFS'] : []}
-            metrics={[
-              {
-                value: wpsMetrics.currentTraining,
-                label: 'Trained Workers'
-              },
-              {
-                value: wpsMetrics.expiringSoon,
-                label: 'Expiring Soon',
-                status: wpsMetrics.expiringSoon > 2 ? 'warning' : 'good'
-              },
-              {
-                value: wpsMetrics.expired,
-                label: 'Expired',
-                status: wpsMetrics.expired > 0 ? 'critical' : 'good'
-              },
-              {
-                value: wpsMetrics.totalWorkers,
-                label: 'Total Records'
-              },
-            ]}
-          />
+        {/* 4. PHI Status Bar */}
+        <PHIStatusBar
+          phiBlockedFields={todayData?.phi_blocked_fields || []}
+          onNavigate={onNavigate}
+        />
 
-          {/* Licenses & Certifications */}
-          <CategoryCard
-            title="Licenses & Certifications"
-            description="Applicator licenses, business permits, and professional certifications"
-            icon={Award}
-            color="amber"
-            status={getLicenseStatus()}
-            onClick={() => onNavigate?.('compliance-licenses')}
-            metrics={[
-              {
-                value: licenseMetrics.active,
-                label: 'Active'
-              },
-              {
-                value: licenseMetrics.expiringSoon,
-                label: 'Expiring Soon',
-                status: licenseMetrics.expiringSoon > 0 ? 'warning' : 'good'
-              },
-              {
-                value: licenseMetrics.expired,
-                label: 'Expired',
-                status: licenseMetrics.expired > 0 ? 'critical' : 'good'
-              },
-              {
-                value: licenseMetrics.total,
-                label: 'Total'
-              },
-            ]}
-          />
+        {/* 5. Score + Today Actions (side by side on large screens) */}
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
+          <div className="lg:col-span-2">
+            <ComplianceScoreBreakdown onNavigate={onNavigate} />
+          </div>
+          <div className="lg:col-span-3">
+            <TodayActionList onNavigate={onNavigate} />
+          </div>
         </div>
 
-        {/* Inspector Report Banner */}
-        <div className="mt-8">
-          <button
-            onClick={async () => {
-              try {
-                const response = await inspectorReportAPI.downloadPDF();
-                const url = window.URL.createObjectURL(new Blob([response.data]));
-                const link = document.createElement('a');
-                link.href = url;
-                link.setAttribute('download', `compliance_report_${new Date().toISOString().split('T')[0]}.pdf`);
-                document.body.appendChild(link);
-                link.click();
-                link.remove();
-                window.URL.revokeObjectURL(url);
-              } catch (error) {
-                console.error('Error downloading report:', error);
-              }
-            }}
-            className="w-full flex items-center gap-4 p-4 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg hover:from-green-700 hover:to-green-800 transition-all shadow-sm hover:shadow"
-          >
-            <Download className="w-6 h-6 flex-shrink-0" />
-            <div className="text-left">
-              <div className="font-semibold">Download Inspector-Ready Report</div>
-              <div className="text-green-100 text-sm">One-click PDF with licenses, PHI status, water testing, PUR compliance, and deadlines</div>
-            </div>
-            <ChevronRight className="w-5 h-5 ml-auto flex-shrink-0" />
-          </button>
-        </div>
+        {/* 6. Smart Suggestions */}
+        <SuggestionsPanel onNavigate={onNavigate} />
 
-        {/* Quick Actions */}
-        <div className="mt-6">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Quick Actions</h2>
+        {/* 7. Quick Actions */}
+        <div>
+          <h2 className="text-base font-semibold text-gray-900 dark:text-white mb-3">Quick Actions</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
             <button
               onClick={() => onNavigate?.('compliance-deadlines')}
@@ -952,16 +834,16 @@ export default function ComplianceDashboard({ onNavigate }) {
             </button>
 
             <button
-              onClick={() => onNavigate?.('compliance-fsma-visitors')}
-              className="flex flex-col items-center gap-2 p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-green-400 dark:hover:border-green-600 hover:shadow transition-all"
+              onClick={() => setShowVisitorModal(true)}
+              className="flex flex-col items-center gap-2 p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-blue-400 dark:hover:border-blue-600 hover:shadow transition-all"
             >
               <Truck className="w-6 h-6 text-blue-600 dark:text-blue-400" />
               <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Log Visitor</span>
             </button>
 
             <button
-              onClick={() => onNavigate?.('compliance-fsma-cleaning')}
-              className="flex flex-col items-center gap-2 p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-green-400 dark:hover:border-green-600 hover:shadow transition-all"
+              onClick={() => setShowCleaningModal(true)}
+              className="flex flex-col items-center gap-2 p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-cyan-400 dark:hover:border-cyan-600 hover:shadow transition-all"
             >
               <Spray className="w-6 h-6 text-cyan-600 dark:text-cyan-400" />
               <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Log Cleaning</span>
@@ -969,7 +851,7 @@ export default function ComplianceDashboard({ onNavigate }) {
 
             <button
               onClick={() => onNavigate?.('compliance-fsma-phi')}
-              className="flex flex-col items-center gap-2 p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-green-400 dark:hover:border-green-600 hover:shadow transition-all"
+              className="flex flex-col items-center gap-2 p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-amber-400 dark:hover:border-amber-600 hover:shadow transition-all"
             >
               <Clock className="w-6 h-6 text-amber-600 dark:text-amber-400" />
               <span className="text-sm font-medium text-gray-700 dark:text-gray-300">PHI Check</span>
@@ -977,113 +859,133 @@ export default function ComplianceDashboard({ onNavigate }) {
 
             <button
               onClick={() => onNavigate?.('compliance-fsma-audit')}
-              className="flex flex-col items-center gap-2 p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-green-400 dark:hover:border-green-600 hover:shadow transition-all"
+              className="flex flex-col items-center gap-2 p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-red-400 dark:hover:border-red-600 hover:shadow transition-all"
             >
               <FileText className="w-6 h-6 text-red-600 dark:text-red-400" />
               <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Audit Binder</span>
             </button>
-          </div>
-        </div>
 
-        {/* Recent Activity Summary */}
-        <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Upcoming Deadlines */}
-          <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
-            <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
-              <h3 className="font-semibold text-gray-900 dark:text-white">Upcoming Deadlines</h3>
-              <button
-                onClick={() => onNavigate?.('compliance-deadlines')}
-                className="text-sm text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 flex items-center gap-1"
-              >
-                View all <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
-            <div className="p-4">
-              {deadlines.length > 0 ? (
-                <div className="space-y-3">
-                  {deadlines.slice(0, 5).map(deadline => {
-                    const days = getDaysUntil(deadline.due_date);
-                    return (
-                      <div key={deadline.id} className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className={`w-2 h-2 rounded-full ${
-                            deadline.status === 'overdue' ? 'bg-red-500' :
-                            deadline.status === 'due_soon' ? 'bg-amber-500' : 'bg-gray-400'
-                          }`} />
-                          <div>
-                            <p className="text-sm font-medium text-gray-900 dark:text-white">{deadline.name}</p>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">{formatDate(deadline.due_date)}</p>
-                          </div>
-                        </div>
-                        {days !== null && (
-                          <span className={`text-xs px-2 py-0.5 rounded-full ${
-                            days < 0 ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400' :
-                            days <= 7 ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400' :
-                            'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
-                          }`}>
-                            {days < 0 ? `${Math.abs(days)}d overdue` : days === 0 ? 'Today' : `${days}d`}
-                          </span>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              ) : (
-                <p className="text-center text-gray-500 dark:text-gray-400 py-4">No upcoming deadlines</p>
-              )}
-            </div>
-          </div>
-
-          {/* Active Alerts */}
-          <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
-            <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
-              <h3 className="font-semibold text-gray-900 dark:text-white">Active Alerts</h3>
-              <span className="text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 px-2 py-1 rounded-full">
-                {alerts.length} active
-              </span>
-            </div>
-            <div className="p-4">
-              {alerts.length > 0 ? (
-                <div className="space-y-3">
-                  {alerts.slice(0, 5).map(alert => (
-                    <div key={alert.id} className="flex items-start gap-3">
-                      <AlertTriangle className={`w-4 h-4 mt-0.5 flex-shrink-0 ${
-                        alert.priority === 'critical' ? 'text-red-500' :
-                        alert.priority === 'high' ? 'text-amber-500' : 'text-blue-500'
-                      }`} />
-                      <div>
-                        <p className="text-sm font-medium text-gray-900 dark:text-white">{alert.title}</p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">{alert.message?.slice(0, 60)}...</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-4">
-                  <CheckCircle2 className="w-8 h-8 text-green-500 mx-auto mb-2" />
-                  <p className="text-gray-500 dark:text-gray-400">No active alerts</p>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Notification Toast */}
-      {notification && (
-        <div className="fixed bottom-4 right-4 z-50">
-          <div className="bg-gray-800 text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-3 max-w-md">
-            <Info className="w-5 h-5 text-blue-400 flex-shrink-0" />
-            <p className="text-sm">{notification}</p>
             <button
-              onClick={() => setNotification(null)}
-              className="text-gray-400 hover:text-white ml-2"
+              onClick={() => onNavigate?.('compliance-inspector-checklist')}
+              className="flex flex-col items-center gap-2 p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-green-400 dark:hover:border-green-600 hover:shadow transition-all"
             >
-              <X className="w-4 h-4" />
+              <ClipboardCheck className="w-6 h-6 text-green-700 dark:text-green-400" />
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Inspector</span>
             </button>
           </div>
         </div>
-      )}
+
+        {/* 8. Category Cards Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <CategoryCard
+            title="Pesticide Compliance"
+            description="Deadlines, PUR reports, REI tracking, and application records"
+            icon={Leaf}
+            color="green"
+            status={getPesticideStatus()}
+            onClick={() => onNavigate?.('compliance-pesticide')}
+            certifications={primusData ? ['Primus GFS'] : []}
+            metrics={[
+              { value: pesticideMetrics.overdueDeadlines, label: 'Overdue', status: pesticideMetrics.overdueDeadlines > 0 ? 'critical' : 'good' },
+              { value: pesticideMetrics.dueSoon, label: 'Due Soon', status: pesticideMetrics.dueSoon > 2 ? 'warning' : 'good' },
+              { value: pesticideMetrics.activeREIs, label: 'Active REIs', status: pesticideMetrics.activeREIs > 0 ? 'warning' : 'good' },
+              { value: pesticideMetrics.upcomingReports, label: 'Reports Due' },
+            ]}
+          />
+
+          <CategoryCard
+            title="Food Safety (FSMA)"
+            description="Visitor logs, facility cleaning, safety meetings, and PHI compliance"
+            icon={ClipboardCheck}
+            color="blue"
+            status={getFSMAStatus()}
+            onClick={() => onNavigate?.('compliance-fsma')}
+            certifications={primusData ? ['Primus GFS'] : []}
+            metrics={[
+              { value: fsmaMetrics.visitorsToday, label: 'Visitors Today' },
+              { value: `${fsmaMetrics.facilitiesCleaned}/${fsmaMetrics.facilitiesTotal}`, label: 'Cleaned Today', status: fsmaMetrics.facilitiesCleaned < fsmaMetrics.facilitiesTotal ? 'warning' : 'good' },
+              { value: fsmaMetrics.phiIssues, label: 'PHI Issues', status: fsmaMetrics.phiIssues > 0 ? 'critical' : 'good' },
+              { value: fsmaMetrics.meetingsThisQuarter, label: 'Meetings (Q)' },
+            ]}
+          />
+
+          <CategoryCard
+            title="Worker Protection"
+            description="WPS training records, safety certifications, and handler requirements"
+            icon={Users}
+            color="purple"
+            status={getWPSStatus()}
+            onClick={() => onNavigate?.('compliance-wps')}
+            certifications={primusData ? ['Primus GFS'] : []}
+            metrics={[
+              { value: wpsMetrics.currentTraining, label: 'Trained Workers' },
+              { value: wpsMetrics.expiringSoon, label: 'Expiring Soon', status: wpsMetrics.expiringSoon > 2 ? 'warning' : 'good' },
+              { value: wpsMetrics.expired, label: 'Expired', status: wpsMetrics.expired > 0 ? 'critical' : 'good' },
+              { value: wpsMetrics.totalWorkers, label: 'Total Records' },
+            ]}
+          />
+
+          <CategoryCard
+            title="Licenses & Certifications"
+            description="Applicator licenses, business permits, and professional certifications"
+            icon={Award}
+            color="amber"
+            status={getLicenseStatus()}
+            onClick={() => onNavigate?.('compliance-licenses')}
+            metrics={[
+              { value: licenseMetrics.active, label: 'Active' },
+              { value: licenseMetrics.expiringSoon, label: 'Expiring Soon', status: licenseMetrics.expiringSoon > 0 ? 'warning' : 'good' },
+              { value: licenseMetrics.expired, label: 'Expired', status: licenseMetrics.expired > 0 ? 'critical' : 'good' },
+              { value: licenseMetrics.total, label: 'Total' },
+            ]}
+          />
+        </div>
+
+        {/* 9. Certification Readiness */}
+        {primusData && (
+          <CertificationReadinessSection primusData={primusData} onNavigate={onNavigate} />
+        )}
+
+        {/* 10. Inspector Report Banner */}
+        <button
+          onClick={async () => {
+            try {
+              const response = await inspectorReportAPI.downloadPDF();
+              const url = window.URL.createObjectURL(new Blob([response.data]));
+              const link = document.createElement('a');
+              link.href = url;
+              link.setAttribute('download', `compliance_report_${new Date().toISOString().split('T')[0]}.pdf`);
+              document.body.appendChild(link);
+              link.click();
+              link.remove();
+              window.URL.revokeObjectURL(url);
+            } catch (error) {
+              console.error('Error downloading report:', error);
+            }
+          }}
+          className="w-full flex items-center gap-4 p-4 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-xl hover:from-green-700 hover:to-green-800 transition-all shadow-sm hover:shadow"
+        >
+          <Download className="w-6 h-6 flex-shrink-0" />
+          <div className="text-left">
+            <div className="font-semibold">Download Inspector-Ready Report</div>
+            <div className="text-green-100 text-sm">One-click PDF with licenses, PHI status, water testing, PUR compliance, and deadlines</div>
+          </div>
+          <ChevronRight className="w-5 h-5 ml-auto flex-shrink-0" />
+        </button>
+      </div>
+
+      {/* Quick Log Modals */}
+      <QuickLogVisitor
+        isOpen={showVisitorModal}
+        onClose={() => setShowVisitorModal(false)}
+        onSuccess={fetchData}
+      />
+      <QuickLogCleaning
+        isOpen={showCleaningModal}
+        onClose={() => setShowCleaningModal(false)}
+        onSuccess={fetchData}
+      />
+
     </div>
   );
 }
