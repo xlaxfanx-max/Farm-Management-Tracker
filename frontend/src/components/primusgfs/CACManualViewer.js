@@ -604,8 +604,8 @@ const CACManualViewer = ({ onTabChange }) => {
           ) : (
             <div className="flex flex-col flex-1 min-h-0">
               {/* Toolbar */}
-              <div className="flex items-center justify-between px-3 py-2 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
-                <div className="flex items-center gap-2 min-w-0 mr-2">
+              <div className="flex items-center flex-wrap gap-y-1 justify-between px-3 py-2 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
+                <div className="flex items-center gap-2 min-w-0 mr-2 overflow-hidden">
                   {/* Prev/Next buttons */}
                   <div className="flex items-center gap-0.5 flex-shrink-0">
                     <button
@@ -630,17 +630,17 @@ const CACManualViewer = ({ onTabChange }) => {
 
                   {/* Inline completion indicator */}
                   {selectedDocScore >= 1 ? (
-                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-xs font-medium text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-900/20 rounded flex-shrink-0">
-                      <CheckCircle2 className="w-3 h-3" /> Complete
+                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-xs font-medium text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-900/20 rounded whitespace-nowrap">
+                      <CheckCircle2 className="w-3 h-3 flex-shrink-0" /> Complete
                     </span>
                   ) : !selectedDocData?.has_data ? (
-                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-xs font-medium text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 rounded flex-shrink-0">
-                      <AlertCircle className="w-3 h-3" /> Needs Data
+                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-xs font-medium text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 rounded whitespace-nowrap">
+                      <AlertCircle className="w-3 h-3 flex-shrink-0" /> Needs Data
                     </span>
                   ) : selectedDocData?.signatures_required > 0 &&
                     selectedDocData?.signatures_completed < selectedDocData?.signatures_required ? (
-                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-xs font-medium text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 rounded flex-shrink-0">
-                      <Pen className="w-3 h-3" /> Needs Signatures
+                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-xs font-medium text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 rounded whitespace-nowrap">
+                      <Pen className="w-3 h-3 flex-shrink-0" /> Needs Signatures
                     </span>
                   ) : null}
 
@@ -649,7 +649,7 @@ const CACManualViewer = ({ onTabChange }) => {
                     {currentDocIdx >= 0 ? `${currentDocIdx + 1} of ${filteredDocList.length}` : ''}
                   </span>
                 </div>
-                <div className="flex items-center gap-2 flex-shrink-0">
+                <div className="flex items-center gap-2 flex-shrink-0 whitespace-nowrap">
                   {onTabChange && DOC_TAB_MAP[selectedDoc] && (
                     <button
                       onClick={() => onTabChange(DOC_TAB_MAP[selectedDoc])}
