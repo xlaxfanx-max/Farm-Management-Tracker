@@ -46,6 +46,8 @@ const AuditBinderGenerator = () => {
     include_inventory: true,
     include_phi_checks: true,
     include_harvest_records: true,
+    include_primus_audits: true,
+    include_primus_findings: true,
     notes: '',
   });
 
@@ -54,31 +56,49 @@ const AuditBinderGenerator = () => {
       key: 'include_visitor_logs',
       label: 'Visitor Logs',
       description: 'All visitor sign-in records for the period',
+      group: 'fsma',
     },
     {
       key: 'include_cleaning_logs',
       label: 'Cleaning Logs',
       description: 'Facility cleaning records with checklists',
+      group: 'fsma',
     },
     {
       key: 'include_safety_meetings',
       label: 'Safety Meetings',
       description: 'Meeting records with attendee sign-in sheets',
+      group: 'fsma',
     },
     {
       key: 'include_inventory',
       label: 'Fertilizer Inventory',
       description: 'Inventory snapshots and transaction history',
+      group: 'fsma',
     },
     {
       key: 'include_phi_checks',
       label: 'PHI Compliance',
       description: 'Pre-harvest interval verification reports',
+      group: 'fsma',
     },
     {
       key: 'include_harvest_records',
       label: 'Harvest Records',
       description: 'Harvest data with traceability information',
+      group: 'fsma',
+    },
+    {
+      key: 'include_primus_audits',
+      label: 'Primus GFS Internal Audits',
+      description: 'Completed audit records, scores, and findings from Primus GFS certification audits',
+      group: 'primusgfs',
+    },
+    {
+      key: 'include_primus_findings',
+      label: 'Primus GFS Open Findings',
+      description: 'Active non-conformances and corrective actions from Primus GFS audits',
+      group: 'primusgfs',
     },
   ];
 
@@ -167,6 +187,8 @@ const AuditBinderGenerator = () => {
       include_inventory: true,
       include_phi_checks: true,
       include_harvest_records: true,
+      include_primus_audits: true,
+      include_primus_findings: true,
       notes: '',
     });
   };
@@ -218,6 +240,8 @@ const AuditBinderGenerator = () => {
     if (binder.include_inventory) included.push('Inventory');
     if (binder.include_phi_checks) included.push('PHI');
     if (binder.include_harvest_records) included.push('Harvests');
+    if (binder.include_primus_audits) included.push('Primus Audits');
+    if (binder.include_primus_findings) included.push('Primus Findings');
     return included;
   };
 
@@ -512,17 +536,18 @@ const AuditBinderGenerator = () => {
                     {selectedSectionCount} of {sections.length} selected
                   </span>
                 </div>
-                <div className="space-y-2">
-                  {sections.map((section) => (
+
+                {/* FSMA Sections */}
+                <p className="text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wider mb-1.5">
+                  Food Safety (FSMA)
+                </p>
+                <div className="space-y-2 mb-4">
+                  {sections.filter((s) => s.group === 'fsma').map((section) => (
                     <label
                       key={section.key}
                       className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
                     >
-                      <button
-                        type="button"
-                        onClick={() => handleSectionToggle(section.key)}
-                        className="mt-0.5"
-                      >
+                      <button type="button" onClick={() => handleSectionToggle(section.key)} className="mt-0.5">
                         {formData[section.key] ? (
                           <CheckSquare className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                         ) : (
@@ -530,12 +555,33 @@ const AuditBinderGenerator = () => {
                         )}
                       </button>
                       <div>
-                        <p className="font-medium text-gray-900 dark:text-white">
-                          {section.label}
-                        </p>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">
-                          {section.description}
-                        </p>
+                        <p className="font-medium text-gray-900 dark:text-white">{section.label}</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">{section.description}</p>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+
+                {/* Primus GFS Sections */}
+                <p className="text-xs font-semibold text-teal-600 dark:text-teal-400 uppercase tracking-wider mb-1.5">
+                  Primus GFS Certification
+                </p>
+                <div className="space-y-2">
+                  {sections.filter((s) => s.group === 'primusgfs').map((section) => (
+                    <label
+                      key={section.key}
+                      className="flex items-start gap-3 p-3 bg-teal-50 dark:bg-teal-900/20 rounded-lg cursor-pointer hover:bg-teal-100 dark:hover:bg-teal-900/30 border border-teal-100 dark:border-teal-800"
+                    >
+                      <button type="button" onClick={() => handleSectionToggle(section.key)} className="mt-0.5">
+                        {formData[section.key] ? (
+                          <CheckSquare className="w-5 h-5 text-teal-600 dark:text-teal-400" />
+                        ) : (
+                          <Square className="w-5 h-5 text-gray-400" />
+                        )}
+                      </button>
+                      <div>
+                        <p className="font-medium text-gray-900 dark:text-white">{section.label}</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">{section.description}</p>
                       </div>
                     </label>
                   ))}

@@ -1188,6 +1188,8 @@ class AuditBinderViewSet(AuditLogMixin, viewsets.ModelViewSet):
             include_fertilizer_inventory=serializer.validated_data['include_fertilizer_inventory'],
             include_phi_reports=serializer.validated_data['include_phi_reports'],
             include_harvest_records=serializer.validated_data['include_harvest_records'],
+            include_primus_audits=serializer.validated_data['include_primus_audits'],
+            include_primus_findings=serializer.validated_data['include_primus_findings'],
             farm_ids=serializer.validated_data.get('farm_ids', []),
             notes=serializer.validated_data.get('notes', ''),
             generated_by=request.user,

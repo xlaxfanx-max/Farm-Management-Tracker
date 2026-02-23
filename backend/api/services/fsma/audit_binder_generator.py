@@ -166,6 +166,16 @@ class AuditBinderGenerator:
         if self.binder.include_harvest_records:
             story.extend(self._build_harvest_section(heading_style, normal_style))
 
+        # Primus GFS Internal Audits Section
+        if getattr(self.binder, 'include_primus_audits', False):
+            story.append(PageBreak())
+            story.extend(self._build_primus_audits_section(heading_style, normal_style))
+
+        # Primus GFS Open Findings Section
+        if getattr(self.binder, 'include_primus_findings', False):
+            story.append(PageBreak())
+            story.extend(self._build_primus_findings_section(heading_style, normal_style))
+
         # Build the document
         doc.build(story)
 
@@ -681,5 +691,102 @@ startxref
             f"Total Harvests: {harvests.count()} | Total Bins: {total_bins} | Total Acres: {total_acres:.1f}",
             normal_style
         ))
+
+        return story
+
+    def _build_primus_audits_section(self, heading_style, normal_style) -> List:
+        """Build Primus GFS Internal Audits section."""
+        from reportlab.platypus import Paragraph, Spacer, Table, TableStyle
+        from reportlab.lib import colors
+        from reportlab.lib.units import inch
+
+        story = []
+        story.append(Paragraph("Primus GFS Internal Audits", heading_style))
+        story.append(Spacer(1, 0.2 * inch))
+
+        try:
+            from api.models.primusgfs import InternalAudit
+            audits = InternalAudit.objects.filter(
+                company=self.company,
+                planned_date__range=[self.start_date, self.end_date]
+            ).order_by('-planned_date')
+
+            if audits.exists():
+                data = [['Audit #', 'Title', 'Type', 'Date', 'Status', 'Score']]
+                for audit in audits:
+                    data.append([
+                        audit.audit_number or '-',
+                        (audit.title or '')[:40],
+                        audit.get_audit_type_display() if hasattr(audit, 'get_audit_type_display') else (audit.audit_type or '-'),
+                        str(audit.planned_date) if audit.planned_date else '-',
+                        audit.get_status_display() if hasattr(audit, 'get_status_display') else (audit.status or '-'),
+                        str(audit.overall_score) if audit.overall_score is not None else '-',
+                    ])
+
+                table = Table(data, colWidths=[1*inch, 2.5*inch, 1.2*inch, 1*inch, 1*inch, 0.8*inch])
+                table.setStyle(TableStyle([
+                    ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#0d9488')),
+                    ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+                    ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                    ('FONTSIZE', (0, 0), (-1, -1), 8),
+                    ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#f0fdfa')]),
+                    ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#99f6e4')),
+                    ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+                    ('PADDING', (0, 0), (-1, -1), 4),
+                ]))
+                story.append(table)
+            else:
+                story.append(Paragraph("No internal audits found for the selected period.", normal_style))
+        except Exception:
+            story.append(Paragraph("Primus GFS audit data not available.", normal_style))
+
+        return story
+
+    def _build_primus_findings_section(self, heading_style, normal_style) -> List:
+        """Build Primus GFS Open Findings / Non-Conformances section."""
+        from reportlab.platypus import Paragraph, Spacer, Table, TableStyle
+        from reportlab.lib import colors
+        from reportlab.lib.units import inch
+
+        story = []
+        story.append(Paragraph("Primus GFS Open Findings & Corrective Actions", heading_style))
+        story.append(Spacer(1, 0.2 * inch))
+
+        try:
+            from api.models.primusgfs import AuditFinding
+            findings = AuditFinding.objects.filter(
+                audit__company=self.company,
+                status__in=['open', 'in_progress']
+            ).select_related('audit').order_by('audit__planned_date', 'id')
+
+            if findings.exists():
+                data = [['Audit', 'Finding', 'Severity', 'Status', 'Due Date']]
+                for f in findings:
+                    data.append([
+                        (f.audit.audit_number or '') if f.audit else '-',
+                        (f.description or '')[:50],
+                        f.get_severity_display() if hasattr(f, 'get_severity_display') else (f.severity or '-'),
+                        f.get_status_display() if hasattr(f, 'get_status_display') else (f.status or '-'),
+                        str(f.due_date) if hasattr(f, 'due_date') and f.due_date else '-',
+                    ])
+
+                table = Table(data, colWidths=[1*inch, 2.8*inch, 1*inch, 1*inch, 0.8*inch])
+                table.setStyle(TableStyle([
+                    ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#dc2626')),
+                    ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+                    ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                    ('FONTSIZE', (0, 0), (-1, -1), 8),
+                    ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#fef2f2')]),
+                    ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#fecaca')),
+                    ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+                    ('PADDING', (0, 0), (-1, -1), 4),
+                ]))
+                story.append(table)
+                story.append(Spacer(1, 0.1 * inch))
+                story.append(Paragraph(f"Total open/in-progress findings: {findings.count()}", normal_style))
+            else:
+                story.append(Paragraph("No open findings — all Primus GFS non-conformances resolved.", normal_style))
+        except Exception:
+            story.append(Paragraph("Primus GFS findings data not available.", normal_style))
 
         return story

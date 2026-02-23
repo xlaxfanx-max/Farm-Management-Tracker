@@ -103,6 +103,8 @@ class AuditBinder(models.Model):
     include_fertilizer_inventory = models.BooleanField(default=True)
     include_phi_reports = models.BooleanField(default=True)
     include_harvest_records = models.BooleanField(default=True)
+    include_primus_audits = models.BooleanField(default=True)
+    include_primus_findings = models.BooleanField(default=True)
 
     # Optional filters
     farm_ids = models.JSONField(

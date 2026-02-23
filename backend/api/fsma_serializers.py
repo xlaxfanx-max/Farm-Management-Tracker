@@ -451,6 +451,7 @@ class AuditBinderSerializer(serializers.ModelSerializer):
             'include_visitor_logs', 'include_cleaning_logs',
             'include_safety_meetings', 'include_fertilizer_inventory',
             'include_phi_reports', 'include_harvest_records',
+            'include_primus_audits', 'include_primus_findings',
             'farm_ids', 'pdf_file', 'pdf_url', 'file_size', 'page_count',
             'status', 'status_display', 'error_message',
             'generation_started', 'generation_completed', 'generation_duration_seconds',
@@ -486,6 +487,8 @@ class AuditBinderGenerateSerializer(serializers.Serializer):
     include_fertilizer_inventory = serializers.BooleanField(default=True)
     include_phi_reports = serializers.BooleanField(default=True)
     include_harvest_records = serializers.BooleanField(default=True)
+    include_primus_audits = serializers.BooleanField(default=True)
+    include_primus_findings = serializers.BooleanField(default=True)
     farm_ids = serializers.ListField(
         child=serializers.IntegerField(),
         required=False,

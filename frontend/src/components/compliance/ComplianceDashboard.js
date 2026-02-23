@@ -858,10 +858,10 @@ export default function ComplianceDashboard({ onNavigate }) {
             </button>
 
             <button
-              onClick={() => onNavigate?.('compliance-fsma-audit')}
-              className="flex flex-col items-center gap-2 p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-red-400 dark:hover:border-red-600 hover:shadow transition-all"
+              onClick={() => onNavigate?.('compliance-primusgfs-audits')}
+              className="flex flex-col items-center gap-2 p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-teal-400 dark:hover:border-teal-600 hover:shadow transition-all"
             >
-              <FileText className="w-6 h-6 text-red-600 dark:text-red-400" />
+              <FileText className="w-6 h-6 text-teal-600 dark:text-teal-400" />
               <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Audit Binder</span>
             </button>
 
