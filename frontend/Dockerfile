@@ -13,7 +13,8 @@ RUN npm ci
 COPY . .
 
 # Build argument for API URL (set during build on Railway)
-ARG REACT_APP_API_URL
+# Now uses same-origin /api path since nginx proxies to the backend
+ARG REACT_APP_API_URL=/api
 ENV REACT_APP_API_URL=$REACT_APP_API_URL
 
 # Build the app
@@ -23,15 +24,22 @@ RUN npm run build
 # Production stage - serve with nginx
 FROM nginx:alpine
 
-# Copy nginx config template
-COPY nginx.conf /etc/nginx/templates/default.conf.template
+# Remove default nginx config
+RUN rm -f /etc/nginx/conf.d/default.conf
+
+# Copy nginx config template (uses __PLACEHOLDER__ syntax, not $VAR)
+COPY nginx.conf.template /etc/nginx/nginx.conf.template
+
+# Copy custom entrypoint that substitutes env vars into nginx config
+COPY docker-entrypoint.sh /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
 
 # Copy built files
 COPY --from=builder /app/build /usr/share/nginx/html
 
-# Railway provides PORT env var - nginx:alpine auto-substitutes ${PORT} in templates
+# Railway provides PORT env var
 ENV PORT=80
 
 EXPOSE ${PORT}
 
-CMD ["nginx", "-g", "daemon off;"]
+ENTRYPOINT ["/docker-entrypoint.sh"]

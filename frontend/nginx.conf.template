@@ -1,5 +1,7 @@
+resolver 8.8.8.8 8.8.4.4 valid=30s;
+
 server {
-    listen ${PORT};
+    listen __PORT__;
     server_name _;
     root /usr/share/nginx/html;
     index index.html;
@@ -8,6 +10,25 @@ server {
     gzip on;
     gzip_types text/plain text/css application/json application/javascript text/xml application/xml;
     gzip_min_length 1000;
+
+    # Reverse proxy API requests to the backend — keeps cookies first-party
+    location /api/ {
+        set $backend "__BACKEND_URL__";
+        proxy_pass $backend/api/;
+        proxy_ssl_server_name on;
+        proxy_set_header Host __BACKEND_HOST__;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto https;
+
+        # Timeouts for long-running requests (e.g. PDF extraction)
+        proxy_connect_timeout 60s;
+        proxy_read_timeout 120s;
+        proxy_send_timeout 60s;
+
+        # Support file uploads
+        client_max_body_size 50M;
+    }
 
     # Cache static assets
     location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2)$ {
