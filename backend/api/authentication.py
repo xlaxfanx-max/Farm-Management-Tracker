@@ -41,7 +41,11 @@ def set_auth_cookies(response, access_token, refresh_token=None):
         refresh_token: JWT refresh token string (optional)
     """
     secure = not settings.DEBUG  # Secure=True in production (HTTPS)
-    samesite = 'Lax'  # Lax allows top-level navigation with cookies
+    # Cross-origin deployments (separate frontend/backend domains) require
+    # SameSite=None so the browser sends cookies on XHR/fetch requests.
+    # SameSite=None requires Secure=True, which is already set in production.
+    # In development (DEBUG=True, HTTP), fall back to Lax.
+    samesite = 'None' if secure else 'Lax'
 
     response.set_cookie(
         key=ACCESS_COOKIE_NAME,
