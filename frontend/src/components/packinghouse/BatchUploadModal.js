@@ -122,10 +122,10 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
       try {
         setPdfLoading(true);
 
-        // PDF is now served through our backend proxy endpoint to avoid CORS issues
-        const token = localStorage.getItem('farm_tracker_access_token');
+        // PDF is served through our backend proxy endpoint to avoid CORS issues
+        // Auth is handled via HttpOnly cookies
         const response = await fetch(getApiUrl(pdfUrl), {
-          headers: { 'Authorization': `Bearer ${token}` },
+          credentials: 'include',
         });
         if (!response.ok) throw new Error('Failed to fetch PDF');
         const blob = await response.blob();

@@ -2639,6 +2639,23 @@ def _validate_settlement_financials(settlement):
     return warnings
 
 
+def _finalize_settlement(settlement):
+    """
+    Run all post-creation/update settlement finalization steps:
+    1. Reconcile totals from grade lines (weight/bins)
+    2. Validate financial consistency
+    3. Auto-update pool status if fully settled
+
+    Returns a list of warning strings from reconciliation and validation.
+    Must be called inside a transaction.atomic() block.
+    """
+    warnings = _reconcile_settlement_from_grade_lines(settlement)
+    financial_warnings = _validate_settlement_financials(settlement)
+    warnings.extend(financial_warnings)
+    _auto_update_pool_status(settlement.pool)
+    return warnings
+
+
 def _auto_update_pool_status(pool):
     """
     Automatically update a pool's status to 'settled' when all packed
@@ -3186,15 +3203,7 @@ class PackinghouseStatementViewSet(viewsets.ModelViewSet):
                                 **deduction_data
                             )
 
-                        # Reconcile totals from grade lines and detect mismatches
-                        warnings = _reconcile_settlement_from_grade_lines(existing_settlement)
-
-                        # Validate financial consistency
-                        financial_warnings = _validate_settlement_financials(existing_settlement)
-                        warnings.extend(financial_warnings)
-
-                        # Auto-update pool status if fully settled
-                        _auto_update_pool_status(existing_settlement.pool)
+                        warnings = _finalize_settlement(existing_settlement)
 
                         logger.info(f"Updated existing settlement {existing_settlement.id} with edited data")
 
@@ -3279,15 +3288,7 @@ class PackinghouseStatementViewSet(viewsets.ModelViewSet):
                             **ded_data
                         )
 
-                    # Reconcile totals from grade lines and detect mismatches
-                    warnings = _reconcile_settlement_from_grade_lines(settlement)
-
-                    # Validate financial consistency
-                    financial_warnings = _validate_settlement_financials(settlement)
-                    warnings.extend(financial_warnings)
-
-                    # Auto-update pool status if fully settled
-                    _auto_update_pool_status(pool)
+                    warnings = _finalize_settlement(settlement)
 
                     statement.pool = pool
                     statement.field = field
@@ -3935,15 +3936,7 @@ class PackinghouseStatementViewSet(viewsets.ModelViewSet):
                                 **ded_data
                             )
 
-                        # Reconcile totals from grade lines and detect mismatches
-                        settlement_warnings = _reconcile_settlement_from_grade_lines(settlement)
-
-                        # Validate financial consistency
-                        financial_warnings = _validate_settlement_financials(settlement)
-                        settlement_warnings.extend(financial_warnings)
-
-                        # Auto-update pool status if fully settled
-                        _auto_update_pool_status(pool)
+                        settlement_warnings = _finalize_settlement(settlement)
 
                         settlement_id = settlement.id
 

@@ -290,7 +290,8 @@ def logout(request):
     }
     """
     try:
-        refresh_token = request.data.get('refresh')
+        from .authentication import REFRESH_COOKIE_NAME
+        refresh_token = request.data.get('refresh') or request.COOKIES.get(REFRESH_COOKIE_NAME)
         if refresh_token:
             token = RefreshToken(refresh_token)
             token.blacklist()

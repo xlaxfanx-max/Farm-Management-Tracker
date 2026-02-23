@@ -1,12 +1,9 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { authAPI } from '../services/api';
+import { useNavigate } from 'react-router-dom';
+import { authAPI, AUTH_SESSION_EXPIRED_EVENT } from '../services/api';
 
 // Create context
 const AuthContext = createContext(null);
-
-// Token storage keys
-const ACCESS_TOKEN_KEY = 'farm_tracker_access_token';
-const REFRESH_TOKEN_KEY = 'farm_tracker_refresh_token';
 
 // =============================================================================
 // AUTH PROVIDER COMPONENT
@@ -19,28 +16,7 @@ export function AuthProvider({ children }) {
   const [permissions, setPermissions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  // ---------------------------------------------------------------------------
-  // TOKEN MANAGEMENT
-  // ---------------------------------------------------------------------------
-
-  const getAccessToken = useCallback(() => {
-    return localStorage.getItem(ACCESS_TOKEN_KEY);
-  }, []);
-
-  const getRefreshToken = useCallback(() => {
-    return localStorage.getItem(REFRESH_TOKEN_KEY);
-  }, []);
-
-  const setTokens = useCallback((access, refresh) => {
-    if (access) localStorage.setItem(ACCESS_TOKEN_KEY, access);
-    if (refresh) localStorage.setItem(REFRESH_TOKEN_KEY, refresh);
-  }, []);
-
-  const clearTokens = useCallback(() => {
-    localStorage.removeItem(ACCESS_TOKEN_KEY);
-    localStorage.removeItem(REFRESH_TOKEN_KEY);
-  }, []);
+  const navigate = useNavigate();
 
   // ---------------------------------------------------------------------------
   // AUTH STATE MANAGEMENT
@@ -51,18 +27,14 @@ export function AuthProvider({ children }) {
     setCurrentCompany(null);
     setCompanies([]);
     setPermissions([]);
-    clearTokens();
-  }, [clearTokens]);
+  }, []);
 
   const updateAuthState = useCallback((data) => {
     if (data.user) setUser(data.user);
     if (data.current_company) setCurrentCompany(data.current_company);
     if (data.companies) setCompanies(data.companies);
     if (data.permissions) setPermissions(data.permissions);
-    if (data.tokens) {
-      setTokens(data.tokens.access, data.tokens.refresh);
-    }
-  }, [setTokens]);
+  }, []);
 
   // ---------------------------------------------------------------------------
   // AUTHENTICATION ACTIONS
@@ -88,8 +60,8 @@ export function AuthProvider({ children }) {
       updateAuthState(response.data);
       return { success: true };
     } catch (err) {
-      const message = err.response?.data?.error || 
-                      err.response?.data?.errors || 
+      const message = err.response?.data?.error ||
+                      err.response?.data?.errors ||
                       'Registration failed';
       setError(message);
       return { success: false, error: message };
@@ -98,41 +70,25 @@ export function AuthProvider({ children }) {
 
   const logout = useCallback(async () => {
     try {
-      const refreshToken = getRefreshToken();
-      if (refreshToken) {
-        await authAPI.logout(refreshToken);
-      }
+      await authAPI.logout();
     } catch (err) {
-      // Ignore logout errors
+      // Ignore logout errors — cookies may already be cleared
     } finally {
       clearAuthState();
     }
-  }, [getRefreshToken, clearAuthState]);
+  }, [clearAuthState]);
 
   const refreshAuth = useCallback(async () => {
-    const refreshToken = getRefreshToken();
-    if (!refreshToken) {
-      clearAuthState();
-      return false;
-    }
-
     try {
-      const response = await authAPI.refresh(refreshToken);
-      setTokens(response.data.access, response.data.refresh);
+      await authAPI.refresh();
       return true;
     } catch (err) {
       clearAuthState();
       return false;
     }
-  }, [getRefreshToken, setTokens, clearAuthState]);
+  }, [clearAuthState]);
 
   const fetchCurrentUser = useCallback(async () => {
-    const token = getAccessToken();
-    if (!token) {
-      setLoading(false);
-      return;
-    }
-
     try {
       const response = await authAPI.me();
       updateAuthState({
@@ -143,29 +99,15 @@ export function AuthProvider({ children }) {
       });
     } catch (err) {
       if (err.response?.status === 401) {
-        // Try to refresh token
-        const refreshed = await refreshAuth();
-        if (refreshed) {
-          // Retry fetching user
-          try {
-            const response = await authAPI.me();
-            updateAuthState({
-              user: response.data,
-              current_company: response.data.current_company,
-              companies: response.data.companies,
-              permissions: response.data.permissions,
-            });
-          } catch {
-            clearAuthState();
-          }
-        }
+        // The api interceptor already tried to refresh — if we still get 401, session is gone
+        clearAuthState();
       } else {
         clearAuthState();
       }
     } finally {
       setLoading(false);
     }
-  }, [getAccessToken, updateAuthState, refreshAuth, clearAuthState]);
+  }, [updateAuthState, clearAuthState]);
 
   // ---------------------------------------------------------------------------
   // COMPANY MANAGEMENT
@@ -225,6 +167,24 @@ export function AuthProvider({ children }) {
   }, [fetchCurrentUser]);
 
   // ---------------------------------------------------------------------------
+  // SESSION EXPIRY LISTENER
+  // Listen for the event emitted by the api.js interceptor when refresh fails.
+  // This replaces the old window.location.href = '/login' hard redirect.
+  // ---------------------------------------------------------------------------
+
+  useEffect(() => {
+    const handleSessionExpired = () => {
+      clearAuthState();
+      navigate('/login');
+    };
+
+    window.addEventListener(AUTH_SESSION_EXPIRED_EVENT, handleSessionExpired);
+    return () => {
+      window.removeEventListener(AUTH_SESSION_EXPIRED_EVENT, handleSessionExpired);
+    };
+  }, [clearAuthState, navigate]);
+
+  // ---------------------------------------------------------------------------
   // CONTEXT VALUE
   // ---------------------------------------------------------------------------
 
@@ -253,11 +213,6 @@ export function AuthProvider({ children }) {
     hasAllPermissions,
     hasRole,
     isOwnerOrAdmin,
-
-    // Token access (for API interceptors)
-    getAccessToken,
-    getRefreshToken,
-    setTokens,
   };
 
   return (

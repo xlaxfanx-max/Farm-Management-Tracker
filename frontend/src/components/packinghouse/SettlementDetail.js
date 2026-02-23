@@ -54,14 +54,12 @@ const SettlementDetail = ({ settlementId, onClose }) => {
     try {
       setPdfLoading(true);
 
-      // PDF is now served through our backend proxy endpoint to avoid CORS issues
+      // PDF is served through our backend proxy endpoint to avoid CORS issues
+      // Auth is handled via HttpOnly cookies
       const pdfUrl = getApiUrl(settlement.source_pdf_url);
-      const token = localStorage.getItem('farm_tracker_access_token');
 
       const response = await fetch(pdfUrl, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
+        credentials: 'include',
       });
 
       if (!response.ok) throw new Error('Failed to fetch PDF');

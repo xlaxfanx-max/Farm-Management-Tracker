@@ -86,17 +86,12 @@ const PDFUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, existi
       setPdfLoading(true);
       setLastFetchedPdfUrl(pdfUrlPath);
 
-      // PDF is now served through our backend proxy endpoint to avoid CORS issues
-      // Always include Bearer token for authentication
+      // PDF is served through our backend proxy endpoint to avoid CORS issues
+      // Auth is handled via HttpOnly cookies
       const pdfUrl = getApiUrl(pdfUrlPath);
-      const token = localStorage.getItem('farm_tracker_access_token');
-
-      console.log('PDF fetch debug:', { pdfUrlPath, pdfUrl, hasToken: !!token });
 
       const response = await fetch(pdfUrl, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
+        credentials: 'include',
       });
 
       if (!response.ok) {
