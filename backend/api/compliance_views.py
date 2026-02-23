@@ -1677,7 +1677,7 @@ class InspectorReportViewSet(viewsets.ViewSet):
             'icon': 'FileText',
             'items': [
                 {
-                    'label': f"PUR submitted for {last_month_start.strftime("%B %Y")}",
+                    'label': f"PUR submitted for {last_month_start.strftime('%B %Y')}",
                     'is_passed': pur_ok,
                     'detail': 'Submitted' if pur_ok else 'Not submitted',
                     'action_label': 'Generate PUR' if not pur_ok else None,
