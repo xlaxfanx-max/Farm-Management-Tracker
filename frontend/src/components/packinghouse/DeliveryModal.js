@@ -6,8 +6,10 @@
 import React, { useState, useEffect } from 'react';
 import { X, Truck, Save, Loader2, Wheat, Link2 } from 'lucide-react';
 import { packinghouseDeliveriesAPI, fieldsAPI, harvestsAPI } from '../../services/api';
+import { useToast } from '../../contexts/ToastContext';
 
 const DeliveryModal = ({ poolId, delivery, onClose, onSave }) => {
+  const toast = useToast();
   const [fields, setFields] = useState([]);
   const [harvests, setHarvests] = useState([]);
   const [loadingHarvests, setLoadingHarvests] = useState(false);
@@ -168,7 +170,7 @@ const DeliveryModal = ({ poolId, delivery, onClose, onSave }) => {
       if (error.response?.data) {
         setErrors(error.response.data);
       } else {
-        alert('Failed to save delivery');
+        toast.error('Failed to save delivery');
       }
     } finally {
       setSaving(false);

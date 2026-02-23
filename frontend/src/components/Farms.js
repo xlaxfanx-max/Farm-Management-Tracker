@@ -8,10 +8,14 @@ import GeocodePreviewModal from './GeocodePreviewModal';
 import { mapAPI, farmsAPI } from '../services/api';
 import { useData } from '../contexts/DataContext';
 import { useModal } from '../contexts/ModalContext';
+import { useConfirm } from '../contexts/ConfirmContext';
+import { useToast } from '../contexts/ToastContext';
 
 function Farms() {
   const { farms, fields, applications, updateFarm, deleteFarm, deleteField, loadData } = useData();
   const { openFarmModal, openFieldModal } = useModal();
+  const confirm = useConfirm();
+  const toast = useToast();
   const [expandedFarms, setExpandedFarms] = useState(new Set());
   const [viewMode, setViewMode] = useState('cards'); // 'cards', 'map', 'split'
   const [selectedFarmId, setSelectedFarmId] = useState(null);
@@ -43,21 +47,21 @@ function Farms() {
     }
   };
   const handleDeleteFarm = async (farmId) => {
-    if (window.confirm('Are you sure you want to delete this farm?')) {
-      const result = await deleteFarm(farmId);
-      if (!result.success) {
-        alert(result.error);
-      }
+    const ok = await confirm({ title: 'Are you sure?', message: 'Are you sure you want to delete this farm?', confirmLabel: 'Delete', variant: 'danger' });
+    if (!ok) return;
+    const result = await deleteFarm(farmId);
+    if (!result.success) {
+      toast.error(result.error);
     }
   };
   const handleNewField = (farmId) => openFieldModal(null, farmId);
   const handleEditField = (field) => openFieldModal(field);
   const handleDeleteField = async (fieldId) => {
-    if (window.confirm('Are you sure you want to delete this field?')) {
-      const result = await deleteField(fieldId);
-      if (!result.success) {
-        alert(result.error);
-      }
+    const ok = await confirm({ title: 'Are you sure?', message: 'Are you sure you want to delete this field?', confirmLabel: 'Delete', variant: 'danger' });
+    if (!ok) return;
+    const result = await deleteField(fieldId);
+    if (!result.success) {
+      toast.error(result.error);
     }
   };
 
@@ -175,14 +179,14 @@ function Farms() {
       if (loadData) loadData();
     } catch (err) {
       console.error('[Farms] Error saving boundary:', err);
-      alert('Failed to save field boundary');
+      toast.error('Failed to save field boundary');
     }
   };
 
   // Geocode farm address - opens preview modal
   const handleGeocodeFarm = async (farm) => {
     if (!farm.address && !farm.county) {
-      alert('Farm needs an address or county to get GPS coordinates');
+      toast.info('Farm needs an address or county to get GPS coordinates');
       return;
     }
 
@@ -253,11 +257,11 @@ function Farms() {
           error: null
         });
       } else {
-        alert('Failed to save coordinates. Please try again.');
+        toast.error('Failed to save coordinates. Please try again.');
       }
     } catch (err) {
       console.error('Error saving coordinates:', err);
-      alert('Failed to save coordinates. Please try again.');
+      toast.error('Failed to save coordinates. Please try again.');
     }
   };
 
@@ -310,11 +314,11 @@ function Farms() {
 
       {/* Map Hint */}
       {viewMode === 'cards' && farmsWithCoords === 0 && farms.length > 0 && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start gap-3">
-          <MapPin className="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0" />
+        <div className="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg p-4 flex items-start gap-3">
+          <MapPin className="w-5 h-5 text-blue-500 dark:text-blue-400 mt-0.5 flex-shrink-0" />
           <div>
-            <p className="text-sm font-medium text-blue-800">Add GPS coordinates to see farms on the map</p>
-            <p className="text-sm text-blue-600 mt-1">
+            <p className="text-sm font-medium text-blue-800 dark:text-blue-200">Add GPS coordinates to see farms on the map</p>
+            <p className="text-sm text-blue-600 dark:text-blue-300 mt-1">
               Click the <Locate className="w-4 h-4 inline" /> button on a farm to get coordinates from its address, 
               or switch to Map view to see the satellite view.
             </p>
@@ -343,7 +347,7 @@ function Farms() {
 
             {/* Tip for fields without boundaries - only show when not drawing */}
             {fieldsWithBoundaries < fields.length && fields.length > 0 && !drawingField && (
-              <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-700">
+              <div className="mt-3 p-3 bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800 rounded-lg text-sm text-amber-700 dark:text-amber-300">
                 <strong>Tip:</strong> {fields.length - fieldsWithBoundaries} of {fields.length} fields need boundaries drawn.
                 Click on a field marker to draw its boundary.
               </div>
@@ -395,10 +399,10 @@ function Farms() {
 
             {/* No farms at all */}
             {safeFarms.length === 0 && (
-              <div className="text-center py-12 bg-white rounded-lg shadow">
-                <Home className="mx-auto text-gray-300 mb-4" size={48} />
-                <h3 className="text-lg font-medium text-gray-800 mb-2">No farms yet</h3>
-                <p className="text-gray-600 mb-4">Get started by adding your first farm</p>
+              <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-lg shadow">
+                <Home className="mx-auto text-gray-300 dark:text-gray-600 mb-4" size={48} />
+                <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200 mb-2">No farms yet</h3>
+                <p className="text-gray-600 dark:text-gray-400 mb-4">Get started by adding your first farm</p>
                 <button
                   onClick={handleNewFarm}
                   className="inline-flex items-center gap-2 bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700"
@@ -411,10 +415,10 @@ function Farms() {
 
             {/* No results from filters */}
             {safeFarms.length > 0 && filteredFarms.length === 0 && (
-              <div className="text-center py-12 bg-white rounded-lg shadow">
-                <Search className="mx-auto text-gray-300 mb-4" size={48} />
-                <h3 className="text-lg font-medium text-gray-800 mb-2">No farms match your filters</h3>
-                <p className="text-gray-600 mb-4">Try adjusting your search or filter criteria</p>
+              <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-lg shadow">
+                <Search className="mx-auto text-gray-300 dark:text-gray-600 mb-4" size={48} />
+                <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200 mb-2">No farms match your filters</h3>
+                <p className="text-gray-600 dark:text-gray-400 mb-4">Try adjusting your search or filter criteria</p>
                 <button
                   onClick={() => {
                     setSearchTerm('');

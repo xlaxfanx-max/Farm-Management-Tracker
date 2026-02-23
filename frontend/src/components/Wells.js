@@ -12,6 +12,8 @@ import {
   Edit, Trash2, Eye, FileText, RefreshCw
 } from 'lucide-react';
 import api from '../services/api';
+import { useConfirm } from '../contexts/ConfirmContext';
+import { useToast } from '../contexts/ToastContext';
 
 // GSA Display names
 const GSA_NAMES = {
@@ -48,6 +50,8 @@ const STATUS_COLORS = {
 };
 
 const Wells = ({ onOpenModal }) => {
+  const confirm = useConfirm();
+  const toast = useToast();
   const [wells, setWells] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -105,14 +109,13 @@ const Wells = ({ onOpenModal }) => {
   };
 
   const handleDelete = async (wellId) => {
-    if (!window.confirm('Are you sure you want to delete this well?')) {
-      return;
-    }
+    const ok = await confirm({ title: 'Are you sure?', message: 'Are you sure you want to delete this well?', confirmLabel: 'Delete', variant: 'danger' });
+    if (!ok) return;
     try {
       await api.delete(`/water-sources/${wellId}/`);
       fetchWells();
     } catch (err) {
-      alert('Failed to delete well');
+      toast.error('Failed to delete well');
       console.error('Error deleting well:', err);
     }
   };
@@ -149,8 +152,8 @@ const Wells = ({ onOpenModal }) => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Wells & SGMA</h2>
-          <p className="text-gray-600">Manage groundwater wells and track SGMA compliance</p>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Wells & SGMA</h2>
+          <p className="text-gray-600 dark:text-gray-400">Manage groundwater wells and track SGMA compliance</p>
         </div>
         <button
           onClick={() => onOpenModal('well', null)}
@@ -163,57 +166,57 @@ const Wells = ({ onOpenModal }) => {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-white rounded-lg shadow p-4">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <Droplets className="w-6 h-6 text-blue-600" />
+            <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+              <Droplets className="w-6 h-6 text-blue-600 dark:text-blue-400" />
             </div>
             <div>
-              <p className="text-sm text-gray-500">Total Wells</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Total Wells</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.total}</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-4">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-green-100 rounded-lg">
-              <CheckCircle className="w-6 h-6 text-green-600" />
+            <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
+              <CheckCircle className="w-6 h-6 text-green-600 dark:text-green-400" />
             </div>
             <div>
-              <p className="text-sm text-gray-500">Active Wells</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.active}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Active Wells</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.active}</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-4">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-yellow-100 rounded-lg">
-              <AlertTriangle className="w-6 h-6 text-yellow-600" />
+            <div className="p-2 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg">
+              <AlertTriangle className="w-6 h-6 text-yellow-600 dark:text-yellow-400" />
             </div>
             <div>
-              <p className="text-sm text-gray-500">Calibration Due</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.calibrationDue}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Calibration Due</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.calibrationDue}</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-4">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-cyan-100 rounded-lg">
-              <Gauge className="w-6 h-6 text-cyan-600" />
+            <div className="p-2 bg-cyan-100 dark:bg-cyan-900/30 rounded-lg">
+              <Gauge className="w-6 h-6 text-cyan-600 dark:text-cyan-400" />
             </div>
             <div>
-              <p className="text-sm text-gray-500">YTD Extraction</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.totalYTD.toFixed(1)} AF</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">YTD Extraction</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.totalYTD.toFixed(1)} AF</p>
             </div>
           </div>
         </div>
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg shadow p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
         <div className="flex flex-wrap gap-4">
           {/* Search */}
           <div className="flex-1 min-w-[200px]">
@@ -224,7 +227,7 @@ const Wells = ({ onOpenModal }) => {
                 placeholder="Search wells..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-200 focus:ring-2 focus:ring-green-500 focus:border-transparent"
               />
             </div>
           </div>
@@ -234,7 +237,7 @@ const Wells = ({ onOpenModal }) => {
             <select
               value={filterGSA}
               onChange={(e) => setFilterGSA(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-200 focus:ring-2 focus:ring-green-500 focus:border-transparent"
             >
               <option value="">All GSAs</option>
               <option value="obgma">Ojai Basin GMA</option>
@@ -249,7 +252,7 @@ const Wells = ({ onOpenModal }) => {
             <select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-200 focus:ring-2 focus:ring-green-500 focus:border-transparent"
             >
               <option value="">All Status</option>
               <option value="active">Active</option>
@@ -261,7 +264,7 @@ const Wells = ({ onOpenModal }) => {
           {/* Refresh Button */}
           <button
             onClick={fetchWells}
-            className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+            className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
           >
             <RefreshCw className="w-5 h-5 text-gray-600" />
           </button>
@@ -278,10 +281,10 @@ const Wells = ({ onOpenModal }) => {
       {/* Wells List */}
       <div className="space-y-4">
         {filteredWells.length === 0 ? (
-          <div className="bg-white rounded-lg shadow p-8 text-center">
-            <Droplets className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No wells found</h3>
-            <p className="text-gray-500 mb-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-8 text-center">
+            <Droplets className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No wells found</h3>
+            <p className="text-gray-500 dark:text-gray-400 mb-4">
               {searchTerm || filterGSA || filterStatus
                 ? 'Try adjusting your filters'
                 : 'Get started by adding your first well'}
@@ -298,10 +301,10 @@ const Wells = ({ onOpenModal }) => {
           </div>
         ) : (
           filteredWells.map(well => (
-            <div key={well.id} className="bg-white rounded-lg shadow overflow-hidden">
+            <div key={well.id} className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
               {/* Well Header */}
               <div
-                className="p-4 cursor-pointer hover:bg-gray-50 transition-colors"
+                className="p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                 onClick={() => toggleWellExpanded(well.id)}
               >
                 <div className="flex items-center justify-between">
@@ -317,10 +320,10 @@ const Wells = ({ onOpenModal }) => {
                     </div>
                     
                     <div>
-                      <h3 className="font-semibold text-gray-900">
+                      <h3 className="font-semibold text-gray-900 dark:text-white">
                         {well.well_name || well.water_source_name}
                       </h3>
-                      <p className="text-sm text-gray-500">
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
                         {well.farm_name} • {GSA_NAMES[well.gsa] || well.gsa}
                       </p>
                     </div>
@@ -378,11 +381,11 @@ const Wells = ({ onOpenModal }) => {
 
               {/* Expanded Details */}
               {expandedWell === well.id && (
-                <div className="border-t border-gray-200 bg-gray-50 p-4">
+                <div className="border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 p-4">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     {/* Well Info */}
                     <div>
-                      <h4 className="font-medium text-gray-900 mb-3">Well Information</h4>
+                      <h4 className="font-medium text-gray-900 dark:text-white mb-3">Well Information</h4>
                       <dl className="space-y-2 text-sm">
                         <div className="flex justify-between">
                           <dt className="text-gray-500">GSA Well ID:</dt>
@@ -411,7 +414,7 @@ const Wells = ({ onOpenModal }) => {
 
                     {/* Calibration Info */}
                     <div>
-                      <h4 className="font-medium text-gray-900 mb-3">Calibration Status</h4>
+                      <h4 className="font-medium text-gray-900 dark:text-white mb-3">Calibration Status</h4>
                       <dl className="space-y-2 text-sm">
                         <div className="flex justify-between">
                           <dt className="text-gray-500">Status:</dt>
@@ -436,7 +439,7 @@ const Wells = ({ onOpenModal }) => {
 
                     {/* Recent Readings */}
                     <div>
-                      <h4 className="font-medium text-gray-900 mb-3">Recent Readings</h4>
+                      <h4 className="font-medium text-gray-900 dark:text-white mb-3">Recent Readings</h4>
                       {wellReadings[well.id] ? (
                         wellReadings[well.id].length > 0 ? (
                           <div className="space-y-2">

@@ -2,9 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { X, Save, Trash2, AlertCircle, HelpCircle } from 'lucide-react';
 import { irrigationZonesAPI, IRRIGATION_CONSTANTS } from '../services/api';
 import { useData } from '../contexts/DataContext';
+import { useConfirm } from '../contexts/ConfirmContext';
 
 function IrrigationZoneModal({ zone, onClose, onSave }) {
   const { fields, waterSources } = useData();
+  const confirm = useConfirm();
   const isEditing = !!zone?.id;
 
   const [formData, setFormData] = useState({
@@ -132,9 +134,13 @@ function IrrigationZoneModal({ zone, onClose, onSave }) {
   };
 
   const handleDelete = async () => {
-    if (!window.confirm('Are you sure you want to delete this irrigation zone?')) {
-      return;
-    }
+    const ok = await confirm({
+      title: 'Are you sure?',
+      message: 'Are you sure you want to delete this irrigation zone?',
+      confirmLabel: 'Delete',
+      variant: 'danger',
+    });
+    if (!ok) return;
 
     setSaving(true);
     try {
@@ -150,9 +156,9 @@ function IrrigationZoneModal({ zone, onClose, onSave }) {
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
       <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
-        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onClick={onClose} />
+        <div className="fixed inset-0 bg-gray-500 dark:bg-gray-900 bg-opacity-75 dark:bg-opacity-80 transition-opacity" onClick={onClose} />
 
-        <div className="relative inline-block w-full max-w-2xl bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8">
+        <div className="relative inline-block w-full max-w-2xl bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8">
           {/* Header */}
           <div className="bg-blue-600 px-6 py-4 flex items-center justify-between">
             <h3 className="text-lg font-semibold text-white">
@@ -166,36 +172,36 @@ function IrrigationZoneModal({ zone, onClose, onSave }) {
           {/* Form */}
           <form onSubmit={handleSubmit} className="p-6 max-h-[70vh] overflow-y-auto">
             {error && (
-              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-start">
-                <AlertCircle className="w-5 h-5 text-red-500 mr-2 flex-shrink-0 mt-0.5" />
-                <span className="text-red-700">{error}</span>
+              <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg flex items-start">
+                <AlertCircle className="w-5 h-5 text-red-500 dark:text-red-400 mr-2 flex-shrink-0 mt-0.5" />
+                <span className="text-red-700 dark:text-red-300">{error}</span>
               </div>
             )}
 
             {/* Basic Info */}
             <div className="mb-6">
-              <h4 className="text-sm font-medium text-gray-700 mb-3 pb-2 border-b">Basic Information</h4>
+              <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3 pb-2 border-b dark:border-gray-700">Basic Information</h4>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Zone Name *</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Zone Name *</label>
                   <input
                     type="text"
                     name="name"
                     value={formData.name}
                     onChange={handleChange}
                     required
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                     placeholder="e.g., Block A - North"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Field *</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Field *</label>
                   <select
                     name="field"
                     value={formData.field}
                     onChange={handleChange}
                     required
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   >
                     <option value="">Select Field</option>
                     {fields.filter(f => f.active).map(field => (
@@ -206,12 +212,12 @@ function IrrigationZoneModal({ zone, onClose, onSave }) {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Water Source</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Water Source</label>
                   <select
                     name="water_source"
                     value={formData.water_source}
                     onChange={handleChange}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   >
                     <option value="">Select Water Source</option>
                     {waterSources.filter(ws => ws.active).map(ws => (
@@ -222,7 +228,7 @@ function IrrigationZoneModal({ zone, onClose, onSave }) {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Zone Acres</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Zone Acres</label>
                   <input
                     type="number"
                     name="acres"
@@ -230,7 +236,7 @@ function IrrigationZoneModal({ zone, onClose, onSave }) {
                     onChange={handleChange}
                     step="0.1"
                     min="0"
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   />
                 </div>
               </div>
@@ -238,15 +244,15 @@ function IrrigationZoneModal({ zone, onClose, onSave }) {
 
             {/* Crop Info */}
             <div className="mb-6">
-              <h4 className="text-sm font-medium text-gray-700 mb-3 pb-2 border-b">Crop Information</h4>
+              <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3 pb-2 border-b dark:border-gray-700">Crop Information</h4>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Crop Type</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Crop Type</label>
                   <select
                     name="crop_type"
                     value={formData.crop_type}
                     onChange={handleChange}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   >
                     {IRRIGATION_CONSTANTS.CROP_TYPES.map(opt => (
                       <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -254,18 +260,18 @@ function IrrigationZoneModal({ zone, onClose, onSave }) {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Tree Age (years)</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tree Age (years)</label>
                   <input
                     type="number"
                     name="tree_age"
                     value={formData.tree_age}
                     onChange={handleChange}
                     min="0"
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Tree Spacing (ft)</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tree Spacing (ft)</label>
                   <input
                     type="number"
                     name="tree_spacing_ft"
@@ -273,12 +279,12 @@ function IrrigationZoneModal({ zone, onClose, onSave }) {
                     onChange={handleChange}
                     step="0.5"
                     min="0"
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                     placeholder="e.g., 22"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Root Depth (inches)</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Root Depth (inches)</label>
                   <input
                     type="number"
                     name="root_depth_inches"
@@ -286,7 +292,7 @@ function IrrigationZoneModal({ zone, onClose, onSave }) {
                     onChange={handleChange}
                     min="6"
                     max="96"
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   />
                 </div>
               </div>
@@ -294,15 +300,15 @@ function IrrigationZoneModal({ zone, onClose, onSave }) {
 
             {/* Irrigation System */}
             <div className="mb-6">
-              <h4 className="text-sm font-medium text-gray-700 mb-3 pb-2 border-b">Irrigation System</h4>
+              <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3 pb-2 border-b dark:border-gray-700">Irrigation System</h4>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Method</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Method</label>
                   <select
                     name="irrigation_method"
                     value={formData.irrigation_method}
                     onChange={handleChange}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   >
                     {IRRIGATION_CONSTANTS.IRRIGATION_METHODS.map(opt => (
                       <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -310,7 +316,7 @@ function IrrigationZoneModal({ zone, onClose, onSave }) {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Distribution Uniformity (%)</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Distribution Uniformity (%)</label>
                   <input
                     type="number"
                     name="distribution_uniformity"
@@ -318,24 +324,24 @@ function IrrigationZoneModal({ zone, onClose, onSave }) {
                     onChange={handleChange}
                     min="50"
                     max="100"
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   />
                 </div>
                 {(formData.irrigation_method === 'drip' || formData.irrigation_method === 'micro_sprinkler') && (
                   <>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Emitters per Tree</label>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Emitters per Tree</label>
                       <input
                         type="number"
                         name="emitters_per_tree"
                         value={formData.emitters_per_tree}
                         onChange={handleChange}
                         min="1"
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Emitter GPH</label>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Emitter GPH</label>
                       <input
                         type="number"
                         name="emitter_gph"
@@ -343,14 +349,14 @@ function IrrigationZoneModal({ zone, onClose, onSave }) {
                         onChange={handleChange}
                         step="0.1"
                         min="0"
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                         placeholder="e.g., 1.0"
                       />
                     </div>
                   </>
                 )}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Application Rate (in/hr)
                     <span className="ml-1 text-gray-400" title="Gross application rate of irrigation system">
                       <HelpCircle className="w-3 h-3 inline" />
@@ -363,7 +369,7 @@ function IrrigationZoneModal({ zone, onClose, onSave }) {
                     onChange={handleChange}
                     step="0.01"
                     min="0"
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                     placeholder="e.g., 0.05"
                   />
                 </div>
@@ -372,15 +378,15 @@ function IrrigationZoneModal({ zone, onClose, onSave }) {
 
             {/* Soil Info */}
             <div className="mb-6">
-              <h4 className="text-sm font-medium text-gray-700 mb-3 pb-2 border-b">Soil Properties</h4>
+              <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3 pb-2 border-b dark:border-gray-700">Soil Properties</h4>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Soil Type</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Soil Type</label>
                   <select
                     name="soil_type"
                     value={formData.soil_type}
                     onChange={handleChange}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   >
                     {IRRIGATION_CONSTANTS.SOIL_TYPES.map(opt => (
                       <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -388,7 +394,7 @@ function IrrigationZoneModal({ zone, onClose, onSave }) {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Water Holding Capacity (in/ft)
                     <span className="ml-1 text-gray-400" title="Available water per foot of soil depth">
                       <HelpCircle className="w-3 h-3 inline" />
@@ -402,11 +408,11 @@ function IrrigationZoneModal({ zone, onClose, onSave }) {
                     step="0.1"
                     min="0.5"
                     max="3"
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Management Allowable Depletion (%)
                     <span className="ml-1 text-gray-400" title="Trigger irrigation when this % of soil water is depleted">
                       <HelpCircle className="w-3 h-3 inline" />
@@ -419,7 +425,7 @@ function IrrigationZoneModal({ zone, onClose, onSave }) {
                     onChange={handleChange}
                     min="20"
                     max="80"
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   />
                 </div>
               </div>
@@ -427,15 +433,15 @@ function IrrigationZoneModal({ zone, onClose, onSave }) {
 
             {/* CIMIS Configuration */}
             <div className="mb-6">
-              <h4 className="text-sm font-medium text-gray-700 mb-3 pb-2 border-b">Weather Data (CIMIS)</h4>
+              <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3 pb-2 border-b dark:border-gray-700">Weather Data (CIMIS)</h4>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Target Type</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Target Type</label>
                   <select
                     name="cimis_target_type"
                     value={formData.cimis_target_type}
                     onChange={handleChange}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   >
                     {IRRIGATION_CONSTANTS.CIMIS_TARGET_TYPES.map(opt => (
                       <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -443,7 +449,7 @@ function IrrigationZoneModal({ zone, onClose, onSave }) {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     {formData.cimis_target_type === 'station' ? 'Station ID' : 'Zip Code'}
                   </label>
                   <input
@@ -451,12 +457,12 @@ function IrrigationZoneModal({ zone, onClose, onSave }) {
                     name="cimis_target"
                     value={formData.cimis_target}
                     onChange={handleChange}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                     placeholder={formData.cimis_target_type === 'station' ? 'e.g., 80' : 'e.g., 93274'}
                   />
                 </div>
               </div>
-              <p className="mt-2 text-xs text-gray-500">
+              <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
                 CIMIS provides ETo (reference evapotranspiration) data for irrigation calculations.
                 Find your nearest station at <a href="https://cimis.water.ca.gov/" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">cimis.water.ca.gov</a>
               </p>
@@ -464,13 +470,13 @@ function IrrigationZoneModal({ zone, onClose, onSave }) {
 
             {/* Notes */}
             <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Notes</label>
               <textarea
                 name="notes"
                 value={formData.notes}
                 onChange={handleChange}
                 rows={3}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               />
             </div>
 
@@ -484,14 +490,14 @@ function IrrigationZoneModal({ zone, onClose, onSave }) {
                 onChange={handleChange}
                 className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
               />
-              <label htmlFor="active" className="ml-2 text-sm text-gray-700">
+              <label htmlFor="active" className="ml-2 text-sm text-gray-700 dark:text-gray-300">
                 Active zone
               </label>
             </div>
           </form>
 
           {/* Footer */}
-          <div className="bg-gray-50 px-6 py-4 flex items-center justify-between">
+          <div className="bg-gray-50 dark:bg-gray-900 px-6 py-4 flex items-center justify-between">
             <div>
               {isEditing && (
                 <button
@@ -510,7 +516,7 @@ function IrrigationZoneModal({ zone, onClose, onSave }) {
                 type="button"
                 onClick={onClose}
                 disabled={loading}
-                className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
+                className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
               >
                 Cancel
               </button>

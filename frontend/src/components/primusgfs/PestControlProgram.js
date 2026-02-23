@@ -4,6 +4,7 @@ import {
   Loader2, RefreshCw, ClipboardList, TrendingUp, Eye, ShieldCheck,
 } from 'lucide-react';
 import { primusGFSAPI } from '../../services/api';
+import { useConfirm } from '../../contexts/ConfirmContext';
 
 const formatDate = (str) => {
   if (!str) return '-';
@@ -284,6 +285,7 @@ const LogModal = ({ log, onClose, onSave }) => {
 
 /* ─── Main Component ─── */
 export default function PestControlProgram() {
+  const confirm = useConfirm();
   const [tab, setTab] = useState('program');
   const [programs, setPrograms] = useState([]);
   const [selectedProgram, setSelectedProgram] = useState(null);
@@ -334,7 +336,8 @@ export default function PestControlProgram() {
     fetchPrograms();
   };
   const handleDeleteProgram = async (id) => {
-    if (!window.confirm('Delete this pest control program?')) return;
+    const ok = await confirm({ title: 'Are you sure?', message: 'Delete this pest control program?', confirmLabel: 'Delete', variant: 'danger' });
+    if (!ok) return;
     try { await primusGFSAPI.deletePestProgram(id); if (selectedProgram?.id === id) setSelectedProgram(null); fetchPrograms(); }
     catch (e) { console.error('Failed to delete program:', e); }
   };
@@ -348,7 +351,8 @@ export default function PestControlProgram() {
     fetchLogs();
   };
   const handleDeleteLog = async (id) => {
-    if (!window.confirm('Delete this monitoring log?')) return;
+    const ok = await confirm({ title: 'Are you sure?', message: 'Delete this monitoring log?', confirmLabel: 'Delete', variant: 'danger' });
+    if (!ok) return;
     try { await primusGFSAPI.deletePestLog(id); fetchLogs(); }
     catch (e) { console.error('Failed to delete log:', e); }
   };

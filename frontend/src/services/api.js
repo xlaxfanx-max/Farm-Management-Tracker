@@ -1503,6 +1503,60 @@ export const complianceDashboardAPI = {
   calendar: (params = {}) => api.get('/compliance/dashboard/calendar/', { params }),
 };
 
+/**
+ * Inspector Report - One-click consolidated compliance report
+ */
+export const inspectorReportAPI = {
+  /** Get full inspector report as JSON */
+  get: (params = {}) => api.get('/compliance/inspector-report/', { params }),
+
+  /** Download as PDF */
+  downloadPDF: (params = {}) => api.get('/compliance/inspector-report/pdf/', {
+    params,
+    responseType: 'blob',
+  }),
+};
+
+/**
+ * NOI Submissions - Notice of Intent for restricted materials
+ */
+export const noiSubmissionAPI = {
+  getAll: (params = {}) => api.get('/compliance/noi-submissions/', { params }),
+  get: (id) => api.get(`/compliance/noi-submissions/${id}/`),
+  create: (data) => api.post('/compliance/noi-submissions/', data),
+  update: (id, data) => api.put(`/compliance/noi-submissions/${id}/`, data),
+  delete: (id) => api.delete(`/compliance/noi-submissions/${id}/`),
+  submit: (id, data = {}) => api.post(`/compliance/noi-submissions/${id}/submit/`, data),
+  confirm: (id, data) => api.post(`/compliance/noi-submissions/${id}/confirm/`, data),
+  pending: () => api.get('/compliance/noi-submissions/pending/'),
+  overdue: () => api.get('/compliance/noi-submissions/overdue/'),
+};
+
+/**
+ * Water GM/STV - FSMA water quality calculations
+ */
+export const waterGMSTVAPI = {
+  /** Get GM/STV for all water sources */
+  getAll: (params = {}) => api.get('/compliance/water-gm-stv/', { params }),
+
+  /** Get detailed trend for a specific source */
+  getBySource: (sourceId) => api.get(`/compliance/water-gm-stv/source/${sourceId}/`),
+};
+
+/**
+ * SGMA Report Export
+ */
+export const sgmaExportAPI = {
+  /** Get SGMA report data as JSON */
+  get: (params = {}) => api.get('/compliance/sgma-export/', { params }),
+
+  /** Download as Excel */
+  downloadExcel: (params = {}) => api.get('/compliance/sgma-export/export_excel/', {
+    params,
+    responseType: 'blob',
+  }),
+};
+
 // Constants for Compliance Management
 export const COMPLIANCE_CONSTANTS = {
   DEADLINE_CATEGORIES: [

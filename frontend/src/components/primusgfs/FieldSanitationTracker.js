@@ -14,6 +14,7 @@ import {
   Filter,
 } from 'lucide-react';
 import { primusGFSAPI } from '../../services/api';
+import { useConfirm } from '../../contexts/ConfirmContext';
 
 const formatDate = (str) => {
   if (!str) return '-';
@@ -163,6 +164,7 @@ const SanitationModal = ({ log, onClose, onSave }) => {
 };
 
 export default function FieldSanitationTracker() {
+  const confirm = useConfirm();
   const [logs, setLogs] = useState([]);
   const [todayLogs, setTodayLogs] = useState([]);
   const [summary, setSummary] = useState(null);
@@ -207,7 +209,8 @@ export default function FieldSanitationTracker() {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this sanitation log?')) return;
+    const ok = await confirm({ title: 'Are you sure?', message: 'Are you sure you want to delete this sanitation log?', confirmLabel: 'Delete', variant: 'danger' });
+    if (!ok) return;
     try { await primusGFSAPI.deleteSanitationLog(id); fetchAll(); }
     catch (err) { console.error('Failed to delete sanitation log:', err); }
   };

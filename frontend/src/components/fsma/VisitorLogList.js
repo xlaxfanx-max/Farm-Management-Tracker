@@ -18,6 +18,8 @@ import {
   ClipboardCheck,
 } from 'lucide-react';
 import { fsmaAPI } from '../../services/api';
+import { useConfirm } from '../../contexts/ConfirmContext';
+import { useToast } from '../../contexts/ToastContext';
 import SignatureCapture from './SignatureCapture';
 
 /**
@@ -30,6 +32,8 @@ import SignatureCapture from './SignatureCapture';
  * - Search and filter capabilities
  */
 const VisitorLogList = () => {
+  const confirm = useConfirm();
+  const toast = useToast();
   const [visitors, setVisitors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -157,7 +161,7 @@ const VisitorLogList = () => {
       fetchVisitors();
     } catch (error) {
       console.error('Error saving visitor:', error);
-      alert('Failed to save visitor log');
+      toast.error('Failed to save visitor log');
     }
   };
 
@@ -173,7 +177,8 @@ const VisitorLogList = () => {
   };
 
   const handleDelete = async (visitorId) => {
-    if (!window.confirm('Are you sure you want to delete this visitor log?')) return;
+    const ok = await confirm({ title: 'Are you sure?', message: 'Are you sure you want to delete this visitor log?', confirmLabel: 'Delete', variant: 'danger' });
+    if (!ok) return;
     try {
       await fsmaAPI.deleteVisitorLog(visitorId);
       fetchVisitors();

@@ -34,6 +34,8 @@ import { harvestsAPI, harvestLoadsAPI, harvestLaborAPI, HARVEST_CONSTANTS } from
 import DrillDownModal from './ui/DrillDownModal';
 import { useData } from '../contexts/DataContext';
 import { useModal } from '../contexts/ModalContext';
+import { useConfirm } from '../contexts/ConfirmContext';
+import { useToast } from '../contexts/ToastContext';
 import HarvestAnalytics from './HarvestAnalytics';
 import ProfitabilityDashboard from './ProfitabilityDashboard';
 import {
@@ -46,6 +48,8 @@ import {
 
 const Harvests = () => {
   const { fields, farms } = useData();
+  const confirm = useConfirm();
+  const toast = useToast();
   const {
     openHarvestModal,
     openHarvestLoadModal,
@@ -291,15 +295,15 @@ const Harvests = () => {
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this harvest record?')) {
-      try {
-        await harvestsAPI.delete(id);
-        fetchHarvests();
-        fetchStatistics();
-      } catch (error) {
-        console.error('Error deleting harvest:', error);
-        alert('Failed to delete harvest');
-      }
+    const ok = await confirm({ title: 'Are you sure?', message: 'Are you sure you want to delete this harvest record?', confirmLabel: 'Delete', variant: 'danger' });
+    if (!ok) return;
+    try {
+      await harvestsAPI.delete(id);
+      fetchHarvests();
+      fetchStatistics();
+    } catch (error) {
+      console.error('Error deleting harvest:', error);
+      toast.error('Failed to delete harvest');
     }
   };
 
@@ -316,7 +320,7 @@ const Harvests = () => {
     try {
       const response = await harvestsAPI.markVerified(id);
       if (response.data.warnings?.length > 0) {
-        alert('Verified with warnings:\n' + response.data.warnings.join('\n'));
+        toast.info('Verified with warnings:\n' + response.data.warnings.join('\n'));
       }
       fetchHarvests();
     } catch (error) {
@@ -500,14 +504,14 @@ const Harvests = () => {
         <>
       {/* Filters Panel */}
       {showFilters && (
-        <div className="bg-white rounded-lg shadow p-4">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
           <div className="grid grid-cols-5 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Season</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Season</label>
               <select
                 value={filters.season}
                 onChange={(e) => setFilters({ ...filters, season: e.target.value })}
-                className="w-full border rounded-lg px-3 py-2"
+                className="w-full border dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 dark:text-gray-200"
               >
                 <option value="">All Seasons</option>
                 {[...Array(5)].map((_, i) => {
@@ -517,11 +521,11 @@ const Harvests = () => {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Farm</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Farm</label>
               <select
                 value={filters.farm}
                 onChange={(e) => setFilters({ ...filters, farm: e.target.value, field: '' })}
-                className="w-full border rounded-lg px-3 py-2"
+                className="w-full border dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 dark:text-gray-200"
               >
                 <option value="">All Farms</option>
                 {farms.map(farm => (
@@ -530,11 +534,11 @@ const Harvests = () => {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Field</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Field</label>
               <select
                 value={filters.field}
                 onChange={(e) => setFilters({ ...filters, field: e.target.value })}
-                className="w-full border rounded-lg px-3 py-2"
+                className="w-full border dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 dark:text-gray-200"
               >
                 <option value="">All Fields</option>
                 {getFilteredFields().map(field => (
@@ -543,11 +547,11 @@ const Harvests = () => {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Crop</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Crop</label>
               <select
                 value={filters.crop_variety}
                 onChange={(e) => setFilters({ ...filters, crop_variety: e.target.value })}
-                className="w-full border rounded-lg px-3 py-2"
+                className="w-full border dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 dark:text-gray-200"
               >
                 <option value="">All Crops</option>
                 {HARVEST_CONSTANTS.CROP_VARIETIES.map(crop => (
@@ -556,11 +560,11 @@ const Harvests = () => {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Status</label>
               <select
                 value={filters.status}
                 onChange={(e) => setFilters({ ...filters, status: e.target.value })}
-                className="w-full border rounded-lg px-3 py-2"
+                className="w-full border dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 dark:text-gray-200"
               >
                 <option value="">All Statuses</option>
                 {HARVEST_CONSTANTS.HARVEST_STATUSES.map(s => (
@@ -589,73 +593,73 @@ const Harvests = () => {
       {/* Statistics Cards */}
       {statistics && (
         <div className="grid grid-cols-6 gap-4">
-          <div className="bg-white rounded-lg shadow p-4 cursor-pointer hover:shadow-md hover:border-green-200 border border-transparent transition-all" onClick={() => openDrillDown('total_harvests')}>
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 cursor-pointer hover:shadow-md hover:border-green-200 dark:hover:border-green-700 border border-transparent transition-all" onClick={() => openDrillDown('total_harvests')}>
             <div className="flex items-center gap-3">
               <div className="p-2 bg-orange-100 rounded-lg">
                 <Wheat className="text-orange-600" size={24} />
               </div>
               <div>
-                <p className="text-sm text-gray-600">Total Harvests</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Total Harvests</p>
                 <p className="text-xl font-bold">{statistics.total_harvests}</p>
               </div>
             </div>
             <p className="text-xs text-gray-400 mt-2">Click for details</p>
           </div>
-          <div className="bg-white rounded-lg shadow p-4 cursor-pointer hover:shadow-md hover:border-green-200 border border-transparent transition-all" onClick={() => openDrillDown('total_bins')}>
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 cursor-pointer hover:shadow-md hover:border-green-200 dark:hover:border-green-700 border border-transparent transition-all" onClick={() => openDrillDown('total_bins')}>
             <div className="flex items-center gap-3">
               <div className="p-2 bg-blue-100 rounded-lg">
                 <Package className="text-blue-600" size={24} />
               </div>
               <div>
-                <p className="text-sm text-gray-600">Total {unitLabel}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Total {unitLabel}</p>
                 <p className="text-xl font-bold">{formatNumber(statistics.primary_quantity ?? statistics.total_bins)}</p>
               </div>
             </div>
             <p className="text-xs text-gray-400 mt-2">Click for details</p>
           </div>
-          <div className="bg-white rounded-lg shadow p-4 cursor-pointer hover:shadow-md hover:border-green-200 border border-transparent transition-all" onClick={() => openDrillDown('total_revenue')}>
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 cursor-pointer hover:shadow-md hover:border-green-200 dark:hover:border-green-700 border border-transparent transition-all" onClick={() => openDrillDown('total_revenue')}>
             <div className="flex items-center gap-3">
               <div className="p-2 bg-green-100 rounded-lg">
                 <DollarSign className="text-green-600" size={24} />
               </div>
               <div>
-                <p className="text-sm text-gray-600">Total Revenue</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Total Revenue</p>
                 <p className="text-xl font-bold">{formatCurrency(statistics.total_revenue)}</p>
               </div>
             </div>
             <p className="text-xs text-gray-400 mt-2">Click for details</p>
           </div>
-          <div className="bg-white rounded-lg shadow p-4 cursor-pointer hover:shadow-md hover:border-green-200 border border-transparent transition-all" onClick={() => openDrillDown('labor_cost')}>
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 cursor-pointer hover:shadow-md hover:border-green-200 dark:hover:border-green-700 border border-transparent transition-all" onClick={() => openDrillDown('labor_cost')}>
             <div className="flex items-center gap-3">
               <div className="p-2 bg-purple-100 rounded-lg">
                 <Users className="text-purple-600" size={24} />
               </div>
               <div>
-                <p className="text-sm text-gray-600">Labor Cost</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Labor Cost</p>
                 <p className="text-xl font-bold">{formatCurrency(statistics.total_labor_cost)}</p>
               </div>
             </div>
             <p className="text-xs text-gray-400 mt-2">Click for details</p>
           </div>
-          <div className="bg-white rounded-lg shadow p-4 cursor-pointer hover:shadow-md hover:border-green-200 border border-transparent transition-all" onClick={() => openDrillDown('pending_payments')}>
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 cursor-pointer hover:shadow-md hover:border-green-200 dark:hover:border-green-700 border border-transparent transition-all" onClick={() => openDrillDown('pending_payments')}>
             <div className="flex items-center gap-3">
               <div className="p-2 bg-yellow-100 rounded-lg">
                 <Clock className="text-yellow-600" size={24} />
               </div>
               <div>
-                <p className="text-sm text-gray-600">Pending Payments</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Pending Payments</p>
                 <p className="text-xl font-bold">{formatCurrency(statistics.pending_payments)}</p>
               </div>
             </div>
             <p className="text-xs text-gray-400 mt-2">Click for details</p>
           </div>
-          <div className="bg-white rounded-lg shadow p-4 cursor-pointer hover:shadow-md hover:border-green-200 border border-transparent transition-all" onClick={() => openDrillDown('yield_per_acre')}>
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 cursor-pointer hover:shadow-md hover:border-green-200 dark:hover:border-green-700 border border-transparent transition-all" onClick={() => openDrillDown('yield_per_acre')}>
             <div className="flex items-center gap-3">
               <div className="p-2 bg-emerald-100 rounded-lg">
                 <Wheat className="text-emerald-600" size={24} />
               </div>
               <div>
-                <p className="text-sm text-gray-600">Yield/Acre</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Yield/Acre</p>
                 <p className="text-xl font-bold">{statistics.avg_yield_per_acre?.toFixed(1) || '0'} {unitLabel.toLowerCase()}</p>
               </div>
             </div>
@@ -666,19 +670,19 @@ const Harvests = () => {
 
       {/* Analytics Panel */}
       {showAnalytics && (
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <HarvestAnalytics />
         </div>
       )}
 
       {/* Harvests List */}
       {!showAnalytics && (
-        <div className="bg-white rounded-lg shadow">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
           {loading ? (
-            <div className="p-8 text-center text-gray-500">Loading harvests...</div>
+            <div className="p-8 text-center text-gray-500 dark:text-gray-400">Loading harvests...</div>
           ) : harvests.length === 0 ? (
-          <div className="p-8 text-center text-gray-500">
-            <Wheat size={48} className="mx-auto mb-4 text-gray-300" />
+          <div className="p-8 text-center text-gray-500 dark:text-gray-400">
+            <Wheat size={48} className="mx-auto mb-4 text-gray-300 dark:text-gray-600" />
             <p>No harvests found</p>
             <button
               onClick={() => openHarvestModal(null,)}
@@ -688,7 +692,7 @@ const Harvests = () => {
             </button>
           </div>
         ) : (
-          <div className="divide-y">
+          <div className="divide-y dark:divide-gray-700">
             {harvests.map(harvest => (
               <div key={harvest.id} className="p-4">
                 {/* Harvest Header */}
@@ -697,7 +701,7 @@ const Harvests = () => {
                   onClick={() => toggleExpand(harvest.id)}
                 >
                   <div className="flex items-center gap-4">
-                    <button className="p-1 hover:bg-gray-100 rounded">
+                    <button className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded">
                       {expandedHarvests[harvest.id] ? (
                         <ChevronDown size={20} />
                       ) : (
@@ -706,21 +710,21 @@ const Harvests = () => {
                     </button>
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="font-medium">{harvest.field_name}</span>
-                        <span className="text-gray-400">•</span>
-                        <span className="text-gray-600">{harvest.farm_name}</span>
-                        <span className="text-gray-400">•</span>
-                        <span className="text-sm text-gray-500">
+                        <span className="font-medium dark:text-gray-200">{harvest.field_name}</span>
+                        <span className="text-gray-400 dark:text-gray-500">•</span>
+                        <span className="text-gray-600 dark:text-gray-300">{harvest.farm_name}</span>
+                        <span className="text-gray-400 dark:text-gray-500">•</span>
+                        <span className="text-sm text-gray-500 dark:text-gray-400">
                           Pick #{harvest.harvest_number}
                         </span>
                       </div>
-                      <div className="flex items-center gap-4 text-sm text-gray-500 mt-1">
+                      <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400 mt-1">
                         <span className="flex items-center gap-1">
                           <Calendar size={14} />
                           {new Date(harvest.harvest_date).toLocaleDateString()}
                         </span>
                         <span>{harvest.crop_variety_display}</span>
-                        <span className="font-mono text-xs bg-gray-100 px-2 py-0.5 rounded">
+                        <span className="font-mono text-xs bg-gray-100 dark:bg-gray-700 dark:text-gray-300 px-2 py-0.5 rounded">
                           {harvest.lot_number}
                         </span>
                       </div>
@@ -730,13 +734,13 @@ const Harvests = () => {
                   <div className="flex items-center gap-6">
                     <div className="text-right">
                       <p className="font-medium">{formatNumber(harvest.primary_quantity ?? harvest.total_bins)} {(harvest.primary_unit_label || 'bins').toLowerCase()}</p>
-                      <p className="text-sm text-gray-500">{harvest.acres_harvested} acres</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">{harvest.acres_harvested} acres</p>
                     </div>
                     <div className="text-right">
-                      <p className="font-medium text-green-600">
+                      <p className="font-medium text-green-600 dark:text-green-400">
                         {formatCurrency(harvest.total_revenue)}
                       </p>
-                      <p className="text-sm text-gray-500">{harvest.load_count} loads</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">{harvest.load_count} loads</p>
                     </div>
                     {getStatusBadge(harvest.status, harvest.phi_compliant)}
                   </div>
@@ -747,11 +751,11 @@ const Harvests = () => {
                   <div className="mt-4 ml-10 space-y-4">
                     {/* PHI Warning Banner */}
                     {harvest.phi_compliant === false && (
-                      <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-start gap-3">
-                        <AlertTriangle className="text-red-600 flex-shrink-0" size={20} />
+                      <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg p-3 flex items-start gap-3">
+                        <AlertTriangle className="text-red-600 dark:text-red-400 flex-shrink-0" size={20} />
                         <div>
-                          <p className="font-medium text-red-800">PHI Compliance Warning</p>
-                          <p className="text-sm text-red-600">
+                          <p className="font-medium text-red-800 dark:text-red-200">PHI Compliance Warning</p>
+                          <p className="text-sm text-red-600 dark:text-red-300">
                             Only {harvest.days_since_last_application} days since last application
                             of {harvest.last_application_product}. Required: {harvest.phi_required_days} days.
                           </p>
@@ -761,8 +765,8 @@ const Harvests = () => {
 
                     {/* Bins Reconciliation Widget */}
                     {harvest.bins_reconciliation_status && (
-                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                        <p className="font-medium text-blue-800 mb-2">{harvest.primary_unit_label || 'Bin'} Tracking</p>
+                      <div className="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
+                        <p className="font-medium text-blue-800 dark:text-blue-200 mb-2">{harvest.primary_unit_label || 'Bin'} Tracking</p>
                         <div className="grid grid-cols-3 gap-4 text-sm">
                           {/* Harvest Total */}
                           <div>
@@ -883,13 +887,13 @@ const Harvests = () => {
                     <div className="flex gap-2">
                       <button
                         onClick={(e) => { e.stopPropagation(); openHarvestLoadModal(harvest.id); }}
-                        className="flex items-center gap-1 px-3 py-1.5 text-sm border rounded-lg hover:bg-gray-50"
+                        className="flex items-center gap-1 px-3 py-1.5 text-sm border dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-gray-200"
                       >
                         <Truck size={16} /> Add Load
                       </button>
                       <button
                         onClick={(e) => { e.stopPropagation(); openHarvestLaborModal(harvest.id); }}
-                        className="flex items-center gap-1 px-3 py-1.5 text-sm border rounded-lg hover:bg-gray-50"
+                        className="flex items-center gap-1 px-3 py-1.5 text-sm border dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-gray-200"
                       >
                         <Users size={16} /> Add Labor
                       </button>
@@ -911,7 +915,7 @@ const Harvests = () => {
                       )}
                       <button
                         onClick={(e) => { e.stopPropagation(); openHarvestModal(harvest); }}
-                        className="flex items-center gap-1 px-3 py-1.5 text-sm border rounded-lg hover:bg-gray-50"
+                        className="flex items-center gap-1 px-3 py-1.5 text-sm border dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-gray-200"
                       >
                         <Edit size={16} /> Edit
                       </button>
@@ -924,8 +928,8 @@ const Harvests = () => {
                     </div>
 
                     {/* GAP/GHP Checklist */}
-                    <div className="bg-gray-50 rounded-lg p-3">
-                      <p className="text-sm font-medium text-gray-700 mb-2">GAP/GHP Compliance</p>
+                    <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
+                      <p className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">GAP/GHP Compliance</p>
                       <div className="grid grid-cols-4 gap-4 text-sm">
                         <div className="flex items-center gap-2">
                           {harvest.phi_verified ? (
@@ -965,10 +969,10 @@ const Harvests = () => {
                     {/* Loads Table */}
                     {harvest.loads && harvest.loads.length > 0 && (
                       <div>
-                        <p className="text-sm font-medium text-gray-700 mb-2">Loads ({harvest.loads.length})</p>
-                        <div className="border rounded-lg overflow-hidden">
-                          <table className="min-w-full divide-y divide-gray-200">
-                            <thead className="bg-gray-50">
+                        <p className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Loads ({harvest.loads.length})</p>
+                        <div className="border dark:border-gray-600 rounded-lg overflow-hidden">
+                          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                            <thead className="bg-gray-50 dark:bg-gray-700">
                               <tr>
                                 <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">#</th>
                                 <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Buyer</th>
@@ -980,9 +984,9 @@ const Harvests = () => {
                                 <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Actions</th>
                               </tr>
                             </thead>
-                            <tbody className="divide-y divide-gray-200">
+                            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                               {harvest.loads.map(load => (
-                                <tr key={load.id} className="hover:bg-gray-50">
+                                <tr key={load.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
                                   <td className="px-3 py-2 text-sm">{load.load_number}</td>
                                   <td className="px-3 py-2 text-sm">{load.buyer_name || 'N/A'}</td>
                                   <td className="px-3 py-2 text-sm">{load.bins}</td>
@@ -1018,10 +1022,10 @@ const Harvests = () => {
                     {/* Labor Records */}
                     {harvest.labor_records && harvest.labor_records.length > 0 && (
                       <div>
-                        <p className="text-sm font-medium text-gray-700 mb-2">Labor Records ({harvest.labor_records.length})</p>
-                        <div className="border rounded-lg overflow-hidden">
-                          <table className="min-w-full divide-y divide-gray-200">
-                            <thead className="bg-gray-50">
+                        <p className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Labor Records ({harvest.labor_records.length})</p>
+                        <div className="border dark:border-gray-600 rounded-lg overflow-hidden">
+                          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                            <thead className="bg-gray-50 dark:bg-gray-700">
                               <tr>
                                 <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Contractor</th>
                                 <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Workers</th>
@@ -1032,9 +1036,9 @@ const Harvests = () => {
                                 <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Actions</th>
                               </tr>
                             </thead>
-                            <tbody className="divide-y divide-gray-200">
+                            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                               {harvest.labor_records.map(labor => (
-                                <tr key={labor.id} className="hover:bg-gray-50">
+                                <tr key={labor.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
                                   <td className="px-3 py-2 text-sm">{labor.contractor_name || labor.crew_name}</td>
                                   <td className="px-3 py-2 text-sm">{labor.worker_count}</td>
                                   <td className="px-3 py-2 text-sm">{labor.total_hours || '-'}</td>

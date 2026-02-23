@@ -6,8 +6,10 @@
 import React, { useState, useEffect } from 'react';
 import { X, Building2, Save, Loader2 } from 'lucide-react';
 import { packinghousesAPI } from '../../services/api';
+import { useToast } from '../../contexts/ToastContext';
 
 const PackinghouseModal = ({ packinghouse, onClose, onSave }) => {
+  const toast = useToast();
   const [formData, setFormData] = useState({
     name: '',
     short_code: '',
@@ -85,7 +87,7 @@ const PackinghouseModal = ({ packinghouse, onClose, onSave }) => {
       if (error.response?.data) {
         setErrors(error.response.data);
       } else {
-        alert('Failed to save packinghouse');
+        toast.error('Failed to save packinghouse');
       }
     } finally {
       setSaving(false);

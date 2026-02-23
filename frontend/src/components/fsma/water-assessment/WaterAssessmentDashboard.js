@@ -17,6 +17,8 @@ import {
   ChevronDown,
 } from 'lucide-react';
 import { fsmaAPI } from '../../../services/api';
+import { useConfirm } from '../../../contexts/ConfirmContext';
+import { useToast } from '../../../contexts/ToastContext';
 
 /**
  * WaterAssessmentDashboard Component
@@ -28,6 +30,8 @@ import { fsmaAPI } from '../../../services/api';
  * - Summary statistics
  */
 const WaterAssessmentDashboard = ({ onCreateNew, onViewAssessment, onEditAssessment }) => {
+  const confirm = useConfirm();
+  const toast = useToast();
   const [assessments, setAssessments] = useState([]);
   const [summary, setSummary] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -96,7 +100,7 @@ const WaterAssessmentDashboard = ({ onCreateNew, onViewAssessment, onEditAssessm
       link.remove();
     } catch (err) {
       console.error('Error downloading PDF:', err);
-      alert('Failed to download PDF');
+      toast.error('Failed to download PDF');
     }
   };
 
@@ -109,21 +113,20 @@ const WaterAssessmentDashboard = ({ onCreateNew, onViewAssessment, onEditAssessm
       loadData();
     } catch (err) {
       console.error('Error duplicating assessment:', err);
-      alert('Failed to duplicate assessment');
+      toast.error('Failed to duplicate assessment');
     }
   };
 
   const handleDelete = async (assessmentId) => {
-    if (!window.confirm('Are you sure you want to delete this assessment? This cannot be undone.')) {
-      return;
-    }
+    const ok = await confirm({ title: 'Are you sure?', message: 'Are you sure you want to delete this assessment? This cannot be undone.', confirmLabel: 'Delete', variant: 'danger' });
+    if (!ok) return;
 
     try {
       await fsmaAPI.deleteWaterAssessment(assessmentId);
       loadData();
     } catch (err) {
       console.error('Error deleting assessment:', err);
-      alert('Failed to delete assessment');
+      toast.error('Failed to delete assessment');
     }
   };
 

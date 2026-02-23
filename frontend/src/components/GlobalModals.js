@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useData } from '../contexts/DataContext';
 import { useModal } from '../contexts/ModalContext';
+import { useToast } from '../contexts/ToastContext';
 import { farmsAPI } from '../services/api';
 
 // Import all modal components
@@ -84,6 +85,8 @@ export function GlobalModals() {
     triggerRefresh,
   } = useModal();
 
+  const toast = useToast();
+
   // Refresh triggers for dropdown lists in modals (buyers, contractors)
   const [buyerRefreshTrigger, setBuyerRefreshTrigger] = useState(0);
   const [contractorRefreshTrigger, setContractorRefreshTrigger] = useState(0);
@@ -129,7 +132,7 @@ export function GlobalModals() {
     if (result.success) {
       closeFieldModal();
     } else {
-      alert(result.error);
+      toast.error(result.error);
     }
   };
 
@@ -141,7 +144,7 @@ export function GlobalModals() {
     if (result.success) {
       closeApplicationModal();
     } else {
-      alert(result.error);
+      toast.error(result.error);
     }
   };
 
@@ -153,7 +156,7 @@ export function GlobalModals() {
     if (result.success) {
       closeWaterSourceModal();
     } else {
-      alert(result.error);
+      toast.error(result.error);
     }
   };
 
@@ -165,7 +168,7 @@ export function GlobalModals() {
     if (result.success) {
       closeWaterTestModal();
     } else {
-      alert(result.error);
+      toast.error(result.error);
     }
   };
 

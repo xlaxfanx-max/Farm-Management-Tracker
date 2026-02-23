@@ -1,6 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { Pen, RotateCcw, Check, Bookmark } from 'lucide-react';
 import { fsmaAPI } from '../../services/api';
+import { useToast } from '../../contexts/ToastContext';
 
 /**
  * SignatureCapture Component
@@ -22,6 +23,7 @@ const SignatureCapture = ({
   strokeWidth = 2,
   disabled = false,
 }) => {
+  const toast = useToast();
   const canvasRef = useRef(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [hasSignature, setHasSignature] = useState(false);
@@ -163,10 +165,10 @@ const SignatureCapture = ({
     try {
       await fsmaAPI.saveUserSignature(signatureData);
       setSavedSignature(signatureData);
-      alert('Signature saved successfully!');
+      toast.success('Signature saved successfully!');
     } catch (error) {
       console.error('Error saving signature:', error);
-      alert('Failed to save signature');
+      toast.error('Failed to save signature');
     }
   };
 

@@ -35,6 +35,7 @@ import {
   EyeOff
 } from 'lucide-react';
 import { auditAPI } from '../services/api';
+import { useToast } from '../contexts/ToastContext';
 
 // Action type icons and colors
 const ACTION_CONFIG = {
@@ -49,6 +50,7 @@ const ACTION_CONFIG = {
 };
 
 const AuditLogViewer = () => {
+  const toast = useToast();
   // State
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -171,7 +173,7 @@ const AuditLogViewer = () => {
       window.URL.revokeObjectURL(url);
     } catch (err) {
       console.error('Export failed:', err);
-      alert('Failed to export audit logs. Please try again.');
+      toast.error('Failed to export audit logs. Please try again.');
     } finally {
       setExporting(false);
     }

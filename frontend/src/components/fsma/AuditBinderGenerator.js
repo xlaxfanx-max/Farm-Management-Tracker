@@ -15,6 +15,8 @@ import {
   Eye,
 } from 'lucide-react';
 import { fsmaAPI } from '../../services/api';
+import { useConfirm } from '../../contexts/ConfirmContext';
+import { useToast } from '../../contexts/ToastContext';
 
 /**
  * AuditBinderGenerator Component
@@ -26,6 +28,8 @@ import { fsmaAPI } from '../../services/api';
  * - Download and management of generated binders
  */
 const AuditBinderGenerator = () => {
+  const confirm = useConfirm();
+  const toast = useToast();
   const [binders, setBinders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
@@ -117,7 +121,7 @@ const AuditBinderGenerator = () => {
       fetchBinders();
     } catch (error) {
       console.error('Error generating binder:', error);
-      alert('Failed to start binder generation');
+      toast.error('Failed to start binder generation');
     } finally {
       setGenerating(false);
     }
@@ -137,12 +141,13 @@ const AuditBinderGenerator = () => {
       window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error('Error downloading binder:', error);
-      alert('Failed to download binder');
+      toast.error('Failed to download binder');
     }
   };
 
   const handleDelete = async (binderId) => {
-    if (!window.confirm('Are you sure you want to delete this audit binder?')) return;
+    const ok = await confirm({ title: 'Are you sure?', message: 'Are you sure you want to delete this audit binder?', confirmLabel: 'Delete', variant: 'danger' });
+    if (!ok) return;
     try {
       await fsmaAPI.deleteAuditBinder(binderId);
       fetchBinders();

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { ClipboardCheck, Plus, Filter, X, Edit2, Trash2, CheckCircle, AlertTriangle,
   Loader2, RefreshCw, ChevronDown, ChevronRight, ShieldCheck, XCircle, Clock } from 'lucide-react';
 import { primusGFSAPI } from '../../services/api';
+import { useConfirm } from '../../contexts/ConfirmContext';
 
 const formatDate = (str) => {
   if (!str) return '-';
@@ -245,6 +246,7 @@ const ChecklistView = ({ inspection, onClose, onRefresh }) => {
 };
 
 export default function PreHarvestInspection() {
+  const confirm = useConfirm();
   const [inspections, setInspections] = useState([]);
   const [upcomingHarvests, setUpcomingHarvests] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -278,7 +280,8 @@ export default function PreHarvestInspection() {
 
   const handleCreate = async (formData) => { await primusGFSAPI.createPreHarvestInspection(formData); fetchData(); };
   const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this inspection?')) return;
+    const ok = await confirm({ title: 'Are you sure?', message: 'Are you sure you want to delete this inspection?', confirmLabel: 'Delete', variant: 'danger' });
+    if (!ok) return;
     try { await primusGFSAPI.deletePreHarvestInspection(id); fetchData(); }
     catch (err) { console.error('Failed to delete inspection:', err); }
   };

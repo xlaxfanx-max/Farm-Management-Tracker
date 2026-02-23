@@ -15,6 +15,7 @@ import {
   XCircle,
 } from 'lucide-react';
 import { fsmaAPI } from '../../services/api';
+import { useToast } from '../../contexts/ToastContext';
 
 /**
  * PHIComplianceChecker Component
@@ -26,6 +27,7 @@ import { fsmaAPI } from '../../services/api';
  * - Override capability for documented exceptions
  */
 const PHIComplianceChecker = () => {
+  const toast = useToast();
   const [phiChecks, setPHIChecks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showPreCheckModal, setShowPreCheckModal] = useState(false);
@@ -98,7 +100,7 @@ const PHIComplianceChecker = () => {
       setPreCheckResult(response.data);
     } catch (error) {
       console.error('Error running pre-check:', error);
-      alert('Failed to run PHI pre-check');
+      toast.error('Failed to run PHI pre-check');
     } finally {
       setPreCheckLoading(false);
     }

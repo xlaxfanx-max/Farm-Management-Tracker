@@ -16,6 +16,7 @@ import {
   ClipboardCheck,
 } from 'lucide-react';
 import { primusGFSAPI } from '../../services/api';
+import { useConfirm } from '../../contexts/ConfirmContext';
 import PrefillBanner from './PrefillBanner';
 
 const formatDate = (str) => {
@@ -371,6 +372,7 @@ const VerificationModal = ({ suppliers, onClose, onSave }) => {
 };
 
 export default function SupplierManagement() {
+  const confirm = useConfirm();
   const [activeTab, setActiveTab] = useState('suppliers');
   const [suppliers, setSuppliers] = useState([]);
   const [verifications, setVerifications] = useState([]);
@@ -433,7 +435,8 @@ export default function SupplierManagement() {
   };
 
   const handleDeleteSupplier = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this supplier?')) return;
+    const ok = await confirm({ title: 'Are you sure?', message: 'Are you sure you want to delete this supplier?', confirmLabel: 'Delete', variant: 'danger' });
+    if (!ok) return;
     try { await primusGFSAPI.deleteSupplier(id); fetchSuppliers(); }
     catch (err) { console.error('Failed to delete supplier:', err); }
   };
@@ -454,7 +457,8 @@ export default function SupplierManagement() {
   };
 
   const handleDeleteVerification = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this verification?')) return;
+    const ok = await confirm({ title: 'Are you sure?', message: 'Are you sure you want to delete this verification?', confirmLabel: 'Delete', variant: 'danger' });
+    if (!ok) return;
     try { await primusGFSAPI.deleteMaterialVerification(id); fetchVerifications(); }
     catch (err) { console.error('Failed to delete verification:', err); }
   };

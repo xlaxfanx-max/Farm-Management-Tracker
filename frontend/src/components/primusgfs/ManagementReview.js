@@ -18,6 +18,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { primusGFSAPI } from '../../services/api';
+import { useConfirm } from '../../contexts/ConfirmContext';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -862,6 +863,7 @@ const ReviewCard = ({ review, onEdit, onDelete }) => {
 // ---------------------------------------------------------------------------
 
 export default function ManagementReview() {
+  const confirm = useConfirm();
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -903,7 +905,8 @@ export default function ManagementReview() {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this management review? This action cannot be undone.')) return;
+    const ok = await confirm({ title: 'Are you sure?', message: 'Are you sure you want to delete this management review? This action cannot be undone.', confirmLabel: 'Delete', variant: 'danger' });
+    if (!ok) return;
     try {
       await primusGFSAPI.deleteManagementReview(id);
       fetchReviews();

@@ -17,6 +17,7 @@ import {
   RefreshCw,
 } from 'lucide-react';
 import { complianceDeadlinesAPI, COMPLIANCE_CONSTANTS } from '../../services/api';
+import { useConfirm } from '../../contexts/ConfirmContext';
 
 // Format date for display
 const formatDate = (dateString) => {
@@ -343,6 +344,7 @@ const DeadlineModal = ({ deadline, onClose, onSave }) => {
 
 // Main Component
 export default function DeadlineCalendar({ onNavigate }) {
+  const confirm = useConfirm();
   const [view, setView] = useState('list'); // 'list' or 'calendar'
   const [deadlines, setDeadlines] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -398,13 +400,13 @@ export default function DeadlineCalendar({ onNavigate }) {
 
   // Handle delete
   const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this deadline?')) {
-      try {
-        await complianceDeadlinesAPI.delete(id);
-        fetchDeadlines();
-      } catch (error) {
-        console.error('Failed to delete deadline:', error);
-      }
+    const ok = await confirm({ title: 'Are you sure?', message: 'Are you sure you want to delete this deadline?', confirmLabel: 'Delete', variant: 'danger' });
+    if (!ok) return;
+    try {
+      await complianceDeadlinesAPI.delete(id);
+      fetchDeadlines();
+    } catch (error) {
+      console.error('Failed to delete deadline:', error);
     }
   };
 

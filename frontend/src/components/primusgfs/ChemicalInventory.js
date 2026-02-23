@@ -12,6 +12,7 @@ import {
   CheckCircle,
 } from 'lucide-react';
 import { primusGFSAPI } from '../../services/api';
+import { useConfirm } from '../../contexts/ConfirmContext';
 import PrefillBanner from './PrefillBanner';
 
 // ---------------------------------------------------------------------------
@@ -459,6 +460,7 @@ const ChemicalModal = ({ item, onClose, onSave }) => {
 // ---------------------------------------------------------------------------
 
 export default function ChemicalInventory() {
+  const confirm = useConfirm();
   const [items, setItems]           = useState([]);
   const [summary, setSummary]       = useState(null);
   const [loading, setLoading]       = useState(true);
@@ -514,7 +516,8 @@ export default function ChemicalInventory() {
   };
 
   const handleDelete = async (id, name) => {
-    if (!window.confirm(`Delete "${name}" from chemical inventory? This cannot be undone.`)) return;
+    const ok = await confirm({ title: 'Are you sure?', message: `Delete "${name}" from chemical inventory? This cannot be undone.`, confirmLabel: 'Delete', variant: 'danger' });
+    if (!ok) return;
     try {
       await primusGFSAPI.deleteChemicalInventory(id);
       fetchAll();

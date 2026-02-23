@@ -8,6 +8,7 @@ import {
   FileText,
   Loader2,
 } from 'lucide-react';
+import { useToast } from '../../../../contexts/ToastContext';
 
 /**
  * Step 8: Sign & Submit
@@ -15,6 +16,7 @@ import {
  * Capture signature and submit the assessment for review.
  */
 const Step8SignSubmit = ({ formData, assessment, onSubmit, saving }) => {
+  const toast = useToast();
   const [signatureData, setSignatureData] = useState(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const canvasRef = useRef(null);
@@ -72,7 +74,7 @@ const Step8SignSubmit = ({ formData, assessment, onSubmit, saving }) => {
 
   const handleSubmit = () => {
     if (!signatureData) {
-      alert('Please provide a signature before submitting.');
+      toast.error('Please provide a signature before submitting.');
       return;
     }
     onSubmit(signatureData);

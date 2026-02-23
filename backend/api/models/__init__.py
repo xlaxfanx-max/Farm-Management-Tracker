@@ -125,6 +125,7 @@ from .compliance import (
     REIPostingRecord,
     ComplianceReport,
     IncidentReport,
+    NOISubmission,
     NotificationPreference,
     NotificationLog,
 )
@@ -272,7 +273,7 @@ __all__ = [
     'ComplianceProfile', 'ComplianceDeadline', 'ComplianceAlert',
     'License', 'WPSTrainingRecord', 'CentralPostingLocation',
     'REIPostingRecord', 'ComplianceReport', 'IncidentReport',
-    'NotificationPreference', 'NotificationLog',
+    'NOISubmission', 'NotificationPreference', 'NotificationLog',
     # disease
     'ExternalDetection', 'QuarantineZone', 'DiseaseAlertRule',
     'DiseaseAnalysisRun', 'DiseaseAlert', 'ScoutingReport',

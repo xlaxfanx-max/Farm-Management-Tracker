@@ -212,7 +212,7 @@ class PURReportGenerator:
             'application_method': app.application_method or '',
             'commodity_applied_to': field.current_crop if field else '',
             'applicator_name': app.applicator_name or '',
-            'applicator_license_no': '',  # Add this field to model if needed
+            'applicator_license_no': app.applicator_license_no or '',
             'applicator_business_name': farm.name if farm else '',
             'restricted_use': 'Y' if (product and product.restricted_use) else 'N',
             'fumigant': 'N',  # Add logic if tracking fumigants

@@ -16,7 +16,7 @@ This module provides API endpoints for compliance management including:
 
 from datetime import date, timedelta, datetime
 from decimal import Decimal
-from django.db.models import Count, Q, Sum, Avg
+from django.db.models import Count, Q, Sum, Avg, Max, Min
 from django.db.models.functions import Coalesce
 from django.utils import timezone
 from django.http import HttpResponse
@@ -32,8 +32,8 @@ from .audit_utils import AuditLogMixin
 from .models import (
     ComplianceProfile, ComplianceDeadline, ComplianceAlert,
     License, WPSTrainingRecord, CentralPostingLocation, REIPostingRecord,
-    ComplianceReport, IncidentReport, NotificationPreference, NotificationLog,
-    Company, PesticideApplication
+    ComplianceReport, IncidentReport, NOISubmission, NotificationPreference,
+    NotificationLog, Company, PesticideApplication
 )
 
 from .serializers import (
@@ -1045,3 +1045,387 @@ class ComplianceDashboardViewSet(viewsets.ViewSet):
             )
 
         return Response(list(calendar_data.values()))
+
+
+# =============================================================================
+# INSPECTOR REPORT VIEWSET
+# =============================================================================
+
+class InspectorReportViewSet(viewsets.ViewSet):
+    """
+    Generate inspector-ready compliance reports.
+    One endpoint to rule them all - consolidated compliance PDF/JSON.
+    """
+    permission_classes = [IsAuthenticated, HasCompanyAccess]
+
+    def list(self, request):
+        """Get the full inspector report as JSON."""
+        company = require_company(request.user)
+        farm_id = request.query_params.get('farm_id')
+
+        from .services.compliance.inspector_report_generator import InspectorReportGenerator
+        generator = InspectorReportGenerator(company, farm_id=farm_id)
+        data = generator.generate_report_data()
+        return Response(data)
+
+    @action(detail=False, methods=['get'])
+    def pdf(self, request):
+        """Download the inspector report as a PDF."""
+        company = require_company(request.user)
+        farm_id = request.query_params.get('farm_id')
+
+        from .services.compliance.inspector_report_generator import InspectorReportGenerator
+        generator = InspectorReportGenerator(company, farm_id=farm_id)
+        pdf_buffer = generator.generate_pdf()
+
+        response = HttpResponse(pdf_buffer.getvalue(), content_type='application/pdf')
+        response['Content-Disposition'] = (
+            f'attachment; filename="compliance_report_{company.name}_{date.today().isoformat()}.pdf"'
+        )
+        return response
+
+
+# =============================================================================
+# NOI SUBMISSION VIEWSET
+# =============================================================================
+
+class NOISubmissionSerializer(drf_serializers.ModelSerializer):
+    product_name = drf_serializers.CharField(source='product.product_name', read_only=True)
+    field_name = drf_serializers.CharField(source='field.name', read_only=True)
+    farm_name = drf_serializers.CharField(source='field.farm.name', read_only=True)
+    is_valid = drf_serializers.BooleanField(read_only=True)
+    is_overdue = drf_serializers.BooleanField(read_only=True)
+
+    class Meta:
+        from .models import NOISubmission
+        model = NOISubmission
+        fields = '__all__'
+        read_only_fields = ['company', 'created_by']
+
+
+class NOISubmissionViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint for NOI (Notice of Intent) submission tracking.
+
+    Tracks when farmers file NOIs with the County Ag Commissioner
+    for restricted use pesticide applications.
+    """
+    serializer_class = NOISubmissionSerializer
+    permission_classes = [IsAuthenticated, HasCompanyAccess]
+
+    def get_queryset(self):
+        from .models import NOISubmission
+        company = require_company(self.request.user)
+        queryset = NOISubmission.objects.filter(
+            company=company
+        ).select_related('product', 'field', 'field__farm', 'pesticide_application')
+
+        status_filter = self.request.query_params.get('status')
+        if status_filter:
+            queryset = queryset.filter(status=status_filter)
+
+        field_id = self.request.query_params.get('field')
+        if field_id:
+            queryset = queryset.filter(field_id=field_id)
+
+        return queryset
+
+    def perform_create(self, serializer):
+        company = require_company(self.request.user)
+        serializer.save(company=company, created_by=self.request.user)
+
+    @action(detail=True, methods=['post'])
+    def submit(self, request, pk=None):
+        """Mark NOI as submitted to county."""
+        noi = self.get_object()
+        noi.status = 'submitted'
+        noi.filed_date = request.data.get('filed_date', date.today())
+        noi.submission_method = request.data.get('submission_method', '')
+        noi.save()
+        return Response(NOISubmissionSerializer(noi).data)
+
+    @action(detail=True, methods=['post'])
+    def confirm(self, request, pk=None):
+        """Mark NOI as confirmed by county."""
+        noi = self.get_object()
+        noi.status = 'confirmed'
+        noi.confirmation_number = request.data.get('confirmation_number', '')
+        noi.county_response_date = request.data.get('response_date', date.today())
+        noi.county_response_notes = request.data.get('notes', '')
+        noi.valid_from = request.data.get('valid_from', noi.planned_application_date)
+        noi.valid_until = request.data.get('valid_until')
+        noi.conditions = request.data.get('conditions', '')
+        noi.save()
+        return Response(NOISubmissionSerializer(noi).data)
+
+    @action(detail=False, methods=['get'])
+    def pending(self, request):
+        """Get NOIs that still need to be filed."""
+        queryset = self.get_queryset().filter(status='pending')
+        serializer = NOISubmissionSerializer(queryset, many=True)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['get'])
+    def overdue(self, request):
+        """Get NOIs past their filing deadline."""
+        from .models import NOISubmission
+        company = require_company(request.user)
+        today = date.today()
+
+        overdue = NOISubmission.objects.filter(
+            company=company,
+            status='pending',
+            planned_application_date__lte=today + timedelta(days=1),
+        )
+        serializer = NOISubmissionSerializer(overdue, many=True)
+        return Response(serializer.data)
+
+
+# =============================================================================
+# WATER GM/STV CALCULATION VIEWSET
+# =============================================================================
+
+class WaterGMSTVViewSet(viewsets.ViewSet):
+    """
+    Calculate FSMA-required Geometric Mean (GM) and Statistical Threshold
+    Value (STV) for water sources.
+
+    FSMA Produce Safety Rule requires:
+    - GM ≤ 126 CFU/100mL (rolling dataset)
+    - STV ≤ 410 CFU/100mL (rolling dataset)
+    - Minimum 5 samples for valid calculation
+    """
+    permission_classes = [IsAuthenticated, HasCompanyAccess]
+
+    def list(self, request):
+        """Get GM/STV for all water sources."""
+        import math
+        from .models import WaterSource, WaterTest
+
+        company = require_company(request.user)
+        farm_id = request.query_params.get('farm_id')
+
+        sources = WaterSource.objects.filter(farm__company=company)
+        if farm_id:
+            sources = sources.filter(farm_id=farm_id)
+
+        results = []
+        for source in sources.select_related('farm'):
+            tests = WaterTest.objects.filter(
+                water_source=source,
+                ecoli_result__isnull=False,
+            ).order_by('-test_date')[:20]
+
+            ecoli_values = [float(t.ecoli_result) for t in tests]
+            test_dates = [t.test_date.isoformat() for t in tests]
+
+            result = {
+                'source_id': source.id,
+                'source_name': source.name,
+                'source_type': source.source_type,
+                'farm': source.farm.name if source.farm else '',
+                'sample_count': len(ecoli_values),
+                'test_dates': test_dates,
+                'ecoli_values': ecoli_values,
+                'geometric_mean': None,
+                'gm_threshold': 126.0,
+                'gm_compliant': None,
+                'stv': None,
+                'stv_threshold': 410.0,
+                'stv_compliant': None,
+                'fsma_compliant': None,
+                'sufficient_samples': len(ecoli_values) >= 5,
+                'samples_needed': max(0, 5 - len(ecoli_values)),
+            }
+
+            if len(ecoli_values) >= 5:
+                # Geometric mean: exp(mean(ln(x)))
+                log_values = [math.log(max(v, 0.1)) for v in ecoli_values]
+                gm = math.exp(sum(log_values) / len(log_values))
+                result['geometric_mean'] = round(gm, 2)
+                result['gm_compliant'] = gm <= 126.0
+
+                # STV: exp(mean(ln) + 0.6745 * std(ln))
+                mean_ln = sum(log_values) / len(log_values)
+                variance = sum((lv - mean_ln) ** 2 for lv in log_values) / (len(log_values) - 1)
+                std_ln = math.sqrt(variance)
+                stv = math.exp(mean_ln + 0.6745 * std_ln)
+                result['stv'] = round(stv, 2)
+                result['stv_compliant'] = stv <= 410.0
+
+                result['fsma_compliant'] = result['gm_compliant'] and result['stv_compliant']
+
+            results.append(result)
+
+        return Response(results)
+
+    @action(detail=False, methods=['get'], url_path='source/(?P<source_id>[0-9]+)')
+    def by_source(self, request, source_id=None):
+        """Get detailed GM/STV trend for a specific water source."""
+        import math
+        from .models import WaterSource, WaterTest
+
+        company = require_company(request.user)
+
+        try:
+            source = WaterSource.objects.get(
+                id=source_id, farm__company=company
+            )
+        except WaterSource.DoesNotExist:
+            return Response({'error': 'Water source not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        tests = WaterTest.objects.filter(
+            water_source=source,
+            ecoli_result__isnull=False,
+        ).order_by('-test_date')
+
+        # Build rolling GM/STV trend (recalculate for each window)
+        all_values = [(t.test_date.isoformat(), float(t.ecoli_result)) for t in tests]
+        trend = []
+
+        for i in range(len(all_values)):
+            window = all_values[i:i+20]  # Use up to 20 most recent from this point
+            values = [v[1] for v in window]
+
+            if len(values) >= 5:
+                log_values = [math.log(max(v, 0.1)) for v in values]
+                gm = math.exp(sum(log_values) / len(log_values))
+                mean_ln = sum(log_values) / len(log_values)
+                variance = sum((lv - mean_ln) ** 2 for lv in log_values) / (len(log_values) - 1)
+                stv = math.exp(mean_ln + 0.6745 * math.sqrt(variance))
+
+                trend.append({
+                    'date': all_values[i][0],
+                    'ecoli': all_values[i][1],
+                    'gm': round(gm, 2),
+                    'stv': round(stv, 2),
+                    'gm_compliant': gm <= 126.0,
+                    'stv_compliant': stv <= 410.0,
+                    'sample_count': len(values),
+                })
+
+        return Response({
+            'source_id': source.id,
+            'source_name': source.name,
+            'total_samples': len(all_values),
+            'trend': trend,
+        })
+
+
+# =============================================================================
+# SGMA REPORT EXPORT VIEWSET
+# =============================================================================
+
+class SGMAReportExportViewSet(viewsets.ViewSet):
+    """
+    Export SGMA semi-annual extraction reports.
+    Wraps the existing WaterComplianceService.generate_sgma_report_data()
+    and provides JSON + Excel export endpoints.
+    """
+    permission_classes = [IsAuthenticated, HasCompanyAccess]
+
+    def list(self, request):
+        """Get SGMA report data as JSON."""
+        company = require_company(request.user)
+        farm_id = request.query_params.get('farm_id')
+        period = request.query_params.get('period', 'H1')  # H1 or H2
+
+        if not farm_id:
+            # Return reports for all farms
+            from .models import Farm
+            farms = Farm.objects.filter(company=company)
+            reports = []
+            for farm in farms:
+                report = self._generate_report(company.id, farm.id, period)
+                reports.append(report)
+            return Response(reports)
+
+        report = self._generate_report(company.id, int(farm_id), period)
+        return Response(report)
+
+    @action(detail=False, methods=['get'])
+    def export_excel(self, request):
+        """Export SGMA report as Excel."""
+        company = require_company(request.user)
+        farm_id = request.query_params.get('farm_id')
+        period = request.query_params.get('period', 'H1')
+
+        if not farm_id:
+            return Response(
+                {'error': 'farm_id is required for Excel export'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        report = self._generate_report(company.id, int(farm_id), period)
+
+        try:
+            import openpyxl
+            from io import BytesIO
+
+            wb = openpyxl.Workbook()
+            ws = wb.active
+            ws.title = f"SGMA Report {period}"
+
+            # Header
+            ws['A1'] = 'SGMA Semi-Annual Extraction Report'
+            ws['A2'] = f'Farm: {report["farm_name"]}'
+            ws['A3'] = f'Water Year: {report["water_year"]}'
+            ws['A4'] = f'Period: {report["report_period"]} ({report["period_start"]} to {report["period_end"]})'
+            ws['A5'] = f'Compliance Status: {report["compliance_status"]}'
+
+            # Well data table
+            row = 7
+            headers = ['Well Name', 'State Well #', 'GSA', 'Flowmeter', 'Extraction (AF)', 'Period Alloc (AF)', 'Annual Alloc (AF)']
+            for col, h in enumerate(headers, 1):
+                ws.cell(row=row, column=col, value=h)
+
+            for well in report.get('wells', []):
+                row += 1
+                ws.cell(row=row, column=1, value=well.get('well_name', ''))
+                ws.cell(row=row, column=2, value=well.get('state_well_number', ''))
+                ws.cell(row=row, column=3, value=well.get('gsa', ''))
+                ws.cell(row=row, column=4, value='Yes' if well.get('has_flowmeter') else 'No')
+                ws.cell(row=row, column=5, value=well.get('extraction_af', 0))
+                ws.cell(row=row, column=6, value=well.get('period_allocation_af', 0))
+                ws.cell(row=row, column=7, value=well.get('annual_allocation_af', 0))
+
+            # Totals
+            row += 1
+            ws.cell(row=row, column=1, value='TOTAL')
+            ws.cell(row=row, column=5, value=report.get('total_extraction_af', 0))
+            ws.cell(row=row, column=6, value=report.get('total_allocation_af', 0))
+
+            # Notes
+            row += 2
+            ws.cell(row=row, column=1, value='Notes:')
+            for note in report.get('notes', []):
+                row += 1
+                ws.cell(row=row, column=1, value=note)
+
+            buffer = BytesIO()
+            wb.save(buffer)
+            buffer.seek(0)
+
+            response = HttpResponse(
+                buffer.getvalue(),
+                content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            )
+            response['Content-Disposition'] = (
+                f'attachment; filename="sgma_report_{report["farm_name"]}_{period}_{report["water_year"]}.xlsx"'
+            )
+            return response
+
+        except ImportError:
+            return Response(
+                {'error': 'openpyxl not installed for Excel export'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+    def _generate_report(self, company_id, farm_id, period):
+        """Generate SGMA report data using the existing service."""
+        from .services.compliance.water_compliance import WaterComplianceService
+        from dataclasses import asdict
+
+        service = WaterComplianceService(company_id=company_id)
+        report = service.generate_sgma_report_data(farm_id, period)
+        return asdict(report)

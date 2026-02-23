@@ -21,6 +21,7 @@ import {
   ClipboardCheck,
 } from 'lucide-react';
 import { wpsTrainingAPI, postingLocationsAPI, reiPostingsAPI, COMPLIANCE_CONSTANTS } from '../../services/api';
+import { useConfirm } from '../../contexts/ConfirmContext';
 
 // Format date for display
 const formatDate = (dateString) => {
@@ -466,6 +467,7 @@ const REIPostingCard = ({ posting, onMarkPosted, onMarkRemoved }) => {
 
 // Main Component
 export default function WPSCompliance({ onNavigate }) {
+  const confirm = useConfirm();
   const [activeTab, setActiveTab] = useState('training');
   const [loading, setLoading] = useState(true);
 
@@ -548,10 +550,10 @@ export default function WPSCompliance({ onNavigate }) {
 
   // Handle training delete
   const handleTrainingDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this training record?')) {
-      await wpsTrainingAPI.delete(id);
-      fetchTrainingRecords();
-    }
+    const ok = await confirm({ title: 'Are you sure?', message: 'Are you sure you want to delete this training record?', confirmLabel: 'Delete', variant: 'danger' });
+    if (!ok) return;
+    await wpsTrainingAPI.delete(id);
+    fetchTrainingRecords();
   };
 
   // Handle verify posting location

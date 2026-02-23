@@ -103,6 +103,10 @@ from .compliance_views import (
     IncidentReportViewSet,
     NotificationPreferenceViewSet,
     ComplianceDashboardViewSet,
+    InspectorReportViewSet,
+    NOISubmissionViewSet,
+    WaterGMSTVViewSet,
+    SGMAReportExportViewSet,
 )
 
 # Import disease prevention views
@@ -272,6 +276,10 @@ router.register(r'compliance/rei-postings', REIPostingRecordViewSet, basename='r
 router.register(r'compliance/reports', ComplianceReportViewSet, basename='compliance-report')
 router.register(r'compliance/incidents', IncidentReportViewSet, basename='incident')
 router.register(r'compliance/notification-preferences', NotificationPreferenceViewSet, basename='notification-preference')
+router.register(r'compliance/inspector-report', InspectorReportViewSet, basename='inspector-report')
+router.register(r'compliance/noi-submissions', NOISubmissionViewSet, basename='noi-submission')
+router.register(r'compliance/water-gm-stv', WaterGMSTVViewSet, basename='water-gm-stv')
+router.register(r'compliance/sgma-export', SGMAReportExportViewSet, basename='sgma-export')
 router.register(r'compliance/dashboard', ComplianceDashboardViewSet, basename='compliance-dashboard')
 
 # Disease Prevention

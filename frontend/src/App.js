@@ -98,6 +98,7 @@ function AppContent() {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showCompanyMenu, setShowCompanyMenu] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   // Onboarding state
   const [onboardingStatus, setOnboardingStatus] = useState(null);
@@ -237,8 +238,21 @@ function AppContent() {
   // ============================================================================
   return (
     <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+      {/* Mobile sidebar overlay */}
+      {mobileSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          onClick={() => setMobileSidebarOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
-      <aside className={`${sidebarCollapsed ? 'w-16' : 'w-64'} bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 transition-all duration-300`}>
+      <aside className={`
+        ${sidebarCollapsed ? 'w-16' : 'w-64'}
+        bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 transition-all duration-300
+        fixed lg:sticky top-0 h-screen z-50
+        ${mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0
+      `}>
         <div className="flex flex-col h-full">
           {/* Logo/Header */}
           <div className="p-4 border-b border-gray-200 dark:border-gray-700">
@@ -322,12 +336,13 @@ function AppContent() {
           )}
 
           {/* Navigation */}
-          <nav className="flex-1 p-4 space-y-1">
+          <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
             {navItems.map((item) => (
               <NavLink
                 key={item.id}
                 to={VIEW_TO_PATH[item.id]}
                 end={item.id === 'dashboard' || item.id === 'compliance'}
+                onClick={() => setMobileSidebarOpen(false)}
                 className={({ isActive }) => `w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
                   isActive
                     ? 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-400'
@@ -408,7 +423,31 @@ function AppContent() {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-y-auto">
+      <main className="flex-1 overflow-y-auto min-w-0">
+        {/* Mobile header */}
+        <div className="sticky top-0 z-30 lg:hidden bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-3 flex items-center gap-3">
+          <button
+            onClick={() => setMobileSidebarOpen(true)}
+            className="p-2 -ml-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+          <div className="flex items-center gap-2">
+            <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-6 h-6">
+              <circle cx="24" cy="24" r="20" fill="#2D5016"/>
+              <circle cx="24" cy="26" r="12" fill="#E8791D"/>
+              <ellipse cx="24" cy="24" rx="8" ry="10" fill="#F4A934"/>
+              <path d="M24 4C24 4 28 10 28 14C28 18 26 20 24 20C22 20 20 18 20 14C20 10 24 4 24 4Z" fill="#4A7A2A"/>
+            </svg>
+            <span className="font-bold text-bark-brown dark:text-white font-heading text-sm">Grove Master</span>
+          </div>
+          <button
+            onClick={toggleTheme}
+            className="ml-auto p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+          >
+            {isDarkMode ? <Sun className="w-5 h-5 text-yellow-500" /> : <Moon className="w-5 h-5" />}
+          </button>
+        </div>
         <ErrorBoundary level="section" name="Page Content" key={currentView}>
           <Routes>
             <Route index element={<Dashboard onNavigate={handleNavigate} />} />

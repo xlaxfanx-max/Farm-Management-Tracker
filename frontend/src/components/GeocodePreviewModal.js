@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import { X, Check, MapPin, Navigation, Edit3, AlertCircle, RefreshCw } from 'lucide-react';
+import { useConfirm } from '../contexts/ConfirmContext';
+import { useToast } from '../contexts/ToastContext';
 
 // Custom marker icon
 const createMarkerIcon = (color = '#16a34a') => {
@@ -96,6 +98,8 @@ function GeocodePreviewModal({
   error,
   onRetry
 }) {
+  const confirmDialog = useConfirm();
+  const toast = useToast();
   const [position, setPosition] = useState(null);
   const [displayName, setDisplayName] = useState('');
   const [alternatives, setAlternatives] = useState([]);
@@ -122,20 +126,19 @@ function GeocodePreviewModal({
     }
   }, [position, manualMode]);
 
-  const handleManualSubmit = () => {
+  const handleManualSubmit = async () => {
     const lat = parseFloat(manualLat);
     const lng = parseFloat(manualLng);
 
     if (isNaN(lat) || isNaN(lng)) {
-      alert('Please enter valid coordinates');
+      toast.error('Please enter valid coordinates');
       return;
     }
 
     // Basic validation for California bounds
     if (lat < 32 || lat > 42 || lng < -124.5 || lng > -114) {
-      if (!window.confirm('These coordinates appear to be outside California. Continue anyway?')) {
-        return;
-      }
+      const ok = await confirmDialog({ title: 'Are you sure?', message: 'These coordinates appear to be outside California. Continue anyway?', confirmLabel: 'Continue', variant: 'warning' });
+      if (!ok) return;
     }
 
     setPosition([lat, lng]);

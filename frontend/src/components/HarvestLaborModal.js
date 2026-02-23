@@ -6,6 +6,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, Plus, Users, AlertTriangle } from 'lucide-react';
 import { harvestLaborAPI, laborContractorsAPI, HARVEST_CONSTANTS } from '../services/api';
+import { useToast } from '../contexts/ToastContext';
 
 const HarvestLaborModal = ({
   isOpen,
@@ -16,6 +17,7 @@ const HarvestLaborModal = ({
   onAddContractor,
   contractorRefreshTrigger
 }) => {
+  const toast = useToast();
   const [formData, setFormData] = useState({
     harvest: '',
     contractor: '',
@@ -243,7 +245,7 @@ const HarvestLaborModal = ({
       if (error.response?.data) {
         setErrors(error.response.data);
       } else {
-        alert('Failed to save labor record. Please try again.');
+        toast.error('Failed to save labor record. Please try again.');
       }
     } finally {
       setSaving(false);
@@ -280,28 +282,28 @@ const HarvestLaborModal = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b sticky top-0 bg-white">
+        <div className="flex items-center justify-between p-4 border-b dark:border-gray-700 sticky top-0 bg-white dark:bg-gray-800">
           <div className="flex items-center gap-2">
-            <Users className="text-purple-600" size={24} />
-            <h2 className="text-xl font-semibold">
+            <Users className="text-purple-600 dark:text-purple-400" size={24} />
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
               {labor ? 'Edit Labor Record' : 'Add Labor to Harvest'}
             </h2>
           </div>
-          <button onClick={onClose} className="p-1 hover:bg-gray-100 rounded">
+          <button onClick={onClose} className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded text-gray-500 dark:text-gray-400">
             <X size={24} />
           </button>
         </div>
 
         {/* Contractor Warnings */}
         {contractorWarnings.length > 0 && (
-          <div className="mx-4 mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+          <div className="mx-4 mt-4 p-3 bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-800 rounded-lg">
             <div className="flex items-start gap-2">
-              <AlertTriangle className="text-yellow-600 flex-shrink-0" size={20} />
+              <AlertTriangle className="text-yellow-600 dark:text-yellow-400 flex-shrink-0" size={20} />
               <div>
-                <p className="font-medium text-yellow-800">Contractor Warnings</p>
-                <ul className="text-sm text-yellow-700 mt-1">
+                <p className="font-medium text-yellow-800 dark:text-yellow-300">Contractor Warnings</p>
+                <ul className="text-sm text-yellow-700 dark:text-yellow-400 mt-1">
                   {contractorWarnings.map((w, i) => (
                     <li key={i}>• {w}</li>
                   ))}
@@ -315,12 +317,12 @@ const HarvestLaborModal = ({
         <form onSubmit={handleSubmit} className="p-4 space-y-6">
           {/* Crew Information */}
           <div>
-            <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">
+            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-3">
               Crew Information
             </h3>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Labor Contractor
                 </label>
                 <div className="flex gap-2">
@@ -341,7 +343,7 @@ const HarvestLaborModal = ({
                     <button
                       type="button"
                       onClick={onAddContractor}
-                      className="px-3 py-2 border rounded-lg hover:bg-gray-50"
+                      className="px-3 py-2 border dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
                       title="Add new contractor"
                     >
                       <Plus size={18} />
@@ -352,7 +354,7 @@ const HarvestLaborModal = ({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Crew Name (if no contractor)
                 </label>
                 <input
@@ -360,7 +362,7 @@ const HarvestLaborModal = ({
                   name="crew_name"
                   value={formData.crew_name}
                   onChange={handleChange}
-                  className="w-full border rounded-lg px-3 py-2"
+                  className="w-full border dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   placeholder="e.g., Morning Crew A"
                 />
               </div>
@@ -368,7 +370,7 @@ const HarvestLaborModal = ({
 
             <div className="grid grid-cols-2 gap-4 mt-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Foreman Name
                 </label>
                 <input
@@ -376,12 +378,12 @@ const HarvestLaborModal = ({
                   name="foreman_name"
                   value={formData.foreman_name}
                   onChange={handleChange}
-                  className="w-full border rounded-lg px-3 py-2"
+                  className="w-full border dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Worker Count <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -390,7 +392,7 @@ const HarvestLaborModal = ({
                   value={formData.worker_count}
                   onChange={handleChange}
                   min="1"
-                  className={`w-full border rounded-lg px-3 py-2 ${errors.worker_count ? 'border-red-500' : ''}`}
+                  className={`w-full border dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${errors.worker_count ? 'border-red-500' : ''}`}
                   required
                 />
                 {errors.worker_count && <p className="text-red-500 text-sm mt-1">{errors.worker_count}</p>}
@@ -400,12 +402,12 @@ const HarvestLaborModal = ({
 
           {/* Time Tracking */}
           <div>
-            <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">
+            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-3">
               Time Tracking
             </h3>
             <div className="grid grid-cols-3 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Start Time
                 </label>
                 <input
@@ -413,12 +415,12 @@ const HarvestLaborModal = ({
                   name="start_time"
                   value={formData.start_time}
                   onChange={handleChange}
-                  className="w-full border rounded-lg px-3 py-2"
+                  className="w-full border dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   End Time
                 </label>
                 <input
@@ -426,12 +428,12 @@ const HarvestLaborModal = ({
                   name="end_time"
                   value={formData.end_time}
                   onChange={handleChange}
-                  className="w-full border rounded-lg px-3 py-2"
+                  className="w-full border dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Total Hours
                 </label>
                 <input
@@ -441,11 +443,11 @@ const HarvestLaborModal = ({
                   onChange={handleChange}
                   step="0.25"
                   min="0"
-                  className="w-full border rounded-lg px-3 py-2"
+                  className="w-full border dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   placeholder={calculatedHours ? calculatedHours.toString() : ''}
                 />
                 {calculatedHours > 0 && !formData.total_hours && (
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                     Calculated: {calculatedHours} hours
                   </p>
                 )}
@@ -454,20 +456,20 @@ const HarvestLaborModal = ({
           </div>
 
           {/* Cost Tracking */}
-          <div className="border rounded-lg p-4 bg-purple-50">
-            <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">
+          <div className="border dark:border-gray-700 rounded-lg p-4 bg-purple-50 dark:bg-purple-900/20">
+            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-3">
               Cost Tracking
             </h3>
             <div className="grid grid-cols-4 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Pay Type
                 </label>
                 <select
                   name="pay_type"
                   value={formData.pay_type}
                   onChange={handleChange}
-                  className="w-full border rounded-lg px-3 py-2"
+                  className="w-full border dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 >
                   {HARVEST_CONSTANTS.PAY_TYPES.map(p => (
                     <option key={p.value} value={p.value}>{p.label}</option>
@@ -476,7 +478,7 @@ const HarvestLaborModal = ({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Rate
                 </label>
                 <input
@@ -486,7 +488,7 @@ const HarvestLaborModal = ({
                   onChange={handleChange}
                   step="0.01"
                   min="0"
-                  className="w-full border rounded-lg px-3 py-2"
+                  className="w-full border dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   placeholder={formData.pay_type === 'hourly' ? '$/hour' : '$/bin'}
                 />
                 {lastLaborForContractor && formData.rate && !labor && (
@@ -497,7 +499,7 @@ const HarvestLaborModal = ({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Bins Picked
                 </label>
                 <input
@@ -506,13 +508,13 @@ const HarvestLaborModal = ({
                   value={formData.bins_picked}
                   onChange={handleChange}
                   min="0"
-                  className="w-full border rounded-lg px-3 py-2"
+                  className="w-full border dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   placeholder="For piece rate"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Total Cost
                 </label>
                 <input
@@ -522,10 +524,10 @@ const HarvestLaborModal = ({
                   onChange={handleChange}
                   step="0.01"
                   min="0"
-                  className="w-full border rounded-lg px-3 py-2"
+                  className="w-full border dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   placeholder={formatCurrency(calculatedCost)}
                 />
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                   Calculated: {formatCurrency(calculatedCost)}
                 </p>
               </div>
@@ -533,12 +535,12 @@ const HarvestLaborModal = ({
           </div>
 
           {/* GAP/GHP Compliance */}
-          <div className="border rounded-lg p-4 bg-blue-50">
-            <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">
+          <div className="border dark:border-gray-700 rounded-lg p-4 bg-blue-50 dark:bg-blue-900/20">
+            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-3">
               GAP/GHP Worker Compliance
             </h3>
             <div className="grid grid-cols-3 gap-4">
-              <label className="flex items-center gap-2 p-3 bg-white rounded-lg border cursor-pointer hover:bg-gray-50">
+              <label className="flex items-center gap-2 p-3 bg-white dark:bg-gray-800 rounded-lg border dark:border-gray-600 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700">
                 <input
                   type="checkbox"
                   name="training_verified"
@@ -547,12 +549,12 @@ const HarvestLaborModal = ({
                   className="rounded border-gray-300"
                 />
                 <div>
-                  <span className="text-sm font-medium">Training Verified</span>
-                  <p className="text-xs text-gray-500">Workers have food safety training</p>
+                  <span className="text-sm font-medium text-gray-900 dark:text-white">Training Verified</span>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Workers have food safety training</p>
                 </div>
               </label>
 
-              <label className="flex items-center gap-2 p-3 bg-white rounded-lg border cursor-pointer hover:bg-gray-50">
+              <label className="flex items-center gap-2 p-3 bg-white dark:bg-gray-800 rounded-lg border dark:border-gray-600 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700">
                 <input
                   type="checkbox"
                   name="hygiene_facilities_available"
@@ -561,12 +563,12 @@ const HarvestLaborModal = ({
                   className="rounded border-gray-300"
                 />
                 <div>
-                  <span className="text-sm font-medium">Hygiene Facilities</span>
-                  <p className="text-xs text-gray-500">Handwashing & toilets available</p>
+                  <span className="text-sm font-medium text-gray-900 dark:text-white">Hygiene Facilities</span>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Handwashing & toilets available</p>
                 </div>
               </label>
 
-              <label className="flex items-center gap-2 p-3 bg-white rounded-lg border cursor-pointer hover:bg-gray-50">
+              <label className="flex items-center gap-2 p-3 bg-white dark:bg-gray-800 rounded-lg border dark:border-gray-600 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700">
                 <input
                   type="checkbox"
                   name="illness_check_performed"
@@ -575,8 +577,8 @@ const HarvestLaborModal = ({
                   className="rounded border-gray-300"
                 />
                 <div>
-                  <span className="text-sm font-medium">Illness Check</span>
-                  <p className="text-xs text-gray-500">No sick workers present</p>
+                  <span className="text-sm font-medium text-gray-900 dark:text-white">Illness Check</span>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">No sick workers present</p>
                 </div>
               </label>
             </div>
@@ -584,7 +586,7 @@ const HarvestLaborModal = ({
 
           {/* Notes */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Notes
             </label>
             <textarea
@@ -592,17 +594,17 @@ const HarvestLaborModal = ({
               value={formData.notes}
               onChange={handleChange}
               rows={2}
-              className="w-full border rounded-lg px-3 py-2"
+              className="w-full border dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               placeholder="Any additional notes..."
             />
           </div>
 
           {/* Form Actions */}
-          <div className="flex justify-end gap-3 pt-4 border-t">
+          <div className="flex justify-end gap-3 pt-4 border-t dark:border-gray-700">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 border rounded-lg hover:bg-gray-50"
+              className="px-4 py-2 border dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
             >
               Cancel
             </button>

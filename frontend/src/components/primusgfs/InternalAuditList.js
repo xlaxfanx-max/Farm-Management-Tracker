@@ -17,6 +17,7 @@ import {
   Download,
 } from 'lucide-react';
 import { primusGFSAPI } from '../../services/api';
+import { useConfirm } from '../../contexts/ConfirmContext';
 
 const formatDate = (str) => {
   if (!str) return '-';
@@ -333,6 +334,7 @@ const AuditModal = ({ onClose, onSave, editAudit }) => {
 };
 
 export default function InternalAuditList() {
+  const confirm = useConfirm();
   const [audits, setAudits] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -375,7 +377,8 @@ export default function InternalAuditList() {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this audit?')) return;
+    const ok = await confirm({ title: 'Are you sure?', message: 'Are you sure you want to delete this audit?', confirmLabel: 'Delete', variant: 'danger' });
+    if (!ok) return;
     try {
       await primusGFSAPI.deleteAudit(id);
       fetchAudits();

@@ -4,6 +4,7 @@ import {
   Upload, Paperclip, Download, AlertTriangle,
 } from 'lucide-react';
 import { primusGFSAPI } from '../../services/api';
+import { useConfirm } from '../../contexts/ConfirmContext';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -528,6 +529,7 @@ const TrainingSessionModal = ({ session, onClose, onSave }) => {
 // ---------------------------------------------------------------------------
 
 export default function TrainingSessions() {
+  const confirm = useConfirm();
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -565,7 +567,8 @@ export default function TrainingSessions() {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this training session?')) return;
+    const ok = await confirm({ title: 'Are you sure?', message: 'Are you sure you want to delete this training session?', confirmLabel: 'Delete', variant: 'danger' });
+    if (!ok) return;
     try {
       await primusGFSAPI.deleteTrainingSession(id);
       fetchSessions();

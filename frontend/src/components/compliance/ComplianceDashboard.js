@@ -37,6 +37,7 @@ import {
   Phone,
   FlaskConical,
   ClipboardList,
+  Download,
 } from 'lucide-react';
 import {
   complianceDashboardAPI,
@@ -47,6 +48,7 @@ import {
   fsmaAPI,
   primusGFSAPI,
   complianceProfileAPI,
+  inspectorReportAPI,
 } from '../../services/api';
 
 // Utility function to format dates
@@ -675,7 +677,7 @@ export default function ComplianceDashboard({ onNavigate }) {
   };
 
   // Calculate overall compliance score
-  const overallScore = dashboardData?.score || 85;
+  const overallScore = dashboardData?.score ?? 0;
 
   // Determine status for each category
   const getPesticideStatus = () => {
@@ -900,8 +902,37 @@ export default function ComplianceDashboard({ onNavigate }) {
           />
         </div>
 
-        {/* Quick Actions */}
+        {/* Inspector Report Banner */}
         <div className="mt-8">
+          <button
+            onClick={async () => {
+              try {
+                const response = await inspectorReportAPI.downloadPDF();
+                const url = window.URL.createObjectURL(new Blob([response.data]));
+                const link = document.createElement('a');
+                link.href = url;
+                link.setAttribute('download', `compliance_report_${new Date().toISOString().split('T')[0]}.pdf`);
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+                window.URL.revokeObjectURL(url);
+              } catch (error) {
+                console.error('Error downloading report:', error);
+              }
+            }}
+            className="w-full flex items-center gap-4 p-4 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg hover:from-green-700 hover:to-green-800 transition-all shadow-sm hover:shadow"
+          >
+            <Download className="w-6 h-6 flex-shrink-0" />
+            <div className="text-left">
+              <div className="font-semibold">Download Inspector-Ready Report</div>
+              <div className="text-green-100 text-sm">One-click PDF with licenses, PHI status, water testing, PUR compliance, and deadlines</div>
+            </div>
+            <ChevronRight className="w-5 h-5 ml-auto flex-shrink-0" />
+          </button>
+        </div>
+
+        {/* Quick Actions */}
+        <div className="mt-6">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Quick Actions</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
             <button

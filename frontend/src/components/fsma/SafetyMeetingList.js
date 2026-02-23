@@ -19,6 +19,8 @@ import {
   Briefcase,
 } from 'lucide-react';
 import { fsmaAPI } from '../../services/api';
+import { useConfirm } from '../../contexts/ConfirmContext';
+import { useToast } from '../../contexts/ToastContext';
 import SignatureCapture from './SignatureCapture';
 
 /**
@@ -31,6 +33,8 @@ import SignatureCapture from './SignatureCapture';
  * - Topics covered tracking
  */
 const SafetyMeetingList = () => {
+  const confirm = useConfirm();
+  const toast = useToast();
   const [meetings, setMeetings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showMeetingModal, setShowMeetingModal] = useState(false);
@@ -150,7 +154,7 @@ const SafetyMeetingList = () => {
       fetchComplianceStatus();
     } catch (error) {
       console.error('Error saving meeting:', error);
-      alert('Failed to save meeting');
+      toast.error('Failed to save meeting');
     }
   };
 
@@ -165,12 +169,13 @@ const SafetyMeetingList = () => {
       fetchMeetings();
     } catch (error) {
       console.error('Error signing in attendee:', error);
-      alert('Failed to sign in attendee');
+      toast.error('Failed to sign in attendee');
     }
   };
 
   const handleDeleteMeeting = async (meetingId) => {
-    if (!window.confirm('Are you sure you want to delete this meeting?')) return;
+    const ok = await confirm({ title: 'Are you sure?', message: 'Are you sure you want to delete this meeting?', confirmLabel: 'Delete', variant: 'danger' });
+    if (!ok) return;
     try {
       await fsmaAPI.deleteSafetyMeeting(meetingId);
       fetchMeetings();
@@ -181,7 +186,8 @@ const SafetyMeetingList = () => {
   };
 
   const handleRemoveAttendee = async (meetingId, attendeeId) => {
-    if (!window.confirm('Remove this attendee from the meeting?')) return;
+    const ok = await confirm({ title: 'Are you sure?', message: 'Remove this attendee from the meeting?', confirmLabel: 'Remove', variant: 'warning' });
+    if (!ok) return;
     try {
       await fsmaAPI.removeMeetingAttendee(meetingId, attendeeId);
       fetchMeetings();

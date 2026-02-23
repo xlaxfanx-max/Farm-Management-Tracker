@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Wrench, Plus, Search, Filter, X, Edit2, Trash2, CheckCircle,
   AlertTriangle, Loader2, RefreshCw, Clock, Upload, Paperclip, Download } from 'lucide-react';
 import { primusGFSAPI } from '../../services/api';
+import { useConfirm } from '../../contexts/ConfirmContext';
 
 const formatDate = (str) => str ? new Date(str).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '-';
 
@@ -242,6 +243,7 @@ const CalibrationModal = ({ record, onClose, onSave, completeMode }) => {
 };
 
 export default function EquipmentCalibration() {
+  const confirm = useConfirm();
   const [calibrations, setCalibrations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -278,7 +280,8 @@ export default function EquipmentCalibration() {
     fetchCalibrations();
   };
   const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this calibration record?')) return;
+    const ok = await confirm({ title: 'Are you sure?', message: 'Are you sure you want to delete this calibration record?', confirmLabel: 'Delete', variant: 'danger' });
+    if (!ok) return;
     try { await primusGFSAPI.deleteCalibration(id); fetchCalibrations(); }
     catch (err) { console.error('Failed to delete calibration:', err); }
   };

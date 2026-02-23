@@ -18,9 +18,13 @@ import {
   Boxes
 } from 'lucide-react';
 import { packinghousesAPI } from '../../services/api';
+import { useConfirm } from '../../contexts/ConfirmContext';
+import { useToast } from '../../contexts/ToastContext';
 import PackinghouseModal from './PackinghouseModal';
 
 const PackinghouseList = () => {
+  const confirm = useConfirm();
+  const toast = useToast();
   const [packinghouses, setPackinghouses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -49,14 +53,19 @@ const PackinghouseList = () => {
   };
 
   const handleDelete = async (id, name) => {
-    if (window.confirm(`Are you sure you want to delete "${name}"? This action cannot be undone.`)) {
-      try {
-        await packinghousesAPI.delete(id);
-        fetchPackinghouses();
-      } catch (error) {
-        console.error('Error deleting packinghouse:', error);
-        alert('Failed to delete packinghouse. It may have associated pools or deliveries.');
-      }
+    const ok = await confirm({
+      title: 'Are you sure?',
+      message: `Are you sure you want to delete "${name}"? This action cannot be undone.`,
+      confirmLabel: 'Delete',
+      variant: 'danger',
+    });
+    if (!ok) return;
+    try {
+      await packinghousesAPI.delete(id);
+      fetchPackinghouses();
+    } catch (error) {
+      console.error('Error deleting packinghouse:', error);
+      toast.error('Failed to delete packinghouse. It may have associated pools or deliveries.');
     }
   };
 

@@ -17,6 +17,7 @@ import {
   Droplets,
 } from 'lucide-react';
 import { fsmaAPI } from '../../services/api';
+import MetricCard from '../ui/MetricCard';
 import VisitorLogList from './VisitorLogList';
 import CleaningLogList from './CleaningLogList';
 import SafetyMeetingList from './SafetyMeetingList';
@@ -453,7 +454,9 @@ const OverviewTab = ({ data, error, onTabChange, onRefresh }) => {
           title="Cleaning Compliance"
           value={`${data.cleaning_compliance_rate || 0}%`}
           subtitle="Last 7 days"
-          trend={data.cleaning_compliance_rate >= 90 ? 'up' : 'down'}
+          trend={data.cleaning_compliance_rate >= 90 ? 'Good' : 'Needs Attention'}
+          trendDirection={data.cleaning_compliance_rate >= 90 ? 'up' : 'down'}
+          color={data.cleaning_compliance_rate >= 90 ? 'green' : 'amber'}
         />
 
         {/* Visitor Log Compliance */}
@@ -461,7 +464,9 @@ const OverviewTab = ({ data, error, onTabChange, onRefresh }) => {
           title="Visitor Signature Rate"
           value={`${data.visitor_log_compliance_rate || 0}%`}
           subtitle="Last 7 days"
-          trend={data.visitor_log_compliance_rate >= 90 ? 'up' : 'down'}
+          trend={data.visitor_log_compliance_rate >= 90 ? 'Good' : 'Needs Attention'}
+          trendDirection={data.visitor_log_compliance_rate >= 90 ? 'up' : 'down'}
+          color={data.visitor_log_compliance_rate >= 90 ? 'green' : 'amber'}
         />
       </div>
 
@@ -540,25 +545,6 @@ const QuickActionButton = ({ icon: Icon, label, onClick }) => (
     </div>
     <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{label}</span>
   </button>
-);
-
-/**
- * Metric Card Component
- */
-const MetricCard = ({ title, value, subtitle, trend }) => (
-  <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-    <p className="text-sm text-gray-500 dark:text-gray-400">{title}</p>
-    <div className="flex items-end gap-2 mt-2">
-      <span className="text-3xl font-bold text-gray-900 dark:text-white">{value}</span>
-      {trend === 'up' && (
-        <span className="text-green-600 dark:text-green-400 text-sm">Good</span>
-      )}
-      {trend === 'down' && (
-        <span className="text-yellow-600 dark:text-yellow-400 text-sm">Needs Attention</span>
-      )}
-    </div>
-    <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{subtitle}</p>
-  </div>
 );
 
 export default FSMADashboard;

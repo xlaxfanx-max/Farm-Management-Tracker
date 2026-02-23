@@ -21,6 +21,7 @@ import {
   Upload,
 } from 'lucide-react';
 import { complianceReportsAPI, COMPLIANCE_CONSTANTS } from '../../services/api';
+import { useConfirm } from '../../contexts/ConfirmContext';
 
 // Format date for display
 const formatDate = (dateString) => {
@@ -524,6 +525,7 @@ const GenerateReportModal = ({ onClose, onGenerate }) => {
 
 // Main Component
 export default function ComplianceReports({ onNavigate }) {
+  const confirm = useConfirm();
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
@@ -578,19 +580,19 @@ export default function ComplianceReports({ onNavigate }) {
 
   // Handle submit
   const handleSubmit = async (report) => {
-    if (window.confirm(`Are you sure you want to submit this ${report.report_type_display || report.report_type} report?`)) {
-      await complianceReportsAPI.submit(report.id);
-      fetchReports();
-      setSelectedReport(null);
-    }
+    const ok = await confirm({ title: 'Are you sure?', message: `Are you sure you want to submit this ${report.report_type_display || report.report_type} report?`, confirmLabel: 'Submit', variant: 'warning' });
+    if (!ok) return;
+    await complianceReportsAPI.submit(report.id);
+    fetchReports();
+    setSelectedReport(null);
   };
 
   // Handle delete
   const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this report?')) {
-      await complianceReportsAPI.delete(id);
-      fetchReports();
-    }
+    const ok = await confirm({ title: 'Are you sure?', message: 'Are you sure you want to delete this report?', confirmLabel: 'Delete', variant: 'danger' });
+    if (!ok) return;
+    await complianceReportsAPI.delete(id);
+    fetchReports();
   };
 
   // Handle download

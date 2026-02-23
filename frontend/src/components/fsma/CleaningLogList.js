@@ -21,6 +21,8 @@ import {
   Check,
 } from 'lucide-react';
 import { fsmaAPI } from '../../services/api';
+import { useConfirm } from '../../contexts/ConfirmContext';
+import { useToast } from '../../contexts/ToastContext';
 import SignatureCapture from './SignatureCapture';
 
 /**
@@ -33,6 +35,8 @@ import SignatureCapture from './SignatureCapture';
  * - Compliance status overview
  */
 const CleaningLogList = () => {
+  const confirm = useConfirm();
+  const toast = useToast();
   const [activeTab, setActiveTab] = useState('logs'); // 'logs' or 'facilities'
   const [cleaningLogs, setCleaningLogs] = useState([]);
   const [facilities, setFacilities] = useState([]);
@@ -169,7 +173,7 @@ const CleaningLogList = () => {
       fetchFacilities(); // Refresh to update last_cleaned
     } catch (error) {
       console.error('Error saving cleaning log:', error);
-      alert('Failed to save cleaning log');
+      toast.error('Failed to save cleaning log');
     }
   };
 
@@ -186,12 +190,13 @@ const CleaningLogList = () => {
       fetchFacilities();
     } catch (error) {
       console.error('Error saving facility:', error);
-      alert('Failed to save facility');
+      toast.error('Failed to save facility');
     }
   };
 
   const handleDeleteLog = async (logId) => {
-    if (!window.confirm('Are you sure you want to delete this cleaning log?')) return;
+    const ok = await confirm({ title: 'Are you sure?', message: 'Are you sure you want to delete this cleaning log?', confirmLabel: 'Delete', variant: 'danger' });
+    if (!ok) return;
     try {
       await fsmaAPI.deleteCleaningLog(logId);
       fetchCleaningLogs();
@@ -201,7 +206,8 @@ const CleaningLogList = () => {
   };
 
   const handleDeleteFacility = async (facilityId) => {
-    if (!window.confirm('Are you sure you want to delete this facility?')) return;
+    const ok = await confirm({ title: 'Are you sure?', message: 'Are you sure you want to delete this facility?', confirmLabel: 'Delete', variant: 'danger' });
+    if (!ok) return;
     try {
       await fsmaAPI.deleteFacility(facilityId);
       fetchFacilities();

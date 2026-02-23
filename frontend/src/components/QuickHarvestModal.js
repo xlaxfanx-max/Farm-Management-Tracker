@@ -6,6 +6,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, Zap } from 'lucide-react';
 import { harvestsAPI, HARVEST_CONSTANTS, getUnitLabelForCropVariety } from '../services/api';
+import { useToast } from '../contexts/ToastContext';
 
 const QuickHarvestModal = ({
   isOpen,
@@ -25,6 +26,7 @@ const QuickHarvestModal = ({
   const [errors, setErrors] = useState({});
   const [saving, setSaving] = useState(false);
   const [lastCropUsed, setLastCropUsed] = useState(null);
+  const toast = useToast();
 
   // Dynamic unit label based on selected crop variety
   const unitInfo = getUnitLabelForCropVariety(formData.crop_variety);
@@ -151,7 +153,7 @@ const QuickHarvestModal = ({
       if (error.response?.data) {
         setErrors(error.response.data);
       } else {
-        alert('Failed to save harvest. Please try again.');
+        toast.error('Failed to save harvest. Please try again.');
       }
     } finally {
       setSaving(false);
@@ -168,14 +170,14 @@ const QuickHarvestModal = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b">
+        <div className="flex items-center justify-between p-4 border-b dark:border-gray-700">
           <div className="flex items-center gap-2">
-            <Zap size={20} className="text-orange-600" />
-            <h2 className="text-xl font-semibold">Quick Harvest Entry</h2>
+            <Zap size={20} className="text-orange-600 dark:text-orange-400" />
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Quick Harvest Entry</h2>
           </div>
-          <button onClick={onClose} className="p-1 hover:bg-gray-100 rounded">
+          <button onClick={onClose} className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded text-gray-500 dark:text-gray-400">
             <X size={24} />
           </button>
         </div>
@@ -184,14 +186,14 @@ const QuickHarvestModal = ({
         <form onSubmit={handleSubmit} className="p-4 space-y-4">
           {/* Field Selection */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Field <span className="text-red-500">*</span>
             </label>
             <select
               name="field"
               value={formData.field}
               onChange={handleChange}
-              className={`w-full border rounded-lg px-3 py-2 ${errors.field ? 'border-red-500' : ''}`}
+              className={`w-full border dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${errors.field ? 'border-red-500' : ''}`}
               required
             >
               <option value="">Select a field...</option>
@@ -213,7 +215,7 @@ const QuickHarvestModal = ({
 
           {/* Harvest Date */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Harvest Date <span className="text-red-500">*</span>
             </label>
             <input
@@ -221,7 +223,7 @@ const QuickHarvestModal = ({
               name="harvest_date"
               value={formData.harvest_date}
               onChange={handleChange}
-              className={`w-full border rounded-lg px-3 py-2 ${errors.harvest_date ? 'border-red-500' : ''}`}
+              className={`w-full border dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${errors.harvest_date ? 'border-red-500' : ''}`}
               required
             />
             {errors.harvest_date && <p className="text-red-500 text-sm mt-1">{errors.harvest_date}</p>}
@@ -229,7 +231,7 @@ const QuickHarvestModal = ({
 
           {/* Total Bins/Lbs */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Total {unitInfo.labelPlural} <span className="text-red-500">*</span>
             </label>
             <input
@@ -238,7 +240,7 @@ const QuickHarvestModal = ({
               value={formData.total_bins}
               onChange={handleChange}
               min="1"
-              className={`w-full border rounded-lg px-3 py-2 ${errors.total_bins ? 'border-red-500' : ''}`}
+              className={`w-full border dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${errors.total_bins ? 'border-red-500' : ''}`}
               placeholder={`Number of ${unitInfo.labelPlural.toLowerCase()} harvested`}
               required
             />
@@ -247,14 +249,14 @@ const QuickHarvestModal = ({
 
           {/* Crop Variety */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Crop Variety <span className="text-red-500">*</span>
             </label>
             <select
               name="crop_variety"
               value={formData.crop_variety}
               onChange={handleChange}
-              className="w-full border rounded-lg px-3 py-2"
+              className="w-full border dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               required
             >
               {HARVEST_CONSTANTS.CROP_VARIETIES.map(crop => (
@@ -268,7 +270,7 @@ const QuickHarvestModal = ({
 
           {/* Notes */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Notes (Optional)
             </label>
             <textarea
@@ -276,14 +278,14 @@ const QuickHarvestModal = ({
               value={formData.notes}
               onChange={handleChange}
               rows={2}
-              className="w-full border rounded-lg px-3 py-2"
+              className="w-full border dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               placeholder="Any additional notes..."
             />
           </div>
 
           {/* Auto-filled Info Notice */}
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-            <p className="text-xs text-blue-800">
+          <div className="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
+            <p className="text-xs text-blue-800 dark:text-blue-300">
               <strong>Auto-filled:</strong> Acres (from field), bin weight (default for crop), pick number (auto-increment), status (In Progress)
             </p>
           </div>
@@ -300,14 +302,14 @@ const QuickHarvestModal = ({
             <button
               type="button"
               onClick={handleSwitchToAdvanced}
-              className="w-full px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
             >
               Switch to Advanced Mode
             </button>
             <button
               type="button"
               onClick={onClose}
-              className="w-full px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg"
+              className="w-full px-4 py-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
             >
               Cancel
             </button>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FileText, Download, AlertTriangle, CheckCircle, Calendar, FileSpreadsheet } from 'lucide-react';
 import axios from 'axios';
+import { useToast } from '../contexts/ToastContext';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
 
@@ -14,6 +15,7 @@ const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api
  * - Export PUR-formatted CSV reports
  */
 function PURReports({ farms }) {
+  const toast = useToast();
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [selectedFarm, setSelectedFarm] = useState('');
@@ -35,7 +37,7 @@ function PURReports({ farms }) {
   // Validate applications for PUR compliance
   const handleValidate = async () => {
     if (!startDate || !endDate) {
-      alert('Please select both start and end dates');
+      toast.error('Please select both start and end dates');
       return;
     }
 
@@ -62,7 +64,7 @@ function PURReports({ farms }) {
       setShowResults(true);
     } catch (error) {
       console.error('Validation error:', error);
-      alert('Failed to validate applications. Please try again.');
+      toast.error('Failed to validate applications. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -71,7 +73,7 @@ function PURReports({ farms }) {
   // Export PUR CSV report
   const handleExport = async () => {
     if (!validation || !validation.valid) {
-      alert('Please validate applications first and fix any errors before exporting.');
+      toast.error('Please validate applications first and fix any errors before exporting.');
       return;
     }
 
@@ -108,10 +110,10 @@ function PURReports({ farms }) {
       link.remove();
       window.URL.revokeObjectURL(url);
 
-      alert('PUR report downloaded successfully!');
+      toast.success('PUR report downloaded successfully!');
     } catch (error) {
       console.error('Export error:', error);
-      alert('Failed to export report. Please ensure all validations pass.');
+      toast.error('Failed to export report. Please ensure all validations pass.');
     } finally {
       setLoading(false);
     }

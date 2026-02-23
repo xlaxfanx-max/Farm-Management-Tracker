@@ -17,6 +17,8 @@ import {
 import api, { irrigationDashboardAPI } from '../services/api';
 import { useData } from '../contexts/DataContext';
 import { useModal } from '../contexts/ModalContext';
+import { useConfirm } from '../contexts/ConfirmContext';
+import { useToast } from '../contexts/ToastContext';
 import IrrigationDashboard from './IrrigationDashboard';
 
 // =============================================================================
@@ -88,15 +90,15 @@ const MetricCard = ({ title, value, subtitle, icon: Icon, trend, color = 'blue',
 
   return (
     <div
-      className={`relative overflow-hidden bg-white rounded-xl shadow-sm border border-gray-100 p-5 hover:shadow-md transition-all ${onClick ? 'cursor-pointer' : ''}`}
+      className={`relative overflow-hidden bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-5 hover:shadow-md transition-all ${onClick ? 'cursor-pointer' : ''}`}
       onClick={onClick}
     >
       <div className="flex items-start justify-between">
         <div className="flex-1">
-          <p className="text-sm font-medium text-gray-500">{title}</p>
-          <p className="text-2xl font-bold text-gray-900 mt-1">{value}</p>
+          <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{title}</p>
+          <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{value}</p>
           {subtitle && (
-            <p className="text-xs text-gray-400 mt-1">{subtitle}</p>
+            <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{subtitle}</p>
           )}
           {trend && (
             <div className={`flex items-center gap-1 mt-2 text-xs ${trend > 0 ? 'text-green-600' : 'text-red-600'}`}>
@@ -116,10 +118,10 @@ const MetricCard = ({ title, value, subtitle, icon: Icon, trend, color = 'blue',
 
 const AlertBanner = ({ type, title, message, action, onAction }) => {
   const config = {
-    error: { bg: 'bg-red-50', border: 'border-red-200', icon: AlertTriangle, iconColor: 'text-red-500', textColor: 'text-red-800' },
-    warning: { bg: 'bg-amber-50', border: 'border-amber-200', icon: AlertCircle, iconColor: 'text-amber-500', textColor: 'text-amber-800' },
-    info: { bg: 'bg-blue-50', border: 'border-blue-200', icon: Activity, iconColor: 'text-blue-500', textColor: 'text-blue-800' },
-    success: { bg: 'bg-green-50', border: 'border-green-200', icon: CheckCircle, iconColor: 'text-green-500', textColor: 'text-green-800' },
+    error: { bg: 'bg-red-50 dark:bg-red-900/30', border: 'border-red-200 dark:border-red-800', icon: AlertTriangle, iconColor: 'text-red-500 dark:text-red-400', textColor: 'text-red-800 dark:text-red-200' },
+    warning: { bg: 'bg-amber-50 dark:bg-amber-900/30', border: 'border-amber-200 dark:border-amber-800', icon: AlertCircle, iconColor: 'text-amber-500 dark:text-amber-400', textColor: 'text-amber-800 dark:text-amber-200' },
+    info: { bg: 'bg-blue-50 dark:bg-blue-900/30', border: 'border-blue-200 dark:border-blue-800', icon: Activity, iconColor: 'text-blue-500 dark:text-blue-400', textColor: 'text-blue-800 dark:text-blue-200' },
+    success: { bg: 'bg-green-50 dark:bg-green-900/30', border: 'border-green-200 dark:border-green-800', icon: CheckCircle, iconColor: 'text-green-500 dark:text-green-400', textColor: 'text-green-800 dark:text-green-200' },
   };
 
   const { bg, border, icon: Icon, iconColor, textColor } = config[type] || config.info;
@@ -307,17 +309,17 @@ const WellUsageChart = ({ readings }) => {
   return (
     <div className="mt-6 mb-2">
       <div className="flex items-center justify-between mb-3">
-        <h4 className="text-sm font-semibold text-gray-700 uppercase tracking-wider flex items-center gap-2">
-          <BarChart3 className="w-4 h-4 text-cyan-600" />
+        <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider flex items-center gap-2">
+          <BarChart3 className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
           Extraction History
         </h4>
-        <div className="flex bg-gray-200 rounded-lg p-0.5">
+        <div className="flex bg-gray-200 dark:bg-gray-700 rounded-lg p-0.5">
           <button
             onClick={() => setChartMode('line')}
             className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
               chartMode === 'line'
-                ? 'bg-white text-cyan-700 shadow-sm'
-                : 'text-gray-500 hover:text-gray-700'
+                ? 'bg-white dark:bg-gray-600 text-cyan-700 dark:text-cyan-300 shadow-sm'
+                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
             }`}
           >
             Per Reading
@@ -326,15 +328,15 @@ const WellUsageChart = ({ readings }) => {
             onClick={() => setChartMode('bar')}
             className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
               chartMode === 'bar'
-                ? 'bg-white text-cyan-700 shadow-sm'
-                : 'text-gray-500 hover:text-gray-700'
+                ? 'bg-white dark:bg-gray-600 text-cyan-700 dark:text-cyan-300 shadow-sm'
+                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
             }`}
           >
             Annual Total
           </button>
         </div>
       </div>
-      <div className="bg-white rounded-lg border border-gray-200 p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
         {chartMode === 'line' ? (
           <ExtractionLineChart readings={validReadings} />
         ) : (
@@ -359,6 +361,8 @@ const WaterManagement = () => {
     openWellSourceModal,
     openBatchReadingModal
   } = useModal();
+  const confirm = useConfirm();
+  const toast = useToast();
 
   // Active tab state
   const [activeTab, setActiveTab] = useState('overview');
@@ -457,7 +461,7 @@ const WaterManagement = () => {
       fetchWells();
     } catch (err) {
       console.error('Error deleting reading:', err);
-      alert('Failed to delete reading. Please try again.');
+      toast.error('Failed to delete reading. Please try again.');
     } finally {
       setDeletingReading(null);
     }
@@ -530,12 +534,13 @@ const WaterManagement = () => {
   };
 
   const handleDeleteSource = async (sourceId) => {
-    if (!window.confirm('Are you sure you want to delete this water source?')) return;
+    const ok = await confirm({ title: 'Are you sure?', message: 'Are you sure you want to delete this water source?', confirmLabel: 'Delete', variant: 'danger' });
+    if (!ok) return;
     try {
       await api.delete(`/water-sources/${sourceId}/`);
       handleRefresh();
     } catch (err) {
-      alert('Failed to delete water source');
+      toast.error('Failed to delete water source');
     }
   };
 
@@ -717,15 +722,15 @@ const WaterManagement = () => {
         )}
 
         {/* IRRIGATION PRIORITY SECTION */}
-        <div className="bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 border border-green-200 rounded-2xl p-6">
+        <div className="bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 dark:from-green-900/20 dark:via-emerald-900/20 dark:to-teal-900/20 border border-green-200 dark:border-green-800 rounded-2xl p-6">
           <div className="flex items-center justify-between mb-5">
             <div className="flex items-center gap-3">
               <div className="p-3 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl shadow-lg">
                 <Sprout className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h2 className="text-xl font-bold text-gray-900">Irrigation Status</h2>
-                <p className="text-sm text-gray-600">Real-time crop water needs based on ET data</p>
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white">Irrigation Status</h2>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Real-time crop water needs based on ET data</p>
               </div>
             </div>
             <button
@@ -739,61 +744,61 @@ const WaterManagement = () => {
 
           {/* Irrigation Metrics Grid */}
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-6">
-            <div className="bg-white/80 backdrop-blur rounded-xl p-4 border border-green-100">
+            <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur rounded-xl p-4 border border-green-100 dark:border-green-800">
               <div className="flex items-center gap-2 mb-1">
                 <MapPin className="w-4 h-4 text-green-600" />
-                <span className="text-xs font-medium text-gray-500 uppercase">Active Zones</span>
+                <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Active Zones</span>
               </div>
-              <p className="text-2xl font-bold text-gray-900">{irrigationStats.totalZones}</p>
-              <p className="text-xs text-gray-500">{formatNumber(irrigationStats.totalAcres)} acres</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{irrigationStats.totalZones}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">{formatNumber(irrigationStats.totalAcres)} acres</p>
             </div>
 
             <div className={`bg-white/80 backdrop-blur rounded-xl p-4 border ${zonesNeedingIrrigation > 0 ? 'border-red-200 bg-red-50/50' : 'border-green-100'}`}>
               <div className="flex items-center gap-2 mb-1">
                 <AlertTriangle className={`w-4 h-4 ${zonesNeedingIrrigation > 0 ? 'text-red-600' : 'text-gray-400'}`} />
-                <span className="text-xs font-medium text-gray-500 uppercase">Need Water</span>
+                <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Need Water</span>
               </div>
-              <p className={`text-2xl font-bold ${zonesNeedingIrrigation > 0 ? 'text-red-600' : 'text-gray-900'}`}>{zonesNeedingIrrigation}</p>
-              <p className="text-xs text-gray-500">Irrigate today</p>
+              <p className={`text-2xl font-bold ${zonesNeedingIrrigation > 0 ? 'text-red-600' : 'text-gray-900 dark:text-white'}`}>{zonesNeedingIrrigation}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Irrigate today</p>
             </div>
 
             <div className={`bg-white/80 backdrop-blur rounded-xl p-4 border ${zonesIrrigationSoon > 0 ? 'border-amber-200 bg-amber-50/50' : 'border-green-100'}`}>
               <div className="flex items-center gap-2 mb-1">
                 <Clock className={`w-4 h-4 ${zonesIrrigationSoon > 0 ? 'text-amber-600' : 'text-gray-400'}`} />
-                <span className="text-xs font-medium text-gray-500 uppercase">Soon</span>
+                <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Soon</span>
               </div>
-              <p className={`text-2xl font-bold ${zonesIrrigationSoon > 0 ? 'text-amber-600' : 'text-gray-900'}`}>{zonesIrrigationSoon}</p>
-              <p className="text-xs text-gray-500">Within 2 days</p>
+              <p className={`text-2xl font-bold ${zonesIrrigationSoon > 0 ? 'text-amber-600' : 'text-gray-900 dark:text-white'}`}>{zonesIrrigationSoon}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Within 2 days</p>
             </div>
 
-            <div className="bg-white/80 backdrop-blur rounded-xl p-4 border border-green-100">
+            <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur rounded-xl p-4 border border-green-100 dark:border-green-800">
               <div className="flex items-center gap-2 mb-1">
                 <Gauge className="w-4 h-4 text-purple-600" />
-                <span className="text-xs font-medium text-gray-500 uppercase">Avg Depletion</span>
+                <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Avg Depletion</span>
               </div>
-              <p className="text-2xl font-bold text-gray-900">{formatNumber(irrigationStats.avgDepletion, 0)}%</p>
-              <p className="text-xs text-gray-500">Soil moisture used</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatNumber(irrigationStats.avgDepletion, 0)}%</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Soil moisture used</p>
             </div>
 
             {irrigationStats.recentEto !== null && irrigationStats.recentEto !== undefined && (
-              <div className="bg-white/80 backdrop-blur rounded-xl p-4 border border-green-100">
+              <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur rounded-xl p-4 border border-green-100 dark:border-green-800">
                 <div className="flex items-center gap-2 mb-1">
                   <ThermometerSun className="w-4 h-4 text-orange-500" />
-                  <span className="text-xs font-medium text-gray-500 uppercase">7-Day ETo</span>
+                  <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">7-Day ETo</span>
                 </div>
-                <p className="text-2xl font-bold text-gray-900">{formatNumber(irrigationStats.recentEto, 2)}"</p>
-                <p className="text-xs text-gray-500">Evapotranspiration</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatNumber(irrigationStats.recentEto, 2)}"</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Evapotranspiration</p>
               </div>
             )}
 
             {irrigationStats.recentRain !== null && irrigationStats.recentRain !== undefined && (
-              <div className="bg-white/80 backdrop-blur rounded-xl p-4 border border-green-100">
+              <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur rounded-xl p-4 border border-green-100 dark:border-green-800">
                 <div className="flex items-center gap-2 mb-1">
                   <CloudRain className="w-4 h-4 text-blue-500" />
-                  <span className="text-xs font-medium text-gray-500 uppercase">7-Day Rain</span>
+                  <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">7-Day Rain</span>
                 </div>
-                <p className="text-2xl font-bold text-gray-900">{formatNumber(irrigationStats.recentRain, 2)}"</p>
-                <p className="text-xs text-gray-500">Precipitation</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatNumber(irrigationStats.recentRain, 2)}"</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Precipitation</p>
               </div>
             )}
           </div>
@@ -801,49 +806,49 @@ const WaterManagement = () => {
           {/* Zones Needing Attention */}
           {(urgentZones.length > 0 || soonZones.length > 0) && (
             <div className="space-y-3">
-              <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wider">Zones Needing Attention</h3>
+              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Zones Needing Attention</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                 {urgentZones.slice(0, 3).map(zone => (
-                  <div key={zone.zone_id} className="bg-white border border-red-200 rounded-xl p-4 shadow-sm">
+                  <div key={zone.zone_id} className="bg-white dark:bg-gray-800 border border-red-200 dark:border-red-800 rounded-xl p-4 shadow-sm">
                     <div className="flex items-start justify-between">
                       <div>
                         <div className="flex items-center gap-2 mb-1">
-                          <span className="px-2 py-0.5 bg-red-100 text-red-700 text-xs font-medium rounded-full">Irrigate Now</span>
+                          <span className="px-2 py-0.5 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 text-xs font-medium rounded-full">Irrigate Now</span>
                         </div>
-                        <h4 className="font-semibold text-gray-900">{zone.zone_name}</h4>
-                        <p className="text-sm text-gray-500">{zone.field_name} • {zone.crop_type}</p>
+                        <h4 className="font-semibold text-gray-900 dark:text-white">{zone.zone_name}</h4>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">{zone.field_name} • {zone.crop_type}</p>
                       </div>
                       <div className="text-right">
-                        <p className="text-lg font-bold text-red-600">{formatNumber(zone.depletion_pct, 0)}%</p>
-                        <p className="text-xs text-gray-500">depleted</p>
+                        <p className="text-lg font-bold text-red-600 dark:text-red-400">{formatNumber(zone.depletion_pct, 0)}%</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">depleted</p>
                       </div>
                     </div>
                     {zone.recommended_depth_inches && (
-                      <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between text-sm">
-                        <span className="text-gray-600">Recommended:</span>
-                        <span className="font-medium text-gray-900">{formatNumber(zone.recommended_depth_inches, 2)}" ({formatNumber(zone.recommended_duration_hours, 1)} hrs)</span>
+                      <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between text-sm">
+                        <span className="text-gray-600 dark:text-gray-400">Recommended:</span>
+                        <span className="font-medium text-gray-900 dark:text-gray-200">{formatNumber(zone.recommended_depth_inches, 2)}" ({formatNumber(zone.recommended_duration_hours, 1)} hrs)</span>
                       </div>
                     )}
                   </div>
                 ))}
                 {soonZones.slice(0, 3 - urgentZones.slice(0, 3).length).map(zone => (
-                  <div key={zone.zone_id} className="bg-white border border-amber-200 rounded-xl p-4 shadow-sm">
+                  <div key={zone.zone_id} className="bg-white dark:bg-gray-800 border border-amber-200 dark:border-amber-800 rounded-xl p-4 shadow-sm">
                     <div className="flex items-start justify-between">
                       <div>
                         <div className="flex items-center gap-2 mb-1">
-                          <span className="px-2 py-0.5 bg-amber-100 text-amber-700 text-xs font-medium rounded-full">Soon</span>
+                          <span className="px-2 py-0.5 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 text-xs font-medium rounded-full">Soon</span>
                         </div>
-                        <h4 className="font-semibold text-gray-900">{zone.zone_name}</h4>
-                        <p className="text-sm text-gray-500">{zone.field_name} • {zone.crop_type}</p>
+                        <h4 className="font-semibold text-gray-900 dark:text-white">{zone.zone_name}</h4>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">{zone.field_name} • {zone.crop_type}</p>
                       </div>
                       <div className="text-right">
-                        <p className="text-lg font-bold text-amber-600">{formatNumber(zone.depletion_pct, 0)}%</p>
-                        <p className="text-xs text-gray-500">depleted</p>
+                        <p className="text-lg font-bold text-amber-600 dark:text-amber-400">{formatNumber(zone.depletion_pct, 0)}%</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">depleted</p>
                       </div>
                     </div>
                     {zone.days_until_irrigation !== null && (
-                      <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between text-sm">
-                        <span className="text-gray-600">Irrigate in:</span>
+                      <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between text-sm">
+                        <span className="text-gray-600 dark:text-gray-400">Irrigate in:</span>
                         <span className="font-medium text-amber-700">{zone.days_until_irrigation} day{zone.days_until_irrigation !== 1 ? 's' : ''}</span>
                       </div>
                     )}
@@ -866,7 +871,7 @@ const WaterManagement = () => {
           {irrigationStats.totalZones === 0 && (
             <div className="text-center py-6">
               <Sprout className="w-10 h-10 text-green-300 mx-auto mb-3" />
-              <p className="text-gray-600 mb-3">No irrigation zones configured yet</p>
+              <p className="text-gray-600 dark:text-gray-400 mb-3">No irrigation zones configured yet</p>
               <button
                 onClick={() => setActiveTab('irrigation')}
                 className="text-green-600 hover:text-green-700 font-medium text-sm"
@@ -913,22 +918,22 @@ const WaterManagement = () => {
 
         {/* Quick Actions */}
         <div>
-          <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">Quick Actions</h3>
+          <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">Quick Actions</h3>
           <div className="flex flex-wrap gap-3">
             <QuickActionButton icon={Sprout} label="Record Irrigation" onClick={() => setActiveTab('irrigation')} color="green" />
             <QuickActionButton icon={Plus} label="Add Zone" onClick={() => setActiveTab('irrigation')} color="green" />
             <QuickActionButton icon={Plus} label="Add Well" onClick={() => openWellSourceModal()} color="cyan" />
             <QuickActionButton icon={Gauge} label="Batch Readings" onClick={() => {
               if (wells.length > 0) openBatchReadingModal(wells);
-              else alert('Add wells first to record readings');
+              else toast.info('Add wells first to record readings');
             }} color="cyan" />
             <QuickActionButton icon={Gauge} label="Single Reading" onClick={() => {
               if (wells.length > 0) openWellReadingModal(wells[0].id, wells[0].well_name);
-              else alert('Add a well first to record readings');
+              else toast.info('Add a well first to record readings');
             }} color="blue" />
             <QuickActionButton icon={FileText} label="Add Water Test" onClick={() => {
               if (waterSources.length > 0) openWaterTestModal(null, waterSources[0]);
-              else alert('Add a water source first');
+              else toast.info('Add a water source first');
             }} color="blue" />
           </div>
         </div>
@@ -936,8 +941,8 @@ const WaterManagement = () => {
         {/* Bottom Section: Sources & SGMA */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Source Type Breakdown */}
-          <div className="bg-white rounded-xl border border-gray-200 p-5">
-            <h3 className="font-semibold text-gray-900 mb-4">Water Sources by Type</h3>
+          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
+            <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Water Sources by Type</h3>
             <div className="space-y-3">
               {Object.entries(SOURCE_TYPE_LABELS).map(([type, label]) => {
                 const count = waterSources.filter(s => s.source_type === type).length;
@@ -947,10 +952,10 @@ const WaterManagement = () => {
                 return (
                   <div key={type}>
                     <div className="flex items-center justify-between mb-1">
-                      <span className="text-sm font-medium text-gray-700">{label}</span>
-                      <span className="text-sm text-gray-500">{count}</span>
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{label}</span>
+                      <span className="text-sm text-gray-500 dark:text-gray-400">{count}</span>
                     </div>
-                    <div className="w-full bg-gray-100 rounded-full h-2">
+                    <div className="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-2">
                       <div
                         className={`h-2 rounded-full ${type === 'well' ? 'bg-cyan-500' : type === 'municipal' ? 'bg-blue-500' : type === 'surface' ? 'bg-emerald-500' : 'bg-gray-400'}`}
                         style={{ width: `${percentage}%` }}
@@ -971,17 +976,17 @@ const WaterManagement = () => {
 
           {/* SGMA Compliance */}
           {sgmaDashboard && (
-            <div className="bg-white rounded-xl border border-gray-200 p-5">
-              <h3 className="font-semibold text-gray-900 mb-4">SGMA Compliance</h3>
+            <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
+              <h3 className="font-semibold text-gray-900 dark:text-white mb-4">SGMA Compliance</h3>
               <div className="space-y-4">
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm text-gray-600">Allocation Usage</span>
+                    <span className="text-sm text-gray-600 dark:text-gray-400">Allocation Usage</span>
                     <span className={`text-sm font-semibold ${wellStats.allocationUsed > 80 ? 'text-red-600' : 'text-green-600'}`}>
                       {formatNumber(wellStats.allocationUsed)}%
                     </span>
                   </div>
-                  <div className="w-full bg-gray-100 rounded-full h-3">
+                  <div className="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-3">
                     <div
                       className={`h-3 rounded-full transition-all ${wellStats.allocationUsed > 95 ? 'bg-red-500' : wellStats.allocationUsed > 80 ? 'bg-yellow-500' : 'bg-green-500'}`}
                       style={{ width: `${Math.min(wellStats.allocationUsed, 100)}%` }}
@@ -990,18 +995,18 @@ const WaterManagement = () => {
                 </div>
 
                 <div className="grid grid-cols-2 gap-4 pt-2">
-                  <div className="bg-gray-50 rounded-lg p-3">
-                    <p className="text-xs text-gray-500">Water Year</p>
-                    <p className="text-lg font-semibold text-gray-900">{sgmaDashboard.water_year}</p>
+                  <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Water Year</p>
+                    <p className="text-lg font-semibold text-gray-900 dark:text-white">{sgmaDashboard.water_year}</p>
                   </div>
-                  <div className="bg-gray-50 rounded-lg p-3">
-                    <p className="text-xs text-gray-500">Current Period</p>
-                    <p className="text-lg font-semibold text-gray-900">{sgmaDashboard.current_period}</p>
+                  <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Current Period</p>
+                    <p className="text-lg font-semibold text-gray-900 dark:text-white">{sgmaDashboard.current_period}</p>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-4 pt-2 text-sm">
-                  <div className="flex items-center gap-2 text-gray-600">
+                  <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
                     <Calendar className="w-4 h-4" />
                     <span>Next report: {formatDate(sgmaDashboard.next_report_due)}</span>
                   </div>
@@ -1028,7 +1033,7 @@ const WaterManagement = () => {
   const renderSourcesTab = () => (
     <div className="space-y-6">
       {/* Search and Filters */}
-      <div className="bg-white rounded-xl border border-gray-200 p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
         <div className="flex flex-col md:flex-row gap-4">
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -1037,13 +1042,13 @@ const WaterManagement = () => {
               placeholder="Search water sources..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full pl-10 pr-4 py-2.5 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
           <select
             value={filterFarm}
             onChange={(e) => setFilterFarm(e.target.value)}
-            className="px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white"
+            className="px-4 py-2.5 border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 dark:text-gray-200"
           >
             <option value="">All Farms</option>
             {farms.map(farm => (
@@ -1053,7 +1058,7 @@ const WaterManagement = () => {
           <select
             value={filterSourceType}
             onChange={(e) => setFilterSourceType(e.target.value)}
-            className="px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white"
+            className="px-4 py-2.5 border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 dark:text-gray-200"
           >
             <option value="">All Types</option>
             {Object.entries(SOURCE_TYPE_LABELS).map(([value, label]) => (
@@ -1062,7 +1067,7 @@ const WaterManagement = () => {
           </select>
           <button
             onClick={handleRefresh}
-            className="p-2.5 border border-gray-200 rounded-lg hover:bg-gray-50 text-gray-600"
+            className="p-2.5 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400"
           >
             <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
           </button>
@@ -1071,10 +1076,10 @@ const WaterManagement = () => {
 
       {/* Sources Grid */}
       {filteredSources.length === 0 ? (
-        <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
-          <Droplet className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No water sources found</h3>
-          <p className="text-gray-500 mb-6">Get started by adding your first well or water source.</p>
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-12 text-center">
+          <Droplet className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No water sources found</h3>
+          <p className="text-gray-500 dark:text-gray-400 mb-6">Get started by adding your first well or water source.</p>
           <div className="flex justify-center gap-3">
             <button
               onClick={() => openWellSourceModal()}
@@ -1101,7 +1106,7 @@ const WaterManagement = () => {
             return (
               <div
                 key={source.id}
-                className="bg-white rounded-xl border border-gray-200 hover:border-gray-300 hover:shadow-md transition-all overflow-hidden"
+                className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-md transition-all overflow-hidden"
               >
                 {/* Card Header */}
                 <div className={`px-4 py-3 ${isWell ? 'bg-gradient-to-r from-cyan-50 to-blue-50 border-b border-cyan-100' : 'bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-blue-100'}`}>
@@ -1127,8 +1132,8 @@ const WaterManagement = () => {
 
                 {/* Card Body */}
                 <div className="p-4">
-                  <h3 className="font-semibold text-gray-900 mb-1">{source.name}</h3>
-                  <p className="text-sm text-gray-500 mb-4">{farm?.name}</p>
+                  <h3 className="font-semibold text-gray-900 dark:text-white mb-1">{source.name}</h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">{farm?.name}</p>
 
                   {/* Usage Tags */}
                   <div className="flex flex-wrap gap-1.5 mb-4">
@@ -1144,13 +1149,13 @@ const WaterManagement = () => {
                   </div>
 
                   {/* Test Frequency */}
-                  <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
+                  <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-4">
                     <Clock className="w-4 h-4" />
                     <span>Tests every {source.test_frequency_days || 365} days</span>
                   </div>
 
                   {/* Actions */}
-                  <div className="flex gap-2 pt-3 border-t border-gray-100">
+                  <div className="flex gap-2 pt-3 border-t border-gray-100 dark:border-gray-700">
                     <button
                       onClick={() => {
                         setSelectedSource(source);
@@ -1239,7 +1244,7 @@ const WaterManagement = () => {
       )}
 
       {/* Quick Actions Bar */}
-      <div className="bg-white rounded-xl border border-gray-200 p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
         <div className="flex flex-wrap items-center gap-4">
           {/* Search */}
           <div className="flex-1 min-w-[200px] relative">
@@ -1249,7 +1254,7 @@ const WaterManagement = () => {
               placeholder="Search wells..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-cyan-500"
+              className="w-full pl-10 pr-4 py-2.5 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-200 focus:ring-2 focus:ring-cyan-500"
             />
           </div>
 
@@ -1257,7 +1262,7 @@ const WaterManagement = () => {
           <select
             value={filterGSA}
             onChange={(e) => setFilterGSA(e.target.value)}
-            className="px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-cyan-500 bg-white"
+            className="px-4 py-2.5 border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-cyan-500 bg-white dark:bg-gray-700 dark:text-gray-200"
           >
             <option value="">All GSAs</option>
             {Object.entries(GSA_NAMES).map(([value, label]) => (
@@ -1269,7 +1274,7 @@ const WaterManagement = () => {
           <button
             onClick={() => {
               if (filteredWells.length > 0) openBatchReadingModal(filteredWells);
-              else alert('No wells available for batch reading');
+              else toast.info('No wells available for batch reading');
             }}
             className="flex items-center gap-2 px-4 py-2.5 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 font-medium"
           >
@@ -1278,8 +1283,8 @@ const WaterManagement = () => {
           </button>
 
           {/* Refresh */}
-          <button onClick={handleRefresh} className="p-2.5 border border-gray-200 rounded-lg hover:bg-gray-50">
-            <RefreshCw className={`w-5 h-5 text-gray-600 ${loading ? 'animate-spin' : ''}`} />
+          <button onClick={handleRefresh} className="p-2.5 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
+            <RefreshCw className={`w-5 h-5 text-gray-600 dark:text-gray-400 ${loading ? 'animate-spin' : ''}`} />
           </button>
         </div>
       </div>
@@ -1337,10 +1342,10 @@ const WaterManagement = () => {
 
       {/* Wells List */}
       {filteredWells.length === 0 ? (
-        <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
-          <Droplets className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No wells found</h3>
-          <p className="text-gray-500 mb-6">Add a well to track groundwater extraction and SGMA compliance.</p>
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-12 text-center">
+          <Droplets className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No wells found</h3>
+          <p className="text-gray-500 dark:text-gray-400 mb-6">Add a well to track groundwater extraction and SGMA compliance.</p>
           <button
             onClick={() => openWellSourceModal()}
             className="inline-flex items-center gap-2 bg-cyan-600 text-white px-4 py-2 rounded-lg hover:bg-cyan-700"
@@ -1352,7 +1357,7 @@ const WaterManagement = () => {
       ) : (
         <div className="space-y-4">
           {filteredWells.map(well => (
-            <div key={well.id} className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:border-gray-300 hover:shadow-sm transition-all">
+            <div key={well.id} className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-sm transition-all">
               {/* Well Header */}
               <div
                 className="p-4 cursor-pointer"
@@ -1364,8 +1369,8 @@ const WaterManagement = () => {
                       <Droplets className={`w-6 h-6 ${well.calibration_due_soon || !well.meter_calibration_current ? 'text-amber-600' : 'text-cyan-600'}`} />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-gray-900">{well.well_name || well.water_source_name}</h3>
-                      <p className="text-sm text-gray-500">{well.farm_name} • {GSA_NAMES[well.gsa] || well.gsa}</p>
+                      <h3 className="font-semibold text-gray-900 dark:text-white">{well.well_name || well.water_source_name}</h3>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">{well.farm_name} • {GSA_NAMES[well.gsa] || well.gsa}</p>
                     </div>
                   </div>
 
@@ -1413,8 +1418,8 @@ const WaterManagement = () => {
                       </span>
                     )}
                     <div className="text-right">
-                      <p className="text-xs text-gray-500">YTD Extraction</p>
-                      <p className="font-semibold text-cyan-600">{formatNumber(well.ytd_extraction_af, 2)} AF</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">YTD Extraction</p>
+                      <p className="font-semibold text-cyan-600 dark:text-cyan-400">{formatNumber(well.ytd_extraction_af, 2)} AF</p>
                     </div>
                     <span className={`px-3 py-1 rounded-full text-sm font-medium ${STATUS_COLORS[well.status] || 'bg-gray-100'}`}>
                       {well.status}
@@ -1446,50 +1451,50 @@ const WaterManagement = () => {
 
               {/* Expanded Details */}
               {expandedItems[well.id] && (
-                <div className="border-t border-gray-100 bg-gray-50 p-5">
+                <div className="border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 p-5">
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                     <div>
-                      <h4 className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wider">Well Info</h4>
+                      <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 uppercase tracking-wider">Well Info</h4>
                       <dl className="space-y-2 text-sm">
                         <div className="flex justify-between">
-                          <dt className="text-gray-500">State Well #:</dt>
+                          <dt className="text-gray-500 dark:text-gray-400">State Well #:</dt>
                           <dd className="text-gray-900 font-medium text-xs">{well.state_well_number || '-'}</dd>
                         </div>
                         <div className="flex justify-between">
-                          <dt className="text-gray-500">Basin:</dt>
-                          <dd className="text-gray-900 font-medium">{BASIN_NAMES[well.basin] || well.basin || '-'}</dd>
+                          <dt className="text-gray-500 dark:text-gray-400">Basin:</dt>
+                          <dd className="text-gray-900 dark:text-gray-200 font-medium">{BASIN_NAMES[well.basin] || well.basin || '-'}</dd>
                         </div>
                         <div className="flex justify-between">
-                          <dt className="text-gray-500">Meter Units:</dt>
-                          <dd className="text-gray-900 font-medium">{well.flowmeter_units || '-'}</dd>
+                          <dt className="text-gray-500 dark:text-gray-400">Meter Units:</dt>
+                          <dd className="text-gray-900 dark:text-gray-200 font-medium">{well.flowmeter_units || '-'}</dd>
                         </div>
                       </dl>
                     </div>
                     <div>
-                      <h4 className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wider">Fee Rates</h4>
+                      <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 uppercase tracking-wider">Fee Rates</h4>
                       <dl className="space-y-2 text-sm">
                         {well.base_extraction_rate && (
                           <div className="flex justify-between">
-                            <dt className="text-gray-500">Base Rate:</dt>
-                            <dd className="text-gray-900 font-medium">${parseFloat(well.base_extraction_rate).toFixed(2)}/AF</dd>
+                            <dt className="text-gray-500 dark:text-gray-400">Base Rate:</dt>
+                            <dd className="text-gray-900 dark:text-gray-200 font-medium">${parseFloat(well.base_extraction_rate).toFixed(2)}/AF</dd>
                           </div>
                         )}
                         {well.gsp_rate && (
                           <div className="flex justify-between">
-                            <dt className="text-gray-500">GSP Rate:</dt>
-                            <dd className="text-gray-900 font-medium">${parseFloat(well.gsp_rate).toFixed(2)}/AF</dd>
+                            <dt className="text-gray-500 dark:text-gray-400">GSP Rate:</dt>
+                            <dd className="text-gray-900 dark:text-gray-200 font-medium">${parseFloat(well.gsp_rate).toFixed(2)}/AF</dd>
                           </div>
                         )}
                         {well.domestic_rate && (
                           <div className="flex justify-between">
-                            <dt className="text-gray-500">Domestic:</dt>
-                            <dd className="text-gray-900 font-medium">${parseFloat(well.domestic_rate).toFixed(2)}/AF</dd>
+                            <dt className="text-gray-500 dark:text-gray-400">Domestic:</dt>
+                            <dd className="text-gray-900 dark:text-gray-200 font-medium">${parseFloat(well.domestic_rate).toFixed(2)}/AF</dd>
                           </div>
                         )}
                         {well.fixed_quarterly_fee && (
                           <div className="flex justify-between">
-                            <dt className="text-gray-500">Fixed/Qtr:</dt>
-                            <dd className="text-gray-900 font-medium">${parseFloat(well.fixed_quarterly_fee).toFixed(2)}</dd>
+                            <dt className="text-gray-500 dark:text-gray-400">Fixed/Qtr:</dt>
+                            <dd className="text-gray-900 dark:text-gray-200 font-medium">${parseFloat(well.fixed_quarterly_fee).toFixed(2)}</dd>
                           </div>
                         )}
                         {!well.base_extraction_rate && !well.gsp_rate && !well.domestic_rate && (
@@ -1498,12 +1503,12 @@ const WaterManagement = () => {
                       </dl>
                     </div>
                     <div>
-                      <h4 className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wider">YTD Costs</h4>
+                      <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 uppercase tracking-wider">YTD Costs</h4>
                       {well.ytd_extraction_af > 0 && (well.base_extraction_rate || well.gsp_rate) ? (
                         <dl className="space-y-2 text-sm">
                           {well.base_extraction_rate && (
                             <div className="flex justify-between">
-                              <dt className="text-gray-500">Base Fee:</dt>
+                              <dt className="text-gray-500 dark:text-gray-400">Base Fee:</dt>
                               <dd className="text-green-700 font-medium">
                                 ${(parseFloat(well.ytd_extraction_af || 0) * parseFloat(well.base_extraction_rate)).toFixed(2)}
                               </dd>
@@ -1511,7 +1516,7 @@ const WaterManagement = () => {
                           )}
                           {well.gsp_rate && (
                             <div className="flex justify-between">
-                              <dt className="text-gray-500">GSP Fee:</dt>
+                              <dt className="text-gray-500 dark:text-gray-400">GSP Fee:</dt>
                               <dd className="text-green-700 font-medium">
                                 ${(parseFloat(well.ytd_extraction_af || 0) * parseFloat(well.gsp_rate)).toFixed(2)}
                               </dd>
@@ -1532,16 +1537,16 @@ const WaterManagement = () => {
                       )}
                     </div>
                     <div>
-                      <h4 className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wider">Latest Reading</h4>
+                      <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 uppercase tracking-wider">Latest Reading</h4>
                       {well.latest_reading ? (
                         <dl className="space-y-2 text-sm">
                           <div className="flex justify-between">
-                            <dt className="text-gray-500">Date:</dt>
-                            <dd className="text-gray-900 font-medium">{formatDate(well.latest_reading.date)}</dd>
+                            <dt className="text-gray-500 dark:text-gray-400">Date:</dt>
+                            <dd className="text-gray-900 dark:text-gray-200 font-medium">{formatDate(well.latest_reading.date)}</dd>
                           </div>
                           <div className="flex justify-between">
-                            <dt className="text-gray-500">Reading:</dt>
-                            <dd className="text-gray-900 font-medium">{well.latest_reading.meter_reading}</dd>
+                            <dt className="text-gray-500 dark:text-gray-400">Reading:</dt>
+                            <dd className="text-gray-900 dark:text-gray-200 font-medium">{well.latest_reading.meter_reading}</dd>
                           </div>
                         </dl>
                       ) : (
@@ -1558,7 +1563,7 @@ const WaterManagement = () => {
                   {/* Reading History */}
                   <div className="mt-6">
                     <div className="flex items-center justify-between mb-3">
-                      <h4 className="text-sm font-semibold text-gray-700 uppercase tracking-wider">Reading History</h4>
+                      <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Reading History</h4>
                       <button
                         onClick={() => openWellReadingModal(well.id, well.well_name)}
                         className="flex items-center gap-1.5 text-sm text-cyan-600 hover:text-cyan-700 font-medium"
@@ -1574,10 +1579,10 @@ const WaterManagement = () => {
                         Loading readings...
                       </div>
                     ) : wellReadings[well.id]?.length > 0 ? (
-                      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
                         <table className="w-full text-sm">
                           <thead>
-                            <tr className="bg-gray-100 text-gray-600 text-xs uppercase tracking-wider">
+                            <tr className="bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 text-xs uppercase tracking-wider">
                               <th className="px-4 py-2.5 text-left font-semibold">Date</th>
                               <th className="px-4 py-2.5 text-right font-semibold">Meter Reading</th>
                               <th className="px-4 py-2.5 text-right font-semibold">Extraction (AF)</th>
@@ -1586,16 +1591,16 @@ const WaterManagement = () => {
                               <th className="px-4 py-2.5 text-center font-semibold">Actions</th>
                             </tr>
                           </thead>
-                          <tbody className="divide-y divide-gray-100">
+                          <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
                             {wellReadings[well.id].map((reading) => (
-                              <tr key={reading.id} className="hover:bg-gray-50 transition-colors">
-                                <td className="px-4 py-2.5 text-gray-900">{formatDate(reading.reading_date)}</td>
-                                <td className="px-4 py-2.5 text-right font-mono text-gray-900">{Number(reading.meter_reading).toLocaleString()}</td>
-                                <td className="px-4 py-2.5 text-right text-cyan-700 font-medium">
+                              <tr key={reading.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                                <td className="px-4 py-2.5 text-gray-900 dark:text-gray-200">{formatDate(reading.reading_date)}</td>
+                                <td className="px-4 py-2.5 text-right font-mono text-gray-900 dark:text-gray-200">{Number(reading.meter_reading).toLocaleString()}</td>
+                                <td className="px-4 py-2.5 text-right text-cyan-700 dark:text-cyan-400 font-medium">
                                   {reading.extraction_acre_feet != null ? formatNumber(reading.extraction_acre_feet, 4) : '-'}
                                 </td>
-                                <td className="px-4 py-2.5 text-gray-600">{reading.reading_type_display || reading.reading_type}</td>
-                                <td className="px-4 py-2.5 text-gray-600">{reading.recorded_by || '-'}</td>
+                                <td className="px-4 py-2.5 text-gray-600 dark:text-gray-400">{reading.reading_type_display || reading.reading_type}</td>
+                                <td className="px-4 py-2.5 text-gray-600 dark:text-gray-400">{reading.recorded_by || '-'}</td>
                                 <td className="px-4 py-2.5 text-center">
                                   <div className="flex items-center justify-center gap-1">
                                     <button
@@ -1686,21 +1691,21 @@ const WaterManagement = () => {
           </div>
         </div>
       ) : (
-        <div className="bg-white rounded-xl border border-gray-200 p-5">
-          <h3 className="font-medium text-gray-700 mb-3">Select a water source to view tests</h3>
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
+          <h3 className="font-medium text-gray-700 dark:text-gray-300 mb-3">Select a water source to view tests</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             {waterSources.map(source => (
               <button
                 key={source.id}
                 onClick={() => setSelectedSource(source)}
-                className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-all text-left"
+                className="flex items-center gap-3 p-3 border border-gray-200 dark:border-gray-600 rounded-lg hover:border-blue-300 dark:hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all text-left"
               >
                 <div className={`p-2 rounded-lg ${source.source_type === 'well' ? 'bg-cyan-100' : 'bg-blue-100'}`}>
                   <Droplet className={`w-4 h-4 ${source.source_type === 'well' ? 'text-cyan-600' : 'text-blue-600'}`} />
                 </div>
                 <div>
-                  <p className="font-medium text-gray-900">{source.name}</p>
-                  <p className="text-sm text-gray-500">{SOURCE_TYPE_LABELS[source.source_type]}</p>
+                  <p className="font-medium text-gray-900 dark:text-white">{source.name}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{SOURCE_TYPE_LABELS[source.source_type]}</p>
                 </div>
               </button>
             ))}
@@ -1711,10 +1716,10 @@ const WaterManagement = () => {
       {/* Tests List */}
       {selectedSource && (
         waterTests.length === 0 ? (
-          <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
-            <FileText className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No test records</h3>
-            <p className="text-gray-500 mb-6">Start tracking water quality by adding your first test result.</p>
+          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-12 text-center">
+            <FileText className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No test records</h3>
+            <p className="text-gray-500 dark:text-gray-400 mb-6">Start tracking water quality by adding your first test result.</p>
             <button
               onClick={() => openWaterTestModal(null, selectedSource)}
               className="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
@@ -1732,14 +1737,14 @@ const WaterManagement = () => {
               return (
                 <div
                   key={test.id}
-                  className="bg-white rounded-xl border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all cursor-pointer overflow-hidden"
+                  className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-sm transition-all cursor-pointer overflow-hidden"
                   onClick={() => openWaterTestModal(test)}
                 >
                   <div className="p-4">
                     <div className="flex items-start justify-between mb-3">
                       <div>
-                        <h3 className="font-semibold text-gray-900">{formatDate(test.test_date)}</h3>
-                        <span className="text-sm text-gray-500">
+                        <h3 className="font-semibold text-gray-900 dark:text-white">{formatDate(test.test_date)}</h3>
+                        <span className="text-sm text-gray-500 dark:text-gray-400">
                           {test.test_type === 'microbial' ? 'Microbial' :
                            test.test_type === 'chemical' ? 'Chemical' : 'Microbial & Chemical'}
                         </span>
@@ -1752,15 +1757,15 @@ const WaterManagement = () => {
 
                     <div className="grid grid-cols-2 gap-4 text-sm">
                       {test.ecoli_result !== null && (
-                        <div className="bg-gray-50 rounded-lg p-2">
-                          <p className="text-gray-500 text-xs">E. coli</p>
-                          <p className="font-semibold text-gray-900">{test.ecoli_result} CFU/100mL</p>
+                        <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-2">
+                          <p className="text-gray-500 dark:text-gray-400 text-xs">E. coli</p>
+                          <p className="font-semibold text-gray-900 dark:text-white">{test.ecoli_result} CFU/100mL</p>
                         </div>
                       )}
                       {test.ph_level !== null && (
-                        <div className="bg-gray-50 rounded-lg p-2">
-                          <p className="text-gray-500 text-xs">pH Level</p>
-                          <p className="font-semibold text-gray-900">{test.ph_level}</p>
+                        <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-2">
+                          <p className="text-gray-500 dark:text-gray-400 text-xs">pH Level</p>
+                          <p className="font-semibold text-gray-900 dark:text-white">{test.ph_level}</p>
                         </div>
                       )}
                     </div>
@@ -1790,16 +1795,16 @@ const WaterManagement = () => {
       {sgmaDashboard ? (
         <>
           {/* SGMA Overview */}
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-6">SGMA Compliance Overview</h3>
+          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-6">SGMA Compliance Overview</h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-              <div className="text-center p-4 bg-gray-50 rounded-xl">
-                <p className="text-sm text-gray-500 mb-1">Water Year</p>
-                <p className="text-2xl font-bold text-gray-900">{sgmaDashboard.water_year}</p>
+              <div className="text-center p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Water Year</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">{sgmaDashboard.water_year}</p>
               </div>
-              <div className="text-center p-4 bg-gray-50 rounded-xl">
-                <p className="text-sm text-gray-500 mb-1">Current Period</p>
-                <p className="text-2xl font-bold text-gray-900">{sgmaDashboard.current_period}</p>
+              <div className="text-center p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Current Period</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">{sgmaDashboard.current_period}</p>
               </div>
               <div className="text-center p-4 bg-cyan-50 rounded-xl">
                 <p className="text-sm text-cyan-600 mb-1">YTD Extraction</p>
@@ -1815,9 +1820,9 @@ const WaterManagement = () => {
           </div>
 
           {/* Allocation Progress & Cost Estimate */}
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">Allocation Progress</h3>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Allocation Progress</h3>
               {/* Monthly Rate Indicator */}
               {sgmaDashboard.ytd_extraction_af > 0 && (() => {
                 const now = new Date();
@@ -1833,8 +1838,8 @@ const WaterManagement = () => {
 
                 return (
                   <div className="text-right">
-                    <p className="text-xs text-gray-500">Monthly Avg</p>
-                    <p className="text-sm font-semibold text-gray-700">{formatNumber(monthlyRate, 1)} AF/mo</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Monthly Avg</p>
+                    <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">{formatNumber(monthlyRate, 1)} AF/mo</p>
                   </div>
                 );
               })()}
@@ -1842,14 +1847,14 @@ const WaterManagement = () => {
 
             <div className="mb-6">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-gray-600">
+                <span className="text-sm text-gray-600 dark:text-gray-400">
                   {formatNumber(sgmaDashboard.ytd_extraction_af, 2)} AF used of {formatNumber(sgmaDashboard.total_allocation_af, 2)} AF
                 </span>
                 <span className={`text-sm font-semibold ${sgmaDashboard.percent_allocation_used > 80 ? 'text-red-600' : 'text-green-600'}`}>
                   {formatNumber(sgmaDashboard.allocation_remaining_af, 2)} AF remaining
                 </span>
               </div>
-              <div className="w-full bg-gray-100 rounded-full h-4">
+              <div className="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-4">
                 <div
                   className={`h-4 rounded-full transition-all ${
                     sgmaDashboard.percent_allocation_used > 95 ? 'bg-red-500' :
@@ -1872,9 +1877,9 @@ const WaterManagement = () => {
                 const projectedPercent = (projectedTotal / sgmaDashboard.total_allocation_af) * 100;
 
                 return (
-                  <div className="mt-3 p-3 bg-gray-50 rounded-lg">
+                  <div className="mt-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
                     <div className="flex items-center justify-between text-sm">
-                      <span className="text-gray-600">Projected Year-End Usage:</span>
+                      <span className="text-gray-600 dark:text-gray-400">Projected Year-End Usage:</span>
                       <span className={`font-semibold ${projectedPercent > 100 ? 'text-red-600' : projectedPercent > 90 ? 'text-amber-600' : 'text-green-600'}`}>
                         {formatNumber(projectedTotal, 1)} AF ({formatNumber(projectedPercent, 0)}%)
                       </span>
@@ -1909,19 +1914,19 @@ const WaterManagement = () => {
               if (totalEstFees === 0) return null;
 
               return (
-                <div className="border-t border-gray-200 pt-4">
-                  <h4 className="text-sm font-semibold text-gray-700 mb-3">Estimated YTD Fees</h4>
+                <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+                  <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Estimated YTD Fees</h4>
                   <div className="space-y-2">
                     {feesByGSA.map((item, idx) => (
                       <div key={idx} className="flex items-center justify-between text-sm">
-                        <span className="text-gray-600">
+                        <span className="text-gray-600 dark:text-gray-400">
                           {GSA_NAMES[item.gsa] || item.gsa} ({formatNumber(item.extraction, 1)} AF)
                         </span>
-                        <span className="font-medium text-gray-900">${formatNumber(item.fee, 2)}</span>
+                        <span className="font-medium text-gray-900 dark:text-gray-200">${formatNumber(item.fee, 2)}</span>
                       </div>
                     ))}
-                    <div className="flex items-center justify-between text-sm pt-2 border-t border-gray-100">
-                      <span className="font-semibold text-gray-700">Total Estimated</span>
+                    <div className="flex items-center justify-between text-sm pt-2 border-t border-gray-100 dark:border-gray-700">
+                      <span className="font-semibold text-gray-700 dark:text-gray-300">Total Estimated</span>
                       <span className="font-bold text-green-700">${formatNumber(totalEstFees, 2)}</span>
                     </div>
                   </div>
@@ -1935,8 +1940,8 @@ const WaterManagement = () => {
 
           {/* Deadlines */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-white rounded-xl border border-gray-200 p-6">
-              <h3 className="font-semibold text-gray-900 mb-4">Upcoming Deadlines</h3>
+            <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+              <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Upcoming Deadlines</h3>
               <div className="space-y-4">
                 <div className="flex items-center gap-4 p-4 bg-blue-50 rounded-xl">
                   <Calendar className="w-8 h-8 text-blue-600" />
@@ -1957,18 +1962,18 @@ const WaterManagement = () => {
 
             {/* Wells by GSA */}
             {sgmaDashboard.wells_by_gsa?.length > 0 && (
-              <div className="bg-white rounded-xl border border-gray-200 p-6">
-                <h3 className="font-semibold text-gray-900 mb-4">Wells by GSA</h3>
+              <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+                <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Wells by GSA</h3>
                 <div className="space-y-3">
                   {sgmaDashboard.wells_by_gsa.map((gsa, idx) => (
-                    <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+                    <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-xl">
                       <div>
-                        <p className="font-medium text-gray-900">{GSA_NAMES[gsa.gsa] || gsa.gsa}</p>
-                        <p className="text-sm text-gray-500">{gsa.active} active of {gsa.count} wells</p>
+                        <p className="font-medium text-gray-900 dark:text-white">{GSA_NAMES[gsa.gsa] || gsa.gsa}</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">{gsa.active} active of {gsa.count} wells</p>
                       </div>
                       <div className="text-right">
-                        <p className="font-semibold text-cyan-600">{formatNumber(gsa.ytd_extraction, 2)} AF</p>
-                        <p className="text-xs text-gray-500">YTD</p>
+                        <p className="font-semibold text-cyan-600 dark:text-cyan-400">{formatNumber(gsa.ytd_extraction, 2)} AF</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">YTD</p>
                       </div>
                     </div>
                   ))}
@@ -1978,10 +1983,10 @@ const WaterManagement = () => {
           </div>
         </>
       ) : (
-        <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
-          <BarChart3 className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No report data available</h3>
-          <p className="text-gray-500">Add wells and meter readings to see SGMA compliance reports.</p>
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-12 text-center">
+          <BarChart3 className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No report data available</h3>
+          <p className="text-gray-500 dark:text-gray-400">Add wells and meter readings to see SGMA compliance reports.</p>
         </div>
       )}
     </div>
@@ -1992,19 +1997,19 @@ const WaterManagement = () => {
   // =============================================================================
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-6 py-5">
+      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-5">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Water Management</h1>
-            <p className="text-gray-500 mt-1">Track water sources, wells, irrigation, and SGMA compliance</p>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Water Management</h1>
+            <p className="text-gray-500 dark:text-gray-400 mt-1">Track water sources, wells, irrigation, and SGMA compliance</p>
           </div>
           <div className="flex items-center gap-3">
             <button
               onClick={handleRefresh}
               disabled={loading}
-              className="p-2.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+              className="p-2.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:bg-gray-700 rounded-lg transition-colors"
             >
               <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
             </button>
@@ -2030,15 +2035,15 @@ const WaterManagement = () => {
               }}
               className={`flex items-center gap-2 px-4 py-3 rounded-t-lg text-sm font-medium transition-colors whitespace-nowrap ${
                 activeTab === tab.id
-                  ? 'bg-gray-50 text-blue-600 border-t border-l border-r border-gray-200'
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                  ? 'bg-gray-50 dark:bg-gray-900 text-blue-600 dark:text-blue-400 border-t border-l border-r border-gray-200 dark:border-gray-700'
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700'
               }`}
             >
               <tab.icon className="w-4 h-4" />
               {tab.label}
               {tab.count !== undefined && (
                 <span className={`ml-1 px-2 py-0.5 rounded-full text-xs ${
-                  activeTab === tab.id ? 'bg-blue-100 text-blue-600' : 'bg-gray-200 text-gray-600'
+                  activeTab === tab.id ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
                 }`}>
                   {tab.count}
                 </span>

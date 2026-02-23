@@ -1519,6 +1519,141 @@ class NotificationPreference(models.Model):
 
 
 # -----------------------------------------------------------------------------
+# NOI SUBMISSION - Notice of Intent tracking for restricted materials
+# -----------------------------------------------------------------------------
+
+class NOISubmission(models.Model):
+    """
+    Tracks Notice of Intent submissions for restricted use pesticide applications.
+
+    California regulations require growers to file an NOI with the County
+    Agricultural Commissioner before applying restricted materials. The
+    PesticideComplianceService flags when an NOI is needed, and this model
+    records that it was actually filed.
+    """
+
+    STATUS_CHOICES = [
+        ('pending', 'Pending Submission'),
+        ('submitted', 'Submitted to County'),
+        ('confirmed', 'Confirmed/Approved by County'),
+        ('denied', 'Denied by County'),
+        ('expired', 'Expired'),
+    ]
+
+    company = models.ForeignKey(
+        'Company',
+        on_delete=models.CASCADE,
+        related_name='noi_submissions'
+    )
+
+    # Link to the application(s) this NOI covers
+    pesticide_application = models.ForeignKey(
+        'PesticideApplication',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='noi_submissions',
+        help_text="The application this NOI covers (may be set after application)"
+    )
+
+    # NOI details
+    product = models.ForeignKey(
+        'PesticideProduct',
+        on_delete=models.CASCADE,
+        related_name='noi_submissions',
+        help_text="Restricted use product requiring NOI"
+    )
+    field = models.ForeignKey(
+        'Field',
+        on_delete=models.CASCADE,
+        related_name='noi_submissions'
+    )
+    planned_application_date = models.DateField(
+        help_text="Planned date of application"
+    )
+    planned_acres = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True,
+        help_text="Planned acres to treat"
+    )
+
+    # Submission tracking
+    status = models.CharField(
+        max_length=20, choices=STATUS_CHOICES, default='pending'
+    )
+    county = models.CharField(
+        max_length=100,
+        help_text="County Agricultural Commissioner office"
+    )
+    filed_date = models.DateField(
+        null=True, blank=True,
+        help_text="Date NOI was filed with county"
+    )
+    confirmation_number = models.CharField(
+        max_length=100, blank=True,
+        help_text="County confirmation/permit number"
+    )
+    submission_method = models.CharField(
+        max_length=50, blank=True,
+        help_text="How submitted (CalAgPermits, fax, in-person, email)"
+    )
+
+    # County response
+    county_response_date = models.DateField(null=True, blank=True)
+    county_response_notes = models.TextField(blank=True)
+
+    # Conditions (county may impose conditions on the NOI)
+    conditions = models.TextField(
+        blank=True,
+        help_text="Any conditions imposed by the county"
+    )
+
+    # Validity
+    valid_from = models.DateField(null=True, blank=True)
+    valid_until = models.DateField(null=True, blank=True)
+
+    notes = models.TextField(blank=True)
+    created_by = models.ForeignKey(
+        'User', null=True, blank=True,
+        on_delete=models.SET_NULL, related_name='noi_submissions'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-planned_application_date']
+        verbose_name = "NOI Submission"
+        verbose_name_plural = "NOI Submissions"
+        indexes = [
+            models.Index(fields=['company', 'status'], name='idx_noi_company_status'),
+            models.Index(fields=['field', 'planned_application_date'], name='idx_noi_field_date'),
+        ]
+
+    def __str__(self):
+        return f"NOI: {self.product} on {self.field} ({self.planned_application_date})"
+
+    @property
+    def is_valid(self):
+        """Check if NOI is currently valid."""
+        if self.status != 'confirmed':
+            return False
+        from datetime import date as _date
+        today = _date.today()
+        if self.valid_until and self.valid_until < today:
+            return False
+        return True
+
+    @property
+    def is_overdue(self):
+        """Check if NOI should have been submitted but hasn't been."""
+        if self.status == 'pending':
+            from datetime import date as _date, timedelta
+            today = _date.today()
+            deadline = self.planned_application_date - timedelta(days=1)
+            return today > deadline
+        return False
+
+
+# -----------------------------------------------------------------------------
 # NOTIFICATION LOG - Tracks sent notifications
 # -----------------------------------------------------------------------------
 

@@ -13,6 +13,7 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import { primusGFSAPI } from '../../services/api';
+import { useConfirm } from '../../contexts/ConfirmContext';
 
 const formatDate = (str) => {
   if (!str) return '-';
@@ -232,6 +233,7 @@ const PlanModal = ({ plan, onClose, onSave }) => {
 };
 
 export default function FoodDefensePlan() {
+  const confirm = useConfirm();
   const [plans, setPlans] = useState([]);
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -267,7 +269,8 @@ export default function FoodDefensePlan() {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this food defense plan?')) return;
+    const ok = await confirm({ title: 'Are you sure?', message: 'Are you sure you want to delete this food defense plan?', confirmLabel: 'Delete', variant: 'danger' });
+    if (!ok) return;
     try {
       await primusGFSAPI.deleteFoodDefensePlan(id);
       if (selectedPlan?.id === id) setSelectedPlan(null);

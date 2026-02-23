@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { analyticsAPI, farmsAPI } from '../services/api';
 import SeasonSelector from './SeasonSelector';
+import { BarChart as RechartsBarChart, PieChart as RechartsPieChart } from './ui/charts';
 import { useSeason } from '../contexts/SeasonContext';
 import {
   AnalyticsCard,
@@ -25,7 +26,7 @@ import {
 } from './analytics/analyticsShared';
 
 // =============================================================================
-// SIMPLE BAR CHART COMPONENT
+// BAR CHART (RECHARTS WRAPPER)
 // =============================================================================
 
 const BarChart = ({ data, title, valueKey = 'count', labelKey = 'month', height = 200 }) => {
@@ -39,51 +40,26 @@ const BarChart = ({ data, title, valueKey = 'count', labelKey = 'month', height 
     );
   }
 
-  const maxValue = Math.max(...data.map(d => d[valueKey] || 0), 1);
-
   return (
     <SectionCard title={title}>
-      <div style={{ height: `${height}px` }} className="relative p-6 pt-2">
-        {/* Y-axis labels */}
-        <div className="absolute left-6 top-2 bottom-10 w-8 flex flex-col justify-between text-xs text-gray-400">
-          <span>{maxValue}</span>
-          <span>{Math.round(maxValue / 2)}</span>
-          <span>0</span>
-        </div>
-
-        {/* Chart area */}
-        <div className="ml-10 h-full flex items-end gap-1">
-          {data.map((item, index) => {
-            const barHeight = ((item[valueKey] || 0) / maxValue) * 100;
-            return (
-              <div
-                key={index}
-                className="flex-1 flex flex-col items-center"
-              >
-                <div
-                  className="w-full bg-green-500 rounded-t hover:bg-green-600 transition-colors cursor-pointer"
-                  style={{ height: `${Math.max(barHeight, 2)}%` }}
-                  title={`${item[labelKey]}: ${item[valueKey]}`}
-                />
-                <span className="text-xs text-gray-500 mt-1 truncate w-full text-center">
-                  {item[labelKey]}
-                </span>
-              </div>
-            );
-          })}
-        </div>
+      <div className="p-6 pt-2">
+        <RechartsBarChart
+          data={data}
+          dataKeys={[valueKey]}
+          xKey={labelKey}
+          height={height}
+          colors={['#22c55e']}
+        />
       </div>
     </SectionCard>
   );
 };
 
 // =============================================================================
-// DONUT CHART COMPONENT
+// DONUT CHART (RECHARTS WRAPPER)
 // =============================================================================
 
 const DonutChart = ({ data, title, valueKey = 'revenue', labelKey = 'crop' }) => {
-  const colors = ['#22c55e', '#3b82f6', '#f59e0b', '#8b5cf6', '#ec4899', '#14b8a6'];
-
   if (!data || data.length === 0) {
     return (
       <SectionCard title={title}>
@@ -94,71 +70,24 @@ const DonutChart = ({ data, title, valueKey = 'revenue', labelKey = 'crop' }) =>
     );
   }
 
-  const total = data.reduce((sum, item) => sum + (item[valueKey] || 0), 0);
-  let currentAngle = 0;
-
   return (
     <SectionCard title={title}>
-      <div className="flex items-center gap-6 p-6 pt-2">
-        {/* Donut */}
-        <div className="relative w-40 h-40 flex-shrink-0">
-          <svg viewBox="0 0 100 100" className="w-full h-full transform -rotate-90">
-            {data.map((item, index) => {
-              const percentage = total > 0 ? (item[valueKey] || 0) / total : 0;
-              const angle = percentage * 360;
-              const startAngle = currentAngle;
-              currentAngle += angle;
-
-              const startRad = (startAngle * Math.PI) / 180;
-              const endRad = ((startAngle + angle) * Math.PI) / 180;
-              const x1 = 50 + 40 * Math.cos(startRad);
-              const y1 = 50 + 40 * Math.sin(startRad);
-              const x2 = 50 + 40 * Math.cos(endRad);
-              const y2 = 50 + 40 * Math.sin(endRad);
-              const largeArc = angle > 180 ? 1 : 0;
-
-              if (percentage === 0) return null;
-
-              return (
-                <path
-                  key={index}
-                  d={`M 50 50 L ${x1} ${y1} A 40 40 0 ${largeArc} 1 ${x2} ${y2} Z`}
-                  fill={colors[index % colors.length]}
-                  stroke="white"
-                  strokeWidth="1"
-                />
-              );
-            })}
-            <circle cx="50" cy="50" r="25" fill="white" />
-          </svg>
-          <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="text-xs text-gray-500">Total</span>
-            <span className="text-lg font-bold text-gray-900">{formatCurrency(total, { compact: true })}</span>
-          </div>
-        </div>
-
-        {/* Legend */}
-        <div className="flex-1 space-y-2">
-          {data.slice(0, 5).map((item, index) => (
-            <div key={index} className="flex items-center gap-2">
-              <div
-                className="w-3 h-3 rounded-full flex-shrink-0"
-                style={{ backgroundColor: colors[index % colors.length] }}
-              />
-              <span className="text-sm text-gray-600 truncate flex-1">{item[labelKey]}</span>
-              <span className="text-sm font-medium text-gray-900">
-                {formatCurrency(item[valueKey], { compact: true })}
-              </span>
-            </div>
-          ))}
-        </div>
+      <div className="p-6 pt-2">
+        <RechartsPieChart
+          data={data}
+          dataKey={valueKey}
+          nameKey={labelKey}
+          height={220}
+          innerRadius={50}
+          valueFormatter={(val) => formatCurrency(val, { compact: true })}
+        />
       </div>
     </SectionCard>
   );
 };
 
 // =============================================================================
-// HORIZONTAL BAR CHART (FIELD PERFORMANCE)
+// HORIZONTAL BAR CHART (RECHARTS WRAPPER)
 // =============================================================================
 
 const HorizontalBarChart = ({ data, title }) => {
@@ -172,36 +101,19 @@ const HorizontalBarChart = ({ data, title }) => {
     );
   }
 
-  const maxProfit = Math.max(...data.map(d => Math.abs(d.profit || 0)), 1);
-
   return (
     <SectionCard title={title}>
-      <div className="space-y-3 p-6 pt-2">
-        {data.slice(0, 8).map((field, index) => {
-          const width = (Math.abs(field.profit) / maxProfit) * 100;
-          const isPositive = field.profit >= 0;
-
-          return (
-            <div key={index} className="flex items-center gap-3">
-              <div className="w-24 text-sm text-gray-600 truncate" title={field.name}>
-                {field.name}
-              </div>
-              <div className="flex-1 h-6 bg-gray-100 rounded-full overflow-hidden relative">
-                <div
-                  className={`h-full rounded-full transition-all ${
-                    isPositive ? 'bg-green-500' : 'bg-red-400'
-                  }`}
-                  style={{ width: `${Math.max(width, 5)}%` }}
-                />
-              </div>
-              <div className={`w-20 text-sm font-medium text-right ${
-                isPositive ? 'text-green-600' : 'text-red-600'
-              }`}>
-                {formatCurrency(field.profit, { compact: true })}
-              </div>
-            </div>
-          );
-        })}
+      <div className="p-6 pt-2">
+        <RechartsBarChart
+          data={data.slice(0, 8)}
+          dataKeys={['profit']}
+          xKey="name"
+          height={250}
+          horizontal
+          colors={['#22c55e']}
+          barColors={data.slice(0, 8).map(d => (d.profit >= 0 ? '#22c55e' : '#f87171'))}
+          valueFormatter={(val) => formatCurrency(val, { compact: true })}
+        />
       </div>
     </SectionCard>
   );

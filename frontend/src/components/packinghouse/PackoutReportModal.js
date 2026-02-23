@@ -6,8 +6,10 @@
 import React, { useState, useEffect } from 'react';
 import { X, FileText, Save, Loader2, Plus, Trash2 } from 'lucide-react';
 import { packoutReportsAPI, fieldsAPI, PACKINGHOUSE_CONSTANTS } from '../../services/api';
+import { useToast } from '../../contexts/ToastContext';
 
 const PackoutReportModal = ({ poolId, report, onClose, onSave }) => {
+  const toast = useToast();
   const [fields, setFields] = useState([]);
   const [formData, setFormData] = useState({
     pool: poolId,
@@ -159,7 +161,7 @@ const PackoutReportModal = ({ poolId, report, onClose, onSave }) => {
       if (error.response?.data) {
         setErrors(error.response.data);
       } else {
-        alert('Failed to save packout report');
+        toast.error('Failed to save packout report');
       }
     } finally {
       setSaving(false);

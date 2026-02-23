@@ -410,32 +410,59 @@ class Harvest(models.Model):
         return f"{base_lot}-{existing_count + 1:02d}"
 
     def _populate_phi_info(self):
-        """Auto-populate PHI compliance information from recent applications."""
+        """Auto-populate PHI compliance information from recent applications.
+
+        Checks ALL applications within a 365-day lookback and uses the
+        worst-case (latest clearance date) to determine compliance, not
+        just the most recent application.
+        """
         if not self.field_id:
             return
 
-        # Get most recent application on this field
+        from datetime import timedelta
         from django.apps import apps
         PesticideApplication = apps.get_model('api', 'PesticideApplication')
 
-        last_app = PesticideApplication.objects.filter(
-            field_id=self.field_id
-        ).select_related('product').order_by('-application_date').first()
+        harvest_dt = self.harvest_date or date.today()
+        lookback_start = harvest_dt - timedelta(days=365)
 
+        applications = PesticideApplication.objects.filter(
+            field_id=self.field_id,
+            application_date__gte=lookback_start,
+        ).select_related('product').order_by('-application_date')
+
+        if not applications.exists():
+            return
+
+        # Find the worst-case blocking application (latest clearance date)
+        worst_clear_date = None
+        worst_app = None
+
+        for app in applications:
+            if app.product and app.product.phi_days:
+                clear_date = app.application_date + timedelta(days=app.product.phi_days)
+                if worst_clear_date is None or clear_date > worst_clear_date:
+                    worst_clear_date = clear_date
+                    worst_app = app
+
+        # Track the most recent application for display
+        last_app = applications.first()
         if last_app:
             self.last_application_date = last_app.application_date
             if last_app.product:
                 self.last_application_product = last_app.product.product_name
-                self.phi_required_days = last_app.product.phi_days
 
-            # Calculate days since application
-            if self.harvest_date and self.last_application_date:
-                delta = self.harvest_date - self.last_application_date
-                self.days_since_last_application = delta.days
-
-                # Determine compliance
-                if self.phi_required_days:
-                    self.phi_compliant = self.days_since_last_application >= self.phi_required_days
+        # Use worst-case PHI for compliance determination
+        if worst_app and self.harvest_date:
+            self.phi_required_days = worst_app.product.phi_days
+            self.last_application_product = worst_app.product.product_name
+            self.last_application_date = worst_app.application_date
+            delta = self.harvest_date - worst_app.application_date
+            self.days_since_last_application = delta.days
+            self.phi_compliant = self.harvest_date >= worst_clear_date
+        elif last_app and self.harvest_date and self.last_application_date:
+            delta = self.harvest_date - self.last_application_date
+            self.days_since_last_application = delta.days
 
     @property
     def total_revenue(self):

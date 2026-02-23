@@ -9,9 +9,13 @@ import {
 } from 'lucide-react';
 import { reportsAPI, nitrogenReportsAPI, downloadFile } from '../services/api';
 import { useData } from '../contexts/DataContext';
+import { useConfirm } from '../contexts/ConfirmContext';
+import { useToast } from '../contexts/ToastContext';
 
 const Reports = () => {
   const { farms, fields, applications } = useData();
+  const confirm = useConfirm();
+  const toast = useToast();
   // Tab state
   const [activeTab, setActiveTab] = useState('pur'); // 'pur' or 'nitrogen'
   
@@ -98,13 +102,13 @@ const Reports = () => {
       setValidation(response.data);
       
       if (response.data.valid) {
-        alert(`✓ Validation Passed!\n\n${response.data.applications_count} applications are ready for PUR submission.`);
+        toast.success(`Validation Passed! ${response.data.applications_count} applications are ready for PUR submission.`);
       } else {
-        alert(`✗ Validation Failed\n\nErrors: ${response.data.errors.length}\nWarnings: ${response.data.warnings.length}`);
+        toast.error(`Validation Failed - Errors: ${response.data.errors.length}, Warnings: ${response.data.warnings.length}`);
       }
     } catch (error) {
       console.error('Error validating:', error);
-      alert('Failed to validate applications');
+      toast.error('Failed to validate applications');
     } finally {
       setValidating(false);
     }
@@ -112,9 +116,7 @@ const Reports = () => {
 
   const handleExport = async () => {
     if (filters.format === 'csv' && validation && !validation.valid) {
-      const proceed = window.confirm(
-        'Warning: Applications contain validation errors.\n\nWould you like to export anyway using the detailed format?'
-      );
+      const proceed = await confirm({ title: 'Are you sure?', message: 'Applications contain validation errors. Would you like to export anyway using the detailed format?', confirmLabel: 'Export Anyway', variant: 'warning' });
       if (proceed) {
         setFilters(prev => ({ ...prev, format: 'csv_detailed' }));
         return;
@@ -139,10 +141,10 @@ const Reports = () => {
       const filename = `PUR_Report_${new Date().toISOString().split('T')[0]}.${extension}`;
       
       downloadFile(response.data, filename);
-      alert('Report exported successfully!');
+      toast.success('Report exported successfully!');
     } catch (error) {
       console.error('Error exporting report:', error);
-      alert('Failed to export report');
+      toast.error('Failed to export report');
     } finally {
       setExporting(false);
     }
@@ -156,7 +158,7 @@ const Reports = () => {
       downloadFile(response.data, `nitrogen_report_${nitrogenYear}.xlsx`);
     } catch (error) {
       console.error('Error exporting nitrogen report:', error);
-      alert('Failed to export nitrogen report');
+      toast.error('Failed to export nitrogen report');
     }
   };
 
@@ -229,21 +231,21 @@ const Reports = () => {
     <div className="p-6">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Reports & Compliance</h1>
-        <p className="text-gray-600">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Reports & Compliance</h1>
+        <p className="text-gray-600 dark:text-gray-400">
           Generate PUR reports for pesticide compliance and nitrogen reports for ILRP
         </p>
       </div>
 
       {/* Tabs */}
-      <div className="border-b border-gray-200 mb-6">
+      <div className="border-b border-gray-200 dark:border-gray-700 mb-6">
         <nav className="flex space-x-8">
           <button
             onClick={() => setActiveTab('pur')}
             className={`flex items-center gap-2 py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
               activeTab === 'pur'
-                ? 'border-green-500 text-green-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                ? 'border-green-500 text-green-600 dark:text-green-400'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
             }`}
           >
             <Shield className="w-4 h-4" />
@@ -253,8 +255,8 @@ const Reports = () => {
             onClick={() => setActiveTab('nitrogen')}
             className={`flex items-center gap-2 py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
               activeTab === 'nitrogen'
-                ? 'border-green-500 text-green-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                ? 'border-green-500 text-green-600 dark:text-green-400'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
             }`}
           >
             <Leaf className="w-4 h-4" />
@@ -269,15 +271,15 @@ const Reports = () => {
       {activeTab === 'nitrogen' && (
         <div className="space-y-6">
           {/* Filters & Export */}
-          <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
             <div className="flex flex-wrap gap-4 items-center justify-between">
               <div className="flex gap-4 items-center">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Year</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Year</label>
                   <select
                     value={nitrogenYear}
                     onChange={(e) => setNitrogenYear(parseInt(e.target.value))}
-                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                    className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-200 focus:ring-2 focus:ring-green-500"
                   >
                     {yearOptions.map(y => (
                       <option key={y} value={y}>{y}</option>
@@ -286,11 +288,11 @@ const Reports = () => {
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Farm</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Farm</label>
                   <select
                     value={nitrogenFarm}
                     onChange={(e) => setNitrogenFarm(e.target.value)}
-                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                    className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-200 focus:ring-2 focus:ring-green-500"
                   >
                     <option value="">All Farms</option>
                     {farms.map(farm => (
@@ -312,40 +314,40 @@ const Reports = () => {
 
           {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="bg-white rounded-lg shadow p-4">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-green-100 rounded-lg">
-                  <Leaf className="w-6 h-6 text-green-600" />
+                <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
+                  <Leaf className="w-6 h-6 text-green-600 dark:text-green-400" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Applications</p>
-                  <p className="text-2xl font-bold text-gray-900">{nitrogenTotals.applications}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Applications</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">{nitrogenTotals.applications}</p>
                 </div>
               </div>
             </div>
             
-            <div className="bg-white rounded-lg shadow p-4">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-blue-100 rounded-lg">
-                  <TrendingUp className="w-6 h-6 text-blue-600" />
+                <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                  <TrendingUp className="w-6 h-6 text-blue-600 dark:text-blue-400" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Total N Applied</p>
-                  <p className="text-2xl font-bold text-gray-900">
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Total N Applied</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
                     {nitrogenTotals.nitrogen.toLocaleString(undefined, {maximumFractionDigits: 0})} lbs
                   </p>
                 </div>
               </div>
             </div>
             
-            <div className="bg-white rounded-lg shadow p-4">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-purple-100 rounded-lg">
-                  <BarChart3 className="w-6 h-6 text-purple-600" />
+                <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
+                  <BarChart3 className="w-6 h-6 text-purple-600 dark:text-purple-400" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Avg N/Acre</p>
-                  <p className="text-2xl font-bold text-gray-900">
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Avg N/Acre</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
                     {nitrogenTotals.acres > 0 
                       ? (nitrogenTotals.nitrogen / nitrogenTotals.acres).toFixed(1) 
                       : '0'} lbs
@@ -354,24 +356,24 @@ const Reports = () => {
               </div>
             </div>
             
-            <div className="bg-white rounded-lg shadow p-4">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-yellow-100 rounded-lg">
-                  <MapPin className="w-6 h-6 text-yellow-600" />
+                <div className="p-2 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg">
+                  <MapPin className="w-6 h-6 text-yellow-600 dark:text-yellow-400" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Total Acres</p>
-                  <p className="text-2xl font-bold text-gray-900">{nitrogenTotals.acres.toFixed(1)}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Total Acres</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">{nitrogenTotals.acres.toFixed(1)}</p>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Summary Table */}
-          <div className="bg-white rounded-lg shadow overflow-hidden">
-            <div className="px-4 py-3 border-b border-gray-200 bg-gray-50">
-              <h3 className="font-medium text-gray-900">Nitrogen Summary by Field - {nitrogenYear}</h3>
-              <p className="text-sm text-gray-500">Annual nitrogen totals for ILRP reporting</p>
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+            <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700">
+              <h3 className="font-medium text-gray-900 dark:text-white">Nitrogen Summary by Field - {nitrogenYear}</h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Annual nitrogen totals for ILRP reporting</p>
             </div>
             
             {nitrogenLoading ? (
@@ -384,41 +386,41 @@ const Reports = () => {
               </div>
             ) : (
               <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
+                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                  <thead className="bg-gray-50 dark:bg-gray-700">
                     <tr>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Field</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Farm</th>
-                      <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Acres</th>
-                      <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Apps</th>
-                      <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Total N (lbs)</th>
-                      <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">N/Acre</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Field</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Farm</th>
+                      <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Acres</th>
+                      <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Apps</th>
+                      <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Total N (lbs)</th>
+                      <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">N/Acre</th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
+                  <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                     {nitrogenSummary.map((row, idx) => (
-                      <tr key={row.field_id || idx} className="hover:bg-gray-50">
-                        <td className="px-4 py-3 whitespace-nowrap font-medium text-gray-900">{row.field_name}</td>
-                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">{row.farm_name}</td>
-                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 text-right">{row.acres?.toFixed(1)}</td>
-                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 text-right">{row.total_applications}</td>
-                        <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900 text-right">
+                      <tr key={row.field_id || idx} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                        <td className="px-4 py-3 whitespace-nowrap font-medium text-gray-900 dark:text-white">{row.field_name}</td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{row.farm_name}</td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200 text-right">{row.acres?.toFixed(1)}</td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200 text-right">{row.total_applications}</td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white text-right">
                           {row.total_lbs_nitrogen?.toLocaleString(undefined, {maximumFractionDigits: 0})}
                         </td>
-                        <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-green-600 text-right">
+                        <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-green-600 dark:text-green-400 text-right">
                           {row.lbs_nitrogen_per_acre?.toFixed(1)}
                         </td>
                       </tr>
                     ))}
                   </tbody>
-                  <tfoot className="bg-gray-50">
+                  <tfoot className="bg-gray-50 dark:bg-gray-700">
                     <tr>
-                      <td colSpan="3" className="px-4 py-3 text-sm font-medium text-gray-900">Totals</td>
-                      <td className="px-4 py-3 text-sm font-medium text-gray-900 text-right">{nitrogenTotals.applications}</td>
-                      <td className="px-4 py-3 text-sm font-bold text-gray-900 text-right">
+                      <td colSpan="3" className="px-4 py-3 text-sm font-medium text-gray-900 dark:text-white">Totals</td>
+                      <td className="px-4 py-3 text-sm font-medium text-gray-900 dark:text-gray-200 text-right">{nitrogenTotals.applications}</td>
+                      <td className="px-4 py-3 text-sm font-bold text-gray-900 dark:text-white text-right">
                         {nitrogenTotals.nitrogen.toLocaleString(undefined, {maximumFractionDigits: 0})}
                       </td>
-                      <td className="px-4 py-3 text-sm font-medium text-green-600 text-right">
+                      <td className="px-4 py-3 text-sm font-medium text-green-600 dark:text-green-400 text-right">
                         {nitrogenTotals.acres > 0 ? (nitrogenTotals.nitrogen / nitrogenTotals.acres).toFixed(1) : '-'}
                       </td>
                     </tr>
@@ -429,12 +431,12 @@ const Reports = () => {
           </div>
 
           {/* ILRP Info */}
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div className="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
             <div className="flex gap-3">
-              <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+              <AlertCircle className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
               <div>
-                <h4 className="font-medium text-blue-900">ILRP Compliance</h4>
-                <p className="text-sm text-blue-800 mt-1">
+                <h4 className="font-medium text-blue-900 dark:text-blue-200">ILRP Compliance</h4>
+                <p className="text-sm text-blue-800 dark:text-blue-300 mt-1">
                   California's Irrigated Lands Regulatory Program requires reporting nitrogen applied to agricultural land. 
                   Use this summary for your coalition's annual nitrogen management reporting.
                 </p>
@@ -451,12 +453,12 @@ const Reports = () => {
         <div className="space-y-6">
           {/* Validation Alert */}
           {validation && !validation.valid && (
-            <div className="bg-red-50 border-l-4 border-red-500 p-4">
+            <div className="bg-red-50 dark:bg-red-900/30 border-l-4 border-red-500 p-4">
               <div className="flex items-start">
-                <AlertTriangle className="w-6 h-6 text-red-500 mr-3 flex-shrink-0" />
+                <AlertTriangle className="w-6 h-6 text-red-500 dark:text-red-400 mr-3 flex-shrink-0" />
                 <div>
-                  <h3 className="text-lg font-semibold text-red-900">Validation Errors Found</h3>
-                  <p className="text-sm text-red-700">
+                  <h3 className="text-lg font-semibold text-red-900 dark:text-red-200">Validation Errors Found</h3>
+                  <p className="text-sm text-red-700 dark:text-red-300">
                     {validation.errors.length} error(s) and {validation.warnings.length} warning(s) must be addressed.
                   </p>
                 </div>
@@ -465,20 +467,20 @@ const Reports = () => {
           )}
 
           {/* Filters */}
-          <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
                 <Filter className="w-5 h-5" />
                 Report Filters
               </h2>
-              <button onClick={clearFilters} className="text-sm text-gray-500 hover:text-gray-700">
+              <button onClick={clearFilters} className="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
                 Clear All
               </button>
             </div>
 
             {/* Quick Date Range */}
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Quick Select</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Quick Select</label>
               <div className="flex flex-wrap gap-2">
                 {[
                   { id: 'thisMonth', label: 'This Month' },
@@ -490,7 +492,7 @@ const Reports = () => {
                   <button
                     key={range.id}
                     onClick={() => setQuickDateRange(range.id)}
-                    className="px-3 py-1 text-sm border border-gray-300 rounded-full hover:bg-gray-50"
+                    className="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-full hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-gray-300"
                   >
                     {range.label}
                   </button>
@@ -501,29 +503,29 @@ const Reports = () => {
             {/* Filter Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Start Date</label>
                 <input
                   type="date"
                   value={filters.start_date}
                   onChange={(e) => handleFilterChange('start_date', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-200 focus:ring-2 focus:ring-green-500"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">End Date</label>
                 <input
                   type="date"
                   value={filters.end_date}
                   onChange={(e) => handleFilterChange('end_date', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-200 focus:ring-2 focus:ring-green-500"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Farm</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Farm</label>
                 <select
                   value={filters.farm_id}
                   onChange={(e) => handleFilterChange('farm_id', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-200 focus:ring-2 focus:ring-green-500"
                 >
                   <option value="">All Farms</option>
                   {farms.map(farm => (
@@ -532,11 +534,11 @@ const Reports = () => {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">County</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">County</label>
                 <select
                   value={filters.county}
                   onChange={(e) => handleFilterChange('county', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-200 focus:ring-2 focus:ring-green-500"
                 >
                   <option value="">All Counties</option>
                   {counties.map(county => (
@@ -548,8 +550,8 @@ const Reports = () => {
           </div>
 
           {/* Export Section */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
               <Download className="w-5 h-5" />
               Export Options
             </h2>
@@ -564,8 +566,8 @@ const Reports = () => {
                   key={format.id}
                   className={`flex items-start p-4 border rounded-lg cursor-pointer transition-colors ${
                     filters.format === format.id
-                      ? 'border-green-500 bg-green-50'
-                      : 'border-gray-200 hover:border-gray-300'
+                      ? 'border-green-500 bg-green-50 dark:bg-green-900/20'
+                      : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
                   }`}
                 >
                   <input
@@ -577,8 +579,8 @@ const Reports = () => {
                     className="mt-1 text-green-600"
                   />
                   <div className="ml-3">
-                    <div className="font-medium text-gray-900">{format.label}</div>
-                    <div className="text-sm text-gray-500">{format.desc}</div>
+                    <div className="font-medium text-gray-900 dark:text-white">{format.label}</div>
+                    <div className="text-sm text-gray-500 dark:text-gray-400">{format.desc}</div>
                   </div>
                 </label>
               ))}
@@ -588,7 +590,7 @@ const Reports = () => {
               <button
                 onClick={handleValidate}
                 disabled={validating}
-                className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center gap-2"
+                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-gray-300 flex items-center gap-2"
               >
                 <CheckCircle className="w-4 h-4" />
                 {validating ? 'Validating...' : 'Validate'}
@@ -606,27 +608,27 @@ const Reports = () => {
 
           {/* Statistics */}
           {statistics && (
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                 <BarChart3 className="w-5 h-5" />
                 Report Statistics
               </h2>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="text-center p-4 bg-gray-50 rounded-lg">
-                  <div className="text-3xl font-bold text-gray-900">{statistics.total_applications || 0}</div>
-                  <div className="text-sm text-gray-500">Applications</div>
+                <div className="text-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                  <div className="text-3xl font-bold text-gray-900 dark:text-white">{statistics.total_applications || 0}</div>
+                  <div className="text-sm text-gray-500 dark:text-gray-400">Applications</div>
                 </div>
-                <div className="text-center p-4 bg-gray-50 rounded-lg">
-                  <div className="text-3xl font-bold text-gray-900">{statistics.total_fields || 0}</div>
-                  <div className="text-sm text-gray-500">Fields</div>
+                <div className="text-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                  <div className="text-3xl font-bold text-gray-900 dark:text-white">{statistics.total_fields || 0}</div>
+                  <div className="text-sm text-gray-500 dark:text-gray-400">Fields</div>
                 </div>
-                <div className="text-center p-4 bg-gray-50 rounded-lg">
-                  <div className="text-3xl font-bold text-gray-900">{statistics.total_acres?.toFixed(1) || 0}</div>
-                  <div className="text-sm text-gray-500">Total Acres</div>
+                <div className="text-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                  <div className="text-3xl font-bold text-gray-900 dark:text-white">{statistics.total_acres?.toFixed(1) || 0}</div>
+                  <div className="text-sm text-gray-500 dark:text-gray-400">Total Acres</div>
                 </div>
-                <div className="text-center p-4 bg-gray-50 rounded-lg">
-                  <div className="text-3xl font-bold text-gray-900">{statistics.total_products || 0}</div>
-                  <div className="text-sm text-gray-500">Products Used</div>
+                <div className="text-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                  <div className="text-3xl font-bold text-gray-900 dark:text-white">{statistics.total_products || 0}</div>
+                  <div className="text-sm text-gray-500 dark:text-gray-400">Products Used</div>
                 </div>
               </div>
             </div>
@@ -634,15 +636,15 @@ const Reports = () => {
 
           {/* Validation Details */}
           {validation && validation.errors && validation.errors.length > 0 && (
-            <div id="validation-section" className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Validation Details</h2>
-              
+            <div id="validation-section" className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Validation Details</h2>
+
               {validation.errors.length > 0 && (
                 <div className="mb-4">
-                  <h3 className="font-medium text-red-800 mb-2">Errors ({validation.errors.length})</h3>
+                  <h3 className="font-medium text-red-800 dark:text-red-300 mb-2">Errors ({validation.errors.length})</h3>
                   <ul className="space-y-1">
                     {validation.errors.map((error, idx) => (
-                      <li key={idx} className="text-sm text-red-700 flex items-start gap-2">
+                      <li key={idx} className="text-sm text-red-700 dark:text-red-400 flex items-start gap-2">
                         <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
                         {error}
                       </li>
@@ -650,13 +652,13 @@ const Reports = () => {
                   </ul>
                 </div>
               )}
-              
+
               {validation.warnings && validation.warnings.length > 0 && (
                 <div>
-                  <h3 className="font-medium text-yellow-800 mb-2">Warnings ({validation.warnings.length})</h3>
+                  <h3 className="font-medium text-yellow-800 dark:text-yellow-300 mb-2">Warnings ({validation.warnings.length})</h3>
                   <ul className="space-y-1">
                     {validation.warnings.map((warning, idx) => (
-                      <li key={idx} className="text-sm text-yellow-700 flex items-start gap-2">
+                      <li key={idx} className="text-sm text-yellow-700 dark:text-yellow-400 flex items-start gap-2">
                         <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
                         {warning}
                       </li>

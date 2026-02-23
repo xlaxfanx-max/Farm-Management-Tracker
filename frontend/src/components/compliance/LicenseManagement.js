@@ -20,6 +20,7 @@ import {
   Building,
 } from 'lucide-react';
 import { licensesAPI, COMPLIANCE_CONSTANTS } from '../../services/api';
+import { useConfirm } from '../../contexts/ConfirmContext';
 
 // Format date for display
 const formatDate = (dateString) => {
@@ -397,6 +398,7 @@ const LicenseModal = ({ license, onClose, onSave }) => {
 
 // Main Component
 export default function LicenseManagement({ onNavigate }) {
+  const confirm = useConfirm();
   const [licenses, setLicenses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -444,13 +446,13 @@ export default function LicenseManagement({ onNavigate }) {
 
   // Handle delete
   const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this license?')) {
-      try {
-        await licensesAPI.delete(id);
-        fetchLicenses();
-      } catch (error) {
-        console.error('Failed to delete license:', error);
-      }
+    const ok = await confirm({ title: 'Are you sure?', message: 'Are you sure you want to delete this license?', confirmLabel: 'Delete', variant: 'danger' });
+    if (!ok) return;
+    try {
+      await licensesAPI.delete(id);
+      fetchLicenses();
+    } catch (error) {
+      console.error('Failed to delete license:', error);
     }
   };
 

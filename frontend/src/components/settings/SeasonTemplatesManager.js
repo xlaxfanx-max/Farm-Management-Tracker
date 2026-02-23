@@ -21,6 +21,7 @@ import {
   ChevronUp,
 } from 'lucide-react';
 import { seasonAPI } from '../../services/api';
+import { useConfirm } from '../../contexts/ConfirmContext';
 
 // Month options
 const MONTHS = [
@@ -360,6 +361,7 @@ const TemplateEditor = ({ template, onSave, onCancel, saving }) => {
 
 // Main component
 const SeasonTemplatesManager = () => {
+  const confirm = useConfirm();
   const [templates, setTemplates] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -399,9 +401,13 @@ const SeasonTemplatesManager = () => {
   };
 
   const handleDelete = async (template) => {
-    if (!window.confirm(`Are you sure you want to delete "${template.name}"?`)) {
-      return;
-    }
+    const ok = await confirm({
+      title: 'Are you sure?',
+      message: `Are you sure you want to delete "${template.name}"?`,
+      confirmLabel: 'Delete',
+      variant: 'danger',
+    });
+    if (!ok) return;
 
     try {
       await seasonAPI.deleteSeasonTemplate(template.id);

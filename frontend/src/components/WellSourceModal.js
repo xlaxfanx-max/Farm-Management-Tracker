@@ -12,6 +12,7 @@ import {
   Info, CheckCircle, Navigation, Crosshair
 } from 'lucide-react';
 import api from '../services/api';
+import { useToast } from '../contexts/ToastContext';
 
 // =============================================================================
 // CONSTANTS
@@ -83,6 +84,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
   // ---------------------------------------------------------------------------
   // State
   // ---------------------------------------------------------------------------
+  const toast = useToast();
   const [activeTab, setActiveTab] = useState('basic');
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
@@ -389,7 +391,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
   // ---------------------------------------------------------------------------
   const getCurrentLocation = () => {
     if (!navigator.geolocation) {
-      alert('Geolocation is not supported by your browser');
+      toast.error('Geolocation is not supported by your browser');
       return;
     }
     
@@ -406,7 +408,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
         lookupPLSS(position.coords.latitude, position.coords.longitude);
       },
       (error) => {
-        alert('Unable to get your location: ' + error.message);
+        toast.error('Unable to get your location: ' + error.message);
       }
     );
   };

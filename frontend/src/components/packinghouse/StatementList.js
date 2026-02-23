@@ -10,6 +10,8 @@ import {
   Download, ExternalLink
 } from 'lucide-react';
 import { packinghouseStatementsAPI } from '../../services/api';
+import { useConfirm } from '../../contexts/ConfirmContext';
+import { useToast } from '../../contexts/ToastContext';
 import UnifiedUploadModal from './BatchUploadModal';
 
 const STATUS_BADGES = {
@@ -29,6 +31,8 @@ const TYPE_LABELS = {
 };
 
 const StatementList = ({ packinghouseId = null }) => {
+  const confirm = useConfirm();
+  const toast = useToast();
   const [statements, setStatements] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -86,14 +90,20 @@ const StatementList = ({ packinghouseId = null }) => {
       ? `Are you sure you want to delete "${statement.original_filename}"?\n\nWARNING: This will also delete the associated settlement/packout report and all related data (grade lines, deductions). This action cannot be undone.`
       : `Are you sure you want to delete "${statement.original_filename}"?`;
 
-    if (!window.confirm(warningMessage)) return;
+    const ok = await confirm({
+      title: 'Are you sure?',
+      message: warningMessage,
+      confirmLabel: 'Delete',
+      variant: 'danger',
+    });
+    if (!ok) return;
 
     try {
       await packinghouseStatementsAPI.delete(statement.id);
       setStatements(prev => prev.filter(s => s.id !== statement.id));
     } catch (err) {
       console.error('Error deleting statement:', err);
-      alert('Failed to delete statement');
+      toast.error('Failed to delete statement');
     }
   };
 

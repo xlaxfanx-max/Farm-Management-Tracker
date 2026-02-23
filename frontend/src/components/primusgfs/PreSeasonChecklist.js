@@ -4,6 +4,8 @@ import {
   ChevronDown, ChevronRight, Sparkles, Database,
 } from 'lucide-react';
 import { primusGFSAPI } from '../../services/api';
+import { useConfirm } from '../../contexts/ConfirmContext';
+import { useToast } from '../../contexts/ToastContext';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -456,6 +458,8 @@ const ChecklistForm = ({ initial, onClose, onSave }) => {
 // ---------------------------------------------------------------------------
 
 export default function PreSeasonChecklist() {
+  const confirm = useConfirm();
+  const toast = useToast();
   const [checklists, setChecklists] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -490,14 +494,15 @@ export default function PreSeasonChecklist() {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Delete this pre-season checklist? This action cannot be undone.')) return;
+    const ok = await confirm({ title: 'Are you sure?', message: 'Delete this pre-season checklist? This action cannot be undone.', confirmLabel: 'Delete', variant: 'danger' });
+    if (!ok) return;
     setDeleting(id);
     try {
       await primusGFSAPI.deletePreSeasonChecklist(id);
       await fetchData();
     } catch (err) {
       console.error('Failed to delete checklist:', err);
-      alert('Failed to delete checklist. Please try again.');
+      toast.error('Failed to delete checklist. Please try again.');
     } finally {
       setDeleting(null);
     }

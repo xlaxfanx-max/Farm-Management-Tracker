@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Trees, ChevronDown, RefreshCw, Calendar, Layers, AlertTriangle, Search } from 'lucide-react';
 import { treeSurveyAPI } from '../../services/api';
 import { useData } from '../../contexts/DataContext';
+import { useConfirm } from '../../contexts/ConfirmContext';
 import SurveyUploadForm from './SurveyUploadForm';
 import SurveyResultsPanel from './SurveyResultsPanel';
 import TreeMap from './TreeMap';
@@ -10,6 +11,7 @@ const POLL_INTERVAL = 3000;
 
 const TreeDetectionPage = () => {
   const { farms, fields } = useData();
+  const confirm = useConfirm();
 
   const [selectedFarm, setSelectedFarm] = useState('');
   const [selectedField, setSelectedField] = useState('');
@@ -152,7 +154,13 @@ const TreeDetectionPage = () => {
 
   // Handle survey deletion
   const handleDeleteSurvey = async (surveyId) => {
-    if (!window.confirm('Are you sure you want to delete this survey?')) return;
+    const ok = await confirm({
+      title: 'Are you sure?',
+      message: 'Are you sure you want to delete this survey?',
+      confirmLabel: 'Delete',
+      variant: 'danger',
+    });
+    if (!ok) return;
     try {
       await treeSurveyAPI.delete(surveyId);
       if (selectedSurvey && selectedSurvey.id === surveyId) {

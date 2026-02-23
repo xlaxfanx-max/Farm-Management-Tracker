@@ -20,10 +20,14 @@ import {
   Eye
 } from 'lucide-react';
 import { poolsAPI, packinghousesAPI, PACKINGHOUSE_CONSTANTS } from '../../services/api';
+import { useConfirm } from '../../contexts/ConfirmContext';
+import { useToast } from '../../contexts/ToastContext';
 import PoolModal from './PoolModal';
 import PoolDetail from './PoolDetail';
 
 const PoolList = () => {
+  const confirm = useConfirm();
+  const toast = useToast();
   const [pools, setPools] = useState([]);
   const [packinghouses, setPackinghouses] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -71,14 +75,19 @@ const PoolList = () => {
   };
 
   const handleDelete = async (id, name) => {
-    if (window.confirm(`Are you sure you want to delete pool "${name}"?`)) {
-      try {
-        await poolsAPI.delete(id);
-        fetchPools();
-      } catch (error) {
-        console.error('Error deleting pool:', error);
-        alert('Failed to delete pool. It may have associated deliveries or reports.');
-      }
+    const ok = await confirm({
+      title: 'Are you sure?',
+      message: `Are you sure you want to delete pool "${name}"?`,
+      confirmLabel: 'Delete',
+      variant: 'danger',
+    });
+    if (!ok) return;
+    try {
+      await poolsAPI.delete(id);
+      fetchPools();
+    } catch (error) {
+      console.error('Error deleting pool:', error);
+      toast.error('Failed to delete pool. It may have associated deliveries or reports.');
     }
   };
 

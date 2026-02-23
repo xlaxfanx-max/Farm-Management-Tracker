@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Package, Upload, Download, Search, Plus, Edit2, Trash2, AlertTriangle, CheckCircle, X, FileText } from 'lucide-react';
 import axios from 'axios';
+import { useConfirm } from '../contexts/ConfirmContext';
+import { useToast } from '../contexts/ToastContext';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
 
@@ -16,6 +18,8 @@ const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api
  * - Download CSV template
  */
 function ProductManagement() {
+  const confirm = useConfirm();
+  const toast = useToast();
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -45,7 +49,7 @@ function ProductManagement() {
       setProducts(response.data.results || response.data);
     } catch (error) {
       console.error('Error loading products:', error);
-      alert('Failed to load products');
+      toast.error('Failed to load products');
     } finally {
       setLoading(false);
     }
@@ -81,23 +85,22 @@ function ProductManagement() {
   };
 
   const handleDeleteProduct = async (productId) => {
-    if (!window.confirm('Are you sure you want to delete this product?')) {
-      return;
-    }
+    const ok = await confirm({ title: 'Are you sure?', message: 'Are you sure you want to delete this product?', confirmLabel: 'Delete', variant: 'danger' });
+    if (!ok) return;
 
     try {
       await axios.delete(`${API_BASE_URL}/products/${productId}/`);
       await loadProducts();
-      alert('Product deleted successfully');
+      toast.success('Product deleted successfully');
     } catch (error) {
       console.error('Error deleting product:', error);
-      alert('Failed to delete product');
+      toast.error('Failed to delete product');
     }
   };
 
   const handleImport = async () => {
     if (!importFile) {
-      alert('Please select a CSV file');
+      toast.info('Please select a CSV file');
       return;
     }
 
@@ -146,7 +149,7 @@ function ProductManagement() {
       window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error('Error downloading template:', error);
-      alert('Failed to download template');
+      toast.error('Failed to download template');
     }
   };
 
@@ -166,7 +169,7 @@ function ProductManagement() {
       window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error('Error exporting products:', error);
-      alert('Failed to export products');
+      toast.error('Failed to export products');
     }
   };
 
@@ -175,8 +178,8 @@ function ProductManagement() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Pesticide Product Catalog</h1>
-          <p className="text-gray-600 mt-1">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Pesticide Product Catalog</h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-1">
             Manage your pesticide product database for PUR compliance
           </p>
         </div>
@@ -184,7 +187,7 @@ function ProductManagement() {
       </div>
 
       {/* Action Buttons */}
-      <div className="bg-white rounded-lg shadow-md p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4">
         <div className="flex gap-3 flex-wrap">
           <button
             onClick={() => {
@@ -224,11 +227,11 @@ function ProductManagement() {
       </div>
 
       {/* Search and Filters */}
-      <div className="bg-white rounded-lg shadow-md p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Search */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               <Search className="w-4 h-4 inline mr-1" />
               Search
             </label>
@@ -237,19 +240,19 @@ function ProductManagement() {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Product name, EPA number, manufacturer..."
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500"
             />
           </div>
 
           {/* Product Type Filter */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Product Type
             </label>
             <select
               value={filterType}
               onChange={(e) => setFilterType(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500"
             >
               <option value="all">All Types</option>
               <option value="insecticide">Insecticide</option>
@@ -264,13 +267,13 @@ function ProductManagement() {
 
           {/* Restricted Use Filter */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Restricted Use
             </label>
             <select
               value={filterRestrictedUse}
               onChange={(e) => setFilterRestrictedUse(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500"
             >
               <option value="all">All Products</option>
               <option value="restricted">Restricted Use Only</option>
@@ -279,15 +282,15 @@ function ProductManagement() {
           </div>
         </div>
 
-        <div className="mt-2 text-sm text-gray-600">
+        <div className="mt-2 text-sm text-gray-600 dark:text-gray-400">
           Showing {filteredProducts.length} of {products.length} products
         </div>
       </div>
 
       {/* Products Table */}
-      <div className="bg-white rounded-lg shadow-md overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
         {loading ? (
-          <div className="p-8 text-center text-gray-500">Loading products...</div>
+          <div className="p-8 text-center text-gray-500 dark:text-gray-400">Loading products...</div>
         ) : filteredProducts.length === 0 ? (
           <div className="p-8 text-center text-gray-500">
             {products.length === 0 ? (
@@ -304,10 +307,10 @@ function ProductManagement() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead className="bg-gray-50 dark:bg-gray-700">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">EPA Reg No</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">EPA Reg No</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Product Name</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Active Ingredient</th>
@@ -317,15 +320,15 @@ function ProductManagement() {
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                 {filteredProducts.map((product) => (
-                  <tr key={product.id} className="hover:bg-gray-50">
-                    <td className="px-4 py-3 text-sm font-mono text-gray-900">
+                  <tr key={product.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                    <td className="px-4 py-3 text-sm font-mono text-gray-900 dark:text-gray-200">
                       {product.epa_registration_number}
                     </td>
                     <td className="px-4 py-3 text-sm">
-                      <div className="font-medium text-gray-900">{product.product_name}</div>
-                      <div className="text-xs text-gray-500">{product.manufacturer}</div>
+                      <div className="font-medium text-gray-900 dark:text-gray-200">{product.product_name}</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">{product.manufacturer}</div>
                     </td>
                     <td className="px-4 py-3 text-sm">
                       <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${
@@ -439,10 +442,10 @@ function ProductManagement() {
 function ImportModal({ onClose, importFile, setImportFile, handleImport, importResult, loading }) {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         <div className="p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-gray-900">Import Products from CSV</h2>
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white">Import Products from CSV</h2>
             <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
               <X className="w-6 h-6" />
             </button>
@@ -456,7 +459,7 @@ function ImportModal({ onClose, importFile, setImportFile, handleImport, importR
                   EPA registration numbers, product names, and other details.
                 </p>
                 
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center">
                   <Upload className="w-12 h-12 mx-auto mb-4 text-gray-400" />
                   <input
                     type="file"
@@ -489,7 +492,7 @@ function ImportModal({ onClose, importFile, setImportFile, handleImport, importR
                 </button>
                 <button
                   onClick={onClose}
-                  className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
+                  className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-gray-200"
                 >
                   Cancel
                 </button>
@@ -560,6 +563,7 @@ function ImportModal({ onClose, importFile, setImportFile, handleImport, importR
 
 // Simplified Product Modal (you can expand this with all fields)
 function ProductModal({ product, onClose, onSave }) {
+  const toast = useToast();
   const [formData, setFormData] = useState(product || {
     epa_registration_number: '',
     product_name: '',
@@ -582,23 +586,23 @@ function ProductModal({ product, onClose, onSave }) {
       } else {
         await axios.post(`${API_BASE_URL}/products/`, formData);
       }
-      alert(`Product ${product ? 'updated' : 'created'} successfully`);
+      toast.success(`Product ${product ? 'updated' : 'created'} successfully`);
       onSave();
     } catch (error) {
       console.error('Error saving product:', error);
-      alert('Failed to save product');
+      toast.error('Failed to save product');
     }
   };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         <form onSubmit={handleSubmit} className="p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-gray-900">
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white">
               {product ? 'Edit Product' : 'Add Product'}
             </h2>
-            <button type="button" onClick={onClose} className="text-gray-500 hover:text-gray-700">
+            <button type="button" onClick={onClose} className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
               <X className="w-6 h-6" />
             </button>
           </div>
@@ -614,7 +618,7 @@ function ProductModal({ product, onClose, onSave }) {
                 required
                 value={formData.epa_registration_number}
                 onChange={(e) => setFormData({...formData, epa_registration_number: e.target.value})}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 dark:text-gray-200"
                 placeholder="e.g., 12345-678"
               />
             </div>
@@ -629,7 +633,7 @@ function ProductModal({ product, onClose, onSave }) {
                 required
                 value={formData.product_name}
                 onChange={(e) => setFormData({...formData, product_name: e.target.value})}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 dark:text-gray-200"
               />
             </div>
 
@@ -645,7 +649,7 @@ function ProductModal({ product, onClose, onSave }) {
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
+                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-gray-200"
               >
                 Cancel
               </button>

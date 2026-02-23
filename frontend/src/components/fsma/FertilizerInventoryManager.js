@@ -17,6 +17,7 @@ import {
   RefreshCw,
 } from 'lucide-react';
 import { fsmaAPI } from '../../services/api';
+import { useToast } from '../../contexts/ToastContext';
 
 /**
  * FertilizerInventoryManager Component
@@ -29,6 +30,7 @@ import { fsmaAPI } from '../../services/api';
  * - Transaction history
  */
 const FertilizerInventoryManager = () => {
+  const toast = useToast();
   const [inventory, setInventory] = useState([]);
   const [transactions, setTransactions] = useState([]);
   const [products, setProducts] = useState([]);
@@ -115,7 +117,7 @@ const FertilizerInventoryManager = () => {
       fetchInventory();
     } catch (error) {
       console.error('Error recording purchase:', error);
-      alert('Failed to record purchase');
+      toast.error('Failed to record purchase');
     }
   };
 
@@ -130,7 +132,7 @@ const FertilizerInventoryManager = () => {
       fetchInventory();
     } catch (error) {
       console.error('Error adjusting inventory:', error);
-      alert('Failed to adjust inventory');
+      toast.error('Failed to adjust inventory');
     }
   };
 

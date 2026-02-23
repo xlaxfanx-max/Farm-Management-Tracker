@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { ClipboardList, Plus, Search, Filter, X, Edit2, Trash2, CheckCircle, XCircle,
   AlertTriangle, Loader2, RefreshCw, Play, Square, Award, Tag, Upload, Paperclip, Download } from 'lucide-react';
 import { primusGFSAPI } from '../../services/api';
+import { useConfirm } from '../../contexts/ConfirmContext';
 
 const formatDate = (str) => {
   if (!str) return '-';
@@ -334,6 +335,7 @@ const ResultsView = ({ recall, onRefresh }) => {
 };
 
 export default function MockRecallExercise() {
+  const confirm = useConfirm();
   const [recalls, setRecalls] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -365,7 +367,8 @@ export default function MockRecallExercise() {
     fetchRecalls();
   };
   const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this mock recall?')) return;
+    const ok = await confirm({ title: 'Are you sure?', message: 'Are you sure you want to delete this mock recall?', confirmLabel: 'Delete', variant: 'danger' });
+    if (!ok) return;
     try { await primusGFSAPI.deleteMockRecall(id); if (activeRecall?.id === id) setActiveRecall(null); fetchRecalls(); }
     catch (err) { console.error('Failed to delete mock recall:', err); }
   };

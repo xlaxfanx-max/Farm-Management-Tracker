@@ -6,8 +6,10 @@
 import React, { useState, useEffect } from 'react';
 import { X, Boxes, Save, Loader2 } from 'lucide-react';
 import { poolsAPI, PACKINGHOUSE_CONSTANTS } from '../../services/api';
+import { useToast } from '../../contexts/ToastContext';
 
 const PoolModal = ({ pool, packinghouses, onClose, onSave }) => {
+  const toast = useToast();
   const [formData, setFormData] = useState({
     packinghouse: '',
     pool_id: '',
@@ -97,7 +99,7 @@ const PoolModal = ({ pool, packinghouses, onClose, onSave }) => {
       if (error.response?.data) {
         setErrors(error.response.data);
       } else {
-        alert('Failed to save pool');
+        toast.error('Failed to save pool');
       }
     } finally {
       setSaving(false);

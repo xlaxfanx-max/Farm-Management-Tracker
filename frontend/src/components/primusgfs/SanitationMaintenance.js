@@ -12,6 +12,7 @@ import {
   Calendar,
 } from 'lucide-react';
 import { primusGFSAPI } from '../../services/api';
+import { useConfirm } from '../../contexts/ConfirmContext';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -465,6 +466,7 @@ const SanitationMaintenanceModal = ({ log, onClose, onSave }) => {
 // ---------------------------------------------------------------------------
 
 export default function SanitationMaintenance() {
+  const confirm = useConfirm();
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -507,7 +509,8 @@ export default function SanitationMaintenance() {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this log?')) return;
+    const ok = await confirm({ title: 'Are you sure?', message: 'Are you sure you want to delete this log?', confirmLabel: 'Delete', variant: 'danger' });
+    if (!ok) return;
     try {
       await primusGFSAPI.deleteSanitationMaintenance(id);
       fetchLogs();
