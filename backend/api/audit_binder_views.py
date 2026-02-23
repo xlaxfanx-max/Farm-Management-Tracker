@@ -377,11 +377,116 @@ class BinderSectionViewSet(AuditLogMixin, viewsets.ModelViewSet):
         if overrides:
             section.manual_overrides = overrides
 
-        section.save(update_fields=['auto_fill_data', 'manual_overrides', 'status'])
+        # Bridge: also resolve auto-fill values to PDF field names so the
+        # PDF editor shows auto-fill data without requiring a separate step.
+        self._bridge_auto_fill_to_pdf_fields(section, binder)
+
+        section.save(update_fields=[
+            'auto_fill_data', 'manual_overrides', 'pdf_field_data', 'status',
+        ])
 
         return Response(
             BinderSectionDetailSerializer(section, context={'request': request}).data
         )
+
+    @action(detail=True, methods=['post'], url_path='save_pdf_fields')
+    def save_pdf_fields(self, request, pk=None):
+        """
+        Save user-edited PDF form field values to this binder section.
+
+        Request body::
+
+            {
+                "field_values": {
+                    "1-a-100": "Sunrise Ranch",
+                    "4-a-CheckBox1": true,
+                    ...
+                }
+            }
+
+        Uses merge (PATCH) semantics: fields not included are left unchanged.
+        """
+        section = self.get_object()
+        field_values = request.data.get('field_values', {})
+
+        if not isinstance(field_values, dict):
+            return Response(
+                {'error': 'field_values must be a dict'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Merge with existing data (PATCH semantics)
+        existing = section.pdf_field_data or {}
+        existing.update(field_values)
+        section.pdf_field_data = existing
+
+        if section.status == 'not_started':
+            section.status = 'in_progress'
+
+        section.save(update_fields=['pdf_field_data', 'status'])
+
+        return Response(
+            BinderSectionDetailSerializer(section, context={'request': request}).data
+        )
+
+    @action(detail=True, methods=['post'], url_path='reset_pdf_fields')
+    def reset_pdf_fields(self, request, pk=None):
+        """Clear all user PDF field overrides, reverting to auto-fill defaults."""
+        section = self.get_object()
+        section.pdf_field_data = None
+        section.save(update_fields=['pdf_field_data'])
+
+        return Response(
+            BinderSectionDetailSerializer(section, context={'request': request}).data
+        )
+
+    def _bridge_auto_fill_to_pdf_fields(self, section, binder):
+        """
+        Resolve auto-fill values to PDF AcroForm field names and merge
+        into section.pdf_field_data.  User overrides take priority.
+        """
+        from .services.primusgfs.cac_data_mapper import CACDataMapper, DOC_PAGE_MAP
+        from .services.primusgfs.cac_pdf_filler import CACPDFFieldFiller
+
+        doc_str = str(section.doc_number).zfill(2)
+        if doc_str not in DOC_PAGE_MAP:
+            return
+
+        try:
+            fields_by_page = CACPDFFieldFiller.discover_fields()
+            mapper = CACDataMapper(
+                company=binder.company,
+                farm=binder.farm,
+                season_year=binder.season_year,
+            )
+            all_text = mapper.resolve_positional_fields(fields_by_page)
+            all_cb = mapper.resolve_positional_checkboxes(fields_by_page)
+
+            # Filter to only fields on this doc's pages
+            doc_pages = set(DOC_PAGE_MAP[doc_str])
+            doc_field_names = set()
+            for page_num, fields in fields_by_page.items():
+                if page_num in doc_pages:
+                    for f in fields:
+                        doc_field_names.add(f['name'])
+
+            auto_pdf_data = {}
+            for name in doc_field_names:
+                if name in all_text and all_text[name]:
+                    auto_pdf_data[name] = all_text[name]
+                elif name in all_cb:
+                    auto_pdf_data[name] = all_cb[name]
+
+            # Merge: auto-fill as base, existing user edits take priority
+            if section.pdf_field_data:
+                auto_pdf_data.update(section.pdf_field_data)
+            section.pdf_field_data = auto_pdf_data
+        except Exception as e:
+            logger = __import__('logging').getLogger(__name__)
+            logger.warning(
+                "Could not bridge auto-fill to PDF fields for doc %s: %s",
+                doc_str, e,
+            )
 
     def _update_binder_status(self, binder):
         """Auto-update binder status based on section completion."""

@@ -59,6 +59,7 @@ class BinderSectionListSerializer(serializers.ModelSerializer):
         source='supporting_documents.count', read_only=True
     )
     has_sop_content = serializers.SerializerMethodField()
+    has_pdf_field_data = serializers.SerializerMethodField()
 
     class Meta:
         model = BinderSection
@@ -66,11 +67,15 @@ class BinderSectionListSerializer(serializers.ModelSerializer):
             'id', 'doc_number', 'title', 'section_group',
             'section_group_display', 'doc_type', 'doc_type_display',
             'status', 'status_display', 'auto_fill_source',
-            'supporting_doc_count', 'has_sop_content', 'notes',
+            'supporting_doc_count', 'has_sop_content', 'has_pdf_field_data',
+            'notes',
         ]
 
     def get_has_sop_content(self, obj):
         return bool(obj.sop_content)
+
+    def get_has_pdf_field_data(self, obj):
+        return bool(obj.pdf_field_data)
 
 
 class BinderSectionDetailSerializer(serializers.ModelSerializer):
@@ -97,7 +102,7 @@ class BinderSectionDetailSerializer(serializers.ModelSerializer):
             'id', 'binder', 'doc_number', 'title', 'section_group',
             'section_group_display', 'doc_type', 'doc_type_display',
             'status', 'status_display', 'sop_content', 'auto_fill_source',
-            'auto_fill_data', 'manual_overrides', 'notes',
+            'auto_fill_data', 'manual_overrides', 'pdf_field_data', 'notes',
             'completed_by', 'completed_by_name', 'completed_at',
             'supporting_documents',
         ]

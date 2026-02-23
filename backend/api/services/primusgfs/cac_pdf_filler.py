@@ -361,13 +361,22 @@ class CACPDFFieldFiller:
         output.seek(0)
         return output
 
+    # Module-level cache for discover_fields — the template PDF is static
+    # and does not change, so we only need to read it once per process.
+    _FIELD_CACHE = {}
+
     @staticmethod
     def discover_fields(template_path=None):
         """
         Discover all form fields in the PDF template.
         Returns dict: {page_number: [{'name': ..., 'type': ...}, ...]}
+
+        Results are cached per template path since the template PDF is static.
         """
         path = template_path or TEMPLATE_PATH
+        if path in CACPDFFieldFiller._FIELD_CACHE:
+            return CACPDFFieldFiller._FIELD_CACHE[path]
+
         reader = PdfReader(path)
         fields_by_page = {}
 
@@ -398,4 +407,5 @@ class CACPDFFieldFiller:
             if page_fields:
                 fields_by_page[page_num] = page_fields
 
+        CACPDFFieldFiller._FIELD_CACHE[path] = fields_by_page
         return fields_by_page

@@ -3581,18 +3581,45 @@ class CACManualPDFViewSet(viewsets.ViewSet):
 
     @action(detail=False, methods=['get'])
     def section(self, request):
-        """Generate and download a specific document section."""
+        """
+        Generate and download a specific document section.
+
+        Accepts optional ``binder_section`` query param.  When provided,
+        loads the BinderSection's ``pdf_field_data`` and applies those
+        user overrides on top of the auto-filled data.
+        """
         doc = request.query_params.get('doc')
         if not doc:
             return Response(
                 {'error': 'doc parameter is required'},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
         gen = self._get_generator(request)
+
+        # Check for binder section overrides
+        binder_section_id = request.query_params.get('binder_section')
+        field_overrides = None
+        if binder_section_id:
+            try:
+                from .models import BinderSection
+                company = require_company(request.user)
+                bs = BinderSection.objects.get(
+                    pk=binder_section_id,
+                    binder__company=company,
+                )
+                field_overrides = bs.pdf_field_data
+            except BinderSection.DoesNotExist:
+                pass
+
         try:
-            pdf_bytes = gen.generate_section(doc)
+            if field_overrides:
+                pdf_bytes = gen.generate_section_with_overrides(doc, field_overrides)
+            else:
+                pdf_bytes = gen.generate_section(doc)
         except ValueError as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
         response = HttpResponse(pdf_bytes.read(), content_type='application/pdf')
         # Use 'inline' so the PDF renders in embedded viewers (iframe)
         # instead of triggering a download.
@@ -3600,6 +3627,118 @@ class CACManualPDFViewSet(viewsets.ViewSet):
             f'inline; filename="CAC_Doc_{doc}_{gen.season_year}.pdf"'
         )
         return response
+
+    @action(detail=False, methods=['get'], url_path='field-schema')
+    def field_schema(self, request):
+        """
+        Discover all form fields for a document section and return
+        their schema along with current values from auto-fill and user
+        overrides.
+
+        Query params:
+            doc (required): Document number, e.g. '04'
+            binder_section (optional): BinderSection ID for saved pdf_field_data
+
+        Returns JSON::
+
+            {
+                "doc_number": "04",
+                "pages": [15, 16],
+                "fields": [
+                    {
+                        "name": "4-a-100",
+                        "type": "text",
+                        "page": 15,
+                        "value": "Meeting Minutes",
+                        "source": "auto_fill",
+                        "label": "Meeting Date"
+                    },
+                    ...
+                ]
+            }
+        """
+        doc = request.query_params.get('doc')
+        if not doc:
+            return Response(
+                {'error': 'doc parameter is required'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        from .services.primusgfs.cac_pdf_filler import CACPDFFieldFiller
+        from .services.primusgfs.cac_data_mapper import CACDataMapper, DOC_PAGE_MAP
+        from .services.primusgfs.cac_field_labels import get_field_label
+
+        pages = DOC_PAGE_MAP.get(doc, [])
+        if not pages:
+            return Response(
+                {'error': f'Unknown document number: {doc}'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Discover all PDF form fields from the template
+        fields_by_page = CACPDFFieldFiller.discover_fields()
+
+        # Build auto-fill values layer
+        company = require_company(request.user)
+        farm_id = request.query_params.get('farm_id')
+        farm = Farm.objects.filter(id=farm_id, company=company).first() if farm_id else None
+        year = int(request.query_params.get('year', date.today().year))
+
+        mapper = CACDataMapper(company, farm=farm, season_year=year)
+        auto_text = mapper.resolve_positional_fields(fields_by_page)
+        auto_checkboxes = mapper.resolve_positional_checkboxes(fields_by_page)
+
+        # Load user override layer from BinderSection
+        user_overrides = {}
+        binder_section_id = request.query_params.get('binder_section')
+        if binder_section_id:
+            try:
+                from .models import BinderSection
+                bs = BinderSection.objects.get(
+                    pk=binder_section_id,
+                    binder__company=company,
+                )
+                user_overrides = bs.pdf_field_data or {}
+            except BinderSection.DoesNotExist:
+                pass
+
+        # Build field list for the requested pages only
+        doc_pages = set(pages)
+        result_fields = []
+        for page_num in sorted(doc_pages):
+            page_fields = fields_by_page.get(page_num, [])
+            for field_info in page_fields:
+                name = field_info['name']
+                ftype = field_info['type']
+
+                # Determine effective value and source
+                if name in user_overrides:
+                    value = user_overrides[name]
+                    source = 'user_override'
+                elif ftype == 'checkbox' and name in auto_checkboxes:
+                    value = auto_checkboxes[name]
+                    source = 'auto_fill'
+                elif name in auto_text:
+                    value = auto_text[name]
+                    source = 'auto_fill'
+                else:
+                    value = '' if ftype == 'text' else False
+                    source = 'empty'
+
+                result_fields.append({
+                    'name': name,
+                    'type': ftype,
+                    'page': page_num,
+                    'value': value,
+                    'source': source,
+                    'label': get_field_label(name),
+                })
+
+        return Response({
+            'doc_number': doc,
+            'pages': pages,
+            'fields': result_fields,
+        })
 
     @action(detail=False, methods=['get'])
     def preview(self, request):

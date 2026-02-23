@@ -378,6 +378,49 @@ class CACManualPDFGenerator:
         return filler.get_pages_as_pdf(pages)
 
     # ------------------------------------------------------------------
+    # Single-section generation with user overrides
+    # ------------------------------------------------------------------
+
+    def generate_section_with_overrides(self, doc_number, field_overrides=None):
+        """
+        Generate section PDF, applying auto-fill data first, then overlaying
+        user's pdf_field_data overrides on top.
+
+        Args:
+            doc_number: CAC document number string, e.g. '04'.
+            field_overrides: Dict of {field_name: value}. Text fields are
+                strings, checkboxes are booleans.
+
+        Returns:
+            io.BytesIO containing the subset PDF.
+
+        Raises:
+            ValueError: If doc_number is not in DOC_PAGE_MAP.
+        """
+        pages = DOC_PAGE_MAP.get(doc_number, [])
+        if not pages:
+            raise ValueError(f"Unknown document number: {doc_number}")
+
+        filler = CACPDFFieldFiller()
+        self._fill_filler(filler, doc_filter=doc_number)
+
+        # Apply user overrides on top of auto-fill
+        if field_overrides:
+            text_overrides = {}
+            checkbox_overrides = {}
+            for name, value in field_overrides.items():
+                if isinstance(value, bool):
+                    checkbox_overrides[name] = value
+                else:
+                    text_overrides[name] = str(value)
+            if text_overrides:
+                filler.fill_text_fields(text_overrides)
+            if checkbox_overrides:
+                filler.fill_checkboxes(checkbox_overrides)
+
+        return filler.get_pages_as_pdf(pages)
+
+    # ------------------------------------------------------------------
     # Preview (PNG)
     # ------------------------------------------------------------------
 

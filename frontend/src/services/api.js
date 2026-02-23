@@ -2864,6 +2864,17 @@ export const primusGFSAPI = {
   getCACSignatures: (params = {}) => api.get('/primusgfs/cac-pdf/signatures/', { params }),
   deleteCACSignature: (id) => api.delete(`/primusgfs/cac-pdf/${id}/signatures/`),
 
+  // CAC PDF Field Schema & Editing
+  getCACFieldSchema: (doc, binderSectionId, params = {}) =>
+    api.get('/primusgfs/cac-pdf/field-schema/', {
+      params: { doc, binder_section: binderSectionId, ...params },
+    }),
+  getCACManualSectionWithOverrides: (doc, binderSectionId, params = {}) =>
+    api.get('/primusgfs/cac-pdf/section/', {
+      params: { doc, binder_section: binderSectionId, ...params },
+      responseType: 'blob',
+    }),
+
   // CAC Audit Binder - Templates
   getCACTemplates: (params = {}) => api.get('/primusgfs/cac-templates/', { params }),
   getCACTemplate: (id) => api.get(`/primusgfs/cac-templates/${id}/`),
@@ -2890,6 +2901,10 @@ export const primusGFSAPI = {
   updateSectionNotes: (id, data) => api.post(`/primusgfs/binder-sections/${id}/update_notes/`, data),
   autoFillPreview: (id) => api.get(`/primusgfs/binder-sections/${id}/auto_fill_preview/`),
   applyAutoFill: (id, data = {}) => api.post(`/primusgfs/binder-sections/${id}/apply_auto_fill/`, data),
+  savePDFFields: (id, fieldValues) =>
+    api.post(`/primusgfs/binder-sections/${id}/save_pdf_fields/`, { field_values: fieldValues }),
+  resetPDFFields: (id) =>
+    api.post(`/primusgfs/binder-sections/${id}/reset_pdf_fields/`),
 
   // CAC Audit Binder - Supporting Documents
   getBinderDocuments: (params = {}) => api.get('/primusgfs/binder-documents/', { params }),

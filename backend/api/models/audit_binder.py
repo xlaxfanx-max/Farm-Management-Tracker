@@ -301,6 +301,11 @@ class BinderSection(models.Model):
         blank=True,
         help_text="User edits on top of auto-filled data"
     )
+    pdf_field_data = models.JSONField(
+        null=True,
+        blank=True,
+        help_text="PDF form field values keyed by AcroForm field names, e.g. {'1-a-100': 'Sunrise Ranch'}"
+    )
     notes = models.TextField(blank=True)
     completed_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
