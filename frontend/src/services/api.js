@@ -22,22 +22,43 @@ const api = axios.create({
   timeout: 30000,  // 30 second timeout to prevent hanging requests
 });
 
-// Token storage keys
-const ACCESS_TOKEN_KEY = 'farm_tracker_access_token';
-const REFRESH_TOKEN_KEY = 'farm_tracker_refresh_token';
+// ---------------------------------------------------------------------------
+// Auth session expiry event — AuthContext listens for this to clear state
+// and redirect via React Router instead of a hard window.location redirect.
+// ---------------------------------------------------------------------------
+export const AUTH_SESSION_EXPIRED_EVENT = 'auth:session-expired';
 
-// Request interceptor - add auth token to requests
-api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem(ACCESS_TOKEN_KEY);
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
+function emitSessionExpired() {
+  window.dispatchEvent(new Event(AUTH_SESSION_EXPIRED_EVENT));
+}
+
+// ---------------------------------------------------------------------------
+// Refresh mutex — ensures only one refresh request runs at a time.
+// Concurrent 401s queue behind the first refresh attempt.
+// ---------------------------------------------------------------------------
+let refreshPromise = null;
+
+function refreshAccessToken() {
+  if (refreshPromise) {
+    return refreshPromise;
   }
+
+  refreshPromise = axios.post(
+    `${API_BASE_URL}/auth/refresh/`,
+    {},  // Backend reads refresh token from HttpOnly cookie
+    { withCredentials: true }
+  ).finally(() => {
+    refreshPromise = null;
+  });
+
+  return refreshPromise;
+}
+
+// Request interceptor — cookies are sent automatically via withCredentials,
+// no need to manually attach Authorization headers.
+api.interceptors.request.use(
+  (config) => config,
+  (error) => Promise.reject(error)
 );
 
 // Response interceptor - handle token refresh
@@ -50,37 +71,13 @@ api.interceptors.response.use(
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
-      // Try refreshing - the backend reads the refresh token from HttpOnly cookie
-      // or from the request body (localStorage fallback for migration)
-      const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
       try {
-        const response = await axios.post(
-          `${API_BASE_URL}/auth/refresh/`,
-          refreshToken ? { refresh: refreshToken } : {},
-          { withCredentials: true }  // Send cookies for cookie-based refresh
-        );
-
-        const newAccessToken = response.data.access;
-        const newRefreshToken = response.data.refresh;
-
-        // Keep localStorage in sync during migration
-        if (newAccessToken) {
-          localStorage.setItem(ACCESS_TOKEN_KEY, newAccessToken);
-        }
-        if (newRefreshToken) {
-          localStorage.setItem(REFRESH_TOKEN_KEY, newRefreshToken);
-        }
-
-        // Retry original request (cookies set by backend, header set here as fallback)
-        if (newAccessToken) {
-          originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
-        }
+        await refreshAccessToken();
+        // Cookies are updated by the backend response — just retry
         return api(originalRequest);
       } catch (refreshError) {
-        // Refresh failed - clear tokens and redirect to login
-        localStorage.removeItem(ACCESS_TOKEN_KEY);
-        localStorage.removeItem(REFRESH_TOKEN_KEY);
-        window.location.href = '/login';
+        // Refresh failed — notify AuthContext to clear state & redirect
+        emitSessionExpired();
         return Promise.reject(refreshError);
       }
     }
@@ -98,17 +95,17 @@ export const authAPI = {
   register: (data) =>
     axios.post(`${API_BASE_URL}/auth/register/`, data, { withCredentials: true }),
 
-  // Login
+  // Login — backend sets HttpOnly cookies on the response
   login: (email, password) =>
     axios.post(`${API_BASE_URL}/auth/login/`, { email, password }, { withCredentials: true }),
 
-  // Logout
-  logout: (refreshToken) =>
-    api.post('/auth/logout/', { refresh: refreshToken }),
+  // Logout — backend clears HttpOnly cookies and blacklists refresh token
+  logout: () =>
+    api.post('/auth/logout/', {}),
 
-  // Refresh token
-  refresh: (refreshToken) =>
-    axios.post(`${API_BASE_URL}/auth/refresh/`, { refresh: refreshToken }, { withCredentials: true }),
+  // Refresh token — backend reads refresh token from HttpOnly cookie
+  refresh: () =>
+    axios.post(`${API_BASE_URL}/auth/refresh/`, {}, { withCredentials: true }),
 
   // Get current user
   me: () => api.get('/auth/me/'),
@@ -2866,6 +2863,46 @@ export const primusGFSAPI = {
   signCACPage: (data) => api.post('/primusgfs/cac-pdf/sign/', data),
   getCACSignatures: (params = {}) => api.get('/primusgfs/cac-pdf/signatures/', { params }),
   deleteCACSignature: (id) => api.delete(`/primusgfs/cac-pdf/${id}/signatures/`),
+
+  // CAC Audit Binder - Templates
+  getCACTemplates: (params = {}) => api.get('/primusgfs/cac-templates/', { params }),
+  getCACTemplate: (id) => api.get(`/primusgfs/cac-templates/${id}/`),
+  createCACTemplate: (data) => _postMaybeFile('/primusgfs/cac-templates/', data),
+  updateCACTemplate: (id, data) => _putMaybeFile(`/primusgfs/cac-templates/${id}/`, data),
+  deleteCACTemplate: (id) => api.delete(`/primusgfs/cac-templates/${id}/`),
+  getDefaultSections: () => api.get('/primusgfs/cac-templates/default_sections/'),
+
+  // CAC Audit Binder - Instances
+  getAuditBinders: (params = {}) => api.get('/primusgfs/audit-binders/', { params }),
+  getAuditBinder: (id) => api.get(`/primusgfs/audit-binders/${id}/`),
+  createAuditBinder: (data) => api.post('/primusgfs/audit-binders/create_from_template/', data),
+  updateAuditBinder: (id, data) => api.put(`/primusgfs/audit-binders/${id}/`, data),
+  deleteAuditBinder: (id) => api.delete(`/primusgfs/audit-binders/${id}/`),
+  getBinderReadiness: (id) => api.get(`/primusgfs/audit-binders/${id}/readiness_summary/`),
+
+  // CAC Audit Binder - Sections
+  getBinderSections: (params = {}) => api.get('/primusgfs/binder-sections/', { params }),
+  getBinderSection: (id) => api.get(`/primusgfs/binder-sections/${id}/`),
+  updateBinderSection: (id, data) => api.patch(`/primusgfs/binder-sections/${id}/`, data),
+  markSectionComplete: (id) => api.post(`/primusgfs/binder-sections/${id}/mark_complete/`),
+  markSectionNA: (id, data = {}) => api.post(`/primusgfs/binder-sections/${id}/mark_not_applicable/`, data),
+  updateSectionSOP: (id, data) => api.post(`/primusgfs/binder-sections/${id}/update_sop/`, data),
+  updateSectionNotes: (id, data) => api.post(`/primusgfs/binder-sections/${id}/update_notes/`, data),
+  autoFillPreview: (id) => api.get(`/primusgfs/binder-sections/${id}/auto_fill_preview/`),
+  applyAutoFill: (id, data = {}) => api.post(`/primusgfs/binder-sections/${id}/apply_auto_fill/`, data),
+
+  // CAC Audit Binder - Supporting Documents
+  getBinderDocuments: (params = {}) => api.get('/primusgfs/binder-documents/', { params }),
+  uploadBinderDocument: (data) => {
+    const formData = new FormData();
+    Object.entries(data).forEach(([key, value]) => {
+      if (value !== null && value !== undefined) formData.append(key, value);
+    });
+    return api.post('/primusgfs/binder-documents/', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  },
+  deleteBinderDocument: (id) => api.delete(`/primusgfs/binder-documents/${id}/`),
 };
 
 // =============================================================================

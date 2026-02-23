@@ -189,6 +189,19 @@ from .fsma import (
     FSMAMitigationAction,
 )
 
+# -- CAC Audit Binder (PrimusGFS) --------------------------------------------
+from .audit_binder import (
+    BINDER_STATUS_CHOICES,
+    SECTION_STATUS_CHOICES,
+    SECTION_DOC_TYPE_CHOICES,
+    SECTION_GROUP_CHOICES,
+    CAC_V5_SECTION_DEFINITIONS,
+    CACBinderTemplate,
+    AuditBinderInstance,
+    BinderSection,
+    BinderSupportingDocument,
+)
+
 # -- Primus GFS / GAP compliance ---------------------------------------------
 from .primusgfs import (
     DOCUMENT_TYPE_CHOICES, DOCUMENT_STATUS_CHOICES, PRIMUS_MODULE_CHOICES,
@@ -328,4 +341,10 @@ __all__ = [
     'SupplierVerificationLog', 'FoodFraudAssessment',
     'EmergencyContact', 'ChemicalInventoryLog', 'SanitationMaintenanceLog',
     'SIGNER_ROLE_CHOICES', 'CACDocumentSignature',
+    # cac audit binder
+    'BINDER_STATUS_CHOICES', 'SECTION_STATUS_CHOICES',
+    'SECTION_DOC_TYPE_CHOICES', 'SECTION_GROUP_CHOICES',
+    'CAC_V5_SECTION_DEFINITIONS',
+    'CACBinderTemplate', 'AuditBinderInstance',
+    'BinderSection', 'BinderSupportingDocument',
 ]

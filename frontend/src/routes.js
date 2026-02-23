@@ -58,6 +58,7 @@ export const VIEW_TO_PATH = {
   'compliance-primusgfs-chemical-inv': '/dashboard/compliance/primusgfs/chemical-inv',
   'compliance-primusgfs-sanitation-maint': '/dashboard/compliance/primusgfs/sanitation-maint',
   'compliance-primusgfs-cac-manual': '/dashboard/compliance/primusgfs/cac-manual',
+  'compliance-primusgfs-audit-binder': '/dashboard/compliance/primusgfs/audit-binder',
   'tree-detection': '/dashboard/tree-detection',
   'disease': '/dashboard/disease',
   'reports': '/dashboard/reports',
@@ -126,6 +127,7 @@ export const VIEW_NAMES = {
   'compliance-primusgfs-chemical-inv': 'Chemical Inventory',
   'compliance-primusgfs-sanitation-maint': 'Sanitation Maintenance',
   'compliance-primusgfs-cac-manual': 'CAC Manual',
+  'compliance-primusgfs-audit-binder': 'Audit Binder',
   'tree-detection': 'Tree Detection',
   disease: 'Disease Prevention',
   reports: 'Reports',
@@ -179,4 +181,5 @@ export const PARENT_VIEWS = {
   'compliance-primusgfs-emergency': 'compliance-primusgfs',
   'compliance-primusgfs-chemical-inv': 'compliance-primusgfs',
   'compliance-primusgfs-sanitation-maint': 'compliance-primusgfs',
+  'compliance-primusgfs-audit-binder': 'compliance-primusgfs',
 };

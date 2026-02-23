@@ -39,6 +39,7 @@ import EmergencyContacts from './EmergencyContacts';
 import ChemicalInventory from './ChemicalInventory';
 import SanitationMaintenance from './SanitationMaintenance';
 import CACManualViewer from './CACManualViewer';
+import AuditBinderDashboard from './audit-binder/AuditBinderDashboard';
 
 /**
  * PrimusGFSDashboard — Main dashboard for Primus GFS compliance.
@@ -186,6 +187,7 @@ const PrimusGFSDashboard = ({ onNavigate, initialTab = 'overview' }) => {
           {activeTab === 'calibration' && <EquipmentCalibrationView />}
           {activeTab === 'pest-control' && <PestControlProgramView />}
           {activeTab === 'pre-harvest' && <PreHarvestInspectionView />}
+          {activeTab === 'audit-binder' && <AuditBinderDashboard />}
         </div>
       </div>
 

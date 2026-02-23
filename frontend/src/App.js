@@ -563,6 +563,7 @@ function AppContent() {
             <Route path="compliance/primusgfs/chemical-inv" element={<PrimusGFSDashboard onNavigate={handleNavigate} initialTab="chemical-inv" />} />
             <Route path="compliance/primusgfs/sanitation-maint" element={<PrimusGFSDashboard onNavigate={handleNavigate} initialTab="sanitation-maint" />} />
             <Route path="compliance/primusgfs/cac-manual" element={<PrimusGFSDashboard onNavigate={handleNavigate} initialTab="cac-manual" />} />
+            <Route path="compliance/primusgfs/audit-binder" element={<PrimusGFSDashboard onNavigate={handleNavigate} initialTab="audit-binder" />} />
             <Route path="compliance/pesticide" element={<DeadlineCalendar onNavigate={handleNavigate} />} />
             <Route path="compliance/inspector-checklist" element={<InspectorChecklist onNavigate={handleNavigate} />} />
             <Route path="yield-forecast" element={<YieldForecastDashboard />} />

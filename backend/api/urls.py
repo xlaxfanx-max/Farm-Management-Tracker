@@ -210,6 +210,14 @@ from .primusgfs_views import (
     CACManualPDFViewSet,
 )
 
+# Import CAC Audit Binder views
+from .audit_binder_views import (
+    CACBinderTemplateViewSet,
+    AuditBinderInstanceViewSet,
+    BinderSectionViewSet,
+    BinderSupportingDocumentViewSet,
+)
+
 # Import FSMA Water Assessment views
 from .fsma_water_views import (
     FSMAWaterAssessmentViewSet,
@@ -354,6 +362,12 @@ router.register(r'primusgfs/emergency-contacts', EmergencyContactViewSet, basena
 router.register(r'primusgfs/chemical-inventory', ChemicalInventoryLogViewSet, basename='primusgfs-chemical-inventory')
 router.register(r'primusgfs/sanitation-maintenance', SanitationMaintenanceLogViewSet, basename='primusgfs-sanitation-maintenance')
 router.register(r'primusgfs/cac-pdf', CACManualPDFViewSet, basename='primusgfs-cac-pdf')
+
+# CAC Audit Binder (PrimusGFS)
+router.register(r'primusgfs/cac-templates', CACBinderTemplateViewSet, basename='primusgfs-cac-template')
+router.register(r'primusgfs/audit-binders', AuditBinderInstanceViewSet, basename='primusgfs-audit-binder')
+router.register(r'primusgfs/binder-sections', BinderSectionViewSet, basename='primusgfs-binder-section')
+router.register(r'primusgfs/binder-documents', BinderSupportingDocumentViewSet, basename='primusgfs-binder-document')
 
 # Yield Forecast Module
 router.register(r'yield-forecast/forecasts', YieldForecastViewSet, basename='yield-forecast')
