@@ -841,7 +841,7 @@ class ComplianceReportViewSet(AuditLogMixin, viewsets.ModelViewSet):
             if not row['acres_treated']:
                 missing.append('acres treated')
             if missing:
-                validation_warnings.append(f"Application {app.id} ({row['date']} - {row['field_name']}): missing {", ".join(missing)}")
+                validation_warnings.append(f"Application {app.id} ({row['date']} - {row['field_name']}): missing {', '.join(missing)}")
                 row['has_warnings'] = True
                 row['missing_fields'] = missing
             else:
