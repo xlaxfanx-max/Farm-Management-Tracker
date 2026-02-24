@@ -521,6 +521,58 @@ class CrossDataLinker:
 
         result['additional_topics'] = '\n'.join(additional)
 
+        # --- Suggested Attendees from Org Roles ---
+        try:
+            from api.models.primusgfs import FoodSafetyRoleAssignment
+            roles = FoodSafetyRoleAssignment.objects.filter(
+                company=self.company,
+                active=True,
+            ).order_by('display_order', 'role_category')
+            result['suggested_attendees'] = [
+                {
+                    'name': role.person_name,
+                    'title': role.role_title,
+                    'signed': False,
+                }
+                for role in roles
+            ]
+        except Exception:
+            result['suggested_attendees'] = []
+
+        # --- Carry Forward from Previous Quarter ---
+        carried_forward = []
+        prev_meeting_date = None
+        try:
+            from api.models.primusgfs import FoodSafetyCommitteeMeeting
+            if q_num == 1:
+                prev_q = 'Q4'
+                prev_year = self.season_year - 1
+            else:
+                prev_q = f'Q{q_num - 1}'
+                prev_year = self.season_year
+
+            prev_meeting = FoodSafetyCommitteeMeeting.objects.filter(
+                company=self.company,
+                meeting_quarter=prev_q,
+                meeting_year=prev_year,
+            ).first()
+
+            if prev_meeting:
+                if prev_meeting.action_items:
+                    for ai in prev_meeting.action_items:
+                        if isinstance(ai, dict) and ai.get('status') in ('open', 'in_progress'):
+                            carried_forward.append({
+                                **ai,
+                                'carried_from': f'{prev_q} {prev_year}',
+                            })
+                if prev_meeting.next_meeting_date:
+                    prev_meeting_date = prev_meeting.next_meeting_date.isoformat()
+        except Exception:
+            pass
+
+        result['carried_forward_items'] = carried_forward
+        result['suggested_meeting_date'] = prev_meeting_date
+
         return result
 
     # ------------------------------------------------------------------
