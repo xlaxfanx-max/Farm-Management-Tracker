@@ -14,14 +14,14 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from .permissions import HasCompanyAccess
 from .audit_utils import AuditLogMixin
-from .view_helpers import get_user_company, require_company
+from .view_helpers import get_user_company, require_company, CompanyFilteredViewSet
 from .models import (
     Buyer, LaborContractor, Harvest, HarvestLoad, HarvestLabor, Field,
     PesticideApplication, CROP_VARIETY_CHOICES, GRADE_CHOICES,
 )
 from .serializers import (
-    BuyerSerializer, BuyerListSerializer,
-    LaborContractorSerializer, LaborContractorListSerializer,
+    BuyerSerializer,
+    LaborContractorSerializer,
     HarvestSerializer, HarvestListSerializer,
     HarvestLoadSerializer, HarvestLaborSerializer,
     PHICheckSerializer, HarvestStatisticsSerializer,
@@ -32,7 +32,7 @@ from .serializers import (
 # BUYER VIEWSET
 # -----------------------------------------------------------------------------
 
-class BuyerViewSet(AuditLogMixin, viewsets.ModelViewSet):
+class BuyerViewSet(CompanyFilteredViewSet):
     """
     CRUD operations for Buyers (packing houses, processors, etc.)
 
@@ -40,18 +40,11 @@ class BuyerViewSet(AuditLogMixin, viewsets.ModelViewSet):
     - Buyers are scoped by company for multi-tenant isolation
     - Uses RLS policy: buyer_company_isolation
     """
-    queryset = Buyer.objects.all()
+    model = Buyer
     serializer_class = BuyerSerializer
-    permission_classes = [IsAuthenticated, HasCompanyAccess]
+    default_ordering = ('name',)
 
-    def get_queryset(self):
-        queryset = Buyer.objects.all()
-
-        # Filter by company (multi-tenancy)
-        company = get_user_company(self.request.user)
-        if company:
-            queryset = queryset.filter(company=company)
-
+    def filter_queryset_by_params(self, queryset):
         # Filter by active status
         active = self.request.query_params.get('active')
         if active is not None:
@@ -67,17 +60,7 @@ class BuyerViewSet(AuditLogMixin, viewsets.ModelViewSet):
         if search:
             queryset = queryset.filter(name__icontains=search)
 
-        return queryset.order_by('name')
-
-    def perform_create(self, serializer):
-        """Auto-assign company when creating buyer."""
-        company = get_user_company(self.request.user)
-        serializer.save(company=company)
-
-    def get_serializer_class(self):
-        if self.action == 'list' and self.request.query_params.get('simple') == 'true':
-            return BuyerListSerializer
-        return BuyerSerializer
+        return queryset
 
     @action(detail=True, methods=['get'])
     def load_history(self, request, pk=None):
@@ -207,7 +190,7 @@ class BuyerViewSet(AuditLogMixin, viewsets.ModelViewSet):
 # LABOR CONTRACTOR VIEWSET
 # -----------------------------------------------------------------------------
 
-class LaborContractorViewSet(AuditLogMixin, viewsets.ModelViewSet):
+class LaborContractorViewSet(CompanyFilteredViewSet):
     """
     CRUD operations for Labor Contractors.
 
@@ -215,18 +198,11 @@ class LaborContractorViewSet(AuditLogMixin, viewsets.ModelViewSet):
     - Labor contractors are scoped by company for multi-tenant isolation
     - Uses RLS policy: laborcontractor_company_isolation
     """
-    queryset = LaborContractor.objects.all()
+    model = LaborContractor
     serializer_class = LaborContractorSerializer
-    permission_classes = [IsAuthenticated, HasCompanyAccess]
+    default_ordering = ('company_name',)
 
-    def get_queryset(self):
-        queryset = LaborContractor.objects.all()
-
-        # Filter by company (multi-tenancy)
-        company = get_user_company(self.request.user)
-        if company:
-            queryset = queryset.filter(company=company)
-
+    def filter_queryset_by_params(self, queryset):
         # Filter by active status
         active = self.request.query_params.get('active')
         if active is not None:
@@ -242,17 +218,7 @@ class LaborContractorViewSet(AuditLogMixin, viewsets.ModelViewSet):
         if search:
             queryset = queryset.filter(company_name__icontains=search)
 
-        return queryset.order_by('company_name')
-
-    def perform_create(self, serializer):
-        """Auto-assign company when creating labor contractor."""
-        company = get_user_company(self.request.user)
-        serializer.save(company=company)
-
-    def get_serializer_class(self):
-        if self.action == 'list' and self.request.query_params.get('simple') == 'true':
-            return LaborContractorListSerializer
-        return LaborContractorSerializer
+        return queryset
 
     @action(detail=True, methods=['get'])
     def job_history(self, request, pk=None):

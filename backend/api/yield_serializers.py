@@ -3,6 +3,7 @@ from .models import (
     ExternalDataSource, SoilSurveyData,
     YieldFeatureSnapshot, YieldForecast,
 )
+from .serializer_mixins import DynamicFieldsMixin
 
 
 class ExternalDataSourceSerializer(serializers.ModelSerializer):
@@ -44,7 +45,7 @@ class YieldFeatureSnapshotSerializer(serializers.ModelSerializer):
         return obj.field.farm.name if obj.field.farm else ''
 
 
-class YieldForecastSerializer(serializers.ModelSerializer):
+class YieldForecastSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     field_name = serializers.CharField(source='field.name', read_only=True)
     farm_name = serializers.SerializerMethodField()
     crop_name = serializers.SerializerMethodField()
@@ -55,6 +56,17 @@ class YieldForecastSerializer(serializers.ModelSerializer):
         source='get_status_display', read_only=True
     )
     accuracy_pct = serializers.SerializerMethodField()
+
+    list_fields = [
+        'id', 'field', 'field_name', 'farm_name', 'crop_name',
+        'season_label', 'forecast_date',
+        'predicted_yield_per_acre', 'predicted_total_yield', 'yield_unit',
+        'lower_bound_per_acre', 'upper_bound_per_acre',
+        'confidence_level',
+        'forecast_method', 'forecast_method_display',
+        'status', 'data_completeness_pct',
+        'actual_yield_per_acre', 'forecast_error_pct',
+    ]
 
     class Meta:
         model = YieldForecast
@@ -75,30 +87,5 @@ class YieldForecastSerializer(serializers.ModelSerializer):
         return None
 
 
-class YieldForecastListSerializer(serializers.ModelSerializer):
-    """Lightweight serializer for list views."""
-    field_name = serializers.CharField(source='field.name', read_only=True)
-    farm_name = serializers.SerializerMethodField()
-    crop_name = serializers.SerializerMethodField()
-    forecast_method_display = serializers.CharField(
-        source='get_forecast_method_display', read_only=True
-    )
-
-    class Meta:
-        model = YieldForecast
-        fields = [
-            'id', 'field', 'field_name', 'farm_name', 'crop_name',
-            'season_label', 'forecast_date',
-            'predicted_yield_per_acre', 'predicted_total_yield', 'yield_unit',
-            'lower_bound_per_acre', 'upper_bound_per_acre',
-            'confidence_level',
-            'forecast_method', 'forecast_method_display',
-            'status', 'data_completeness_pct',
-            'actual_yield_per_acre', 'forecast_error_pct',
-        ]
-
-    def get_farm_name(self, obj):
-        return obj.field.farm.name if obj.field.farm else ''
-
-    def get_crop_name(self, obj):
-        return obj.field.crop.name if obj.field.crop else ''
+# Backward-compatible alias
+YieldForecastListSerializer = YieldForecastSerializer

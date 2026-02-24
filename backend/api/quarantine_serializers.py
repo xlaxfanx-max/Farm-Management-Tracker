@@ -1,8 +1,9 @@
 from rest_framework import serializers
 from .models import QuarantineStatus
+from .serializer_mixins import DynamicFieldsMixin
 
 
-class QuarantineStatusSerializer(serializers.ModelSerializer):
+class QuarantineStatusSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     """
     Full serializer for QuarantineStatus model.
     Used for quarantine check results.
@@ -20,6 +21,16 @@ class QuarantineStatusSerializer(serializers.ModelSerializer):
     # Related names
     farm_name = serializers.CharField(source='farm.name', read_only=True, allow_null=True)
     field_name = serializers.CharField(source='field.name', read_only=True, allow_null=True)
+
+    list_fields = [
+        'id',
+        'farm', 'field',
+        'target_name', 'target_type',
+        'quarantine_type', 'quarantine_type_display',
+        'in_quarantine', 'zone_name',
+        'status_display', 'last_checked',
+        'error_message',
+    ]
 
     class Meta:
         model = QuarantineStatus
@@ -41,26 +52,5 @@ class QuarantineStatusSerializer(serializers.ModelSerializer):
         ]
 
 
-class QuarantineStatusListSerializer(serializers.ModelSerializer):
-    """
-    Lightweight serializer for quarantine status listings.
-    """
-    target_name = serializers.ReadOnlyField()
-    target_type = serializers.ReadOnlyField()
-    status_display = serializers.ReadOnlyField()
-    quarantine_type_display = serializers.CharField(
-        source='get_quarantine_type_display',
-        read_only=True
-    )
-
-    class Meta:
-        model = QuarantineStatus
-        fields = [
-            'id',
-            'farm', 'field',
-            'target_name', 'target_type',
-            'quarantine_type', 'quarantine_type_display',
-            'in_quarantine', 'zone_name',
-            'status_display', 'last_checked',
-            'error_message',
-        ]
+# Backward-compatible alias
+QuarantineStatusListSerializer = QuarantineStatusSerializer

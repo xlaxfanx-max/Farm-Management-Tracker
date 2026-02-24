@@ -1,8 +1,9 @@
 from rest_framework import serializers
 from .models import WaterSource, WaterTest
+from .serializer_mixins import DynamicFieldsMixin
 
 
-class WaterSourceSerializer(serializers.ModelSerializer):
+class WaterSourceSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     """
     Full serializer for unified WaterSource model (includes well data).
     """
@@ -22,6 +23,7 @@ class WaterSourceSerializer(serializers.ModelSerializer):
     allocation_remaining_af = serializers.SerializerMethodField()
     latest_reading = serializers.SerializerMethodField()
     calibration_status = serializers.SerializerMethodField()
+    calibration_due_soon = serializers.SerializerMethodField()
 
     # Location fields from LocationMixin
     has_coordinates = serializers.ReadOnlyField()
@@ -29,6 +31,15 @@ class WaterSourceSerializer(serializers.ModelSerializer):
     plss_display = serializers.ReadOnlyField()
     effective_location = serializers.ReadOnlyField()
     effective_plss = serializers.ReadOnlyField()
+
+    list_fields = [
+        'id', 'name', 'farm', 'farm_name', 'source_type', 'is_well',
+        'gsa', 'gsa_display', 'basin', 'basin_display',
+        'well_status', 'well_status_display',
+        'has_flowmeter', 'flowmeter_units', 'meter_calibration_current',
+        'next_calibration_due', 'calibration_due_soon', 'ytd_extraction_af',
+        'registered_with_gsa', 'is_de_minimis', 'active'
+    ]
 
     class Meta:
         model = WaterSource
@@ -85,38 +96,14 @@ class WaterSourceSerializer(serializers.ModelSerializer):
             }
         return None
 
-
-class WaterSourceListSerializer(serializers.ModelSerializer):
-    """Lightweight serializer for WaterSource listings."""
-
-    farm_name = serializers.CharField(source='farm.name', read_only=True)
-    is_well = serializers.ReadOnlyField()
-    gsa_display = serializers.CharField(source='get_gsa_display', read_only=True)
-    basin_display = serializers.CharField(source='get_basin_display', read_only=True)
-    well_status_display = serializers.CharField(source='get_well_status_display', read_only=True)
-    ytd_extraction_af = serializers.SerializerMethodField()
-    calibration_due_soon = serializers.SerializerMethodField()
-
-    class Meta:
-        model = WaterSource
-        fields = [
-            'id', 'name', 'farm', 'farm_name', 'source_type', 'is_well',
-            'gsa', 'gsa_display', 'basin', 'basin_display',
-            'well_status', 'well_status_display',
-            'has_flowmeter', 'flowmeter_units', 'meter_calibration_current',
-            'next_calibration_due', 'calibration_due_soon', 'ytd_extraction_af',
-            'registered_with_gsa', 'is_de_minimis', 'active'
-        ]
-
-    def get_ytd_extraction_af(self, obj):
-        if obj.is_well:
-            return float(obj.get_ytd_extraction_af())
-        return None
-
     def get_calibration_due_soon(self, obj):
         if obj.is_well:
             return obj.is_calibration_due(days_warning=30)
         return None
+
+
+# Alias for backward compatibility
+WaterSourceListSerializer = WaterSourceSerializer
 
 
 class WaterTestSerializer(serializers.ModelSerializer):

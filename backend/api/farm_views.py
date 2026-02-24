@@ -8,16 +8,16 @@ from rest_framework.permissions import IsAuthenticated
 from .permissions import HasCompanyAccess
 from .audit_utils import AuditLogMixin
 from django.db.models import Q
-from .view_helpers import get_user_company, require_company
+from .view_helpers import get_user_company, require_company, CompanyFilteredViewSet
 from .models import Farm, Field, FarmParcel, Crop, Rootstock, CropCategory
 from .serializers import (
-    FarmSerializer, FarmParcelSerializer, FarmParcelListSerializer,
+    FarmSerializer, FarmParcelSerializer,
     FieldSerializer, PesticideApplicationSerializer,
-    CropSerializer, CropListSerializer, RootstockSerializer, RootstockListSerializer,
+    CropSerializer, RootstockSerializer,
 )
 
 
-class FarmViewSet(AuditLogMixin, viewsets.ModelViewSet):
+class FarmViewSet(CompanyFilteredViewSet):
     """
     API endpoint for managing farms.
 
@@ -25,24 +25,15 @@ class FarmViewSet(AuditLogMixin, viewsets.ModelViewSet):
     - get_queryset filters by company (defense in depth with RLS)
     - perform_create sets company_id (REQUIRED for RLS INSERT)
     """
+    model = Farm
     serializer_class = FarmSerializer
-    permission_classes = [IsAuthenticated, HasCompanyAccess]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['name', 'farm_number', 'owner_name', 'county']
     ordering_fields = ['name', 'created_at']
+    default_ordering = ('-id',)
 
-    def get_queryset(self):
-        """Filter farms by current user's company."""
-        queryset = Farm.objects.filter(active=True)
-        company = get_user_company(self.request.user)
-        if company:
-            queryset = queryset.filter(company=company)
-        return queryset
-
-    def perform_create(self, serializer):
-        """Set company when creating a new farm - REQUIRED FOR RLS."""
-        company = require_company(self.request.user)
-        serializer.save(company=company)
+    def filter_queryset_by_params(self, qs):
+        return qs.filter(active=True)
 
     @action(detail=True, methods=['get'])
     def fields(self, request, pk=None):
@@ -136,7 +127,7 @@ class FarmViewSet(AuditLogMixin, viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-class FieldViewSet(AuditLogMixin, viewsets.ModelViewSet):
+class FieldViewSet(CompanyFilteredViewSet):
     """
     API endpoint for managing fields.
 
@@ -144,19 +135,16 @@ class FieldViewSet(AuditLogMixin, viewsets.ModelViewSet):
     - Fields inherit company from their Farm
     - get_queryset filters by company through farm relationship
     """
+    model = Field
     serializer_class = FieldSerializer
-    permission_classes = [IsAuthenticated, HasCompanyAccess]
+    company_field = 'farm__company'
+    select_related_fields = ('farm',)
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['name', 'field_number', 'current_crop', 'county']
     ordering_fields = ['name', 'total_acres', 'created_at']
 
-    def get_queryset(self):
-        """Filter fields by current user's company through farm."""
-        queryset = Field.objects.filter(active=True).select_related('farm')
-        company = get_user_company(self.request.user)
-        if company:
-            queryset = queryset.filter(farm__company=company)
-        return queryset
+    def filter_queryset_by_params(self, qs):
+        return qs.filter(active=True)
 
     @action(detail=True, methods=['get'])
     def applications(self, request, pk=None):
@@ -178,6 +166,7 @@ class CropViewSet(AuditLogMixin, viewsets.ModelViewSet):
     System defaults (company=null) are read-only.
     Companies can create custom crops.
     """
+    serializer_class = CropSerializer
     permission_classes = [IsAuthenticated, HasCompanyAccess]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['name', 'variety', 'scientific_name']
@@ -208,11 +197,6 @@ class CropViewSet(AuditLogMixin, viewsets.ModelViewSet):
             queryset = queryset.filter(crop_type=crop_type)
 
         return queryset
-
-    def get_serializer_class(self):
-        if self.action == 'list':
-            return CropListSerializer
-        return CropSerializer
 
     def perform_create(self, serializer):
         """Assign company to new crops."""
@@ -258,7 +242,7 @@ class CropViewSet(AuditLogMixin, viewsets.ModelViewSet):
         queryset = self.get_queryset().filter(
             Q(name__icontains=q) | Q(variety__icontains=q)
         )[:20]
-        return Response(CropListSerializer(queryset, many=True).data)
+        return Response(CropSerializer(queryset, many=True).data)
 
 
 class RootstockViewSet(AuditLogMixin, viewsets.ModelViewSet):
@@ -268,6 +252,7 @@ class RootstockViewSet(AuditLogMixin, viewsets.ModelViewSet):
     System defaults (company=null) are read-only.
     Companies can create custom rootstocks.
     """
+    serializer_class = RootstockSerializer
     permission_classes = [IsAuthenticated, HasCompanyAccess]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['name', 'code']
@@ -295,11 +280,6 @@ class RootstockViewSet(AuditLogMixin, viewsets.ModelViewSet):
             queryset = queryset.filter(compatible_crops__id=crop_id)
 
         return queryset
-
-    def get_serializer_class(self):
-        if self.action == 'list':
-            return RootstockListSerializer
-        return RootstockSerializer
 
     def perform_create(self, serializer):
         company = require_company(self.request.user)
@@ -332,24 +312,17 @@ class RootstockViewSet(AuditLogMixin, viewsets.ModelViewSet):
             return Response({'error': 'crop_id required'}, status=status.HTTP_400_BAD_REQUEST)
 
         queryset = self.get_queryset().filter(compatible_crops__id=crop_id)
-        return Response(RootstockListSerializer(queryset, many=True).data)
+        return Response(RootstockSerializer(queryset, many=True).data)
 
 
-class FarmParcelViewSet(AuditLogMixin, viewsets.ModelViewSet):
+class FarmParcelViewSet(CompanyFilteredViewSet):
+    model = FarmParcel
     serializer_class = FarmParcelSerializer
-    permission_classes = [IsAuthenticated, HasCompanyAccess]
+    company_field = 'farm__company'
+    select_related_fields = ('farm',)
 
-    def get_queryset(self):
-        user = self.request.user
-        if hasattr(user, 'current_company') and user.current_company:
-            queryset = FarmParcel.objects.filter(
-                farm__company=user.current_company
-            ).select_related('farm')
-        else:
-            queryset = FarmParcel.objects.all().select_related('farm')
-
+    def filter_queryset_by_params(self, qs):
         farm_id = self.request.query_params.get('farm')
         if farm_id:
-            queryset = queryset.filter(farm_id=farm_id)
-
-        return queryset
+            qs = qs.filter(farm_id=farm_id)
+        return qs

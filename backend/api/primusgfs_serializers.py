@@ -2,9 +2,14 @@
 Primus GFS Compliance Serializers
 
 Phase 1: Document Control, Internal Audits, Corrective Actions, Land History
+
+Uses DynamicFieldsMixin to consolidate List/Detail serializer pairs into
+a single serializer with `list_fields`.  Backward-compatible aliases
+(e.g. ControlledDocumentListSerializer) are retained at module scope.
 """
 
 from rest_framework import serializers
+from .serializer_mixins import DynamicFieldsMixin
 from .models import (
     ControlledDocument, DocumentRevisionHistory,
     InternalAudit, AuditFinding, CorrectiveAction,
@@ -44,8 +49,17 @@ class DocumentRevisionHistorySerializer(serializers.ModelSerializer):
         read_only_fields = ['changed_by', 'changed_at']
 
 
-class ControlledDocumentSerializer(serializers.ModelSerializer):
+class ControlledDocumentSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     """Full serializer for controlled documents."""
+    list_fields = [
+        'id', 'document_number', 'title',
+        'document_type', 'document_type_display',
+        'primus_module', 'primus_module_display',
+        'version', 'status', 'status_display',
+        'review_due_date', 'is_review_overdue', 'days_until_review',
+        'effective_date', 'has_file',
+    ]
+
     document_type_display = serializers.CharField(
         source='get_document_type_display', read_only=True
     )
@@ -71,6 +85,7 @@ class ControlledDocumentSerializer(serializers.ModelSerializer):
     )
     file_url = serializers.SerializerMethodField()
     file_name = serializers.SerializerMethodField()
+    has_file = serializers.SerializerMethodField()
 
     class Meta:
         model = ControlledDocument
@@ -79,7 +94,8 @@ class ControlledDocumentSerializer(serializers.ModelSerializer):
             'document_type', 'document_type_display',
             'primus_module', 'primus_module_display',
             'version', 'revision_date', 'effective_date', 'review_due_date',
-            'description', 'file', 'file_url', 'file_name', 'content_text',
+            'description', 'file', 'file_url', 'file_name', 'has_file',
+            'content_text',
             'status', 'status_display',
             'prepared_by', 'prepared_by_name',
             'reviewed_by', 'reviewed_by_name',
@@ -106,35 +122,11 @@ class ControlledDocumentSerializer(serializers.ModelSerializer):
             return obj.file.name.split('/')[-1]
         return None
 
-
-class ControlledDocumentListSerializer(serializers.ModelSerializer):
-    """Lightweight serializer for document lists."""
-    document_type_display = serializers.CharField(
-        source='get_document_type_display', read_only=True
-    )
-    primus_module_display = serializers.CharField(
-        source='get_primus_module_display', read_only=True
-    )
-    status_display = serializers.CharField(
-        source='get_status_display', read_only=True
-    )
-    is_review_overdue = serializers.BooleanField(read_only=True)
-    days_until_review = serializers.IntegerField(read_only=True)
-    has_file = serializers.SerializerMethodField()
-
-    class Meta:
-        model = ControlledDocument
-        fields = [
-            'id', 'document_number', 'title',
-            'document_type', 'document_type_display',
-            'primus_module', 'primus_module_display',
-            'version', 'status', 'status_display',
-            'review_due_date', 'is_review_overdue', 'days_until_review',
-            'effective_date', 'has_file',
-        ]
-
     def get_has_file(self, obj):
         return bool(obj.file)
+
+
+ControlledDocumentListSerializer = ControlledDocumentSerializer
 
 
 # =============================================================================
@@ -166,8 +158,17 @@ class AuditFindingSerializer(serializers.ModelSerializer):
         return obj.corrective_actions.count()
 
 
-class InternalAuditSerializer(serializers.ModelSerializer):
+class InternalAuditSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     """Full serializer for internal audits."""
+    list_fields = [
+        'id', 'audit_number', 'title',
+        'audit_type', 'audit_type_display',
+        'planned_date', 'actual_date',
+        'status', 'status_display',
+        'overall_score', 'total_findings', 'open_findings',
+        'has_report',
+    ]
+
     audit_type_display = serializers.CharField(
         source='get_audit_type_display', read_only=True
     )
@@ -182,6 +183,7 @@ class InternalAuditSerializer(serializers.ModelSerializer):
     findings = AuditFindingSerializer(many=True, read_only=True)
     report_file_url = serializers.SerializerMethodField()
     report_file_name = serializers.SerializerMethodField()
+    has_report = serializers.SerializerMethodField()
 
     class Meta:
         model = InternalAudit
@@ -195,7 +197,7 @@ class InternalAuditSerializer(serializers.ModelSerializer):
             'auditor_name', 'audit_team',
             'status', 'status_display',
             'overall_score', 'executive_summary',
-            'report_file', 'report_file_url', 'report_file_name',
+            'report_file', 'report_file_url', 'report_file_name', 'has_report',
             'related_documents',
             'total_findings', 'open_findings', 'findings',
             'notes', 'created_at', 'updated_at',
@@ -215,40 +217,26 @@ class InternalAuditSerializer(serializers.ModelSerializer):
             return obj.report_file.name.split('/')[-1]
         return None
 
-
-class InternalAuditListSerializer(serializers.ModelSerializer):
-    """Lightweight serializer for audit lists."""
-    audit_type_display = serializers.CharField(
-        source='get_audit_type_display', read_only=True
-    )
-    status_display = serializers.CharField(
-        source='get_status_display', read_only=True
-    )
-    total_findings = serializers.IntegerField(read_only=True)
-    open_findings = serializers.IntegerField(read_only=True)
-    has_report = serializers.SerializerMethodField()
-
-    class Meta:
-        model = InternalAudit
-        fields = [
-            'id', 'audit_number', 'title',
-            'audit_type', 'audit_type_display',
-            'planned_date', 'actual_date',
-            'status', 'status_display',
-            'overall_score', 'total_findings', 'open_findings',
-            'has_report',
-        ]
-
     def get_has_report(self, obj):
         return bool(obj.report_file)
+
+
+InternalAuditListSerializer = InternalAuditSerializer
 
 
 # =============================================================================
 # CORRECTIVE ACTION SERIALIZERS
 # =============================================================================
 
-class CorrectiveActionSerializer(serializers.ModelSerializer):
+class CorrectiveActionSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     """Full serializer for corrective actions."""
+    list_fields = [
+        'id', 'ca_number', 'description', 'source_type',
+        'due_date', 'status', 'status_display',
+        'is_overdue', 'days_until_due',
+        'assigned_to_name',
+    ]
+
     status_display = serializers.CharField(
         source='get_status_display', read_only=True
     )
@@ -283,30 +271,26 @@ class CorrectiveActionSerializer(serializers.ModelSerializer):
         return obj.assigned_to_name or ''
 
 
-class CorrectiveActionListSerializer(serializers.ModelSerializer):
-    """Lightweight serializer for corrective action lists."""
-    status_display = serializers.CharField(
-        source='get_status_display', read_only=True
-    )
-    is_overdue = serializers.BooleanField(read_only=True)
-    days_until_due = serializers.IntegerField(read_only=True)
-
-    class Meta:
-        model = CorrectiveAction
-        fields = [
-            'id', 'ca_number', 'description', 'source_type',
-            'due_date', 'status', 'status_display',
-            'is_overdue', 'days_until_due',
-            'assigned_to_name',
-        ]
+CorrectiveActionListSerializer = CorrectiveActionSerializer
 
 
 # =============================================================================
 # LAND HISTORY ASSESSMENT SERIALIZERS
 # =============================================================================
 
-class LandHistoryAssessmentSerializer(serializers.ModelSerializer):
+class LandHistoryAssessmentSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     """Full serializer for land history assessments."""
+    list_fields = [
+        'id', 'field', 'field_name', 'farm_name',
+        'assessment_date', 'contamination_risk',
+        'contamination_risk_display', 'approved',
+        'risk_factor_count',
+        'buffer_period_adequate', 'previous_animal_operations',
+        'remediation_required', 'remediation_verified',
+        'information_source', 'has_document',
+        'supporting_document_name',
+    ]
+
     contamination_risk_display = serializers.CharField(
         source='get_contamination_risk_display', read_only=True
     )
@@ -324,6 +308,7 @@ class LandHistoryAssessmentSerializer(serializers.ModelSerializer):
     )
     risk_factor_count = serializers.IntegerField(read_only=True)
     supporting_document_url = serializers.SerializerMethodField()
+    has_document = serializers.SerializerMethodField()
 
     class Meta:
         model = LandHistoryAssessment
@@ -346,7 +331,7 @@ class LandHistoryAssessmentSerializer(serializers.ModelSerializer):
             'risk_justification', 'mitigation_measures',
             'approved', 'approved_by', 'approved_by_name', 'approved_at',
             'supporting_document', 'supporting_document_name',
-            'supporting_document_url',
+            'supporting_document_url', 'has_document',
             'related_document', 'risk_factor_count',
             'notes', 'created_at', 'updated_at',
         ]
@@ -363,34 +348,11 @@ class LandHistoryAssessmentSerializer(serializers.ModelSerializer):
             return obj.supporting_document.url
         return None
 
-
-class LandHistoryAssessmentListSerializer(serializers.ModelSerializer):
-    """Lightweight serializer for land assessment lists."""
-    contamination_risk_display = serializers.CharField(
-        source='get_contamination_risk_display', read_only=True
-    )
-    field_name = serializers.CharField(source='field.name', read_only=True)
-    farm_name = serializers.CharField(
-        source='field.farm.name', read_only=True
-    )
-    risk_factor_count = serializers.IntegerField(read_only=True)
-    has_document = serializers.SerializerMethodField()
-
-    class Meta:
-        model = LandHistoryAssessment
-        fields = [
-            'id', 'field', 'field_name', 'farm_name',
-            'assessment_date', 'contamination_risk',
-            'contamination_risk_display', 'approved',
-            'risk_factor_count',
-            'buffer_period_adequate', 'previous_animal_operations',
-            'remediation_required', 'remediation_verified',
-            'information_source', 'has_document',
-            'supporting_document_name',
-        ]
-
     def get_has_document(self, obj):
         return bool(obj.supporting_document)
+
+
+LandHistoryAssessmentListSerializer = LandHistoryAssessmentSerializer
 
 
 # =============================================================================
@@ -401,8 +363,14 @@ class LandHistoryAssessmentListSerializer(serializers.ModelSerializer):
 # SUPPLIER CONTROL SERIALIZERS
 # =============================================================================
 
-class ApprovedSupplierSerializer(serializers.ModelSerializer):
+class ApprovedSupplierSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     """Full serializer for approved suppliers."""
+    list_fields = [
+        'id', 'supplier_name', 'supplier_code',
+        'material_types', 'status', 'status_display',
+        'approved_date', 'next_review_date', 'is_review_overdue',
+    ]
+
     status_display = serializers.CharField(
         source='get_status_display', read_only=True
     )
@@ -432,24 +400,17 @@ class ApprovedSupplierSerializer(serializers.ModelSerializer):
         return obj.material_verifications.count()
 
 
-class ApprovedSupplierListSerializer(serializers.ModelSerializer):
-    """Lightweight serializer for supplier lists."""
-    status_display = serializers.CharField(
-        source='get_status_display', read_only=True
-    )
-    is_review_overdue = serializers.BooleanField(read_only=True)
-
-    class Meta:
-        model = ApprovedSupplier
-        fields = [
-            'id', 'supplier_name', 'supplier_code',
-            'material_types', 'status', 'status_display',
-            'approved_date', 'next_review_date', 'is_review_overdue',
-        ]
+ApprovedSupplierListSerializer = ApprovedSupplierSerializer
 
 
-class IncomingMaterialVerificationSerializer(serializers.ModelSerializer):
+class IncomingMaterialVerificationSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     """Full serializer for material verifications."""
+    list_fields = [
+        'id', 'supplier', 'supplier_name', 'receipt_date',
+        'material_type', 'material_type_display',
+        'material_description', 'accepted',
+    ]
+
     material_type_display = serializers.CharField(
         source='get_material_type_display', read_only=True
     )
@@ -477,30 +438,22 @@ class IncomingMaterialVerificationSerializer(serializers.ModelSerializer):
         ]
 
 
-class IncomingMaterialVerificationListSerializer(serializers.ModelSerializer):
-    """Lightweight serializer for verification lists."""
-    material_type_display = serializers.CharField(
-        source='get_material_type_display', read_only=True
-    )
-    supplier_name = serializers.CharField(
-        source='supplier.supplier_name', read_only=True
-    )
-
-    class Meta:
-        model = IncomingMaterialVerification
-        fields = [
-            'id', 'supplier', 'supplier_name', 'receipt_date',
-            'material_type', 'material_type_display',
-            'material_description', 'accepted',
-        ]
+IncomingMaterialVerificationListSerializer = IncomingMaterialVerificationSerializer
 
 
 # =============================================================================
 # MOCK RECALL SERIALIZERS
 # =============================================================================
 
-class MockRecallSerializer(serializers.ModelSerializer):
+class MockRecallSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     """Full serializer for mock recall exercises."""
+    list_fields = [
+        'id', 'recall_number', 'exercise_date',
+        'target_product', 'status', 'status_display',
+        'trace_duration_minutes', 'effectiveness_score',
+        'passed', 'within_time_limit', 'has_report',
+    ]
+
     status_display = serializers.CharField(
         source='get_status_display', read_only=True
     )
@@ -510,6 +463,7 @@ class MockRecallSerializer(serializers.ModelSerializer):
     within_time_limit = serializers.BooleanField(read_only=True)
     report_file_url = serializers.SerializerMethodField()
     report_file_name = serializers.SerializerMethodField()
+    has_report = serializers.SerializerMethodField()
 
     class Meta:
         model = MockRecall
@@ -523,7 +477,7 @@ class MockRecallSerializer(serializers.ModelSerializer):
             'lots_traced_forward', 'lots_traced_backward',
             'effectiveness_score', 'passed', 'within_time_limit',
             'led_by', 'led_by_name', 'participants',
-            'report_file', 'report_file_url', 'report_file_name',
+            'report_file', 'report_file_url', 'report_file_name', 'has_report',
             'notes', 'created_at', 'updated_at',
         ]
         read_only_fields = [
@@ -544,34 +498,25 @@ class MockRecallSerializer(serializers.ModelSerializer):
             return obj.report_file.name.split('/')[-1]
         return None
 
-
-class MockRecallListSerializer(serializers.ModelSerializer):
-    """Lightweight serializer for mock recall lists."""
-    status_display = serializers.CharField(
-        source='get_status_display', read_only=True
-    )
-    within_time_limit = serializers.BooleanField(read_only=True)
-    has_report = serializers.SerializerMethodField()
-
-    class Meta:
-        model = MockRecall
-        fields = [
-            'id', 'recall_number', 'exercise_date',
-            'target_product', 'status', 'status_display',
-            'trace_duration_minutes', 'effectiveness_score',
-            'passed', 'within_time_limit', 'has_report',
-        ]
-
     def get_has_report(self, obj):
         return bool(obj.report_file)
+
+
+MockRecallListSerializer = MockRecallSerializer
 
 
 # =============================================================================
 # FOOD DEFENSE PLAN SERIALIZERS
 # =============================================================================
 
-class FoodDefensePlanSerializer(serializers.ModelSerializer):
+class FoodDefensePlanSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     """Full serializer for food defense plans."""
+    list_fields = [
+        'id', 'plan_year', 'effective_date', 'review_date',
+        'overall_threat_level', 'overall_threat_level_display',
+        'approved', 'is_review_overdue',
+    ]
+
     overall_threat_level_display = serializers.CharField(
         source='get_overall_threat_level_display', read_only=True
     )
@@ -600,28 +545,21 @@ class FoodDefensePlanSerializer(serializers.ModelSerializer):
         ]
 
 
-class FoodDefensePlanListSerializer(serializers.ModelSerializer):
-    """Lightweight serializer for food defense plan lists."""
-    overall_threat_level_display = serializers.CharField(
-        source='get_overall_threat_level_display', read_only=True
-    )
-    is_review_overdue = serializers.BooleanField(read_only=True)
-
-    class Meta:
-        model = FoodDefensePlan
-        fields = [
-            'id', 'plan_year', 'effective_date', 'review_date',
-            'overall_threat_level', 'overall_threat_level_display',
-            'approved', 'is_review_overdue',
-        ]
+FoodDefensePlanListSerializer = FoodDefensePlanSerializer
 
 
 # =============================================================================
 # FIELD SANITATION SERIALIZERS
 # =============================================================================
 
-class FieldSanitationLogSerializer(serializers.ModelSerializer):
+class FieldSanitationLogSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     """Full serializer for field sanitation logs."""
+    list_fields = [
+        'id', 'farm', 'farm_name', 'log_date',
+        'worker_count', 'units_required', 'units_deployed',
+        'compliant',
+    ]
+
     farm_name = serializers.CharField(source='farm.name', read_only=True)
     field_name = serializers.CharField(source='field.name', read_only=True)
     checked_by_name = serializers.CharField(
@@ -647,25 +585,24 @@ class FieldSanitationLogSerializer(serializers.ModelSerializer):
         ]
 
 
-class FieldSanitationLogListSerializer(serializers.ModelSerializer):
-    """Lightweight serializer for sanitation log lists."""
-    farm_name = serializers.CharField(source='farm.name', read_only=True)
-
-    class Meta:
-        model = FieldSanitationLog
-        fields = [
-            'id', 'farm', 'farm_name', 'log_date',
-            'worker_count', 'units_required', 'units_deployed',
-            'compliant',
-        ]
+FieldSanitationLogListSerializer = FieldSanitationLogSerializer
 
 
 # =============================================================================
 # EQUIPMENT CALIBRATION SERIALIZERS
 # =============================================================================
 
-class EquipmentCalibrationSerializer(serializers.ModelSerializer):
+class EquipmentCalibrationSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     """Full serializer for equipment calibration records."""
+    list_fields = [
+        'id', 'equipment_name', 'equipment_type',
+        'equipment_type_display', 'equipment_id',
+        'calibration_date', 'next_calibration_date',
+        'status', 'status_display',
+        'within_tolerance', 'is_overdue', 'days_until_due',
+        'has_certificate',
+    ]
+
     equipment_type_display = serializers.CharField(
         source='get_equipment_type_display', read_only=True
     )
@@ -679,6 +616,7 @@ class EquipmentCalibrationSerializer(serializers.ModelSerializer):
     days_until_due = serializers.IntegerField(read_only=True)
     certificate_file_url = serializers.SerializerMethodField()
     certificate_file_name = serializers.SerializerMethodField()
+    has_certificate = serializers.SerializerMethodField()
 
     class Meta:
         model = EquipmentCalibration
@@ -694,7 +632,7 @@ class EquipmentCalibrationSerializer(serializers.ModelSerializer):
             'within_tolerance',
             'corrective_action_taken', 'corrective_action_ref',
             'certificate_number', 'certificate_file',
-            'certificate_file_url', 'certificate_file_name',
+            'certificate_file_url', 'certificate_file_name', 'has_certificate',
             'is_overdue', 'days_until_due',
             'notes', 'created_at', 'updated_at',
         ]
@@ -715,40 +653,25 @@ class EquipmentCalibrationSerializer(serializers.ModelSerializer):
             return obj.certificate_file.name.split('/')[-1]
         return None
 
-
-class EquipmentCalibrationListSerializer(serializers.ModelSerializer):
-    """Lightweight serializer for calibration lists."""
-    equipment_type_display = serializers.CharField(
-        source='get_equipment_type_display', read_only=True
-    )
-    status_display = serializers.CharField(
-        source='get_status_display', read_only=True
-    )
-    is_overdue = serializers.BooleanField(read_only=True)
-    days_until_due = serializers.IntegerField(read_only=True)
-    has_certificate = serializers.SerializerMethodField()
-
-    class Meta:
-        model = EquipmentCalibration
-        fields = [
-            'id', 'equipment_name', 'equipment_type',
-            'equipment_type_display', 'equipment_id',
-            'calibration_date', 'next_calibration_date',
-            'status', 'status_display',
-            'within_tolerance', 'is_overdue', 'days_until_due',
-            'has_certificate',
-        ]
-
     def get_has_certificate(self, obj):
         return bool(obj.certificate_file)
+
+
+EquipmentCalibrationListSerializer = EquipmentCalibrationSerializer
 
 
 # =============================================================================
 # PEST CONTROL SERIALIZERS
 # =============================================================================
 
-class PestControlProgramSerializer(serializers.ModelSerializer):
+class PestControlProgramSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     """Full serializer for pest control programs."""
+    list_fields = [
+        'id', 'program_year', 'effective_date', 'review_date',
+        'pco_company', 'total_stations',
+        'approved', 'is_review_overdue',
+    ]
+
     approved_by_name = serializers.CharField(
         source='approved_by.get_full_name', read_only=True
     )
@@ -777,21 +700,19 @@ class PestControlProgramSerializer(serializers.ModelSerializer):
         return obj.monitoring_logs.count()
 
 
-class PestControlProgramListSerializer(serializers.ModelSerializer):
-    """Lightweight serializer for pest control program lists."""
-    is_review_overdue = serializers.BooleanField(read_only=True)
-
-    class Meta:
-        model = PestControlProgram
-        fields = [
-            'id', 'program_year', 'effective_date', 'review_date',
-            'pco_company', 'total_stations',
-            'approved', 'is_review_overdue',
-        ]
+PestControlProgramListSerializer = PestControlProgramSerializer
 
 
-class PestMonitoringLogSerializer(serializers.ModelSerializer):
+class PestMonitoringLogSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     """Full serializer for pest monitoring logs."""
+    list_fields = [
+        'id', 'farm', 'farm_name', 'inspection_date',
+        'is_pco_visit', 'total_stations_checked',
+        'stations_with_activity', 'overall_activity_level',
+        'overall_activity_level_display',
+        'corrective_actions_needed',
+    ]
+
     farm_name = serializers.CharField(source='farm.name', read_only=True)
     overall_activity_level_display = serializers.CharField(
         source='get_overall_activity_level_display', read_only=True
@@ -816,30 +737,21 @@ class PestMonitoringLogSerializer(serializers.ModelSerializer):
         ]
 
 
-class PestMonitoringLogListSerializer(serializers.ModelSerializer):
-    """Lightweight serializer for pest monitoring log lists."""
-    farm_name = serializers.CharField(source='farm.name', read_only=True)
-    overall_activity_level_display = serializers.CharField(
-        source='get_overall_activity_level_display', read_only=True
-    )
-
-    class Meta:
-        model = PestMonitoringLog
-        fields = [
-            'id', 'farm', 'farm_name', 'inspection_date',
-            'is_pco_visit', 'total_stations_checked',
-            'stations_with_activity', 'overall_activity_level',
-            'overall_activity_level_display',
-            'corrective_actions_needed',
-        ]
+PestMonitoringLogListSerializer = PestMonitoringLogSerializer
 
 
 # =============================================================================
 # PRE-HARVEST INSPECTION SERIALIZERS
 # =============================================================================
 
-class PreHarvestInspectionSerializer(serializers.ModelSerializer):
+class PreHarvestInspectionSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     """Full serializer for pre-harvest inspections."""
+    list_fields = [
+        'id', 'farm', 'farm_name', 'field', 'field_name',
+        'inspection_date', 'planned_harvest_date', 'crop',
+        'status', 'status_display', 'passed',
+    ]
+
     status_display = serializers.CharField(
         source='get_status_display', read_only=True
     )
@@ -885,21 +797,7 @@ class PreHarvestInspectionSerializer(serializers.ModelSerializer):
         return obj.inspector_name or ''
 
 
-class PreHarvestInspectionListSerializer(serializers.ModelSerializer):
-    """Lightweight serializer for pre-harvest inspection lists."""
-    status_display = serializers.CharField(
-        source='get_status_display', read_only=True
-    )
-    farm_name = serializers.CharField(source='farm.name', read_only=True)
-    field_name = serializers.CharField(source='field.name', read_only=True)
-
-    class Meta:
-        model = PreHarvestInspection
-        fields = [
-            'id', 'farm', 'farm_name', 'field', 'field_name',
-            'inspection_date', 'planned_harvest_date', 'crop',
-            'status', 'status_display', 'passed',
-        ]
+PreHarvestInspectionListSerializer = PreHarvestInspectionSerializer
 
 
 # =============================================================================
@@ -976,7 +874,13 @@ class FoodSafetyRoleAssignmentSerializer(serializers.ModelSerializer):
 # CAC DOCS 03-04 — COMMITTEE MEETING
 # =============================================================================
 
-class FoodSafetyCommitteeMeetingSerializer(serializers.ModelSerializer):
+class FoodSafetyCommitteeMeetingSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+    list_fields = [
+        'id', 'meeting_date', 'meeting_quarter', 'quarter_display',
+        'meeting_year', 'status', 'all_sections_reviewed',
+        'attendees',
+    ]
+
     quarter_display = serializers.CharField(
         source='get_meeting_quarter_display', read_only=True
     )
@@ -1005,26 +909,19 @@ class FoodSafetyCommitteeMeetingSerializer(serializers.ModelSerializer):
         read_only_fields = ['company']
 
 
-class FoodSafetyCommitteeMeetingListSerializer(serializers.ModelSerializer):
-    quarter_display = serializers.CharField(
-        source='get_meeting_quarter_display', read_only=True
-    )
-    all_sections_reviewed = serializers.BooleanField(read_only=True)
-
-    class Meta:
-        model = FoodSafetyCommitteeMeeting
-        fields = [
-            'id', 'meeting_date', 'meeting_quarter', 'quarter_display',
-            'meeting_year', 'status', 'all_sections_reviewed',
-            'attendees',
-        ]
+FoodSafetyCommitteeMeetingListSerializer = FoodSafetyCommitteeMeetingSerializer
 
 
 # =============================================================================
 # CAC DOC 05 — MANAGEMENT VERIFICATION REVIEW
 # =============================================================================
 
-class ManagementVerificationReviewSerializer(serializers.ModelSerializer):
+class ManagementVerificationReviewSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+    list_fields = [
+        'id', 'review_year', 'review_date', 'conducted_by',
+        'approved', 'all_sections_reviewed', 'sections_reviewed_count',
+    ]
+
     all_sections_reviewed = serializers.BooleanField(read_only=True)
     sections_reviewed_count = serializers.IntegerField(read_only=True)
     report_file_url = serializers.SerializerMethodField()
@@ -1061,23 +958,19 @@ class ManagementVerificationReviewSerializer(serializers.ModelSerializer):
         return None
 
 
-class ManagementVerificationReviewListSerializer(serializers.ModelSerializer):
-    all_sections_reviewed = serializers.BooleanField(read_only=True)
-    sections_reviewed_count = serializers.IntegerField(read_only=True)
-
-    class Meta:
-        model = ManagementVerificationReview
-        fields = [
-            'id', 'review_year', 'review_date', 'conducted_by',
-            'approved', 'all_sections_reviewed', 'sections_reviewed_count',
-        ]
+ManagementVerificationReviewListSerializer = ManagementVerificationReviewSerializer
 
 
 # =============================================================================
 # CAC DOC 06 — TRAINING MATRIX
 # =============================================================================
 
-class TrainingRecordSerializer(serializers.ModelSerializer):
+class TrainingRecordSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+    list_fields = [
+        'id', 'employee_name', 'employee_role', 'active',
+        'training_types_current', 'compliance_percentage',
+    ]
+
     training_types_current = serializers.IntegerField(read_only=True)
     compliance_percentage = serializers.IntegerField(read_only=True)
 
@@ -1101,23 +994,20 @@ class TrainingRecordSerializer(serializers.ModelSerializer):
         read_only_fields = ['company']
 
 
-class TrainingRecordListSerializer(serializers.ModelSerializer):
-    training_types_current = serializers.IntegerField(read_only=True)
-    compliance_percentage = serializers.IntegerField(read_only=True)
-
-    class Meta:
-        model = TrainingRecord
-        fields = [
-            'id', 'employee_name', 'employee_role', 'active',
-            'training_types_current', 'compliance_percentage',
-        ]
+TrainingRecordListSerializer = TrainingRecordSerializer
 
 
 # =============================================================================
 # CAC DOC 37 — TRAINING SESSIONS
 # =============================================================================
 
-class WorkerTrainingSessionSerializer(serializers.ModelSerializer):
+class WorkerTrainingSessionSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+    list_fields = [
+        'id', 'training_date', 'training_topic',
+        'training_category', 'category_display',
+        'farm_name', 'instructor_name', 'attendee_count',
+    ]
+
     category_display = serializers.CharField(
         source='get_training_category_display', read_only=True
     )
@@ -1149,26 +1039,20 @@ class WorkerTrainingSessionSerializer(serializers.ModelSerializer):
         return None
 
 
-class WorkerTrainingSessionListSerializer(serializers.ModelSerializer):
-    category_display = serializers.CharField(
-        source='get_training_category_display', read_only=True
-    )
-    farm_name = serializers.CharField(source='farm.name', read_only=True, default='')
-
-    class Meta:
-        model = WorkerTrainingSession
-        fields = [
-            'id', 'training_date', 'training_topic',
-            'training_category', 'category_display',
-            'farm_name', 'instructor_name', 'attendee_count',
-        ]
+WorkerTrainingSessionListSerializer = WorkerTrainingSessionSerializer
 
 
 # =============================================================================
 # CAC DOC 24 — PERIMETER MONITORING
 # =============================================================================
 
-class PerimeterMonitoringLogSerializer(serializers.ModelSerializer):
+class PerimeterMonitoringLogSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+    list_fields = [
+        'id', 'farm_name', 'log_date', 'week_number',
+        'inspector_name', 'animal_activity_found',
+        'corrective_action_needed',
+    ]
+
     farm_name = serializers.CharField(source='farm.name', read_only=True)
 
     class Meta:
@@ -1190,23 +1074,19 @@ class PerimeterMonitoringLogSerializer(serializers.ModelSerializer):
         read_only_fields = ['company', 'week_number']
 
 
-class PerimeterMonitoringLogListSerializer(serializers.ModelSerializer):
-    farm_name = serializers.CharField(source='farm.name', read_only=True)
-
-    class Meta:
-        model = PerimeterMonitoringLog
-        fields = [
-            'id', 'farm_name', 'log_date', 'week_number',
-            'inspector_name', 'animal_activity_found',
-            'corrective_action_needed',
-        ]
+PerimeterMonitoringLogListSerializer = PerimeterMonitoringLogSerializer
 
 
 # =============================================================================
 # CAC DOC 38 — PRE-SEASON CHECKLIST
 # =============================================================================
 
-class PreSeasonChecklistSerializer(serializers.ModelSerializer):
+class PreSeasonChecklistSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+    list_fields = [
+        'id', 'farm_name', 'season_year', 'assessment_date',
+        'assessed_by', 'approved_for_season', 'deficiencies_found',
+    ]
+
     farm_name = serializers.CharField(source='farm.name', read_only=True)
 
     class Meta:
@@ -1247,22 +1127,20 @@ class PreSeasonChecklistSerializer(serializers.ModelSerializer):
         read_only_fields = ['company']
 
 
-class PreSeasonChecklistListSerializer(serializers.ModelSerializer):
-    farm_name = serializers.CharField(source='farm.name', read_only=True)
-
-    class Meta:
-        model = PreSeasonChecklist
-        fields = [
-            'id', 'farm_name', 'season_year', 'assessment_date',
-            'assessed_by', 'approved_for_season', 'deficiencies_found',
-        ]
+PreSeasonChecklistListSerializer = PreSeasonChecklistSerializer
 
 
 # =============================================================================
 # CAC DOC 39 — FIELD RISK ASSESSMENT
 # =============================================================================
 
-class FieldRiskAssessmentSerializer(serializers.ModelSerializer):
+class FieldRiskAssessmentSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+    list_fields = [
+        'id', 'farm_name', 'season_year', 'assessment_date',
+        'overall_risk_level', 'risk_level_display',
+        'critical_risks_count', 'high_risks_count', 'approved',
+    ]
+
     farm_name = serializers.CharField(source='farm.name', read_only=True)
     field_name = serializers.CharField(source='field.name', read_only=True, default='')
     risk_level_display = serializers.CharField(
@@ -1297,26 +1175,20 @@ class FieldRiskAssessmentSerializer(serializers.ModelSerializer):
         return None
 
 
-class FieldRiskAssessmentListSerializer(serializers.ModelSerializer):
-    farm_name = serializers.CharField(source='farm.name', read_only=True)
-    risk_level_display = serializers.CharField(
-        source='get_overall_risk_level_display', read_only=True
-    )
-
-    class Meta:
-        model = FieldRiskAssessment
-        fields = [
-            'id', 'farm_name', 'season_year', 'assessment_date',
-            'overall_risk_level', 'risk_level_display',
-            'critical_risks_count', 'high_risks_count', 'approved',
-        ]
+FieldRiskAssessmentListSerializer = FieldRiskAssessmentSerializer
 
 
 # =============================================================================
 # CAC DOC 09A — EMPLOYEE NON-CONFORMANCE
 # =============================================================================
 
-class EmployeeNonConformanceSerializer(serializers.ModelSerializer):
+class EmployeeNonConformanceSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+    list_fields = [
+        'id', 'employee_name', 'violation_date',
+        'violation_type', 'violation_type_display',
+        'warning_level', 'resolved',
+    ]
+
     violation_type_display = serializers.CharField(
         source='get_violation_type_display', read_only=True
     )
@@ -1336,25 +1208,19 @@ class EmployeeNonConformanceSerializer(serializers.ModelSerializer):
         read_only_fields = ['company']
 
 
-class EmployeeNonConformanceListSerializer(serializers.ModelSerializer):
-    violation_type_display = serializers.CharField(
-        source='get_violation_type_display', read_only=True
-    )
-
-    class Meta:
-        model = EmployeeNonConformance
-        fields = [
-            'id', 'employee_name', 'violation_date',
-            'violation_type', 'violation_type_display',
-            'warning_level', 'resolved',
-        ]
+EmployeeNonConformanceListSerializer = EmployeeNonConformanceSerializer
 
 
 # =============================================================================
 # CAC DOCS 11-12 — PRODUCT HOLD/RELEASE
 # =============================================================================
 
-class ProductHoldReleaseSerializer(serializers.ModelSerializer):
+class ProductHoldReleaseSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+    list_fields = [
+        'id', 'hold_number', 'hold_date', 'product_description',
+        'status', 'status_display', 'hold_reason',
+    ]
+
     status_display = serializers.CharField(
         source='get_status_display', read_only=True
     )
@@ -1380,17 +1246,7 @@ class ProductHoldReleaseSerializer(serializers.ModelSerializer):
         read_only_fields = ['company']
 
 
-class ProductHoldReleaseListSerializer(serializers.ModelSerializer):
-    status_display = serializers.CharField(
-        source='get_status_display', read_only=True
-    )
-
-    class Meta:
-        model = ProductHoldRelease
-        fields = [
-            'id', 'hold_number', 'hold_date', 'product_description',
-            'status', 'status_display', 'hold_reason',
-        ]
+ProductHoldReleaseListSerializer = ProductHoldReleaseSerializer
 
 
 # =============================================================================
@@ -1464,7 +1320,12 @@ class EmergencyContactSerializer(serializers.ModelSerializer):
 # CAC DOC 29 — CHEMICAL INVENTORY
 # =============================================================================
 
-class ChemicalInventoryLogSerializer(serializers.ModelSerializer):
+class ChemicalInventoryLogSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+    list_fields = [
+        'id', 'chemical_name', 'chemical_type',
+        'inventory_date', 'stock_on_hand', 'unit_of_measure',
+    ]
+
     chemical_type_display = serializers.CharField(
         source='get_chemical_type_display', read_only=True
     )
@@ -1482,20 +1343,19 @@ class ChemicalInventoryLogSerializer(serializers.ModelSerializer):
         read_only_fields = ['company']
 
 
-class ChemicalInventoryLogListSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ChemicalInventoryLog
-        fields = [
-            'id', 'chemical_name', 'chemical_type',
-            'inventory_date', 'stock_on_hand', 'unit_of_measure',
-        ]
+ChemicalInventoryLogListSerializer = ChemicalInventoryLogSerializer
 
 
 # =============================================================================
 # CAC DOC 34 — SANITATION MAINTENANCE
 # =============================================================================
 
-class SanitationMaintenanceLogSerializer(serializers.ModelSerializer):
+class SanitationMaintenanceLogSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+    list_fields = [
+        'id', 'farm_name', 'log_date', 'unit_identifier',
+        'condition_acceptable', 'repairs_needed',
+    ]
+
     farm_name = serializers.CharField(source='farm.name', read_only=True)
 
     class Meta:
@@ -1513,23 +1373,22 @@ class SanitationMaintenanceLogSerializer(serializers.ModelSerializer):
         read_only_fields = ['company']
 
 
-class SanitationMaintenanceLogListSerializer(serializers.ModelSerializer):
-    farm_name = serializers.CharField(source='farm.name', read_only=True)
-
-    class Meta:
-        model = SanitationMaintenanceLog
-        fields = [
-            'id', 'farm_name', 'log_date', 'unit_identifier',
-            'condition_acceptable', 'repairs_needed',
-        ]
+SanitationMaintenanceLogListSerializer = SanitationMaintenanceLogSerializer
 
 
 # =============================================================================
 # CAC FOOD SAFETY MANUAL — PDF & SIGNATURE SERIALIZERS
 # =============================================================================
 
-class CACDocumentSignatureSerializer(serializers.ModelSerializer):
+class CACDocumentSignatureSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     """Full serializer for CAC document signatures."""
+    list_fields = [
+        'id', 'doc_number', 'page_number',
+        'signer_role', 'signer_role_display',
+        'signer_name', 'signed', 'signed_at',
+        'season_year', 'signer_order',
+    ]
+
     signer_role_display = serializers.CharField(
         source='get_signer_role_display', read_only=True
     )
@@ -1553,20 +1412,7 @@ class CACDocumentSignatureSerializer(serializers.ModelSerializer):
         return None
 
 
-class CACDocumentSignatureListSerializer(serializers.ModelSerializer):
-    """Abbreviated serializer for signature list view."""
-    signer_role_display = serializers.CharField(
-        source='get_signer_role_display', read_only=True
-    )
-
-    class Meta:
-        model = CACDocumentSignature
-        fields = [
-            'id', 'doc_number', 'page_number',
-            'signer_role', 'signer_role_display',
-            'signer_name', 'signed', 'signed_at',
-            'season_year', 'signer_order',
-        ]
+CACDocumentSignatureListSerializer = CACDocumentSignatureSerializer
 
 
 class CACSignRequestSerializer(serializers.Serializer):

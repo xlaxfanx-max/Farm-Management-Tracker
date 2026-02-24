@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from .serializer_mixins import DynamicFieldsMixin
 from .models import (
     IrrigationZone, CropCoefficientProfile, CIMISDataCache,
     IrrigationRecommendation, SoilMoistureReading, IrrigationEvent,
@@ -74,8 +75,19 @@ class SoilMoistureReadingSerializer(serializers.ModelSerializer):
         return None
 
 
-class IrrigationRecommendationSerializer(serializers.ModelSerializer):
-    """Serializer for irrigation recommendations."""
+class IrrigationRecommendationSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+    """Serializer for irrigation recommendations.
+
+    On list action, returns only ``list_fields``.  Detail/create/update
+    actions return the full field set.
+    """
+
+    list_fields = [
+        'id', 'zone', 'zone_name',
+        'recommended_date', 'recommended_depth_inches', 'recommended_duration_hours',
+        'soil_moisture_depletion_pct', 'status', 'status_display',
+        'created_at',
+    ]
 
     zone_name = serializers.CharField(source='zone.name', read_only=True)
     field_name = serializers.CharField(source='zone.field.name', read_only=True)
@@ -103,24 +115,22 @@ class IrrigationRecommendationSerializer(serializers.ModelSerializer):
         return obj.calculation_details.get('satellite_adjustment')
 
 
-class IrrigationRecommendationListSerializer(serializers.ModelSerializer):
-    """Lightweight serializer for recommendation listings."""
-
-    zone_name = serializers.CharField(source='zone.name', read_only=True)
-    status_display = serializers.CharField(source='get_status_display', read_only=True)
-
-    class Meta:
-        model = IrrigationRecommendation
-        fields = [
-            'id', 'zone', 'zone_name',
-            'recommended_date', 'recommended_depth_inches', 'recommended_duration_hours',
-            'soil_moisture_depletion_pct', 'status', 'status_display',
-            'created_at',
-        ]
+# Backward-compatible alias
+IrrigationRecommendationListSerializer = IrrigationRecommendationSerializer
 
 
-class IrrigationZoneSerializer(serializers.ModelSerializer):
-    """Full serializer for irrigation zones."""
+class IrrigationZoneSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+    """Serializer for irrigation zones.
+
+    On list action, returns only ``list_fields``.  Detail/create/update
+    actions return the full field set.
+    """
+
+    list_fields = [
+        'id', 'name', 'field', 'field_name', 'farm_name',
+        'acres', 'crop_type', 'irrigation_method',
+        'cimis_target', 'active',
+    ]
 
     # Related object names
     field_name = serializers.CharField(source='field.name', read_only=True)
@@ -165,19 +175,8 @@ class IrrigationZoneSerializer(serializers.ModelSerializer):
         return float(capacity * (mad_pct / 100))
 
 
-class IrrigationZoneListSerializer(serializers.ModelSerializer):
-    """Lightweight serializer for zone listings."""
-
-    field_name = serializers.CharField(source='field.name', read_only=True)
-    farm_name = serializers.CharField(source='field.farm.name', read_only=True)
-
-    class Meta:
-        model = IrrigationZone
-        fields = [
-            'id', 'name', 'field', 'field_name', 'farm_name',
-            'acres', 'crop_type', 'irrigation_method',
-            'cimis_target', 'active',
-        ]
+# Backward-compatible alias
+IrrigationZoneListSerializer = IrrigationZoneSerializer
 
 
 class IrrigationZoneEventSerializer(serializers.ModelSerializer):

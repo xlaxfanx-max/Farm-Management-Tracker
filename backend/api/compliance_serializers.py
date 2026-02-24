@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from .serializer_mixins import DynamicFieldsMixin
 from .models import (
     ComplianceProfile, ComplianceDeadline, ComplianceAlert,
     License, WPSTrainingRecord, CentralPostingLocation, REIPostingRecord,
@@ -36,8 +37,14 @@ class ComplianceProfileSerializer(serializers.ModelSerializer):
 # COMPLIANCE DEADLINE SERIALIZERS
 # -----------------------------------------------------------------------------
 
-class ComplianceDeadlineSerializer(serializers.ModelSerializer):
-    """Full serializer for compliance deadlines."""
+class ComplianceDeadlineSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+    """Serializer for compliance deadlines (dynamic list/detail)."""
+    list_fields = [
+        'id', 'name', 'category', 'category_display',
+        'regulation', 'due_date', 'status', 'status_display',
+        'days_until_due', 'is_overdue', 'action_url',
+    ]
+
     category_display = serializers.CharField(source='get_category_display', read_only=True)
     status_display = serializers.CharField(source='get_status_display', read_only=True)
     frequency_display = serializers.CharField(source='get_frequency_display', read_only=True)
@@ -65,20 +72,8 @@ class ComplianceDeadlineSerializer(serializers.ModelSerializer):
         read_only_fields = ['company', 'completed_at', 'completed_by', 'auto_generated', 'created_at', 'updated_at']
 
 
-class ComplianceDeadlineListSerializer(serializers.ModelSerializer):
-    """Lightweight serializer for deadline lists."""
-    category_display = serializers.CharField(source='get_category_display', read_only=True)
-    status_display = serializers.CharField(source='get_status_display', read_only=True)
-    days_until_due = serializers.IntegerField(read_only=True)
-    is_overdue = serializers.BooleanField(read_only=True)
-
-    class Meta:
-        model = ComplianceDeadline
-        fields = [
-            'id', 'name', 'category', 'category_display',
-            'regulation', 'due_date', 'status', 'status_display',
-            'days_until_due', 'is_overdue', 'action_url',
-        ]
+# Backward-compatible alias for manual serialization in dashboard/actions
+ComplianceDeadlineListSerializer = ComplianceDeadlineSerializer
 
 
 class ComplianceDeadlineCompleteSerializer(serializers.Serializer):
@@ -90,8 +85,15 @@ class ComplianceDeadlineCompleteSerializer(serializers.Serializer):
 # COMPLIANCE ALERT SERIALIZERS
 # -----------------------------------------------------------------------------
 
-class ComplianceAlertSerializer(serializers.ModelSerializer):
-    """Full serializer for compliance alerts."""
+class ComplianceAlertSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+    """Serializer for compliance alerts (dynamic list/detail)."""
+    list_fields = [
+        'id', 'alert_type', 'alert_type_display',
+        'priority', 'priority_display', 'title', 'message',
+        'is_acknowledged', 'action_url', 'action_label',
+        'created_at',
+    ]
+
     alert_type_display = serializers.CharField(source='get_alert_type_display', read_only=True)
     priority_display = serializers.CharField(source='get_priority_display', read_only=True)
     acknowledged_by_name = serializers.CharField(source='acknowledged_by.get_full_name', read_only=True)
@@ -110,27 +112,22 @@ class ComplianceAlertSerializer(serializers.ModelSerializer):
         read_only_fields = ['company', 'acknowledged_by', 'acknowledged_at', 'created_at', 'updated_at']
 
 
-class ComplianceAlertListSerializer(serializers.ModelSerializer):
-    """Lightweight serializer for alert lists."""
-    alert_type_display = serializers.CharField(source='get_alert_type_display', read_only=True)
-    priority_display = serializers.CharField(source='get_priority_display', read_only=True)
-
-    class Meta:
-        model = ComplianceAlert
-        fields = [
-            'id', 'alert_type', 'alert_type_display',
-            'priority', 'priority_display', 'title', 'message',
-            'is_acknowledged', 'action_url', 'action_label',
-            'created_at',
-        ]
+ComplianceAlertListSerializer = ComplianceAlertSerializer
 
 
 # -----------------------------------------------------------------------------
 # LICENSE SERIALIZERS
 # -----------------------------------------------------------------------------
 
-class LicenseSerializer(serializers.ModelSerializer):
-    """Full serializer for licenses."""
+class LicenseSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+    """Serializer for licenses (dynamic list/detail)."""
+    list_fields = [
+        'id', 'license_type', 'license_type_display',
+        'license_number', 'holder_name',
+        'expiration_date', 'status', 'status_display',
+        'days_until_expiration',
+    ]
+
     license_type_display = serializers.CharField(source='get_license_type_display', read_only=True)
     status_display = serializers.CharField(source='get_status_display', read_only=True)
     holder_name = serializers.CharField(read_only=True)
@@ -158,29 +155,21 @@ class LicenseSerializer(serializers.ModelSerializer):
         read_only_fields = ['company', 'status', 'created_at', 'updated_at']
 
 
-class LicenseListSerializer(serializers.ModelSerializer):
-    """Lightweight serializer for license lists."""
-    license_type_display = serializers.CharField(source='get_license_type_display', read_only=True)
-    status_display = serializers.CharField(source='get_status_display', read_only=True)
-    holder_name = serializers.CharField(read_only=True)
-    days_until_expiration = serializers.IntegerField(read_only=True)
-
-    class Meta:
-        model = License
-        fields = [
-            'id', 'license_type', 'license_type_display',
-            'license_number', 'holder_name',
-            'expiration_date', 'status', 'status_display',
-            'days_until_expiration',
-        ]
+LicenseListSerializer = LicenseSerializer
 
 
 # -----------------------------------------------------------------------------
 # WPS TRAINING SERIALIZERS
 # -----------------------------------------------------------------------------
 
-class WPSTrainingRecordSerializer(serializers.ModelSerializer):
-    """Full serializer for WPS training records."""
+class WPSTrainingRecordSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+    """Serializer for WPS training records (dynamic list/detail)."""
+    list_fields = [
+        'id', 'trainee_name', 'training_type', 'training_type_display',
+        'training_date', 'expiration_date',
+        'status', 'days_until_expiration', 'verified',
+    ]
+
     training_type_display = serializers.CharField(source='get_training_type_display', read_only=True)
     is_valid = serializers.BooleanField(read_only=True)
     days_until_expiration = serializers.IntegerField(read_only=True)
@@ -218,19 +207,7 @@ class WPSTrainingRecordSerializer(serializers.ModelSerializer):
         return data
 
 
-class WPSTrainingRecordListSerializer(serializers.ModelSerializer):
-    """Lightweight serializer for training lists."""
-    training_type_display = serializers.CharField(source='get_training_type_display', read_only=True)
-    status = serializers.CharField(read_only=True)
-    days_until_expiration = serializers.IntegerField(read_only=True)
-
-    class Meta:
-        model = WPSTrainingRecord
-        fields = [
-            'id', 'trainee_name', 'training_type', 'training_type_display',
-            'training_date', 'expiration_date',
-            'status', 'days_until_expiration', 'verified',
-        ]
+WPSTrainingRecordListSerializer = WPSTrainingRecordSerializer
 
 
 # -----------------------------------------------------------------------------
@@ -264,8 +241,14 @@ class CentralPostingLocationSerializer(serializers.ModelSerializer):
 # REI POSTING SERIALIZERS
 # -----------------------------------------------------------------------------
 
-class REIPostingRecordSerializer(serializers.ModelSerializer):
-    """Full serializer for REI posting records."""
+class REIPostingRecordSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+    """Serializer for REI posting records (dynamic list/detail)."""
+    list_fields = [
+        'id', 'field_name', 'product_name',
+        'rei_hours', 'rei_end_datetime', 'is_active',
+        'posted_at', 'posting_compliant',
+    ]
+
     application_date = serializers.DateField(source='application.application_date', read_only=True)
     field_name = serializers.CharField(source='application.field.name', read_only=True)
     product_name = serializers.CharField(source='application.product.product_name', read_only=True)
@@ -295,27 +278,22 @@ class REIPostingRecordSerializer(serializers.ModelSerializer):
         ]
 
 
-class REIPostingRecordListSerializer(serializers.ModelSerializer):
-    """Lightweight serializer for REI posting lists."""
-    field_name = serializers.CharField(source='application.field.name', read_only=True)
-    product_name = serializers.CharField(source='application.product.product_name', read_only=True)
-    is_active = serializers.BooleanField(read_only=True)
-
-    class Meta:
-        model = REIPostingRecord
-        fields = [
-            'id', 'field_name', 'product_name',
-            'rei_hours', 'rei_end_datetime', 'is_active',
-            'posted_at', 'posting_compliant',
-        ]
+REIPostingRecordListSerializer = REIPostingRecordSerializer
 
 
 # -----------------------------------------------------------------------------
 # COMPLIANCE REPORT SERIALIZERS
 # -----------------------------------------------------------------------------
 
-class ComplianceReportSerializer(serializers.ModelSerializer):
-    """Full serializer for compliance reports."""
+class ComplianceReportSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+    """Serializer for compliance reports (dynamic list/detail)."""
+    list_fields = [
+        'id', 'report_type', 'report_type_display', 'title',
+        'reporting_period_start', 'reporting_period_end', 'period_display',
+        'status', 'status_display', 'record_count', 'is_valid',
+        'submitted_at', 'created_at',
+    ]
+
     report_type_display = serializers.CharField(source='get_report_type_display', read_only=True)
     status_display = serializers.CharField(source='get_status_display', read_only=True)
     period_display = serializers.CharField(read_only=True)
@@ -346,28 +324,21 @@ class ComplianceReportSerializer(serializers.ModelSerializer):
         ]
 
 
-class ComplianceReportListSerializer(serializers.ModelSerializer):
-    """Lightweight serializer for report lists."""
-    report_type_display = serializers.CharField(source='get_report_type_display', read_only=True)
-    status_display = serializers.CharField(source='get_status_display', read_only=True)
-    period_display = serializers.CharField(read_only=True)
-
-    class Meta:
-        model = ComplianceReport
-        fields = [
-            'id', 'report_type', 'report_type_display', 'title',
-            'reporting_period_start', 'reporting_period_end', 'period_display',
-            'status', 'status_display', 'record_count', 'is_valid',
-            'submitted_at', 'created_at',
-        ]
+ComplianceReportListSerializer = ComplianceReportSerializer
 
 
 # -----------------------------------------------------------------------------
 # INCIDENT REPORT SERIALIZERS
 # -----------------------------------------------------------------------------
 
-class IncidentReportSerializer(serializers.ModelSerializer):
-    """Full serializer for incident reports."""
+class IncidentReportSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+    """Serializer for incident reports (dynamic list/detail)."""
+    list_fields = [
+        'id', 'incident_type', 'incident_type_display',
+        'severity', 'severity_display',
+        'incident_date', 'title', 'status', 'status_display',
+    ]
+
     incident_type_display = serializers.CharField(source='get_incident_type_display', read_only=True)
     severity_display = serializers.CharField(source='get_severity_display', read_only=True)
     status_display = serializers.CharField(source='get_status_display', read_only=True)
@@ -405,19 +376,7 @@ class IncidentReportSerializer(serializers.ModelSerializer):
         read_only_fields = ['company', 'reported_by', 'reported_date', 'created_at', 'updated_at']
 
 
-class IncidentReportListSerializer(serializers.ModelSerializer):
-    """Lightweight serializer for incident lists."""
-    incident_type_display = serializers.CharField(source='get_incident_type_display', read_only=True)
-    severity_display = serializers.CharField(source='get_severity_display', read_only=True)
-    status_display = serializers.CharField(source='get_status_display', read_only=True)
-
-    class Meta:
-        model = IncidentReport
-        fields = [
-            'id', 'incident_type', 'incident_type_display',
-            'severity', 'severity_display',
-            'incident_date', 'title', 'status', 'status_display',
-        ]
+IncidentReportListSerializer = IncidentReportSerializer
 
 
 # -----------------------------------------------------------------------------
@@ -470,14 +429,14 @@ class ComplianceDashboardSerializer(serializers.Serializer):
     summary = serializers.DictField(child=serializers.IntegerField())
     by_category = serializers.DictField()
 
-    upcoming_deadlines = ComplianceDeadlineListSerializer(many=True)
-    active_alerts = ComplianceAlertListSerializer(many=True)
-    expiring_licenses = LicenseListSerializer(many=True)
-    expiring_training = WPSTrainingRecordListSerializer(many=True)
+    upcoming_deadlines = ComplianceDeadlineSerializer(many=True)
+    active_alerts = ComplianceAlertSerializer(many=True)
+    expiring_licenses = LicenseSerializer(many=True)
+    expiring_training = WPSTrainingRecordSerializer(many=True)
 
 
 class ComplianceCalendarSerializer(serializers.Serializer):
     """Serializer for calendar view data."""
     date = serializers.DateField()
-    deadlines = ComplianceDeadlineListSerializer(many=True)
-    reports_due = ComplianceReportListSerializer(many=True)
+    deadlines = ComplianceDeadlineSerializer(many=True)
+    reports_due = ComplianceReportSerializer(many=True)

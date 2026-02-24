@@ -26,13 +26,10 @@ from .models import (
 )
 
 from .audit_binder_serializers import (
-    CACBinderTemplateListSerializer,
-    CACBinderTemplateDetailSerializer,
-    AuditBinderInstanceListSerializer,
-    AuditBinderInstanceDetailSerializer,
+    CACBinderTemplateSerializer,
+    AuditBinderInstanceSerializer,
     CreateAuditBinderSerializer,
-    BinderSectionListSerializer,
-    BinderSectionDetailSerializer,
+    BinderSectionSerializer,
     BinderSupportingDocumentSerializer,
 )
 
@@ -49,10 +46,7 @@ class CACBinderTemplateViewSet(AuditLogMixin, viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated, HasCompanyAccess]
     parser_classes = [MultiPartParser, FormParser, JSONParser]
 
-    def get_serializer_class(self):
-        if self.action == 'list':
-            return CACBinderTemplateListSerializer
-        return CACBinderTemplateDetailSerializer
+    serializer_class = CACBinderTemplateSerializer
 
     def get_queryset(self):
         company = get_user_company(self.request.user)
@@ -92,10 +86,7 @@ class AuditBinderInstanceViewSet(AuditLogMixin, viewsets.ModelViewSet):
     ordering_fields = ['name', 'season_year', 'status', 'created_at']
     ordering = ['-created_at']
 
-    def get_serializer_class(self):
-        if self.action == 'list':
-            return AuditBinderInstanceListSerializer
-        return AuditBinderInstanceDetailSerializer
+    serializer_class = AuditBinderInstanceSerializer
 
     def get_queryset(self):
         company = get_user_company(self.request.user)
@@ -232,10 +223,7 @@ class BinderSectionViewSet(AuditLogMixin, viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated, HasCompanyAccess]
     http_method_names = ['get', 'post', 'patch', 'head', 'options']  # No create/delete via standard CRUD
 
-    def get_serializer_class(self):
-        if self.action == 'list':
-            return BinderSectionListSerializer
-        return BinderSectionDetailSerializer
+    serializer_class = BinderSectionSerializer
 
     def get_queryset(self):
         company = get_user_company(self.request.user)

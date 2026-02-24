@@ -24,8 +24,7 @@ from rest_framework.response import Response
 from .models import TreeSurvey, DetectedTree
 from .view_helpers import get_user_company
 from .tree_detection_serializers import (
-    TreeSurveyListSerializer,
-    TreeSurveyDetailSerializer,
+    TreeSurveySerializer,
     TreeSurveyUploadSerializer,
     DetectedTreeSerializer,
     DetectedTreeGeoJSONSerializer,
@@ -42,15 +41,12 @@ class TreeSurveyViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser, JSONParser]
 
-    # ------------------------------------------------------------------
-    # Serializer routing
-    # ------------------------------------------------------------------
+    serializer_class = TreeSurveySerializer
+
     def get_serializer_class(self):
-        if self.action == 'list':
-            return TreeSurveyListSerializer
         if self.action == 'create':
             return TreeSurveyUploadSerializer
-        return TreeSurveyDetailSerializer
+        return TreeSurveySerializer
 
     # ------------------------------------------------------------------
     # Queryset — company-scoped with select_related

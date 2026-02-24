@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from .serializer_mixins import DynamicFieldsMixin
 from .models import FertilizerProduct, NutrientApplication, NutrientPlan
 
 

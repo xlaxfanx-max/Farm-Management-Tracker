@@ -16,7 +16,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from .permissions import HasCompanyAccess
 from .audit_utils import AuditLogMixin
-from .view_helpers import get_user_company, require_company
+from .view_helpers import get_user_company, require_company, CompanyFilteredViewSet
 from .models import (
     Farm, Field, WaterSource, WellReading, MeterCalibration,
     WaterAllocation, ExtractionReport, IrrigationEvent,
@@ -626,48 +626,31 @@ class WellViewSet(AuditLogMixin, viewsets.ModelViewSet):
 # WELL READING VIEWSET
 # -----------------------------------------------------------------------------
 
-class WellReadingViewSet(AuditLogMixin, viewsets.ModelViewSet):
+class WellReadingViewSet(CompanyFilteredViewSet):
     """ViewSet for WellReading model."""
-
-    queryset = WellReading.objects.select_related(
-        'water_source', 'water_source__farm'
-    ).all()
-    permission_classes = [IsAuthenticated, HasCompanyAccess]
+    model = WellReading
+    serializer_class = WellReadingSerializer
+    company_field = 'water_source__farm__company'
+    select_related_fields = ('water_source', 'water_source__farm')
+    default_ordering = ('-id',)
 
     def get_serializer_class(self):
-        if self.action == 'list':
-            return WellReadingListSerializer
-        elif self.action in ['create', 'update', 'partial_update']:
+        if self.action in ['create', 'update', 'partial_update']:
             return WellReadingCreateSerializer
         return WellReadingSerializer
 
-    def get_queryset(self):
-        """Filter by company and optional parameters."""
-        queryset = WellReading.objects.select_related(
-            'water_source', 'water_source__farm'
-        )
-
-        company = get_user_company(self.request.user)
-        if company:
-            queryset = queryset.filter(
-                water_source__farm__company=company
-            )
-
-        # Filter by water source (well)
+    def filter_queryset_by_params(self, qs):
         water_source_id = self.request.query_params.get('water_source') or self.request.query_params.get('well')
         if water_source_id:
-            queryset = queryset.filter(water_source_id=water_source_id)
+            qs = qs.filter(water_source_id=water_source_id)
 
-        # Filter by date range
         start_date = self.request.query_params.get('start_date')
         end_date = self.request.query_params.get('end_date')
-
         if start_date:
-            queryset = queryset.filter(reading_date__gte=start_date)
+            qs = qs.filter(reading_date__gte=start_date)
         if end_date:
-            queryset = queryset.filter(reading_date__lte=end_date)
-
-        return queryset
+            qs = qs.filter(reading_date__lte=end_date)
+        return qs
 
     @action(detail=False, methods=['get'])
     def by_period(self, request):
@@ -706,35 +689,24 @@ class WellReadingViewSet(AuditLogMixin, viewsets.ModelViewSet):
 # METER CALIBRATION VIEWSET
 # -----------------------------------------------------------------------------
 
-class MeterCalibrationViewSet(AuditLogMixin, viewsets.ModelViewSet):
+class MeterCalibrationViewSet(CompanyFilteredViewSet):
     """ViewSet for MeterCalibration model."""
-
-    queryset = MeterCalibration.objects.select_related(
-        'water_source', 'water_source__farm'
-    ).all()
-    permission_classes = [IsAuthenticated, HasCompanyAccess]
+    model = MeterCalibration
+    serializer_class = MeterCalibrationSerializer
+    company_field = 'water_source__farm__company'
+    select_related_fields = ('water_source', 'water_source__farm')
+    default_ordering = ('-id',)
 
     def get_serializer_class(self):
         if self.action in ['create', 'update', 'partial_update']:
             return MeterCalibrationCreateSerializer
         return MeterCalibrationSerializer
 
-    def get_queryset(self):
-        queryset = MeterCalibration.objects.select_related(
-            'water_source', 'water_source__farm'
-        )
-
-        company = get_user_company(self.request.user)
-        if company:
-            queryset = queryset.filter(
-                water_source__farm__company=company
-            )
-
+    def filter_queryset_by_params(self, qs):
         well_id = self.request.query_params.get('well')
         if well_id:
-            queryset = queryset.filter(water_source_id=well_id)
-
-        return queryset
+            qs = qs.filter(water_source_id=well_id)
+        return qs
 
     @action(detail=False, methods=['get'])
     def expiring(self, request):
@@ -755,33 +727,23 @@ class MeterCalibrationViewSet(AuditLogMixin, viewsets.ModelViewSet):
 # WATER ALLOCATION VIEWSET
 # -----------------------------------------------------------------------------
 
-class WaterAllocationViewSet(AuditLogMixin, viewsets.ModelViewSet):
+class WaterAllocationViewSet(CompanyFilteredViewSet):
     """ViewSet for WaterAllocation model."""
-
-    queryset = WaterAllocation.objects.select_related(
-        'well', 'water_source', 'water_source__farm'
-    ).all()
+    model = WaterAllocation
     serializer_class = WaterAllocationSerializer
-    permission_classes = [IsAuthenticated, HasCompanyAccess]
+    company_field = 'water_source__farm__company'
+    select_related_fields = ('water_source', 'water_source__farm')
+    default_ordering = ('-id',)
 
-    def get_queryset(self):
-        queryset = super().get_queryset()
-
-        user = self.request.user
-        if hasattr(user, 'current_company') and user.current_company:
-            queryset = queryset.filter(
-                water_source__farm__company=user.current_company
-            )
-
+    def filter_queryset_by_params(self, qs):
         well_id = self.request.query_params.get('well')
         if well_id:
-            queryset = queryset.filter(water_source_id=well_id)
+            qs = qs.filter(water_source_id=well_id)
 
         water_year = self.request.query_params.get('water_year')
         if water_year:
-            queryset = queryset.filter(water_year=water_year)
-
-        return queryset
+            qs = qs.filter(water_year=water_year)
+        return qs
 
     @action(detail=False, methods=['get'])
     def summary(self, request):
@@ -832,43 +794,32 @@ class WaterAllocationViewSet(AuditLogMixin, viewsets.ModelViewSet):
 # EXTRACTION REPORT VIEWSET
 # -----------------------------------------------------------------------------
 
-class ExtractionReportViewSet(AuditLogMixin, viewsets.ModelViewSet):
+class ExtractionReportViewSet(CompanyFilteredViewSet):
     """ViewSet for ExtractionReport model."""
-
-    queryset = ExtractionReport.objects.select_related(
-        'well', 'water_source', 'water_source__farm'
-    ).all()
-    permission_classes = [IsAuthenticated, HasCompanyAccess]
+    model = ExtractionReport
+    serializer_class = ExtractionReportSerializer
+    company_field = 'water_source__farm__company'
+    select_related_fields = ('water_source', 'water_source__farm')
+    default_ordering = ('-id',)
 
     def get_serializer_class(self):
-        if self.action == 'list':
-            return ExtractionReportListSerializer
-        elif self.action in ['create', 'update', 'partial_update']:
+        if self.action in ['create', 'update', 'partial_update']:
             return ExtractionReportCreateSerializer
         return ExtractionReportSerializer
 
-    def get_queryset(self):
-        queryset = super().get_queryset()
-
-        user = self.request.user
-        if hasattr(user, 'current_company') and user.current_company:
-            queryset = queryset.filter(
-                water_source__farm__company=user.current_company
-            )
-
+    def filter_queryset_by_params(self, qs):
         well_id = self.request.query_params.get('well')
         if well_id:
-            queryset = queryset.filter(water_source_id=well_id)
+            qs = qs.filter(water_source_id=well_id)
 
         status_filter = self.request.query_params.get('status')
         if status_filter:
-            queryset = queryset.filter(status=status_filter)
+            qs = qs.filter(status=status_filter)
 
         gsa = self.request.query_params.get('gsa')
         if gsa:
-            queryset = queryset.filter(well__gsa=gsa)
-
-        return queryset
+            qs = qs.filter(well__gsa=gsa)
+        return qs
 
     @action(detail=False, methods=['post'])
     def generate(self, request):
@@ -992,47 +943,35 @@ class ExtractionReportViewSet(AuditLogMixin, viewsets.ModelViewSet):
 # IRRIGATION EVENT VIEWSET (SGMA context)
 # -----------------------------------------------------------------------------
 
-class SGMAIrrigationEventViewSet(AuditLogMixin, viewsets.ModelViewSet):
+class SGMAIrrigationEventViewSet(CompanyFilteredViewSet):
     """ViewSet for IrrigationEvent model (SGMA context)."""
-
-    queryset = IrrigationEvent.objects.select_related(
-        'field', 'field__farm', 'well', 'water_source'
-    ).all()
-    permission_classes = [IsAuthenticated, HasCompanyAccess]
+    model = IrrigationEvent
+    serializer_class = IrrigationEventSerializer
+    company_field = 'field__farm__company'
+    select_related_fields = ('field', 'field__farm', 'water_source')
+    default_ordering = ('-id',)
 
     def get_serializer_class(self):
-        if self.action == 'list':
-            return IrrigationEventListSerializer
-        elif self.action in ['create', 'update', 'partial_update']:
+        if self.action in ['create', 'update', 'partial_update']:
             return IrrigationEventCreateSerializer
         return IrrigationEventSerializer
 
-    def get_queryset(self):
-        queryset = super().get_queryset()
-
-        user = self.request.user
-        if hasattr(user, 'current_company') and user.current_company:
-            queryset = queryset.filter(
-                field__farm__company=user.current_company
-            )
-
+    def filter_queryset_by_params(self, qs):
         field_id = self.request.query_params.get('field')
         if field_id:
-            queryset = queryset.filter(field_id=field_id)
+            qs = qs.filter(field_id=field_id)
 
         well_id = self.request.query_params.get('well')
         if well_id:
-            queryset = queryset.filter(water_source_id=well_id)
+            qs = qs.filter(water_source_id=well_id)
 
         start_date = self.request.query_params.get('start_date')
         end_date = self.request.query_params.get('end_date')
-
         if start_date:
-            queryset = queryset.filter(irrigation_date__gte=start_date)
+            qs = qs.filter(irrigation_date__gte=start_date)
         if end_date:
-            queryset = queryset.filter(irrigation_date__lte=end_date)
-
-        return queryset
+            qs = qs.filter(irrigation_date__lte=end_date)
+        return qs
 
     @action(detail=False, methods=['get'])
     def by_field(self, request):

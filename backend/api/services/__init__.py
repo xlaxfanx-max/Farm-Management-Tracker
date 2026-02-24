@@ -4,6 +4,7 @@ from .irrigation_scheduler import IrrigationScheduler
 from .pdf_extraction_service import PDFExtractionService, ExtractionResult
 from .statement_matcher import StatementMatcher, MatchResult
 from .packinghouse_lookup import PackinghouseLookupService, PackinghouseLookupResult
+from .settlement_service import finalize_settlement
 
 # Import compliance services
 from .compliance import (
@@ -41,6 +42,7 @@ __all__ = [
     'MatchResult',
     'PackinghouseLookupService',
     'PackinghouseLookupResult',
+    'finalize_settlement',
 
     # Compliance services
     'PesticideComplianceService',

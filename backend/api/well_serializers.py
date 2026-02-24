@@ -3,19 +3,26 @@ from .models import (
     WellReading, MeterCalibration, WaterAllocation,
     ExtractionReport, IrrigationEvent,
 )
+from .serializer_mixins import DynamicFieldsMixin
 
 
 # -----------------------------------------------------------------------------
 # WELL READING SERIALIZERS (Now reference WaterSource instead of Well)
 # -----------------------------------------------------------------------------
 
-class WellReadingSerializer(serializers.ModelSerializer):
+class WellReadingSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     """Full serializer for WellReading model."""
 
     water_source_name = serializers.CharField(source='water_source.name', read_only=True)
     farm_name = serializers.CharField(source='water_source.farm.name', read_only=True)
     flowmeter_units = serializers.CharField(source='water_source.flowmeter_units', read_only=True)
     reading_type_display = serializers.CharField(source='get_reading_type_display', read_only=True)
+
+    list_fields = [
+        'id', 'water_source', 'water_source_name', 'reading_date', 'reading_time',
+        'meter_reading', 'extraction_acre_feet', 'extraction_gallons',
+        'reading_type', 'reading_type_display', 'recorded_by'
+    ]
 
     class Meta:
         model = WellReading
@@ -27,6 +34,10 @@ class WellReadingSerializer(serializers.ModelSerializer):
             'irrigation_extraction_af', 'base_fee', 'gsp_fee', 'domestic_fee',
             'fixed_fee', 'total_fee'
         ]
+
+
+# Alias for backward compatibility
+WellReadingListSerializer = WellReadingSerializer
 
 
 class WellReadingCreateSerializer(serializers.ModelSerializer):
@@ -70,21 +81,6 @@ class WellReadingCreateSerializer(serializers.ModelSerializer):
                     })
 
         return data
-
-
-class WellReadingListSerializer(serializers.ModelSerializer):
-    """Lightweight serializer for reading listings."""
-
-    water_source_name = serializers.CharField(source='water_source.name', read_only=True)
-    reading_type_display = serializers.CharField(source='get_reading_type_display', read_only=True)
-
-    class Meta:
-        model = WellReading
-        fields = [
-            'id', 'water_source', 'water_source_name', 'reading_date', 'reading_time',
-            'meter_reading', 'extraction_acre_feet', 'extraction_gallons',
-            'reading_type', 'reading_type_display', 'recorded_by'
-        ]
 
 
 # -----------------------------------------------------------------------------
@@ -171,7 +167,7 @@ class WaterAllocationSummarySerializer(serializers.Serializer):
 # EXTRACTION REPORT SERIALIZERS (Now reference WaterSource)
 # -----------------------------------------------------------------------------
 
-class ExtractionReportSerializer(serializers.ModelSerializer):
+class ExtractionReportSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     """Full serializer for ExtractionReport model."""
 
     water_source_name = serializers.CharField(source='water_source.name', read_only=True)
@@ -184,9 +180,21 @@ class ExtractionReportSerializer(serializers.ModelSerializer):
         source='get_payment_status_display', read_only=True
     )
 
+    list_fields = [
+        'id', 'water_source', 'water_source_name', 'gsa_display', 'reporting_period',
+        'period_type', 'period_start_date', 'period_end_date',
+        'total_extraction_af', 'period_allocation_af', 'over_allocation',
+        'total_fees_due', 'status', 'status_display',
+        'payment_status', 'payment_status_display', 'payment_due_date'
+    ]
+
     class Meta:
         model = ExtractionReport
         fields = '__all__'
+
+
+# Alias for backward compatibility
+ExtractionReportListSerializer = ExtractionReportSerializer
 
 
 class ExtractionReportCreateSerializer(serializers.ModelSerializer):
@@ -223,32 +231,11 @@ class ExtractionReportCreateSerializer(serializers.ModelSerializer):
         return data
 
 
-class ExtractionReportListSerializer(serializers.ModelSerializer):
-    """Lightweight serializer for report listings."""
-
-    water_source_name = serializers.CharField(source='water_source.name', read_only=True)
-    gsa_display = serializers.CharField(source='water_source.get_gsa_display', read_only=True)
-    status_display = serializers.CharField(source='get_status_display', read_only=True)
-    payment_status_display = serializers.CharField(
-        source='get_payment_status_display', read_only=True
-    )
-
-    class Meta:
-        model = ExtractionReport
-        fields = [
-            'id', 'water_source', 'water_source_name', 'gsa_display', 'reporting_period',
-            'period_type', 'period_start_date', 'period_end_date',
-            'total_extraction_af', 'period_allocation_af', 'over_allocation',
-            'total_fees_due', 'status', 'status_display',
-            'payment_status', 'payment_status_display', 'payment_due_date'
-        ]
-
-
 # -----------------------------------------------------------------------------
 # IRRIGATION EVENT SERIALIZERS (Now only reference WaterSource)
 # -----------------------------------------------------------------------------
 
-class IrrigationEventSerializer(serializers.ModelSerializer):
+class IrrigationEventSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     """Full serializer for IrrigationEvent model."""
 
     field_name = serializers.CharField(source='field.name', read_only=True)
@@ -261,10 +248,21 @@ class IrrigationEventSerializer(serializers.ModelSerializer):
         source='get_measurement_method_display', read_only=True
     )
 
+    list_fields = [
+        'id', 'field', 'field_name', 'water_source', 'water_source_name',
+        'irrigation_date', 'duration_hours', 'water_applied_af',
+        'water_applied_gallons', 'irrigation_method', 'irrigation_method_display',
+        'acres_irrigated', 'acre_inches'
+    ]
+
     class Meta:
         model = IrrigationEvent
         fields = '__all__'
         read_only_fields = ['duration_hours', 'acre_inches']
+
+
+# Alias for backward compatibility
+IrrigationEventListSerializer = IrrigationEventSerializer
 
 
 class IrrigationEventCreateSerializer(serializers.ModelSerializer):
@@ -281,25 +279,6 @@ class IrrigationEventCreateSerializer(serializers.ModelSerializer):
                 'water_source must be specified'
             )
         return data
-
-
-class IrrigationEventListSerializer(serializers.ModelSerializer):
-    """Lightweight serializer for irrigation event listings."""
-
-    field_name = serializers.CharField(source='field.name', read_only=True)
-    water_source_name = serializers.CharField(source='water_source.name', read_only=True)
-    irrigation_method_display = serializers.CharField(
-        source='get_irrigation_method_display', read_only=True
-    )
-
-    class Meta:
-        model = IrrigationEvent
-        fields = [
-            'id', 'field', 'field_name', 'water_source', 'water_source_name',
-            'irrigation_date', 'duration_hours', 'water_applied_af',
-            'water_applied_gallons', 'irrigation_method', 'irrigation_method_display',
-            'acres_irrigated', 'acre_inches'
-        ]
 
 
 # -----------------------------------------------------------------------------

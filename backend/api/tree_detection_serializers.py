@@ -10,6 +10,7 @@ import tempfile
 from rest_framework import serializers
 
 from .models import TreeSurvey, DetectedTree
+from .serializer_mixins import DynamicFieldsMixin
 from .view_helpers import get_user_company
 
 
@@ -17,27 +18,13 @@ from .view_helpers import get_user_company
 # TREE SURVEY SERIALIZERS
 # =============================================================================
 
-class TreeSurveyListSerializer(serializers.ModelSerializer):
-    """Lightweight serializer for survey list views."""
-    field_id = serializers.IntegerField(source='field.id', read_only=True)
-    field_name = serializers.CharField(source='field.name', read_only=True)
+class TreeSurveySerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+    """Unified serializer for TreeSurvey (list + detail)."""
+    list_fields = [
+        'id', 'field_id', 'field_name', 'capture_date',
+        'status', 'tree_count', 'avg_ndvi', 'created_at',
+    ]
 
-    class Meta:
-        model = TreeSurvey
-        fields = [
-            'id',
-            'field_id',
-            'field_name',
-            'capture_date',
-            'status',
-            'tree_count',
-            'avg_ndvi',
-            'created_at',
-        ]
-
-
-class TreeSurveyDetailSerializer(serializers.ModelSerializer):
-    """Full serializer for survey detail, including all model fields."""
     field_id = serializers.IntegerField(source='field.id', read_only=True)
     field_name = serializers.CharField(source='field.name', read_only=True)
     uploaded_by_username = serializers.SerializerMethodField()
@@ -94,6 +81,11 @@ class TreeSurveyDetailSerializer(serializers.ModelSerializer):
         if obj.uploaded_by:
             return obj.uploaded_by.get_full_name() or obj.uploaded_by.username
         return None
+
+
+# Backward-compatible aliases
+TreeSurveyListSerializer = TreeSurveySerializer
+TreeSurveyDetailSerializer = TreeSurveySerializer
 
 
 class TreeSurveyUploadSerializer(serializers.ModelSerializer):

@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from .serializer_mixins import DynamicFieldsMixin
 from .models import (
     Buyer, LaborContractor, Harvest, HarvestLoad, HarvestLabor,
     CROP_VARIETY_CHOICES, DEFAULT_BIN_WEIGHTS,
@@ -9,7 +10,9 @@ from .models import (
 # BUYER SERIALIZER
 # -----------------------------------------------------------------------------
 
-class BuyerSerializer(serializers.ModelSerializer):
+class BuyerSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+    list_fields = ['id', 'name', 'buyer_type', 'buyer_type_display', 'active']
+
     buyer_type_display = serializers.CharField(
         source='get_buyer_type_display',
         read_only=True
@@ -32,23 +35,21 @@ class BuyerSerializer(serializers.ModelSerializer):
         return ', '.join(p for p in parts if p)
 
 
-class BuyerListSerializer(serializers.ModelSerializer):
-    """Simplified serializer for dropdowns."""
-    buyer_type_display = serializers.CharField(
-        source='get_buyer_type_display',
-        read_only=True
-    )
-
-    class Meta:
-        model = Buyer
-        fields = ['id', 'name', 'buyer_type', 'buyer_type_display', 'active']
+# Backward-compatible alias
+BuyerListSerializer = BuyerSerializer
 
 
 # -----------------------------------------------------------------------------
 # LABOR CONTRACTOR SERIALIZER
 # -----------------------------------------------------------------------------
 
-class LaborContractorSerializer(serializers.ModelSerializer):
+class LaborContractorSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+    list_fields = [
+        'id', 'company_name', 'contact_name',
+        'default_hourly_rate', 'default_piece_rate',
+        'is_license_valid', 'food_safety_training_current', 'active'
+    ]
+
     is_license_valid = serializers.BooleanField(read_only=True)
     is_insurance_valid = serializers.BooleanField(read_only=True)
     full_address = serializers.SerializerMethodField()
@@ -74,17 +75,8 @@ class LaborContractorSerializer(serializers.ModelSerializer):
         return ', '.join(p for p in parts if p)
 
 
-class LaborContractorListSerializer(serializers.ModelSerializer):
-    """Simplified serializer for dropdowns."""
-    is_license_valid = serializers.BooleanField(read_only=True)
-
-    class Meta:
-        model = LaborContractor
-        fields = [
-            'id', 'company_name', 'contact_name',
-            'default_hourly_rate', 'default_piece_rate',
-            'is_license_valid', 'food_safety_training_current', 'active'
-        ]
+# Backward-compatible alias
+LaborContractorListSerializer = LaborContractorSerializer
 
 
 # -----------------------------------------------------------------------------

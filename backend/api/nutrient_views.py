@@ -16,7 +16,7 @@ from rest_framework.permissions import IsAuthenticated
 from openpyxl import Workbook
 from .permissions import HasCompanyAccess
 from .audit_utils import AuditLogMixin
-from .view_helpers import get_user_company, require_company
+from .view_helpers import get_user_company, require_company, CompanyFilteredViewSet
 from .models import Farm, Field, FertilizerProduct, NutrientApplication, NutrientPlan
 from .serializers import (
     FertilizerProductSerializer, FertilizerProductListSerializer,
@@ -80,43 +80,36 @@ class FertilizerProductViewSet(AuditLogMixin, viewsets.ModelViewSet):
         return Response({'created': created, 'existing': existing})
 
 
-class NutrientApplicationViewSet(AuditLogMixin, viewsets.ModelViewSet):
+class NutrientApplicationViewSet(CompanyFilteredViewSet):
     """API endpoint for nutrient applications."""
-    permission_classes = [IsAuthenticated, HasCompanyAccess]
+    model = NutrientApplication
+    serializer_class = NutrientApplicationSerializer
+    company_field = 'field__farm__company'
+    select_related_fields = ('field', 'field__farm', 'product', 'water_source')
+    default_ordering = ('-application_date', '-created_at')
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['product__name', 'field__name', 'notes']
     ordering_fields = ['application_date', 'created_at', 'total_lbs_nitrogen']
     ordering = ['-application_date', '-created_at']
-
-    def get_queryset(self):
-        user = self.request.user
-        company = getattr(user, 'current_company', None)
-        queryset = NutrientApplication.objects.select_related('field', 'field__farm', 'product', 'water_source')
-
-        if company:
-            queryset = queryset.filter(field__farm__company=company)
-
-        field_id = self.request.query_params.get('field')
-        if field_id:
-            queryset = queryset.filter(field_id=field_id)
-
-        farm_id = self.request.query_params.get('farm')
-        if farm_id:
-            queryset = queryset.filter(field__farm_id=farm_id)
-
-        year = self.request.query_params.get('year')
-        if year:
-            queryset = queryset.filter(application_date__year=year)
-
-        return queryset
 
     def get_serializer_class(self):
         if self.action == 'list':
             return NutrientApplicationListSerializer
         return NutrientApplicationSerializer
 
-    def perform_create(self, serializer):
-        serializer.save(created_by=self.request.user)
+    def filter_queryset_by_params(self, qs):
+        field_id = self.request.query_params.get('field')
+        if field_id:
+            qs = qs.filter(field_id=field_id)
+
+        farm_id = self.request.query_params.get('farm')
+        if farm_id:
+            qs = qs.filter(field__farm_id=farm_id)
+
+        year = self.request.query_params.get('year')
+        if year:
+            qs = qs.filter(application_date__year=year)
+        return qs
 
     @action(detail=False, methods=['get'])
     def by_field(self, request):
@@ -148,31 +141,27 @@ class NutrientApplicationViewSet(AuditLogMixin, viewsets.ModelViewSet):
         return Response(results)
 
 
-class NutrientPlanViewSet(AuditLogMixin, viewsets.ModelViewSet):
+class NutrientPlanViewSet(CompanyFilteredViewSet):
     """API endpoint for nitrogen management plans."""
-    permission_classes = [IsAuthenticated, HasCompanyAccess]
+    model = NutrientPlan
+    serializer_class = NutrientPlanSerializer
+    company_field = 'field__farm__company'
+    select_related_fields = ('field', 'field__farm')
+    default_ordering = ('-year', 'field__name')
     filter_backends = [filters.OrderingFilter]
     ordering_fields = ['year', 'field__name']
     ordering = ['-year', 'field__name']
-
-    def get_queryset(self):
-        user = self.request.user
-        company = getattr(user, 'current_company', None)
-        queryset = NutrientPlan.objects.select_related('field', 'field__farm')
-
-        if company:
-            queryset = queryset.filter(field__farm__company=company)
-
-        year = self.request.query_params.get('year')
-        if year:
-            queryset = queryset.filter(year=year)
-
-        return queryset
 
     def get_serializer_class(self):
         if self.action == 'list':
             return NutrientPlanListSerializer
         return NutrientPlanSerializer
+
+    def filter_queryset_by_params(self, qs):
+        year = self.request.query_params.get('year')
+        if year:
+            qs = qs.filter(year=year)
+        return qs
 
 
 @api_view(['GET'])

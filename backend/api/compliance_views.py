@@ -38,20 +38,20 @@ from .models import (
 
 from .serializers import (
     ComplianceProfileSerializer,
-    ComplianceDeadlineSerializer, ComplianceDeadlineListSerializer, ComplianceDeadlineCompleteSerializer,
-    ComplianceAlertSerializer, ComplianceAlertListSerializer,
-    LicenseSerializer, LicenseListSerializer,
-    WPSTrainingRecordSerializer, WPSTrainingRecordListSerializer,
+    ComplianceDeadlineSerializer, ComplianceDeadlineCompleteSerializer,
+    ComplianceAlertSerializer,
+    LicenseSerializer,
+    WPSTrainingRecordSerializer,
     CentralPostingLocationSerializer,
-    REIPostingRecordSerializer, REIPostingRecordListSerializer,
-    ComplianceReportSerializer, ComplianceReportListSerializer,
-    IncidentReportSerializer, IncidentReportListSerializer,
+    REIPostingRecordSerializer,
+    ComplianceReportSerializer,
+    IncidentReportSerializer,
     NotificationPreferenceSerializer, NotificationLogSerializer,
     ComplianceDashboardSerializer,
 )
 
 
-from .view_helpers import get_user_company, require_company
+from .view_helpers import get_user_company, require_company, CompanyFilteredViewSet
 
 
 # =============================================================================
@@ -202,68 +202,36 @@ class ComplianceProfileViewSet(AuditLogMixin, viewsets.ModelViewSet):
 # COMPLIANCE DEADLINE VIEWSET
 # =============================================================================
 
-class ComplianceDeadlineViewSet(AuditLogMixin, viewsets.ModelViewSet):
+class ComplianceDeadlineViewSet(CompanyFilteredViewSet):
     """
     API endpoint for managing compliance deadlines.
 
     Supports filtering by status, category, date range, and regulation.
     """
-    permission_classes = [IsAuthenticated, HasCompanyAccess]
+    model = ComplianceDeadline
+    serializer_class = ComplianceDeadlineSerializer
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['name', 'description', 'regulation']
     ordering_fields = ['due_date', 'status', 'category', 'created_at']
-    ordering = ['due_date']
+    default_ordering = ('due_date',)
 
-    def get_serializer_class(self):
-        if self.action == 'list':
-            return ComplianceDeadlineListSerializer
-        return ComplianceDeadlineSerializer
-
-    def get_queryset(self):
-        company = get_user_company(self.request.user)
-        if not company:
-            return ComplianceDeadline.objects.none()
-
-        queryset = ComplianceDeadline.objects.filter(company=company)
-
-        # Filter by status
-        status_filter = self.request.query_params.get('status')
-        if status_filter:
-            queryset = queryset.filter(status=status_filter)
-
-        # Filter by category
-        category = self.request.query_params.get('category')
-        if category:
-            queryset = queryset.filter(category=category)
-
-        # Filter by regulation
-        regulation = self.request.query_params.get('regulation')
-        if regulation:
-            queryset = queryset.filter(regulation__icontains=regulation)
-
-        # Filter by date range
-        start_date = self.request.query_params.get('start_date')
-        end_date = self.request.query_params.get('end_date')
-        if start_date:
-            queryset = queryset.filter(due_date__gte=start_date)
-        if end_date:
-            queryset = queryset.filter(due_date__lte=end_date)
-
-        # Filter overdue only
-        overdue_only = self.request.query_params.get('overdue')
-        if overdue_only and overdue_only.lower() == 'true':
+    def filter_queryset_by_params(self, queryset):
+        params = self.request.query_params
+        if params.get('status'):
+            queryset = queryset.filter(status=params['status'])
+        if params.get('category'):
+            queryset = queryset.filter(category=params['category'])
+        if params.get('regulation'):
+            queryset = queryset.filter(regulation__icontains=params['regulation'])
+        if params.get('start_date'):
+            queryset = queryset.filter(due_date__gte=params['start_date'])
+        if params.get('end_date'):
+            queryset = queryset.filter(due_date__lte=params['end_date'])
+        if params.get('overdue', '').lower() == 'true':
             queryset = queryset.filter(status='overdue')
-
-        # Filter due soon only
-        due_soon = self.request.query_params.get('due_soon')
-        if due_soon and due_soon.lower() == 'true':
+        if params.get('due_soon', '').lower() == 'true':
             queryset = queryset.filter(status='due_soon')
-
         return queryset
-
-    def perform_create(self, serializer):
-        company = require_company(self.request.user)
-        serializer.save(company=company)
 
     @action(detail=True, methods=['post'])
     def complete(self, request, pk=None):
@@ -307,7 +275,7 @@ class ComplianceDeadlineViewSet(AuditLogMixin, viewsets.ModelViewSet):
             status__in=['upcoming', 'due_soon']
         ).order_by('due_date')[:20]
 
-        serializer = ComplianceDeadlineListSerializer(deadlines, many=True)
+        serializer = ComplianceDeadlineSerializer(deadlines, many=True)
         return Response(serializer.data)
 
     @action(detail=False, methods=['get'])
@@ -320,7 +288,7 @@ class ComplianceDeadlineViewSet(AuditLogMixin, viewsets.ModelViewSet):
             status='overdue'
         ).order_by('due_date')
 
-        serializer = ComplianceDeadlineListSerializer(deadlines, many=True)
+        serializer = ComplianceDeadlineSerializer(deadlines, many=True)
         return Response(serializer.data)
 
 
@@ -334,15 +302,11 @@ class ComplianceAlertViewSet(AuditLogMixin, viewsets.ModelViewSet):
 
     Alerts are system-generated notifications about compliance issues.
     """
+    serializer_class = ComplianceAlertSerializer
     permission_classes = [IsAuthenticated, HasCompanyAccess]
     http_method_names = ['get', 'post']  # No direct create/update/delete
     filter_backends = [filters.OrderingFilter]
     ordering = ['-priority', '-created_at']
-
-    def get_serializer_class(self):
-        if self.action == 'list':
-            return ComplianceAlertListSerializer
-        return ComplianceAlertSerializer
 
     def get_queryset(self):
         company = get_user_company(self.request.user)
@@ -415,51 +379,30 @@ class ComplianceAlertViewSet(AuditLogMixin, viewsets.ModelViewSet):
 # LICENSE VIEWSET
 # =============================================================================
 
-class LicenseViewSet(AuditLogMixin, viewsets.ModelViewSet):
+class LicenseViewSet(CompanyFilteredViewSet):
     """
     API endpoint for managing licenses and certificates.
     """
-    permission_classes = [IsAuthenticated, HasCompanyAccess]
+    model = License
+    serializer_class = LicenseSerializer
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['license_number', 'name_on_license', 'issuing_authority']
     ordering_fields = ['expiration_date', 'license_type', 'status', 'created_at']
-    ordering = ['expiration_date']
+    default_ordering = ('expiration_date',)
 
-    def get_serializer_class(self):
-        if self.action == 'list':
-            return LicenseListSerializer
-        return LicenseSerializer
-
-    def get_queryset(self):
-        company = get_user_company(self.request.user)
-        if not company:
-            return License.objects.none()
-
-        queryset = License.objects.filter(company=company)
-
-        # Filter by license type
-        license_type = self.request.query_params.get('type')
-        if license_type:
-            queryset = queryset.filter(license_type=license_type)
-
-        # Filter by status
-        status_filter = self.request.query_params.get('status')
-        if status_filter:
-            queryset = queryset.filter(status=status_filter)
-
-        # Filter by user
-        user_id = self.request.query_params.get('user')
+    def filter_queryset_by_params(self, queryset):
+        params = self.request.query_params
+        if params.get('type'):
+            queryset = queryset.filter(license_type=params['type'])
+        if params.get('status'):
+            queryset = queryset.filter(status=params['status'])
+        user_id = params.get('user')
         if user_id:
             if user_id == 'company':
                 queryset = queryset.filter(user__isnull=True)
             else:
                 queryset = queryset.filter(user_id=user_id)
-
         return queryset
-
-    def perform_create(self, serializer):
-        company = require_company(self.request.user)
-        serializer.save(company=company)
 
     @action(detail=False, methods=['get'])
     def expiring(self, request):
@@ -473,7 +416,7 @@ class LicenseViewSet(AuditLogMixin, viewsets.ModelViewSet):
             status__in=['active', 'expiring_soon']
         ).order_by('expiration_date')
 
-        serializer = LicenseListSerializer(licenses, many=True)
+        serializer = LicenseSerializer(licenses, many=True)
         return Response(serializer.data)
 
     @action(detail=True, methods=['post'])
@@ -491,50 +434,29 @@ class LicenseViewSet(AuditLogMixin, viewsets.ModelViewSet):
 # WPS TRAINING VIEWSET
 # =============================================================================
 
-class WPSTrainingRecordViewSet(AuditLogMixin, viewsets.ModelViewSet):
+class WPSTrainingRecordViewSet(CompanyFilteredViewSet):
     """
     API endpoint for managing WPS training records.
     """
-    permission_classes = [IsAuthenticated, HasCompanyAccess]
+    model = WPSTrainingRecord
+    serializer_class = WPSTrainingRecordSerializer
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['trainee_name', 'trainer_name', 'trainee_employee_id']
     ordering_fields = ['training_date', 'expiration_date', 'training_type']
-    ordering = ['-training_date']
+    default_ordering = ('-training_date',)
 
-    def get_serializer_class(self):
-        if self.action == 'list':
-            return WPSTrainingRecordListSerializer
-        return WPSTrainingRecordSerializer
-
-    def get_queryset(self):
-        company = get_user_company(self.request.user)
-        if not company:
-            return WPSTrainingRecord.objects.none()
-
-        queryset = WPSTrainingRecord.objects.filter(company=company)
-
-        # Filter by training type
-        training_type = self.request.query_params.get('type')
-        if training_type:
-            queryset = queryset.filter(training_type=training_type)
-
-        # Filter by trainee name
-        trainee = self.request.query_params.get('trainee')
-        if trainee:
-            queryset = queryset.filter(trainee_name__icontains=trainee)
-
-        # Filter by valid/expired
-        valid_only = self.request.query_params.get('valid')
-        if valid_only and valid_only.lower() == 'true':
+    def filter_queryset_by_params(self, queryset):
+        params = self.request.query_params
+        if params.get('type'):
+            queryset = queryset.filter(training_type=params['type'])
+        if params.get('trainee'):
+            queryset = queryset.filter(trainee_name__icontains=params['trainee'])
+        valid_only = params.get('valid', '').lower()
+        if valid_only == 'true':
             queryset = queryset.filter(expiration_date__gte=date.today())
-        elif valid_only and valid_only.lower() == 'false':
+        elif valid_only == 'false':
             queryset = queryset.filter(expiration_date__lt=date.today())
-
         return queryset
-
-    def perform_create(self, serializer):
-        company = require_company(self.request.user)
-        serializer.save(company=company)
 
     @action(detail=False, methods=['get'])
     def expiring(self, request):
@@ -548,7 +470,7 @@ class WPSTrainingRecordViewSet(AuditLogMixin, viewsets.ModelViewSet):
             expiration_date__gte=date.today()
         ).order_by('expiration_date')
 
-        serializer = WPSTrainingRecordListSerializer(records, many=True)
+        serializer = WPSTrainingRecordSerializer(records, many=True)
         return Response(serializer.data)
 
     @action(detail=False, methods=['get'])
@@ -604,33 +526,19 @@ class WPSTrainingRecordViewSet(AuditLogMixin, viewsets.ModelViewSet):
 # CENTRAL POSTING LOCATION VIEWSET
 # =============================================================================
 
-class CentralPostingLocationViewSet(AuditLogMixin, viewsets.ModelViewSet):
+class CentralPostingLocationViewSet(CompanyFilteredViewSet):
     """
     API endpoint for managing WPS central posting locations.
     """
+    model = CentralPostingLocation
     serializer_class = CentralPostingLocationSerializer
-    permission_classes = [IsAuthenticated, HasCompanyAccess]
+    select_related_fields = ('farm', 'last_verified_by')
 
-    def get_queryset(self):
-        company = get_user_company(self.request.user)
-        if not company:
-            return CentralPostingLocation.objects.none()
-
-        queryset = CentralPostingLocation.objects.filter(
-            company=company,
-            active=True
-        ).select_related('farm', 'last_verified_by')
-
-        # Filter by farm
-        farm_id = self.request.query_params.get('farm')
-        if farm_id:
-            queryset = queryset.filter(farm_id=farm_id)
-
+    def filter_queryset_by_params(self, queryset):
+        queryset = queryset.filter(active=True)
+        if self.request.query_params.get('farm'):
+            queryset = queryset.filter(farm_id=self.request.query_params['farm'])
         return queryset
-
-    def perform_create(self, serializer):
-        company = require_company(self.request.user)
-        serializer.save(company=company)
 
     @action(detail=True, methods=['post'])
     def verify(self, request, pk=None):
@@ -649,13 +557,9 @@ class REIPostingRecordViewSet(AuditLogMixin, viewsets.ModelViewSet):
     """
     API endpoint for managing REI posting records.
     """
+    serializer_class = REIPostingRecordSerializer
     permission_classes = [IsAuthenticated, HasCompanyAccess]
     http_method_names = ['get', 'post']
-
-    def get_serializer_class(self):
-        if self.action == 'list':
-            return REIPostingRecordListSerializer
-        return REIPostingRecordSerializer
 
     def get_queryset(self):
         company = get_user_company(self.request.user)
@@ -688,7 +592,7 @@ class REIPostingRecordViewSet(AuditLogMixin, viewsets.ModelViewSet):
             'application', 'application__field', 'application__product'
         ).order_by('rei_end_datetime')
 
-        serializer = REIPostingRecordListSerializer(active_reis, many=True)
+        serializer = REIPostingRecordSerializer(active_reis, many=True)
         return Response(serializer.data)
 
     @action(detail=True, methods=['post'])
@@ -710,41 +614,22 @@ class REIPostingRecordViewSet(AuditLogMixin, viewsets.ModelViewSet):
 # COMPLIANCE REPORT VIEWSET
 # =============================================================================
 
-class ComplianceReportViewSet(AuditLogMixin, viewsets.ModelViewSet):
+class ComplianceReportViewSet(CompanyFilteredViewSet):
     """
     API endpoint for managing compliance reports.
     """
-    permission_classes = [IsAuthenticated, HasCompanyAccess]
+    model = ComplianceReport
+    serializer_class = ComplianceReportSerializer
     filter_backends = [filters.OrderingFilter]
-    ordering = ['-reporting_period_end', '-created_at']
+    default_ordering = ('-reporting_period_end', '-created_at')
 
-    def get_serializer_class(self):
-        if self.action == 'list':
-            return ComplianceReportListSerializer
-        return ComplianceReportSerializer
-
-    def get_queryset(self):
-        company = get_user_company(self.request.user)
-        if not company:
-            return ComplianceReport.objects.none()
-
-        queryset = ComplianceReport.objects.filter(company=company)
-
-        # Filter by report type
-        report_type = self.request.query_params.get('type')
-        if report_type:
-            queryset = queryset.filter(report_type=report_type)
-
-        # Filter by status
-        status_filter = self.request.query_params.get('status')
-        if status_filter:
-            queryset = queryset.filter(status=status_filter)
-
+    def filter_queryset_by_params(self, queryset):
+        params = self.request.query_params
+        if params.get('type'):
+            queryset = queryset.filter(report_type=params['type'])
+        if params.get('status'):
+            queryset = queryset.filter(status=params['status'])
         return queryset
-
-    def perform_create(self, serializer):
-        company = require_company(self.request.user)
-        serializer.save(company=company, created_by=self.request.user)
 
     @action(detail=True, methods=['post'])
     def validate(self, request, pk=None):
@@ -865,43 +750,25 @@ class ComplianceReportViewSet(AuditLogMixin, viewsets.ModelViewSet):
 # INCIDENT REPORT VIEWSET
 # =============================================================================
 
-class IncidentReportViewSet(AuditLogMixin, viewsets.ModelViewSet):
+class IncidentReportViewSet(CompanyFilteredViewSet):
     """
     API endpoint for managing incident reports.
     """
-    permission_classes = [IsAuthenticated, HasCompanyAccess]
+    model = IncidentReport
+    serializer_class = IncidentReportSerializer
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['title', 'description', 'location_description']
     ordering_fields = ['incident_date', 'severity', 'status']
-    ordering = ['-incident_date']
+    default_ordering = ('-incident_date',)
 
-    def get_serializer_class(self):
-        if self.action == 'list':
-            return IncidentReportListSerializer
-        return IncidentReportSerializer
-
-    def get_queryset(self):
-        company = get_user_company(self.request.user)
-        if not company:
-            return IncidentReport.objects.none()
-
-        queryset = IncidentReport.objects.filter(company=company)
-
-        # Filter by type
-        incident_type = self.request.query_params.get('type')
-        if incident_type:
-            queryset = queryset.filter(incident_type=incident_type)
-
-        # Filter by severity
-        severity = self.request.query_params.get('severity')
-        if severity:
-            queryset = queryset.filter(severity=severity)
-
-        # Filter by status
-        status_filter = self.request.query_params.get('status')
-        if status_filter:
-            queryset = queryset.filter(status=status_filter)
-
+    def filter_queryset_by_params(self, queryset):
+        params = self.request.query_params
+        if params.get('type'):
+            queryset = queryset.filter(incident_type=params['type'])
+        if params.get('severity'):
+            queryset = queryset.filter(severity=params['severity'])
+        if params.get('status'):
+            queryset = queryset.filter(status=params['status'])
         return queryset
 
     def perform_create(self, serializer):
@@ -1083,10 +950,10 @@ class ComplianceDashboardViewSet(viewsets.ViewSet):
                 'expiring_training': expiring_training,
             },
             'by_category': by_category,
-            'upcoming_deadlines': ComplianceDeadlineListSerializer(upcoming_deadlines, many=True).data,
-            'active_alerts': ComplianceAlertListSerializer(alerts, many=True).data,
-            'expiring_licenses': LicenseListSerializer(exp_licenses, many=True).data,
-            'expiring_training': WPSTrainingRecordListSerializer(exp_training, many=True).data,
+            'upcoming_deadlines': ComplianceDeadlineSerializer(upcoming_deadlines, many=True).data,
+            'active_alerts': ComplianceAlertSerializer(alerts, many=True).data,
+            'expiring_licenses': LicenseSerializer(exp_licenses, many=True).data,
+            'expiring_training': WPSTrainingRecordSerializer(exp_training, many=True).data,
         }
 
         return Response(data)
@@ -1130,7 +997,7 @@ class ComplianceDashboardViewSet(viewsets.ViewSet):
                     'deadlines': [],
                 }
             calendar_data[date_key]['deadlines'].append(
-                ComplianceDeadlineListSerializer(deadline).data
+                ComplianceDeadlineSerializer(deadline).data
             )
 
         return Response(list(calendar_data.values()))
@@ -1460,8 +1327,8 @@ class ComplianceDashboardViewSet(viewsets.ViewSet):
             'overdue_deadlines': [serialize_deadline(d) for d in overdue],
             'due_today': [serialize_deadline(d) for d in due_today],
             'due_this_week': [serialize_deadline(d) for d in due_this_week],
-            'expired_licenses': LicenseListSerializer(expired_lic, many=True).data,
-            'expiring_training': WPSTrainingRecordListSerializer(expiring_training, many=True).data,
+            'expired_licenses': LicenseSerializer(expired_lic, many=True).data,
+            'expiring_training': WPSTrainingRecordSerializer(expiring_training, many=True).data,
             'active_reis': [serialize_rei(r) for r in active_reis],
             'phi_blocked_fields': [serialize_phi(a) for a in phi_apps],
             'pending_pur_month': pending_pur,

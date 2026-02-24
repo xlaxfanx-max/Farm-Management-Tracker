@@ -1,11 +1,14 @@
 from rest_framework import serializers
 from .models import SeasonTemplate, SeasonType, GrowingCycle, GrowingCycleStatus
+from .serializer_mixins import DynamicFieldsMixin
 
 
-class SeasonTemplateSerializer(serializers.ModelSerializer):
+class SeasonTemplateSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     """Serializer for SeasonTemplate model."""
     season_type_display = serializers.CharField(source='get_season_type_display', read_only=True)
     is_system_default = serializers.SerializerMethodField()
+
+    list_fields = ['id', 'name', 'season_type', 'crosses_calendar_year', 'applicable_categories']
 
     class Meta:
         model = SeasonTemplate
@@ -24,21 +27,24 @@ class SeasonTemplateSerializer(serializers.ModelSerializer):
         return obj.company is None
 
 
-class SeasonTemplateListSerializer(serializers.ModelSerializer):
-    """Lightweight serializer for season template dropdowns."""
-
-    class Meta:
-        model = SeasonTemplate
-        fields = ['id', 'name', 'season_type', 'crosses_calendar_year', 'applicable_categories']
+# Backward-compatible alias
+SeasonTemplateListSerializer = SeasonTemplateSerializer
 
 
-class GrowingCycleSerializer(serializers.ModelSerializer):
+class GrowingCycleSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     """Full serializer for GrowingCycle model."""
     field_name = serializers.CharField(source='field.name', read_only=True)
     crop_name = serializers.SerializerMethodField()
     status_display = serializers.CharField(source='get_status_display', read_only=True)
     is_active = serializers.BooleanField(read_only=True)
     duration_days = serializers.IntegerField(read_only=True)
+
+    list_fields = [
+        'id', 'field', 'field_name',
+        'cycle_number', 'year',
+        'crop_name', 'status',
+        'planting_date', 'expected_harvest_end',
+    ]
 
     class Meta:
         model = GrowingCycle
@@ -57,26 +63,16 @@ class GrowingCycleSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'created_at', 'updated_at']
 
     def get_crop_name(self, obj):
+        # In list mode, return simple name; in detail mode, return full name
+        view = self.context.get('view')
+        action = getattr(view, 'action', None)
         crop = obj.effective_crop
+        if action == 'list':
+            return crop.name if crop else None
         if crop:
             return crop.name if not crop.variety else f"{crop.name} ({crop.variety})"
         return None
 
 
-class GrowingCycleListSerializer(serializers.ModelSerializer):
-    """Lightweight serializer for growing cycle lists."""
-    field_name = serializers.CharField(source='field.name', read_only=True)
-    crop_name = serializers.SerializerMethodField()
-
-    class Meta:
-        model = GrowingCycle
-        fields = [
-            'id', 'field', 'field_name',
-            'cycle_number', 'year',
-            'crop_name', 'status',
-            'planting_date', 'expected_harvest_end',
-        ]
-
-    def get_crop_name(self, obj):
-        crop = obj.effective_crop
-        return crop.name if crop else None
+# Backward-compatible alias
+GrowingCycleListSerializer = GrowingCycleSerializer

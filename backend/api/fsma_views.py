@@ -38,20 +38,20 @@ from .models import (
 
 from .serializers import (
     UserSignatureSerializer,
-    FacilityLocationSerializer, FacilityLocationListSerializer,
-    FacilityCleaningLogSerializer, FacilityCleaningLogListSerializer,
-    VisitorLogSerializer, VisitorLogListSerializer, VisitorQuickEntrySerializer,
-    SafetyMeetingSerializer, SafetyMeetingListSerializer, SafetyMeetingAttendeeSerializer,
+    FacilityLocationSerializer,
+    FacilityCleaningLogSerializer,
+    VisitorLogSerializer, VisitorQuickEntrySerializer,
+    SafetyMeetingSerializer, SafetyMeetingAttendeeSerializer,
     FertilizerInventorySerializer, FertilizerInventoryListSerializer,
     FertilizerInventoryTransactionSerializer, FertilizerInventoryTransactionListSerializer,
     InventoryPurchaseSerializer, InventoryAdjustmentSerializer,
     MonthlyInventorySnapshotSerializer,
-    PHIComplianceCheckSerializer, PHIComplianceCheckListSerializer, PHIPreCheckSerializer,
-    AuditBinderSerializer, AuditBinderListSerializer, AuditBinderGenerateSerializer,
+    PHIComplianceCheckSerializer, PHIPreCheckSerializer,
+    AuditBinderSerializer, AuditBinderGenerateSerializer,
     FSMADashboardSerializer,
 )
 
-from .view_helpers import get_user_company, require_company
+from .view_helpers import CompanyFilteredViewSet, get_user_company, require_company
 
 
 # =============================================================================
@@ -122,48 +122,36 @@ class UserSignatureViewSet(AuditLogMixin, viewsets.ModelViewSet):
 # FACILITY LOCATION VIEWSET
 # =============================================================================
 
-class FacilityLocationViewSet(AuditLogMixin, viewsets.ModelViewSet):
+class FacilityLocationViewSet(CompanyFilteredViewSet):
     """
     API endpoint for managing facility locations.
     """
-    permission_classes = [IsAuthenticated, HasCompanyAccess]
+    model = FacilityLocation
+    serializer_class = FacilityLocationSerializer
+    select_related_fields = ('farm',)
+    default_ordering = ('name',)
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['name', 'description']
     ordering_fields = ['name', 'facility_type', 'created_at']
     ordering = ['name']
 
-    def get_serializer_class(self):
-        if self.action == 'list':
-            return FacilityLocationListSerializer
-        return FacilityLocationSerializer
-
-    def get_queryset(self):
-        company = get_user_company(self.request.user)
-        if not company:
-            return FacilityLocation.objects.none()
-
-        queryset = FacilityLocation.objects.filter(company=company)
-
+    def filter_queryset_by_params(self, qs):
         # Filter by active status
         active = self.request.query_params.get('active')
         if active is not None:
-            queryset = queryset.filter(is_active=active.lower() == 'true')
+            qs = qs.filter(is_active=active.lower() == 'true')
 
         # Filter by facility type
         facility_type = self.request.query_params.get('facility_type')
         if facility_type:
-            queryset = queryset.filter(facility_type=facility_type)
+            qs = qs.filter(facility_type=facility_type)
 
         # Filter by farm
         farm_id = self.request.query_params.get('farm')
         if farm_id:
-            queryset = queryset.filter(farm_id=farm_id)
+            qs = qs.filter(farm_id=farm_id)
 
-        return queryset.select_related('farm')
-
-    def perform_create(self, serializer):
-        company = require_company(self.request.user)
-        serializer.save(company=company)
+        return qs
 
 
 # =============================================================================

@@ -24,6 +24,7 @@ from rest_framework import serializers as drf_serializers
 
 from .permissions import HasCompanyAccess
 from .audit_utils import AuditLogMixin
+from .view_helpers import get_user_company, require_company, CompanyFilteredViewSet
 
 from .models import (
     ExternalDetection, DiseaseAlertRule, DiseaseAnalysisRun,
@@ -32,18 +33,15 @@ from .models import (
 )
 
 from .serializers import (
-    ExternalDetectionSerializer, ExternalDetectionListSerializer,
+    ExternalDetectionSerializer,
     DiseaseAlertRuleSerializer,
-    DiseaseAnalysisRunSerializer, DiseaseAnalysisRunListSerializer,
-    DiseaseAlertSerializer, DiseaseAlertListSerializer,
-    ScoutingReportSerializer, ScoutingReportListSerializer,
+    DiseaseAnalysisRunSerializer,
+    DiseaseAlertSerializer,
+    ScoutingReportSerializer,
     ScoutingPhotoSerializer,
 )
 
 from .services.proximity_calculator import ProximityCalculator
-
-
-from .view_helpers import get_user_company, require_company
 
 
 # =============================================================================
@@ -57,6 +55,7 @@ class ExternalDetectionViewSet(viewsets.ReadOnlyModelViewSet):
     External detections are imported from CDFA, USDA, and other authorities.
     These are read-only for regular users - admin/system updates them.
     """
+    serializer_class = ExternalDetectionSerializer
     permission_classes = [IsAuthenticated, HasCompanyAccess]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['disease_name', 'county', 'city']
@@ -90,11 +89,6 @@ class ExternalDetectionViewSet(viewsets.ReadOnlyModelViewSet):
             queryset = queryset.filter(detection_date__lte=end_date)
 
         return queryset
-
-    def get_serializer_class(self):
-        if self.action == 'list':
-            return ExternalDetectionListSerializer
-        return ExternalDetectionSerializer
 
     @action(detail=False, methods=['get'])
     def near_company(self, request):
@@ -215,6 +209,7 @@ class DiseaseAlertViewSet(AuditLogMixin, viewsets.ModelViewSet):
     - Field health analysis anomalies
     - Verified scouting reports
     """
+    serializer_class = DiseaseAlertSerializer
     permission_classes = [IsAuthenticated, HasCompanyAccess]
     filter_backends = [filters.OrderingFilter]
     ordering_fields = ['created_at', 'priority']
@@ -250,11 +245,6 @@ class DiseaseAlertViewSet(AuditLogMixin, viewsets.ModelViewSet):
 
         return queryset.select_related('farm', 'field', 'related_detection')
 
-    def get_serializer_class(self):
-        if self.action == 'list':
-            return DiseaseAlertListSerializer
-        return DiseaseAlertSerializer
-
     @action(detail=False, methods=['get'])
     def active(self, request):
         """Get all active, unacknowledged alerts."""
@@ -265,7 +255,7 @@ class DiseaseAlertViewSet(AuditLogMixin, viewsets.ModelViewSet):
             is_acknowledged=False
         ).select_related('farm', 'field').order_by('-priority', '-created_at')
 
-        serializer = DiseaseAlertListSerializer(alerts, many=True)
+        serializer = DiseaseAlertSerializer(alerts, many=True)
         return Response(serializer.data)
 
     @action(detail=False, methods=['get'])
@@ -328,7 +318,7 @@ class DiseaseAlertViewSet(AuditLogMixin, viewsets.ModelViewSet):
 # DISEASE ALERT RULE VIEWSET
 # =============================================================================
 
-class DiseaseAlertRuleViewSet(AuditLogMixin, viewsets.ModelViewSet):
+class DiseaseAlertRuleViewSet(CompanyFilteredViewSet):
     """
     API endpoint for managing disease alert rules.
 
@@ -337,18 +327,8 @@ class DiseaseAlertRuleViewSet(AuditLogMixin, viewsets.ModelViewSet):
     - NDVI rules: Alert when NDVI drops below threshold
     - Change rules: Alert when metrics change by certain percentage
     """
+    model = DiseaseAlertRule
     serializer_class = DiseaseAlertRuleSerializer
-    permission_classes = [IsAuthenticated, HasCompanyAccess]
-
-    def get_queryset(self):
-        company = get_user_company(self.request.user)
-        if not company:
-            return DiseaseAlertRule.objects.none()
-        return DiseaseAlertRule.objects.filter(company=company)
-
-    def perform_create(self, serializer):
-        company = require_company(self.request.user)
-        serializer.save(company=company, created_by=self.request.user)
 
     @action(detail=False, methods=['post'])
     def create_defaults(self, request):
@@ -413,6 +393,7 @@ class DiseaseAnalysisRunViewSet(AuditLogMixin, viewsets.ModelViewSet):
     Analysis runs process satellite imagery to assess field health,
     detect anomalies, and generate health scores.
     """
+    serializer_class = DiseaseAnalysisRunSerializer
     permission_classes = [IsAuthenticated, HasCompanyAccess]
     filter_backends = [filters.OrderingFilter]
     ordering_fields = ['created_at', 'health_score']
@@ -442,11 +423,6 @@ class DiseaseAnalysisRunViewSet(AuditLogMixin, viewsets.ModelViewSet):
             queryset = queryset.filter(risk_level=risk_level)
 
         return queryset.select_related('field', 'field__farm')
-
-    def get_serializer_class(self):
-        if self.action == 'list':
-            return DiseaseAnalysisRunListSerializer
-        return DiseaseAnalysisRunSerializer
 
     def perform_create(self, serializer):
         """Create analysis run and trigger async processing."""
@@ -495,26 +471,23 @@ class DiseaseAnalysisRunViewSet(AuditLogMixin, viewsets.ModelViewSet):
 # SCOUTING REPORT VIEWSET
 # =============================================================================
 
-class ScoutingReportViewSet(AuditLogMixin, viewsets.ModelViewSet):
+class ScoutingReportViewSet(CompanyFilteredViewSet):
     """
     API endpoint for managing scouting reports.
 
     Users can submit disease/pest observations which contribute
     to the crowdsourced disease monitoring network.
     """
-    permission_classes = [IsAuthenticated, HasCompanyAccess]
+    model = ScoutingReport
+    serializer_class = ScoutingReportSerializer
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['notes']
     ordering_fields = ['created_at', 'observed_date', 'severity']
     ordering = ['-created_at']
+    select_related_fields = ('farm', 'field', 'reported_by')
+    prefetch_related_fields = ('photos',)
 
-    def get_queryset(self):
-        company = get_user_company(self.request.user)
-        if not company:
-            return ScoutingReport.objects.none()
-
-        queryset = ScoutingReport.objects.filter(company=company)
-
+    def filter_queryset_by_params(self, queryset):
         # Filter by status
         report_status = self.request.query_params.get('status')
         if report_status:
@@ -535,12 +508,7 @@ class ScoutingReportViewSet(AuditLogMixin, viewsets.ModelViewSet):
         if farm_id:
             queryset = queryset.filter(farm_id=farm_id)
 
-        return queryset.select_related('farm', 'field', 'reported_by').prefetch_related('photos')
-
-    def get_serializer_class(self):
-        if self.action == 'list':
-            return ScoutingReportListSerializer
-        return ScoutingReportSerializer
+        return queryset
 
     def perform_create(self, serializer):
         company = require_company(self.request.user)
@@ -731,7 +699,7 @@ class DiseaseDashboardViewSet(viewsets.ViewSet):
             'risk_distribution': risk_distribution,
             'risk_score': risk_score,
             'alerts': alert_summary,
-            'recent_alerts': DiseaseAlertListSerializer(recent_alerts, many=True).data,
+            'recent_alerts': DiseaseAlertSerializer(recent_alerts, many=True).data,
             'proximity_threats': risks['summary'],
             'farms_at_risk': risks['farms'],
             'pending_analyses': pending_analyses,

@@ -23,7 +23,7 @@ from .models import (
     Farm, Field, WaterSource
 )
 from .serializers import (
-    FSMAWaterAssessmentSerializer, FSMAWaterAssessmentListSerializer,
+    FSMAWaterAssessmentSerializer,
     FSMAWaterAssessmentDetailSerializer,
     FSMASourceAssessmentSerializer,
     FSMAFieldAssessmentSerializer,
@@ -73,11 +73,9 @@ class FSMAWaterAssessmentViewSet(AuditLogMixin, viewsets.ModelViewSet):
     ordering = ['-assessment_year', 'farm__name']
 
     def get_serializer_class(self):
-        if self.action == 'list':
-            return FSMAWaterAssessmentListSerializer
-        if self.action == 'retrieve':
-            return FSMAWaterAssessmentDetailSerializer
-        return FSMAWaterAssessmentSerializer
+        if self.action in ('create', 'update', 'partial_update'):
+            return FSMAWaterAssessmentSerializer
+        return FSMAWaterAssessmentDetailSerializer
 
     def get_queryset(self):
         company = get_user_company(self.request.user)

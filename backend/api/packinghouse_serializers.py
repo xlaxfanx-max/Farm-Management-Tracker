@@ -5,25 +5,16 @@ from .models import (
     PoolSettlement, SettlementGradeLine, SettlementDeduction,
     GrowerLedgerEntry, PackinghouseStatement, Farm,
 )
+from .serializer_mixins import DynamicFieldsMixin
 
 
-class PackinghouseListSerializer(serializers.ModelSerializer):
-    """Lightweight serializer for packinghouse listings."""
-    pool_count = serializers.SerializerMethodField()
+class PackinghouseSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+    """Unified serializer for Packinghouse (list + detail)."""
+    list_fields = [
+        'id', 'name', 'short_code', 'grower_id',
+        'city', 'state', 'is_active', 'pool_count'
+    ]
 
-    class Meta:
-        model = Packinghouse
-        fields = [
-            'id', 'name', 'short_code', 'grower_id',
-            'city', 'state', 'is_active', 'pool_count'
-        ]
-
-    def get_pool_count(self, obj):
-        return obj.pools.count()
-
-
-class PackinghouseSerializer(serializers.ModelSerializer):
-    """Full serializer for Packinghouse model."""
     pool_count = serializers.SerializerMethodField()
     active_pools_count = serializers.SerializerMethodField()
 
@@ -46,33 +37,22 @@ class PackinghouseSerializer(serializers.ModelSerializer):
         return obj.pools.filter(status='active').count()
 
 
-class PoolListSerializer(serializers.ModelSerializer):
-    """Lightweight serializer for pool listings."""
-    packinghouse_name = serializers.CharField(source='packinghouse.name', read_only=True)
-    packinghouse_short_code = serializers.CharField(source='packinghouse.short_code', read_only=True)
-    status_display = serializers.CharField(source='get_status_display', read_only=True)
-    pool_type_display = serializers.CharField(source='get_pool_type_display', read_only=True)
-    total_bins = serializers.ReadOnlyField()
-    delivery_count = serializers.ReadOnlyField()
-    primary_quantity = serializers.ReadOnlyField()
-    primary_unit = serializers.ReadOnlyField()
-    primary_unit_label = serializers.ReadOnlyField()
-
-    class Meta:
-        model = Pool
-        fields = [
-            'id', 'pool_id', 'name', 'packinghouse',
-            'packinghouse_name', 'packinghouse_short_code',
-            'commodity', 'variety', 'season',
-            'pool_type', 'pool_type_display',
-            'status', 'status_display',
-            'total_bins', 'delivery_count',
-            'primary_quantity', 'primary_unit', 'primary_unit_label'
-        ]
+# Backward-compatible alias
+PackinghouseListSerializer = PackinghouseSerializer
 
 
-class PoolSerializer(serializers.ModelSerializer):
-    """Full serializer for Pool model."""
+class PoolSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+    """Unified serializer for Pool (list + detail)."""
+    list_fields = [
+        'id', 'pool_id', 'name', 'packinghouse',
+        'packinghouse_name', 'packinghouse_short_code',
+        'commodity', 'variety', 'season',
+        'pool_type', 'pool_type_display',
+        'status', 'status_display',
+        'total_bins', 'delivery_count',
+        'primary_quantity', 'primary_unit', 'primary_unit_label'
+    ]
+
     packinghouse_name = serializers.CharField(source='packinghouse.name', read_only=True)
     packinghouse_short_code = serializers.CharField(source='packinghouse.short_code', read_only=True)
     status_display = serializers.CharField(source='get_status_display', read_only=True)
@@ -98,30 +78,25 @@ class PoolSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'created_at', 'updated_at']
 
 
-class PackinghouseDeliveryListSerializer(serializers.ModelSerializer):
-    """Lightweight serializer for delivery listings."""
-    pool_name = serializers.CharField(source='pool.name', read_only=True)
-    field_name = serializers.CharField(source='field.name', read_only=True)
-    harvest_date = serializers.DateField(source='harvest.harvest_date', read_only=True)
-    harvest_lot = serializers.CharField(source='harvest.lot_number', read_only=True)
-
-    class Meta:
-        model = PackinghouseDelivery
-        fields = [
-            'id', 'pool', 'pool_name', 'field', 'field_name',
-            'ticket_number', 'delivery_date', 'bins', 'weight_lbs',
-            'harvest', 'harvest_date', 'harvest_lot'
-        ]
+# Backward-compatible alias
+PoolListSerializer = PoolSerializer
 
 
-class PackinghouseDeliverySerializer(serializers.ModelSerializer):
-    """Full serializer for PackinghouseDelivery model."""
+class PackinghouseDeliverySerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+    """Unified serializer for PackinghouseDelivery (list + detail)."""
+    list_fields = [
+        'id', 'pool', 'pool_name', 'field', 'field_name',
+        'ticket_number', 'delivery_date', 'bins', 'weight_lbs',
+        'harvest', 'harvest_date', 'harvest_lot'
+    ]
+
     pool_name = serializers.CharField(source='pool.name', read_only=True)
     pool_commodity = serializers.CharField(source='pool.commodity', read_only=True)
     packinghouse_name = serializers.CharField(source='pool.packinghouse.name', read_only=True)
     field_name = serializers.CharField(source='field.name', read_only=True)
     farm_name = serializers.CharField(source='field.farm.name', read_only=True)
     harvest_date = serializers.DateField(source='harvest.harvest_date', read_only=True)
+    harvest_lot = serializers.CharField(source='harvest.lot_number', read_only=True)
 
     class Meta:
         model = PackinghouseDelivery
@@ -130,10 +105,14 @@ class PackinghouseDeliverySerializer(serializers.ModelSerializer):
             'field', 'field_name', 'farm_name',
             'ticket_number', 'delivery_date',
             'bins', 'field_boxes', 'weight_lbs',
-            'harvest', 'harvest_date',
+            'harvest', 'harvest_date', 'harvest_lot',
             'notes', 'created_at', 'updated_at'
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']
+
+
+# Backward-compatible alias
+PackinghouseDeliveryListSerializer = PackinghouseDeliverySerializer
 
 
 class PackoutGradeLineSerializer(serializers.ModelSerializer):
@@ -150,23 +129,15 @@ class PackoutGradeLineSerializer(serializers.ModelSerializer):
         ]
 
 
-class PackoutReportListSerializer(serializers.ModelSerializer):
-    """Lightweight serializer for packout report listings."""
-    pool_name = serializers.CharField(source='pool.name', read_only=True)
-    field_name = serializers.CharField(source='field.name', read_only=True)
+class PackoutReportSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+    """Unified serializer for PackoutReport (list + detail)."""
+    list_fields = [
+        'id', 'pool', 'pool_name', 'field', 'field_name',
+        'report_date', 'period_start', 'period_end',
+        'bins_this_period', 'bins_cumulative',
+        'total_packed_percent', 'house_avg_packed_percent'
+    ]
 
-    class Meta:
-        model = PackoutReport
-        fields = [
-            'id', 'pool', 'pool_name', 'field', 'field_name',
-            'report_date', 'period_start', 'period_end',
-            'bins_this_period', 'bins_cumulative',
-            'total_packed_percent', 'house_avg_packed_percent'
-        ]
-
-
-class PackoutReportSerializer(serializers.ModelSerializer):
-    """Full serializer for PackoutReport with nested grade lines."""
     pool_name = serializers.CharField(source='pool.name', read_only=True)
     pool_commodity = serializers.CharField(source='pool.commodity', read_only=True)
     packinghouse_name = serializers.CharField(source='pool.packinghouse.name', read_only=True)
@@ -188,6 +159,10 @@ class PackoutReportSerializer(serializers.ModelSerializer):
             'created_at', 'updated_at'
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']
+
+
+# Backward-compatible alias
+PackoutReportListSerializer = PackoutReportSerializer
 
 
 class PackoutReportCreateSerializer(serializers.ModelSerializer):
@@ -241,43 +216,16 @@ class SettlementDeductionSerializer(serializers.ModelSerializer):
         ]
 
 
-class PoolSettlementListSerializer(serializers.ModelSerializer):
-    """Lightweight serializer for settlement listings."""
-    pool_name = serializers.CharField(source='pool.name', read_only=True)
-    field_name = serializers.CharField(source='field.name', read_only=True, allow_null=True)
-    variance_vs_house_per_bin = serializers.ReadOnlyField()
-    primary_quantity = serializers.SerializerMethodField()
-    primary_unit = serializers.SerializerMethodField()
-    primary_unit_label = serializers.SerializerMethodField()
+class PoolSettlementSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+    """Unified serializer for PoolSettlement (list + detail)."""
+    list_fields = [
+        'id', 'pool', 'pool_name', 'field', 'field_name',
+        'statement_date', 'total_bins', 'total_weight_lbs',
+        'net_return', 'amount_due',
+        'net_per_bin', 'house_avg_per_bin', 'variance_vs_house_per_bin',
+        'primary_quantity', 'primary_unit', 'primary_unit_label'
+    ]
 
-    class Meta:
-        model = PoolSettlement
-        fields = [
-            'id', 'pool', 'pool_name', 'field', 'field_name',
-            'statement_date', 'total_bins', 'total_weight_lbs',
-            'net_return', 'amount_due',
-            'net_per_bin', 'house_avg_per_bin', 'variance_vs_house_per_bin',
-            'primary_quantity', 'primary_unit', 'primary_unit_label'
-        ]
-
-    def get_primary_quantity(self, obj):
-        from api.services.season_service import get_primary_unit_for_commodity
-        info = get_primary_unit_for_commodity(obj.pool.commodity)
-        if info['unit'] == 'LBS':
-            return obj.total_weight_lbs
-        return obj.total_bins
-
-    def get_primary_unit(self, obj):
-        from api.services.season_service import get_primary_unit_for_commodity
-        return get_primary_unit_for_commodity(obj.pool.commodity)['unit']
-
-    def get_primary_unit_label(self, obj):
-        from api.services.season_service import get_primary_unit_for_commodity
-        return get_primary_unit_for_commodity(obj.pool.commodity)['label_plural']
-
-
-class PoolSettlementSerializer(serializers.ModelSerializer):
-    """Full serializer for PoolSettlement with nested grade lines and deductions."""
     pool_name = serializers.CharField(source='pool.name', read_only=True)
     pool_commodity = serializers.CharField(source='pool.commodity', read_only=True)
     packinghouse_name = serializers.CharField(source='pool.packinghouse.name', read_only=True)
@@ -341,7 +289,6 @@ class PoolSettlementSerializer(serializers.ModelSerializer):
     def get_source_pdf_url(self, obj):
         """Return the proxy URL that serves PDF through our backend to avoid CORS issues."""
         if obj.source_statement and obj.source_statement.pdf_file:
-            # Return relative URL so it works with frontend's API base URL
             return f'/api/packinghouse-statements/{obj.source_statement.id}/pdf/'
         return None
 
@@ -349,6 +296,10 @@ class PoolSettlementSerializer(serializers.ModelSerializer):
         if obj.source_statement:
             return obj.source_statement.original_filename
         return None
+
+
+# Backward-compatible alias
+PoolSettlementListSerializer = PoolSettlementSerializer
 
 
 class PoolSettlementCreateSerializer(serializers.ModelSerializer):
@@ -391,26 +342,16 @@ class PoolSettlementCreateSerializer(serializers.ModelSerializer):
         return settlement
 
 
-class GrowerLedgerEntryListSerializer(serializers.ModelSerializer):
-    """Lightweight serializer for ledger entry listings."""
-    packinghouse_name = serializers.CharField(source='packinghouse.name', read_only=True)
-    pool_name = serializers.CharField(source='pool.name', read_only=True, allow_null=True)
-    entry_type_display = serializers.CharField(source='get_entry_type_display', read_only=True)
-    net_amount = serializers.ReadOnlyField()
+class GrowerLedgerEntrySerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+    """Unified serializer for GrowerLedgerEntry (list + detail)."""
+    list_fields = [
+        'id', 'packinghouse', 'packinghouse_name',
+        'pool', 'pool_name',
+        'entry_date', 'entry_type', 'entry_type_display',
+        'reference', 'description',
+        'debit', 'credit', 'net_amount', 'balance'
+    ]
 
-    class Meta:
-        model = GrowerLedgerEntry
-        fields = [
-            'id', 'packinghouse', 'packinghouse_name',
-            'pool', 'pool_name',
-            'entry_date', 'entry_type', 'entry_type_display',
-            'reference', 'description',
-            'debit', 'credit', 'net_amount', 'balance'
-        ]
-
-
-class GrowerLedgerEntrySerializer(serializers.ModelSerializer):
-    """Full serializer for GrowerLedgerEntry model."""
     packinghouse_name = serializers.CharField(source='packinghouse.name', read_only=True)
     packinghouse_short_code = serializers.CharField(source='packinghouse.short_code', read_only=True)
     pool_name = serializers.CharField(source='pool.name', read_only=True, allow_null=True)
@@ -435,6 +376,10 @@ class GrowerLedgerEntrySerializer(serializers.ModelSerializer):
         if obj.pool:
             return obj.pool.commodity
         return None
+
+
+# Backward-compatible alias
+GrowerLedgerEntryListSerializer = GrowerLedgerEntrySerializer
 
 
 # =============================================================================
@@ -505,10 +450,24 @@ class SizePricingEntrySerializer(serializers.Serializer):
 # PACKINGHOUSE STATEMENT SERIALIZERS
 # =============================================================================
 
-class PackinghouseStatementListSerializer(serializers.ModelSerializer):
-    """Lightweight serializer for statement listings."""
-    packinghouse_name = serializers.CharField(source='packinghouse.name', read_only=True)
-    packinghouse_short_code = serializers.CharField(source='packinghouse.short_code', read_only=True)
+class PackinghouseStatementSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+    """Unified serializer for PackinghouseStatement (list + detail)."""
+    list_fields = [
+        'id', 'packinghouse', 'packinghouse_name', 'packinghouse_short_code',
+        'original_filename', 'file_size_bytes',
+        'statement_type', 'statement_type_display',
+        'packinghouse_format', 'format_display',
+        'status', 'status_display',
+        'extraction_confidence',
+        'pool', 'pool_name', 'field', 'field_name', 'farm_name',
+        'uploaded_by', 'uploaded_by_name',
+        'commodity',
+        'is_processed',
+        'created_at'
+    ]
+
+    packinghouse_name = serializers.CharField(source='packinghouse.name', read_only=True, allow_null=True)
+    packinghouse_short_code = serializers.CharField(source='packinghouse.short_code', read_only=True, allow_null=True)
     status_display = serializers.CharField(source='get_status_display', read_only=True)
     statement_type_display = serializers.CharField(source='get_statement_type_display', read_only=True)
     format_display = serializers.CharField(source='get_packinghouse_format_display', read_only=True)
@@ -518,21 +477,31 @@ class PackinghouseStatementListSerializer(serializers.ModelSerializer):
     uploaded_by_name = serializers.SerializerMethodField()
     commodity = serializers.SerializerMethodField()
     is_processed = serializers.ReadOnlyField()
+    has_packout_report = serializers.ReadOnlyField()
+    has_pool_settlement = serializers.ReadOnlyField()
+    pdf_url = serializers.SerializerMethodField()
 
     class Meta:
         model = PackinghouseStatement
         fields = [
             'id', 'packinghouse', 'packinghouse_name', 'packinghouse_short_code',
-            'original_filename', 'file_size_bytes',
+            'pdf_file', 'pdf_url', 'original_filename', 'file_size_bytes',
             'statement_type', 'statement_type_display',
             'packinghouse_format', 'format_display',
             'status', 'status_display',
-            'extraction_confidence',
+            'extracted_data', 'extraction_confidence', 'extraction_error',
+            'auto_match_result',
             'pool', 'pool_name', 'field', 'field_name', 'farm_name',
             'uploaded_by', 'uploaded_by_name',
             'commodity',
-            'is_processed',
-            'created_at'
+            'is_processed', 'has_packout_report', 'has_pool_settlement',
+            'created_at', 'updated_at'
+        ]
+        read_only_fields = [
+            'id', 'pdf_file', 'original_filename', 'file_size_bytes',
+            'extracted_data', 'extraction_confidence', 'extraction_error',
+            'auto_match_result',
+            'uploaded_by', 'created_at', 'updated_at'
         ]
 
     def get_uploaded_by_name(self, obj):
@@ -560,58 +529,15 @@ class PackinghouseStatementListSerializer(serializers.ModelSerializer):
                 return header.get('commodity')
         return None
 
-
-class PackinghouseStatementSerializer(serializers.ModelSerializer):
-    """Full serializer for PackinghouseStatement with all details."""
-    packinghouse_name = serializers.CharField(source='packinghouse.name', read_only=True, allow_null=True)
-    packinghouse_short_code = serializers.CharField(source='packinghouse.short_code', read_only=True, allow_null=True)
-    status_display = serializers.CharField(source='get_status_display', read_only=True)
-    statement_type_display = serializers.CharField(source='get_statement_type_display', read_only=True)
-    format_display = serializers.CharField(source='get_packinghouse_format_display', read_only=True)
-    pool_name = serializers.CharField(source='pool.name', read_only=True, allow_null=True)
-    field_name = serializers.CharField(source='field.name', read_only=True, allow_null=True)
-    uploaded_by_name = serializers.SerializerMethodField()
-    is_processed = serializers.ReadOnlyField()
-    has_packout_report = serializers.ReadOnlyField()
-    has_pool_settlement = serializers.ReadOnlyField()
-    pdf_url = serializers.SerializerMethodField()
-
-    class Meta:
-        model = PackinghouseStatement
-        fields = [
-            'id', 'packinghouse', 'packinghouse_name', 'packinghouse_short_code',
-            'pdf_file', 'pdf_url', 'original_filename', 'file_size_bytes',
-            'statement_type', 'statement_type_display',
-            'packinghouse_format', 'format_display',
-            'status', 'status_display',
-            'extracted_data', 'extraction_confidence', 'extraction_error',
-            'auto_match_result',
-            'pool', 'pool_name', 'field', 'field_name',
-            'uploaded_by', 'uploaded_by_name',
-            'is_processed', 'has_packout_report', 'has_pool_settlement',
-            'created_at', 'updated_at'
-        ]
-        read_only_fields = [
-            'id', 'pdf_file', 'original_filename', 'file_size_bytes',
-            'extracted_data', 'extraction_confidence', 'extraction_error',
-            'auto_match_result',
-            'uploaded_by', 'created_at', 'updated_at'
-        ]
-
-    def get_uploaded_by_name(self, obj):
-        if obj.uploaded_by:
-            return f"{obj.uploaded_by.first_name} {obj.uploaded_by.last_name}".strip() or obj.uploaded_by.email
-        return None
-
     def get_pdf_url(self, obj):
-        """
-        Return the proxy URL that serves PDF through our backend.
-        This avoids CORS issues with direct R2/S3 access.
-        """
+        """Return the proxy URL that serves PDF through our backend."""
         if obj.pdf_file:
-            # Return relative URL - frontend prepends API base URL
             return f'/api/packinghouse-statements/{obj.id}/pdf/'
         return None
+
+
+# Backward-compatible alias
+PackinghouseStatementListSerializer = PackinghouseStatementSerializer
 
 
 class PackinghouseStatementUploadSerializer(serializers.Serializer):

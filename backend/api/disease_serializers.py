@@ -1,32 +1,24 @@
 from rest_framework import serializers
+from .serializer_mixins import DynamicFieldsMixin
 from .models import (
     ExternalDetection, DiseaseAlertRule, DiseaseAnalysisRun,
     DiseaseAlert, ScoutingReport, ScoutingPhoto, TreeHealthRecord
 )
 
 
-class ExternalDetectionListSerializer(serializers.ModelSerializer):
-    """List serializer for external detections."""
+class ExternalDetectionSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+    """Serializer for external detections (list + detail via DynamicFieldsMixin)."""
     source_display = serializers.CharField(source='get_source_display', read_only=True)
     disease_type_display = serializers.CharField(source='get_disease_type_display', read_only=True)
     location_type_display = serializers.CharField(source='get_location_type_display', read_only=True)
 
-    class Meta:
-        model = ExternalDetection
-        fields = [
-            'id', 'source', 'source_display', 'source_id',
-            'disease_type', 'disease_type_display', 'disease_name',
-            'latitude', 'longitude', 'county', 'city',
-            'location_type', 'location_type_display',
-            'detection_date', 'is_active'
-        ]
-
-
-class ExternalDetectionSerializer(serializers.ModelSerializer):
-    """Detail serializer for external detections."""
-    source_display = serializers.CharField(source='get_source_display', read_only=True)
-    disease_type_display = serializers.CharField(source='get_disease_type_display', read_only=True)
-    location_type_display = serializers.CharField(source='get_location_type_display', read_only=True)
+    list_fields = [
+        'id', 'source', 'source_display', 'source_id',
+        'disease_type', 'disease_type_display', 'disease_name',
+        'latitude', 'longitude', 'county', 'city',
+        'location_type', 'location_type_display',
+        'detection_date', 'is_active'
+    ]
 
     class Meta:
         model = ExternalDetection
@@ -39,6 +31,10 @@ class ExternalDetectionSerializer(serializers.ModelSerializer):
             'is_active', 'eradication_date',
             'notes', 'raw_data'
         ]
+
+
+# Backward-compatible alias
+ExternalDetectionListSerializer = ExternalDetectionSerializer
 
 
 class DiseaseAlertRuleSerializer(serializers.ModelSerializer):
@@ -59,32 +55,22 @@ class DiseaseAlertRuleSerializer(serializers.ModelSerializer):
         read_only_fields = ['company', 'created_at', 'created_by']
 
 
-class DiseaseAnalysisRunListSerializer(serializers.ModelSerializer):
-    """List serializer for disease analysis runs."""
-    field_name = serializers.CharField(source='field.name', read_only=True)
-    farm_name = serializers.CharField(source='field.farm.name', read_only=True)
-    status_display = serializers.CharField(source='get_status_display', read_only=True)
-    risk_level_display = serializers.CharField(source='get_risk_level_display', read_only=True)
-
-    class Meta:
-        model = DiseaseAnalysisRun
-        fields = [
-            'id', 'field', 'field_name', 'farm_name',
-            'status', 'status_display',
-            'health_score', 'risk_level', 'risk_level_display',
-            'total_trees_analyzed',
-            'created_at', 'completed_at'
-        ]
-
-
-class DiseaseAnalysisRunSerializer(serializers.ModelSerializer):
-    """Detail serializer for disease analysis runs."""
+class DiseaseAnalysisRunSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+    """Serializer for disease analysis runs (list + detail via DynamicFieldsMixin)."""
     field_name = serializers.CharField(source='field.name', read_only=True)
     farm_name = serializers.CharField(source='field.farm.name', read_only=True)
     status_display = serializers.CharField(source='get_status_display', read_only=True)
     analysis_type_display = serializers.CharField(source='get_analysis_type_display', read_only=True)
     risk_level_display = serializers.CharField(source='get_risk_level_display', read_only=True)
     reviewed_by_email = serializers.EmailField(source='reviewed_by.email', read_only=True)
+
+    list_fields = [
+        'id', 'field', 'field_name', 'farm_name',
+        'status', 'status_display',
+        'health_score', 'risk_level', 'risk_level_display',
+        'total_trees_analyzed',
+        'created_at', 'completed_at'
+    ]
 
     class Meta:
         model = DiseaseAnalysisRun
@@ -112,34 +98,28 @@ class DiseaseAnalysisRunSerializer(serializers.ModelSerializer):
         ]
 
 
-class DiseaseAlertListSerializer(serializers.ModelSerializer):
-    """List serializer for disease alerts."""
-    alert_type_display = serializers.CharField(source='get_alert_type_display', read_only=True)
-    priority_display = serializers.CharField(source='get_priority_display', read_only=True)
-    farm_name = serializers.CharField(source='farm.name', read_only=True)
-    field_name = serializers.CharField(source='field.name', read_only=True)
-
-    class Meta:
-        model = DiseaseAlert
-        fields = [
-            'id', 'alert_type', 'alert_type_display',
-            'priority', 'priority_display',
-            'title', 'message',
-            'farm', 'farm_name', 'field', 'field_name',
-            'distance_miles',
-            'is_active', 'is_acknowledged',
-            'created_at'
-        ]
+# Backward-compatible alias
+DiseaseAnalysisRunListSerializer = DiseaseAnalysisRunSerializer
 
 
-class DiseaseAlertSerializer(serializers.ModelSerializer):
-    """Detail serializer for disease alerts."""
+class DiseaseAlertSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+    """Serializer for disease alerts (list + detail via DynamicFieldsMixin)."""
     alert_type_display = serializers.CharField(source='get_alert_type_display', read_only=True)
     priority_display = serializers.CharField(source='get_priority_display', read_only=True)
     farm_name = serializers.CharField(source='farm.name', read_only=True)
     field_name = serializers.CharField(source='field.name', read_only=True)
     acknowledged_by_email = serializers.EmailField(source='acknowledged_by.email', read_only=True)
-    related_detection_data = ExternalDetectionListSerializer(source='related_detection', read_only=True)
+    related_detection_data = ExternalDetectionSerializer(source='related_detection', read_only=True)
+
+    list_fields = [
+        'id', 'alert_type', 'alert_type_display',
+        'priority', 'priority_display',
+        'title', 'message',
+        'farm', 'farm_name', 'field', 'field_name',
+        'distance_miles',
+        'is_active', 'is_acknowledged',
+        'created_at'
+    ]
 
     class Meta:
         model = DiseaseAlert
@@ -164,6 +144,10 @@ class DiseaseAlertSerializer(serializers.ModelSerializer):
         ]
 
 
+# Backward-compatible alias
+DiseaseAlertListSerializer = DiseaseAlertSerializer
+
+
 class ScoutingPhotoSerializer(serializers.ModelSerializer):
     """Serializer for scouting photos."""
 
@@ -173,32 +157,8 @@ class ScoutingPhotoSerializer(serializers.ModelSerializer):
         read_only_fields = ['uploaded_at']
 
 
-class ScoutingReportListSerializer(serializers.ModelSerializer):
-    """List serializer for scouting reports."""
-    report_type_display = serializers.CharField(source='get_report_type_display', read_only=True)
-    severity_display = serializers.CharField(source='get_severity_display', read_only=True)
-    status_display = serializers.CharField(source='get_status_display', read_only=True)
-    reported_by_name = serializers.CharField(source='reported_by.get_full_name', read_only=True)
-    farm_name = serializers.CharField(source='farm.name', read_only=True)
-    field_name = serializers.CharField(source='field.name', read_only=True)
-    photo_count = serializers.IntegerField(source='photos.count', read_only=True)
-
-    class Meta:
-        model = ScoutingReport
-        fields = [
-            'id', 'report_type', 'report_type_display',
-            'severity', 'severity_display',
-            'status', 'status_display',
-            'latitude', 'longitude',
-            'farm', 'farm_name', 'field', 'field_name',
-            'observed_date', 'created_at',
-            'reported_by', 'reported_by_name',
-            'photo_count'
-        ]
-
-
-class ScoutingReportSerializer(serializers.ModelSerializer):
-    """Detail serializer for scouting reports."""
+class ScoutingReportSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+    """Serializer for scouting reports (list + detail via DynamicFieldsMixin)."""
     report_type_display = serializers.CharField(source='get_report_type_display', read_only=True)
     severity_display = serializers.CharField(source='get_severity_display', read_only=True)
     status_display = serializers.CharField(source='get_status_display', read_only=True)
@@ -207,7 +167,19 @@ class ScoutingReportSerializer(serializers.ModelSerializer):
     verified_by_name = serializers.CharField(source='verified_by.get_full_name', read_only=True)
     farm_name = serializers.CharField(source='farm.name', read_only=True)
     field_name = serializers.CharField(source='field.name', read_only=True)
+    photo_count = serializers.IntegerField(source='photos.count', read_only=True)
     photos = ScoutingPhotoSerializer(many=True, read_only=True)
+
+    list_fields = [
+        'id', 'report_type', 'report_type_display',
+        'severity', 'severity_display',
+        'status', 'status_display',
+        'latitude', 'longitude',
+        'farm', 'farm_name', 'field', 'field_name',
+        'observed_date', 'created_at',
+        'reported_by', 'reported_by_name',
+        'photo_count'
+    ]
 
     class Meta:
         model = ScoutingReport
@@ -223,13 +195,17 @@ class ScoutingReportSerializer(serializers.ModelSerializer):
             'verified_by', 'verified_by_name', 'verification_notes',
             'share_anonymously', 'is_public',
             'observed_date', 'created_at', 'updated_at',
-            'photos'
+            'photo_count', 'photos'
         ]
         read_only_fields = [
             'company', 'reported_by', 'ai_analysis_status', 'ai_diagnosis',
             'status', 'verified_by', 'verification_notes',
             'created_at', 'updated_at'
         ]
+
+
+# Backward-compatible alias
+ScoutingReportListSerializer = ScoutingReportSerializer
 
 
 class TreeHealthRecordSerializer(serializers.ModelSerializer):

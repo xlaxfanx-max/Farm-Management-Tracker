@@ -1,10 +1,13 @@
 from rest_framework import serializers
 from .models import FarmParcel, Farm, Field
 from .crop_serializers import CropListSerializer, RootstockListSerializer
+from .serializer_mixins import DynamicFieldsMixin
 
 
-class FarmParcelSerializer(serializers.ModelSerializer):
+class FarmParcelSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     """Full serializer for farm parcel/APN data."""
+
+    list_fields = ['id', 'apn', 'acreage', 'ownership_type']
 
     class Meta:
         model = FarmParcel
@@ -15,16 +18,13 @@ class FarmParcelSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'created_at', 'updated_at']
 
 
-class FarmParcelListSerializer(serializers.ModelSerializer):
-    """Lightweight serializer for parcel listings."""
+# Backward-compatible alias
+FarmParcelListSerializer = FarmParcelSerializer
 
-    class Meta:
-        model = FarmParcel
-        fields = ['id', 'apn', 'acreage', 'ownership_type']
 
 class FarmSerializer(serializers.ModelSerializer):
     field_count = serializers.SerializerMethodField()
-    parcels = FarmParcelListSerializer(many=True, read_only=True)
+    parcels = FarmParcelSerializer(many=True, read_only=True)
     apn_list = serializers.ReadOnlyField()
     parcel_count = serializers.ReadOnlyField()
     total_parcel_acreage = serializers.DecimalField(

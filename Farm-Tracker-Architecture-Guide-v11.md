@@ -1,5 +1,5 @@
 # Farm Management Tracker - System Architecture Guide
-## Version 13.0 | February 19, 2026
+## Version 14.0 | February 23, 2026
 
 ---
 
@@ -47,6 +47,19 @@ The **Farm Management Tracker** is a comprehensive full-stack web application de
 | **Yield Forecasting** | ML-based yield predictions with soil/climate/tree health features |
 | **Compliance Reporting** | PUR exports, SGMA semi-annual reports, Nitrogen/ILRP reports |
 | **Audit Logging** | Comprehensive activity tracking for compliance |
+
+### What's New in v14.0
+
+| Feature | Description |
+|---------|-------------|
+| **CAC Audit Binder System** | Full audit binder lifecycle: CACBinderTemplate, AuditBinderInstance, BinderSection, BinderSupportingDocument models. Two-panel PDF editor with form fields + iframe preview. Auto-fill from model data, manual overrides, field-schema endpoint |
+| **CAC PDF Field Mapping** | `cac_pdf_filler.py` discovers AcroForm fields, `cac_data_mapper.py` resolves model data to field names, `cac_field_labels.py` provides human-readable labels. `PDFFieldEditor.js` + `PDFPreviewPanel.js` frontend |
+| **HttpOnly Cookie Authentication** | Migrated from JWT header tokens to HttpOnly cookie-based auth. `CookieJWTAuthentication` class in `authentication.py`, nginx proxy for cookie passthrough, `SameSite=Lax` in production |
+| **Mission Produce Format** | Multi-block avocado grower statement support. `block_id` field on SettlementGradeLine and SettlementDeduction (migration 0064). ExtractedDataPreview groups by block_id. Extraction prompt max_tokens increased to 8192 |
+| **Settlement Financial Validation** | `_validate_settlement_financials()` checks dollar amount consistency. `_reconcile_settlement_from_grade_lines()` checks bin/weight sums. Batch confirm path now includes reconciliation and pool status updates |
+| **Batch Statement Upload** | `BatchUploadModal.js` for multi-PDF uploads. Warning pattern: amber modal shows non-blocking validation warnings |
+| **NOI Submission Model** | New model for Notice of Intent submissions (migration 0071) |
+| **Updated Counts** | 75 migrations, 180+ frontend components, 120+ models, 17 model files, 28 view files, 21 serializer files |
 
 ### What's New in v13.0
 
@@ -161,7 +174,7 @@ The **Farm Management Tracker** is a comprehensive full-stack web application de
 |                         USER'S WEB BROWSER                              |
 |                                                                         |
 |  +-------------------------------------------------------------------+  |
-|  |              FRONTEND (React 19 + Tailwind CSS 4)                 |  |
+|  |              FRONTEND (React 19 + Tailwind CSS 3)                 |  |
 |  |              http://localhost:3000                                |  |
 |  |              URL-based routing via routes.js                     |  |
 |  |                                                                   |  |
@@ -193,7 +206,7 @@ The **Farm Management Tracker** is a comprehensive full-stack web application de
 |  |  (see PrimusGFS section)- AuditBinder                             |  |
 |  +-------------------------------------------------------------------+  |
 |                              |                                          |
-|                    HTTP/REST (axios + JWT)                              |
+|                    HTTP/REST (axios + HttpOnly cookies)                 |
 +-------------------------------------------------------------------------+
                                |
 +-------------------------------------------------------------------------+
@@ -202,7 +215,8 @@ The **Farm Management Tracker** is a comprehensive full-stack web application de
 |                                                                         |
 |  +-------------------------------------------------------------------+  |
 |  |                    AUTHENTICATION LAYER                           |  |
-|  |  JWT Tokens (SimpleJWT) - Custom User Model - Email-based Auth    |  |
+|  |  HttpOnly Cookie JWT (CookieJWTAuthentication wrapping SimpleJWT) |  |
+|  |  Custom User Model - Email-based Auth - SameSite=Lax             |  |
 |  |  /api/auth/* endpoints (login, register, refresh, password reset) |  |
 |  +-------------------------------------------------------------------+  |
 |                                                                         |
@@ -259,7 +273,7 @@ The **Farm Management Tracker** is a comprehensive full-stack web application de
 |  |                DATABASE (PostgreSQL 18)                           |  |
 |  |                Database: farm_tracker                             |  |
 |  |                                                                   |  |
-|  |  120+ Tables organized by domain (16 model files):                |  |
+|  |  120+ Tables organized by domain (17 model files):                |  |
 |  |  - Auth: Company, User, Role, Permission, CompanyMembership       |  |
 |  |  - Core: Farm, FarmParcel, Field, Crop, Rootstock, Season*        |  |
 |  |  - Pesticide: PesticideProduct, PesticideApplication              |  |
@@ -272,6 +286,7 @@ The **Farm Management Tracker** is a comprehensive full-stack web application de
 |  |  - Compliance: ComplianceProfile, License, WPSTrainingRecord, etc.|  |
 |  |  - Packinghouse: Packinghouse, Pool, Delivery, Settlement, etc.   |  |
 |  |  - PrimusGFS: 40+ models (documents, audits, CAC v5.0, etc.)     |  |
+|  |  - Audit Binder: CACBinderTemplate, BinderSection, PDF fields    |  |
 |  |  - FSMA: PHICheck, AuditBinder, WaterAssessment, Facility, etc.  |  |
 |  |  - Yield: YieldForecast, YieldFeatureSnapshot, SoilSurveyData    |  |
 |  |  - System: AuditLog, Invitation, WeatherCache, QuarantineStatus   |  |
@@ -317,7 +332,7 @@ The **Farm Management Tracker** is a comprehensive full-stack web application de
 |---------|---------|---------|
 | Django | 4.2 | Web framework, ORM, admin |
 | Django REST Framework | 3.14 | API endpoints |
-| djangorestframework-simplejwt | 5.3+ | JWT authentication |
+| djangorestframework-simplejwt | 5.3+ | JWT token generation (delivered via HttpOnly cookies) |
 | django-cors-headers | 4.3 | CORS for frontend |
 | psycopg2-binary | >=2.9.0 | PostgreSQL adapter |
 | python-dotenv | 1.0.0 | Environment variable management |
@@ -358,7 +373,7 @@ The **Farm Management Tracker** is a comprehensive full-stack web application de
 | React | 19.2.1 | UI framework |
 | React Router DOM | 7.10.1 | Client-side routing |
 | axios | 1.13.2 | HTTP client with interceptors |
-| Tailwind CSS | 4.1.18 | Utility-first styling |
+| Tailwind CSS | 3.4.17 | Utility-first styling |
 | Leaflet | 1.9.4 | Interactive maps |
 | react-leaflet | 5.0.0 | React map components |
 | @react-leaflet/core | 3.0.0 | React-Leaflet core utilities |
@@ -389,7 +404,7 @@ Farm-Management-Tracker/
 |   |   +-- celery.py                     # Celery configuration
 |   |
 |   +-- api/                              # Main Application
-|       +-- models/                       # Domain-specific model files (16 files)
+|       +-- models/                       # Domain-specific model files (17 files)
 |       |   +-- __init__.py               # Re-export hub (all models importable from api.models)
 |       |   +-- base.py                   # LocationMixin, helper functions
 |       |   +-- auth.py                   # Company, User, Role, Permission, etc.
@@ -405,15 +420,17 @@ Farm-Management-Tracker/
 |       |   +-- facility.py             # UserSignature, FacilityLocation, Cleaning/Visitor/Safety logs
 |       |   +-- fsma.py                 # PHIComplianceCheck, AuditBinder, FSMAWaterAssessment, etc.
 |       |   +-- primusgfs.py            # 40+ models: documents, audits, CAs, CAC v5.0 modules
+|       |   +-- audit_binder.py        # CACBinderTemplate, AuditBinderInstance, BinderSection, BinderSupportingDocument
 |       |   +-- yield_forecast.py       # ExternalDataSource, SoilSurveyData, YieldForecast
 |       |
 |       +-- views.py                      # Re-export hub (imports from all *_views.py files)
 |       +-- serializers.py                # Re-export hub (imports from all *_serializers.py files)
 |       +-- urls.py                       # API routing
+|       +-- authentication.py             # CookieJWTAuthentication (HttpOnly cookie auth)
 |       |
 |       +-- view_helpers.py              # Shared helpers: get_user_company, require_company
 |       |
-|       +-- # Domain View Files (27 files):
+|       +-- # Domain View Files (28 files):
 |       +-- farm_views.py                # Farm, Field, Crop, Rootstock, FarmParcel ViewSets
 |       +-- pesticide_views.py           # PesticideProduct, PesticideApplication ViewSets
 |       +-- water_views.py               # WaterSource, WaterTest ViewSets
@@ -431,6 +448,7 @@ Farm-Management-Tracker/
 |       +-- fsma_water_views.py          # FSMA water/source/field/environmental assessments
 |       +-- primusgfs_views.py           # 30+ ViewSets for PrimusGFS + CAC v5.0
 |       +-- yield_views.py              # YieldForecast, dashboard, season comparison
+|       +-- audit_binder_views.py       # CAC Audit Binder: templates, instances, sections, documents
 |       +-- analytics_views.py           # Analytics dashboard, season dashboard
 |       +-- season_views.py              # SeasonTemplate, GrowingCycle ViewSets
 |       +-- report_views.py              # Report statistics
@@ -441,7 +459,7 @@ Farm-Management-Tracker/
 |       +-- weather_views.py             # Weather API endpoints
 |       +-- audit_views.py              # Audit log endpoints
 |       |
-|       +-- # Domain Serializer Files (20 files):
+|       +-- # Domain Serializer Files (21 files):
 |       +-- crop_serializers.py, company_serializers.py, farm_serializers.py
 |       +-- pesticide_serializers.py, water_serializers.py, harvest_serializers.py
 |       +-- well_serializers.py, nutrient_serializers.py, quarantine_serializers.py
@@ -449,6 +467,7 @@ Farm-Management-Tracker/
 |       +-- compliance_serializers.py, disease_serializers.py
 |       +-- packinghouse_serializers.py, fsma_serializers.py, fsma_water_serializers.py
 |       +-- season_serializers.py, yield_serializers.py, primusgfs_serializers.py
+|       +-- audit_binder_serializers.py
 |       |
 |       +-- rls_middleware.py             # RLS context middleware
 |       +-- permissions.py                # Permission utilities + CompanyMiddleware
@@ -496,7 +515,7 @@ Farm-Management-Tracker/
 |       +-- weather_service.py            # Weather API client
 |       +-- email_service.py              # Email configuration
 |       |
-|       +-- migrations/                   # 68 migration files (0001-0068)
+|       +-- migrations/                   # 75 migration files (0001-0075)
 |       |
 |       +-- templates/                    # Email templates
 |           +-- emails/
@@ -510,7 +529,7 @@ Farm-Management-Tracker/
     +-- src/
     |   +-- routes.js                     # Centralized VIEW_TO_PATH/PATH_TO_VIEW mappings
     |   |
-    |   +-- components/                   # 170+ UI components
+    |   +-- components/                   # 180+ UI components
     |   |   +-- Dashboard.js
     |   |   +-- Farms.js                  # Uses FarmCard, FarmToolbar
     |   |   +-- FarmCard.js, FieldCard.js, FarmToolbar.js, FarmInsightsPanel.js
@@ -545,7 +564,7 @@ Farm-Management-Tracker/
     |   |   |   +-- DeadlineCalendar.js, LicenseManagement.js
     |   |   |   +-- WPSCompliance.js, ComplianceReports.js, ComplianceSettings.js
     |   |   |
-    |   |   +-- primusgfs/                # PrimusGFS compliance (29 components)
+    |   |   +-- primusgfs/                # PrimusGFS compliance (36+ components)
     |   |   |   +-- PrimusGFSDashboard.js     # Main dashboard with tab navigation
     |   |   |   +-- DocumentControlList.js, InternalAuditList.js
     |   |   |   +-- CorrectiveActionTracker.js, LandHistoryForm.js
@@ -553,6 +572,11 @@ Farm-Management-Tracker/
     |   |   |   +-- FoodDefensePlan.js, FieldSanitationTracker.js
     |   |   |   +-- EquipmentCalibration.js, PestControlProgram.js
     |   |   |   +-- PreHarvestInspection.js
+    |   |   |   +-- PrefillBanner.js              # Auto-fill notification (NEW)
+    |   |   |   +-- SeasonCopyModal.js             # Copy season data (NEW)
+    |   |   |   +-- WhatsNextDashboard.js          # Next steps guidance (NEW)
+    |   |   |   +-- CACManualViewer.js             # CAC manual reference (NEW)
+    |   |   |   +-- CACSignaturePage.js            # Signature capture (NEW)
     |   |   |   +-- # CAC Food Safety Manual V5.0:
     |   |   |   +-- FoodSafetyProfile.js, OrgRoles.js, CommitteeMeetings.js
     |   |   |   +-- ManagementReview.js, TrainingMatrix.js, TrainingSessions.js
@@ -561,14 +585,26 @@ Farm-Management-Tracker/
     |   |   |   +-- ProductHolds.js, SupplierVerification.js
     |   |   |   +-- FoodFraudAssessment.js, EmergencyContacts.js
     |   |   |   +-- ChemicalInventory.js, SanitationMaintenance.js
+    |   |   |   +-- # CAC Audit Binder (NEW):
+    |   |   |   +-- audit-binder/
+    |   |   |       +-- AuditBinderDashboard.js    # Binder management dashboard
+    |   |   |       +-- BinderOverview.js           # Binder instance overview
+    |   |   |       +-- CreateBinderModal.js        # Create new binder instance
+    |   |   |       +-- SectionDetail.js            # Section detail with PDF field tab
+    |   |   |       +-- PDFFieldEditor.js           # HTML form fields for PDF AcroForm
+    |   |   |       +-- PDFPreviewPanel.js          # iframe PDF preview panel
+    |   |   |       +-- AutoFillPreview.js          # Auto-fill preview before apply
     |   |   |
-    |   |   +-- packinghouse/             # Packinghouse management (12+)
+    |   |   +-- packinghouse/             # Packinghouse management (16)
     |   |   |   +-- index.js
     |   |   |   +-- PackinghouseDashboard.js  # Unified packinghouse dashboard
     |   |   |   +-- PackinghouseList.js, PackinghouseModal.js
+    |   |   |   +-- PackinghouseAnalytics.js  # Settlement Intelligence analytics (NEW)
     |   |   |   +-- PoolList.js, PoolModal.js, PoolDetail.js
     |   |   |   +-- DeliveryModal.js, PackoutReportModal.js
     |   |   |   +-- PDFUploadModal.js, ExtractedDataPreview.js
+    |   |   |   +-- BatchUploadModal.js       # Multi-PDF batch upload with warnings (NEW)
+    |   |   |   +-- StatementList.js          # Statement management list (NEW)
     |   |   |   +-- SettlementDetail.js, PipelineOverview.js
     |   |   |
     |   |   +-- disease/                  # Disease prevention (5)
@@ -623,7 +659,7 @@ Farm-Management-Tracker/
 
 ## DATABASE MODELS
 
-### Model Count: 120+ Models (16 domain files)
+### Model Count: 120+ Models (17 domain files)
 
 Organized by domain:
 
@@ -698,14 +734,18 @@ Organized by domain:
 | `PackoutReport` | Packout summaries | pool, packout_date, total_bins_packed, cull_percent |
 | `PackoutGradeLine` | Grade breakdown | packout_report, grade_name, size, cartons, weight_lbs, price_per_carton |
 | `PoolSettlement` | Settlement records | pool, field, statement_date, total_bins, total_credits, total_deductions, net_return, net_per_bin |
-| `SettlementGradeLine` | Settlement grade detail | settlement, grade_name, size, cartons, weight_lbs, price |
-| `SettlementDeduction` | Settlement deduction items | settlement, description, amount, unit_of_measure |
+| `SettlementGradeLine` | Settlement grade detail | settlement, grade_name, size, cartons, weight_lbs, price, block_id |
+| `SettlementDeduction` | Settlement deduction items | settlement, description, amount, unit_of_measure, block_id |
 | `GrowerLedgerEntry` | Grower financial ledger | company, pool, entry_type, amount, description |
-| `PackinghouseStatement` | PDF statements | packinghouse, pool, original_filename, pdf_file, status, extracted_data (JSON), statement_type |
+| `PackinghouseStatement` | PDF statements | packinghouse, pool, original_filename, pdf_file, status, extracted_data (JSON), statement_type, statement_format (vpoa/sla/mission/generic) |
 | `PackinghouseGrowerMapping` | Grower-to-packinghouse mapping | company, packinghouse, grower_id_at_packinghouse |
 | `StatementBatchUpload` | Batch PDF upload tracking | company, packinghouse, uploaded_by, file_count, status |
 
 **Settlement Structure Note:** Pick & haul costs are included as line items in settlement deductions. Therefore, `net_return` represents the grower's actual return after all packinghouse-related costs. Citrus tracks bins; avocados track pounds.
+
+**Supported Statement Formats:** vpoa, sla, mission, generic. Mission Produce added for multi-block avocado grower statements. `block_id` field enables per-block grade line and deduction tracking.
+
+**Settlement Reconciliation:** `_reconcile_settlement_from_grade_lines()` validates bin/weight sums. `_validate_settlement_financials()` checks dollar amount consistency. `_auto_update_pool_status()` promotes pool to 'settled' when settled >= packed. All three run on single confirm, update, and batch confirm paths.
 
 ### Nutrient Management (3 models)
 
@@ -815,6 +855,23 @@ Organized by domain:
 
 **CorrectiveAction enhancements:** Added `is_nuoca`, `nuoca_category` (11 categories), `occurrence_time`, `reported_by_name`, `source_type='nuoca'`
 
+### CAC Audit Binder (4 models) - NEW
+
+| Model | Purpose | Key Fields |
+|-------|---------|------------|
+| `CACBinderTemplate` | Versioned CAC Food Safety Manual PDF template | company, version, name, pdf_file, section_definitions (JSON), is_active |
+| `AuditBinderInstance` | Specific audit binder being prepared | company, template (FK), name, season_year, farm (FK), status (draft/in_progress/ready/submitted), generated_pdf, created_by |
+| `BinderSection` | One of 39 documents within a binder instance | binder (FK), doc_number (1-39), title, section_group, doc_type, status (not_started/in_progress/complete/not_applicable), sop_content, auto_fill_source, auto_fill_data (JSON), manual_overrides (JSON), pdf_field_data (JSON), completed_by, completed_at |
+| `BinderSupportingDocument` | Supporting docs attached to sections | section (FK), file, file_name, description, uploaded_by |
+
+**Section Groups**: management, field_sanitation, agricultural_inputs, worker_health, training, audit_checklists, risk_assessment
+
+**Doc Types**: auto_fill (from system data), partial_fill, sop (Standard Operating Procedure), blank_template (on-site use), reference (static)
+
+**PDF Field Data**: `BinderSection.pdf_field_data` stores field values keyed by AcroForm field names (e.g. `{'1-a-100': 'Sunrise Ranch'}`). The two-panel PDF editor allows left-side HTML form editing with right-side iframe PDF preview.
+
+**Default 39 section definitions** stored as `CAC_V5_SECTION_DEFINITIONS` constant, covering 7 sections from Ranch Information through Field Risk Assessment.
+
 ### Yield Forecasting (4 models)
 
 | Model | Purpose | Key Fields |
@@ -923,7 +980,8 @@ Organized by domain:
 | Packout Grades | `/api/packout-grades/` | Grade breakdown |
 | Statements | `/api/packinghouse-statements/` | PDF statement upload |
 | Extract Statement | `/api/packinghouse-statements/<id>/extract/` | Trigger AI extraction |
-| Confirm Statement | `/api/packinghouse-statements/<id>/confirm/` | Confirm extracted data |
+| Confirm Statement | `/api/packinghouse-statements/<id>/confirm/` | Confirm extracted data (single) |
+| Batch Confirm | `/api/packinghouse-statements/batch_confirm/` | Confirm multiple statements at once |
 | Pipeline Overview | `/api/harvest-packing/pipeline/` | Harvest-to-packing pipeline stats |
 
 ### Harvest Analytics
@@ -1071,6 +1129,15 @@ Organized by domain:
 | Emergency Contacts | `/api/primusgfs/emergency-contacts/` | Emergency directory |
 | Chemical Inventory | `/api/primusgfs/chemical-inventory/` | Chemical counts |
 | Sanitation Maintenance | `/api/primusgfs/sanitation-maintenance/` | Facility maintenance |
+| **CAC Audit Binder endpoints:** | | |
+| CAC Templates | `/api/primusgfs/cac-templates/` | Binder template CRUD |
+| Audit Binders | `/api/primusgfs/audit-binders/` | Binder instance CRUD |
+| Binder Sections | `/api/primusgfs/binder-sections/` | Section management |
+| Section Field Schema | `/api/primusgfs/binder-sections/<id>/field-schema/` | PDF field schema with values/sources |
+| Save PDF Fields | `/api/primusgfs/binder-sections/<id>/save_pdf_fields/` | Save user-edited PDF field values |
+| Reset PDF Fields | `/api/primusgfs/binder-sections/<id>/reset_pdf_fields/` | Reset to auto-fill defaults |
+| Apply Auto-Fill | `/api/primusgfs/binder-sections/<id>/apply_auto_fill/` | Bridge auto-fill to pdf_field_data |
+| Binder Documents | `/api/primusgfs/binder-documents/` | Supporting document uploads |
 
 ### FSMA Compliance
 
@@ -1324,6 +1391,7 @@ backend/api/services/
 ├── climate_features.py           # Climate data features
 ├── alternate_bearing.py          # Alternate bearing calculations
 ├── soil_survey_service.py        # Soil survey data
+├── cac_auto_fill.py              # CAC audit binder auto-fill bridge (NEW)
 │
 ├── compliance/                   # Compliance services
 │   ├── pesticide_compliance.py
@@ -1336,6 +1404,14 @@ backend/api/services/
 ├── analytics/                    # Analytics computation
 │
 ├── reporting/                    # Reporting utilities
+│
+├── primusgfs/                    # CAC PDF field mapping services (NEW)
+│   ├── __init__.py
+│   ├── cac_pdf_filler.py         # CACPDFFieldFiller: discover fields, generate with overrides
+│   ├── cac_pdf_generator.py      # PDF generation for CAC sections
+│   ├── cac_data_mapper.py        # CACDataMapper: resolve model data to PDF field names
+│   ├── cac_field_labels.py       # Human-readable labels for PDF field names
+│   └── cross_data_linker.py      # Cross-reference data linking
 │
 └── fsma/                         # FSMA services
     ├── phi_compliance.py
@@ -1361,6 +1437,13 @@ backend/api/services/
 **Yield Forecast Service** (`yield_forecast_service.py`):
 - ML-based yield prediction with soil, climate, and tree health features
 - Season comparison and alternate bearing analysis
+
+**CAC PDF Field Mapping** (`services/primusgfs/`):
+- `CACPDFFieldFiller.discover_fields()` scans template PDFs for AcroForm fields (cached per process)
+- `CACDataMapper.resolve_positional_fields()` maps model data to PDF field names
+- `cac_field_labels.py` maps field names (e.g. `1-a-100`) to human-readable labels
+- `generate_section_with_overrides()` applies auto-fill then user overrides
+- `cac_auto_fill.py` bridges auto-fill to `pdf_field_data` via `_bridge_auto_fill_to_pdf_fields()`
 
 **Proximity Calculator** (`proximity_calculator.py`):
 - Calculates distances to external disease detections
@@ -1490,7 +1573,7 @@ CELERY_BROKER_URL=redis://localhost:6379/0
 
 ### Backend Patterns
 
-1. **Domain-specific files**: Models in `models/`, views in `*_views.py`, serializers in `*_serializers.py` — all with re-export hubs
+1. **Domain-specific files**: Models in `models/` (17 files), views in `*_views.py` (28 files), serializers in `*_serializers.py` (21 files) — all with re-export hubs
 2. **ViewSets with company filtering**: All ViewSets filter by user's current company via `view_helpers.py`
 3. **LocationMixin**: Abstract base for GPS/PLSS fields (Farm, Field, WaterSource)
 4. **Audit logging**: Use `AuditLogMixin` or manual `AuditLog.objects.create()`
@@ -1504,10 +1587,10 @@ CELERY_BROKER_URL=redis://localhost:6379/0
 1. **URL-based routing**: Centralized in `routes.js` with VIEW_TO_PATH/PATH_TO_VIEW mappings
 2. **Context API**: Global state in AuthContext, DataContext, ModalContext
 3. **Modal pattern**: `GlobalModals` component renders all modals based on ModalContext state
-4. **API calls**: All through `services/api.js` with automatic token handling
+4. **API calls**: All through `services/api.js` with automatic HttpOnly cookie handling (withCredentials: true)
 5. **Form handling**: Controlled components with local state
 6. **Tailwind CSS**: Utility classes, no separate CSS files (except App.css for globals)
-7. **Component subdirectories**: Related components grouped (tree-detection/, primusgfs/, fsma/, compliance/, disease/, packinghouse/, yield-forecast/, dashboard/)
+7. **Component subdirectories**: Related components grouped (tree-detection/, primusgfs/, primusgfs/audit-binder/, fsma/, compliance/, disease/, packinghouse/, yield-forecast/, dashboard/)
 
 ### Naming Conventions
 
@@ -1526,12 +1609,13 @@ CELERY_BROKER_URL=redis://localhost:6379/0
 |---------|------|
 | Django settings | `backend/pesticide_tracker/settings.py` |
 | Environment variables | `backend/.env` |
-| **Models (package)** | **`backend/api/models/`** (16 domain files + `__init__.py` re-export hub) |
-| **Views (hub)** | **`backend/api/views.py`** (re-exports from 27 `*_views.py` files) |
-| **Serializers (hub)** | **`backend/api/serializers.py`** (re-exports from 20 `*_serializers.py` files) |
+| **Models (package)** | **`backend/api/models/`** (17 domain files + `__init__.py` re-export hub) |
+| **Views (hub)** | **`backend/api/views.py`** (re-exports from 28 `*_views.py` files) |
+| **Serializers (hub)** | **`backend/api/serializers.py`** (re-exports from 21 `*_serializers.py` files) |
 | API routes | `backend/api/urls.py` |
 | **View helpers** | **`backend/api/view_helpers.py`** (get_user_company, require_company) |
 | RLS Middleware | `backend/api/rls_middleware.py` |
+| Cookie auth | `backend/api/authentication.py` |
 | Auth views | `backend/api/auth_views.py` |
 | Tree detection views | `backend/api/tree_detection_views.py` |
 | Compliance views | `backend/api/compliance_views.py` |
@@ -1563,8 +1647,15 @@ CELERY_BROKER_URL=redis://localhost:6379/0
 | Compliance UI | `frontend/src/components/compliance/` |
 | Disease UI | `frontend/src/components/disease/` |
 | Packinghouse UI | `frontend/src/components/packinghouse/` |
+| Audit binder views | `backend/api/audit_binder_views.py` |
+| Audit binder models | `backend/api/models/audit_binder.py` |
+| CAC PDF filler | `backend/api/services/primusgfs/cac_pdf_filler.py` |
+| CAC data mapper | `backend/api/services/primusgfs/cac_data_mapper.py` |
+| CAC field labels | `backend/api/services/primusgfs/cac_field_labels.py` |
+| CAC auto-fill | `backend/api/services/cac_auto_fill.py` |
 | Yield forecast UI | `frontend/src/components/yield-forecast/` |
 | Dashboard UI | `frontend/src/components/dashboard/` |
+| Audit binder UI | `frontend/src/components/primusgfs/audit-binder/` |
 
 ---
 
@@ -1574,7 +1665,7 @@ When working on this codebase:
 
 1. **Check this document first** for architecture understanding
 2. **Follow existing patterns** - see Common Patterns section
-3. **Domain file structure** - models in `models/`, views in `*_views.py`, serializers in `*_serializers.py` — add to re-export hubs
+3. **Domain file structure** - models in `models/` (17 files), views in `*_views.py` (28 files), serializers in `*_serializers.py` (21 files) — add to re-export hubs
 4. **View helpers** - use `get_user_company()` and `require_company()` from `view_helpers.py` for company scoping
 5. **RLS awareness** - all tenant data is company-scoped
 6. **API consistency** - follow existing endpoint naming conventions

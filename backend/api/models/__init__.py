@@ -202,29 +202,46 @@ from .audit_binder import (
     BinderSupportingDocument,
 )
 
-# -- Primus GFS / GAP compliance ---------------------------------------------
-from .primusgfs import (
+# -- Primus GFS / GAP compliance (core) ----------------------------------------
+from .primusgfs_core import (
     DOCUMENT_TYPE_CHOICES, DOCUMENT_STATUS_CHOICES, PRIMUS_MODULE_CHOICES,
     AUDIT_TYPE_CHOICES, AUDIT_STATUS_CHOICES, FINDING_SEVERITY_CHOICES,
-    CORRECTIVE_ACTION_STATUS_CHOICES, LAND_USE_CHOICES, CONTAMINATION_RISK_CHOICES,
+    CORRECTIVE_ACTION_STATUS_CHOICES,
     ControlledDocument, DocumentRevisionHistory,
     InternalAudit, AuditFinding, CorrectiveAction,
+)
+
+# -- Primus GFS / land history -------------------------------------------------
+from .primusgfs_land import (
+    LAND_USE_CHOICES, CONTAMINATION_RISK_CHOICES,
     LandHistoryAssessment,
+)
+
+# -- Primus GFS / supply & food defense ----------------------------------------
+from .primusgfs_supply import (
     SUPPLIER_STATUS_CHOICES, MATERIAL_TYPE_CHOICES,
     RECALL_STATUS_CHOICES, THREAT_LEVEL_CHOICES,
     ApprovedSupplier, IncomingMaterialVerification,
-    MockRecall, FoodDefensePlan, FieldSanitationLog,
+    MockRecall, FoodDefensePlan,
+)
+
+# -- Primus GFS / field operations ---------------------------------------------
+from .primusgfs_operations import (
     CALIBRATION_STATUS_CHOICES, CALIBRATION_METHOD_CHOICES,
     EQUIPMENT_TYPE_CHOICES, PEST_TYPE_CHOICES,
     PEST_ACTIVITY_CHOICES, INSPECTION_STATUS_CHOICES,
-    EquipmentCalibration, PestControlProgram, PestMonitoringLog,
-    PreHarvestInspection,
-    # CAC Food Safety Manual V5.0 additions
+    FieldSanitationLog, EquipmentCalibration,
+    PestControlProgram, PestMonitoringLog, PreHarvestInspection,
+)
+
+# -- Primus GFS / CAC Food Safety Manual V5.0 ----------------------------------
+from .primusgfs_cac import (
     QUARTER_CHOICES, TRAINING_CATEGORY_CHOICES, LANGUAGE_CHOICES,
     RISK_LEVEL_CHOICES, VERIFICATION_TYPE_CHOICES, VIOLATION_TYPE_CHOICES,
     HOLD_STATUS_CHOICES, HOLD_REASON_CHOICES, NUOCA_CATEGORY_CHOICES,
     CHEMICAL_TYPE_CHOICES, EMERGENCY_CONTACT_TYPE_CHOICES,
     ROLE_CATEGORY_CHOICES, FRAUD_VULNERABILITY_CHOICES,
+    SIGNER_ROLE_CHOICES,
     FoodSafetyProfile, FoodSafetyRoleAssignment,
     FoodSafetyCommitteeMeeting, ManagementVerificationReview,
     TrainingRecord, WorkerTrainingSession,
@@ -232,7 +249,7 @@ from .primusgfs import (
     EmployeeNonConformance, ProductHoldRelease,
     SupplierVerificationLog, FoodFraudAssessment,
     EmergencyContact, ChemicalInventoryLog, SanitationMaintenanceLog,
-    SIGNER_ROLE_CHOICES, CACDocumentSignature,
+    CACDocumentSignature,
 )
 
 # -- PUR / tank mix / unified product ----------------------------------------

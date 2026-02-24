@@ -20,7 +20,7 @@ from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 
 from .permissions import HasCompanyAccess
 from .audit_utils import AuditLogMixin
-from .view_helpers import get_user_company, require_company
+from .view_helpers import get_user_company, require_company, CompanyFilteredViewSet
 
 from .models import (
     ControlledDocument, DocumentRevisionHistory,
@@ -43,40 +43,40 @@ from .models import (
 )
 
 from .primusgfs_serializers import (
-    ControlledDocumentSerializer, ControlledDocumentListSerializer,
+    ControlledDocumentSerializer,
     DocumentRevisionHistorySerializer,
-    InternalAuditSerializer, InternalAuditListSerializer,
+    InternalAuditSerializer,
     AuditFindingSerializer,
-    CorrectiveActionSerializer, CorrectiveActionListSerializer,
-    LandHistoryAssessmentSerializer, LandHistoryAssessmentListSerializer,
-    ApprovedSupplierSerializer, ApprovedSupplierListSerializer,
-    IncomingMaterialVerificationSerializer, IncomingMaterialVerificationListSerializer,
-    MockRecallSerializer, MockRecallListSerializer,
-    FoodDefensePlanSerializer, FoodDefensePlanListSerializer,
-    FieldSanitationLogSerializer, FieldSanitationLogListSerializer,
-    EquipmentCalibrationSerializer, EquipmentCalibrationListSerializer,
-    PestControlProgramSerializer, PestControlProgramListSerializer,
-    PestMonitoringLogSerializer, PestMonitoringLogListSerializer,
-    PreHarvestInspectionSerializer, PreHarvestInspectionListSerializer,
+    CorrectiveActionSerializer,
+    LandHistoryAssessmentSerializer,
+    ApprovedSupplierSerializer,
+    IncomingMaterialVerificationSerializer,
+    MockRecallSerializer,
+    FoodDefensePlanSerializer,
+    FieldSanitationLogSerializer,
+    EquipmentCalibrationSerializer,
+    PestControlProgramSerializer,
+    PestMonitoringLogSerializer,
+    PreHarvestInspectionSerializer,
     # CAC Food Safety Manual V5.0
     FoodSafetyProfileSerializer,
     FoodSafetyRoleAssignmentSerializer,
-    FoodSafetyCommitteeMeetingSerializer, FoodSafetyCommitteeMeetingListSerializer,
-    ManagementVerificationReviewSerializer, ManagementVerificationReviewListSerializer,
-    TrainingRecordSerializer, TrainingRecordListSerializer,
-    WorkerTrainingSessionSerializer, WorkerTrainingSessionListSerializer,
-    PerimeterMonitoringLogSerializer, PerimeterMonitoringLogListSerializer,
-    PreSeasonChecklistSerializer, PreSeasonChecklistListSerializer,
-    FieldRiskAssessmentSerializer, FieldRiskAssessmentListSerializer,
-    EmployeeNonConformanceSerializer, EmployeeNonConformanceListSerializer,
-    ProductHoldReleaseSerializer, ProductHoldReleaseListSerializer,
+    FoodSafetyCommitteeMeetingSerializer,
+    ManagementVerificationReviewSerializer,
+    TrainingRecordSerializer,
+    WorkerTrainingSessionSerializer,
+    PerimeterMonitoringLogSerializer,
+    PreSeasonChecklistSerializer,
+    FieldRiskAssessmentSerializer,
+    EmployeeNonConformanceSerializer,
+    ProductHoldReleaseSerializer,
     SupplierVerificationLogSerializer,
     FoodFraudAssessmentSerializer,
     EmergencyContactSerializer,
-    ChemicalInventoryLogSerializer, ChemicalInventoryLogListSerializer,
-    SanitationMaintenanceLogSerializer, SanitationMaintenanceLogListSerializer,
+    ChemicalInventoryLogSerializer,
+    SanitationMaintenanceLogSerializer,
     # CAC PDF & Signature
-    CACDocumentSignatureSerializer, CACDocumentSignatureListSerializer,
+    CACDocumentSignatureSerializer,
     CACSignRequestSerializer,
 )
 

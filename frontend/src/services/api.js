@@ -87,6 +87,52 @@ api.interceptors.response.use(
 );
 
 // =============================================================================
+// CRUD API FACTORY
+// =============================================================================
+// Generates standard getAll/get/getById/create/update/delete methods for a
+// given endpoint prefix. Spread the result and add custom methods per API.
+//
+//   export const foosAPI = {
+//     ...createCRUDAPI('foos'),
+//     myCustomAction: (id) => api.post(`/foos/${id}/custom/`),
+//   };
+// =============================================================================
+
+function createCRUDAPI(endpoint) {
+  const base = `/${endpoint}/`;
+  return {
+    getAll: (params = {}) => api.get(base, { params }),
+    get: (id) => api.get(`${base}${id}/`),
+    getById: (id) => api.get(`${base}${id}/`),
+    create: (data) => api.post(base, data),
+    update: (id, data) => api.put(`${base}${id}/`, data),
+    patch: (id, data) => api.patch(`${base}${id}/`, data),
+    delete: (id) => api.delete(`${base}${id}/`),
+  };
+}
+
+// Variant for endpoints that accept FormData (file uploads).
+// Uses multipart/form-data header when data is FormData, JSON otherwise.
+function createCRUDAPIWithFiles(endpoint) {
+  const base = `/${endpoint}/`;
+  const maybeFile = (method, url, data) => {
+    if (data instanceof FormData) {
+      return api[method](url, data, { headers: { 'Content-Type': 'multipart/form-data' } });
+    }
+    return api[method](url, data);
+  };
+  return {
+    getAll: (params = {}) => api.get(base, { params }),
+    get: (id) => api.get(`${base}${id}/`),
+    getById: (id) => api.get(`${base}${id}/`),
+    create: (data) => maybeFile('post', base, data),
+    update: (id, data) => maybeFile('put', `${base}${id}/`, data),
+    patch: (id, data) => maybeFile('patch', `${base}${id}/`, data),
+    delete: (id) => api.delete(`${base}${id}/`),
+  };
+}
+
+// =============================================================================
 // AUTHENTICATION API (NEW)
 // =============================================================================
 
@@ -363,12 +409,7 @@ export const analyticsAPI = {
 // =============================================================================
 
 export const farmsAPI = {
-  getAll: () => api.get('/farms/'),
-  getById: (id) => api.get(`/farms/${id}/`),
-  create: (data) => api.post('/farms/', data),
-  update: (id, data) => api.put(`/farms/${id}/`, data),
-  patch: (id, data) => api.patch(`/farms/${id}/`, data),
-  delete: (id) => api.delete(`/farms/${id}/`),
+  ...createCRUDAPI('farms'),
   getFields: (id) => api.get(`/farms/${id}/fields/`),
   bulkAddParcels: (farmId, parcels, replace = false) =>
     api.post(`/farms/${farmId}/bulk-parcels/`, { parcels, replace }),
@@ -381,11 +422,7 @@ export const farmsAPI = {
 // =============================================================================
 
 export const fieldsAPI = {
-  getAll: () => api.get('/fields/'),
-  getById: (id) => api.get(`/fields/${id}/`),
-  create: (data) => api.post('/fields/', data),
-  update: (id, data) => api.put(`/fields/${id}/`, data),
-  delete: (id) => api.delete(`/fields/${id}/`),
+  ...createCRUDAPI('fields'),
   getApplications: (id) => api.get(`/fields/${id}/applications/`),
 };
 
@@ -394,11 +431,8 @@ export const fieldsAPI = {
 // =============================================================================
 
 export const productsAPI = {
-  getAll: () => api.get('/products/'),
+  ...createCRUDAPI('products'),
   getByEPA: (epaNumber) => api.get(`/products/${epaNumber}/`),
-  create: (data) => api.post('/products/', data),
-  update: (epaNumber, data) => api.put(`/products/${epaNumber}/`, data),
-  delete: (epaNumber) => api.delete(`/products/${epaNumber}/`),
 };
 
 // =============================================================================
@@ -406,11 +440,7 @@ export const productsAPI = {
 // =============================================================================
 
 export const applicationsAPI = {
-  getAll: () => api.get('/applications/'),
-  getById: (id) => api.get(`/applications/${id}/`),
-  create: (data) => api.post('/applications/', data),
-  update: (id, data) => api.put(`/applications/${id}/`, data),
-  delete: (id) => api.delete(`/applications/${id}/`),
+  ...createCRUDAPI('applications'),
   getPending: () => api.get('/applications/pending/'),
   getReadyForPUR: () => api.get('/applications/ready_for_pur/'),
   markComplete: (id) => api.post(`/applications/${id}/mark_complete/`),
@@ -422,12 +452,7 @@ export const applicationsAPI = {
 // =============================================================================
 
 export const applicationEventsAPI = {
-  getAll: (params) => api.get('/application-events/', { params }),
-  getById: (id) => api.get(`/application-events/${id}/`),
-  create: (data) => api.post('/application-events/', data),
-  update: (id, data) => api.put(`/application-events/${id}/`, data),
-  delete: (id) => api.delete(`/application-events/${id}/`),
-  // PUR reporting
+  ...createCRUDAPI('application-events'),
   validatePUR: (data) => api.post('/application-events/validate_pur/', data),
   purSummary: (data) => api.post('/application-events/pur_summary/', data),
   exportPURCSV: (data) => api.post('/application-events/export_pur_csv/', data, {
@@ -436,19 +461,12 @@ export const applicationEventsAPI = {
 };
 
 export const unifiedProductsAPI = {
-  getAll: (params) => api.get('/unified-products/', { params }),
+  ...createCRUDAPI('unified-products'),
   search: (params) => api.get('/unified-products/search/', { params }),
-  create: (data) => api.post('/unified-products/', data),
-  update: (id, data) => api.put(`/unified-products/${id}/`, data),
-  delete: (id) => api.delete(`/unified-products/${id}/`),
 };
 
 export const applicatorsAPI = {
-  getAll: () => api.get('/applicators/'),
-  getById: (id) => api.get(`/applicators/${id}/`),
-  create: (data) => api.post('/applicators/', data),
-  update: (id, data) => api.put(`/applicators/${id}/`, data),
-  delete: (id) => api.delete(`/applicators/${id}/`),
+  ...createCRUDAPI('applicators'),
 };
 
 export const purImportAPI = {
@@ -466,11 +484,7 @@ export const purImportAPI = {
 // =============================================================================
 
 export const waterSourcesAPI = {
-  getAll: () => api.get('/water-sources/'),
-  getById: (id) => api.get(`/water-sources/${id}/`),
-  create: (data) => api.post('/water-sources/', data),
-  update: (id, data) => api.put(`/water-sources/${id}/`, data),
-  delete: (id) => api.delete(`/water-sources/${id}/`),
+  ...createCRUDAPI('water-sources'),
   getTests: (id) => api.get(`/water-sources/${id}/tests/`),
   getOverdue: () => api.get('/water-sources/overdue/'),
 };
@@ -480,11 +494,7 @@ export const waterSourcesAPI = {
 // =============================================================================
 
 export const waterTestsAPI = {
-  getAll: () => api.get('/water-tests/'),
-  getById: (id) => api.get(`/water-tests/${id}/`),
-  create: (data) => api.post('/water-tests/', data),
-  update: (id, data) => api.put(`/water-tests/${id}/`, data),
-  delete: (id) => api.delete(`/water-tests/${id}/`),
+  ...createCRUDAPI('water-tests'),
   getFailed: () => api.get('/water-tests/failed/'),
   getBySource: (sourceId) => api.get(`/water-tests/?water_source=${sourceId}`),
 };
@@ -527,29 +537,10 @@ export const reportsAPI = {
 // =============================================================================
 
 export const buyersAPI = {
-  getAll: (params = {}) => 
-    api.get('/buyers/', { params }),
-  
-  getSimpleList: () => 
-    api.get('/buyers/', { params: { simple: true, active: true } }),
-  
-  get: (id) => 
-    api.get(`/buyers/${id}/`),
-  
-  create: (data) => 
-    api.post('/buyers/', data),
-  
-  update: (id, data) => 
-    api.put(`/buyers/${id}/`, data),
-  
-  delete: (id) =>
-    api.delete(`/buyers/${id}/`),
-
-  getLoadHistory: (id) =>
-    api.get(`/buyers/${id}/load_history/`),
-
-  getPerformance: (id) =>
-    api.get(`/buyers/${id}/performance/`),
+  ...createCRUDAPI('buyers'),
+  getSimpleList: () => api.get('/buyers/', { params: { simple: true, active: true } }),
+  getLoadHistory: (id) => api.get(`/buyers/${id}/load_history/`),
+  getPerformance: (id) => api.get(`/buyers/${id}/performance/`),
 };
 
 // =============================================================================
@@ -557,32 +548,11 @@ export const buyersAPI = {
 // =============================================================================
 
 export const laborContractorsAPI = {
-  getAll: (params = {}) => 
-    api.get('/labor-contractors/', { params }),
-  
-  getSimpleList: () => 
-    api.get('/labor-contractors/', { params: { simple: true, active: true } }),
-  
-  get: (id) => 
-    api.get(`/labor-contractors/${id}/`),
-  
-  create: (data) => 
-    api.post('/labor-contractors/', data),
-  
-  update: (id, data) => 
-    api.put(`/labor-contractors/${id}/`, data),
-  
-  delete: (id) => 
-    api.delete(`/labor-contractors/${id}/`),
-  
-  getJobHistory: (id) =>
-    api.get(`/labor-contractors/${id}/job_history/`),
-
-  getExpiringSoon: () =>
-    api.get('/labor-contractors/expiring_soon/'),
-
-  getPerformance: (id) =>
-    api.get(`/labor-contractors/${id}/performance/`),
+  ...createCRUDAPI('labor-contractors'),
+  getSimpleList: () => api.get('/labor-contractors/', { params: { simple: true, active: true } }),
+  getJobHistory: (id) => api.get(`/labor-contractors/${id}/job_history/`),
+  getExpiringSoon: () => api.get('/labor-contractors/expiring_soon/'),
+  getPerformance: (id) => api.get(`/labor-contractors/${id}/performance/`),
 };
 
 // =============================================================================
@@ -590,41 +560,14 @@ export const laborContractorsAPI = {
 // =============================================================================
 
 export const harvestsAPI = {
-  getAll: (params = {}) => 
-    api.get('/harvests/', { params }),
-  
-  get: (id) => 
-    api.get(`/harvests/${id}/`),
-  
-  create: (data) => 
-    api.post('/harvests/', data),
-  
-  update: (id, data) => 
-    api.put(`/harvests/${id}/`, data),
-  
-  delete: (id) => 
-    api.delete(`/harvests/${id}/`),
-  
-  checkPHI: (fieldId, proposedDate) => 
-    api.post('/harvests/check_phi/', {
-      field_id: fieldId,
-      proposed_harvest_date: proposedDate
-    }),
-  
-  getStatistics: (params = {}) => 
-    api.get('/harvests/statistics/', { params }),
-  
-  markComplete: (id) => 
-    api.post(`/harvests/${id}/mark_complete/`),
-  
-  markVerified: (id) =>
-    api.post(`/harvests/${id}/mark_verified/`),
-
-  getByField: (params = {}) =>
-    api.get('/harvests/by_field/', { params }),
-
-  getCostAnalysis: (params = {}) =>
-    api.get('/harvests/cost_analysis/', { params }),
+  ...createCRUDAPI('harvests'),
+  checkPHI: (fieldId, proposedDate) =>
+    api.post('/harvests/check_phi/', { field_id: fieldId, proposed_harvest_date: proposedDate }),
+  getStatistics: (params = {}) => api.get('/harvests/statistics/', { params }),
+  markComplete: (id) => api.post(`/harvests/${id}/mark_complete/`),
+  markVerified: (id) => api.post(`/harvests/${id}/mark_verified/`),
+  getByField: (params = {}) => api.get('/harvests/by_field/', { params }),
+  getCostAnalysis: (params = {}) => api.get('/harvests/cost_analysis/', { params }),
 };
 
 // =============================================================================
@@ -632,28 +575,10 @@ export const harvestsAPI = {
 // =============================================================================
 
 export const harvestLoadsAPI = {
-  getAll: (params = {}) => 
-    api.get('/harvest-loads/', { params }),
-  
-  get: (id) => 
-    api.get(`/harvest-loads/${id}/`),
-  
-  create: (data) => 
-    api.post('/harvest-loads/', data),
-  
-  update: (id, data) => 
-    api.put(`/harvest-loads/${id}/`, data),
-  
-  delete: (id) => 
-    api.delete(`/harvest-loads/${id}/`),
-  
-  markPaid: (id, paymentDate = null) => 
-    api.post(`/harvest-loads/${id}/mark_paid/`, { 
-      payment_date: paymentDate 
-    }),
-  
-  getPendingPayments: () => 
-    api.get('/harvest-loads/pending_payments/'),
+  ...createCRUDAPI('harvest-loads'),
+  markPaid: (id, paymentDate = null) =>
+    api.post(`/harvest-loads/${id}/mark_paid/`, { payment_date: paymentDate }),
+  getPendingPayments: () => api.get('/harvest-loads/pending_payments/'),
 };
 
 // =============================================================================
@@ -661,23 +586,8 @@ export const harvestLoadsAPI = {
 // =============================================================================
 
 export const harvestLaborAPI = {
-  getAll: (params = {}) => 
-    api.get('/harvest-labor/', { params }),
-  
-  get: (id) => 
-    api.get(`/harvest-labor/${id}/`),
-  
-  create: (data) => 
-    api.post('/harvest-labor/', data),
-  
-  update: (id, data) => 
-    api.put(`/harvest-labor/${id}/`, data),
-  
-  delete: (id) => 
-    api.delete(`/harvest-labor/${id}/`),
-  
-  getCostAnalysis: (params = {}) => 
-    api.get('/harvest-labor/cost_analysis/', { params }),
+  ...createCRUDAPI('harvest-labor'),
+  getCostAnalysis: (params = {}) => api.get('/harvest-labor/cost_analysis/', { params }),
 };
 
 // =============================================================================
@@ -705,49 +615,29 @@ export const wellsAPI = {
 };
 
 export const wellReadingsAPI = {
-  getAll: (params = {}) => api.get('/well-readings/', { params }),
-  get: (id) => api.get(`/well-readings/${id}/`),
-  create: (data) => api.post('/well-readings/', data),
-  update: (id, data) => api.put(`/well-readings/${id}/`, data),
-  delete: (id) => api.delete(`/well-readings/${id}/`),
+  ...createCRUDAPI('well-readings'),
   byPeriod: (params = {}) => api.get('/well-readings/by_period/', { params }),
 };
 
 export const meterCalibrationsAPI = {
-  getAll: (params = {}) => api.get('/meter-calibrations/', { params }),
-  get: (id) => api.get(`/meter-calibrations/${id}/`),
-  create: (data) => api.post('/meter-calibrations/', data),
-  update: (id, data) => api.put(`/meter-calibrations/${id}/`, data),
-  delete: (id) => api.delete(`/meter-calibrations/${id}/`),
+  ...createCRUDAPI('meter-calibrations'),
   expiring: (days = 90) => api.get('/meter-calibrations/expiring/', { params: { days } }),
 };
 
 export const waterAllocationsAPI = {
-  getAll: (params = {}) => api.get('/water-allocations/', { params }),
-  get: (id) => api.get(`/water-allocations/${id}/`),
-  create: (data) => api.post('/water-allocations/', data),
-  update: (id, data) => api.put(`/water-allocations/${id}/`, data),
-  delete: (id) => api.delete(`/water-allocations/${id}/`),
+  ...createCRUDAPI('water-allocations'),
   summary: (params = {}) => api.get('/water-allocations/summary/', { params }),
 };
 
 export const extractionReportsAPI = {
-  getAll: (params = {}) => api.get('/extraction-reports/', { params }),
-  get: (id) => api.get(`/extraction-reports/${id}/`),
-  create: (data) => api.post('/extraction-reports/', data),
-  update: (id, data) => api.put(`/extraction-reports/${id}/`, data),
-  delete: (id) => api.delete(`/extraction-reports/${id}/`),
+  ...createCRUDAPI('extraction-reports'),
   generate: (data) => api.post('/extraction-reports/generate/', data),
   submit: (id) => api.post(`/extraction-reports/${id}/submit/`),
   confirm: (id, data) => api.post(`/extraction-reports/${id}/confirm/`, data),
 };
 
 export const irrigationEventsAPI = {
-  getAll: (params = {}) => api.get('/irrigation-events/', { params }),
-  get: (id) => api.get(`/irrigation-events/${id}/`),
-  create: (data) => api.post('/irrigation-events/', data),
-  update: (id, data) => api.put(`/irrigation-events/${id}/`, data),
-  delete: (id) => api.delete(`/irrigation-events/${id}/`),
+  ...createCRUDAPI('irrigation-events'),
   byField: (params = {}) => api.get('/irrigation-events/by_field/', { params }),
   byWell: (params = {}) => api.get('/irrigation-events/by_well/', { params }),
 };
@@ -761,32 +651,20 @@ export const sgmaAPI = {
 // =============================================================================
 
 export const fertilizerProductsAPI = {
-  getAll: (params = {}) => api.get('/fertilizer-products/', { params }),
-  get: (id) => api.get(`/fertilizer-products/${id}/`),
-  create: (data) => api.post('/fertilizer-products/', data),
-  update: (id, data) => api.put(`/fertilizer-products/${id}/`, data),
-  delete: (id) => api.delete(`/fertilizer-products/${id}/`),
+  ...createCRUDAPI('fertilizer-products'),
   search: (q) => api.get('/fertilizer-products/search/', { params: { q } }),
   seedCommon: () => api.post('/fertilizer-products/seed_common/'),
 };
 
 export const nutrientApplicationsAPI = {
-  getAll: (params = {}) => api.get('/nutrient-applications/', { params }),
-  get: (id) => api.get(`/nutrient-applications/${id}/`),
-  create: (data) => api.post('/nutrient-applications/', data),
-  update: (id, data) => api.put(`/nutrient-applications/${id}/`, data),
-  delete: (id) => api.delete(`/nutrient-applications/${id}/`),
+  ...createCRUDAPI('nutrient-applications'),
   byField: (params = {}) => api.get('/nutrient-applications/by_field/', { params }),
   byProduct: (params = {}) => api.get('/nutrient-applications/by_product/', { params }),
   byMonth: (params = {}) => api.get('/nutrient-applications/by_month/', { params }),
 };
 
 export const nutrientPlansAPI = {
-  getAll: (params = {}) => api.get('/nutrient-plans/', { params }),
-  get: (id) => api.get(`/nutrient-plans/${id}/`),
-  create: (data) => api.post('/nutrient-plans/', data),
-  update: (id, data) => api.put(`/nutrient-plans/${id}/`, data),
-  delete: (id) => api.delete(`/nutrient-plans/${id}/`),
+  ...createCRUDAPI('nutrient-plans'),
 };
 
 export const nitrogenReportsAPI = {
@@ -1000,14 +878,7 @@ export const HARVEST_CONSTANTS = {
 };
 
 export const farmParcelsAPI = {
-  // Standard CRUD
-  getAll: (params = {}) => api.get('/farm-parcels/', { params }),
-  get: (id) => api.get(`/farm-parcels/${id}/`),
-  create: (data) => api.post('/farm-parcels/', data),
-  update: (id, data) => api.put(`/farm-parcels/${id}/`, data),
-  delete: (id) => api.delete(`/farm-parcels/${id}/`),
-
-  // Farm-specific endpoints
+  ...createCRUDAPI('farm-parcels'),
   getForFarm: (farmId) => api.get(`/farms/${farmId}/parcels/`),
   addToFarm: (farmId, data) => api.post(`/farms/${farmId}/parcels/`, data),
   bulkAdd: (farmId, parcels, replace = false) =>
@@ -1043,22 +914,13 @@ export const quarantineAPI = {
 // =============================================================================
 
 export const irrigationZonesAPI = {
-  // Standard CRUD
-  getAll: (params = {}) => api.get('/irrigation-zones/', { params }),
-  get: (id) => api.get(`/irrigation-zones/${id}/`),
-  create: (data) => api.post('/irrigation-zones/', data),
-  update: (id, data) => api.put(`/irrigation-zones/${id}/`, data),
-  delete: (id) => api.delete(`/irrigation-zones/${id}/`),
-
-  // Zone actions
+  ...createCRUDAPI('irrigation-zones'),
   getStatus: (id) => api.get(`/irrigation-zones/${id}/status/`),
   calculate: (id, data = {}) => api.post(`/irrigation-zones/${id}/calculate/`, data),
   getEvents: (id) => api.get(`/irrigation-zones/${id}/events/`),
   recordEvent: (id, data) => api.post(`/irrigation-zones/${id}/events/`, data),
   getRecommendations: (id) => api.get(`/irrigation-zones/${id}/recommendations/`),
   getWeather: (id, days = 7) => api.get(`/irrigation-zones/${id}/weather/`, { params: { days } }),
-
-  // Filtered lists
   byField: (fieldId) => api.get('/irrigation-zones/', { params: { field: fieldId } }),
   byFarm: (farmId) => api.get('/irrigation-zones/', { params: { farm: farmId } }),
 };
@@ -1078,26 +940,12 @@ export const irrigationRecommendationsAPI = {
 };
 
 export const kcProfilesAPI = {
-  // Standard CRUD
-  getAll: (params = {}) => api.get('/kc-profiles/', { params }),
-  get: (id) => api.get(`/kc-profiles/${id}/`),
-  create: (data) => api.post('/kc-profiles/', data),
-  update: (id, data) => api.put(`/kc-profiles/${id}/`, data),
-  delete: (id) => api.delete(`/kc-profiles/${id}/`),
-
-  // Get system defaults
+  ...createCRUDAPI('kc-profiles'),
   defaults: () => api.get('/kc-profiles/', { params: { zone__isnull: true } }),
 };
 
 export const soilMoistureReadingsAPI = {
-  // Standard CRUD
-  getAll: (params = {}) => api.get('/soil-moisture-readings/', { params }),
-  get: (id) => api.get(`/soil-moisture-readings/${id}/`),
-  create: (data) => api.post('/soil-moisture-readings/', data),
-  update: (id, data) => api.put(`/soil-moisture-readings/${id}/`, data),
-  delete: (id) => api.delete(`/soil-moisture-readings/${id}/`),
-
-  // Filtered lists
+  ...createCRUDAPI('soil-moisture-readings'),
   byZone: (zoneId) => api.get('/soil-moisture-readings/', { params: { zone: zoneId } }),
 };
 
@@ -1115,21 +963,13 @@ export const irrigationDashboardAPI = {
 // =============================================================================
 
 export const cropsAPI = {
-  getAll: (params = {}) => api.get('/crops/', { params }),
-  getById: (id) => api.get(`/crops/${id}/`),
-  create: (data) => api.post('/crops/', data),
-  update: (id, data) => api.put(`/crops/${id}/`, data),
-  delete: (id) => api.delete(`/crops/${id}/`),
+  ...createCRUDAPI('crops'),
   getCategories: () => api.get('/crops/categories/'),
   search: (q) => api.get('/crops/search/', { params: { q } }),
 };
 
 export const rootstocksAPI = {
-  getAll: (params = {}) => api.get('/rootstocks/', { params }),
-  getById: (id) => api.get(`/rootstocks/${id}/`),
-  create: (data) => api.post('/rootstocks/', data),
-  update: (id, data) => api.put(`/rootstocks/${id}/`, data),
-  delete: (id) => api.delete(`/rootstocks/${id}/`),
+  ...createCRUDAPI('rootstocks'),
   forCrop: (cropId) => api.get('/rootstocks/for_crop/', { params: { crop_id: cropId } }),
 };
 
@@ -1324,31 +1164,10 @@ export const complianceProfileAPI = {
  * Compliance Deadlines - Track regulatory deadlines
  */
 export const complianceDeadlinesAPI = {
-  /** Get all deadlines with optional filters */
-  getAll: (params = {}) => api.get('/compliance/deadlines/', { params }),
-
-  /** Get a specific deadline */
-  get: (id) => api.get(`/compliance/deadlines/${id}/`),
-
-  /** Create a new deadline */
-  create: (data) => api.post('/compliance/deadlines/', data),
-
-  /** Update a deadline */
-  update: (id, data) => api.put(`/compliance/deadlines/${id}/`, data),
-
-  /** Delete a deadline */
-  delete: (id) => api.delete(`/compliance/deadlines/${id}/`),
-
-  /** Mark deadline as completed */
+  ...createCRUDAPI('compliance/deadlines'),
   complete: (id, data = {}) => api.post(`/compliance/deadlines/${id}/complete/`, data),
-
-  /** Skip a deadline */
   skip: (id, reason = '') => api.post(`/compliance/deadlines/${id}/skip/`, { reason }),
-
-  /** Get upcoming deadlines */
   upcoming: (days = 30) => api.get('/compliance/deadlines/upcoming/', { params: { days } }),
-
-  /** Get overdue deadlines */
   overdue: () => api.get('/compliance/deadlines/overdue/'),
 };
 
@@ -1376,25 +1195,8 @@ export const complianceAlertsAPI = {
  * Licenses - Track applicator licenses, certifications, etc.
  */
 export const licensesAPI = {
-  /** Get all licenses */
-  getAll: (params = {}) => api.get('/compliance/licenses/', { params }),
-
-  /** Get a specific license */
-  get: (id) => api.get(`/compliance/licenses/${id}/`),
-
-  /** Create a new license */
-  create: (data) => api.post('/compliance/licenses/', data),
-
-  /** Update a license */
-  update: (id, data) => api.put(`/compliance/licenses/${id}/`, data),
-
-  /** Delete a license */
-  delete: (id) => api.delete(`/compliance/licenses/${id}/`),
-
-  /** Get expiring licenses */
+  ...createCRUDAPI('compliance/licenses'),
   expiring: (days = 90) => api.get('/compliance/licenses/expiring/', { params: { days } }),
-
-  /** Start renewal process */
   startRenewal: (id) => api.post(`/compliance/licenses/${id}/start_renewal/`),
 };
 
@@ -1402,28 +1204,9 @@ export const licensesAPI = {
  * WPS Training Records - Worker Protection Standard training tracking
  */
 export const wpsTrainingAPI = {
-  /** Get all training records */
-  getAll: (params = {}) => api.get('/compliance/wps-training/', { params }),
-
-  /** Get a specific training record */
-  get: (id) => api.get(`/compliance/wps-training/${id}/`),
-
-  /** Create a new training record */
-  create: (data) => api.post('/compliance/wps-training/', data),
-
-  /** Update a training record */
-  update: (id, data) => api.put(`/compliance/wps-training/${id}/`, data),
-
-  /** Delete a training record */
-  delete: (id) => api.delete(`/compliance/wps-training/${id}/`),
-
-  /** Get expiring training */
+  ...createCRUDAPI('compliance/wps-training'),
   expiring: (days = 90) => api.get('/compliance/wps-training/expiring/', { params: { days } }),
-
-  /** Get training by worker */
   byWorker: (workerId) => api.get('/compliance/wps-training/by_worker/', { params: { worker_id: workerId } }),
-
-  /** Get WPS dashboard data */
   dashboard: () => api.get('/compliance/wps-training/dashboard/'),
 };
 
@@ -1431,22 +1214,7 @@ export const wpsTrainingAPI = {
  * Central Posting Locations - WPS poster/SDS display locations
  */
 export const postingLocationsAPI = {
-  /** Get all posting locations */
-  getAll: (params = {}) => api.get('/compliance/posting-locations/', { params }),
-
-  /** Get a specific posting location */
-  get: (id) => api.get(`/compliance/posting-locations/${id}/`),
-
-  /** Create a new posting location */
-  create: (data) => api.post('/compliance/posting-locations/', data),
-
-  /** Update a posting location */
-  update: (id, data) => api.put(`/compliance/posting-locations/${id}/`, data),
-
-  /** Delete a posting location */
-  delete: (id) => api.delete(`/compliance/posting-locations/${id}/`),
-
-  /** Verify posting location requirements */
+  ...createCRUDAPI('compliance/posting-locations'),
   verify: (id, data = {}) => api.post(`/compliance/posting-locations/${id}/verify/`, data),
 };
 
@@ -1471,31 +1239,10 @@ export const reiPostingsAPI = {
  * Compliance Reports - Generated regulatory reports (PUR, SGMA, etc.)
  */
 export const complianceReportsAPI = {
-  /** Get all compliance reports */
-  getAll: (params = {}) => api.get('/compliance/reports/', { params }),
-
-  /** Get a specific report */
-  get: (id) => api.get(`/compliance/reports/${id}/`),
-
-  /** Create a new report */
-  create: (data) => api.post('/compliance/reports/', data),
-
-  /** Update a report */
-  update: (id, data) => api.put(`/compliance/reports/${id}/`, data),
-
-  /** Delete a report */
-  delete: (id) => api.delete(`/compliance/reports/${id}/`),
-
-  /** Generate a new report */
+  ...createCRUDAPI('compliance/reports'),
   generate: (data) => api.post('/compliance/reports/generate/', data),
-
-  /** Validate report data */
   validate: (id) => api.post(`/compliance/reports/${id}/validate/`),
-
-  /** Submit report */
   submit: (id, data = {}) => api.post(`/compliance/reports/${id}/submit/`, data),
-
-  /** Auto-generate PUR data from application records */
   generatePUR: (periodStart, periodEnd) =>
     api.post('/compliance/reports/generate-pur/', { period_start: periodStart, period_end: periodEnd }),
 };
@@ -1504,25 +1251,8 @@ export const complianceReportsAPI = {
  * Incident Reports - Safety incidents, spills, exposures
  */
 export const incidentReportsAPI = {
-  /** Get all incident reports */
-  getAll: (params = {}) => api.get('/compliance/incidents/', { params }),
-
-  /** Get a specific incident */
-  get: (id) => api.get(`/compliance/incidents/${id}/`),
-
-  /** Create a new incident report */
-  create: (data) => api.post('/compliance/incidents/', data),
-
-  /** Update an incident report */
-  update: (id, data) => api.put(`/compliance/incidents/${id}/`, data),
-
-  /** Delete an incident report */
-  delete: (id) => api.delete(`/compliance/incidents/${id}/`),
-
-  /** Start investigation */
+  ...createCRUDAPI('compliance/incidents'),
   startInvestigation: (id) => api.post(`/compliance/incidents/${id}/start_investigation/`),
-
-  /** Resolve incident */
   resolve: (id, data) => api.post(`/compliance/incidents/${id}/resolve/`, data),
 };
 
@@ -1578,11 +1308,7 @@ export const inspectorReportAPI = {
  * NOI Submissions - Notice of Intent for restricted materials
  */
 export const noiSubmissionAPI = {
-  getAll: (params = {}) => api.get('/compliance/noi-submissions/', { params }),
-  get: (id) => api.get(`/compliance/noi-submissions/${id}/`),
-  create: (data) => api.post('/compliance/noi-submissions/', data),
-  update: (id, data) => api.put(`/compliance/noi-submissions/${id}/`, data),
-  delete: (id) => api.delete(`/compliance/noi-submissions/${id}/`),
+  ...createCRUDAPI('compliance/noi-submissions'),
   submit: (id, data = {}) => api.post(`/compliance/noi-submissions/${id}/submit/`, data),
   confirm: (id, data) => api.post(`/compliance/noi-submissions/${id}/confirm/`, data),
   pending: () => api.get('/compliance/noi-submissions/pending/'),
@@ -1730,25 +1456,8 @@ export const COMPLIANCE_CONSTANTS = {
  * External Detections - Official disease detections from CDFA, USDA, etc.
  */
 export const externalDetectionsAPI = {
-  /** Get all external detections with optional filters */
-  getAll: (params = {}) => api.get('/disease/external-detections/', { params }),
-
-  /** Get a specific detection */
-  get: (id) => api.get(`/disease/external-detections/${id}/`),
-
-  /** Create a new detection (admin only) */
-  create: (data) => api.post('/disease/external-detections/', data),
-
-  /** Update a detection */
-  update: (id, data) => api.put(`/disease/external-detections/${id}/`, data),
-
-  /** Delete a detection */
-  delete: (id) => api.delete(`/disease/external-detections/${id}/`),
-
-  /** Trigger sync with external data sources */
+  ...createCRUDAPI('disease/external-detections'),
   sync: () => api.post('/disease/external-detections/sync/'),
-
-  /** Get detections near a point */
   nearPoint: (lat, lng, radiusMiles = 15) =>
     api.get('/disease/external-detections/near_point/', {
       params: { latitude: lat, longitude: lng, radius_miles: radiusMiles },
@@ -1785,22 +1494,7 @@ export const diseaseAlertsAPI = {
  * Disease Alert Rules - Configurable alert triggers
  */
 export const diseaseAlertRulesAPI = {
-  /** Get all alert rules */
-  getAll: () => api.get('/disease/alert-rules/'),
-
-  /** Get a specific rule */
-  get: (id) => api.get(`/disease/alert-rules/${id}/`),
-
-  /** Create a new rule */
-  create: (data) => api.post('/disease/alert-rules/', data),
-
-  /** Update a rule */
-  update: (id, data) => api.put(`/disease/alert-rules/${id}/`, data),
-
-  /** Delete a rule */
-  delete: (id) => api.delete(`/disease/alert-rules/${id}/`),
-
-  /** Toggle rule active status */
+  ...createCRUDAPI('disease/alert-rules'),
   toggle: (id, isActive) => api.patch(`/disease/alert-rules/${id}/`, { is_active: isActive }),
 };
 
@@ -1826,31 +1520,12 @@ export const diseaseAnalysesAPI = {
  * Scouting Reports - Crowdsourced disease observations
  */
 export const scoutingReportsAPI = {
-  /** Get all scouting reports */
-  getAll: (params = {}) => api.get('/disease/scouting/', { params }),
-
-  /** Get a specific report */
-  get: (id) => api.get(`/disease/scouting/${id}/`),
-
-  /** Create a new scouting report */
-  create: (data) => api.post('/disease/scouting/', data),
-
-  /** Update a report */
-  update: (id, data) => api.put(`/disease/scouting/${id}/`, data),
-
-  /** Delete a report */
-  delete: (id) => api.delete(`/disease/scouting/${id}/`),
-
-  /** Verify a report (admin) */
+  ...createCRUDAPI('disease/scouting'),
   verify: (id, data) => api.post(`/disease/scouting/${id}/verify/`, data),
-
-  /** Add photos to a report */
   addPhoto: (id, formData) =>
     api.post(`/disease/scouting/${id}/photos/`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     }),
-
-  /** Get reports for a specific field */
   byField: (fieldId) => api.get('/disease/scouting/', { params: { field: fieldId } }),
 };
 
@@ -2011,132 +1686,36 @@ export const DISEASE_CONSTANTS = {
 // =============================================================================
 
 export const packinghousesAPI = {
-  getAll: (params = {}) =>
-    api.get('/packinghouses/', { params }),
-
-  get: (id) =>
-    api.get(`/packinghouses/${id}/`),
-
-  create: (data) =>
-    api.post('/packinghouses/', data),
-
-  update: (id, data) =>
-    api.put(`/packinghouses/${id}/`, data),
-
-  delete: (id) =>
-    api.delete(`/packinghouses/${id}/`),
-
-  getPools: (id, params = {}) =>
-    api.get(`/packinghouses/${id}/pools/`, { params }),
-
-  getLedger: (id, params = {}) =>
-    api.get(`/packinghouses/${id}/ledger/`, { params }),
+  ...createCRUDAPI('packinghouses'),
+  getPools: (id, params = {}) => api.get(`/packinghouses/${id}/pools/`, { params }),
+  getLedger: (id, params = {}) => api.get(`/packinghouses/${id}/ledger/`, { params }),
 };
 
 export const poolsAPI = {
-  getAll: (params = {}) =>
-    api.get('/pools/', { params }),
-
-  get: (id) =>
-    api.get(`/pools/${id}/`),
-
-  create: (data) =>
-    api.post('/pools/', data),
-
-  update: (id, data) =>
-    api.put(`/pools/${id}/`, data),
-
-  delete: (id) =>
-    api.delete(`/pools/${id}/`),
-
-  getDeliveries: (id, params = {}) =>
-    api.get(`/pools/${id}/deliveries/`, { params }),
-
-  getPackoutReports: (id, params = {}) =>
-    api.get(`/pools/${id}/packout-reports/`, { params }),
-
-  getSettlements: (id, params = {}) =>
-    api.get(`/pools/${id}/settlements/`, { params }),
-
-  getSummary: (id) =>
-    api.get(`/pools/${id}/summary/`),
+  ...createCRUDAPI('pools'),
+  getDeliveries: (id, params = {}) => api.get(`/pools/${id}/deliveries/`, { params }),
+  getPackoutReports: (id, params = {}) => api.get(`/pools/${id}/packout-reports/`, { params }),
+  getSettlements: (id, params = {}) => api.get(`/pools/${id}/settlements/`, { params }),
+  getSummary: (id) => api.get(`/pools/${id}/summary/`),
 };
 
 export const packinghouseDeliveriesAPI = {
-  getAll: (params = {}) =>
-    api.get('/packinghouse-deliveries/', { params }),
-
-  get: (id) =>
-    api.get(`/packinghouse-deliveries/${id}/`),
-
-  create: (data) =>
-    api.post('/packinghouse-deliveries/', data),
-
-  update: (id, data) =>
-    api.put(`/packinghouse-deliveries/${id}/`, data),
-
-  delete: (id) =>
-    api.delete(`/packinghouse-deliveries/${id}/`),
+  ...createCRUDAPI('packinghouse-deliveries'),
 };
 
 export const packoutReportsAPI = {
-  getAll: (params = {}) =>
-    api.get('/packout-reports/', { params }),
-
-  get: (id) =>
-    api.get(`/packout-reports/${id}/`),
-
-  create: (data) =>
-    api.post('/packout-reports/', data),
-
-  update: (id, data) =>
-    api.put(`/packout-reports/${id}/`, data),
-
-  delete: (id) =>
-    api.delete(`/packout-reports/${id}/`),
-
-  addGradeLines: (id, gradeLines) =>
-    api.post(`/packout-reports/${id}/grade-lines/`, gradeLines),
+  ...createCRUDAPI('packout-reports'),
+  addGradeLines: (id, gradeLines) => api.post(`/packout-reports/${id}/grade-lines/`, gradeLines),
 };
 
 export const poolSettlementsAPI = {
-  getAll: (params = {}) =>
-    api.get('/pool-settlements/', { params }),
-
-  get: (id) =>
-    api.get(`/pool-settlements/${id}/`),
-
-  create: (data) =>
-    api.post('/pool-settlements/', data),
-
-  update: (id, data) =>
-    api.put(`/pool-settlements/${id}/`, data),
-
-  delete: (id) =>
-    api.delete(`/pool-settlements/${id}/`),
-
-  addGradeLines: (id, gradeLines) =>
-    api.post(`/pool-settlements/${id}/grade-lines/`, gradeLines),
-
-  addDeductions: (id, deductions) =>
-    api.post(`/pool-settlements/${id}/deductions/`, deductions),
+  ...createCRUDAPI('pool-settlements'),
+  addGradeLines: (id, gradeLines) => api.post(`/pool-settlements/${id}/grade-lines/`, gradeLines),
+  addDeductions: (id, deductions) => api.post(`/pool-settlements/${id}/deductions/`, deductions),
 };
 
 export const growerLedgerAPI = {
-  getAll: (params = {}) =>
-    api.get('/grower-ledger/', { params }),
-
-  get: (id) =>
-    api.get(`/grower-ledger/${id}/`),
-
-  create: (data) =>
-    api.post('/grower-ledger/', data),
-
-  update: (id, data) =>
-    api.put(`/grower-ledger/${id}/`, data),
-
-  delete: (id) =>
-    api.delete(`/grower-ledger/${id}/`),
+  ...createCRUDAPI('grower-ledger'),
 };
 
 export const packinghouseAnalyticsAPI = {

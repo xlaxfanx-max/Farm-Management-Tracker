@@ -6,13 +6,13 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from .permissions import HasCompanyAccess
+from .view_helpers import CompanyFilteredViewSet, get_user_company
 from .audit_utils import AuditLogMixin
-from .view_helpers import get_user_company
 from .models import WaterSource, WaterTest
 from .serializers import WaterSourceSerializer, WaterTestSerializer
 
 
-class WaterSourceViewSet(AuditLogMixin, viewsets.ModelViewSet):
+class WaterSourceViewSet(CompanyFilteredViewSet):
     """
     API endpoint for managing water sources.
 
@@ -20,19 +20,16 @@ class WaterSourceViewSet(AuditLogMixin, viewsets.ModelViewSet):
     - Water sources belong to farms, which have company FK
     - get_queryset filters by company through farm
     """
+    model = WaterSource
     serializer_class = WaterSourceSerializer
-    permission_classes = [IsAuthenticated, HasCompanyAccess]
+    company_field = 'farm__company'
+    select_related_fields = ('farm',)
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['name', 'source_type', 'farm__name']
     ordering_fields = ['name', 'created_at']
 
-    def get_queryset(self):
-        """Filter water sources by current user's company through farm."""
-        queryset = WaterSource.objects.filter(active=True).select_related('farm')
-        company = get_user_company(self.request.user)
-        if company:
-            queryset = queryset.filter(farm__company=company)
-        return queryset
+    def filter_queryset_by_params(self, qs):
+        return qs.filter(active=True)
 
     @action(detail=True, methods=['get'])
     def tests(self, request, pk=None):

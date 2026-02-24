@@ -24,30 +24,25 @@ from .yield_serializers import (
     YieldForecastListSerializer,
 )
 from .permissions import HasCompanyAccess, AuditLogMixin
-from .view_helpers import get_user_company, require_company
+from .view_helpers import get_user_company, require_company, CompanyFilteredViewSet
 
 
 # =============================================================================
 # VIEWSETS
 # =============================================================================
 
-class YieldForecastViewSet(AuditLogMixin, viewsets.ModelViewSet):
+class YieldForecastViewSet(CompanyFilteredViewSet):
     """CRUD for yield forecasts, filtered by company."""
+    model = YieldForecast
     serializer_class = YieldForecastSerializer
-    permission_classes = [IsAuthenticated, HasCompanyAccess]
+    company_field = 'field__farm__company'
+    select_related_fields = ('field', 'field__farm', 'field__crop')
+    default_ordering = ('-forecast_date',)
     filter_backends = [filters.OrderingFilter]
     ordering_fields = ['forecast_date', 'predicted_yield_per_acre', 'season_label']
     ordering = ['-forecast_date']
 
-    def get_queryset(self):
-        qs = YieldForecast.objects.select_related(
-            'field', 'field__farm', 'field__crop'
-        )
-        company = get_user_company(self.request.user)
-        if company:
-            qs = qs.filter(field__farm__company=company)
-
-        # Query param filters
+    def filter_queryset_by_params(self, qs):
         field_id = self.request.query_params.get('field')
         farm_id = self.request.query_params.get('farm')
         season = self.request.query_params.get('season_label')
@@ -64,13 +59,7 @@ class YieldForecastViewSet(AuditLogMixin, viewsets.ModelViewSet):
             qs = qs.filter(status=status_filter)
         if crop_category:
             qs = qs.filter(field__crop__category=crop_category)
-
         return qs
-
-    def get_serializer_class(self):
-        if self.action == 'list':
-            return YieldForecastListSerializer
-        return YieldForecastSerializer
 
     @action(detail=False, methods=['post'])
     def generate(self, request):
@@ -202,42 +191,31 @@ class YieldForecastViewSet(AuditLogMixin, viewsets.ModelViewSet):
         })
 
 
-class YieldFeatureSnapshotViewSet(viewsets.ReadOnlyModelViewSet):
+class YieldFeatureSnapshotViewSet(CompanyFilteredViewSet):
     """Read-only access to feature snapshots."""
+    model = YieldFeatureSnapshot
     serializer_class = YieldFeatureSnapshotSerializer
-    permission_classes = [IsAuthenticated, HasCompanyAccess]
+    company_field = 'field__farm__company'
+    select_related_fields = ('field', 'field__farm')
+    default_ordering = ('-id',)
+    http_method_names = ['get', 'head', 'options']
 
-    def get_queryset(self):
-        qs = YieldFeatureSnapshot.objects.select_related('field', 'field__farm')
-        company = get_user_company(self.request.user)
-        if company:
-            qs = qs.filter(field__farm__company=company)
-
+    def filter_queryset_by_params(self, qs):
         field_id = self.request.query_params.get('field')
         season = self.request.query_params.get('season_label')
         if field_id:
             qs = qs.filter(field_id=field_id)
         if season:
             qs = qs.filter(season_label=season)
-
         return qs
 
 
-class ExternalDataSourceViewSet(AuditLogMixin, viewsets.ModelViewSet):
+class ExternalDataSourceViewSet(CompanyFilteredViewSet):
     """CRUD for external data source configurations."""
+    model = ExternalDataSource
     serializer_class = ExternalDataSourceSerializer
-    permission_classes = [IsAuthenticated, HasCompanyAccess]
-
-    def get_queryset(self):
-        qs = ExternalDataSource.objects.all()
-        company = get_user_company(self.request.user)
-        if company:
-            qs = qs.filter(company=company)
-        return qs
-
-    def perform_create(self, serializer):
-        company = require_company(self.request.user)
-        serializer.save(company=company)
+    company_field = 'company'
+    default_ordering = ('-id',)
 
 
 class SoilSurveyDataViewSet(viewsets.ReadOnlyModelViewSet):

@@ -21,10 +21,10 @@ from .models import (
 from .pur_serializers import (
     ProductSerializer, ProductListSerializer,
     ApplicatorSerializer, ApplicatorListSerializer,
-    ApplicationEventListSerializer, ApplicationEventDetailSerializer,
+    ApplicationEventDetailSerializer,
     ApplicationEventCreateSerializer,
 )
-from .view_helpers import get_user_company, require_company
+from .view_helpers import get_user_company, require_company, CompanyFilteredViewSet
 from .audit_utils import AuditLogMixin
 from .permissions import HasCompanyAccess
 
@@ -123,29 +123,30 @@ class ApplicatorViewSet(AuditLogMixin, viewsets.ModelViewSet):
 # APPLICATION EVENT VIEWSET
 # =============================================================================
 
-class ApplicationEventViewSet(AuditLogMixin, viewsets.ModelViewSet):
+class ApplicationEventViewSet(CompanyFilteredViewSet):
     """
     Application events (PUR reports) with nested tank mix items.
 
     List returns summary; detail returns full data with tank mix items.
     Create/update accepts nested tank_mix_items array.
     """
-    permission_classes = [IsAuthenticated, HasCompanyAccess]
+    model = ApplicationEvent
+    serializer_class = ApplicationEventDetailSerializer
+    company_field = 'company'
+    select_related_fields = ('farm', 'field', 'applicator')
+    prefetch_related_fields = ('tank_mix_items', 'tank_mix_items__product')
+    default_ordering = ('-date_started',)
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['pur_number', 'farm__name', 'field__name', 'commodity_name', 'applied_by']
     ordering_fields = ['date_started', 'created_at', 'pur_number']
     ordering = ['-date_started']
 
-    def get_queryset(self):
-        company = get_user_company(self.request.user)
-        qs = ApplicationEvent.objects.select_related(
-            'farm', 'field', 'applicator'
-        ).prefetch_related('tank_mix_items', 'tank_mix_items__product')
+    def get_serializer_class(self):
+        if self.action in ('create', 'update', 'partial_update'):
+            return ApplicationEventCreateSerializer
+        return ApplicationEventDetailSerializer
 
-        if company:
-            qs = qs.filter(company=company)
-
-        # Filters
+    def filter_queryset_by_params(self, qs):
         farm_id = self.request.query_params.get('farm')
         if farm_id:
             qs = qs.filter(farm_id=farm_id)
@@ -165,19 +166,7 @@ class ApplicationEventViewSet(AuditLogMixin, viewsets.ModelViewSet):
         date_to = self.request.query_params.get('date_to')
         if date_to:
             qs = qs.filter(date_started__date__lte=date_to)
-
         return qs
-
-    def get_serializer_class(self):
-        if self.action == 'list':
-            return ApplicationEventListSerializer
-        if self.action in ('create', 'update', 'partial_update'):
-            return ApplicationEventCreateSerializer
-        return ApplicationEventDetailSerializer
-
-    def perform_create(self, serializer):
-        company = require_company(self.request.user)
-        serializer.save(company=company)
 
     # -----------------------------------------------------------------
     # PUR Reporting Actions

@@ -17,6 +17,7 @@ from rest_framework.response import Response
 from .models import SeasonTemplate, GrowingCycle, Field, Crop
 from .serializers import SeasonTemplateSerializer, GrowingCycleSerializer
 from .services.season_service import SeasonService
+from .view_helpers import CompanyFilteredViewSet
 
 
 @api_view(['GET'])
@@ -233,7 +234,7 @@ class SeasonTemplateViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 
-class GrowingCycleViewSet(viewsets.ModelViewSet):
+class GrowingCycleViewSet(CompanyFilteredViewSet):
     """
     ViewSet for managing GrowingCycle CRUD operations.
 
@@ -246,39 +247,25 @@ class GrowingCycleViewSet(viewsets.ModelViewSet):
     - GET /growing-cycles/active/ - Get active cycles
     - POST /growing-cycles/{id}/complete/ - Mark cycle as complete
     """
+    model = GrowingCycle
     serializer_class = GrowingCycleSerializer
-    permission_classes = [IsAuthenticated]
+    company_field = 'field__farm__company'
+    select_related_fields = ('field', 'field__farm', 'crop')
+    default_ordering = ('-year', 'cycle_number')
 
-    def get_queryset(self):
-        """
-        Return growing cycles for user's company farms.
-        Supports filtering by field_id, year, and status.
-        """
-        user = self.request.user
-        company = getattr(user, 'current_company', None)
-
-        queryset = GrowingCycle.objects.select_related(
-            'field', 'field__farm', 'crop'
-        )
-
-        # Filter by company
-        if company:
-            queryset = queryset.filter(field__farm__company=company)
-
-        # Filter by query params
+    def filter_queryset_by_params(self, qs):
         field_id = self.request.query_params.get('field_id')
         if field_id:
-            queryset = queryset.filter(field_id=field_id)
+            qs = qs.filter(field_id=field_id)
 
         year = self.request.query_params.get('year')
         if year:
-            queryset = queryset.filter(year=year)
+            qs = qs.filter(year=year)
 
         status_filter = self.request.query_params.get('status')
         if status_filter:
-            queryset = queryset.filter(status=status_filter)
-
-        return queryset.order_by('-year', 'cycle_number')
+            qs = qs.filter(status=status_filter)
+        return qs
 
     @action(detail=False, methods=['get'])
     def active(self, request):

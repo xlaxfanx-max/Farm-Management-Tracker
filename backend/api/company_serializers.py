@@ -1,8 +1,9 @@
 from rest_framework import serializers
 from .models import Company
+from .serializer_mixins import DynamicFieldsMixin
 
 
-class CompanySerializer(serializers.ModelSerializer):
+class CompanySerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     """
     Serializer for Company model.
     Used for company settings page and company management.
@@ -12,6 +13,12 @@ class CompanySerializer(serializers.ModelSerializer):
     farm_count = serializers.ReadOnlyField()
     user_count = serializers.ReadOnlyField()
     county_display = serializers.ReadOnlyField()
+
+    list_fields = [
+        'id', 'uuid', 'name', 'county',
+        'subscription_tier', 'farm_count', 'user_count',
+        'is_active',
+    ]
 
     class Meta:
         model = Company
@@ -57,19 +64,5 @@ class CompanySerializer(serializers.ModelSerializer):
         ]
 
 
-class CompanyListSerializer(serializers.ModelSerializer):
-    """
-    Lightweight serializer for company listings.
-    Used when showing list of companies user belongs to.
-    """
-
-    farm_count = serializers.ReadOnlyField()
-    user_count = serializers.ReadOnlyField()
-
-    class Meta:
-        model = Company
-        fields = [
-            'id', 'uuid', 'name', 'county',
-            'subscription_tier', 'farm_count', 'user_count',
-            'is_active',
-        ]
+# Backward-compatible alias
+CompanyListSerializer = CompanySerializer

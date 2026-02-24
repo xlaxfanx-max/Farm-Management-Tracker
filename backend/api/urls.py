@@ -4,7 +4,7 @@ from django.db import connection
 from rest_framework.routers import DefaultRouter
 from .views import (
     FarmViewSet, FieldViewSet, PesticideProductViewSet,
-    FieldViewSet, FarmParcelViewSet,
+    FarmParcelViewSet,
     PesticideApplicationViewSet, WaterSourceViewSet, WaterTestViewSet,
     report_statistics,
     BuyerViewSet, LaborContractorViewSet, HarvestViewSet,

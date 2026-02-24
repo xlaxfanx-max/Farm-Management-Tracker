@@ -1,5 +1,6 @@
 from decimal import Decimal
 from rest_framework import serializers
+from .serializer_mixins import DynamicFieldsMixin
 from .models import (
     UserSignature, FacilityLocation, FacilityCleaningLog,
     VisitorLog, SafetyMeeting, SafetyMeetingAttendee,
@@ -27,23 +28,14 @@ class UserSignatureSerializer(serializers.ModelSerializer):
         return f"{obj.user.first_name} {obj.user.last_name}".strip() or obj.user.email
 
 
-class FacilityLocationListSerializer(serializers.ModelSerializer):
-    """Lightweight serializer for facility listings."""
-    facility_type_display = serializers.CharField(source='get_facility_type_display', read_only=True)
-    cleaning_frequency_display = serializers.CharField(source='get_cleaning_frequency_display', read_only=True)
-    farm_name = serializers.CharField(source='farm.name', read_only=True, allow_null=True)
+class FacilityLocationSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+    """Serializer for facility locations (list fields restricted automatically)."""
+    list_fields = [
+        'id', 'name', 'facility_type', 'facility_type_display',
+        'cleaning_frequency', 'cleaning_frequency_display',
+        'farm', 'farm_name', 'is_active',
+    ]
 
-    class Meta:
-        model = FacilityLocation
-        fields = [
-            'id', 'name', 'facility_type', 'facility_type_display',
-            'cleaning_frequency', 'cleaning_frequency_display',
-            'farm', 'farm_name', 'is_active'
-        ]
-
-
-class FacilityLocationSerializer(serializers.ModelSerializer):
-    """Full serializer for facility locations."""
     facility_type_display = serializers.CharField(source='get_facility_type_display', read_only=True)
     cleaning_frequency_display = serializers.CharField(source='get_cleaning_frequency_display', read_only=True)
     farm_name = serializers.CharField(source='farm.name', read_only=True, allow_null=True)
@@ -60,29 +52,19 @@ class FacilityLocationSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'company', 'created_at', 'updated_at']
 
 
-class FacilityCleaningLogListSerializer(serializers.ModelSerializer):
-    """Lightweight serializer for cleaning log listings."""
-    facility_name = serializers.CharField(source='facility.name', read_only=True)
-    cleaned_by_display = serializers.SerializerMethodField()
-    is_signed = serializers.BooleanField(read_only=True)
-
-    class Meta:
-        model = FacilityCleaningLog
-        fields = [
-            'id', 'facility', 'facility_name',
-            'cleaning_date', 'cleaning_time',
-            'cleaned_by', 'cleaned_by_display',
-            'is_signed', 'verified_at'
-        ]
-
-    def get_cleaned_by_display(self, obj):
-        if obj.cleaned_by:
-            return f"{obj.cleaned_by.first_name} {obj.cleaned_by.last_name}".strip() or obj.cleaned_by.email
-        return obj.cleaned_by_name or "Unknown"
+# Backward-compatible alias
+FacilityLocationListSerializer = FacilityLocationSerializer
 
 
-class FacilityCleaningLogSerializer(serializers.ModelSerializer):
-    """Full serializer for facility cleaning logs."""
+class FacilityCleaningLogSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+    """Serializer for facility cleaning logs (list fields restricted automatically)."""
+    list_fields = [
+        'id', 'facility', 'facility_name',
+        'cleaning_date', 'cleaning_time',
+        'cleaned_by', 'cleaned_by_display',
+        'is_signed', 'verified_at',
+    ]
+
     facility_name = serializers.CharField(source='facility.name', read_only=True)
     cleaned_by_display = serializers.SerializerMethodField()
     verified_by_display = serializers.SerializerMethodField()
@@ -114,26 +96,20 @@ class FacilityCleaningLogSerializer(serializers.ModelSerializer):
         return None
 
 
-class VisitorLogListSerializer(serializers.ModelSerializer):
-    """Lightweight serializer for visitor log listings."""
-    visitor_type_display = serializers.CharField(source='get_visitor_type_display', read_only=True)
-    farm_name = serializers.CharField(source='farm.name', read_only=True)
-    is_signed = serializers.BooleanField(read_only=True)
-    duration_minutes = serializers.IntegerField(read_only=True)
-
-    class Meta:
-        model = VisitorLog
-        fields = [
-            'id', 'farm', 'farm_name',
-            'visitor_name', 'visitor_company',
-            'visitor_type', 'visitor_type_display',
-            'visit_date', 'time_in', 'time_out', 'duration_minutes',
-            'linked_harvest', 'is_signed'
-        ]
+# Backward-compatible alias
+FacilityCleaningLogListSerializer = FacilityCleaningLogSerializer
 
 
-class VisitorLogSerializer(serializers.ModelSerializer):
-    """Full serializer for visitor logs."""
+class VisitorLogSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+    """Serializer for visitor logs (list fields restricted automatically)."""
+    list_fields = [
+        'id', 'farm', 'farm_name',
+        'visitor_name', 'visitor_company',
+        'visitor_type', 'visitor_type_display',
+        'visit_date', 'time_in', 'time_out', 'duration_minutes',
+        'linked_harvest', 'is_signed',
+    ]
+
     visitor_type_display = serializers.CharField(source='get_visitor_type_display', read_only=True)
     farm_name = serializers.CharField(source='farm.name', read_only=True)
     logged_by_display = serializers.SerializerMethodField()
@@ -167,6 +143,10 @@ class VisitorLogSerializer(serializers.ModelSerializer):
         return [f.name for f in obj.fields_visited.all()]
 
 
+# Backward-compatible alias
+VisitorLogListSerializer = VisitorLogSerializer
+
+
 class VisitorQuickEntrySerializer(serializers.Serializer):
     """Serializer for quick visitor entry (sign-in kiosk mode)."""
     farm = serializers.PrimaryKeyRelatedField(queryset=Farm.objects.all())
@@ -191,28 +171,6 @@ class VisitorQuickEntrySerializer(serializers.Serializer):
     signature_data = serializers.CharField(required=False, allow_blank=True)
 
 
-class SafetyMeetingListSerializer(serializers.ModelSerializer):
-    """Lightweight serializer for safety meeting listings."""
-    meeting_type_display = serializers.CharField(source='get_meeting_type_display', read_only=True)
-    attendee_count = serializers.SerializerMethodField()
-    signed_count = serializers.SerializerMethodField()
-
-    class Meta:
-        model = SafetyMeeting
-        fields = [
-            'id', 'meeting_type', 'meeting_type_display',
-            'meeting_date', 'meeting_time', 'location',
-            'quarter', 'year', 'trainer_name',
-            'attendee_count', 'signed_count'
-        ]
-
-    def get_attendee_count(self, obj):
-        return obj.attendees.count()
-
-    def get_signed_count(self, obj):
-        return obj.attendees.exclude(signature_data='').count()
-
-
 class SafetyMeetingAttendeeSerializer(serializers.ModelSerializer):
     """Serializer for meeting attendees."""
     is_signed = serializers.BooleanField(read_only=True)
@@ -229,8 +187,15 @@ class SafetyMeetingAttendeeSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'created_at', 'updated_at']
 
 
-class SafetyMeetingSerializer(serializers.ModelSerializer):
-    """Full serializer for safety meetings."""
+class SafetyMeetingSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+    """Serializer for safety meetings (list fields restricted automatically)."""
+    list_fields = [
+        'id', 'meeting_type', 'meeting_type_display',
+        'meeting_date', 'meeting_time', 'location',
+        'quarter', 'year', 'trainer_name',
+        'attendee_count', 'signed_count',
+    ]
+
     meeting_type_display = serializers.CharField(source='get_meeting_type_display', read_only=True)
     conducted_by_display = serializers.SerializerMethodField()
     attendees = SafetyMeetingAttendeeSerializer(many=True, read_only=True)
@@ -263,22 +228,18 @@ class SafetyMeetingSerializer(serializers.ModelSerializer):
         return obj.attendees.exclude(signature_data='').count()
 
 
-class FertilizerInventoryListSerializer(serializers.ModelSerializer):
-    """Lightweight serializer for fertilizer inventory listings."""
-    product_name = serializers.CharField(source='product.name', read_only=True)
-    is_low_stock = serializers.BooleanField(read_only=True)
-
-    class Meta:
-        model = FertilizerInventory
-        fields = [
-            'id', 'product', 'product_name',
-            'quantity_on_hand', 'unit', 'reorder_point',
-            'is_low_stock', 'storage_location'
-        ]
+# Backward-compatible alias
+SafetyMeetingListSerializer = SafetyMeetingSerializer
 
 
-class FertilizerInventorySerializer(serializers.ModelSerializer):
-    """Full serializer for fertilizer inventory."""
+class FertilizerInventorySerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+    """Serializer for fertilizer inventory (list fields restricted automatically)."""
+    list_fields = [
+        'id', 'product', 'product_name',
+        'quantity_on_hand', 'unit', 'reorder_point',
+        'is_low_stock', 'storage_location',
+    ]
+
     product_name = serializers.CharField(source='product.name', read_only=True)
     product_npk = serializers.SerializerMethodField()
     is_low_stock = serializers.BooleanField(read_only=True)
@@ -298,22 +259,18 @@ class FertilizerInventorySerializer(serializers.ModelSerializer):
         return f"{p.nitrogen_pct}-{p.phosphorus_pct}-{p.potassium_pct}"
 
 
-class FertilizerInventoryTransactionListSerializer(serializers.ModelSerializer):
-    """Lightweight serializer for inventory transaction listings."""
-    transaction_type_display = serializers.CharField(source='get_transaction_type_display', read_only=True)
-    product_name = serializers.CharField(source='inventory.product.name', read_only=True)
-
-    class Meta:
-        model = FertilizerInventoryTransaction
-        fields = [
-            'id', 'inventory', 'product_name',
-            'transaction_type', 'transaction_type_display',
-            'quantity', 'balance_after', 'transaction_date'
-        ]
+# Backward-compatible alias
+FertilizerInventoryListSerializer = FertilizerInventorySerializer
 
 
-class FertilizerInventoryTransactionSerializer(serializers.ModelSerializer):
-    """Full serializer for inventory transactions."""
+class FertilizerInventoryTransactionSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+    """Serializer for inventory transactions (list fields restricted automatically)."""
+    list_fields = [
+        'id', 'inventory', 'product_name',
+        'transaction_type', 'transaction_type_display',
+        'quantity', 'balance_after', 'transaction_date',
+    ]
+
     transaction_type_display = serializers.CharField(source='get_transaction_type_display', read_only=True)
     product_name = serializers.CharField(source='inventory.product.name', read_only=True)
     created_by_display = serializers.SerializerMethodField()
@@ -334,6 +291,10 @@ class FertilizerInventoryTransactionSerializer(serializers.ModelSerializer):
         if obj.created_by:
             return f"{obj.created_by.first_name} {obj.created_by.last_name}".strip() or obj.created_by.email
         return None
+
+
+# Backward-compatible alias
+FertilizerInventoryTransactionListSerializer = FertilizerInventoryTransactionSerializer
 
 
 class InventoryPurchaseSerializer(serializers.Serializer):
@@ -368,30 +329,18 @@ class MonthlyInventorySnapshotSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'company', 'generated_at']
 
 
-class PHIComplianceCheckListSerializer(serializers.ModelSerializer):
-    """Lightweight serializer for PHI compliance check listings."""
+class PHIComplianceCheckSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+    """Serializer for PHI compliance checks (list fields restricted automatically)."""
+    list_fields = [
+        'id', 'harvest', 'harvest_date', 'field_name',
+        'status', 'status_display',
+        'earliest_safe_harvest', 'warning_count', 'checked_at',
+    ]
+
     status_display = serializers.CharField(source='get_status_display', read_only=True)
     harvest_date = serializers.DateField(source='harvest.harvest_date', read_only=True)
     field_name = serializers.CharField(source='harvest.field.name', read_only=True)
     warning_count = serializers.SerializerMethodField()
-
-    class Meta:
-        model = PHIComplianceCheck
-        fields = [
-            'id', 'harvest', 'harvest_date', 'field_name',
-            'status', 'status_display',
-            'earliest_safe_harvest', 'warning_count', 'checked_at'
-        ]
-
-    def get_warning_count(self, obj):
-        return len(obj.warnings) if obj.warnings else 0
-
-
-class PHIComplianceCheckSerializer(serializers.ModelSerializer):
-    """Full serializer for PHI compliance checks."""
-    status_display = serializers.CharField(source='get_status_display', read_only=True)
-    harvest_date = serializers.DateField(source='harvest.harvest_date', read_only=True)
-    field_name = serializers.CharField(source='harvest.field.name', read_only=True)
     override_by_display = serializers.SerializerMethodField()
 
     class Meta:
@@ -400,15 +349,23 @@ class PHIComplianceCheckSerializer(serializers.ModelSerializer):
             'id', 'harvest', 'harvest_date', 'field_name',
             'status', 'status_display',
             'applications_checked', 'warnings', 'earliest_safe_harvest',
+            'warning_count',
             'override_reason', 'override_by', 'override_by_display', 'override_at',
             'checked_at', 'updated_at'
         ]
         read_only_fields = ['id', 'harvest', 'checked_at', 'updated_at']
 
+    def get_warning_count(self, obj):
+        return len(obj.warnings) if obj.warnings else 0
+
     def get_override_by_display(self, obj):
         if obj.override_by:
             return f"{obj.override_by.first_name} {obj.override_by.last_name}".strip() or obj.override_by.email
         return None
+
+
+# Backward-compatible alias
+PHIComplianceCheckListSerializer = PHIComplianceCheckSerializer
 
 
 class PHIPreCheckSerializer(serializers.Serializer):
@@ -417,28 +374,15 @@ class PHIPreCheckSerializer(serializers.Serializer):
     proposed_harvest_date = serializers.DateField()
 
 
-class AuditBinderListSerializer(serializers.ModelSerializer):
-    """Lightweight serializer for audit binder listings."""
-    status_display = serializers.CharField(source='get_status_display', read_only=True)
-    generated_by_display = serializers.SerializerMethodField()
+class AuditBinderSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+    """Serializer for audit binders (list fields restricted automatically)."""
+    list_fields = [
+        'id', 'date_range_start', 'date_range_end',
+        'status', 'status_display',
+        'page_count', 'file_size',
+        'generated_by', 'generated_by_display', 'created_at',
+    ]
 
-    class Meta:
-        model = AuditBinder
-        fields = [
-            'id', 'date_range_start', 'date_range_end',
-            'status', 'status_display',
-            'page_count', 'file_size',
-            'generated_by', 'generated_by_display', 'created_at'
-        ]
-
-    def get_generated_by_display(self, obj):
-        if obj.generated_by:
-            return f"{obj.generated_by.first_name} {obj.generated_by.last_name}".strip() or obj.generated_by.email
-        return None
-
-
-class AuditBinderSerializer(serializers.ModelSerializer):
-    """Full serializer for audit binders."""
     status_display = serializers.CharField(source='get_status_display', read_only=True)
     generated_by_display = serializers.SerializerMethodField()
     pdf_url = serializers.SerializerMethodField()
@@ -475,6 +419,10 @@ class AuditBinderSerializer(serializers.ModelSerializer):
                 return request.build_absolute_uri(obj.pdf_file.url)
             return obj.pdf_file.url
         return None
+
+
+# Backward-compatible alias
+AuditBinderListSerializer = AuditBinderSerializer
 
 
 class AuditBinderGenerateSerializer(serializers.Serializer):

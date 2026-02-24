@@ -11,7 +11,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from .permissions import HasCompanyAccess
 from .audit_utils import AuditLogMixin
-from .view_helpers import get_user_company, require_company
+from .view_helpers import get_user_company, require_company, CompanyFilteredViewSet
 from .models import (
     IrrigationZone, CropCoefficientProfile, CIMISDataCache,
     IrrigationRecommendation, SoilMoistureReading, IrrigationEvent,
@@ -39,8 +39,6 @@ class IrrigationZoneViewSet(AuditLogMixin, viewsets.ModelViewSet):
     ordering_fields = ['name', 'acres', 'created_at']
 
     def get_serializer_class(self):
-        if self.action == 'list':
-            return IrrigationZoneListSerializer
         if self.action == 'retrieve':
             return IrrigationZoneDetailSerializer
         return IrrigationZoneSerializer
@@ -175,41 +173,31 @@ class IrrigationZoneViewSet(AuditLogMixin, viewsets.ModelViewSet):
             )
 
 
-class IrrigationRecommendationViewSet(AuditLogMixin, viewsets.ModelViewSet):
+class IrrigationRecommendationViewSet(CompanyFilteredViewSet):
     """
     API endpoint for managing irrigation recommendations.
 
     RLS NOTES:
     - Recommendations inherit company from Zone -> Field -> Farm
     """
-    permission_classes = [IsAuthenticated, HasCompanyAccess]
+    model = IrrigationRecommendation
+    serializer_class = IrrigationRecommendationSerializer
+    company_field = 'zone__field__farm__company'
+    select_related_fields = ('zone', 'zone__field', 'zone__field__farm')
+    default_ordering = ('-created_at',)
     filter_backends = [filters.OrderingFilter]
     ordering_fields = ['recommended_date', 'created_at']
 
-    def get_serializer_class(self):
-        if self.action == 'list':
-            return IrrigationRecommendationListSerializer
-        return IrrigationRecommendationSerializer
-
-    def get_queryset(self):
-        """Filter recommendations by current user's company."""
-        queryset = IrrigationRecommendation.objects.select_related(
-            'zone', 'zone__field', 'zone__field__farm'
-        )
-        company = get_user_company(self.request.user)
-        if company:
-            queryset = queryset.filter(zone__field__farm__company=company)
-
-        # Optional filters
+    def filter_queryset_by_params(self, qs):
         zone_id = self.request.query_params.get('zone')
         if zone_id:
-            queryset = queryset.filter(zone_id=zone_id)
+            qs = qs.filter(zone_id=zone_id)
 
         status_filter = self.request.query_params.get('status')
         if status_filter:
-            queryset = queryset.filter(status=status_filter)
+            qs = qs.filter(status=status_filter)
 
-        return queryset.order_by('-created_at')
+        return qs
 
     @action(detail=True, methods=['post'])
     def apply(self, request, pk=None):
@@ -319,29 +307,23 @@ class CropCoefficientProfileViewSet(AuditLogMixin, viewsets.ModelViewSet):
         instance.delete()
 
 
-class SoilMoistureReadingViewSet(AuditLogMixin, viewsets.ModelViewSet):
+class SoilMoistureReadingViewSet(CompanyFilteredViewSet):
     """
     API endpoint for soil moisture sensor readings.
     """
+    model = SoilMoistureReading
     serializer_class = SoilMoistureReadingSerializer
-    permission_classes = [IsAuthenticated, HasCompanyAccess]
+    company_field = 'zone__field__farm__company'
+    select_related_fields = ('zone', 'zone__field', 'zone__field__farm')
+    default_ordering = ('-reading_datetime',)
     filter_backends = [filters.OrderingFilter]
     ordering_fields = ['reading_datetime']
 
-    def get_queryset(self):
-        """Filter readings by current user's company."""
-        queryset = SoilMoistureReading.objects.select_related(
-            'zone', 'zone__field', 'zone__field__farm'
-        )
-        company = get_user_company(self.request.user)
-        if company:
-            queryset = queryset.filter(zone__field__farm__company=company)
-
+    def filter_queryset_by_params(self, qs):
         zone_id = self.request.query_params.get('zone')
         if zone_id:
-            queryset = queryset.filter(zone_id=zone_id)
-
-        return queryset.order_by('-reading_datetime')
+            qs = qs.filter(zone_id=zone_id)
+        return qs
 
 
 @api_view(['GET'])

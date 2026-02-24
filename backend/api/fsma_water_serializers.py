@@ -1,41 +1,5 @@
 from rest_framework import serializers
-
-
-class FSMAWaterAssessmentListSerializer(serializers.ModelSerializer):
-    """Lightweight serializer for assessment listings."""
-    farm_name = serializers.CharField(source='farm.name', read_only=True)
-    status_display = serializers.CharField(source='get_status_display', read_only=True)
-    fda_outcome_display = serializers.CharField(source='get_fda_outcome_display', read_only=True)
-    risk_level_display = serializers.CharField(source='get_risk_level_display', read_only=True)
-    source_count = serializers.SerializerMethodField()
-    field_count = serializers.SerializerMethodField()
-    pending_mitigation_count = serializers.SerializerMethodField()
-    days_until_expiry = serializers.SerializerMethodField()
-    is_expired = serializers.BooleanField(read_only=True)
-
-    class Meta:
-        from .models import FSMAWaterAssessment
-        model = FSMAWaterAssessment
-        fields = [
-            'id', 'farm', 'farm_name', 'assessment_year', 'assessment_date',
-            'assessor_name', 'status', 'status_display',
-            'overall_risk_score', 'risk_level', 'risk_level_display',
-            'fda_outcome', 'fda_outcome_display', 'valid_until',
-            'source_count', 'field_count', 'pending_mitigation_count',
-            'days_until_expiry', 'is_expired', 'created_at'
-        ]
-
-    def get_source_count(self, obj):
-        return obj.source_assessments.count()
-
-    def get_field_count(self, obj):
-        return obj.field_assessments.count()
-
-    def get_pending_mitigation_count(self, obj):
-        return obj.mitigation_actions.filter(status__in=['pending', 'in_progress']).count()
-
-    def get_days_until_expiry(self, obj):
-        return obj.days_until_expiry
+from .serializer_mixins import DynamicFieldsMixin
 
 
 class FSMASourceAssessmentSerializer(serializers.ModelSerializer):
@@ -181,8 +145,17 @@ class FSMAWaterAssessmentSerializer(serializers.ModelSerializer):
         ]
 
 
-class FSMAWaterAssessmentDetailSerializer(serializers.ModelSerializer):
-    """Detailed serializer with nested sub-assessments."""
+class FSMAWaterAssessmentDetailSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+    """Unified serializer for FSMAWaterAssessment list + detail views."""
+    list_fields = [
+        'id', 'farm', 'farm_name', 'assessment_year', 'assessment_date',
+        'assessor_name', 'status', 'status_display',
+        'overall_risk_score', 'risk_level', 'risk_level_display',
+        'fda_outcome', 'fda_outcome_display', 'valid_until',
+        'source_count', 'field_count', 'pending_mitigation_count',
+        'days_until_expiry', 'is_expired', 'created_at'
+    ]
+
     farm_name = serializers.CharField(source='farm.name', read_only=True)
     status_display = serializers.CharField(source='get_status_display', read_only=True)
     fda_outcome_display = serializers.CharField(source='get_fda_outcome_display', read_only=True)
@@ -197,6 +170,9 @@ class FSMAWaterAssessmentDetailSerializer(serializers.ModelSerializer):
     days_until_expiry = serializers.SerializerMethodField()
     is_expired = serializers.BooleanField(read_only=True)
     is_current = serializers.BooleanField(read_only=True)
+    source_count = serializers.SerializerMethodField()
+    field_count = serializers.SerializerMethodField()
+    pending_mitigation_count = serializers.SerializerMethodField()
 
     class Meta:
         from .models import FSMAWaterAssessment
@@ -223,3 +199,16 @@ class FSMAWaterAssessmentDetailSerializer(serializers.ModelSerializer):
 
     def get_days_until_expiry(self, obj):
         return obj.days_until_expiry
+
+    def get_source_count(self, obj):
+        return obj.source_assessments.count()
+
+    def get_field_count(self, obj):
+        return obj.field_assessments.count()
+
+    def get_pending_mitigation_count(self, obj):
+        return obj.mitigation_actions.filter(status__in=['pending', 'in_progress']).count()
+
+
+# Backward-compatible alias
+FSMAWaterAssessmentListSerializer = FSMAWaterAssessmentDetailSerializer
