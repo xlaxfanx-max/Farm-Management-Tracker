@@ -418,6 +418,44 @@ export const applicationsAPI = {
 };
 
 // =============================================================================
+// PUR / TANK MIX API (NEW)
+// =============================================================================
+
+export const applicationEventsAPI = {
+  getAll: (params) => api.get('/application-events/', { params }),
+  getById: (id) => api.get(`/application-events/${id}/`),
+  create: (data) => api.post('/application-events/', data),
+  update: (id, data) => api.put(`/application-events/${id}/`, data),
+  delete: (id) => api.delete(`/application-events/${id}/`),
+};
+
+export const unifiedProductsAPI = {
+  getAll: (params) => api.get('/unified-products/', { params }),
+  search: (params) => api.get('/unified-products/search/', { params }),
+  create: (data) => api.post('/unified-products/', data),
+  update: (id, data) => api.put(`/unified-products/${id}/`, data),
+  delete: (id) => api.delete(`/unified-products/${id}/`),
+};
+
+export const applicatorsAPI = {
+  getAll: () => api.get('/applicators/'),
+  getById: (id) => api.get(`/applicators/${id}/`),
+  create: (data) => api.post('/applicators/', data),
+  update: (id, data) => api.put(`/applicators/${id}/`, data),
+  delete: (id) => api.delete(`/applicators/${id}/`),
+};
+
+export const purImportAPI = {
+  upload: (formData) => api.post('/pur-import/upload/', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+    timeout: 120000,
+  }),
+  confirm: (data) => api.post('/pur-import/confirm/', data),
+  matchProducts: (params) => api.get('/pur-import/match-products/', { params }),
+  matchFields: (params) => api.get('/pur-import/match-fields/', { params }),
+};
+
+// =============================================================================
 // WATER SOURCES API (EXISTING)
 // =============================================================================
 

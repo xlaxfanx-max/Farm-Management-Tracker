@@ -445,6 +445,13 @@ class Crop(models.Model):
         help_text="Typical days from planting to harvest"
     )
 
+    # === DPR COMMODITY CODE ===
+    dpr_commodity_code = models.CharField(
+        max_length=20,
+        blank=True,
+        help_text="California DPR commodity code, e.g., '2004-00' for lemon"
+    )
+
     # === OWNERSHIP & STATUS ===
     company = models.ForeignKey(
         'Company',
@@ -817,6 +824,12 @@ class Field(LocationMixin, models.Model):
     organic_cert_expiration = models.DateField(
         null=True,
         blank=True
+    )
+
+    # === PUR SITE MAPPING ===
+    pur_site_id = models.CharField(
+        max_length=100, blank=True,
+        help_text="Ag Commissioner site ID for PUR matching, e.g., 'FINCH FARMS, LLC 02C'"
     )
 
     # === NOTES ===

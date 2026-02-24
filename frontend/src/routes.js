@@ -59,6 +59,8 @@ export const VIEW_TO_PATH = {
   'compliance-primusgfs-sanitation-maint': '/dashboard/compliance/primusgfs/sanitation-maint',
   'compliance-primusgfs-cac-manual': '/dashboard/compliance/primusgfs/cac-manual',
   'compliance-primusgfs-audit-binder': '/dashboard/compliance/primusgfs/audit-binder',
+  'applications': '/dashboard/applications',
+  'pur-import': '/dashboard/pur-import',
   'tree-detection': '/dashboard/tree-detection',
   'disease': '/dashboard/disease',
   'reports': '/dashboard/reports',
@@ -128,6 +130,8 @@ export const VIEW_NAMES = {
   'compliance-primusgfs-sanitation-maint': 'Sanitation Maintenance',
   'compliance-primusgfs-cac-manual': 'CAC Manual',
   'compliance-primusgfs-audit-binder': 'Audit Binder',
+  applications: 'Applications',
+  'pur-import': 'PUR Import',
   'tree-detection': 'Tree Detection',
   disease: 'Disease Prevention',
   reports: 'Reports',
@@ -139,6 +143,7 @@ export const VIEW_NAMES = {
 
 // Parent view mappings for breadcrumbs
 export const PARENT_VIEWS = {
+  'pur-import': 'applications',
   'compliance-deadlines': 'compliance',
   'compliance-licenses': 'compliance',
   'compliance-wps': 'compliance',

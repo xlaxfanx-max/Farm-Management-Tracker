@@ -235,6 +235,21 @@ from .primusgfs import (
     SIGNER_ROLE_CHOICES, CACDocumentSignature,
 )
 
+# -- PUR / tank mix / unified product ----------------------------------------
+from .pur import (
+    PRODUCT_TYPE_CHOICES,
+    SIGNAL_WORD_CHOICES,
+    APPLICATOR_TYPE_CHOICES,
+    PUR_STATUS_CHOICES,
+    APPLICATION_METHOD_CHOICES,
+    AMOUNT_UNIT_CHOICES,
+    RATE_UNIT_CHOICES,
+    Product,
+    Applicator,
+    ApplicationEvent,
+    TankMixItem,
+)
+
 # -- yield forecast / soil survey --------------------------------------------
 from .yield_forecast import (
     ExternalDataSource,
@@ -347,4 +362,9 @@ __all__ = [
     'CAC_V5_SECTION_DEFINITIONS',
     'CACBinderTemplate', 'AuditBinderInstance',
     'BinderSection', 'BinderSupportingDocument',
+    # pur / tank mix
+    'PRODUCT_TYPE_CHOICES', 'SIGNAL_WORD_CHOICES', 'APPLICATOR_TYPE_CHOICES',
+    'PUR_STATUS_CHOICES', 'APPLICATION_METHOD_CHOICES',
+    'AMOUNT_UNIT_CHOICES', 'RATE_UNIT_CHOICES',
+    'Product', 'Applicator', 'ApplicationEvent', 'TankMixItem',
 ]

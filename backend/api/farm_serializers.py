@@ -106,6 +106,8 @@ class FieldSerializer(serializers.ModelSerializer):
             # Certification
             'organic_status', 'organic_status_display',
             'organic_certifier', 'organic_cert_number', 'organic_cert_expiration',
+            # PUR mapping
+            'pur_site_id',
             # Notes & status
             'notes', 'active',
             'created_at', 'updated_at', 'application_count'

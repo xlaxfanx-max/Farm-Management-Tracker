@@ -137,15 +137,11 @@ export function GlobalModals() {
   };
 
   // ============================================================================
-  // APPLICATION MODAL
+  // APPLICATION MODAL — new modal saves via applicationEventsAPI internally
   // ============================================================================
-  const handleSaveApplication = async (appData) => {
-    const result = await saveApplication(appData, !!applicationModal.data);
-    if (result.success) {
-      closeApplicationModal();
-    } else {
-      toast.error(result.error);
-    }
+  const handleSaveApplication = async () => {
+    // Modal handles its own save and close; just refresh data
+    await loadData();
   };
 
   // ============================================================================

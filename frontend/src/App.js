@@ -23,6 +23,7 @@ import {
   Moon,
   TrendingUp,
   TreePine,
+  FlaskConical,
 } from 'lucide-react';
 
 // Contexts
@@ -64,6 +65,7 @@ import YieldForecastDashboard from './components/yield-forecast/YieldForecastDas
 import { TreeDetectionPage } from './components/tree-detection';
 import InspectorChecklist from './components/compliance/InspectorChecklist';
 
+import PURImportPage from './components/pur-import/PURImportPage';
 import ErrorBoundary from './components/ui/ErrorBoundary';
 import { onboardingAPI } from './services/api';
 import './components/OnboardingWizard.css';
@@ -213,6 +215,7 @@ function AppContent() {
     { id: 'analytics', label: 'Analytics', icon: BarChart3 },
     { id: 'water', label: 'Water Management', icon: Droplets },
     { id: 'nutrients', label: 'Nutrients', icon: Leaf },
+    { id: 'applications', label: 'Applications', icon: FlaskConical },
     { id: 'harvests', label: 'Harvest & Packing', icon: Wheat },
     { id: 'yield-forecast', label: 'Yield Forecast', icon: TrendingUp },
     { id: 'compliance', label: 'Compliance', icon: Shield },
@@ -456,6 +459,18 @@ function AppContent() {
               <div className="p-6">
                 <Breadcrumbs currentView="farms" onNavigate={handleNavigate} />
                 <Farms />
+              </div>
+            } />
+            <Route path="applications" element={
+              <div className="p-6">
+                <Breadcrumbs currentView="applications" onNavigate={handleNavigate} />
+                <PURImportPage onNavigate={handleNavigate} />
+              </div>
+            } />
+            <Route path="pur-import" element={
+              <div className="p-6">
+                <Breadcrumbs currentView="pur-import" onNavigate={handleNavigate} />
+                <PURImportPage onNavigate={handleNavigate} initialStep="upload" />
               </div>
             } />
             <Route path="reports" element={

@@ -218,6 +218,17 @@ from .audit_binder_views import (
     BinderSupportingDocumentViewSet,
 )
 
+# Import PUR / Tank Mix views
+from .pur_views import (
+    ProductViewSet as UnifiedProductViewSet,
+    ApplicatorViewSet,
+    ApplicationEventViewSet,
+    pur_import_upload,
+    pur_import_confirm,
+    pur_match_products,
+    pur_match_fields,
+)
+
 # Import FSMA Water Assessment views
 from .fsma_water_views import (
     FSMAWaterAssessmentViewSet,
@@ -369,6 +380,11 @@ router.register(r'primusgfs/audit-binders', AuditBinderInstanceViewSet, basename
 router.register(r'primusgfs/binder-sections', BinderSectionViewSet, basename='primusgfs-binder-section')
 router.register(r'primusgfs/binder-documents', BinderSupportingDocumentViewSet, basename='primusgfs-binder-document')
 
+# PUR / Tank Mix
+router.register(r'unified-products', UnifiedProductViewSet, basename='unified-product')
+router.register(r'applicators', ApplicatorViewSet, basename='applicator')
+router.register(r'application-events', ApplicationEventViewSet, basename='application-event')
+
 # Yield Forecast Module
 router.register(r'yield-forecast/forecasts', YieldForecastViewSet, basename='yield-forecast')
 router.register(r'yield-forecast/feature-snapshots', YieldFeatureSnapshotViewSet, basename='yield-feature-snapshot')
@@ -488,6 +504,12 @@ urlpatterns = [
     path('harvest-analytics/profitability/', profitability_analysis, name='harvest-profitability'),
     path('harvest-analytics/deductions/', deduction_breakdown, name='harvest-deductions'),
     path('harvest-analytics/seasons/', season_comparison, name='harvest-season-comparison'),
+
+    # PUR Import pipeline
+    path('pur-import/upload/', pur_import_upload, name='pur-import-upload'),
+    path('pur-import/confirm/', pur_import_confirm, name='pur-import-confirm'),
+    path('pur-import/match-products/', pur_match_products, name='pur-match-products'),
+    path('pur-import/match-fields/', pur_match_fields, name='pur-match-fields'),
 
     # Yield Forecast analytics routes
     path('yield-forecast/dashboard/', yield_forecast_dashboard, name='yield-forecast-dashboard'),

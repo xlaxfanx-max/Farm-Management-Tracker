@@ -1,573 +1,531 @@
-import React, { useState, useEffect } from 'react';
-import { X, Search, AlertTriangle, Info } from 'lucide-react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { X, Search, AlertTriangle, Info, Plus, Trash2, GripVertical } from 'lucide-react';
 import { useToast } from '../contexts/ToastContext';
+import { unifiedProductsAPI, applicationEventsAPI } from '../services/api';
 
 /**
- * Enhanced Application Modal with Smart Product Selection
- * 
- * Features:
- * - Searchable product dropdown
- * - Shows REI/PHI warnings
- * - Displays restricted use indicators
- * - Auto-fills product details
- * - Validation warnings
+ * Application Event Modal with Tank Mix Support
+ *
+ * Creates/edits an ApplicationEvent with multiple TankMixItems (products).
+ * Each row in the tank mix section represents one product in the spray mix.
  */
-function EnhancedApplicationModal({ 
-  application, 
-  onClose, 
-  onSave, 
-  fields, 
-  products 
+
+const AMOUNT_UNITS = [
+  { value: 'Lb', label: 'Pounds (Lb)' },
+  { value: 'Oz', label: 'Ounces (Oz)' },
+  { value: 'Ga', label: 'Gallons (Ga)' },
+  { value: 'Qt', label: 'Quarts (Qt)' },
+  { value: 'Pt', label: 'Pints (Pt)' },
+  { value: 'Fl Oz', label: 'Fluid Ounces (Fl Oz)' },
+  { value: 'Kg', label: 'Kilograms (Kg)' },
+  { value: 'L', label: 'Liters (L)' },
+];
+
+const RATE_UNITS = [
+  { value: 'Lb/A', label: 'Lb/Acre' },
+  { value: 'Oz/A', label: 'Oz/Acre' },
+  { value: 'Ga/A', label: 'Gal/Acre' },
+  { value: 'Qt/A', label: 'Qt/Acre' },
+  { value: 'Pt/A', label: 'Pt/Acre' },
+  { value: 'Fl Oz/A', label: 'Fl Oz/Acre' },
+];
+
+const APPLICATION_METHODS = [
+  { value: 'ground', label: 'Ground Spray' },
+  { value: 'aerial', label: 'Aerial Application' },
+  { value: 'chemigation', label: 'Chemigation' },
+  { value: 'soil_injection', label: 'Soil Injection' },
+  { value: 'broadcast', label: 'Broadcast' },
+  { value: 'hand', label: 'Hand Application' },
+];
+
+const EMPTY_ITEM = {
+  product: '',
+  product_name: '',
+  total_amount: '',
+  amount_unit: 'Ga',
+  rate: '',
+  rate_unit: 'Ga/A',
+  dilution_gallons: '',
+};
+
+function EnhancedApplicationModal({
+  application,
+  onClose,
+  onSave,
+  fields,
+  products: legacyProducts, // from DataContext (old PesticideProducts)
 }) {
   const toast = useToast();
-  const [formData, setFormData] = useState(application || {
-    application_date: new Date().toISOString().split('T')[0],
-    start_time: '',
-    end_time: '',
+  const isEdit = Boolean(application?.id);
+
+  // Event-level form state
+  const [formData, setFormData] = useState({
     field: '',
-    acres_treated: '',
-    product: '',
-    amount_used: '',
-    unit_of_measure: '',
-    application_method: '',
-    target_pest: '',
-    applicator_name: '',
-    temperature: '',
-    wind_speed: '',
-    wind_direction: '',
-    notes: '',
-    status: 'pending_signature',
+    date_started: new Date().toISOString().split('T')[0],
+    date_completed: '',
+    treated_area_acres: '',
+    application_method: 'ground',
+    applied_by: '',
+    temperature_start_f: '',
+    wind_velocity_mph: '',
+    wind_direction_degrees: '',
+    comments: '',
+    pur_status: 'draft',
   });
 
+  // Tank mix items — array of product line items
+  const [tankMixItems, setTankMixItems] = useState([{ ...EMPTY_ITEM }]);
+
+  // Product search state
+  const [allProducts, setAllProducts] = useState([]);
+  const [activeSearchIdx, setActiveSearchIdx] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filteredProducts, setFilteredProducts] = useState(products);
-  const [selectedProduct, setSelectedProduct] = useState(null);
-  const [showProductDropdown, setShowProductDropdown] = useState(false);
-  const [warnings, setWarnings] = useState([]);
+  const [searchResults, setSearchResults] = useState([]);
+  const searchTimeoutRef = useRef(null);
 
-  // Filter products based on search
-  useEffect(() => {
-    if (searchTerm) {
-      const search = searchTerm.toLowerCase();
-      const filtered = products.filter(p =>
-        p.product_name?.toLowerCase().includes(search) ||
-        p.epa_registration_number?.toLowerCase().includes(search) ||
-        p.manufacturer?.toLowerCase().includes(search) ||
-        p.active_ingredients?.toLowerCase().includes(search)
-      );
-      setFilteredProducts(filtered);
-    } else {
-      setFilteredProducts(products);
-    }
-  }, [searchTerm, products]);
+  const [saving, setSaving] = useState(false);
 
-  // Load selected product details
+  // Load unified products
   useEffect(() => {
-    if (formData.product) {
-      const product = products.find(p => p.id === parseInt(formData.product));
-      setSelectedProduct(product);
-      if (product) {
-        setSearchTerm(product.product_name);
+    unifiedProductsAPI.getAll().then(res => {
+      const data = res.data.results || res.data || [];
+      setAllProducts(data);
+    }).catch(() => {});
+  }, []);
+
+  // Populate form when editing
+  useEffect(() => {
+    if (application) {
+      setFormData({
+        field: application.field || '',
+        date_started: application.date_started?.split('T')[0] || '',
+        date_completed: application.date_completed?.split('T')[0] || '',
+        treated_area_acres: application.treated_area_acres || '',
+        application_method: application.application_method || 'ground',
+        applied_by: application.applied_by || '',
+        temperature_start_f: application.temperature_start_f || '',
+        wind_velocity_mph: application.wind_velocity_mph || '',
+        wind_direction_degrees: application.wind_direction_degrees || '',
+        comments: application.comments || '',
+        pur_status: application.pur_status || 'draft',
+      });
+
+      // Load tank mix items from existing event
+      if (application.tank_mix_items?.length > 0) {
+        setTankMixItems(application.tank_mix_items.map(item => ({
+          product: item.product || '',
+          product_name: item.product_name || '',
+          total_amount: item.total_amount || '',
+          amount_unit: item.amount_unit || 'Ga',
+          rate: item.rate || '',
+          rate_unit: item.rate_unit || 'Ga/A',
+          dilution_gallons: item.dilution_gallons || '',
+        })));
       }
     }
-  }, [formData.product, products]);
+  }, [application]);
 
-  // Update warnings when data changes
-  useEffect(() => {
-    updateWarnings();
-  }, [formData, selectedProduct]);
+  // Product search with debounce
+  const handleProductSearch = useCallback((term, idx) => {
+    setSearchTerm(term);
+    setActiveSearchIdx(idx);
 
-  const updateWarnings = () => {
-    const newWarnings = [];
+    if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
 
-    // Restricted use warning
-    if (selectedProduct?.restricted_use && !formData.applicator_name) {
-      newWarnings.push({
-        type: 'error',
-        message: 'Restricted Use Product requires licensed applicator name'
-      });
-    }
-
-    // Fumigant warning
-    if (selectedProduct?.is_fumigant) {
-      newWarnings.push({
-        type: 'warning',
-        message: 'This is a FUMIGANT - Special regulations apply'
-      });
-    }
-
-    // REI info
-    if (selectedProduct?.rei_hours || selectedProduct?.rei_days) {
-      const reiHours = selectedProduct.rei_hours || (selectedProduct.rei_days * 24);
-      newWarnings.push({
-        type: 'info',
-        message: `Re-Entry Interval (REI): ${reiHours >= 24 ? `${reiHours/24} days` : `${reiHours} hours`}`
-      });
-    }
-
-    // PHI info
-    if (selectedProduct?.phi_days) {
-      newWarnings.push({
-        type: 'info',
-        message: `Pre-Harvest Interval (PHI): ${selectedProduct.phi_days} days`
-      });
-    }
-
-    // Missing required fields
-    if (formData.field && !formData.acres_treated) {
-      const field = fields.find(f => f.id === parseInt(formData.field));
-      if (field) {
-        newWarnings.push({
-          type: 'info',
-          message: `Field total acres: ${field.total_acres}. Enter acres actually treated.`
-        });
-      }
-    }
-
-    // Application rate check
-    if (selectedProduct?.max_rate_per_application && formData.amount_used && formData.acres_treated) {
-      const rate = parseFloat(formData.amount_used) / parseFloat(formData.acres_treated);
-      if (rate > selectedProduct.max_rate_per_application) {
-        newWarnings.push({
-          type: 'error',
-          message: `Application rate (${rate.toFixed(2)} ${selectedProduct.max_rate_unit}) exceeds maximum allowed (${selectedProduct.max_rate_per_application} ${selectedProduct.max_rate_unit})`
-        });
-      }
-    }
-
-    setWarnings(newWarnings);
-  };
-
-  const handleProductSelect = (product) => {
-    setFormData({ ...formData, product: product.id });
-    setSelectedProduct(product);
-    setSearchTerm(product.product_name);
-    setShowProductDropdown(false);
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    
-    // Check for errors
-    const errors = warnings.filter(w => w.type === 'error');
-    if (errors.length > 0) {
-      toast.error('Please fix all errors before saving:\n' + errors.map(e => '• ' + e.message).join('\n'));
+    if (term.length < 2) {
+      setSearchResults(allProducts.slice(0, 20));
       return;
     }
 
-    onSave(formData);
+    searchTimeoutRef.current = setTimeout(() => {
+      const lower = term.toLowerCase();
+      const filtered = allProducts.filter(p =>
+        p.product_name?.toLowerCase().includes(lower) ||
+        p.epa_registration_number?.toLowerCase().includes(lower) ||
+        p.manufacturer?.toLowerCase().includes(lower)
+      ).slice(0, 20);
+      setSearchResults(filtered);
+    }, 200);
+  }, [allProducts]);
+
+  const handleProductSelect = useCallback((product, idx) => {
+    setTankMixItems(prev => {
+      const next = [...prev];
+      next[idx] = {
+        ...next[idx],
+        product: product.id,
+        product_name: product.product_name,
+      };
+      return next;
+    });
+    setActiveSearchIdx(null);
+    setSearchTerm('');
+  }, []);
+
+  const handleItemChange = useCallback((idx, field, value) => {
+    setTankMixItems(prev => {
+      const next = [...prev];
+      next[idx] = { ...next[idx], [field]: value };
+      return next;
+    });
+  }, []);
+
+  const addItem = useCallback(() => {
+    setTankMixItems(prev => [...prev, { ...EMPTY_ITEM }]);
+  }, []);
+
+  const removeItem = useCallback((idx) => {
+    setTankMixItems(prev => prev.length > 1 ? prev.filter((_, i) => i !== idx) : prev);
+  }, []);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    // Validate at least one product
+    const validItems = tankMixItems.filter(item => item.product);
+    if (validItems.length === 0) {
+      toast.error('Add at least one product to the tank mix');
+      return;
+    }
+
+    if (!formData.field) {
+      toast.error('Please select a field');
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const payload = {
+        ...formData,
+        field: parseInt(formData.field),
+        treated_area_acres: formData.treated_area_acres ? parseFloat(formData.treated_area_acres) : null,
+        temperature_start_f: formData.temperature_start_f ? parseFloat(formData.temperature_start_f) : null,
+        wind_velocity_mph: formData.wind_velocity_mph ? parseFloat(formData.wind_velocity_mph) : null,
+        wind_direction_degrees: formData.wind_direction_degrees ? parseFloat(formData.wind_direction_degrees) : null,
+        date_completed: formData.date_completed || null,
+        tank_mix_items: validItems.map((item, idx) => ({
+          product: parseInt(item.product),
+          total_amount: parseFloat(item.total_amount) || 0,
+          amount_unit: item.amount_unit,
+          rate: parseFloat(item.rate) || 0,
+          rate_unit: item.rate_unit,
+          dilution_gallons: item.dilution_gallons ? parseFloat(item.dilution_gallons) : null,
+          sort_order: idx,
+        })),
+      };
+
+      if (isEdit) {
+        await applicationEventsAPI.update(application.id, payload);
+      } else {
+        await applicationEventsAPI.create(payload);
+      }
+
+      toast.success(isEdit ? 'Application updated' : 'Application created');
+      onSave?.(payload);
+      onClose();
+    } catch (err) {
+      const msg = err.response?.data?.detail || err.message || 'Failed to save';
+      toast.error(msg);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // Get selected product info for a tank mix item
+  const getProductInfo = (productId) => {
+    return allProducts.find(p => p.id === parseInt(productId));
   };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+      <div className="bg-white rounded-lg shadow-xl max-w-5xl w-full max-h-[90vh] overflow-y-auto">
         <form onSubmit={handleSubmit} className="p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-              {application ? 'Edit Application' : 'New Application'}
+          {/* Header */}
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-bold text-gray-900">
+              {isEdit ? 'Edit Application Event' : 'New Application Event'}
             </h2>
-            <button type="button" onClick={onClose} className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+            <button type="button" onClick={onClose} className="text-gray-500 hover:text-gray-700">
               <X className="w-6 h-6" />
             </button>
           </div>
 
-          {/* Warnings Section */}
-          {warnings.length > 0 && (
-            <div className="mb-4 space-y-2">
-              {warnings.map((warning, index) => (
-                <div
-                  key={index}
-                  className={`p-3 rounded-lg flex items-start gap-2 ${
-                    warning.type === 'error' ? 'bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800' :
-                    warning.type === 'warning' ? 'bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-800' :
-                    'bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800'
-                  }`}
-                >
-                  {warning.type === 'error' ? (
-                    <AlertTriangle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-                  ) : (
-                    <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                  )}
-                  <span className={`text-sm ${
-                    warning.type === 'error' ? 'text-red-800 dark:text-red-300' :
-                    warning.type === 'warning' ? 'text-yellow-800 dark:text-yellow-300' :
-                    'text-blue-800 dark:text-blue-300'
-                  }`}>
-                    {warning.message}
-                  </span>
-                </div>
-              ))}
-            </div>
-          )}
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Application Date */}
+          {/* Event fields */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Application Date *
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Date *</label>
               <input
                 type="date"
                 required
-                value={formData.application_date}
-                onChange={(e) => setFormData({ ...formData, application_date: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                value={formData.date_started}
+                onChange={(e) => setFormData(prev => ({ ...prev, date_started: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
               />
             </div>
 
-            {/* Field */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Field *
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Field *</label>
               <select
                 required
                 value={formData.field}
-                onChange={(e) => setFormData({ ...formData, field: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                onChange={(e) => setFormData(prev => ({ ...prev, field: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
               >
                 <option value="">Select field...</option>
-                {fields.map((field) => (
-                  <option key={field.id} value={field.id}>
-                    {field.name} - {field.total_acres} acres ({field.current_crop || 'No crop'})
+                {(fields || []).map(f => (
+                  <option key={f.id} value={f.id}>
+                    {f.name} - {f.total_acres} ac ({f.crop_name || f.current_crop || 'No crop'})
                   </option>
                 ))}
               </select>
             </div>
 
-            {/* Product - Enhanced Searchable Dropdown */}
-            <div className="col-span-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Pesticide Product *
-              </label>
-              <div className="relative">
-                <div className="flex items-center gap-2">
-                  <div className="flex-1 relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                    <input
-                      type="text"
-                      value={searchTerm}
-                      onChange={(e) => {
-                        setSearchTerm(e.target.value);
-                        setShowProductDropdown(true);
-                      }}
-                      onFocus={() => setShowProductDropdown(true)}
-                      placeholder="Search by product name, EPA number, or manufacturer..."
-                      className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                    />
-                  </div>
-                  {selectedProduct && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setFormData({ ...formData, product: '' });
-                        setSelectedProduct(null);
-                        setSearchTerm('');
-                      }}
-                      className="px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
-                    >
-                      Clear
-                    </button>
-                  )}
-                </div>
-
-                {/* Dropdown List */}
-                {showProductDropdown && filteredProducts.length > 0 && (
-                  <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-60 overflow-y-auto">
-                    {filteredProducts.slice(0, 20).map((product) => (
-                      <button
-                        key={product.id}
-                        type="button"
-                        onClick={() => handleProductSelect(product)}
-                        className="w-full text-left px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-600 border-b border-gray-100 dark:border-gray-600"
-                      >
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="flex-1">
-                            <div className="font-medium text-gray-900 dark:text-white">
-                              {product.product_name}
-                            </div>
-                            <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                              EPA: {product.epa_registration_number} | {product.manufacturer}
-                            </div>
-                            {product.active_ingredients && (
-                              <div className="text-xs text-gray-600 dark:text-gray-300 mt-1">
-                                {product.active_ingredients}
-                              </div>
-                            )}
-                          </div>
-                          <div className="flex flex-col gap-1 items-end">
-                            {product.restricted_use && (
-                              <span className="px-2 py-0.5 bg-orange-100 text-orange-800 text-xs rounded">
-                                RUP
-                              </span>
-                            )}
-                            {product.product_type && (
-                              <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded">
-                                {product.product_type}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      </button>
-                    ))}
-                    {filteredProducts.length > 20 && (
-                      <div className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400 text-center">
-                        Showing first 20 results. Refine your search for more.
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              {/* Selected Product Info */}
-              {selectedProduct && (
-                <div className="mt-2 p-3 bg-gray-50 dark:bg-gray-900 rounded-md">
-                  <div className="text-sm">
-                    <div className="font-medium text-gray-900 dark:text-white">{selectedProduct.product_name}</div>
-                    <div className="text-gray-600 dark:text-gray-300 mt-1">
-                      <span className="font-medium">EPA:</span> {selectedProduct.epa_registration_number}
-                      {selectedProduct.manufacturer && (
-                        <> | <span className="font-medium">Manufacturer:</span> {selectedProduct.manufacturer}</>
-                      )}
-                    </div>
-                    {selectedProduct.active_ingredients && (
-                      <div className="text-gray-600 dark:text-gray-300 mt-1">
-                        <span className="font-medium">Active Ingredient:</span> {selectedProduct.active_ingredients}
-                      </div>
-                    )}
-                    <div className="flex gap-4 mt-2">
-                      {selectedProduct.rei_hours && (
-                        <span className="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded">
-                          REI: {selectedProduct.rei_hours}h
-                        </span>
-                      )}
-                      {selectedProduct.phi_days && (
-                        <span className="text-xs px-2 py-1 bg-green-100 text-green-800 rounded">
-                          PHI: {selectedProduct.phi_days}d
-                        </span>
-                      )}
-                      {selectedProduct.signal_word && (
-                        <span className={`text-xs px-2 py-1 rounded ${
-                          selectedProduct.signal_word === 'DANGER' ? 'bg-red-100 text-red-800' :
-                          selectedProduct.signal_word === 'WARNING' ? 'bg-yellow-100 text-yellow-800' :
-                          'bg-gray-100 text-gray-800'
-                        }`}>
-                          {selectedProduct.signal_word}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Amount Used */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Amount Used *
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Acres Treated</label>
               <input
                 type="number"
                 step="0.01"
-                required
-                value={formData.amount_used}
-                onChange={(e) => setFormData({ ...formData, amount_used: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                value={formData.treated_area_acres}
+                onChange={(e) => setFormData(prev => ({ ...prev, treated_area_acres: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                placeholder="Acres"
               />
             </div>
 
-            {/* Unit of Measure */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Unit of Measure *
-              </label>
-              <select
-                required
-                value={formData.unit_of_measure}
-                onChange={(e) => setFormData({ ...formData, unit_of_measure: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-              >
-                <option value="">Select unit...</option>
-                <option value="lbs">Pounds (lbs)</option>
-                <option value="oz">Ounces (oz)</option>
-                <option value="gal">Gallons (gal)</option>
-                <option value="qt">Quarts (qt)</option>
-                <option value="pt">Pints (pt)</option>
-                <option value="fl oz">Fluid Ounces (fl oz)</option>
-                <option value="kg">Kilograms (kg)</option>
-                <option value="L">Liters (L)</option>
-              </select>
-            </div>
-
-            {/* Acres Treated */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Acres Treated *
-              </label>
-              <input
-                type="number"
-                step="0.01"
-                required
-                value={formData.acres_treated}
-                onChange={(e) => setFormData({ ...formData, acres_treated: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-              />
-            </div>
-
-            {/* Application Method */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Application Method
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Method</label>
               <select
                 value={formData.application_method}
-                onChange={(e) => setFormData({ ...formData, application_method: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                onChange={(e) => setFormData(prev => ({ ...prev, application_method: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
               >
-                <option value="">Select method...</option>
-                <option value="Ground Spray">Ground Spray</option>
-                <option value="Aerial Application">Aerial Application</option>
-                <option value="Chemigation">Chemigation</option>
-                <option value="Soil Injection">Soil Injection</option>
-                <option value="Broadcast">Broadcast Application</option>
+                {APPLICATION_METHODS.map(m => (
+                  <option key={m.value} value={m.value}>{m.label}</option>
+                ))}
               </select>
             </div>
 
-            {/* Start Time */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Start Time
-              </label>
-              <input
-                type="time"
-                value={formData.start_time}
-                onChange={(e) => setFormData({ ...formData, start_time: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-              />
-            </div>
-
-            {/* End Time */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                End Time
-              </label>
-              <input
-                type="time"
-                value={formData.end_time}
-                onChange={(e) => setFormData({ ...formData, end_time: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-              />
-            </div>
-
-            {/* Applicator Name */}
-            <div className="col-span-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Applicator Name {selectedProduct?.restricted_use && '*'}
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Applied By</label>
               <input
                 type="text"
-                required={selectedProduct?.restricted_use}
-                value={formData.applicator_name}
-                onChange={(e) => setFormData({ ...formData, applicator_name: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                placeholder={selectedProduct?.restricted_use ? "Required for Restricted Use Products" : "Optional"}
+                value={formData.applied_by}
+                onChange={(e) => setFormData(prev => ({ ...prev, applied_by: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                placeholder="Applicator name"
               />
             </div>
 
-            {/* Target Pest */}
-            <div className="col-span-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Target Pest/Disease
-              </label>
-              <input
-                type="text"
-                value={formData.target_pest}
-                onChange={(e) => setFormData({ ...formData, target_pest: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                placeholder="e.g., Citrus leafminer, Brown rot, Weeds"
-              />
-            </div>
-
-            {/* Weather Conditions */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Temperature (°F)
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Temperature (F)</label>
               <input
                 type="number"
-                value={formData.temperature}
-                onChange={(e) => setFormData({ ...formData, temperature: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                value={formData.temperature_start_f}
+                onChange={(e) => setFormData(prev => ({ ...prev, temperature_start_f: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Wind Speed (mph)
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Wind (mph)</label>
               <input
                 type="number"
                 step="0.1"
-                value={formData.wind_speed}
-                onChange={(e) => setFormData({ ...formData, wind_speed: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                value={formData.wind_velocity_mph}
+                onChange={(e) => setFormData(prev => ({ ...prev, wind_velocity_mph: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Wind Direction
-              </label>
-              <select
-                value={formData.wind_direction}
-                onChange={(e) => setFormData({ ...formData, wind_direction: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-              >
-                <option value="">Select direction...</option>
-                <option value="N">North</option>
-                <option value="NE">Northeast</option>
-                <option value="E">East</option>
-                <option value="SE">Southeast</option>
-                <option value="S">South</option>
-                <option value="SW">Southwest</option>
-                <option value="W">West</option>
-                <option value="NW">Northwest</option>
-              </select>
-            </div>
-
-            {/* Notes */}
-            <div className="col-span-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Notes
-              </label>
-              <textarea
-                value={formData.notes}
-                onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                rows="3"
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                placeholder="Additional notes or observations..."
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Comments</label>
+              <input
+                type="text"
+                value={formData.comments}
+                onChange={(e) => setFormData(prev => ({ ...prev, comments: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                placeholder="Optional notes"
               />
             </div>
           </div>
 
+          {/* Tank Mix Items */}
+          <div className="mb-6">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wider">
+                Tank Mix Products
+              </h3>
+              <button
+                type="button"
+                onClick={addItem}
+                className="flex items-center gap-1 px-3 py-1.5 text-sm text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-md"
+              >
+                <Plus className="w-4 h-4" />
+                Add Product
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              {tankMixItems.map((item, idx) => {
+                const productInfo = item.product ? getProductInfo(item.product) : null;
+                return (
+                  <div key={idx} className="border border-gray-200 rounded-lg p-3">
+                    <div className="flex items-start gap-3">
+                      <span className="text-xs text-gray-400 font-mono mt-2.5 w-4">
+                        {idx + 1}
+                      </span>
+
+                      {/* Product search */}
+                      <div className="flex-1 min-w-0">
+                        <div className="relative">
+                          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                          <input
+                            type="text"
+                            value={activeSearchIdx === idx ? searchTerm : (item.product_name || '')}
+                            onChange={(e) => handleProductSearch(e.target.value, idx)}
+                            onFocus={() => {
+                              setActiveSearchIdx(idx);
+                              setSearchTerm(item.product_name || '');
+                              setSearchResults(allProducts.slice(0, 20));
+                            }}
+                            placeholder="Search product name or EPA #..."
+                            className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-md text-sm"
+                          />
+
+                          {/* Search dropdown */}
+                          {activeSearchIdx === idx && searchResults.length > 0 && (
+                            <div className="absolute z-20 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-auto">
+                              {searchResults.map(p => (
+                                <button
+                                  key={p.id}
+                                  type="button"
+                                  onClick={() => handleProductSelect(p, idx)}
+                                  className="w-full text-left px-3 py-2 hover:bg-gray-50 border-b border-gray-50 text-sm"
+                                >
+                                  <span className="font-medium">{p.product_name}</span>
+                                  {p.epa_registration_number && (
+                                    <span className="text-gray-400 ml-2 text-xs">
+                                      EPA: {p.epa_registration_number}
+                                    </span>
+                                  )}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Product badges */}
+                        {productInfo && (
+                          <div className="flex items-center gap-2 mt-1.5">
+                            {productInfo.epa_registration_number && (
+                              <span className="text-xs text-gray-500">
+                                EPA: {productInfo.epa_registration_number}
+                              </span>
+                            )}
+                            {productInfo.product_type && (
+                              <span className="px-1.5 py-0.5 text-xs bg-gray-100 text-gray-600 rounded">
+                                {productInfo.product_type}
+                              </span>
+                            )}
+                            {productInfo.active_ingredient && (
+                              <span className="text-xs text-gray-400 truncate max-w-[200px]">
+                                {productInfo.active_ingredient}
+                              </span>
+                            )}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Amount */}
+                      <div className="w-28">
+                        <input
+                          type="number"
+                          step="0.01"
+                          value={item.total_amount}
+                          onChange={(e) => handleItemChange(idx, 'total_amount', e.target.value)}
+                          placeholder="Amount"
+                          className="w-full px-2 py-2 border border-gray-300 rounded-md text-sm"
+                        />
+                      </div>
+                      <div className="w-28">
+                        <select
+                          value={item.amount_unit}
+                          onChange={(e) => handleItemChange(idx, 'amount_unit', e.target.value)}
+                          className="w-full px-2 py-2 border border-gray-300 rounded-md text-sm"
+                        >
+                          {AMOUNT_UNITS.map(u => (
+                            <option key={u.value} value={u.value}>{u.label}</option>
+                          ))}
+                        </select>
+                      </div>
+
+                      {/* Rate */}
+                      <div className="w-24">
+                        <input
+                          type="number"
+                          step="0.01"
+                          value={item.rate}
+                          onChange={(e) => handleItemChange(idx, 'rate', e.target.value)}
+                          placeholder="Rate"
+                          className="w-full px-2 py-2 border border-gray-300 rounded-md text-sm"
+                        />
+                      </div>
+                      <div className="w-28">
+                        <select
+                          value={item.rate_unit}
+                          onChange={(e) => handleItemChange(idx, 'rate_unit', e.target.value)}
+                          className="w-full px-2 py-2 border border-gray-300 rounded-md text-sm"
+                        >
+                          {RATE_UNITS.map(u => (
+                            <option key={u.value} value={u.value}>{u.label}</option>
+                          ))}
+                        </select>
+                      </div>
+
+                      {/* Remove */}
+                      <button
+                        type="button"
+                        onClick={() => removeItem(idx)}
+                        className="p-1.5 text-gray-400 hover:text-red-500 mt-0.5"
+                        disabled={tankMixItems.length <= 1}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
           {/* Action Buttons */}
-          <div className="flex gap-3 mt-6">
+          <div className="flex gap-3 pt-4 border-t border-gray-200">
             <button
               type="submit"
-              className="flex-1 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+              disabled={saving}
+              className="flex-1 px-4 py-2.5 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 font-medium"
             >
-              Save Application
+              {saving ? 'Saving...' : (isEdit ? 'Update Application' : 'Save Application')}
             </button>
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
+              className="px-4 py-2.5 border border-gray-300 rounded-md hover:bg-gray-50 text-gray-700"
             >
               Cancel
             </button>
           </div>
         </form>
       </div>
+
+      {/* Click outside search to close dropdown */}
+      {activeSearchIdx !== null && (
+        <div
+          className="fixed inset-0 z-10"
+          onClick={() => setActiveSearchIdx(null)}
+        />
+      )}
     </div>
   );
 }
