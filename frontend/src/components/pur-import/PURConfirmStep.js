@@ -5,11 +5,11 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import {
   Loader2, CheckCircle, AlertCircle, FileText,
-  Package, MapPin, RotateCcw, ExternalLink,
+  Package, MapPin, RotateCcw,
 } from 'lucide-react';
 import { purImportAPI } from '../../services/api';
 
-export default function PURConfirmStep({ reports, fields, filename, onComplete, onReset }) {
+export default function PURConfirmStep({ reports, farms, filename, onComplete, onReset }) {
   const [importing, setImporting] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState('');
@@ -21,13 +21,13 @@ export default function PURConfirmStep({ reports, fields, filename, onComplete, 
       const matches = r._match_info?.product_matches || [];
       return sum + matches.filter(m => m.match_type === 'none').length;
     }, 0);
-    const fieldNames = {};
+    const farmNames = {};
     reports.forEach(r => {
-      const f = (fields || []).find(f => f.id === r._fieldId);
-      if (f) fieldNames[f.id] = f.name;
+      const f = (farms || []).find(f => f.id === r._farmId);
+      if (f) farmNames[f.id] = f.name;
     });
-    return { total: reports.length, totalProducts, newProducts, fieldNames };
-  }, [reports, fields]);
+    return { total: reports.length, totalProducts, newProducts, farmNames };
+  }, [reports, farms]);
 
   const handleImport = useCallback(async () => {
     setImporting(true);
@@ -142,14 +142,14 @@ export default function PURConfirmStep({ reports, fields, filename, onComplete, 
           <Stat label="Reports" value={summary.total} />
           <Stat label="Total Products" value={summary.totalProducts} />
           <Stat label="New Products" value={summary.newProducts} subtitle="will be created" />
-          <Stat label="Fields" value={Object.keys(summary.fieldNames).length} />
+          <Stat label="Farms" value={Object.keys(summary.farmNames).length} />
         </div>
       </div>
 
       {/* Report list */}
       <div className="space-y-2">
         {reports.map((r, idx) => {
-          const fieldName = summary.fieldNames[r._fieldId] || 'Unknown';
+          const farmName = summary.farmNames[r._farmId] || 'Unknown';
           return (
             <div
               key={r._index ?? idx}
@@ -165,7 +165,7 @@ export default function PURConfirmStep({ reports, fields, filename, onComplete, 
               <div className="flex items-center gap-4 text-gray-600">
                 <span className="flex items-center gap-1">
                   <MapPin className="w-3.5 h-3.5" />
-                  {fieldName}
+                  {farmName}
                 </span>
                 <span className="flex items-center gap-1">
                   <Package className="w-3.5 h-3.5" />

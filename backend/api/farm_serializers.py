@@ -44,6 +44,7 @@ class FarmSerializer(serializers.ModelSerializer):
             'has_coordinates', 'has_plss', 'plss_display',
             'phone', 'email', 'active',
             'parcels', 'apn_list', 'parcel_count', 'total_parcel_acreage',
+            'cimis_station_id', 'pur_site_id',
             'created_at', 'updated_at', 'field_count'
         ]
 

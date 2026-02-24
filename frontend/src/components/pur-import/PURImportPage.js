@@ -23,7 +23,7 @@ const STEPS = [
 ];
 
 const PURImportPage = () => {
-  const { fields } = useData();
+  const { farms } = useData();
 
   // Wizard state
   const [currentStep, setCurrentStep] = useState(0);
@@ -41,7 +41,7 @@ const PURImportPage = () => {
       ...report,
       _index: idx,
       _selected: true,
-      _fieldId: report._match_info?.field_matches?.[0]?.field_id || null,
+      _farmId: report._match_info?.farm_matches?.[0]?.farm_id || null,
       _rememberMapping: false,
       _editedComments: report.comments || '',
     }));
@@ -170,7 +170,7 @@ const PURImportPage = () => {
         {currentStep === 1 && reviewData && (
           <PURReviewStep
             reports={reviewData}
-            fields={fields}
+            farms={farms}
             filename={uploadResponse?.filename}
             onReportsChange={setReviewData}
             onComplete={handleReviewComplete}
@@ -180,7 +180,7 @@ const PURImportPage = () => {
         {currentStep === 2 && reviewData && (
           <PURConfirmStep
             reports={reviewData}
-            fields={fields}
+            farms={farms}
             filename={uploadResponse?.filename}
             onComplete={handleImportComplete}
             onReset={handleReset}

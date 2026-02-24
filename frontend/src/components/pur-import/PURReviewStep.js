@@ -1,5 +1,5 @@
 // =============================================================================
-// PUR REVIEW STEP — Review all parsed PUR reports, map fields, toggle selection
+// PUR REVIEW STEP — Review all parsed PUR reports, map farms, toggle selection
 // =============================================================================
 
 import React, { useMemo, useCallback } from 'react';
@@ -8,12 +8,12 @@ import {
 } from 'lucide-react';
 import PURReviewCard from './PURReviewCard';
 
-export default function PURReviewStep({ reports, fields, filename, onReportsChange, onComplete }) {
+export default function PURReviewStep({ reports, farms, filename, onReportsChange, onComplete }) {
   // Stats
   const stats = useMemo(() => {
     const selected = reports.filter(r => r._selected);
-    const mapped = selected.filter(r => r._fieldId);
-    const unmapped = selected.filter(r => !r._fieldId);
+    const mapped = selected.filter(r => r._farmId);
+    const unmapped = selected.filter(r => !r._farmId);
     const totalProducts = selected.reduce((sum, r) => sum + (r.products || []).length, 0);
     return {
       total: reports.length,
@@ -38,12 +38,12 @@ export default function PURReviewStep({ reports, fields, filename, onReportsChan
   }, [reports, onReportsChange]);
 
   const handleProceed = useCallback(() => {
-    // Only pass selected reports with field mapping
-    const selected = reports.filter(r => r._selected && r._fieldId);
-    // Map _fieldId to the confirm payload shape
+    // Only pass selected reports with farm mapping
+    const selected = reports.filter(r => r._selected && r._farmId);
+    // Map _farmId to the confirm payload shape
     const mapped = selected.map(r => ({
       ...r,
-      _field_id: r._fieldId,
+      _farm_id: r._farmId,
       _save_site_mapping: r._rememberMapping || false,
     }));
     onComplete(mapped);
@@ -80,13 +80,13 @@ export default function PURReviewStep({ reports, fields, filename, onReportsChan
         {stats.mapped > 0 && (
           <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-green-50 text-green-700 rounded-full text-sm">
             <CheckCircle className="w-4 h-4" />
-            {stats.mapped} mapped to fields
+            {stats.mapped} mapped to farms
           </span>
         )}
         {stats.unmapped > 0 && (
           <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-50 text-amber-700 rounded-full text-sm">
             <AlertTriangle className="w-4 h-4" />
-            {stats.unmapped} need field mapping
+            {stats.unmapped} need farm mapping
           </span>
         )}
       </div>
@@ -98,7 +98,7 @@ export default function PURReviewStep({ reports, fields, filename, onReportsChan
             key={report._index ?? idx}
             report={report}
             index={idx}
-            fields={fields}
+            farms={farms}
             onChange={(updated) => handleReportChange(idx, updated)}
           />
         ))}
@@ -122,7 +122,7 @@ export default function PURReviewStep({ reports, fields, filename, onReportsChan
       {/* Warning if unmapped */}
       {stats.unmapped > 0 && stats.selected > 0 && (
         <p className="text-sm text-amber-600">
-          All selected reports must be mapped to a field before importing.
+          All selected reports must be mapped to a farm before importing.
         </p>
       )}
     </div>

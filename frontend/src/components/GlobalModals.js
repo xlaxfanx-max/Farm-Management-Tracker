@@ -196,6 +196,7 @@ export function GlobalModals() {
       {applicationModal.isOpen && (
         <ApplicationModal
           application={applicationModal.data}
+          farms={farms}
           fields={fields}
           products={products}
           onSave={handleSaveApplication}

@@ -226,7 +226,7 @@ from .pur_views import (
     pur_import_upload,
     pur_import_confirm,
     pur_match_products,
-    pur_match_fields,
+    pur_match_farms,
 )
 
 # Import FSMA Water Assessment views
@@ -509,7 +509,7 @@ urlpatterns = [
     path('pur-import/upload/', pur_import_upload, name='pur-import-upload'),
     path('pur-import/confirm/', pur_import_confirm, name='pur-import-confirm'),
     path('pur-import/match-products/', pur_match_products, name='pur-match-products'),
-    path('pur-import/match-fields/', pur_match_fields, name='pur-match-fields'),
+    path('pur-import/match-farms/', pur_match_farms, name='pur-match-farms'),
 
     # Yield Forecast analytics routes
     path('yield-forecast/dashboard/', yield_forecast_dashboard, name='yield-forecast-dashboard'),

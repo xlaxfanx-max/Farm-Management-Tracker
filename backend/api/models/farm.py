@@ -73,6 +73,12 @@ class Farm(LocationMixin, models.Model):
         help_text="Nearest CIMIS weather station ID (e.g., '152' for Oxnard). Used for yield forecast climate features."
     )
 
+    # PUR site mapping
+    pur_site_id = models.CharField(
+        max_length=100, blank=True,
+        help_text="Ag Commissioner site ID for PUR matching, e.g., 'FINCH FARMS, LLC 02C'"
+    )
+
     # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

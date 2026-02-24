@@ -452,7 +452,7 @@ export const purImportAPI = {
   }),
   confirm: (data) => api.post('/pur-import/confirm/', data),
   matchProducts: (params) => api.get('/pur-import/match-products/', { params }),
-  matchFields: (params) => api.get('/pur-import/match-fields/', { params }),
+  matchFarms: (params) => api.get('/pur-import/match-farms/', { params }),
 };
 
 // =============================================================================

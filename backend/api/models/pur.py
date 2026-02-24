@@ -222,9 +222,16 @@ class ApplicationEvent(models.Model):
         null=True, blank=True,
         related_name='application_events'
     )
+    farm = models.ForeignKey(
+        'Farm', on_delete=models.CASCADE,
+        related_name='application_events',
+        help_text="PUR reports are filed at the farm/ranch level"
+    )
     field = models.ForeignKey(
         'Field', on_delete=models.CASCADE,
-        related_name='application_events'
+        null=True, blank=True,
+        related_name='application_events',
+        help_text="Optional: specific field within the farm"
     )
     applicator = models.ForeignKey(
         Applicator, on_delete=models.SET_NULL, null=True, blank=True,

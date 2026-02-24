@@ -53,6 +53,7 @@ function EnhancedApplicationModal({
   application,
   onClose,
   onSave,
+  farms,
   fields,
   products: legacyProducts, // from DataContext (old PesticideProducts)
 }) {
@@ -61,6 +62,7 @@ function EnhancedApplicationModal({
 
   // Event-level form state
   const [formData, setFormData] = useState({
+    farm: '',
     field: '',
     date_started: new Date().toISOString().split('T')[0],
     date_completed: '',
@@ -98,6 +100,7 @@ function EnhancedApplicationModal({
   useEffect(() => {
     if (application) {
       setFormData({
+        farm: application.farm || '',
         field: application.field || '',
         date_started: application.date_started?.split('T')[0] || '',
         date_completed: application.date_completed?.split('T')[0] || '',
@@ -189,8 +192,8 @@ function EnhancedApplicationModal({
       return;
     }
 
-    if (!formData.field) {
-      toast.error('Please select a field');
+    if (!formData.farm) {
+      toast.error('Please select a farm');
       return;
     }
 
@@ -198,7 +201,8 @@ function EnhancedApplicationModal({
     try {
       const payload = {
         ...formData,
-        field: parseInt(formData.field),
+        farm: parseInt(formData.farm),
+        field: formData.field ? parseInt(formData.field) : null,
         treated_area_acres: formData.treated_area_acres ? parseFloat(formData.treated_area_acres) : null,
         temperature_start_f: formData.temperature_start_f ? parseFloat(formData.temperature_start_f) : null,
         wind_velocity_mph: formData.wind_velocity_mph ? parseFloat(formData.wind_velocity_mph) : null,
@@ -265,17 +269,17 @@ function EnhancedApplicationModal({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Field *</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Farm *</label>
               <select
                 required
-                value={formData.field}
-                onChange={(e) => setFormData(prev => ({ ...prev, field: e.target.value }))}
+                value={formData.farm}
+                onChange={(e) => setFormData(prev => ({ ...prev, farm: e.target.value, field: '' }))}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
               >
-                <option value="">Select field...</option>
-                {(fields || []).map(f => (
+                <option value="">Select farm...</option>
+                {(farms || []).map(f => (
                   <option key={f.id} value={f.id}>
-                    {f.name} - {f.total_acres} ac ({f.crop_name || f.current_crop || 'No crop'})
+                    {f.name} — {f.county || ''}
                   </option>
                 ))}
               </select>

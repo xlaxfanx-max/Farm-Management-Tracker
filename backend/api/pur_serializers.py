@@ -86,8 +86,8 @@ class TankMixItemWriteSerializer(serializers.ModelSerializer):
 
 class ApplicationEventListSerializer(serializers.ModelSerializer):
     """Summary serializer for list views."""
-    field_name = serializers.CharField(source='field.name', read_only=True)
-    farm_name = serializers.CharField(source='field.farm.name', read_only=True)
+    farm_name = serializers.CharField(source='farm.name', read_only=True)
+    field_name = serializers.CharField(source='field.name', read_only=True, default='')
     applicator_name = serializers.CharField(source='applicator.name', read_only=True, default='')
     product_count = serializers.SerializerMethodField()
     pur_status_display = serializers.CharField(source='get_pur_status_display', read_only=True)
@@ -98,7 +98,7 @@ class ApplicationEventListSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'pur_number', 'pur_status', 'pur_status_display',
             'date_started', 'date_completed',
-            'field', 'field_name', 'farm_name',
+            'farm', 'farm_name', 'field', 'field_name',
             'applicator', 'applicator_name',
             'treated_area_acres', 'commodity_name',
             'application_method', 'method_display',
@@ -112,8 +112,8 @@ class ApplicationEventListSerializer(serializers.ModelSerializer):
 
 class ApplicationEventDetailSerializer(serializers.ModelSerializer):
     """Detail serializer with nested tank mix items."""
-    field_name = serializers.CharField(source='field.name', read_only=True)
-    farm_name = serializers.CharField(source='field.farm.name', read_only=True)
+    farm_name = serializers.CharField(source='farm.name', read_only=True)
+    field_name = serializers.CharField(source='field.name', read_only=True, default='')
     applicator_name = serializers.CharField(source='applicator.name', read_only=True, default='')
     tank_mix_items = TankMixItemSerializer(many=True, read_only=True)
     pur_status_display = serializers.CharField(source='get_pur_status_display', read_only=True)

@@ -1,26 +1,26 @@
 // =============================================================================
-// PUR REVIEW CARD — Single parsed PUR report for review and field mapping
+// PUR REVIEW CARD — Single parsed PUR report for review and farm mapping
 // =============================================================================
 
 import React, { useState, useMemo } from 'react';
 import {
   ChevronDown, ChevronRight, MapPin, Package, Calendar,
-  CheckCircle, AlertTriangle, XCircle, Eye, EyeOff,
+  CheckCircle, AlertTriangle, XCircle,
 } from 'lucide-react';
 
-export default function PURReviewCard({ report, index, fields, onChange }) {
+export default function PURReviewCard({ report, index, farms, onChange }) {
   const [expanded, setExpanded] = useState(true);
 
   const matchInfo = report._match_info || {};
-  const fieldMatches = matchInfo.field_matches || [];
+  const farmMatches = matchInfo.farm_matches || [];
   const productMatches = matchInfo.product_matches || [];
 
-  // Determine field match status
-  const fieldStatus = useMemo(() => {
-    if (report._fieldId) return 'mapped';
-    if (fieldMatches.length > 0 && fieldMatches[0].match_type === 'exact_site_id') return 'auto';
+  // Determine farm match status
+  const farmStatus = useMemo(() => {
+    if (report._farmId) return 'mapped';
+    if (farmMatches.length > 0 && farmMatches[0].match_type === 'exact_site_id') return 'auto';
     return 'unmatched';
-  }, [report._fieldId, fieldMatches]);
+  }, [report._farmId, farmMatches]);
 
   // Count product matches
   const productStats = useMemo(() => {
@@ -29,8 +29,8 @@ export default function PURReviewCard({ report, index, fields, onChange }) {
     return { total: products.length, matched };
   }, [report.products, productMatches]);
 
-  const handleFieldChange = (fieldId) => {
-    onChange({ ...report, _fieldId: fieldId ? parseInt(fieldId) : null });
+  const handleFarmChange = (farmId) => {
+    onChange({ ...report, _farmId: farmId ? parseInt(farmId) : null });
   };
 
   const handleToggleSelected = () => {
@@ -41,19 +41,8 @@ export default function PURReviewCard({ report, index, fields, onChange }) {
     onChange({ ...report, _rememberMapping: val });
   };
 
-  // Group fields by farm for the dropdown
-  const fieldsByFarm = useMemo(() => {
-    const grouped = {};
-    (fields || []).forEach(f => {
-      const farmName = f.farm_name || f.farm?.name || 'Unknown Farm';
-      if (!grouped[farmName]) grouped[farmName] = [];
-      grouped[farmName].push(f);
-    });
-    return grouped;
-  }, [fields]);
-
   const statusColor = report._selected
-    ? (fieldStatus === 'unmatched' ? 'border-amber-300' : 'border-green-300')
+    ? (farmStatus === 'unmatched' ? 'border-amber-300' : 'border-green-300')
     : 'border-gray-200 opacity-60';
 
   return (
@@ -108,19 +97,19 @@ export default function PURReviewCard({ report, index, fields, onChange }) {
 
         {/* Status badges */}
         <div className="flex items-center gap-2">
-          {fieldStatus === 'auto' && (
+          {farmStatus === 'auto' && (
             <span className="px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700 rounded-full">
-              Field matched
+              Farm matched
             </span>
           )}
-          {fieldStatus === 'mapped' && (
+          {farmStatus === 'mapped' && (
             <span className="px-2 py-0.5 text-xs font-medium bg-blue-100 text-blue-700 rounded-full">
-              Field set
+              Farm set
             </span>
           )}
-          {fieldStatus === 'unmatched' && report._selected && (
+          {farmStatus === 'unmatched' && report._selected && (
             <span className="px-2 py-0.5 text-xs font-medium bg-amber-100 text-amber-700 rounded-full">
-              Needs field
+              Needs farm
             </span>
           )}
           {expanded ? <ChevronDown className="w-5 h-5 text-gray-400" /> : <ChevronRight className="w-5 h-5 text-gray-400" />}
@@ -130,50 +119,46 @@ export default function PURReviewCard({ report, index, fields, onChange }) {
       {/* Expanded content */}
       {expanded && (
         <div className="border-t border-gray-100 p-4 space-y-4">
-          {/* Field mapping */}
+          {/* Farm mapping */}
           <div className="bg-gray-50 rounded-lg p-3">
             <label className="block text-sm font-medium text-gray-700 mb-1.5">
-              Map to Field
+              Map to Farm
             </label>
             <select
-              value={report._fieldId || ''}
-              onChange={(e) => handleFieldChange(e.target.value)}
+              value={report._farmId || ''}
+              onChange={(e) => handleFarmChange(e.target.value)}
               className={`w-full px-3 py-2 border rounded-lg text-sm ${
-                !report._fieldId && report._selected
+                !report._farmId && report._selected
                   ? 'border-amber-300 bg-amber-50'
                   : 'border-gray-300 bg-white'
               }`}
             >
-              <option value="">-- Select a field --</option>
-              {Object.entries(fieldsByFarm).map(([farmName, farmFields]) => (
-                <optgroup key={farmName} label={farmName}>
-                  {farmFields.map(f => (
-                    <option key={f.id} value={f.id}>
-                      {f.name} {f.pur_site_id ? `(${f.pur_site_id})` : ''}
-                    </option>
-                  ))}
-                </optgroup>
+              <option value="">-- Select a farm --</option>
+              {(farms || []).map(f => (
+                <option key={f.id} value={f.id}>
+                  {f.name} {f.pur_site_id ? `(${f.pur_site_id})` : ''} — {f.county || ''}
+                </option>
               ))}
             </select>
 
             {/* Auto-match suggestion */}
-            {!report._fieldId && fieldMatches.length > 0 && (
+            {!report._farmId && farmMatches.length > 0 && (
               <div className="mt-2 flex items-center gap-2">
                 <span className="text-xs text-gray-500">Suggestion:</span>
-                {fieldMatches.slice(0, 3).map(m => (
+                {farmMatches.slice(0, 3).map(m => (
                   <button
-                    key={m.field_id}
-                    onClick={() => handleFieldChange(m.field_id)}
+                    key={m.farm_id}
+                    onClick={() => handleFarmChange(m.farm_id)}
                     className="px-2 py-0.5 text-xs bg-blue-50 text-blue-700 rounded hover:bg-blue-100 border border-blue-200"
                   >
-                    {m.field_name} ({m.farm_name})
+                    {m.farm_name}
                   </button>
                 ))}
               </div>
             )}
 
             {/* Remember mapping checkbox */}
-            {report._fieldId && report.site_id && (
+            {report._farmId && report.site_id && (
               <label className="mt-2 flex items-center gap-2 text-xs text-gray-600 cursor-pointer">
                 <input
                   type="checkbox"
@@ -181,7 +166,7 @@ export default function PURReviewCard({ report, index, fields, onChange }) {
                   onChange={(e) => handleRememberMapping(e.target.checked)}
                   className="rounded border-gray-300"
                 />
-                Remember: map &quot;{report.site_id}&quot; to this field for future imports
+                Remember: map &quot;{report.site_id}&quot; to this farm for future imports
               </label>
             )}
           </div>

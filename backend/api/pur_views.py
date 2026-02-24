@@ -11,7 +11,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.parsers import MultiPartParser, FormParser
 
 from .models import (
-    Product, Applicator, ApplicationEvent, TankMixItem, Field,
+    Product, Applicator, ApplicationEvent, TankMixItem, Farm, Field,
 )
 from .pur_serializers import (
     ProductSerializer, ProductListSerializer,
@@ -127,27 +127,27 @@ class ApplicationEventViewSet(AuditLogMixin, viewsets.ModelViewSet):
     """
     permission_classes = [IsAuthenticated, HasCompanyAccess]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
-    search_fields = ['pur_number', 'field__name', 'commodity_name', 'applied_by']
+    search_fields = ['pur_number', 'farm__name', 'field__name', 'commodity_name', 'applied_by']
     ordering_fields = ['date_started', 'created_at', 'pur_number']
     ordering = ['-date_started']
 
     def get_queryset(self):
         company = get_user_company(self.request.user)
         qs = ApplicationEvent.objects.select_related(
-            'field', 'field__farm', 'applicator'
+            'farm', 'field', 'applicator'
         ).prefetch_related('tank_mix_items', 'tank_mix_items__product')
 
         if company:
             qs = qs.filter(company=company)
 
         # Filters
+        farm_id = self.request.query_params.get('farm')
+        if farm_id:
+            qs = qs.filter(farm_id=farm_id)
+
         field_id = self.request.query_params.get('field')
         if field_id:
             qs = qs.filter(field_id=field_id)
-
-        farm_id = self.request.query_params.get('farm')
-        if farm_id:
-            qs = qs.filter(field__farm_id=farm_id)
 
         pur_status = self.request.query_params.get('pur_status')
         if pur_status:
@@ -260,22 +260,22 @@ def pur_import_confirm(request):
             if report.get('_skip', False):
                 continue
 
-            # 1. Resolve field
-            field_id = report.get('_field_id')
-            if not field_id:
-                errors.append(f"Report #{idx+1} ({report.get('pur_number', '?')}): No field selected")
+            # 1. Resolve farm
+            farm_id = report.get('_farm_id')
+            if not farm_id:
+                errors.append(f"Report #{idx+1} ({report.get('pur_number', '?')}): No farm selected")
                 continue
 
             try:
-                field = Field.objects.get(id=field_id, farm__company=company)
-            except Field.DoesNotExist:
-                errors.append(f"Report #{idx+1}: Field not found (id={field_id})")
+                farm = Farm.objects.get(id=farm_id, company=company)
+            except Farm.DoesNotExist:
+                errors.append(f"Report #{idx+1}: Farm not found (id={farm_id})")
                 continue
 
-            # Save pur_site_id if requested
+            # Save pur_site_id on farm if requested
             if report.get('_save_site_mapping') and report.get('site_id'):
-                field.pur_site_id = report['site_id']
-                field.save(update_fields=['pur_site_id'])
+                farm.pur_site_id = report['site_id']
+                farm.save(update_fields=['pur_site_id'])
 
             # 2. Resolve applicator
             applicator = _resolve_applicator(report, company)
@@ -287,7 +287,7 @@ def pur_import_confirm(request):
             from datetime import datetime as dt
             event = ApplicationEvent.objects.create(
                 company=company,
-                field=field,
+                farm=farm,
                 applicator=applicator,
                 pur_number=report.get('pur_number', ''),
                 pur_status=report.get('pur_status', 'draft'),
@@ -395,15 +395,15 @@ def pur_match_products(request):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated, HasCompanyAccess])
-def pur_match_fields(request):
-    """Match a PUR site_id / location to existing Field records."""
+def pur_match_farms(request):
+    """Match a PUR site_id / location to existing Farm records."""
     company = get_user_company(request.user)
     site_id = request.query_params.get('site_id', '')
     location = request.query_params.get('location', '')
 
-    qs = Field.objects.filter(active=True)
+    qs = Farm.objects.filter(active=True)
     if company:
-        qs = qs.filter(farm__company=company)
+        qs = qs.filter(company=company)
 
     results = []
 
@@ -413,40 +413,40 @@ def pur_match_fields(request):
         if exact:
             results.append({
                 'match_type': 'exact_site_id',
-                'field_id': exact.id,
-                'field_name': exact.name,
-                'farm_name': exact.farm.name if exact.farm else '',
+                'farm_id': exact.id,
+                'farm_name': exact.name,
             })
 
-    # 2. Fuzzy location/name match
+    # 2. Fuzzy name match
     if location:
-        # Try matching by field name containing location keywords
         parts = location.replace('/', ' ').split()
         for part in parts:
             if len(part) >= 3:
                 matches = qs.filter(
-                    Q(name__icontains=part) | Q(field_number__icontains=part)
+                    Q(name__icontains=part) | Q(farm_number__icontains=part)
                 )[:5]
                 for m in matches:
-                    if not any(r['field_id'] == m.id for r in results):
+                    if not any(r['farm_id'] == m.id for r in results):
                         results.append({
                             'match_type': 'fuzzy_location',
-                            'field_id': m.id,
-                            'field_name': m.name,
-                            'farm_name': m.farm.name if m.farm else '',
+                            'farm_id': m.id,
+                            'farm_name': m.name,
                         })
 
-    # 3. If no matches, return all fields for manual selection
+    # 3. If no matches, return all farms for manual selection
     if not results:
-        all_fields = qs.select_related('farm')[:50]
+        all_farms = qs[:50]
         results = [{
             'match_type': 'none',
-            'field_id': f.id,
-            'field_name': f.name,
-            'farm_name': f.farm.name if f.farm else '',
-        } for f in all_fields]
+            'farm_id': f.id,
+            'farm_name': f.name,
+        } for f in all_farms]
 
     return Response(results)
+
+
+# Keep old name as alias for backward compatibility
+pur_match_fields = pur_match_farms
 
 
 # =============================================================================
@@ -456,26 +456,25 @@ def pur_match_fields(request):
 def _enrich_with_matches(report, company):
     """Add product and field match info to a parsed report."""
     match_info = {
-        'field_matches': [],
+        'farm_matches': [],
         'product_matches': [],
     }
 
-    qs_fields = Field.objects.filter(active=True)
+    qs_farms = Farm.objects.filter(active=True)
     qs_products = Product.objects.filter(is_active=True)
     if company:
-        qs_fields = qs_fields.filter(farm__company=company)
+        qs_farms = qs_farms.filter(company=company)
         qs_products = qs_products.filter(Q(company__isnull=True) | Q(company=company))
 
-    # Field matching
+    # Farm matching
     site_id = report.get('site_id', '')
     if site_id:
-        exact = qs_fields.filter(pur_site_id=site_id).first()
+        exact = qs_farms.filter(pur_site_id=site_id).first()
         if exact:
-            match_info['field_matches'].append({
+            match_info['farm_matches'].append({
                 'match_type': 'exact_site_id',
-                'field_id': exact.id,
-                'field_name': exact.name,
-                'farm_name': exact.farm.name if exact.farm else '',
+                'farm_id': exact.id,
+                'farm_name': exact.name,
             })
 
     # Product matching
