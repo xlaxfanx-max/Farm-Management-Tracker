@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FileText, Download, AlertTriangle, CheckCircle, Calendar, FileSpreadsheet } from 'lucide-react';
-import axios from 'axios';
+import { applicationEventsAPI } from '../services/api';
 import { useToast } from '../contexts/ToastContext';
-
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
 
 /**
  * PUR Report Generator Component
@@ -54,11 +52,11 @@ function PURReports({ farms }) {
         payload.farm_id = selectedFarm;
       }
 
-      const response = await axios.post(`${API_BASE_URL}/applications/validate_pur/`, payload);
+      const response = await applicationEventsAPI.validatePUR(payload);
       setValidation(response.data);
-      
+
       // Also get summary
-      const summaryResponse = await axios.post(`${API_BASE_URL}/applications/pur_summary/`, payload);
+      const summaryResponse = await applicationEventsAPI.purSummary(payload);
       setSummary(summaryResponse.data.summary);
       
       setShowResults(true);
@@ -89,16 +87,7 @@ function PURReports({ farms }) {
         payload.farm_id = selectedFarm;
       }
 
-      const response = await axios.post(
-        `${API_BASE_URL}/applications/export_pur_csv/`,
-        payload,
-        { 
-          responseType: 'blob',
-          headers: {
-            'Content-Type': 'application/json',
-          }
-        }
-      );
+      const response = await applicationEventsAPI.exportPURCSV(payload);
 
       // Create download link
       const url = window.URL.createObjectURL(new Blob([response.data]));

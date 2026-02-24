@@ -427,6 +427,12 @@ export const applicationEventsAPI = {
   create: (data) => api.post('/application-events/', data),
   update: (id, data) => api.put(`/application-events/${id}/`, data),
   delete: (id) => api.delete(`/application-events/${id}/`),
+  // PUR reporting
+  validatePUR: (data) => api.post('/application-events/validate_pur/', data),
+  purSummary: (data) => api.post('/application-events/pur_summary/', data),
+  exportPURCSV: (data) => api.post('/application-events/export_pur_csv/', data, {
+    responseType: 'blob',
+  }),
 };
 
 export const unifiedProductsAPI = {

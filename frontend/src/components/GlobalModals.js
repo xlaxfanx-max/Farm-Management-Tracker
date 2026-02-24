@@ -41,6 +41,7 @@ export function GlobalModals() {
     saveApplication,
     saveWaterSource,
     saveWaterTest,
+    refreshApplicationEvents,
     loadData,
   } = useData();
 
@@ -140,8 +141,8 @@ export function GlobalModals() {
   // APPLICATION MODAL — new modal saves via applicationEventsAPI internally
   // ============================================================================
   const handleSaveApplication = async () => {
-    // Modal handles its own save and close; just refresh data
-    await loadData();
+    // Modal handles its own save and close; refresh applicationEvents in context
+    await refreshApplicationEvents();
   };
 
   // ============================================================================

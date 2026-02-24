@@ -5,7 +5,7 @@ import { StatusDot } from '../ui/StatusBadge';
 /**
  * Horizontal strip showing status of each farm - provides quick overview
  */
-function FarmStatusStrip({ farms = [], fields = [], applications = [], waterSources = [], onFarmClick }) {
+function FarmStatusStrip({ farms = [], fields = [], applications = [], applicationEvents = [], waterSources = [], onFarmClick }) {
   // Calculate status for each farm
   const getFarmStatus = (farm) => {
     const farmFields = fields.filter(f => f.farm === farm.id);
@@ -16,6 +16,8 @@ function FarmStatusStrip({ farms = [], fields = [], applications = [], waterSour
     const farmWaterSources = waterSources.filter(ws => ws.farm === farm.id);
 
     const pendingSignatures = farmApplications.filter(a => a.status === 'pending_signature').length;
+    const farmEvents = applicationEvents.filter(evt => evt.farm === farm.id);
+    const draftEventCount = farmEvents.filter(evt => evt.pur_status === 'draft').length;
     const activeFields = farmFields.filter(f => f.active).length;
     const totalAcres = farmFields.reduce((sum, f) => sum + (parseFloat(f.total_acres) || 0), 0);
 
@@ -28,7 +30,10 @@ function FarmStatusStrip({ farms = [], fields = [], applications = [], waterSour
       alerts.push(`${pendingSignatures} pending signature${pendingSignatures > 1 ? 's' : ''}`);
     }
 
-    // Could add more health checks here (overdue water tests, etc.)
+    if (draftEventCount > 0) {
+      health = 'attention';
+      alerts.push(`${draftEventCount} draft event${draftEventCount > 1 ? 's' : ''}`);
+    }
 
     return {
       farm,

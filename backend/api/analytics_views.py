@@ -21,7 +21,8 @@ from .permissions import HasCompanyAccess
 
 from .models import (
     PesticideApplication, Harvest, HarvestLoad, HarvestLabor,
-    Field, Farm, WaterTest, WaterSource, LaborContractor
+    Field, Farm, WaterTest, WaterSource, LaborContractor,
+    ApplicationEvent, TankMixItem,
 )
 from .services.season_service import SeasonService
 
@@ -74,6 +75,9 @@ def get_analytics_dashboard(request):
             'applications': {
                 'total': 0, 'pending': 0, 'complete': 0, 'submitted_to_pur': 0,
                 'pur_compliance_rate': 0, 'by_month': [], 'top_products': [],
+            },
+            'application_events': {
+                'total': 0, 'draft': 0, 'sent': 0, 'by_month': [], 'top_products': [],
             },
             'harvests': {
                 'total_bins': 0, 'total_acres_harvested': 0, 'yield_per_acre': 0, 'by_crop': [],
@@ -184,11 +188,50 @@ def _get_analytics_dashboard_impl(request, company):
     if app_complete > 0:
         pur_compliance_rate = round((app_submitted / app_complete) * 100, 1)
 
-    # Top products used
+    # Top products used (legacy)
     top_products = (
         applications
         .values('product__name')
         .annotate(count=Count('id'))
+        .order_by('-count')[:5]
+    )
+
+    # ==========================================================================
+    # APPLICATION EVENT DATA (New PUR/Tank Mix system)
+    # ==========================================================================
+    app_events = ApplicationEvent.objects.filter(
+        farm_id__in=farm_ids,
+        date_started__date__gte=start_date,
+        date_started__date__lte=end_date,
+    )
+
+    evt_total = app_events.count()
+    evt_draft = app_events.filter(pur_status='draft').count()
+    evt_sent = app_events.filter(pur_status='sent').count()
+
+    events_by_month = (
+        app_events
+        .annotate(month=TruncMonth('date_started'))
+        .values('month')
+        .annotate(count=Count('id'))
+        .order_by('month')
+    )
+
+    events_monthly = {m: 0 for m in month_names}
+    for item in events_by_month:
+        if item['month']:
+            month_idx = item['month'].month - 1
+            events_monthly[month_names[month_idx]] = item['count']
+
+    events_by_month_list = [
+        {'month': m, 'count': events_monthly[m]} for m in month_names
+    ]
+
+    # Top products from new model (via TankMixItem)
+    evt_top_products = list(
+        TankMixItem.objects.filter(application_event__in=app_events)
+        .values('product__product_name')
+        .annotate(count=Count('application_event', distinct=True))
         .order_by('-count')[:5]
     )
 
@@ -427,6 +470,13 @@ def _get_analytics_dashboard_impl(request, company):
             'by_month': apps_by_month_list,
             'top_products': list(top_products),
         },
+        'application_events': {
+            'total': evt_total,
+            'draft': evt_draft,
+            'sent': evt_sent,
+            'by_month': events_by_month_list,
+            'top_products': evt_top_products,
+        },
         'harvests': {
             'total_bins': total_bins,
             'total_acres_harvested': float(total_acres_harvested),
@@ -500,6 +550,13 @@ def _get_analytics_summary_impl(request, company):
 
     pur_rate = round((app_submitted / app_complete) * 100, 1) if app_complete > 0 else 0
 
+    # Application Events (new PUR system)
+    evt_total = ApplicationEvent.objects.filter(
+        farm_id__in=farm_ids,
+        date_started__date__gte=start_date,
+        date_started__date__lte=end_date,
+    ).count()
+
     # Harvests
     harvests = Harvest.objects.filter(
         field_id__in=field_ids,
@@ -540,7 +597,8 @@ def _get_analytics_summary_impl(request, company):
         'profit': net_profit,
         'cost_per_bin': cost_per_bin,
         'yield_per_acre': yield_per_acre,
-        'applications': app_total,
+        'applications': app_total + evt_total,
+        'application_events': evt_total,
         'pur_compliance': pur_rate,
         'water_pass_rate': water_rate,
         'total_bins': total_bins,

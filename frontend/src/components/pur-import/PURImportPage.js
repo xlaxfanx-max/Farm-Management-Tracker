@@ -23,7 +23,7 @@ const STEPS = [
 ];
 
 const PURImportPage = () => {
-  const { farms } = useData();
+  const { farms, refreshApplicationEvents, refreshUnifiedProducts, refreshApplicators } = useData();
 
   // Wizard state
   const [currentStep, setCurrentStep] = useState(0);
@@ -55,10 +55,14 @@ const PURImportPage = () => {
     setCurrentStep(2);
   }, []);
 
-  // Step 3 complete: import finished
+  // Step 3 complete: import finished — refresh DataContext
   const handleImportComplete = useCallback((results) => {
     setImportResults(results);
-  }, []);
+    // Refresh context so Dashboard, PUR Reports, etc. see the new data
+    refreshApplicationEvents();
+    refreshUnifiedProducts();
+    refreshApplicators();
+  }, [refreshApplicationEvents, refreshUnifiedProducts, refreshApplicators]);
 
   // Navigation
   const handleBack = useCallback(() => {

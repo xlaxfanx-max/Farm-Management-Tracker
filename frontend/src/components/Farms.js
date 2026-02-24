@@ -12,7 +12,7 @@ import { useConfirm } from '../contexts/ConfirmContext';
 import { useToast } from '../contexts/ToastContext';
 
 function Farms() {
-  const { farms, fields, applications, updateFarm, deleteFarm, deleteField, loadData } = useData();
+  const { farms, fields, applications, applicationEvents, updateFarm, deleteFarm, deleteField, loadData } = useData();
   const { openFarmModal, openFieldModal } = useModal();
   const confirm = useConfirm();
   const toast = useToast();
@@ -69,6 +69,7 @@ function Farms() {
   const safeFarms = useMemo(() => farms || [], [farms]);
   const safeFields = useMemo(() => fields || [], [fields]);
   const safeApplications = useMemo(() => applications || [], [applications]);
+  const safeApplicationEvents = useMemo(() => applicationEvents || [], [applicationEvents]);
 
   const toggleFarm = (farmId) => {
     const newExpanded = new Set(expandedFarms);
@@ -89,9 +90,13 @@ function Farms() {
   };
 
   const getFieldApplicationCount = (fieldId, fieldName) => {
-    return safeApplications.filter(app =>
+    const legacyCount = safeApplications.filter(app =>
       app.field === fieldId || app.field_name === fieldName
     ).length;
+    const eventCount = safeApplicationEvents.filter(evt =>
+      evt.field === fieldId
+    ).length;
+    return legacyCount + eventCount;
   };
 
   // Get unique counties for filter dropdown

@@ -8,7 +8,10 @@ import {
   waterSourcesAPI,
   waterTestsAPI,
   cropsAPI,
-  rootstocksAPI
+  rootstocksAPI,
+  applicationEventsAPI,
+  unifiedProductsAPI,
+  applicatorsAPI,
 } from '../services/api';
 
 // Create context
@@ -35,6 +38,11 @@ export function DataProvider({ children }) {
   const [waterTests, setWaterTests] = useState([]);
   const [crops, setCrops] = useState([]);
   const [rootstocks, setRootstocks] = useState([]);
+
+  // New PUR / Tank Mix system
+  const [applicationEvents, setApplicationEvents] = useState([]);
+  const [unifiedProducts, setUnifiedProducts] = useState([]);
+  const [applicators, setApplicators] = useState([]);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -67,6 +75,21 @@ export function DataProvider({ children }) {
     setWaterTests(extractResults(res));
   }, []);
 
+  const refreshApplicationEvents = useCallback(async () => {
+    const res = await applicationEventsAPI.getAll();
+    setApplicationEvents(extractResults(res));
+  }, []);
+
+  const refreshUnifiedProducts = useCallback(async () => {
+    const res = await unifiedProductsAPI.getAll();
+    setUnifiedProducts(extractResults(res));
+  }, []);
+
+  const refreshApplicators = useCallback(async () => {
+    const res = await applicatorsAPI.getAll();
+    setApplicators(extractResults(res));
+  }, []);
+
   // ============================================================================
   // LOAD ALL DATA (initial load + company switch)
   // ============================================================================
@@ -79,7 +102,7 @@ export function DataProvider({ children }) {
     setLoading(true);
     setError(null);
     try {
-      const [farmsRes, fieldsRes, appsRes, productsRes, waterSourcesRes, waterTestsRes, cropsRes, rootstocksRes] = await Promise.all([
+      const [farmsRes, fieldsRes, appsRes, productsRes, waterSourcesRes, waterTestsRes, cropsRes, rootstocksRes, appEventsRes, unifiedProdsRes, applicatorsRes] = await Promise.all([
         farmsAPI.getAll(),
         fieldsAPI.getAll(),
         applicationsAPI.getAll(),
@@ -87,7 +110,10 @@ export function DataProvider({ children }) {
         waterSourcesAPI.getAll(),
         waterTestsAPI.getAll(),
         cropsAPI.getAll(),
-        rootstocksAPI.getAll()
+        rootstocksAPI.getAll(),
+        applicationEventsAPI.getAll(),
+        unifiedProductsAPI.getAll(),
+        applicatorsAPI.getAll(),
       ]);
 
       setFarms(extractResults(farmsRes));
@@ -98,6 +124,9 @@ export function DataProvider({ children }) {
       setWaterTests(extractResults(waterTestsRes));
       setCrops(extractResults(cropsRes));
       setRootstocks(extractResults(rootstocksRes));
+      setApplicationEvents(extractResults(appEventsRes));
+      setUnifiedProducts(extractResults(unifiedProdsRes));
+      setApplicators(extractResults(applicatorsRes));
     } catch (err) {
       setError('Failed to load data. Please check your connection.');
       console.error('Error loading data:', err);
@@ -261,6 +290,38 @@ export function DataProvider({ children }) {
   }, [refreshApplications]);
 
   // ============================================================================
+  // APPLICATION EVENT CRUD OPERATIONS (New PUR/Tank Mix system)
+  // ============================================================================
+  const saveApplicationEvent = useCallback(async (eventData, isEdit = false) => {
+    try {
+      if (isEdit) {
+        await applicationEventsAPI.update(eventData.id, eventData);
+      } else {
+        await applicationEventsAPI.create(eventData);
+      }
+      await refreshApplicationEvents();
+      return { success: true };
+    } catch (err) {
+      console.error('Error saving application event:', err);
+      return {
+        success: false,
+        error: err.response?.data?.detail || err.message || 'Failed to save application event'
+      };
+    }
+  }, [refreshApplicationEvents]);
+
+  const deleteApplicationEvent = useCallback(async (eventId) => {
+    try {
+      await applicationEventsAPI.delete(eventId);
+      await refreshApplicationEvents();
+      return { success: true };
+    } catch (err) {
+      console.error('Error deleting application event:', err);
+      return { success: false, error: 'Failed to delete application event' };
+    }
+  }, [refreshApplicationEvents]);
+
+  // ============================================================================
   // WATER SOURCE CRUD OPERATIONS
   // ============================================================================
   const saveWaterSource = useCallback(async (waterSourceData, isEdit = false) => {
@@ -321,6 +382,9 @@ export function DataProvider({ children }) {
     waterTests,
     crops,
     rootstocks,
+    applicationEvents,
+    unifiedProducts,
+    applicators,
     loading,
     error,
 
@@ -337,9 +401,16 @@ export function DataProvider({ children }) {
     saveField,
     deleteField,
 
-    // Application operations
+    // Application operations (legacy)
     saveApplication,
     deleteApplication,
+
+    // Application event operations (new PUR/Tank Mix)
+    saveApplicationEvent,
+    deleteApplicationEvent,
+    refreshApplicationEvents,
+    refreshUnifiedProducts,
+    refreshApplicators,
 
     // Water source operations
     saveWaterSource,

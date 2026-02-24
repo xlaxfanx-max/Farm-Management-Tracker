@@ -1,9 +1,14 @@
 """
 PUR views — ViewSets for Product, Applicator, ApplicationEvent, and PUR import pipeline.
 """
+import csv
+import io
 import uuid
 import logging
-from django.db.models import Q
+from decimal import Decimal
+from django.db.models import Q, Sum, Count
+from django.db.models.functions import TruncMonth
+from django.http import HttpResponse
 from rest_framework import viewsets, filters, status
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
@@ -173,6 +178,207 @@ class ApplicationEventViewSet(AuditLogMixin, viewsets.ModelViewSet):
     def perform_create(self, serializer):
         company = require_company(self.request.user)
         serializer.save(company=company)
+
+    # -----------------------------------------------------------------
+    # PUR Reporting Actions
+    # -----------------------------------------------------------------
+
+    @action(detail=False, methods=['post'])
+    def validate_pur(self, request):
+        """Validate application events for PUR compliance."""
+        start_date = request.data.get('start_date')
+        end_date = request.data.get('end_date')
+        farm_id = request.data.get('farm_id')
+
+        queryset = self.get_queryset()
+        if start_date:
+            queryset = queryset.filter(date_started__date__gte=start_date)
+        if end_date:
+            queryset = queryset.filter(date_started__date__lte=end_date)
+        if farm_id:
+            queryset = queryset.filter(farm_id=farm_id)
+
+        errors = []
+        warnings = []
+
+        for evt in queryset:
+            evt_label = f"Event #{evt.id} (PUR {evt.pur_number or 'no PUR#'})"
+            items = evt.tank_mix_items.select_related('product').all()
+
+            if not evt.date_started:
+                errors.append(f"{evt_label}: Missing application date")
+            if not evt.farm_id:
+                errors.append(f"{evt_label}: Missing farm")
+            if not items.exists():
+                errors.append(f"{evt_label}: No products in tank mix")
+            for item in items:
+                if not item.product.epa_registration_number:
+                    warnings.append(f"{evt_label}: Product '{item.product.product_name}' missing EPA reg#")
+                if item.product.restricted_use and not evt.applied_by:
+                    errors.append(f"{evt_label}: Restricted use product requires applicator name")
+            if not evt.treated_area_acres or evt.treated_area_acres <= 0:
+                errors.append(f"{evt_label}: Missing or invalid treated acres")
+            if not evt.applied_by:
+                warnings.append(f"{evt_label}: Missing applicator name")
+
+        return Response({
+            'valid': len(errors) == 0,
+            'errors': errors,
+            'warnings': warnings,
+            'applications_count': queryset.count(),
+            'ready_for_export': len(errors) == 0,
+        })
+
+    @action(detail=False, methods=['post'])
+    def pur_summary(self, request):
+        """Generate PUR summary statistics for the date range."""
+        start_date = request.data.get('start_date')
+        end_date = request.data.get('end_date')
+        farm_id = request.data.get('farm_id')
+
+        queryset = self.get_queryset()
+        if start_date:
+            queryset = queryset.filter(date_started__date__gte=start_date)
+        if end_date:
+            queryset = queryset.filter(date_started__date__lte=end_date)
+        if farm_id:
+            queryset = queryset.filter(farm_id=farm_id)
+
+        total_acres = queryset.aggregate(
+            total=Sum('treated_area_acres')
+        )['total'] or Decimal('0')
+
+        # Product breakdown via TankMixItems
+        items = TankMixItem.objects.filter(
+            application_event__in=queryset
+        ).select_related('product')
+
+        product_stats = items.values(
+            'product__product_name', 'product__epa_registration_number'
+        ).annotate(
+            applications=Count('application_event', distinct=True),
+            total_amount=Sum('total_amount'),
+        ).order_by('-applications')
+
+        restricted_count = queryset.filter(
+            tank_mix_items__product__restricted_use=True
+        ).distinct().count()
+
+        by_county = queryset.values('county').annotate(
+            applications=Count('id'),
+            acres=Sum('treated_area_acres'),
+        ).order_by('-applications')
+
+        return Response({
+            'summary': {
+                'total_applications': queryset.count(),
+                'total_acres_treated': float(total_acres),
+                'unique_products': items.values('product').distinct().count(),
+                'restricted_use_applications': restricted_count,
+                'by_county': [
+                    {
+                        'county': c['county'] or 'Unknown',
+                        'applications': c['applications'],
+                        'acres': float(c['acres'] or 0),
+                    }
+                    for c in by_county
+                ],
+                'by_product': [
+                    {
+                        'product_name': p['product__product_name'],
+                        'epa_reg_no': p['product__epa_registration_number'] or '',
+                        'applications': p['applications'],
+                        'total_amount': float(p['total_amount'] or 0),
+                    }
+                    for p in product_stats[:20]
+                ],
+            }
+        })
+
+    @action(detail=False, methods=['post'])
+    def export_pur_csv(self, request):
+        """Export application events as PUR-formatted CSV."""
+        start_date = request.data.get('start_date')
+        end_date = request.data.get('end_date')
+        farm_id = request.data.get('farm_id')
+
+        queryset = self.get_queryset()
+        if start_date:
+            queryset = queryset.filter(date_started__date__gte=start_date)
+        if end_date:
+            queryset = queryset.filter(date_started__date__lte=end_date)
+        if farm_id:
+            queryset = queryset.filter(farm_id=farm_id)
+
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = (
+            f'attachment; filename="PUR_Report_{start_date}_to_{end_date}.csv"'
+        )
+
+        writer = csv.writer(response)
+        writer.writerow([
+            'PUR Number', 'Application Date', 'Farm Name', 'Site ID',
+            'County', 'Section', 'Township', 'Range',
+            'Applicator', 'Applicator ID',
+            'Product Name', 'EPA Reg Number', 'Active Ingredient',
+            'Amount Applied', 'Amount Unit', 'Rate', 'Rate Unit',
+            'Treated Acres', 'Application Method',
+            'Commodity', 'Permit Number',
+            'Wind MPH', 'Temperature F',
+            'Comments',
+        ])
+
+        for evt in queryset:
+            items = evt.tank_mix_items.select_related('product').all()
+            if not items.exists():
+                # Write a row even with no products
+                writer.writerow([
+                    evt.pur_number or '',
+                    evt.date_started.strftime('%m/%d/%Y') if evt.date_started else '',
+                    evt.farm.name if evt.farm else '',
+                    evt.site_id or '',
+                    evt.county or '',
+                    evt.section or '', evt.township or '', evt.range_field or '',
+                    evt.applied_by or '',
+                    evt.applicator.applicator_id if evt.applicator else '',
+                    '', '', '',
+                    '', '', '', '',
+                    float(evt.treated_area_acres or 0),
+                    evt.application_method or '',
+                    evt.commodity_name or '',
+                    evt.permit_number or '',
+                    evt.wind_velocity_mph or '',
+                    evt.temperature_start_f or '',
+                    evt.comments or '',
+                ])
+            else:
+                for item in items:
+                    writer.writerow([
+                        evt.pur_number or '',
+                        evt.date_started.strftime('%m/%d/%Y') if evt.date_started else '',
+                        evt.farm.name if evt.farm else '',
+                        evt.site_id or '',
+                        evt.county or '',
+                        evt.section or '', evt.township or '', evt.range_field or '',
+                        evt.applied_by or '',
+                        evt.applicator.applicator_id if evt.applicator else '',
+                        item.product.product_name,
+                        item.product.epa_registration_number or '',
+                        item.product.active_ingredient or '',
+                        float(item.total_amount or 0),
+                        item.amount_unit or '',
+                        float(item.rate or 0),
+                        item.rate_unit or '',
+                        float(evt.treated_area_acres or 0),
+                        evt.application_method or '',
+                        evt.commodity_name or '',
+                        evt.permit_number or '',
+                        evt.wind_velocity_mph or '',
+                        evt.temperature_start_f or '',
+                        evt.comments or '',
+                    ])
+
+        return response
 
 
 # =============================================================================

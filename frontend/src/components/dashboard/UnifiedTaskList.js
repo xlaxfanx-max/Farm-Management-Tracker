@@ -17,6 +17,7 @@ import StatusBadge from '../ui/StatusBadge';
  */
 function UnifiedTaskList({
   applications = [],
+  applicationEvents = [],
   waterSources = [],
   harvests = [],
   fields = [],
@@ -119,6 +120,23 @@ function UnifiedTaskList({
         });
       });
 
+    // Draft application events (new PUR system)
+    applicationEvents
+      .filter(evt => evt.pur_status === 'draft')
+      .forEach(evt => {
+        tasks.push({
+          id: `evt-draft-${evt.id}`,
+          type: 'pur_draft',
+          module: 'reports',
+          icon: FileSignature,
+          title: 'PUR Event Draft',
+          description: `${evt.farm_name || 'Unknown Farm'} - ${(evt.tank_mix_items || []).length} product${(evt.tank_mix_items || []).length !== 1 ? 's' : ''}`,
+          date: new Date(evt.date_started),
+          priority: 'medium',
+          data: evt
+        });
+      });
+
     // Active harvests that may need attention
     harvests
       .filter(h => h.status === 'in_progress')
@@ -146,7 +164,7 @@ function UnifiedTaskList({
     });
 
     return tasks;
-  }, [applications, waterSources, harvests]);
+  }, [applications, applicationEvents, waterSources, harvests]);
 
   // Apply filter
   const filteredTasks = useMemo(() => {

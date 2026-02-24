@@ -28,7 +28,7 @@ import WeatherWidget from './WeatherWidget';
 import { ProximityRiskCard } from './disease';
 
 function Dashboard({ onNavigate }) {
-  const { applications, fields, farms, waterSources, waterTests } = useData();
+  const { applications, applicationEvents, fields, farms, waterSources, waterTests } = useData();
 
   // Disease alerts state
   const [diseaseAlerts, setDiseaseAlerts] = useState([]);
@@ -78,12 +78,18 @@ function Dashboard({ onNavigate }) {
     // Water stats
     const activeWaterSources = waterSources.filter(ws => ws.active);
 
-    // Application stats
+    // Application stats (legacy)
     const thisMonthApps = applications.filter(app =>
       new Date(app.application_date) >= oneMonthAgo
     );
     const pendingApps = applications.filter(a => a.status === 'pending_signature');
     const purReady = applications.filter(a => a.status === 'complete' && !a.submitted_to_pur);
+
+    // Application event stats (new PUR/Tank Mix system)
+    const thisMonthEvents = (applicationEvents || []).filter(evt =>
+      new Date(evt.date_started) >= oneMonthAgo
+    );
+    const draftEvents = (applicationEvents || []).filter(evt => evt.pur_status === 'draft');
 
     // Field stats
     const activeFields = fields.filter(f => f.active);
@@ -108,9 +114,9 @@ function Dashboard({ onNavigate }) {
         totalBins: 0
       },
       applications: {
-        total: applications.length,
-        thisMonth: thisMonthApps.length,
-        pending: pendingApps.length,
+        total: applications.length + (applicationEvents || []).length,
+        thisMonth: thisMonthApps.length + thisMonthEvents.length,
+        pending: pendingApps.length + draftEvents.length,
         purReady: purReady.length
       },
       nutrients: {
@@ -123,7 +129,7 @@ function Dashboard({ onNavigate }) {
         acres: totalAcres.toFixed(0)
       }
     }));
-  }, [applications, fields, farms, waterSources, waterTests]);
+  }, [applications, applicationEvents, fields, farms, waterSources, waterTests]);
 
   // Handle navigation to different modules
   const handleNavigate = (view) => {
@@ -191,6 +197,7 @@ function Dashboard({ onNavigate }) {
         {/* Operational Alerts Banner */}
         <OperationalAlertsBanner
           applications={applications}
+          applicationEvents={applicationEvents}
           waterSources={waterSources}
           waterTests={waterTests}
           diseaseAlerts={diseaseAlerts}
@@ -202,6 +209,7 @@ function Dashboard({ onNavigate }) {
           farms={farms}
           fields={fields}
           applications={applications}
+          applicationEvents={applicationEvents}
           waterSources={waterSources}
           onFarmClick={handleFarmClick}
         />
@@ -222,6 +230,7 @@ function Dashboard({ onNavigate }) {
             {/* Unified Task List */}
             <UnifiedTaskList
               applications={applications}
+              applicationEvents={applicationEvents}
               waterSources={waterSources}
               fields={fields}
               onTaskClick={handleTaskClick}

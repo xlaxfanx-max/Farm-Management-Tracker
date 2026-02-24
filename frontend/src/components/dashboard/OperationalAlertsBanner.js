@@ -17,6 +17,7 @@ import {
  */
 function OperationalAlertsBanner({
   applications = [],
+  applicationEvents = [],
   waterSources = [],
   waterTests = [],
   harvests = [],
@@ -44,7 +45,7 @@ function OperationalAlertsBanner({
     });
   }
 
-  // Applications ready for PUR submission
+  // Applications ready for PUR submission (legacy)
   const readyForPur = applications.filter(a => a.status === 'complete' && !a.submitted_to_pur);
   if (readyForPur.length > 0) {
     alerts.push({
@@ -54,6 +55,20 @@ function OperationalAlertsBanner({
       title: `${readyForPur.length} application${readyForPur.length > 1 ? 's' : ''} ready for PUR submission`,
       module: 'reports',
       count: readyForPur.length,
+      priority: 'medium'
+    });
+  }
+
+  // Draft application events (new PUR system) needing review/submission
+  const draftEvents = applicationEvents.filter(e => e.pur_status === 'draft');
+  if (draftEvents.length > 0) {
+    alerts.push({
+      id: 'draft-application-events',
+      type: 'info',
+      icon: FileSignature,
+      title: `${draftEvents.length} application event${draftEvents.length > 1 ? 's' : ''} in draft status`,
+      module: 'reports',
+      count: draftEvents.length,
       priority: 'medium'
     });
   }
