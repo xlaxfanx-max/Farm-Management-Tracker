@@ -175,11 +175,13 @@ export default function PURReviewStep({ reports, farms, filename, pdfFile, onRep
               <X className="w-4 h-4" />
             </button>
           </div>
-          <iframe
-            src={`${pdfBlobUrl}#page=${activePdfPage}`}
+          <object
+            data={`${pdfBlobUrl}#page=${activePdfPage}&toolbar=0&navpanes=0&view=FitH`}
+            type="application/pdf"
             className="flex-1 w-full"
-            title="PUR PDF Preview"
-          />
+          >
+            <p className="p-4 text-sm text-gray-500">PDF preview not available in this browser.</p>
+          </object>
         </div>
       )}
     </div>
