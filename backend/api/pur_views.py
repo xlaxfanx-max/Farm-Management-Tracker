@@ -17,6 +17,7 @@ from rest_framework.parsers import MultiPartParser, FormParser
 
 from .models import (
     Product, Applicator, ApplicationEvent, TankMixItem, Farm, Field,
+    PURImportBatch,
 )
 from .pur_serializers import (
     ProductSerializer, ProductListSerializer,
@@ -378,11 +379,11 @@ class ApplicationEventViewSet(CompanyFilteredViewSet):
 @permission_classes([IsAuthenticated, HasCompanyAccess])
 def pur_import_upload(request):
     """
-    Upload a PUR PDF, parse it, and return structured data for review.
-    Does NOT save to database.
+    Upload a PUR PDF, parse it, save the PDF for history, and return structured
+    data for review. Does NOT create ApplicationEvent records yet.
 
     Accepts multipart/form-data with 'file' field.
-    Returns parsed PUR reports as JSON.
+    Returns parsed PUR reports as JSON plus batch_id for linking.
     """
     from .services.pur_parser import parse_pur_pdf
     import tempfile
@@ -420,10 +421,24 @@ def pur_import_upload(request):
         r['_match_info'] = _enrich_with_matches(r, company)
         enriched.append(r)
 
+    # Save PDF to PURImportBatch for history / review
+    batch = None
+    if company and enriched:
+        # Re-seek the uploaded file so Django can save it
+        pdf_file.seek(0)
+        batch = PURImportBatch.objects.create(
+            company=company,
+            source_pdf=pdf_file,
+            filename=pdf_file.name,
+            report_count=len(enriched),
+            created_by=request.user,
+        )
+
     return Response({
         'filename': pdf_file.name,
         'report_count': len(enriched),
         'reports': enriched,
+        'batch_id': str(batch.batch_id) if batch else None,
     })
 
 
@@ -444,7 +459,8 @@ def pur_import_confirm(request):
     if not reports:
         return Response({'error': 'No reports to import'}, status=status.HTTP_400_BAD_REQUEST)
 
-    batch_id = str(uuid.uuid4())[:12]
+    # Use batch_id from upload step (links to PURImportBatch), or generate one
+    batch_id = request.data.get('batch_id') or str(uuid.uuid4())[:12]
     created_events = []
     created_products = 0
     created_applicators = 0
@@ -642,6 +658,101 @@ def pur_match_farms(request):
 
 # Keep old name as alias for backward compatibility
 pur_match_fields = pur_match_farms
+
+
+# =============================================================================
+# PUR IMPORT BATCH HISTORY
+# =============================================================================
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated, HasCompanyAccess])
+def pur_import_batches(request):
+    """List import batches for the user's company."""
+    company = get_user_company(request.user)
+    if not company:
+        return Response([])
+
+    batches = PURImportBatch.objects.filter(company=company).select_related('created_by')
+    data = []
+    for b in batches:
+        event_count = ApplicationEvent.objects.filter(
+            company=company, import_batch_id=str(b.batch_id)
+        ).count()
+        data.append({
+            'batch_id': str(b.batch_id),
+            'filename': b.filename,
+            'report_count': b.report_count,
+            'event_count': event_count,
+            'created_by': b.created_by.get_full_name() or b.created_by.email if b.created_by else '',
+            'created_at': b.created_at.isoformat(),
+        })
+
+    return Response(data)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated, HasCompanyAccess])
+def pur_import_batch_detail(request, batch_id):
+    """Get all ApplicationEvents for a given import batch."""
+    company = get_user_company(request.user)
+    if not company:
+        return Response({'error': 'No company'}, status=status.HTTP_400_BAD_REQUEST)
+
+    events = ApplicationEvent.objects.filter(
+        company=company, import_batch_id=batch_id
+    ).select_related('farm', 'applicator').prefetch_related(
+        'tank_mix_items', 'tank_mix_items__product'
+    ).order_by('date_started')
+
+    data = []
+    for evt in events:
+        items = [{
+            'product_name': i.product.product_name,
+            'epa_reg': i.product.epa_registration_number or '',
+            'amount': float(i.total_amount),
+            'amount_unit': i.amount_unit,
+            'rate': float(i.rate),
+            'rate_unit': i.rate_unit,
+        } for i in evt.tank_mix_items.all()]
+
+        data.append({
+            'id': evt.id,
+            'pur_number': evt.pur_number,
+            'date_started': evt.date_started.isoformat() if evt.date_started else None,
+            'farm_name': evt.farm.name if evt.farm else '',
+            'applicator_name': evt.applicator.name if evt.applicator else evt.applied_by,
+            'commodity_name': evt.commodity_name,
+            'treated_area_acres': float(evt.treated_area_acres) if evt.treated_area_acres else 0,
+            'application_method': evt.application_method,
+            'products': items,
+        })
+
+    return Response(data)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated, HasCompanyAccess])
+def pur_import_batch_pdf(request, batch_id):
+    """Serve the original PDF for a given import batch."""
+    from django.http import FileResponse
+
+    company = get_user_company(request.user)
+    if not company:
+        return Response({'error': 'No company'}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        batch = PURImportBatch.objects.get(company=company, batch_id=batch_id)
+    except PURImportBatch.DoesNotExist:
+        return Response({'error': 'Batch not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    if not batch.source_pdf:
+        return Response({'error': 'No PDF stored for this batch'}, status=status.HTTP_404_NOT_FOUND)
+
+    return FileResponse(
+        batch.source_pdf.open('rb'),
+        content_type='application/pdf',
+        filename=batch.filename,
+    )
 
 
 # =============================================================================

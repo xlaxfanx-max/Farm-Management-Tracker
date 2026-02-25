@@ -7,6 +7,9 @@ with a proper tank-mix architecture where one ApplicationEvent can have multiple
 TankMixItem line items (3–10+ products per spray pass).
 """
 
+import uuid
+
+from django.conf import settings
 from django.db import models
 from django.core.validators import MinValueValidator
 from decimal import Decimal
@@ -415,3 +418,37 @@ class TankMixItem(models.Model):
 
     def __str__(self):
         return f"{self.product.product_name}: {self.total_amount} {self.amount_unit}"
+
+
+# =============================================================================
+# PUR IMPORT BATCH (tracks each PDF upload for history/audit)
+# =============================================================================
+
+class PURImportBatch(models.Model):
+    """Tracks an uploaded PUR PDF and links to the ApplicationEvents it created."""
+    company = models.ForeignKey(
+        'Company', on_delete=models.CASCADE,
+        related_name='pur_import_batches'
+    )
+    batch_id = models.CharField(
+        max_length=36, unique=True, db_index=True,
+        default=uuid.uuid4,
+        help_text="Unique batch identifier linking to ApplicationEvent.import_batch_id"
+    )
+    source_pdf = models.FileField(
+        upload_to='pur_imports/%Y/%m/',
+        help_text="Original uploaded PUR PDF"
+    )
+    filename = models.CharField(max_length=255)
+    report_count = models.IntegerField(default=0)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='pur_import_batches'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"PUR Import {self.batch_id[:8]} — {self.filename} ({self.report_count} reports)"

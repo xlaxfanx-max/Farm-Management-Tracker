@@ -70,11 +70,11 @@ def parse_pur_pdf(pdf_path):
 
     pages_text = []
     with pdfplumber.open(pdf_path) as pdf:
-        for page in pdf.pages:
+        for page_num, page in enumerate(pdf.pages, start=1):
             text = page.extract_text() or ''
-            pages_text.append(text)
+            pages_text.append(f'<<PAGE_START:{page_num}>>\n{text}')
 
-    # Join all page text
+    # Join all page text with markers
     full_text = '\n'.join(pages_text)
 
     # Split into individual PUR reports
@@ -83,13 +83,23 @@ def parse_pur_pdf(pdf_path):
     results = []
     for report_text in reports_text:
         try:
-            parsed = _parse_single_report(report_text)
+            # Extract page numbers from markers before stripping them
+            source_pages = _extract_page_numbers(report_text)
+            # Strip markers before parsing
+            clean_text = re.sub(r'<<PAGE_START:\d+>>\n?', '', report_text)
+            parsed = _parse_single_report(clean_text)
             if parsed:
+                parsed['_source_pages'] = source_pages
                 results.append(parsed)
         except Exception as e:
             logger.warning(f"Failed to parse PUR report: {e}", exc_info=True)
 
     return results
+
+
+def _extract_page_numbers(text):
+    """Extract page numbers from <<PAGE_START:N>> markers in a report section."""
+    return sorted(set(int(m) for m in re.findall(r'<<PAGE_START:(\d+)>>', text)))
 
 
 def _split_into_reports(full_text):

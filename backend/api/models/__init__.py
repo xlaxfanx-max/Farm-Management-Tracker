@@ -265,6 +265,7 @@ from .pur import (
     Applicator,
     ApplicationEvent,
     TankMixItem,
+    PURImportBatch,
 )
 
 # -- yield forecast / soil survey --------------------------------------------
@@ -384,4 +385,5 @@ __all__ = [
     'PUR_STATUS_CHOICES', 'APPLICATION_METHOD_CHOICES',
     'AMOUNT_UNIT_CHOICES', 'RATE_UNIT_CHOICES',
     'Product', 'Applicator', 'ApplicationEvent', 'TankMixItem',
+    'PURImportBatch',
 ]

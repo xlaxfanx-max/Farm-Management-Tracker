@@ -51,7 +51,7 @@ export default function PURUploadStep({ onComplete }) {
         return;
       }
 
-      onComplete(result);
+      onComplete(result, file);
     } catch (err) {
       const msg = err.response?.data?.error || err.message || 'Failed to parse PDF';
       setError(msg);

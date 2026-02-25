@@ -477,6 +477,11 @@ export const purImportAPI = {
   confirm: (data) => api.post('/pur-import/confirm/', data),
   matchProducts: (params) => api.get('/pur-import/match-products/', { params }),
   matchFarms: (params) => api.get('/pur-import/match-farms/', { params }),
+  getBatches: () => api.get('/pur-import/batches/'),
+  getBatchDetail: (batchId) => api.get(`/pur-import/batches/${batchId}/`),
+  getBatchPdf: (batchId) => api.get(`/pur-import/batches/${batchId}/pdf/`, {
+    responseType: 'blob',
+  }),
 };
 
 // =============================================================================

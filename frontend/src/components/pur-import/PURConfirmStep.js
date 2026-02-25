@@ -9,7 +9,7 @@ import {
 } from 'lucide-react';
 import { purImportAPI } from '../../services/api';
 
-export default function PURConfirmStep({ reports, farms, filename, onComplete, onReset }) {
+export default function PURConfirmStep({ reports, farms, filename, batchId, onComplete, onReset }) {
   const [importing, setImporting] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState('');
@@ -37,6 +37,7 @@ export default function PURConfirmStep({ reports, farms, filename, onComplete, o
       const response = await purImportAPI.confirm({
         filename,
         reports,
+        batch_id: batchId || undefined,
       });
 
       const data = response.data;
@@ -48,7 +49,7 @@ export default function PURConfirmStep({ reports, farms, filename, onComplete, o
     } finally {
       setImporting(false);
     }
-  }, [filename, reports, onComplete]);
+  }, [filename, reports, batchId, onComplete]);
 
   // Post-import success view
   if (result && result.created_events > 0) {

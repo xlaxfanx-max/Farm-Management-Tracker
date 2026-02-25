@@ -5,10 +5,10 @@
 import React, { useState, useMemo } from 'react';
 import {
   ChevronDown, ChevronRight, MapPin, Package, Calendar,
-  CheckCircle, AlertTriangle, XCircle,
+  CheckCircle, AlertTriangle, XCircle, FileText,
 } from 'lucide-react';
 
-export default function PURReviewCard({ report, index, farms, onChange }) {
+export default function PURReviewCard({ report, index, farms, onChange, onViewPdf }) {
   const [expanded, setExpanded] = useState(true);
 
   const matchInfo = report._match_info || {};
@@ -97,6 +97,15 @@ export default function PURReviewCard({ report, index, farms, onChange }) {
 
         {/* Status badges */}
         <div className="flex items-center gap-2">
+          {onViewPdf && report._source_pages && report._source_pages.length > 0 && (
+            <button
+              onClick={(e) => { e.stopPropagation(); onViewPdf(report._source_pages); }}
+              className="flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-blue-50 text-blue-600 rounded-full hover:bg-blue-100 border border-blue-200"
+            >
+              <FileText className="w-3 h-3" />
+              PDF p.{report._source_pages[0]}
+            </button>
+          )}
           {farmStatus === 'auto' && (
             <span className="px-2 py-0.5 text-xs font-medium bg-green-100 text-primary rounded-full">
               Farm matched
