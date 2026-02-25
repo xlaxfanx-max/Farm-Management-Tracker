@@ -724,7 +724,7 @@ export const NUTRIENT_CONSTANTS = {
 // MAP API (EXISTING)
 // =============================================================================
 
-export const mapAPI = {
+  export const mapAPI = {
   // Geocode an address to GPS coordinates
   // Accepts string or object { address, county, city }
   geocode: (addressOrParams) => {
@@ -735,12 +735,23 @@ export const mapAPI = {
   },
   
   // Update field boundary from drawn polygon
-  updateFieldBoundary: (fieldId, boundaryGeojson, calculatedAcres) => 
-    api.post(`/fields/${fieldId}/boundary/`, {
-      boundary_geojson: boundaryGeojson,
-      calculated_acres: calculatedAcres
-    }),
-};
+    updateFieldBoundary: (fieldId, boundaryGeojson, calculatedAcres) => 
+      api.post(`/fields/${fieldId}/boundary/`, {
+        boundary_geojson: boundaryGeojson,
+        calculated_acres: calculatedAcres
+      }),
+
+    // Update farm boundary from drawn polygon
+    updateFarmBoundary: (farmId, boundaryGeojson, calculatedAcres) =>
+      api.post(`/farms/${farmId}/boundary/`, {
+        boundary_geojson: boundaryGeojson,
+        calculated_acres: calculatedAcres
+      }),
+
+    // Auto-derive farm boundary from fields
+    autoFarmBoundary: (farmId) =>
+      api.post(`/farms/${farmId}/auto-boundary/`),
+  };
 
 // =============================================================================
 // HELPER FUNCTIONS (EXISTING)

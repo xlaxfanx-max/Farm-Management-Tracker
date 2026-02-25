@@ -8,6 +8,8 @@ from rest_framework.permissions import IsAuthenticated
 from .permissions import HasCompanyAccess
 from .audit_utils import AuditLogMixin
 from django.db.models import Q
+from decimal import Decimal
+import math
 from .view_helpers import get_user_company, require_company, CompanyFilteredViewSet
 from .models import Farm, Field, FarmParcel, Crop, Rootstock, CropCategory
 from .serializers import (
@@ -15,6 +17,89 @@ from .serializers import (
     FieldSerializer, PesticideApplicationSerializer,
     CropSerializer, RootstockSerializer,
 )
+from .sgma_views import get_plss_from_coordinates
+
+
+def _calculate_polygon_centroid(coords):
+    if not coords:
+        return None
+    if len(coords) > 1 and coords[0] == coords[-1]:
+        coords = coords[:-1]
+    if not coords:
+        return None
+    lats = [c[1] for c in coords]
+    lngs = [c[0] for c in coords]
+    return (sum(lats) / len(lats), sum(lngs) / len(lngs))
+
+
+def _calculate_acres(coords):
+    if not coords or len(coords) < 3:
+        return None
+    if len(coords) > 1 and coords[0] == coords[-1]:
+        coords = coords[:-1]
+    if len(coords) < 3:
+        return None
+
+    area = 0.0
+    n = len(coords)
+    for i in range(n):
+        j = (i + 1) % n
+        lat1 = coords[i][1] * 3.141592653589793 / 180.0
+        lat2 = coords[j][1] * 3.141592653589793 / 180.0
+        lng1 = coords[i][0] * 3.141592653589793 / 180.0
+        lng2 = coords[j][0] * 3.141592653589793 / 180.0
+        area += (lng2 - lng1) * (2 + math.sin(lat1) + math.sin(lat2))
+
+    earth_radius = 6371000
+    area = abs(area * earth_radius * earth_radius / 2.0)
+    acres = area * 0.000247105
+    return round(acres, 2)
+
+
+def _convex_hull(points):
+    # Monotonic chain convex hull. Points are (lng, lat).
+    points = sorted(set(points))
+    if len(points) <= 1:
+        return points
+
+    def cross(o, a, b):
+        return (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0])
+
+    lower = []
+    for p in points:
+        while len(lower) >= 2 and cross(lower[-2], lower[-1], p) <= 0:
+            lower.pop()
+        lower.append(p)
+
+    upper = []
+    for p in reversed(points):
+        while len(upper) >= 2 and cross(upper[-2], upper[-1], p) <= 0:
+            upper.pop()
+        upper.append(p)
+
+    return lower[:-1] + upper[:-1]
+
+
+def _apply_boundary_to_farm(farm, boundary_geojson, calculated_acres=None):
+    farm.boundary_geojson = boundary_geojson
+
+    coords = boundary_geojson.get('coordinates', [[]])[0] if boundary_geojson else []
+    centroid = _calculate_polygon_centroid(coords)
+    if centroid:
+        centroid_lat, centroid_lng = centroid
+        farm.gps_latitude = Decimal(str(centroid_lat))
+        farm.gps_longitude = Decimal(str(centroid_lng))
+
+        plss_data = get_plss_from_coordinates(centroid_lat, centroid_lng)
+        if plss_data.get('section'):
+            farm.plss_section = plss_data['section']
+        if plss_data.get('township'):
+            farm.plss_township = plss_data['township']
+        if plss_data.get('range'):
+            farm.plss_range = plss_data['range']
+
+    if calculated_acres is not None:
+        farm.calculated_acres = Decimal(str(calculated_acres))
 
 
 class FarmViewSet(CompanyFilteredViewSet):
@@ -126,6 +211,75 @@ class FarmViewSet(CompanyFilteredViewSet):
                 {'error': f'Invalid coordinate values: {str(e)}'},
                 status=status.HTTP_400_BAD_REQUEST
             )
+
+    @action(detail=True, methods=['post'])
+    def boundary(self, request, pk=None):
+        """
+        Update a farm's boundary from a drawn polygon.
+
+        POST /api/farms/{id}/boundary/
+        {
+            "boundary_geojson": {...},
+            "calculated_acres": 45.5
+        }
+        """
+        farm = self.get_object()
+        boundary = request.data.get('boundary_geojson')
+        acres = request.data.get('calculated_acres')
+
+        if not boundary:
+            return Response(
+                {'error': 'boundary_geojson is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        _apply_boundary_to_farm(farm, boundary, acres)
+        farm.save()
+
+        serializer = self.get_serializer(farm)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=['post'], url_path='auto-boundary')
+    def auto_boundary(self, request, pk=None):
+        """
+        Auto-derive farm boundary from field boundaries (convex hull).
+        """
+        farm = self.get_object()
+        field_boundaries = farm.fields.filter(boundary_geojson__isnull=False)
+
+        points = []
+        for field in field_boundaries:
+            coords = field.boundary_geojson.get('coordinates', [[]])[0] if field.boundary_geojson else []
+            for coord in coords:
+                if isinstance(coord, (list, tuple)) and len(coord) >= 2:
+                    points.append((coord[0], coord[1]))
+
+        if len(points) < 3:
+            return Response(
+                {'error': 'Not enough field boundary points to derive a farm boundary'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        hull = _convex_hull(points)
+        if len(hull) < 3:
+            return Response(
+                {'error': 'Unable to compute a valid boundary from field points'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Close the polygon ring
+        hull_coords = hull + [hull[0]]
+        boundary_geojson = {
+            'type': 'Polygon',
+            'coordinates': [hull_coords],
+        }
+        acres = _calculate_acres(hull_coords)
+
+        _apply_boundary_to_farm(farm, boundary_geojson, acres)
+        farm.save()
+
+        serializer = self.get_serializer(farm)
+        return Response(serializer.data)
 
 class FieldViewSet(CompanyFilteredViewSet):
     """

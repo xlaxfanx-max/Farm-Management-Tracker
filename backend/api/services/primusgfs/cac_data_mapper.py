@@ -310,6 +310,11 @@ class CACDataMapper:
         gps_str = ''
         if farm and hasattr(farm, 'gps_latitude') and farm.gps_latitude:
             gps_str = f"{farm.gps_latitude}, {farm.gps_longitude}"
+        if farm and getattr(farm, 'boundary_geojson', None):
+            boundary_note = "Boundary on file"
+            if getattr(farm, 'calculated_acres', None):
+                boundary_note = f"{boundary_note} ({_fmt_decimal(farm.calculated_acres)} ac)"
+            gps_str = f"{gps_str} | {boundary_note}" if gps_str else boundary_note
         fields['1-a-105'] = gps_str
 
         # Commodities

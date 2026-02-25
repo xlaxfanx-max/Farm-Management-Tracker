@@ -188,6 +188,29 @@ function Farms() {
     }
   };
 
+  const handleFarmBoundaryUpdate = async (farmId, geojson, acres) => {
+    try {
+      await mapAPI.updateFarmBoundary(farmId, geojson, acres);
+      if (loadData) loadData();
+      toast.success('Farm boundary saved');
+    } catch (err) {
+      console.error('[Farms] Error saving farm boundary:', err);
+      toast.error('Failed to save farm boundary');
+    }
+  };
+
+  const handleAutoFarmBoundary = async (farmId) => {
+    try {
+      await mapAPI.autoFarmBoundary(farmId);
+      if (loadData) loadData();
+      toast.success('Farm boundary auto-derived');
+    } catch (err) {
+      console.error('[Farms] Error auto-deriving farm boundary:', err);
+      const message = err.response?.data?.error || 'Failed to auto-derive farm boundary';
+      toast.error(message);
+    }
+  };
+
   // Geocode farm address - opens preview modal
   const handleGeocodeFarm = async (farm) => {
     if (!farm.address && !farm.county) {
@@ -345,6 +368,8 @@ function Farms() {
               onFarmSelect={handleFarmSelect}
               onFieldSelect={handleFieldSelect}
               onBoundaryUpdate={handleBoundaryUpdate}
+              onFarmBoundaryUpdate={handleFarmBoundaryUpdate}
+              onAutoFarmBoundary={handleAutoFarmBoundary}
               height={viewMode === 'map' ? '600px' : '500px'}
               drawingField={drawingField}
               onDrawingComplete={() => setDrawingField(null)}

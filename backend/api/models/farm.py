@@ -63,6 +63,22 @@ class Farm(LocationMixin, models.Model):
         help_text="Are septic systems located near production areas?"
     )
 
+    # Boundary
+    boundary_geojson = models.JSONField(
+        null=True,
+        blank=True,
+        verbose_name="Boundary GeoJSON",
+        help_text="Farm boundary polygon in GeoJSON format"
+    )
+    calculated_acres = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        verbose_name="Calculated Acres",
+        help_text="Acreage calculated from drawn boundary"
+    )
+
     # Status
     active = models.BooleanField(default=True)
 

@@ -42,6 +42,7 @@ class FarmSerializer(serializers.ModelSerializer):
             'address', 'county', 'gps_latitude', 'gps_longitude',
             'plss_section', 'plss_township', 'plss_range', 'plss_meridian',
             'has_coordinates', 'has_plss', 'plss_display',
+            'boundary_geojson', 'calculated_acres',
             'phone', 'email', 'active',
             'parcels', 'apn_list', 'parcel_count', 'total_parcel_acreage',
             'cimis_station_id', 'pur_site_id',

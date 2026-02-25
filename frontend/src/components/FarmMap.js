@@ -103,6 +103,8 @@ const FarmMap = ({
   onFieldSelect,
   onFarmSelect,
   onBoundaryUpdate,
+  onFarmBoundaryUpdate,
+  onAutoFarmBoundary,
   height = '500px',
   drawingField = null,  // { id, name } - auto-start drawing for this field
   onDrawingComplete = null  // callback when drawing is done/cancelled
@@ -110,8 +112,9 @@ const FarmMap = ({
   const [mapType, setMapType] = useState('satellite');
   const [isExpanded, setIsExpanded] = useState(false);
   const [isDrawing, setIsDrawing] = useState(false);
-  const [drawingFieldId, setDrawingFieldId] = useState(null);
-  const [drawingFieldName, setDrawingFieldName] = useState('');
+  const [drawingType, setDrawingType] = useState(null); // 'field' | 'farm'
+  const [drawingTargetId, setDrawingTargetId] = useState(null);
+  const [drawingTargetName, setDrawingTargetName] = useState('');
   const [showLayerMenu, setShowLayerMenu] = useState(false);
   const [pendingBoundary, setPendingBoundary] = useState(null);
   const [showQuarantineLayer, setShowQuarantineLayer] = useState(true);
@@ -179,18 +182,29 @@ const FarmMap = ({
   const saveBoundary = () => {
     console.log('[FarmMap] saveBoundary called');
     console.log('[FarmMap] pendingBoundary:', pendingBoundary);
-    console.log('[FarmMap] drawingFieldId:', drawingFieldId);
+    console.log('[FarmMap] drawingTargetId:', drawingTargetId);
     console.log('[FarmMap] onBoundaryUpdate exists:', !!onBoundaryUpdate);
     
-    if (pendingBoundary && drawingFieldId && onBoundaryUpdate) {
-      console.log('[FarmMap] Calling onBoundaryUpdate with:', {
-        fieldId: drawingFieldId,
-        geojson: pendingBoundary.geojson,
-        acres: pendingBoundary.acres
-      });
-      onBoundaryUpdate(drawingFieldId, pendingBoundary.geojson, pendingBoundary.acres);
+    if (pendingBoundary && drawingTargetId) {
+      if (drawingType === 'field' && onBoundaryUpdate) {
+        console.log('[FarmMap] Calling onBoundaryUpdate with:', {
+          fieldId: drawingTargetId,
+          geojson: pendingBoundary.geojson,
+          acres: pendingBoundary.acres
+        });
+        onBoundaryUpdate(drawingTargetId, pendingBoundary.geojson, pendingBoundary.acres);
+      } else if (drawingType === 'farm' && onFarmBoundaryUpdate) {
+        console.log('[FarmMap] Calling onFarmBoundaryUpdate with:', {
+          farmId: drawingTargetId,
+          geojson: pendingBoundary.geojson,
+          acres: pendingBoundary.acres
+        });
+        onFarmBoundaryUpdate(drawingTargetId, pendingBoundary.geojson, pendingBoundary.acres);
+      } else {
+        console.log('[FarmMap] NOT calling update - missing handler');
+      }
     } else {
-      console.log('[FarmMap] NOT calling onBoundaryUpdate - missing data');
+      console.log('[FarmMap] NOT calling update - missing data');
     }
     if (onDrawingComplete) {
       onDrawingComplete();
@@ -202,8 +216,9 @@ const FarmMap = ({
   const cancelDrawing = () => {
     setPendingBoundary(null);
     setIsDrawing(false);
-    setDrawingFieldId(null);
-    setDrawingFieldName('');
+    setDrawingType(null);
+    setDrawingTargetId(null);
+    setDrawingTargetName('');
     if (featureGroupRef.current) {
       featureGroupRef.current.clearLayers();
     }
@@ -213,17 +228,18 @@ const FarmMap = ({
   };
 
   // Start drawing for a specific field
-  const startDrawing = (fieldId, fieldName) => {
-    console.log('[FarmMap] startDrawing called:', { fieldId, fieldName });
+  const startDrawing = (type, targetId, targetName) => {
+    console.log('[FarmMap] startDrawing called:', { type, targetId, targetName });
     // Close any open popups first
     if (mapRef.current) {
       mapRef.current.closePopup();
     }
     setIsDrawing(true);
-    setDrawingFieldId(fieldId);
-    setDrawingFieldName(fieldName);
+    setDrawingType(type);
+    setDrawingTargetId(targetId);
+    setDrawingTargetName(targetName);
     setPendingBoundary(null);
-    console.log('[FarmMap] Drawing mode activated for field:', fieldName);
+    console.log('[FarmMap] Drawing mode activated for target:', targetName);
   };
 
   const mapHeight = isExpanded ? '100vh' : height;
@@ -231,7 +247,7 @@ const FarmMap = ({
   // Auto-start drawing when drawingField prop is passed
   useEffect(() => {
     if (drawingField && drawingField.id && drawingField.name) {
-      startDrawing(drawingField.id, drawingField.name);
+      startDrawing('field', drawingField.id, drawingField.name);
     }
   }, [drawingField]);
 
@@ -369,7 +385,11 @@ const FarmMap = ({
               <div className="p-1.5 bg-blue-100 rounded-lg">
                 <Pencil className="w-5 h-5 text-blue-600" />
               </div>
-              <span className="font-semibold text-gray-800">Drawing: {drawingFieldName}</span>
+              <span className="font-semibold text-gray-800">
+                {drawingType === 'farm'
+                  ? `Drawing boundary for Farm: ${drawingTargetName}`
+                  : `Drawing boundary for Field: ${drawingTargetName}`}
+              </span>
             </div>
             <button
               onClick={cancelDrawing}
@@ -495,6 +515,42 @@ const FarmMap = ({
                 <div className="min-w-[250px] max-h-[300px] overflow-y-auto">
                   <h3 className="font-bold text-lg text-gray-800">{farm.name}</h3>
                   <p className="text-sm text-gray-600">{farm.county} County</p>
+
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        startDrawing('farm', farm.id, farm.name);
+                      }}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap flex items-center gap-1.5 transition-all ${
+                        farm.boundary_geojson
+                          ? 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-300'
+                          : 'bg-blue-600 text-white hover:bg-blue-700 shadow-md hover:shadow-lg animate-pulse hover:animate-none'
+                      }`}
+                    >
+                      <Pencil className="w-3 h-3" />
+                      {farm.boundary_geojson ? 'Redraw Farm Boundary' : 'Draw Farm Boundary'}
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        if (onAutoFarmBoundary) {
+                          onAutoFarmBoundary(farm.id);
+                        }
+                      }}
+                      disabled={!farmFields.some(f => f.boundary_geojson) || !onAutoFarmBoundary}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap flex items-center gap-1.5 transition-all ${
+                        !farmFields.some(f => f.boundary_geojson) || !onAutoFarmBoundary
+                          ? 'bg-gray-100 text-gray-400 border border-gray-200 cursor-not-allowed'
+                          : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200 border border-indigo-200'
+                      }`}
+                      title={farmFields.some(f => f.boundary_geojson) ? 'Auto-derive farm boundary from field boundaries' : 'Add field boundaries to enable auto-boundary'}
+                    >
+                      Auto from Fields
+                    </button>
+                  </div>
                   
                   {farmFields.length > 0 ? (
                     <div className="mt-3 border-t pt-3">
@@ -510,7 +566,7 @@ const FarmMap = ({
                               onClick={(e) => {
                                 e.stopPropagation();
                                 e.preventDefault();
-                                startDrawing(field.id, field.name);
+                                startDrawing('field', field.id, field.name);
                               }}
                               className={`ml-2 px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap flex items-center gap-1.5 transition-all ${
                                 field.boundary_geojson
@@ -560,7 +616,7 @@ const FarmMap = ({
                   <p className="text-sm text-gray-600">{field.current_crop || 'No crop'}</p>
                   <p className="text-sm text-gray-500">{field.total_acres} acres</p>
                   <button
-                    onClick={() => startDrawing(field.id, field.name)}
+                    onClick={() => startDrawing('field', field.id, field.name)}
                     className="mt-3 w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-amber-500 text-white rounded-lg hover:bg-amber-600 text-sm font-semibold shadow-md hover:shadow-lg transition-all border border-amber-600"
                   >
                     <Pencil className="w-4 h-4" />
@@ -571,6 +627,47 @@ const FarmMap = ({
             </Polygon>
           );
         })}
+
+        {/* Farm Boundaries */}
+        {farms
+          .filter(farm => farm.boundary_geojson)
+          .filter(farm => !selectedFarmId || farm.id === selectedFarmId)
+          .map((farm) => {
+            const coords = farm.boundary_geojson.coordinates[0].map(c => [c[1], c[0]]);
+            return (
+              <Polygon
+                key={`farm-boundary-${farm.id}`}
+                positions={coords}
+                pathOptions={{
+                  color: '#1d4ed8',
+                  fillColor: '#93c5fd',
+                  fillOpacity: 0.15,
+                  weight: selectedFarmId === farm.id ? 3 : 2,
+                  dashArray: '8 6',
+                }}
+                eventHandlers={{
+                  click: () => onFarmSelect && onFarmSelect(farm.id)
+                }}
+              >
+                <Popup>
+                  <div className="min-w-[220px]">
+                    <h3 className="font-bold text-lg text-gray-800">{farm.name}</h3>
+                    <p className="text-sm text-gray-600">{farm.county} County</p>
+                    {farm.calculated_acres && (
+                      <p className="text-sm text-gray-500">{farm.calculated_acres} acres</p>
+                    )}
+                    <button
+                      onClick={() => startDrawing('farm', farm.id, farm.name)}
+                      className="mt-3 w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-semibold shadow-md hover:shadow-lg transition-all"
+                    >
+                      <Pencil className="w-4 h-4" />
+                      Redraw Farm Boundary
+                    </button>
+                  </div>
+                </Popup>
+              </Polygon>
+            );
+          })}
 
         {/* Field Markers (for fields without boundaries) */}
         {fields.map((field) => {
@@ -593,7 +690,7 @@ const FarmMap = ({
                   <p className="text-sm text-gray-600">{field.current_crop || 'No crop'}</p>
                   <p className="text-sm text-gray-500">{field.total_acres} acres</p>
                   <button
-                    onClick={() => startDrawing(field.id, field.name)}
+                    onClick={() => startDrawing('field', field.id, field.name)}
                     className="mt-3 w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-semibold shadow-md hover:shadow-lg transition-all animate-pulse hover:animate-none"
                   >
                     <Pencil className="w-4 h-4" />
