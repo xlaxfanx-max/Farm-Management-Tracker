@@ -1,13 +1,14 @@
 // =============================================================================
-// PUR IMPORT HISTORY — Browse past import batches and their events
+// PUR IMPORT HISTORY — Browse past import batches and their reports
 // =============================================================================
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   FileText, ChevronDown, ChevronRight, Loader2, Calendar,
-  Package, MapPin, Eye, AlertCircle,
+  Package, MapPin, Eye, AlertCircle, Pencil,
 } from 'lucide-react';
-import { purImportAPI } from '../../services/api';
+import { purImportAPI, applicationEventsAPI } from '../../services/api';
+import { useModal } from '../../contexts/ModalContext';
 
 export default function PURImportHistory() {
   const [batches, setBatches] = useState([]);
@@ -16,6 +17,9 @@ export default function PURImportHistory() {
   const [expandedBatch, setExpandedBatch] = useState(null);
   const [batchEvents, setBatchEvents] = useState({});
   const [loadingDetail, setLoadingDetail] = useState(null);
+
+  const { openApplicationModal, applicationModal } = useModal();
+  const editingBatchRef = useRef(null);
 
   // Load batches on mount
   useEffect(() => {
@@ -54,6 +58,36 @@ export default function PURImportHistory() {
       }
     }
   }, [expandedBatch, batchEvents]);
+
+  // Re-fetch a single batch's detail to refresh after edits
+  const refreshBatch = useCallback(async (batchId) => {
+    try {
+      const res = await purImportAPI.getBatchDetail(batchId);
+      setBatchEvents(prev => ({ ...prev, [batchId]: res.data }));
+    } catch {
+      // silently keep stale data
+    }
+  }, []);
+
+  // When the application modal closes, refresh the batch that was being edited
+  const prevModalOpen = useRef(false);
+  useEffect(() => {
+    if (prevModalOpen.current && !applicationModal.isOpen && editingBatchRef.current) {
+      refreshBatch(editingBatchRef.current);
+      editingBatchRef.current = null;
+    }
+    prevModalOpen.current = applicationModal.isOpen;
+  }, [applicationModal.isOpen, refreshBatch]);
+
+  const handleEditReport = useCallback(async (evt, batchId) => {
+    try {
+      const res = await applicationEventsAPI.get(evt.id);
+      editingBatchRef.current = batchId;
+      openApplicationModal(res.data);
+    } catch {
+      alert('Failed to load report for editing');
+    }
+  }, [openApplicationModal]);
 
   const handleViewPdf = useCallback(async (batchId, filename) => {
     try {
@@ -147,7 +181,7 @@ export default function PURImportHistory() {
 
                 <div className="flex items-center gap-3">
                   <span className="px-2.5 py-1 text-xs font-medium bg-blue-50 text-blue-700 rounded-full">
-                    {batch.event_count} event{batch.event_count !== 1 ? 's' : ''}
+                    {batch.event_count} report{batch.event_count !== 1 ? 's' : ''}
                   </span>
                   <button
                     onClick={(e) => { e.stopPropagation(); handleViewPdf(batch.batch_id, batch.filename); }}
@@ -165,10 +199,10 @@ export default function PURImportHistory() {
                   {isLoading ? (
                     <div className="flex items-center gap-2 text-sm text-gray-500 py-3">
                       <Loader2 className="w-4 h-4 animate-spin" />
-                      Loading events...
+                      Loading reports...
                     </div>
                   ) : events.length === 0 ? (
-                    <p className="text-sm text-gray-400 py-3">No events found for this batch.</p>
+                    <p className="text-sm text-gray-400 py-3">No reports found for this batch.</p>
                   ) : (
                     <div className="space-y-2">
                       {events.map(evt => (
@@ -201,6 +235,14 @@ export default function PURImportHistory() {
                             <span className="text-xs">
                               {evt.treated_area_acres} ac
                             </span>
+                            <button
+                              onClick={() => handleEditReport(evt, batch.batch_id)}
+                              className="flex items-center gap-1 px-2 py-0.5 text-xs font-medium text-amber-700 bg-amber-50 rounded hover:bg-amber-100 transition-colors"
+                              title="Edit report"
+                            >
+                              <Pencil className="w-3 h-3" />
+                              Edit
+                            </button>
                           </div>
                         </div>
                       ))}
