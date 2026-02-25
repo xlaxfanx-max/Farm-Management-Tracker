@@ -91,7 +91,7 @@ function FarmToolbar({
               onClick={() => onViewModeChange('cards')}
               className={`p-2 rounded-md transition-colors ${
                 viewMode === 'cards'
-                  ? 'bg-white shadow text-green-600'
+                  ? 'bg-white shadow text-primary'
                   : 'text-gray-500 hover:text-gray-700'
               }`}
               title="Card View"
@@ -102,7 +102,7 @@ function FarmToolbar({
               onClick={() => onViewModeChange('map')}
               className={`p-2 rounded-md transition-colors ${
                 viewMode === 'map'
-                  ? 'bg-white shadow text-green-600'
+                  ? 'bg-white shadow text-primary'
                   : 'text-gray-500 hover:text-gray-700'
               }`}
               title="Map View"
@@ -113,7 +113,7 @@ function FarmToolbar({
               onClick={() => onViewModeChange('split')}
               className={`p-2 rounded-md transition-colors ${
                 viewMode === 'split'
-                  ? 'bg-white shadow text-green-600'
+                  ? 'bg-white shadow text-primary'
                   : 'text-gray-500 hover:text-gray-700'
               }`}
               title="Split View"
@@ -124,7 +124,7 @@ function FarmToolbar({
 
           <button
             onClick={onAddFarm}
-            className="flex items-center gap-2 bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 shadow-lg transition-colors"
+            className="flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-lg hover:bg-primary-hover shadow-lg transition-colors"
           >
             <Plus size={20} />
             Add Farm
@@ -144,7 +144,7 @@ function FarmToolbar({
                 placeholder="Search farms by name, owner, county..."
                 value={searchTerm}
                 onChange={(e) => onSearchChange(e.target.value)}
-                className="w-full pl-10 pr-10 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="w-full pl-10 pr-10 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
               />
               {searchTerm && (
                 <button
@@ -160,7 +160,7 @@ function FarmToolbar({
             <select
               value={filterCounty}
               onChange={(e) => onCountyChange(e.target.value)}
-              className="px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 bg-white min-w-[160px]"
+              className="px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white min-w-[160px]"
             >
               <option value="">All Counties</option>
               {counties.map(county => (
@@ -172,7 +172,7 @@ function FarmToolbar({
             <select
               value={filterMapped}
               onChange={(e) => onMappedChange(e.target.value)}
-              className="px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 bg-white min-w-[160px]"
+              className="px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white min-w-[160px]"
             >
               <option value="all">All Status</option>
               <option value="mapped">Mapped Only</option>

@@ -68,7 +68,7 @@ const DOCUMENT_TYPE_OPTIONS = [
 const statusBadgeStyles = {
   draft: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300',
   pending_review: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
-  approved: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+  approved: 'bg-green-100 text-primary dark:bg-green-900/30 dark:text-green-400',
   superseded: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
   archived: 'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400',
 };
@@ -185,7 +185,7 @@ const DocumentModal = ({ document, onClose, onSave }) => {
                 value={formData.document_number}
                 onChange={handleChange}
                 placeholder="Auto-generated (e.g., SOP-001)"
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary"
               />
               <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">Leave blank to auto-generate based on document type</p>
             </div>
@@ -197,7 +197,7 @@ const DocumentModal = ({ document, onClose, onSave }) => {
                 value={formData.version}
                 onChange={handleChange}
                 placeholder="e.g., 1.0"
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary"
               />
             </div>
           </div>
@@ -211,7 +211,7 @@ const DocumentModal = ({ document, onClose, onSave }) => {
               value={formData.title}
               onChange={handleChange}
               placeholder="Document title"
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary"
             />
           </div>
 
@@ -223,7 +223,7 @@ const DocumentModal = ({ document, onClose, onSave }) => {
                 required
                 value={formData.document_type}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary"
               >
                 {DOCUMENT_TYPE_OPTIONS.map((opt) => (
                   <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -237,7 +237,7 @@ const DocumentModal = ({ document, onClose, onSave }) => {
                 required
                 value={formData.primus_module}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary"
               >
                 {MODULE_OPTIONS.filter((m) => m.value !== '').map((opt) => (
                   <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -254,7 +254,7 @@ const DocumentModal = ({ document, onClose, onSave }) => {
                 name="revision_date"
                 value={formData.revision_date}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary"
               />
             </div>
             <div>
@@ -264,7 +264,7 @@ const DocumentModal = ({ document, onClose, onSave }) => {
                 name="effective_date"
                 value={formData.effective_date}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary"
               />
             </div>
             <div>
@@ -274,7 +274,7 @@ const DocumentModal = ({ document, onClose, onSave }) => {
                 name="review_due_date"
                 value={formData.review_due_date}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary"
               />
             </div>
           </div>
@@ -287,7 +287,7 @@ const DocumentModal = ({ document, onClose, onSave }) => {
               onChange={handleChange}
               rows={3}
               placeholder="Brief description of this document..."
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary"
             />
           </div>
 
@@ -332,7 +332,7 @@ const DocumentModal = ({ document, onClose, onSave }) => {
             {/* Drop zone / file picker */}
             {!selectedFile && (
               <label
-                className="flex flex-col items-center gap-2 p-6 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer hover:border-green-400 dark:hover:border-green-500 hover:bg-green-50/50 dark:hover:bg-green-900/10 transition"
+                className="flex flex-col items-center gap-2 p-6 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer hover:border-green-400 dark:hover:border-primary hover:bg-primary-light/50 dark:hover:bg-green-900/10 transition"
                 onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
                 onDrop={(e) => {
                   e.preventDefault();
@@ -343,7 +343,7 @@ const DocumentModal = ({ document, onClose, onSave }) => {
               >
                 <Upload className="w-6 h-6 text-gray-400" />
                 <span className="text-sm text-gray-500 dark:text-gray-400">
-                  Drop a file here or <span className="text-green-600 dark:text-green-400 font-medium">browse</span>
+                  Drop a file here or <span className="text-primary dark:text-green-400 font-medium">browse</span>
                 </span>
                 <span className="text-xs text-gray-400">PDF, DOC, DOCX, XLS, XLSX, JPG, PNG</span>
                 <input
@@ -370,7 +370,7 @@ const DocumentModal = ({ document, onClose, onSave }) => {
             <button
               type="submit"
               disabled={saving}
-              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+              className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors disabled:opacity-50"
             >
               {saving ? 'Saving...' : document ? 'Update Document' : 'Create Document'}
             </button>
@@ -463,7 +463,7 @@ export default function DocumentControlList() {
         </h2>
         <button
           onClick={() => { setEditingDocument(null); setShowCreateModal(true); }}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors"
         >
           <Plus className="w-4 h-4" />
           Add Document
@@ -481,7 +481,7 @@ export default function DocumentControlList() {
               placeholder="Search documents..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              className="w-full pl-9 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-primary focus:border-primary"
             />
           </div>
 
@@ -491,7 +491,7 @@ export default function DocumentControlList() {
             <select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
-              className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary"
             >
               {STATUS_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -503,7 +503,7 @@ export default function DocumentControlList() {
           <select
             value={filterModule}
             onChange={(e) => setFilterModule(e.target.value)}
-            className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-green-500"
+            className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary"
           >
             {MODULE_OPTIONS.map((opt) => (
               <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -530,7 +530,7 @@ export default function DocumentControlList() {
       {/* Loading State */}
       {loading && !error && (
         <div className="flex items-center justify-center py-12">
-          <Loader2 className="w-6 h-6 text-green-600 animate-spin" />
+          <Loader2 className="w-6 h-6 text-primary animate-spin" />
         </div>
       )}
 
@@ -544,7 +544,7 @@ export default function DocumentControlList() {
           </p>
           <button
             onClick={() => { setEditingDocument(null); setShowCreateModal(true); }}
-            className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+            className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors"
           >
             <Plus className="w-4 h-4" />
             Add Document
@@ -623,7 +623,7 @@ export default function DocumentControlList() {
                         {(doc.status === 'draft' || doc.status === 'pending_review') && (
                           <button
                             onClick={() => handleApprove(doc.id)}
-                            className="p-1.5 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded transition-colors"
+                            className="p-1.5 text-primary hover:bg-primary-light dark:hover:bg-green-900/20 rounded transition-colors"
                             title="Approve"
                           >
                             <ShieldCheck className="w-4 h-4" />

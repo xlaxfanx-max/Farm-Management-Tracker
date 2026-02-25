@@ -148,7 +148,7 @@ const RoleModal = ({ role, onClose, onSave }) => {
                   onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addResponsibility(); } }}
                   className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm" />
                 <button type="button" onClick={addResponsibility}
-                  className="px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm">Add</button>
+                  className="px-3 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover text-sm">Add</button>
               </div>
             </div>
           </div>
@@ -167,7 +167,7 @@ const RoleModal = ({ role, onClose, onSave }) => {
           <div className="flex justify-end gap-3 pt-2">
             <button type="button" onClick={onClose} className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600">Cancel</button>
             <button type="submit" disabled={saving}
-              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 flex items-center gap-2">
+              className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover disabled:opacity-50 flex items-center gap-2">
               {saving && <Loader2 className="w-4 h-4 animate-spin" />}{role ? 'Update' : 'Create'}
             </button>
           </div>
@@ -222,19 +222,19 @@ const OrgRoles = () => {
   };
 
   if (loading) {
-    return <div className="flex items-center justify-center h-64"><Loader2 className="w-8 h-8 animate-spin text-green-600" /></div>;
+    return <div className="flex items-center justify-center h-64"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;
   }
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-          <Users className="w-5 h-5 text-green-600" /> Organization Roles (Doc 02)
+          <Users className="w-5 h-5 text-primary" /> Organization Roles (Doc 02)
         </h2>
         <div className="flex gap-2">
           <button onClick={loadRoles} className="p-2 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"><RefreshCw className="w-4 h-4" /></button>
           <button onClick={() => { setEditingRole(null); setShowModal(true); }}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+            className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover">
             <Plus className="w-4 h-4" /> Add Role
           </button>
         </div>
@@ -262,7 +262,7 @@ const OrgRoles = () => {
                   </button>
                 </div>
               </div>
-              <span className="inline-block px-2 py-0.5 text-xs font-medium rounded-full bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 mb-2">
+              <span className="inline-block px-2 py-0.5 text-xs font-medium rounded-full bg-green-100 text-primary dark:bg-green-900/30 dark:text-green-400 mb-2">
                 {categoryLabel(role.role_category)}
               </span>
               {role.responsibilities && role.responsibilities.length > 0 && (

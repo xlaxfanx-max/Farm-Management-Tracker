@@ -6,14 +6,12 @@ import {
   Wheat,
   Leaf,
   CheckCircle2,
-  AlertCircle,
   Calendar,
-  Filter
+  ArrowRight
 } from 'lucide-react';
-import StatusBadge from '../ui/StatusBadge';
 
 /**
- * Unified task list combining tasks from all modules
+ * Unified task list combining tasks from all modules, with inline action buttons.
  */
 function UnifiedTaskList({
   applications = [],
@@ -22,16 +20,13 @@ function UnifiedTaskList({
   harvests = [],
   fields = [],
   onTaskClick,
-  maxItems = 8
+  maxItems = 6
 }) {
-  const [filter, setFilter] = useState('all'); // all, today, week
+  const [filter, setFilter] = useState('all');
 
-  // Build unified task list from all modules
   const allTasks = useMemo(() => {
     const tasks = [];
     const now = new Date();
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const weekFromNow = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
 
     // Pending application signatures
     applications
@@ -46,6 +41,7 @@ function UnifiedTaskList({
           description: `${app.field_name || 'Unknown Field'} - ${app.product_name || 'Unknown Product'}`,
           date: new Date(app.application_date),
           priority: 'high',
+          cta: 'Sign',
           data: app
         });
       });
@@ -63,6 +59,7 @@ function UnifiedTaskList({
           description: `${app.field_name || 'Unknown Field'} - ${app.product_name || 'Unknown Product'}`,
           date: new Date(app.application_date),
           priority: 'medium',
+          cta: 'Submit',
           data: app
         });
       });
@@ -71,15 +68,12 @@ function UnifiedTaskList({
     waterSources
       .filter(ws => {
         if (!ws.active || !ws.test_frequency || !ws.last_test_date) return false;
-        const lastTest = new Date(ws.last_test_date);
-        const daysSinceTest = Math.floor((now - lastTest) / (1000 * 60 * 60 * 24));
+        const daysSinceTest = Math.floor((now - new Date(ws.last_test_date)) / 86400000);
         return daysSinceTest > ws.test_frequency;
       })
       .forEach(ws => {
-        const lastTest = new Date(ws.last_test_date);
-        const daysSinceTest = Math.floor((now - lastTest) / (1000 * 60 * 60 * 24));
+        const daysSinceTest = Math.floor((now - new Date(ws.last_test_date)) / 86400000);
         const daysOverdue = daysSinceTest - ws.test_frequency;
-
         tasks.push({
           id: `water-test-${ws.id}`,
           type: 'water_test',
@@ -87,8 +81,9 @@ function UnifiedTaskList({
           icon: Droplet,
           title: 'Water Test Overdue',
           description: `${ws.name} - ${daysOverdue} day${daysOverdue !== 1 ? 's' : ''} overdue`,
-          date: lastTest,
+          date: new Date(ws.last_test_date),
           priority: 'high',
+          cta: 'Log Test',
           data: ws
         });
       });
@@ -97,30 +92,28 @@ function UnifiedTaskList({
     waterSources
       .filter(ws => {
         if (!ws.active || !ws.test_frequency || !ws.last_test_date) return false;
-        const lastTest = new Date(ws.last_test_date);
-        const daysSinceTest = Math.floor((now - lastTest) / (1000 * 60 * 60 * 24));
-        const daysRemaining = ws.test_frequency - daysSinceTest;
-        return daysRemaining > 0 && daysRemaining <= 7;
+        const daysSinceTest = Math.floor((now - new Date(ws.last_test_date)) / 86400000);
+        const remaining = ws.test_frequency - daysSinceTest;
+        return remaining > 0 && remaining <= 7;
       })
       .forEach(ws => {
-        const lastTest = new Date(ws.last_test_date);
-        const daysSinceTest = Math.floor((now - lastTest) / (1000 * 60 * 60 * 24));
-        const daysRemaining = ws.test_frequency - daysSinceTest;
-
+        const daysSinceTest = Math.floor((now - new Date(ws.last_test_date)) / 86400000);
+        const remaining = ws.test_frequency - daysSinceTest;
         tasks.push({
           id: `water-due-${ws.id}`,
           type: 'water_test_due',
           module: 'water',
           icon: Droplet,
           title: 'Water Test Due Soon',
-          description: `${ws.name} - due in ${daysRemaining} day${daysRemaining !== 1 ? 's' : ''}`,
-          date: new Date(lastTest.getTime() + ws.test_frequency * 24 * 60 * 60 * 1000),
+          description: `${ws.name} - due in ${remaining} day${remaining !== 1 ? 's' : ''}`,
+          date: new Date(new Date(ws.last_test_date).getTime() + ws.test_frequency * 86400000),
           priority: 'low',
+          cta: 'Schedule',
           data: ws
         });
       });
 
-    // Draft application events (new PUR system)
+    // Draft application events
     applicationEvents
       .filter(evt => evt.pur_status === 'draft')
       .forEach(evt => {
@@ -133,11 +126,12 @@ function UnifiedTaskList({
           description: `${evt.farm_name || 'Unknown Farm'} - ${(evt.tank_mix_items || []).length} product${(evt.tank_mix_items || []).length !== 1 ? 's' : ''}`,
           date: new Date(evt.date_started),
           priority: 'medium',
+          cta: 'Review',
           data: evt
         });
       });
 
-    // Active harvests that may need attention
+    // Active harvests
     harvests
       .filter(h => h.status === 'in_progress')
       .forEach(harvest => {
@@ -150,6 +144,7 @@ function UnifiedTaskList({
           description: `${harvest.field_name || 'Unknown Field'} - ${harvest.crop_name || 'Harvest'}`,
           date: new Date(harvest.start_date || harvest.created_at),
           priority: 'medium',
+          cta: 'View',
           data: harvest
         });
       });
@@ -166,15 +161,14 @@ function UnifiedTaskList({
     return tasks;
   }, [applications, applicationEvents, waterSources, harvests]);
 
-  // Apply filter
   const filteredTasks = useMemo(() => {
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const weekFromNow = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
+    const weekFromNow = new Date(today.getTime() + 7 * 86400000);
 
     switch (filter) {
       case 'today':
-        return allTasks.filter(t => t.date <= new Date(today.getTime() + 24 * 60 * 60 * 1000));
+        return allTasks.filter(t => t.date <= new Date(today.getTime() + 86400000));
       case 'week':
         return allTasks.filter(t => t.date <= weekFromNow);
       default:
@@ -188,98 +182,115 @@ function UnifiedTaskList({
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const taskDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-
-    const diffDays = Math.floor((taskDate - today) / (1000 * 60 * 60 * 24));
+    const diffDays = Math.floor((taskDate - today) / 86400000);
 
     if (diffDays === 0) return 'Today';
     if (diffDays === 1) return 'Tomorrow';
     if (diffDays === -1) return 'Yesterday';
-    if (diffDays < -1) return `${Math.abs(diffDays)} days ago`;
-    if (diffDays < 7) return `In ${diffDays} days`;
-
+    if (diffDays < -1) return `${Math.abs(diffDays)}d ago`;
+    if (diffDays < 7) return `In ${diffDays}d`;
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   };
 
-  const getPriorityColor = (priority) => {
+  const getPriorityDot = (priority) => {
     switch (priority) {
-      case 'high': return 'text-red-600';
-      case 'medium': return 'text-amber-600';
-      case 'low': return 'text-blue-600';
-      default: return 'text-gray-600';
+      case 'high': return 'bg-red-500';
+      case 'medium': return 'bg-amber-500';
+      case 'low': return 'bg-blue-400';
+      default: return 'bg-gray-400';
     }
   };
 
+  const filterBtn = (value, label) => (
+    <button
+      onClick={() => setFilter(value)}
+      className={`px-2.5 py-1 text-xs rounded-md transition-colors ${
+        filter === value
+          ? 'bg-primary-light text-primary dark:bg-primary/20 dark:text-green-400 font-medium'
+          : 'text-text-secondary dark:text-gray-400 hover:bg-surface-sunken dark:hover:bg-gray-700'
+      }`}
+    >
+      {label}
+    </button>
+  );
+
   return (
-    <div className="bg-white rounded-lg border border-gray-200">
+    <div className="bg-surface-raised dark:bg-gray-800 rounded-lg border border-border dark:border-gray-700">
       {/* Header */}
-      <div className="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
-        <h3 className="font-semibold text-gray-900 flex items-center gap-2">
-          <Clock className="w-4 h-4" />
+      <div className="px-4 py-3 border-b border-border dark:border-gray-700 flex items-center justify-between">
+        <h3 className="font-semibold text-text dark:text-white text-sm flex items-center gap-2">
+          <Clock className="w-4 h-4 text-text-secondary dark:text-gray-400" />
           Tasks & Actions
         </h3>
         <div className="flex items-center gap-1">
-          <button
-            onClick={() => setFilter('all')}
-            className={`px-2 py-1 text-xs rounded ${filter === 'all' ? 'bg-gray-200 text-gray-800' : 'text-gray-500 hover:bg-gray-100'}`}
-          >
-            All
-          </button>
-          <button
-            onClick={() => setFilter('today')}
-            className={`px-2 py-1 text-xs rounded ${filter === 'today' ? 'bg-gray-200 text-gray-800' : 'text-gray-500 hover:bg-gray-100'}`}
-          >
-            Today
-          </button>
-          <button
-            onClick={() => setFilter('week')}
-            className={`px-2 py-1 text-xs rounded ${filter === 'week' ? 'bg-gray-200 text-gray-800' : 'text-gray-500 hover:bg-gray-100'}`}
-          >
-            This Week
-          </button>
+          {filterBtn('all', 'All')}
+          {filterBtn('today', 'Today')}
+          {filterBtn('week', 'Week')}
         </div>
       </div>
 
       {/* Task List */}
-      <div className="divide-y divide-gray-100">
+      <div className="divide-y divide-border/50 dark:divide-gray-700/50">
         {displayTasks.length === 0 ? (
-          <div className="p-6 text-center">
-            <CheckCircle2 className="w-10 h-10 text-green-500 mx-auto mb-2" />
-            <p className="text-sm font-medium text-gray-700">All caught up!</p>
-            <p className="text-xs text-gray-500 mt-1">No pending tasks</p>
+          <div className="p-8 text-center">
+            <CheckCircle2 className="w-8 h-8 text-primary mx-auto mb-2" />
+            <p className="text-sm font-medium text-text dark:text-gray-200">All caught up!</p>
+            <p className="text-xs text-text-muted dark:text-gray-500 mt-1">No pending tasks</p>
           </div>
         ) : (
           displayTasks.map((task) => (
             <div
               key={task.id}
-              onClick={() => onTaskClick?.(task.module, task)}
-              className="px-4 py-3 hover:bg-gray-50 cursor-pointer transition-colors"
+              className="px-4 py-3 hover:bg-surface-sunken dark:hover:bg-gray-700/50 transition-colors group"
             >
-              <div className="flex items-start gap-3">
-                <div className={`mt-0.5 ${getPriorityColor(task.priority)}`}>
-                  <task.icon className="w-4 h-4" />
-                </div>
+              <div className="flex items-center gap-3">
+                {/* Priority dot */}
+                <div className={`w-2 h-2 rounded-full flex-shrink-0 ${getPriorityDot(task.priority)}`} />
+
+                {/* Icon */}
+                <task.icon className="w-4 h-4 text-text-muted dark:text-gray-500 flex-shrink-0" />
+
+                {/* Content */}
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-0.5">
-                    <p className="text-sm font-medium text-gray-900 truncate">{task.title}</p>
-                    <StatusBadge status={task.priority} size="xs" />
-                  </div>
-                  <p className="text-xs text-gray-600 truncate">{task.description}</p>
+                  <p className="text-sm font-medium text-text dark:text-gray-200 truncate">{task.title}</p>
+                  <p className="text-xs text-text-muted dark:text-gray-500 truncate">{task.description}</p>
                 </div>
-                <div className="text-xs text-gray-500 flex items-center gap-1 flex-shrink-0">
+
+                {/* Date */}
+                <span className="text-xs text-text-muted dark:text-gray-500 flex-shrink-0 hidden sm:flex items-center gap-1">
                   <Calendar className="w-3 h-3" />
                   {formatDate(task.date)}
-                </div>
+                </span>
+
+                {/* Inline CTA */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onTaskClick?.(task.module, task);
+                  }}
+                  className="
+                    inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium
+                    text-primary dark:text-green-400
+                    bg-primary-light dark:bg-primary/10
+                    hover:bg-primary hover:text-white dark:hover:bg-primary dark:hover:text-white
+                    transition-colors flex-shrink-0
+                    opacity-0 group-hover:opacity-100 sm:opacity-100
+                  "
+                >
+                  {task.cta || 'View'}
+                  <ArrowRight className="w-3 h-3" />
+                </button>
               </div>
             </div>
           ))
         )}
       </div>
 
-      {/* Footer - Show more */}
+      {/* Footer */}
       {filteredTasks.length > maxItems && (
-        <div className="px-4 py-2 border-t border-gray-100 text-center">
-          <button className="text-xs text-blue-600 hover:text-blue-700 font-medium">
-            View all {filteredTasks.length} tasks →
+        <div className="px-4 py-2.5 border-t border-border dark:border-gray-700 text-center">
+          <button className="text-xs text-primary dark:text-green-400 hover:text-primary-hover font-medium">
+            View all {filteredTasks.length} tasks
           </button>
         </div>
       )}

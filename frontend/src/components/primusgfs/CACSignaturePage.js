@@ -204,7 +204,7 @@ const CACSignaturePage = ({ docNumber, pageNumber, seasonYear, onComplete, onCan
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <Loader2 className="w-8 h-8 animate-spin text-green-600" />
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
       </div>
     );
   }
@@ -228,7 +228,7 @@ const CACSignaturePage = ({ docNumber, pageNumber, seasonYear, onComplete, onCan
           {allSigned && (
             <button
               onClick={onComplete}
-              className="inline-flex items-center gap-1.5 px-4 py-2 text-sm text-white bg-green-600 hover:bg-green-700 rounded-lg"
+              className="inline-flex items-center gap-1.5 px-4 py-2 text-sm text-white bg-primary hover:bg-primary-hover rounded-lg"
             >
               <Check className="w-4 h-4" />
               Done
@@ -256,7 +256,7 @@ const CACSignaturePage = ({ docNumber, pageNumber, seasonYear, onComplete, onCan
               key={idx}
               className={`border rounded-lg p-4 ${
                 signed
-                  ? 'border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/20'
+                  ? 'border-green-200 dark:border-green-800 bg-primary-light dark:bg-green-900/20'
                   : isActive
                   ? 'border-blue-300 dark:border-blue-700 bg-blue-50 dark:bg-blue-900/20'
                   : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800'
@@ -265,7 +265,7 @@ const CACSignaturePage = ({ docNumber, pageNumber, seasonYear, onComplete, onCan
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   {signed ? (
-                    <CheckCircle2 className="w-5 h-5 text-green-600" />
+                    <CheckCircle2 className="w-5 h-5 text-primary" />
                   ) : (
                     <Clock className="w-5 h-5 text-gray-400" />
                   )}
@@ -355,7 +355,7 @@ const CACSignaturePage = ({ docNumber, pageNumber, seasonYear, onComplete, onCan
                     <button
                       onClick={handleSubmit}
                       disabled={!hasSignature || !signerName.trim() || submitting}
-                      className="inline-flex items-center gap-1.5 px-4 py-2 text-sm text-white bg-green-600 hover:bg-green-700 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="inline-flex items-center gap-1.5 px-4 py-2 text-sm text-white bg-primary hover:bg-primary-hover rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {submitting ? (
                         <Loader2 className="w-4 h-4 animate-spin" />

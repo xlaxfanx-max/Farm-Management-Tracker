@@ -195,7 +195,7 @@ const AutoFillPreview = ({ sectionId, autoFillSource, existingData, onApplied })
       )}
 
       {existingData?.fields?.length > 0 && (
-        <div className="mt-2 flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
+        <div className="mt-2 flex items-center gap-1 text-xs text-primary dark:text-green-400">
           <CheckCircle2 className="w-3.5 h-3.5" />
           Auto-fill data saved. Click "Refresh" to pull latest system data.
         </div>

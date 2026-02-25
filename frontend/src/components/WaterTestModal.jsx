@@ -240,7 +240,7 @@ function WaterTestModal({ test, waterSource, onClose, onSave }) {
                     />
                     {autoStatus && formData.ecoli_result && (
                       <p className={`mt-1 text-sm ${
-                        autoStatus === 'pass' ? 'text-green-600' : autoStatus === 'fail' ? 'text-red-600' : 'text-yellow-600'
+                        autoStatus === 'pass' ? 'text-primary' : autoStatus === 'fail' ? 'text-red-600' : 'text-yellow-600'
                       }`}>
                         Auto-status: {autoStatus.toUpperCase()}
                       </p>

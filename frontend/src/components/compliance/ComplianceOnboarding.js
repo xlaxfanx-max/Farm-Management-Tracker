@@ -277,11 +277,11 @@ export default function ComplianceOnboarding({ onComplete, onSkip }) {
             <p className="text-gray-600 dark:text-gray-400 mb-4">{step.description}</p>
 
             {deadlinesGenerated ? (
-              <div className="bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-lg p-4 flex gap-3">
+              <div className="bg-primary-light dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-lg p-4 flex gap-3">
                 <Check className="w-5 h-5 text-green-500 dark:text-green-400 flex-shrink-0 mt-0.5" />
                 <div>
                   <p className="font-medium text-green-800 dark:text-green-300">Deadlines generated!</p>
-                  <p className="text-sm text-green-700 dark:text-green-400 mt-1">
+                  <p className="text-sm text-primary dark:text-green-400 mt-1">
                     Your compliance calendar has been populated with 12 months of
                     regulatory deadlines based on your selected regulations.
                   </p>
@@ -339,7 +339,7 @@ export default function ComplianceOnboarding({ onComplete, onSkip }) {
                 key={s.id}
                 className={`w-8 h-8 rounded-full flex items-center justify-center ${
                   i < currentStep
-                    ? 'bg-green-100 dark:bg-green-900/50 text-green-600 dark:text-green-400'
+                    ? 'bg-green-100 dark:bg-green-900/50 text-primary dark:text-green-400'
                     : i === currentStep
                     ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400'
                     : 'bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500'

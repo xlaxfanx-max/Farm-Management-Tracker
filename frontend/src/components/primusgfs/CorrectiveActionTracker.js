@@ -43,7 +43,7 @@ const PIPELINE_STAGES = [
   { key: 'open', label: 'Open', color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' },
   { key: 'in_progress', label: 'In Progress', color: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' },
   { key: 'implemented', label: 'Implemented', color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' },
-  { key: 'verified', label: 'Verified', color: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' },
+  { key: 'verified', label: 'Verified', color: 'bg-green-100 text-primary dark:bg-green-900/30 dark:text-green-400' },
 ];
 
 const StatusBadge = ({ status, isOverdue }) => {
@@ -58,7 +58,7 @@ const StatusBadge = ({ status, isOverdue }) => {
     open: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
     in_progress: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
     implemented: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-    verified: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+    verified: 'bg-green-100 text-primary dark:bg-green-900/30 dark:text-green-400',
   };
   const labels = {
     open: 'Open',
@@ -316,7 +316,7 @@ export default function CorrectiveActionTracker() {
                       {action.status === 'implemented' && (
                         <button
                           onClick={() => handleVerify(action.id)}
-                          className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400 rounded-md hover:bg-green-100 dark:hover:bg-green-900/50 transition"
+                          className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium bg-primary-light text-primary dark:bg-green-900/30 dark:text-green-400 rounded-md hover:bg-green-100 dark:hover:bg-green-900/50 transition"
                         >
                           <Shield className="w-3.5 h-3.5" /> Verify
                         </button>

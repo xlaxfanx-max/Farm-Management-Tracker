@@ -58,7 +58,7 @@ const AUDIT_TYPE_OPTIONS = [
 const statusBadgeStyles = {
   planned: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
   in_progress: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
-  completed: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+  completed: 'bg-green-100 text-primary dark:bg-green-900/30 dark:text-green-400',
   cancelled: 'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400',
 };
 
@@ -180,7 +180,7 @@ const getBinderStatusIcon = (status) => {
 
 const getBinderStatusColor = (status) => {
   switch (status) {
-    case 'completed': return 'text-green-600 dark:text-green-400';
+    case 'completed': return 'text-primary dark:text-green-400';
     case 'failed': return 'text-red-600 dark:text-red-400';
     case 'generating': return 'text-blue-600 dark:text-blue-400';
     default: return 'text-gray-600 dark:text-gray-400';
@@ -382,16 +382,16 @@ const AuditModal = ({ onClose, onSave, editAudit }) => {
               </div>
             )}
             {selectedFile ? (
-              <div className="flex items-center gap-2 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
-                <Paperclip className="w-4 h-4 text-green-600 dark:text-green-400 flex-shrink-0" />
-                <span className="text-sm text-green-700 dark:text-green-300 truncate">{selectedFile.name}</span>
-                <span className="text-xs text-green-600 dark:text-green-400 flex-shrink-0">
+              <div className="flex items-center gap-2 p-3 bg-primary-light dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                <Paperclip className="w-4 h-4 text-primary dark:text-green-400 flex-shrink-0" />
+                <span className="text-sm text-primary dark:text-green-300 truncate">{selectedFile.name}</span>
+                <span className="text-xs text-primary dark:text-green-400 flex-shrink-0">
                   ({formatFileSize(selectedFile.size)})
                 </span>
                 <button
                   type="button"
                   onClick={() => setSelectedFile(null)}
-                  className="ml-auto p-0.5 text-green-600 hover:text-red-600 dark:text-green-400 dark:hover:text-red-400 transition-colors flex-shrink-0"
+                  className="ml-auto p-0.5 text-primary hover:text-red-600 dark:text-green-400 dark:hover:text-red-400 transition-colors flex-shrink-0"
                   title="Remove file"
                 >
                   <X className="w-4 h-4" />
@@ -1012,7 +1012,7 @@ export default function InternalAuditList() {
                               {audit.status === 'in_progress' && (
                                 <button
                                   onClick={() => handleCompleteAudit(audit.id)}
-                                  className="p-1.5 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded"
+                                  className="p-1.5 text-primary hover:bg-primary-light dark:hover:bg-green-900/20 rounded"
                                   title="Complete Audit"
                                 >
                                   <CheckCircle className="w-4 h-4" />
@@ -1175,7 +1175,7 @@ export default function InternalAuditList() {
                         {binder.status === 'completed' && (
                           <button
                             onClick={() => handleDownloadBinder(binder.id)}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-lg hover:bg-green-200 dark:hover:bg-green-900/50 transition-colors"
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm bg-green-100 dark:bg-green-900/30 text-primary dark:text-green-400 rounded-lg hover:bg-green-200 dark:hover:bg-green-900/50 transition-colors"
                           >
                             <Download className="w-4 h-4" /> Download
                           </button>

@@ -36,7 +36,7 @@ const OVERALL_RESULT_OPTIONS = [
 ];
 
 const resultBadgeStyles = {
-  approved: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+  approved: 'bg-green-100 text-primary dark:bg-green-900/30 dark:text-green-400',
   conditional: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
   rejected: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
 };
@@ -118,9 +118,9 @@ const VerificationModal = ({ record, suppliers, onClose, onSave }) => {
   const [saveError, setSaveError] = useState(null);
 
   const inputCls =
-    'w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm';
+    'w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary text-sm';
   const checkCls =
-    'w-4 h-4 text-green-600 border-gray-300 dark:border-gray-600 rounded focus:ring-green-500';
+    'w-4 h-4 text-primary border-gray-300 dark:border-gray-600 rounded focus:ring-primary';
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -307,7 +307,7 @@ const VerificationModal = ({ record, suppliers, onClose, onSave }) => {
               <button
                 type="button"
                 onClick={addChecklistItem}
-                className="inline-flex items-center gap-1 text-xs text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300 font-medium transition-colors"
+                className="inline-flex items-center gap-1 text-xs text-primary hover:text-primary-hover dark:text-green-400 dark:hover:text-green-300 font-medium transition-colors"
               >
                 <Plus className="w-3.5 h-3.5" /> Add Item
               </button>
@@ -338,7 +338,7 @@ const VerificationModal = ({ record, suppliers, onClose, onSave }) => {
                       placeholder="Item description"
                       value={ci.item}
                       onChange={(e) => updateChecklistItem(idx, 'item', e.target.value)}
-                      className="flex-1 px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-1 focus:ring-green-500 focus:border-green-500"
+                      className="flex-1 px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-1 focus:ring-primary focus:border-primary"
                     />
                     {/* Notes */}
                     <input
@@ -346,7 +346,7 @@ const VerificationModal = ({ record, suppliers, onClose, onSave }) => {
                       placeholder="Notes (optional)"
                       value={ci.notes}
                       onChange={(e) => updateChecklistItem(idx, 'notes', e.target.value)}
-                      className="flex-1 px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-1 focus:ring-green-500 focus:border-green-500"
+                      className="flex-1 px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-1 focus:ring-primary focus:border-primary"
                     />
                     <button
                       type="button"
@@ -440,7 +440,7 @@ const VerificationModal = ({ record, suppliers, onClose, onSave }) => {
             <button
               type="submit"
               disabled={saving}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 text-sm font-medium"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors disabled:opacity-50 text-sm font-medium"
             >
               {saving && <Loader2 className="w-4 h-4 animate-spin" />}
               {saving ? 'Saving...' : record ? 'Update Verification' : 'Create Verification'}
@@ -573,12 +573,12 @@ export default function SupplierVerification() {
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <h2 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-          <ClipboardCheck className="w-6 h-6 text-green-600 dark:text-green-400" />
+          <ClipboardCheck className="w-6 h-6 text-primary dark:text-green-400" />
           Supplier Verification Log
         </h2>
         <button
           onClick={handleOpenAdd}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors text-sm font-medium"
         >
           <Plus className="w-4 h-4" />
           Add Verification
@@ -594,7 +594,7 @@ export default function SupplierVerification() {
           <select
             value={filterType}
             onChange={(e) => setFilterType(e.target.value)}
-            className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-green-500"
+            className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary"
           >
             {VERIFICATION_TYPE_OPTIONS.map((opt) => (
               <option key={opt.value} value={opt.value}>
@@ -629,7 +629,7 @@ export default function SupplierVerification() {
       {/* Loading State */}
       {loading && !error && (
         <div className="flex items-center justify-center py-12">
-          <Loader2 className="w-6 h-6 text-green-600 animate-spin" />
+          <Loader2 className="w-6 h-6 text-primary animate-spin" />
           <span className="ml-2 text-gray-500 dark:text-gray-400 text-sm">Loading verifications...</span>
         </div>
       )}
@@ -646,7 +646,7 @@ export default function SupplierVerification() {
           </p>
           <button
             onClick={handleOpenAdd}
-            className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm"
+            className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors text-sm"
           >
             <Plus className="w-4 h-4" /> Add Verification
           </button>

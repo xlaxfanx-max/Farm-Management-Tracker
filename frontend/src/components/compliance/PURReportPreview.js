@@ -170,7 +170,7 @@ export default function PURReportPreview({ data, reportId, onMarkSubmitted }) {
             <button
               onClick={handleMarkSubmitted}
               disabled={submitting}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm bg-primary hover:bg-primary-hover text-white rounded-lg transition-colors disabled:opacity-50"
             >
               <CheckCircle2 className="w-4 h-4" />
               {submitting ? 'Saving...' : 'Mark as Submitted'}

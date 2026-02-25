@@ -22,8 +22,8 @@ function MetricCard({
       border: 'border-blue-100 dark:border-blue-800'
     },
     green: {
-      bg: 'bg-green-50 dark:bg-green-900/30',
-      text: 'text-green-600 dark:text-green-400',
+      bg: 'bg-primary-light dark:bg-green-900/30',
+      text: 'text-primary dark:text-green-400',
       border: 'border-green-100 dark:border-green-800'
     },
     orange: {
@@ -59,8 +59,8 @@ function MetricCard({
   return (
     <div
       className={`
-        bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-5
-        ${isClickable ? 'cursor-pointer hover:shadow-md hover:border-gray-300 dark:hover:border-gray-600 transition-all' : ''}
+        bg-surface-raised dark:bg-gray-800 rounded-card border border-border dark:border-gray-700 p-5
+        ${isClickable ? 'cursor-pointer hover:shadow-md hover:border-border-strong dark:hover:border-gray-600 transition-all' : ''}
         ${className}
       `}
       onClick={onClick}
@@ -107,7 +107,7 @@ function MetricCard({
 export function CompactMetric({ label, value, icon: Icon, color = 'gray' }) {
   const colorClasses = {
     blue: 'text-blue-600 dark:text-blue-400',
-    green: 'text-green-600 dark:text-green-400',
+    green: 'text-primary dark:text-green-400',
     orange: 'text-orange-600 dark:text-orange-400',
     amber: 'text-amber-600 dark:text-amber-400',
     red: 'text-red-600 dark:text-red-400',

@@ -58,7 +58,7 @@ function FieldCard({
       <div className="flex items-start justify-between mb-3">
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-1">
-            <Sprout className="w-4 h-4 text-green-600 dark:text-green-400" />
+            <Sprout className="w-4 h-4 text-primary dark:text-green-400" />
             <h5 className="font-bold text-gray-900 dark:text-white">{field.name}</h5>
           </div>
           {field.field_number && (
@@ -67,7 +67,7 @@ function FieldCard({
         </div>
         <div className="flex items-center gap-1 flex-wrap">
           {hasBoundary ? (
-            <span className="px-2 py-0.5 bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-400 rounded text-xs">
+            <span className="px-2 py-0.5 bg-green-100 dark:bg-green-900/50 text-primary dark:text-green-400 rounded text-xs">
               Mapped
             </span>
           ) : (
@@ -136,7 +136,7 @@ function FieldCard({
         {field.organic_status && field.organic_status !== 'conventional' && (
           <div className="flex justify-between text-sm">
             <span className="text-gray-600 dark:text-gray-400">Organic:</span>
-            <span className={`font-medium ${field.organic_status === 'certified' ? 'text-green-600 dark:text-green-400' : 'text-yellow-600 dark:text-yellow-400'}`}>
+            <span className={`font-medium ${field.organic_status === 'certified' ? 'text-primary dark:text-green-400' : 'text-yellow-600 dark:text-yellow-400'}`}>
               {field.organic_status === 'certified' ? 'Certified' : 'Transitional'}
             </span>
           </div>
@@ -153,7 +153,7 @@ function FieldCard({
                 <TreeDeciduous className="w-3 h-3" />
                 Detected Trees:
               </span>
-              <span className="font-medium text-green-600 dark:text-green-400">
+              <span className="font-medium text-primary dark:text-green-400">
                 {field.latest_satellite_tree_count.toLocaleString()}
               </span>
             </div>
@@ -181,7 +181,7 @@ function FieldCard({
       <div className="hidden sm:flex gap-2 pt-3 border-t border-gray-100 dark:border-gray-700" onClick={e => e.stopPropagation()}>
         <button
           onClick={() => onDrawBoundary(field, farmId)}
-          className="flex-1 flex items-center justify-center gap-1 px-3 py-1.5 bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded hover:bg-green-100 dark:hover:bg-green-900/50 text-sm font-medium transition-colors"
+          className="flex-1 flex items-center justify-center gap-1 px-3 py-1.5 bg-primary-light dark:bg-green-900/30 text-primary dark:text-green-400 rounded hover:bg-green-100 dark:hover:bg-green-900/50 text-sm font-medium transition-colors"
         >
           <MapPin size={14} />
           {hasBoundary ? 'Edit Map' : 'Draw Map'}
@@ -225,7 +225,7 @@ function FieldCard({
         {/* Primary action: Draw/Edit Map */}
         <button
           onClick={() => onDrawBoundary(field, farmId)}
-          className="flex-1 flex items-center justify-center gap-1 px-3 py-2 bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded hover:bg-green-100 dark:hover:bg-green-900/50 text-sm font-medium transition-colors"
+          className="flex-1 flex items-center justify-center gap-1 px-3 py-2 bg-primary-light dark:bg-green-900/30 text-primary dark:text-green-400 rounded hover:bg-green-100 dark:hover:bg-green-900/50 text-sm font-medium transition-colors"
         >
           <MapPin size={14} />
           {hasBoundary ? 'Edit Map' : 'Draw Map'}

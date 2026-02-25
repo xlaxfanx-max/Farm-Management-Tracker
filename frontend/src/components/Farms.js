@@ -410,7 +410,7 @@ function Farms() {
                 <p className="text-gray-600 dark:text-gray-400 mb-4">Get started by adding your first farm</p>
                 <button
                   onClick={handleNewFarm}
-                  className="inline-flex items-center gap-2 bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700"
+                  className="inline-flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-lg hover:bg-primary-hover"
                 >
                   <Plus size={20} />
                   Add Your First Farm
@@ -430,7 +430,7 @@ function Farms() {
                     setFilterCounty('');
                     setFilterMapped('all');
                   }}
-                  className="inline-flex items-center gap-2 text-green-600 hover:text-green-700 font-medium"
+                  className="inline-flex items-center gap-2 text-primary hover:text-primary-hover font-medium"
                 >
                   <X size={16} />
                   Clear all filters

@@ -150,7 +150,7 @@ const PoolList = () => {
   if (loading) {
     return (
       <div className="flex justify-center items-center py-12">
-        <RefreshCw className="w-8 h-8 animate-spin text-green-600" />
+        <RefreshCw className="w-8 h-8 animate-spin text-primary" />
       </div>
     );
   }
@@ -163,7 +163,7 @@ const PoolList = () => {
           <button
             onClick={() => setShowFilters(!showFilters)}
             className={`flex items-center px-3 py-2 border rounded-lg transition-colors ${
-              showFilters ? 'border-green-500 bg-green-50 text-green-700' : 'border-gray-300 hover:bg-gray-50'
+              showFilters ? 'border-primary bg-primary-light text-primary' : 'border-gray-300 hover:bg-gray-50'
             }`}
           >
             <Filter className="w-4 h-4 mr-2" />
@@ -179,7 +179,7 @@ const PoolList = () => {
         </div>
         <button
           onClick={handleCreate}
-          className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+          className="flex items-center px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors"
         >
           <Plus className="w-4 h-4 mr-2" />
           Add Pool
@@ -196,7 +196,7 @@ const PoolList = () => {
             <select
               value={filters.packinghouse}
               onChange={(e) => setFilters(prev => ({ ...prev, packinghouse: e.target.value }))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
             >
               <option value="">All Packinghouses</option>
               {packinghouses.map(ph => (
@@ -214,7 +214,7 @@ const PoolList = () => {
               value={filters.season}
               onChange={(e) => setFilters(prev => ({ ...prev, season: e.target.value }))}
               placeholder="e.g., 2024-2025"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
             />
           </div>
 
@@ -225,7 +225,7 @@ const PoolList = () => {
             <select
               value={filters.status}
               onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value }))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
             >
               <option value="">All Statuses</option>
               {PACKINGHOUSE_CONSTANTS.poolStatuses.map(s => (
@@ -241,7 +241,7 @@ const PoolList = () => {
             <select
               value={filters.commodity}
               onChange={(e) => setFilters(prev => ({ ...prev, commodity: e.target.value }))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
             >
               <option value="">All Commodities</option>
               {PACKINGHOUSE_CONSTANTS.commodities.map(c => (
@@ -262,7 +262,7 @@ const PoolList = () => {
           </p>
           <button
             onClick={handleCreate}
-            className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+            className="inline-flex items-center px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover"
           >
             <Plus className="w-4 h-4 mr-2" />
             Add Pool
@@ -305,7 +305,7 @@ const PoolList = () => {
                 >
                   <td className="px-4 py-3">
                     <div>
-                      <p className="font-medium text-gray-900 text-green-700 hover:text-green-800">{pool.name}</p>
+                      <p className="font-medium text-gray-900 text-primary hover:text-green-800">{pool.name}</p>
                       <p className="text-xs text-gray-500">{pool.pool_id}</p>
                     </div>
                   </td>
@@ -337,7 +337,7 @@ const PoolList = () => {
                     <div className="flex justify-end space-x-1">
                       <button
                         onClick={() => handleView(pool)}
-                        className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg"
+                        className="p-2 text-gray-400 hover:text-primary hover:bg-primary-light rounded-lg"
                         title="View Details"
                       >
                         <Eye className="w-4 h-4" />

@@ -101,7 +101,7 @@ const MetricCard = ({ title, value, subtitle, icon: Icon, trend, color = 'blue',
             <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{subtitle}</p>
           )}
           {trend && (
-            <div className={`flex items-center gap-1 mt-2 text-xs ${trend > 0 ? 'text-green-600' : 'text-red-600'}`}>
+            <div className={`flex items-center gap-1 mt-2 text-xs ${trend > 0 ? 'text-primary' : 'text-red-600'}`}>
               <TrendingUp className={`w-3 h-3 ${trend < 0 ? 'rotate-180' : ''}`} />
               <span>{Math.abs(trend)}% vs last month</span>
             </div>
@@ -121,7 +121,7 @@ const AlertBanner = ({ type, title, message, action, onAction }) => {
     error: { bg: 'bg-red-50 dark:bg-red-900/30', border: 'border-red-200 dark:border-red-800', icon: AlertTriangle, iconColor: 'text-red-500 dark:text-red-400', textColor: 'text-red-800 dark:text-red-200' },
     warning: { bg: 'bg-amber-50 dark:bg-amber-900/30', border: 'border-amber-200 dark:border-amber-800', icon: AlertCircle, iconColor: 'text-amber-500 dark:text-amber-400', textColor: 'text-amber-800 dark:text-amber-200' },
     info: { bg: 'bg-blue-50 dark:bg-blue-900/30', border: 'border-blue-200 dark:border-blue-800', icon: Activity, iconColor: 'text-blue-500 dark:text-blue-400', textColor: 'text-blue-800 dark:text-blue-200' },
-    success: { bg: 'bg-green-50 dark:bg-green-900/30', border: 'border-green-200 dark:border-green-800', icon: CheckCircle, iconColor: 'text-green-500 dark:text-green-400', textColor: 'text-green-800 dark:text-green-200' },
+    success: { bg: 'bg-primary-light dark:bg-green-900/30', border: 'border-green-200 dark:border-green-800', icon: CheckCircle, iconColor: 'text-green-500 dark:text-green-400', textColor: 'text-green-800 dark:text-green-200' },
   };
 
   const { bg, border, icon: Icon, iconColor, textColor } = config[type] || config.info;
@@ -150,7 +150,7 @@ const QuickActionButton = ({ icon: Icon, label, onClick, color = 'blue' }) => {
   const colorClasses = {
     blue: 'bg-blue-600 hover:bg-blue-700',
     cyan: 'bg-cyan-600 hover:bg-cyan-700',
-    green: 'bg-green-600 hover:bg-green-700',
+    green: 'bg-primary hover:bg-primary-hover',
   };
 
   return (
@@ -735,7 +735,7 @@ const WaterManagement = () => {
             </div>
             <button
               onClick={() => setActiveTab('irrigation')}
-              className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 shadow-sm transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover shadow-sm transition-colors"
             >
               <span>Full Dashboard</span>
               <ChevronRight className="w-4 h-4" />
@@ -746,7 +746,7 @@ const WaterManagement = () => {
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-6">
             <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur rounded-xl p-4 border border-green-100 dark:border-green-800">
               <div className="flex items-center gap-2 mb-1">
-                <MapPin className="w-4 h-4 text-green-600" />
+                <MapPin className="w-4 h-4 text-primary" />
                 <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Active Zones</span>
               </div>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">{irrigationStats.totalZones}</p>
@@ -858,7 +858,7 @@ const WaterManagement = () => {
               {(urgentZones.length + soonZones.length) > 3 && (
                 <button
                   onClick={() => setActiveTab('irrigation')}
-                  className="text-sm text-green-600 hover:text-green-700 font-medium flex items-center gap-1"
+                  className="text-sm text-primary hover:text-primary-hover font-medium flex items-center gap-1"
                 >
                   View all {urgentZones.length + soonZones.length} zones needing attention
                   <ChevronRight className="w-4 h-4" />
@@ -874,7 +874,7 @@ const WaterManagement = () => {
               <p className="text-gray-600 dark:text-gray-400 mb-3">No irrigation zones configured yet</p>
               <button
                 onClick={() => setActiveTab('irrigation')}
-                className="text-green-600 hover:text-green-700 font-medium text-sm"
+                className="text-primary hover:text-primary-hover font-medium text-sm"
               >
                 Set up your first irrigation zone →
               </button>
@@ -982,7 +982,7 @@ const WaterManagement = () => {
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm text-gray-600 dark:text-gray-400">Allocation Usage</span>
-                    <span className={`text-sm font-semibold ${wellStats.allocationUsed > 80 ? 'text-red-600' : 'text-green-600'}`}>
+                    <span className={`text-sm font-semibold ${wellStats.allocationUsed > 80 ? 'text-red-600' : 'text-primary'}`}>
                       {formatNumber(wellStats.allocationUsed)}%
                     </span>
                   </div>
@@ -1117,7 +1117,7 @@ const WaterManagement = () => {
                       </span>
                     </div>
                     {source.active ? (
-                      <div className="flex items-center gap-1 text-green-600">
+                      <div className="flex items-center gap-1 text-primary">
                         <CheckCircle className="w-4 h-4" />
                         <span className="text-xs font-medium">Active</span>
                       </div>
@@ -1404,7 +1404,7 @@ const WaterManagement = () => {
                         );
                       }
                       return (
-                        <span className="flex items-center gap-1.5 text-green-600 text-xs bg-green-50 px-2.5 py-1 rounded-full">
+                        <span className="flex items-center gap-1.5 text-primary text-xs bg-primary-light px-2.5 py-1 rounded-full">
                           <CheckCircle className="w-3.5 h-3.5" />
                           {daysSince}d ago
                         </span>
@@ -1509,7 +1509,7 @@ const WaterManagement = () => {
                           {well.base_extraction_rate && (
                             <div className="flex justify-between">
                               <dt className="text-gray-500 dark:text-gray-400">Base Fee:</dt>
-                              <dd className="text-green-700 font-medium">
+                              <dd className="text-primary font-medium">
                                 ${(parseFloat(well.ytd_extraction_af || 0) * parseFloat(well.base_extraction_rate)).toFixed(2)}
                               </dd>
                             </div>
@@ -1517,14 +1517,14 @@ const WaterManagement = () => {
                           {well.gsp_rate && (
                             <div className="flex justify-between">
                               <dt className="text-gray-500 dark:text-gray-400">GSP Fee:</dt>
-                              <dd className="text-green-700 font-medium">
+                              <dd className="text-primary font-medium">
                                 ${(parseFloat(well.ytd_extraction_af || 0) * parseFloat(well.gsp_rate)).toFixed(2)}
                               </dd>
                             </div>
                           )}
                           <div className="flex justify-between pt-1 border-t border-gray-200">
                             <dt className="text-gray-700 font-medium">Est. Total:</dt>
-                            <dd className="text-green-700 font-bold">
+                            <dd className="text-primary font-bold">
                               ${(
                                 (parseFloat(well.ytd_extraction_af || 0) * parseFloat(well.base_extraction_rate || 0)) +
                                 (parseFloat(well.ytd_extraction_af || 0) * parseFloat(well.gsp_rate || 0))
@@ -1811,8 +1811,8 @@ const WaterManagement = () => {
                 <p className="text-2xl font-bold text-cyan-700">{formatNumber(sgmaDashboard.ytd_extraction_af, 2)} AF</p>
               </div>
               <div className={`text-center p-4 rounded-xl ${sgmaDashboard.percent_allocation_used > 80 ? 'bg-red-50' : 'bg-green-50'}`}>
-                <p className={`text-sm mb-1 ${sgmaDashboard.percent_allocation_used > 80 ? 'text-red-600' : 'text-green-600'}`}>Allocation Used</p>
-                <p className={`text-2xl font-bold ${sgmaDashboard.percent_allocation_used > 80 ? 'text-red-700' : 'text-green-700'}`}>
+                <p className={`text-sm mb-1 ${sgmaDashboard.percent_allocation_used > 80 ? 'text-red-600' : 'text-primary'}`}>Allocation Used</p>
+                <p className={`text-2xl font-bold ${sgmaDashboard.percent_allocation_used > 80 ? 'text-red-700' : 'text-primary'}`}>
                   {formatNumber(sgmaDashboard.percent_allocation_used)}%
                 </p>
               </div>
@@ -1850,7 +1850,7 @@ const WaterManagement = () => {
                 <span className="text-sm text-gray-600 dark:text-gray-400">
                   {formatNumber(sgmaDashboard.ytd_extraction_af, 2)} AF used of {formatNumber(sgmaDashboard.total_allocation_af, 2)} AF
                 </span>
-                <span className={`text-sm font-semibold ${sgmaDashboard.percent_allocation_used > 80 ? 'text-red-600' : 'text-green-600'}`}>
+                <span className={`text-sm font-semibold ${sgmaDashboard.percent_allocation_used > 80 ? 'text-red-600' : 'text-primary'}`}>
                   {formatNumber(sgmaDashboard.allocation_remaining_af, 2)} AF remaining
                 </span>
               </div>
@@ -1880,7 +1880,7 @@ const WaterManagement = () => {
                   <div className="mt-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-gray-600 dark:text-gray-400">Projected Year-End Usage:</span>
-                      <span className={`font-semibold ${projectedPercent > 100 ? 'text-red-600' : projectedPercent > 90 ? 'text-amber-600' : 'text-green-600'}`}>
+                      <span className={`font-semibold ${projectedPercent > 100 ? 'text-red-600' : projectedPercent > 90 ? 'text-amber-600' : 'text-primary'}`}>
                         {formatNumber(projectedTotal, 1)} AF ({formatNumber(projectedPercent, 0)}%)
                       </span>
                     </div>
@@ -1927,7 +1927,7 @@ const WaterManagement = () => {
                     ))}
                     <div className="flex items-center justify-between text-sm pt-2 border-t border-gray-100 dark:border-gray-700">
                       <span className="font-semibold text-gray-700 dark:text-gray-300">Total Estimated</span>
-                      <span className="font-bold text-green-700">${formatNumber(totalEstFees, 2)}</span>
+                      <span className="font-bold text-primary">${formatNumber(totalEstFees, 2)}</span>
                     </div>
                   </div>
                   <p className="text-xs text-gray-400 mt-2">

@@ -181,7 +181,7 @@ const SurveyUploadForm = ({ fieldId, onUploadComplete }) => {
 
           {file ? (
             <div className="flex items-center justify-center gap-3">
-              <FileImage size={24} className="text-green-600" />
+              <FileImage size={24} className="text-primary" />
               <div className="text-left">
                 <p className="text-sm font-medium text-slate-800 truncate max-w-[200px]">
                   {file.name}
@@ -239,7 +239,7 @@ const SurveyUploadForm = ({ fieldId, onUploadComplete }) => {
             value={captureDate}
             onChange={(e) => setCaptureDate(e.target.value)}
             disabled={uploading}
-            className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:bg-slate-100"
+            className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-slate-100"
           />
         </div>
 
@@ -254,7 +254,7 @@ const SurveyUploadForm = ({ fieldId, onUploadComplete }) => {
             onChange={(e) => setSource(e.target.value)}
             placeholder="e.g., DJI Phantom 4 RTK, Sentinel-2"
             disabled={uploading}
-            className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:bg-slate-100"
+            className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-slate-100"
           />
         </div>
 
@@ -268,9 +268,9 @@ const SurveyUploadForm = ({ fieldId, onUploadComplete }) => {
 
         {/* Success Message */}
         {success && (
-          <div className="flex items-start gap-2 p-3 bg-green-50 border border-green-200 rounded-lg">
+          <div className="flex items-start gap-2 p-3 bg-primary-light border border-green-200 rounded-lg">
             <CheckCircle2 size={16} className="text-green-500 flex-shrink-0 mt-0.5" />
-            <p className="text-sm text-green-700">
+            <p className="text-sm text-primary">
               Image uploaded successfully. Select the survey and run detection to find trees.
             </p>
           </div>
@@ -280,7 +280,7 @@ const SurveyUploadForm = ({ fieldId, onUploadComplete }) => {
         <button
           onClick={handleUpload}
           disabled={!file || uploading}
-          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 disabled:bg-slate-300 disabled:cursor-not-allowed transition-colors"
+          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-white font-medium rounded-lg hover:bg-primary-hover disabled:bg-slate-300 disabled:cursor-not-allowed transition-colors"
         >
           {uploading ? (
             <>

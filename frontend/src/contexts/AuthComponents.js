@@ -87,7 +87,7 @@ export function CompanySelector() {
                 </div>
               </div>
               {company.id === currentCompany?.id && (
-                <Check className="w-4 h-4 text-green-600" />
+                <Check className="w-4 h-4 text-primary" />
               )}
             </button>
           ))}
@@ -140,7 +140,7 @@ export function UserMenu() {
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center gap-2 p-1 rounded-full hover:bg-gray-100 transition-colors"
       >
-        <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center">
+        <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
           <span className="text-sm font-medium text-white">{initials}</span>
         </div>
       </button>
@@ -156,7 +156,7 @@ export function UserMenu() {
               {user?.email}
             </div>
             {currentCompany && (
-              <div className="mt-1 text-xs text-green-600 font-medium">
+              <div className="mt-1 text-xs text-primary font-medium">
                 {currentCompany.role} at {currentCompany.name}
               </div>
             )}
@@ -347,7 +347,7 @@ export function InviteUserModal({ isOpen, onClose, onSuccess }) {
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b">
           <div className="flex items-center gap-2">
-            <UserPlus className="w-5 h-5 text-green-600" />
+            <UserPlus className="w-5 h-5 text-primary" />
             <h2 className="text-lg font-semibold">Invite Team Member</h2>
           </div>
           <button
@@ -375,7 +375,7 @@ export function InviteUserModal({ isOpen, onClose, onSuccess }) {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
               placeholder="colleague@example.com"
               required
             />
@@ -388,7 +388,7 @@ export function InviteUserModal({ isOpen, onClose, onSuccess }) {
             <select
               value={role}
               onChange={(e) => setRole(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
             >
               {roles.map((r) => (
                 <option key={r.codename} value={r.codename}>
@@ -405,7 +405,7 @@ export function InviteUserModal({ isOpen, onClose, onSuccess }) {
             <textarea
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
               rows={3}
               placeholder="Welcome to the team!"
             />
@@ -422,7 +422,7 @@ export function InviteUserModal({ isOpen, onClose, onSuccess }) {
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
+              className="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover disabled:opacity-50"
             >
               {loading ? 'Sending...' : 'Send Invitation'}
             </button>

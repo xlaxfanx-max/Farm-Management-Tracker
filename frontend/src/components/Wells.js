@@ -142,7 +142,7 @@ const Wells = ({ onOpenModal }) => {
   if (loading && wells.length === 0) {
     return (
       <div className="flex items-center justify-center h-64">
-        <RefreshCw className="w-8 h-8 animate-spin text-green-600" />
+        <RefreshCw className="w-8 h-8 animate-spin text-primary" />
       </div>
     );
   }
@@ -157,7 +157,7 @@ const Wells = ({ onOpenModal }) => {
         </div>
         <button
           onClick={() => onOpenModal('well', null)}
-          className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
+          className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-hover transition-colors"
         >
           <Plus className="w-5 h-5" />
           Add Well
@@ -181,7 +181,7 @@ const Wells = ({ onOpenModal }) => {
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
-              <CheckCircle className="w-6 h-6 text-green-600 dark:text-green-400" />
+              <CheckCircle className="w-6 h-6 text-primary dark:text-green-400" />
             </div>
             <div>
               <p className="text-sm text-gray-500 dark:text-gray-400">Active Wells</p>
@@ -227,7 +227,7 @@ const Wells = ({ onOpenModal }) => {
                 placeholder="Search wells..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-200 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-200 focus:ring-2 focus:ring-primary focus:border-transparent"
               />
             </div>
           </div>
@@ -237,7 +237,7 @@ const Wells = ({ onOpenModal }) => {
             <select
               value={filterGSA}
               onChange={(e) => setFilterGSA(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-200 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-200 focus:ring-2 focus:ring-primary focus:border-transparent"
             >
               <option value="">All GSAs</option>
               <option value="obgma">Ojai Basin GMA</option>
@@ -252,7 +252,7 @@ const Wells = ({ onOpenModal }) => {
             <select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-200 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-200 focus:ring-2 focus:ring-primary focus:border-transparent"
             >
               <option value="">All Status</option>
               <option value="active">Active</option>
@@ -292,7 +292,7 @@ const Wells = ({ onOpenModal }) => {
             {!searchTerm && !filterGSA && !filterStatus && (
               <button
                 onClick={() => onOpenModal('well', null)}
-                className="inline-flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
+                className="inline-flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-hover"
               >
                 <Plus className="w-5 h-5" />
                 Add Well
@@ -403,7 +403,7 @@ const Wells = ({ onOpenModal }) => {
                           <dt className="text-gray-500">Registered:</dt>
                           <dd className="text-gray-900">
                             {well.registered_with_gsa ? (
-                              <span className="text-green-600">Yes</span>
+                              <span className="text-primary">Yes</span>
                             ) : (
                               <span className="text-red-600">No</span>
                             )}
@@ -418,7 +418,7 @@ const Wells = ({ onOpenModal }) => {
                       <dl className="space-y-2 text-sm">
                         <div className="flex justify-between">
                           <dt className="text-gray-500">Status:</dt>
-                          <dd className={well.meter_calibration_current ? 'text-green-600' : 'text-red-600'}>
+                          <dd className={well.meter_calibration_current ? 'text-primary' : 'text-red-600'}>
                             {well.meter_calibration_current ? 'Current' : 'Due/Overdue'}
                           </dd>
                         </div>

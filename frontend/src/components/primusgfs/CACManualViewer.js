@@ -334,7 +334,7 @@ const CACManualViewer = ({ onTabChange }) => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <Loader2 className="w-8 h-8 animate-spin text-green-600" />
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
       </div>
     );
   }
@@ -364,7 +364,7 @@ const CACManualViewer = ({ onTabChange }) => {
       {/* Compact header row */}
       <div className="flex items-center justify-between mb-3 flex-shrink-0">
         <div className="flex items-center gap-3">
-          <BookOpen className="w-5 h-5 text-green-600" />
+          <BookOpen className="w-5 h-5 text-primary" />
           <div>
             <h2 className="text-base font-semibold text-gray-900 dark:text-white">
               CAC Food Safety Manual V5.0
@@ -404,7 +404,7 @@ const CACManualViewer = ({ onTabChange }) => {
           <button
             onClick={handleDownloadFull}
             disabled={downloading}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-white bg-green-600 hover:bg-green-700 rounded-lg disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-white bg-primary hover:bg-primary-hover rounded-lg disabled:opacity-50"
           >
             {downloading ? (
               <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -477,7 +477,7 @@ const CACManualViewer = ({ onTabChange }) => {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder='Search docs (or press "/")'
-                  className="w-full pl-8 pr-7 py-1.5 text-xs border border-gray-200 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-1 focus:ring-green-500 focus:border-green-500"
+                  className="w-full pl-8 pr-7 py-1.5 text-xs border border-gray-200 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-1 focus:ring-primary focus:border-primary"
                 />
                 {searchQuery && (
                   <button
@@ -509,7 +509,7 @@ const CACManualViewer = ({ onTabChange }) => {
                       onClick={() => handleSelectDoc(docNum)}
                       className={`w-full text-left px-3 py-2.5 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${
                         isSelected
-                          ? 'bg-green-50 dark:bg-green-900/20 border-l-2 border-green-500'
+                          ? 'bg-primary-light dark:bg-green-900/20 border-l-2 border-primary'
                           : ''
                       }`}
                     >
@@ -521,7 +521,7 @@ const CACManualViewer = ({ onTabChange }) => {
                           <div
                             className={`text-sm font-medium truncate ${
                               isComplete
-                                ? 'text-green-700 dark:text-green-400'
+                                ? 'text-primary dark:text-green-400'
                                 : 'text-gray-900 dark:text-white'
                             }`}
                           >
@@ -552,7 +552,7 @@ const CACManualViewer = ({ onTabChange }) => {
                                 <span
                                   className={`text-xs font-medium ${
                                     doc.signatures_completed >= doc.signatures_required
-                                      ? 'text-green-600 dark:text-green-400'
+                                      ? 'text-primary dark:text-green-400'
                                       : 'text-amber-600 dark:text-amber-400'
                                   }`}
                                 >
@@ -630,7 +630,7 @@ const CACManualViewer = ({ onTabChange }) => {
 
                   {/* Inline completion indicator */}
                   {selectedDocScore >= 1 ? (
-                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-xs font-medium text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-900/20 rounded whitespace-nowrap">
+                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-xs font-medium text-primary dark:text-green-400 bg-primary-light dark:bg-green-900/20 rounded whitespace-nowrap">
                       <CheckCircle2 className="w-3 h-3 flex-shrink-0" /> Complete
                     </span>
                   ) : !selectedDocData?.has_data ? (
@@ -683,7 +683,7 @@ const CACManualViewer = ({ onTabChange }) => {
               <div className="flex-1 bg-gray-100 dark:bg-gray-900 min-h-0">
                 {pdfLoading ? (
                   <div className="flex items-center justify-center h-full">
-                    <Loader2 className="w-10 h-10 animate-spin text-green-600" />
+                    <Loader2 className="w-10 h-10 animate-spin text-primary" />
                   </div>
                 ) : pdfUrl ? (
                   <iframe

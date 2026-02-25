@@ -66,7 +66,7 @@ const Step2WaterSources = ({ formData, updateFormData }) => {
     const colors = {
       well: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400',
       surface: 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/40 dark:text-cyan-400',
-      municipal: 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400',
+      municipal: 'bg-green-100 text-primary dark:bg-green-900/40 dark:text-green-400',
       pond: 'bg-teal-100 text-teal-700 dark:bg-teal-900/40 dark:text-teal-400',
       canal: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-400',
     };
@@ -87,7 +87,7 @@ const Step2WaterSources = ({ formData, updateFormData }) => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-32">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
   }
@@ -116,7 +116,7 @@ const Step2WaterSources = ({ formData, updateFormData }) => {
         <div className="flex gap-2">
           <button
             onClick={selectAll}
-            className="text-sm text-green-600 dark:text-green-400 hover:underline"
+            className="text-sm text-primary dark:text-green-400 hover:underline"
           >
             Select All
           </button>
@@ -140,7 +140,7 @@ const Step2WaterSources = ({ formData, updateFormData }) => {
               onClick={() => toggleSource(source.id)}
               className={`p-4 rounded-lg border-2 text-left transition-all ${
                 isSelected
-                  ? 'border-green-500 bg-green-50 dark:bg-green-900/20'
+                  ? 'border-primary bg-primary-light dark:bg-green-900/20'
                   : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
               }`}
             >
@@ -170,7 +170,7 @@ const Step2WaterSources = ({ formData, updateFormData }) => {
                 <div
                   className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
                     isSelected
-                      ? 'border-green-500 bg-green-500 text-white'
+                      ? 'border-primary bg-green-500 text-white'
                       : 'border-gray-300 dark:border-gray-600'
                   }`}
                 >

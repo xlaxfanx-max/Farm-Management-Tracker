@@ -199,7 +199,7 @@ const TreeDetectionPage = () => {
     const config = {
       pending: { bg: 'bg-gray-100', text: 'text-gray-700', label: 'Pending' },
       processing: { bg: 'bg-blue-100', text: 'text-blue-700', label: 'Processing' },
-      completed: { bg: 'bg-green-100', text: 'text-green-700', label: 'Completed' },
+      completed: { bg: 'bg-green-100', text: 'text-primary', label: 'Completed' },
       failed: { bg: 'bg-red-100', text: 'text-red-700', label: 'Failed' },
     };
     const c = config[status] || config.pending;
@@ -215,7 +215,7 @@ const TreeDetectionPage = () => {
       {/* Header */}
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
-          <Trees className="text-green-600" size={28} />
+          <Trees className="text-primary" size={28} />
           Tree Detection
         </h1>
         <p className="text-slate-600 mt-1">
@@ -234,7 +234,7 @@ const TreeDetectionPage = () => {
               <select
                 value={selectedFarm}
                 onChange={handleFarmChange}
-                className="w-full px-3 py-2 pr-8 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent appearance-none bg-white"
+                className="w-full px-3 py-2 pr-8 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent appearance-none bg-white"
               >
                 <option value="">Select a farm...</option>
                 {farms.map((farm) => (
@@ -259,7 +259,7 @@ const TreeDetectionPage = () => {
                 value={selectedField}
                 onChange={handleFieldChange}
                 disabled={!selectedFarm}
-                className="w-full px-3 py-2 pr-8 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent appearance-none bg-white disabled:bg-slate-100 disabled:text-slate-400"
+                className="w-full px-3 py-2 pr-8 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent appearance-none bg-white disabled:bg-slate-100 disabled:text-slate-400"
               >
                 <option value="">
                   {selectedFarm ? 'Select a field...' : 'Select a farm first'}
@@ -358,7 +358,7 @@ const TreeDetectionPage = () => {
                       onClick={() => setSelectedSurvey(survey)}
                       className={`w-full text-left px-4 py-3 hover:bg-slate-50 transition-colors ${
                         selectedSurvey?.id === survey.id
-                          ? 'bg-green-50 border-l-2 border-green-500'
+                          ? 'bg-primary-light border-l-2 border-primary'
                           : ''
                       }`}
                     >
@@ -412,7 +412,7 @@ const TreeDetectionPage = () => {
                       selectedSurvey.status === 'failed') && (
                       <button
                         onClick={() => handleRunDetection(selectedSurvey)}
-                        className="flex items-center gap-1.5 px-3 py-1.5 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition-colors"
+                        className="flex items-center gap-1.5 px-3 py-1.5 bg-primary text-white text-sm rounded-lg hover:bg-primary-hover transition-colors"
                       >
                         <Search size={14} />
                         Run Detection
@@ -438,7 +438,7 @@ const TreeDetectionPage = () => {
                   <div className="bg-white rounded-lg shadow-sm overflow-hidden">
                     <div className="px-4 py-3 border-b border-slate-200">
                       <h3 className="font-semibold text-slate-800 flex items-center gap-2">
-                        <Trees size={18} className="text-green-600" />
+                        <Trees size={18} className="text-primary" />
                         Tree Map
                       </h3>
                     </div>

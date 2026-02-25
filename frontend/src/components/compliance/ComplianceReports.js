@@ -40,7 +40,7 @@ const ReportTypeBadge = ({ type }) => {
     pur_monthly: 'bg-purple-100 text-purple-700',
     sgma_semi_annual: 'bg-blue-100 text-blue-700',
     ilrp_annual: 'bg-cyan-100 text-cyan-700',
-    wps_annual: 'bg-green-100 text-green-700',
+    wps_annual: 'bg-green-100 text-primary',
     custom: 'bg-gray-100 text-gray-700',
   };
 
@@ -65,8 +65,8 @@ const StatusBadge = ({ status }) => {
     draft: 'bg-gray-100 text-gray-700',
     pending_review: 'bg-amber-100 text-amber-700',
     ready: 'bg-blue-100 text-blue-700',
-    submitted: 'bg-green-100 text-green-700',
-    accepted: 'bg-green-100 text-green-700',
+    submitted: 'bg-green-100 text-primary',
+    accepted: 'bg-green-100 text-primary',
     rejected: 'bg-red-100 text-red-700',
   };
 
@@ -94,7 +94,7 @@ const ReportCard = ({ report, onView, onDownload, onSubmit, onDelete }) => {
     switch (report.status) {
       case 'accepted':
       case 'submitted':
-        return <CheckCircle2 className="w-5 h-5 text-green-600" />;
+        return <CheckCircle2 className="w-5 h-5 text-primary" />;
       case 'ready':
         return <FileCheck className="w-5 h-5 text-blue-600" />;
       case 'pending_review':
@@ -157,7 +157,7 @@ const ReportCard = ({ report, onView, onDownload, onSubmit, onDelete }) => {
                 {report.status === 'ready' && (
                   <button
                     onClick={() => { onSubmit(report); setShowMenu(false); }}
-                    className="w-full px-3 py-2 text-left text-sm text-green-600 hover:bg-green-50 flex items-center gap-2"
+                    className="w-full px-3 py-2 text-left text-sm text-primary hover:bg-primary-light flex items-center gap-2"
                   >
                     <Send className="w-4 h-4" /> Submit
                   </button>
@@ -228,7 +228,7 @@ const ReportCard = ({ report, onView, onDownload, onSubmit, onDelete }) => {
         {report.status === 'ready' && (
           <button
             onClick={() => onSubmit(report)}
-            className="flex-1 px-3 py-1.5 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700"
+            className="flex-1 px-3 py-1.5 text-sm bg-primary text-white rounded-lg hover:bg-primary-hover"
           >
             Submit
           </button>
@@ -371,7 +371,7 @@ const ReportDetailModal = ({ report, onClose, onValidate, onSubmit }) => {
             {report.status === 'ready' && (
               <button
                 onClick={() => onSubmit(report)}
-                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
+                className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors flex items-center gap-2"
               >
                 <Send className="w-4 h-4" />
                 Submit Report
@@ -474,7 +474,7 @@ const GenerateReportModal = ({ onClose, onGenerate }) => {
               required
               value={formData.report_type}
               onChange={(e) => setFormData({ ...formData, report_type: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
             >
               {COMPLIANCE_CONSTANTS.REPORT_TYPES.map(type => (
                 <option key={type.value} value={type.value}>{type.label}</option>
@@ -490,7 +490,7 @@ const GenerateReportModal = ({ onClose, onGenerate }) => {
                 required
                 value={formData.reporting_period_start}
                 onChange={(e) => setFormData({ ...formData, reporting_period_start: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
               />
             </div>
             <div>
@@ -500,7 +500,7 @@ const GenerateReportModal = ({ onClose, onGenerate }) => {
                 required
                 value={formData.reporting_period_end}
                 onChange={(e) => setFormData({ ...formData, reporting_period_end: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
               />
             </div>
           </div>
@@ -547,7 +547,7 @@ const GenerateReportModal = ({ onClose, onGenerate }) => {
             <button
               type="submit"
               disabled={generating}
-              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+              className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors disabled:opacity-50"
             >
               {generating ? 'Generating...' : 'Generate Report'}
             </button>
@@ -651,7 +651,7 @@ export default function ComplianceReports({ onNavigate }) {
       <div className="flex items-center justify-between mb-6">
         <div>
           <div className="flex items-center gap-2 text-sm text-gray-500 mb-1">
-            <button onClick={() => onNavigate?.('compliance')} className="hover:text-green-600">
+            <button onClick={() => onNavigate?.('compliance')} className="hover:text-primary">
               Compliance
             </button>
             <span>/</span>
@@ -670,7 +670,7 @@ export default function ComplianceReports({ onNavigate }) {
           </button>
           <button
             onClick={() => setShowGenerateModal(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors"
           >
             <Plus className="w-4 h-4" />
             Generate Report
@@ -701,12 +701,12 @@ export default function ComplianceReports({ onNavigate }) {
           </div>
           <p className="text-sm text-blue-700 mt-1">Ready to Submit</p>
         </div>
-        <div className="bg-green-50 border border-green-100 rounded-lg p-4">
+        <div className="bg-primary-light border border-green-100 rounded-lg p-4">
           <div className="flex items-center gap-2">
-            <CheckCircle2 className="w-5 h-5 text-green-600" />
-            <span className="text-2xl font-bold text-green-600">{stats.submitted}</span>
+            <CheckCircle2 className="w-5 h-5 text-primary" />
+            <span className="text-2xl font-bold text-primary">{stats.submitted}</span>
           </div>
-          <p className="text-sm text-green-700 mt-1">Submitted</p>
+          <p className="text-sm text-primary mt-1">Submitted</p>
         </div>
       </div>
 
@@ -735,7 +735,7 @@ export default function ComplianceReports({ onNavigate }) {
             <select
               value={typeFilter}
               onChange={(e) => setTypeFilter(e.target.value)}
-              className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-primary focus:border-primary"
             >
               <option value="all">All Types</option>
               {COMPLIANCE_CONSTANTS.REPORT_TYPES.map(type => (
@@ -752,7 +752,7 @@ export default function ComplianceReports({ onNavigate }) {
               placeholder="Search reports..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 w-64"
+              className="pl-9 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-primary w-64"
             />
           </div>
         </div>
@@ -783,7 +783,7 @@ export default function ComplianceReports({ onNavigate }) {
           <p className="text-sm text-gray-500 mt-1">Generate your first compliance report</p>
           <button
             onClick={() => setShowGenerateModal(true)}
-            className="mt-4 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+            className="mt-4 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors"
           >
             Generate Report
           </button>

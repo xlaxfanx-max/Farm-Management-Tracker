@@ -104,8 +104,8 @@ const getCellStatus = (dateStr, expirationStr, expiringSoonRecord) => {
 const CELL_STYLES = {
   current: {
     dot: 'bg-green-500',
-    text: 'text-green-700 dark:text-green-400',
-    bg: 'bg-green-50 dark:bg-green-900/20',
+    text: 'text-primary dark:text-green-400',
+    bg: 'bg-primary-light dark:bg-green-900/20',
     label: 'Current',
   },
   expiring: {
@@ -129,7 +129,7 @@ const CELL_STYLES = {
 };
 
 const inputCls =
-  'w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm';
+  'w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary text-sm';
 const labelCls = 'block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1';
 
 // ---------------------------------------------------------------------------
@@ -212,7 +212,7 @@ const TrainingModal = ({ record, onClose, onSave }) => {
         {/* Header */}
         <div className="sticky top-0 bg-white dark:bg-gray-800 flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700 z-10">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-            <GraduationCap className="w-5 h-5 text-green-600 dark:text-green-400" />
+            <GraduationCap className="w-5 h-5 text-primary dark:text-green-400" />
             {record ? 'Edit Training Record' : 'New Training Record'}
           </h2>
           <button
@@ -292,7 +292,7 @@ const TrainingModal = ({ record, onClose, onSave }) => {
                   name="active"
                   checked={formData.active}
                   onChange={handleChange}
-                  className="rounded border-gray-300 dark:border-gray-600 text-green-600 focus:ring-green-500"
+                  className="rounded border-gray-300 dark:border-gray-600 text-primary focus:ring-primary"
                 />
                 Active Employee
               </label>
@@ -363,7 +363,7 @@ const TrainingModal = ({ record, onClose, onSave }) => {
             <button
               type="submit"
               disabled={saving}
-              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 inline-flex items-center gap-2"
+              className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors disabled:opacity-50 inline-flex items-center gap-2"
             >
               {saving && <Loader2 className="w-4 h-4 animate-spin" />}
               {saving ? 'Saving...' : record ? 'Update' : 'Create'}
@@ -458,12 +458,12 @@ export default function TrainingMatrix() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-          <GraduationCap className="w-6 h-6 text-green-600 dark:text-green-400" />
+          <GraduationCap className="w-6 h-6 text-primary dark:text-green-400" />
           Employee Training Matrix
         </h2>
         <button
           onClick={openCreate}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors text-sm font-medium"
         >
           <Plus className="w-4 h-4" /> Add Employee
         </button>
@@ -506,14 +506,14 @@ export default function TrainingMatrix() {
             label: 'Active Employees',
             value: activeCount,
             icon: CheckCircle,
-            color: 'text-green-600 dark:text-green-400',
+            color: 'text-primary dark:text-green-400',
           },
           {
             label: 'Overall Compliance',
             value: `${Math.round(totalCompliance)}%`,
             icon: CheckCircle,
             color: totalCompliance >= 80
-              ? 'text-green-600 dark:text-green-400'
+              ? 'text-primary dark:text-green-400'
               : totalCompliance >= 60
               ? 'text-yellow-600 dark:text-yellow-500'
               : 'text-red-600 dark:text-red-400',
@@ -575,7 +575,7 @@ export default function TrainingMatrix() {
           <select
             value={filterActive}
             onChange={(e) => setFilterActive(e.target.value)}
-            className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-1.5 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-green-500"
+            className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-1.5 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary"
           >
             <option value="true">Active Only</option>
             <option value="false">Inactive Only</option>
@@ -601,7 +601,7 @@ export default function TrainingMatrix() {
       {/* Loading State */}
       {loading && !error && (
         <div className="flex items-center justify-center py-16">
-          <Loader2 className="w-8 h-8 text-green-600 animate-spin" />
+          <Loader2 className="w-8 h-8 text-primary animate-spin" />
         </div>
       )}
 
@@ -615,7 +615,7 @@ export default function TrainingMatrix() {
           </p>
           <button
             onClick={openCreate}
-            className="mt-5 inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm"
+            className="mt-5 inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors text-sm"
           >
             <Plus className="w-4 h-4" /> Add Employee
           </button>
@@ -658,7 +658,7 @@ export default function TrainingMatrix() {
                   const compliance = rec.compliance_percentage ?? 0;
                   const complianceColor =
                     compliance >= 80
-                      ? 'text-green-700 dark:text-green-400'
+                      ? 'text-primary dark:text-green-400'
                       : compliance >= 60
                       ? 'text-yellow-700 dark:text-yellow-500'
                       : 'text-red-700 dark:text-red-400';

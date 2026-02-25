@@ -31,7 +31,7 @@ const LANGUAGE_OPTIONS = [
 ];
 
 const CATEGORY_BADGE_STYLES = {
-  food_safety:       'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+  food_safety:       'bg-green-100 text-primary dark:bg-green-900/30 dark:text-green-400',
   gmp:               'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
   hygiene:           'bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400',
   chemical_handling: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
@@ -76,7 +76,7 @@ const ACCEPTED_FILE_TYPES = '.pdf,.jpg,.jpeg,.png,.doc,.docx';
 const inputCls =
   'w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg ' +
   'bg-white dark:bg-gray-700 text-gray-900 dark:text-white ' +
-  'focus:ring-2 focus:ring-green-500 focus:border-green-500';
+  'focus:ring-2 focus:ring-primary focus:border-primary';
 
 const labelCls = 'block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1';
 
@@ -217,7 +217,7 @@ const TrainingSessionModal = ({ session, onClose, onSave }) => {
         {/* Header */}
         <div className="sticky top-0 bg-white dark:bg-gray-800 flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700 z-10">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-            <BookOpen className="w-5 h-5 text-green-600 dark:text-green-400" />
+            <BookOpen className="w-5 h-5 text-primary dark:text-green-400" />
             {title}
           </h2>
           <button
@@ -371,7 +371,7 @@ const TrainingSessionModal = ({ session, onClose, onSave }) => {
               <button
                 type="button"
                 onClick={addAttendee}
-                className="px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex-shrink-0"
+                className="px-3 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors flex-shrink-0"
               >
                 <Plus className="w-4 h-4" />
               </button>
@@ -383,13 +383,13 @@ const TrainingSessionModal = ({ session, onClose, onSave }) => {
               {attendees.map((name, index) => (
                 <span
                   key={index}
-                  className="inline-flex items-center gap-1.5 px-3 py-1 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-800 dark:text-green-300 rounded-full text-sm"
+                  className="inline-flex items-center gap-1.5 px-3 py-1 bg-primary-light dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-800 dark:text-green-300 rounded-full text-sm"
                 >
                   {name}
                   <button
                     type="button"
                     onClick={() => removeAttendee(index)}
-                    className="text-green-500 hover:text-green-700 dark:hover:text-green-100 transition-colors"
+                    className="text-green-500 hover:text-primary-hover dark:hover:text-green-100 transition-colors"
                   >
                     <X className="w-3.5 h-3.5" />
                   </button>
@@ -414,20 +414,20 @@ const TrainingSessionModal = ({ session, onClose, onSave }) => {
           </h3>
           <div>
             {session?.sign_in_sheet_url && !selectedFile && (
-              <div className="flex items-center gap-2 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg mb-2">
-                <Paperclip className="w-4 h-4 text-green-600 dark:text-green-400 flex-shrink-0" />
-                <span className="text-sm text-green-700 dark:text-green-300 truncate flex-1">
+              <div className="flex items-center gap-2 p-3 bg-primary-light dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg mb-2">
+                <Paperclip className="w-4 h-4 text-primary dark:text-green-400 flex-shrink-0" />
+                <span className="text-sm text-primary dark:text-green-300 truncate flex-1">
                   Sign-in sheet attached
                 </span>
                 <a
                   href={session.sign_in_sheet_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-xs text-green-600 dark:text-green-400 hover:underline flex-shrink-0"
+                  className="inline-flex items-center gap-1 text-xs text-primary dark:text-green-400 hover:underline flex-shrink-0"
                 >
                   <Download className="w-3 h-3" /> View
                 </a>
-                <label className="text-xs text-gray-500 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400 cursor-pointer flex-shrink-0">
+                <label className="text-xs text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-green-400 cursor-pointer flex-shrink-0">
                   Replace
                   <input
                     type="file"
@@ -465,8 +465,8 @@ const TrainingSessionModal = ({ session, onClose, onSave }) => {
                 onDragLeave={() => setDragOver(false)}
                 className={`relative border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${
                   dragOver
-                    ? 'border-green-400 bg-green-50 dark:bg-green-900/20'
-                    : 'border-gray-300 dark:border-gray-600 hover:border-green-400 dark:hover:border-green-500 bg-gray-50 dark:bg-gray-700/30'
+                    ? 'border-green-400 bg-primary-light dark:bg-green-900/20'
+                    : 'border-gray-300 dark:border-gray-600 hover:border-green-400 dark:hover:border-primary bg-gray-50 dark:bg-gray-700/30'
                 }`}
               >
                 <input
@@ -477,7 +477,7 @@ const TrainingSessionModal = ({ session, onClose, onSave }) => {
                 />
                 <Upload className="w-8 h-8 mx-auto mb-2 text-gray-400 dark:text-gray-500" />
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  <span className="font-medium text-green-600 dark:text-green-400">Click to upload</span>{' '}
+                  <span className="font-medium text-primary dark:text-green-400">Click to upload</span>{' '}
                   or drag and drop
                 </p>
                 <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
@@ -512,7 +512,7 @@ const TrainingSessionModal = ({ session, onClose, onSave }) => {
             <button
               type="submit"
               disabled={saving}
-              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 flex items-center gap-2"
+              className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors disabled:opacity-50 flex items-center gap-2"
             >
               {saving && <Loader2 className="w-4 h-4 animate-spin" />}
               {saving ? 'Saving...' : session ? 'Update' : 'Create'}
@@ -603,12 +603,12 @@ export default function TrainingSessions() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-          <BookOpen className="w-6 h-6 text-green-600 dark:text-green-400" />
+          <BookOpen className="w-6 h-6 text-primary dark:text-green-400" />
           Worker Training Sessions
         </h2>
         <button
           onClick={openCreate}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors"
         >
           <Plus className="w-4 h-4" />
           New Session
@@ -628,7 +628,7 @@ export default function TrainingSessions() {
             label: 'Total Attendees',
             value: totalAttendees,
             icon: Users,
-            color: 'text-green-600 dark:text-green-400',
+            color: 'text-primary dark:text-green-400',
           },
           {
             label: 'Categories Covered',
@@ -665,7 +665,7 @@ export default function TrainingSessions() {
           <select
             value={filterCategory}
             onChange={(e) => setFilterCategory(e.target.value)}
-            className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-green-500"
+            className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary"
           >
             {CATEGORY_OPTIONS.map((o) => (
               <option key={o.value} value={o.value}>{o.label}</option>
@@ -699,7 +699,7 @@ export default function TrainingSessions() {
       {/* Loading State */}
       {loading && !error && (
         <div className="flex items-center justify-center py-12">
-          <Loader2 className="w-6 h-6 text-green-600 animate-spin" />
+          <Loader2 className="w-6 h-6 text-primary animate-spin" />
         </div>
       )}
 
@@ -715,7 +715,7 @@ export default function TrainingSessions() {
           </p>
           <button
             onClick={openCreate}
-            className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+            className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors"
           >
             <Plus className="w-4 h-4" /> New Session
           </button>
@@ -817,7 +817,7 @@ export default function TrainingSessions() {
                           href={session.sign_in_sheet_url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-xs text-green-600 dark:text-green-400 hover:underline"
+                          className="inline-flex items-center gap-1 text-xs text-primary dark:text-green-400 hover:underline"
                           title="View sign-in sheet"
                         >
                           <Paperclip className="w-3.5 h-3.5" />

@@ -176,7 +176,7 @@ const Step8SignSubmit = ({ formData, assessment, onSubmit, saving }) => {
       <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-            <PenTool className="w-5 h-5 text-green-600" />
+            <PenTool className="w-5 h-5 text-primary" />
             Assessor Signature
           </h3>
           {signatureData && (
@@ -243,7 +243,7 @@ const Step8SignSubmit = ({ formData, assessment, onSubmit, saving }) => {
           disabled={!canSubmit}
           className={`inline-flex items-center gap-2 px-6 py-3 rounded-lg transition-colors ${
             canSubmit
-              ? 'bg-green-600 text-white hover:bg-green-700'
+              ? 'bg-primary text-white hover:bg-primary-hover'
               : 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed'
           }`}
         >
@@ -275,11 +275,11 @@ const Step8SignSubmit = ({ formData, assessment, onSubmit, saving }) => {
       </div>
 
       {/* FDA Requirements Box */}
-      <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
+      <div className="bg-primary-light dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
         <h4 className="font-medium text-green-900 dark:text-green-300 mb-2">
           FDA Compliance Notes (21 CFR 112.43)
         </h4>
-        <ul className="text-sm text-green-700 dark:text-green-400 space-y-1">
+        <ul className="text-sm text-primary dark:text-green-400 space-y-1">
           <li>• <strong>Annual Requirement:</strong> Water assessments must be conducted at least once annually</li>
           <li>• <strong>Record Retention:</strong> Keep assessments for at least 2 years from harvest date</li>
           <li>• <strong>No FDA Submission Required:</strong> Assessments are kept on-site for audits, not submitted to FDA</li>
@@ -298,7 +298,7 @@ const ChecklistItem = ({ label, checked }) => (
     <div
       className={`w-6 h-6 rounded-full flex items-center justify-center ${
         checked
-          ? 'bg-green-100 dark:bg-green-900/40 text-green-600 dark:text-green-400'
+          ? 'bg-green-100 dark:bg-green-900/40 text-primary dark:text-green-400'
           : 'bg-gray-100 dark:bg-gray-700 text-gray-400'
       }`}
     >

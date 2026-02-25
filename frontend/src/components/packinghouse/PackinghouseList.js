@@ -98,7 +98,7 @@ const PackinghouseList = () => {
   if (loading) {
     return (
       <div className="flex justify-center items-center py-12">
-        <RefreshCw className="w-8 h-8 animate-spin text-green-600" />
+        <RefreshCw className="w-8 h-8 animate-spin text-primary" />
       </div>
     );
   }
@@ -115,7 +115,7 @@ const PackinghouseList = () => {
               placeholder="Search packinghouses..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
             />
           </div>
           <label className="flex items-center text-sm text-gray-600">
@@ -130,7 +130,7 @@ const PackinghouseList = () => {
         </div>
         <button
           onClick={handleCreate}
-          className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+          className="flex items-center px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors"
         >
           <Plus className="w-4 h-4 mr-2" />
           Add Packinghouse
@@ -148,7 +148,7 @@ const PackinghouseList = () => {
           {!searchTerm && (
             <button
               onClick={handleCreate}
-              className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+              className="inline-flex items-center px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover"
             >
               <Plus className="w-4 h-4 mr-2" />
               Add Packinghouse

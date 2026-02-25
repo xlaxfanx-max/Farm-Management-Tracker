@@ -105,7 +105,7 @@ const PoolDetail = ({ pool, onBack, onEdit, onRefresh }) => {
           </button>
           <div>
             <h2 className="text-xl font-bold text-gray-900 flex items-center">
-              <Boxes className="w-6 h-6 mr-2 text-green-600" />
+              <Boxes className="w-6 h-6 mr-2 text-primary" />
               {pool.name}
             </h2>
             <div className="flex items-center space-x-3 text-sm text-gray-500 mt-1">
@@ -151,7 +151,7 @@ const PoolDetail = ({ pool, onBack, onEdit, onRefresh }) => {
           </div>
           <div className="bg-white rounded-lg border border-gray-200 p-4">
             <div className="text-sm text-gray-500">Total Bins</div>
-            <div className="text-2xl font-bold text-green-600">
+            <div className="text-2xl font-bold text-primary">
               {formatNumber(summary.delivery_stats?.total_bins)}
             </div>
           </div>
@@ -171,7 +171,7 @@ const PoolDetail = ({ pool, onBack, onEdit, onRefresh }) => {
           {summary.settlement_stats && (
             <div className="bg-white rounded-lg border border-gray-200 p-4">
               <div className="text-sm text-gray-500">Net Return</div>
-              <div className="text-2xl font-bold text-green-600">
+              <div className="text-2xl font-bold text-primary">
                 {formatCurrency(summary.settlement_stats.net_return)}
               </div>
               <div className="text-xs text-gray-500 mt-1">
@@ -194,7 +194,7 @@ const PoolDetail = ({ pool, onBack, onEdit, onRefresh }) => {
                 <span className="text-gray-900">{field.field__name}</span>
                 <div className="flex items-center space-x-4 text-sm">
                   <span className="text-gray-500">{field.deliveries} deliveries</span>
-                  <span className="font-semibold text-green-600">{formatNumber(field.bins)} bins</span>
+                  <span className="font-semibold text-primary">{formatNumber(field.bins)} bins</span>
                 </div>
               </div>
             ))}
@@ -211,7 +211,7 @@ const PoolDetail = ({ pool, onBack, onEdit, onRefresh }) => {
               onClick={() => setActiveTab(id)}
               className={`flex items-center py-3 border-b-2 font-medium text-sm transition-colors ${
                 activeTab === id
-                  ? 'border-green-500 text-green-600'
+                  ? 'border-primary text-primary'
                   : 'border-transparent text-gray-500 hover:text-gray-700'
               }`}
             >
@@ -228,7 +228,7 @@ const PoolDetail = ({ pool, onBack, onEdit, onRefresh }) => {
       {/* Tab Content */}
       {loading ? (
         <div className="flex justify-center py-12">
-          <RefreshCw className="w-8 h-8 animate-spin text-green-600" />
+          <RefreshCw className="w-8 h-8 animate-spin text-primary" />
         </div>
       ) : (
         <>
@@ -238,7 +238,7 @@ const PoolDetail = ({ pool, onBack, onEdit, onRefresh }) => {
               <div className="flex justify-end">
                 <button
                   onClick={() => setShowDeliveryModal(true)}
-                  className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                  className="flex items-center px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover"
                 >
                   <Plus className="w-4 h-4 mr-2" />
                   Record Delivery
@@ -304,7 +304,7 @@ const PoolDetail = ({ pool, onBack, onEdit, onRefresh }) => {
               <div className="flex justify-end">
                 <button
                   onClick={() => setShowPackoutModal(true)}
-                  className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                  className="flex items-center px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover"
                 >
                   <Plus className="w-4 h-4 mr-2" />
                   Add Packout Report
@@ -383,7 +383,7 @@ const PoolDetail = ({ pool, onBack, onEdit, onRefresh }) => {
                       {settlements.map((s) => (
                         <tr
                           key={s.id}
-                          className="hover:bg-green-50 cursor-pointer transition-colors"
+                          className="hover:bg-primary-light cursor-pointer transition-colors"
                           onClick={() => setSelectedSettlementId(s.id)}
                         >
                           <td className="px-4 py-3 text-sm">
@@ -402,13 +402,13 @@ const PoolDetail = ({ pool, onBack, onEdit, onRefresh }) => {
                             {formatCurrency(s.net_per_bin)}
                             {s.variance_vs_house_per_bin !== null && (
                               <span className={`ml-1 text-xs ${
-                                s.variance_vs_house_per_bin >= 0 ? 'text-green-600' : 'text-red-600'
+                                s.variance_vs_house_per_bin >= 0 ? 'text-primary' : 'text-red-600'
                               }`}>
                                 ({s.variance_vs_house_per_bin >= 0 ? '+' : ''}{formatCurrency(s.variance_vs_house_per_bin)})
                               </span>
                             )}
                           </td>
-                          <td className="px-4 py-3 text-sm text-right font-semibold text-green-600">
+                          <td className="px-4 py-3 text-sm text-right font-semibold text-primary">
                             {formatCurrency(s.amount_due)}
                           </td>
                           <td className="px-4 py-3 text-center">
@@ -417,7 +417,7 @@ const PoolDetail = ({ pool, onBack, onEdit, onRefresh }) => {
                                 e.stopPropagation();
                                 setSelectedSettlementId(s.id);
                               }}
-                              className="p-1.5 text-green-600 hover:bg-green-100 rounded-lg transition-colors"
+                              className="p-1.5 text-primary hover:bg-green-100 rounded-lg transition-colors"
                               title="View Details"
                             >
                               <Eye className="w-4 h-4" />

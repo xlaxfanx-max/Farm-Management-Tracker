@@ -176,7 +176,7 @@ const PackinghouseDashboard = () => {
     if (loading) {
       return (
         <div className="flex justify-center items-center py-12">
-          <RefreshCw className="w-8 h-8 animate-spin text-green-600" />
+          <RefreshCw className="w-8 h-8 animate-spin text-primary" />
         </div>
       );
     }
@@ -204,13 +204,13 @@ const PackinghouseDashboard = () => {
         <div className="flex justify-between items-center">
           <div className="flex items-center space-x-3">
             <label className="text-lg font-semibold text-gray-800 flex items-center">
-              <Calendar className="w-5 h-5 mr-2 text-green-600" />
+              <Calendar className="w-5 h-5 mr-2 text-primary" />
               Season:
             </label>
             <select
               value={selectedSeason || dashboardData.selected_season}
               onChange={handleSeasonChange}
-              className="px-3 py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-gray-800 font-medium"
+              className="px-3 py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-gray-800 font-medium"
             >
               {dashboardData.available_seasons?.map((season) => (
                 <option key={season} value={season}>
@@ -239,7 +239,7 @@ const PackinghouseDashboard = () => {
                 </p>
               </div>
               <div className="p-3 bg-green-100 rounded-lg">
-                <Boxes className="w-6 h-6 text-green-600" />
+                <Boxes className="w-6 h-6 text-primary" />
               </div>
             </div>
             <p className="text-xs text-gray-400 mt-1">{dashboardData.active_pools || 0} active &middot; Click for details</p>
@@ -316,7 +316,7 @@ const PackinghouseDashboard = () => {
                     </div>
                     <div className="text-center">
                       <p className="text-gray-500">Settlements</p>
-                      <p className="font-semibold text-green-600">{formatCurrency(ph.total_settlements)}</p>
+                      <p className="font-semibold text-primary">{formatCurrency(ph.total_settlements)}</p>
                     </div>
                     <ChevronRight className="w-5 h-5 text-gray-400" />
                   </div>
@@ -348,7 +348,7 @@ const PackinghouseDashboard = () => {
                         </p>
                       </div>
                       <div className="text-right">
-                        <p className="font-semibold text-green-600">
+                        <p className="font-semibold text-primary">
                           {formatNumber(delivery.bins)}
                         </p>
                         <p className="text-xs text-gray-400">
@@ -399,7 +399,7 @@ const PackinghouseDashboard = () => {
                         <span className="text-gray-500">House Avg: </span>
                         <span className={
                           parseFloat(report.total_packed_percent) >= parseFloat(report.house_avg_packed_percent)
-                            ? 'text-green-600'
+                            ? 'text-primary'
                             : 'text-red-600'
                         }>
                           {report.house_avg_packed_percent}%
@@ -439,7 +439,7 @@ const PackinghouseDashboard = () => {
       {/* Header */}
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-800 flex items-center">
-          <Building2 className="w-7 h-7 mr-2 text-green-600" />
+          <Building2 className="w-7 h-7 mr-2 text-primary" />
           Packinghouse Pool Tracking
         </h1>
         <p className="text-gray-500 mt-1">
@@ -456,7 +456,7 @@ const PackinghouseDashboard = () => {
               onClick={() => setActiveTab(id)}
               className={`flex items-center py-3 border-b-2 font-medium text-sm transition-colors ${
                 activeTab === id
-                  ? 'border-green-500 text-green-600'
+                  ? 'border-primary text-primary'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >

@@ -88,7 +88,7 @@ const Step5CropContact = ({ formData, updateFormData }) => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-32">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
   }
@@ -120,7 +120,7 @@ const Step5CropContact = ({ formData, updateFormData }) => {
               onClick={() => setActiveField(field.id)}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg whitespace-nowrap transition-colors ${
                 activeField === field.id
-                  ? 'bg-green-600 text-white'
+                  ? 'bg-primary text-white'
                   : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
               }`}
             >
@@ -180,7 +180,7 @@ const Step5CropContact = ({ formData, updateFormData }) => {
                   }
                   className={`p-4 rounded-lg border-2 text-left transition-all ${
                     currentAssessment.crop_contact_type === type.value
-                      ? 'border-green-500 bg-green-50 dark:bg-green-900/20'
+                      ? 'border-primary bg-primary-light dark:bg-green-900/20'
                       : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
                   }`}
                 >
@@ -196,7 +196,7 @@ const Step5CropContact = ({ formData, updateFormData }) => {
                     <span
                       className={`px-2 py-0.5 text-xs font-medium rounded ${
                         type.risk === 'low'
-                          ? 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400'
+                          ? 'bg-green-100 text-primary dark:bg-green-900/40 dark:text-green-400'
                           : type.risk === 'medium'
                           ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-400'
                           : 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400'
@@ -228,7 +228,7 @@ const Step5CropContact = ({ formData, updateFormData }) => {
                 }
                 min="0"
                 placeholder="Enter days"
-                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent"
               />
               <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                 Time between last water application and harvest
@@ -246,14 +246,14 @@ const Step5CropContact = ({ formData, updateFormData }) => {
                   }
                   className={`flex-1 p-3 rounded-lg border-2 transition-all ${
                     currentAssessment.die_off_period_adequate === true
-                      ? 'border-green-500 bg-green-50 dark:bg-green-900/20'
+                      ? 'border-primary bg-primary-light dark:bg-green-900/20'
                       : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
                   }`}
                 >
                   <CheckCircle2
                     className={`w-5 h-5 mx-auto ${
                       currentAssessment.die_off_period_adequate === true
-                        ? 'text-green-600'
+                        ? 'text-primary'
                         : 'text-gray-400'
                     }`}
                   />
@@ -294,7 +294,7 @@ const Step5CropContact = ({ formData, updateFormData }) => {
               }
               rows={3}
               placeholder="Add notes about water application practices for this field..."
-              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
+              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent resize-none"
             />
           </div>
         </div>

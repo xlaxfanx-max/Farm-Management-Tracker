@@ -62,7 +62,7 @@ function SectionCard({ section, onNavigate }) {
         <div className="flex items-center gap-3">
           <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
             allGood
-              ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
+              ? 'bg-green-100 dark:bg-green-900/30 text-primary dark:text-green-300'
               : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
           }`}>
             {passed}/{total}
@@ -131,7 +131,7 @@ export default function InspectorChecklist({ onNavigate }) {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-        <RefreshCw className="w-6 h-6 text-green-600 animate-spin" />
+        <RefreshCw className="w-6 h-6 text-primary animate-spin" />
       </div>
     );
   }
@@ -154,7 +154,7 @@ export default function InspectorChecklist({ onNavigate }) {
         <div className="max-w-4xl mx-auto px-6 py-5 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <div className="w-11 h-11 bg-green-100 dark:bg-green-900/40 rounded-xl flex items-center justify-center">
-              <Shield className="w-5 h-5 text-green-600 dark:text-green-400" />
+              <Shield className="w-5 h-5 text-primary dark:text-green-400" />
             </div>
             <div>
               <h1 className="text-xl font-bold text-gray-900 dark:text-white">Inspector Readiness</h1>
@@ -209,7 +209,7 @@ export default function InspectorChecklist({ onNavigate }) {
               <button
                 onClick={handleDownloadPDF}
                 disabled={downloading}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm rounded-lg transition-colors disabled:opacity-50"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-hover text-white text-sm rounded-lg transition-colors disabled:opacity-50"
               >
                 <Download className="w-4 h-4" />
                 {downloading ? 'Generating PDF…' : 'Download Inspector Report'}

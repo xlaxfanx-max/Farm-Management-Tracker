@@ -139,7 +139,7 @@ export default function AcceptInvitation({ token, onComplete }) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center p-4">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
           <p className="mt-4 text-gray-600">Validating invitation...</p>
         </div>
       </div>
@@ -159,7 +159,7 @@ export default function AcceptInvitation({ token, onComplete }) {
             <p className="text-gray-600 mb-6">{error}</p>
             <button
               onClick={() => window.location.href = '/'}
-              className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+              className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover"
             >
               Go to Login
             </button>
@@ -176,7 +176,7 @@ export default function AcceptInvitation({ token, onComplete }) {
         <div className="w-full max-w-md">
           <div className="bg-white rounded-xl shadow-lg p-8 text-center">
             <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <CheckCircle className="w-8 h-8 text-green-600" />
+              <CheckCircle className="w-8 h-8 text-primary" />
             </div>
             <h1 className="text-xl font-bold text-gray-900 mb-2">Welcome to the Team!</h1>
             <p className="text-gray-600 mb-2">Your account has been created successfully.</p>
@@ -196,7 +196,7 @@ export default function AcceptInvitation({ token, onComplete }) {
       <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center p-4">
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-green-600 rounded-xl mb-4">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-primary rounded-xl mb-4">
               <Leaf className="w-8 h-8 text-white" />
             </div>
             <h1 className="text-2xl font-bold text-gray-900">Join {invitation.company_name}</h1>
@@ -233,7 +233,7 @@ export default function AcceptInvitation({ token, onComplete }) {
                     name="existingPassword"
                     value={existingPassword}
                     onChange={(e) => setExistingPassword(e.target.value)}
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                     placeholder="********"
                     required
                   />
@@ -242,7 +242,7 @@ export default function AcceptInvitation({ token, onComplete }) {
                 <button
                   type="submit"
                   disabled={existingSubmitting}
-                  className="w-full bg-green-600 text-white py-2.5 px-4 rounded-lg font-medium hover:bg-green-700 focus:ring-4 focus:ring-green-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full bg-primary text-white py-2.5 px-4 rounded-lg font-medium hover:bg-primary-hover focus:ring-4 focus:ring-green-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {existingSubmitting ? 'Signing In...' : 'Sign In & Accept Invitation'}
                 </button>
@@ -269,7 +269,7 @@ export default function AcceptInvitation({ token, onComplete }) {
                 type="button"
                 onClick={acceptExistingInvitation}
                 disabled={existingSubmitting}
-                className="w-full bg-green-600 text-white py-2.5 px-4 rounded-lg font-medium hover:bg-green-700 focus:ring-4 focus:ring-green-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-primary text-white py-2.5 px-4 rounded-lg font-medium hover:bg-primary-hover focus:ring-4 focus:ring-green-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {existingSubmitting ? 'Accepting...' : 'Accept Invitation'}
               </button>
@@ -279,7 +279,7 @@ export default function AcceptInvitation({ token, onComplete }) {
               Need to create a new account instead?{' '}
               <button
                 onClick={() => window.location.href = '/'}
-                className="text-green-600 hover:text-green-700 font-medium"
+                className="text-primary hover:text-primary-hover font-medium"
               >
                 Go to sign in
               </button>
@@ -296,7 +296,7 @@ export default function AcceptInvitation({ token, onComplete }) {
       <div className="w-full max-w-md">
         {/* Logo/Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-green-600 rounded-xl mb-4">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-primary rounded-xl mb-4">
             <Leaf className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-2xl font-bold text-gray-900">Join {invitation.company_name}</h1>
@@ -335,7 +335,7 @@ export default function AcceptInvitation({ token, onComplete }) {
                   name="firstName"
                   value={formData.firstName}
                   onChange={handleChange}
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                   placeholder="John"
                 />
               </div>
@@ -348,7 +348,7 @@ export default function AcceptInvitation({ token, onComplete }) {
                   name="lastName"
                   value={formData.lastName}
                   onChange={handleChange}
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                   placeholder="Smith"
                 />
               </div>
@@ -365,7 +365,7 @@ export default function AcceptInvitation({ token, onComplete }) {
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent pr-10"
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent pr-10"
                   placeholder="••••••••"
                   required
                   minLength={8}
@@ -391,7 +391,7 @@ export default function AcceptInvitation({ token, onComplete }) {
                 name="confirmPassword"
                 value={formData.confirmPassword}
                 onChange={handleChange}
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                 placeholder="••••••••"
                 required
               />
@@ -401,7 +401,7 @@ export default function AcceptInvitation({ token, onComplete }) {
             <button
               type="submit"
               disabled={submitting}
-              className="w-full bg-green-600 text-white py-2.5 px-4 rounded-lg font-medium hover:bg-green-700 focus:ring-4 focus:ring-green-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-primary text-white py-2.5 px-4 rounded-lg font-medium hover:bg-primary-hover focus:ring-4 focus:ring-green-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {submitting ? (
                 <span className="flex items-center justify-center">
@@ -421,7 +421,7 @@ export default function AcceptInvitation({ token, onComplete }) {
             Already have an account?{' '}
             <button
               onClick={() => window.location.href = '/'}
-              className="text-green-600 hover:text-green-700 font-medium"
+              className="text-primary hover:text-primary-hover font-medium"
             >
               Sign in instead
             </button>

@@ -39,24 +39,24 @@ const formatDateValue = (value) => {
 };
 
 const statusColors = {
-  complete: 'bg-green-100 text-green-800',
-  completed: 'bg-green-100 text-green-800',
-  verified: 'bg-blue-100 text-blue-800',
-  active: 'bg-green-100 text-green-800',
-  open: 'bg-green-100 text-green-800',
-  in_progress: 'bg-blue-100 text-blue-800',
-  pending: 'bg-yellow-100 text-yellow-800',
-  closed: 'bg-gray-100 text-gray-800',
-  cancelled: 'bg-red-100 text-red-800',
-  overdue: 'bg-red-100 text-red-800',
-  paid: 'bg-green-100 text-green-800',
-  unpaid: 'bg-yellow-100 text-yellow-800',
+  complete: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
+  completed: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
+  verified: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
+  active: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
+  open: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
+  in_progress: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
+  pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
+  closed: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300',
+  cancelled: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
+  overdue: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
+  paid: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
+  unpaid: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
 };
 
 const formatStatusValue = (value) => {
   if (!value) return '-';
   const label = String(value).replace(/_/g, ' ');
-  const colorClass = statusColors[String(value).toLowerCase()] || 'bg-gray-100 text-gray-800';
+  const colorClass = statusColors[String(value).toLowerCase()] || 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
   return (
     <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium capitalize ${colorClass}`}>
       {label}
@@ -136,25 +136,25 @@ const DrillDownModal = ({
       />
 
       {/* Modal */}
-      <div className="relative bg-white rounded-xl shadow-xl w-full max-w-4xl mx-4 max-h-[85vh] flex flex-col">
+      <div className="relative bg-surface-raised dark:bg-gray-800 rounded-modal shadow-xl w-full max-w-4xl mx-4 max-h-[85vh] flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between p-5 border-b border-gray-200">
+        <div className="flex items-center justify-between p-5 border-b border-border dark:border-gray-700">
           <div className="flex items-center gap-3 min-w-0">
             {Icon && (
-              <div className="p-2 bg-green-50 rounded-lg flex-shrink-0">
-                <Icon className="w-5 h-5 text-green-600" />
+              <div className="p-2 bg-primary-light dark:bg-primary-light rounded-lg flex-shrink-0">
+                <Icon className="w-5 h-5 text-primary dark:text-primary" />
               </div>
             )}
             <div className="min-w-0">
-              <h2 className="text-lg font-semibold text-gray-900 truncate">{title}</h2>
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white truncate">{title}</h2>
               {subtitle && (
-                <p className="text-sm text-gray-500">{subtitle}</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{subtitle}</p>
               )}
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0"
+            className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-surface-sunken dark:hover:bg-gray-700 rounded-lg transition-colors flex-shrink-0"
           >
             <X className="w-5 h-5" />
           </button>
@@ -165,8 +165,8 @@ const DrillDownModal = ({
           {loading && (
             <div className="flex items-center justify-center py-16">
               <div className="text-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto" />
-                <p className="mt-3 text-sm text-gray-500">Loading records...</p>
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto" />
+                <p className="mt-3 text-sm text-gray-500 dark:text-gray-400">Loading records...</p>
               </div>
             </div>
           )}
@@ -181,7 +181,7 @@ const DrillDownModal = ({
           )}
 
           {!loading && !error && data.length === 0 && (
-            <div className="flex flex-col items-center justify-center py-16 text-gray-400">
+            <div className="flex flex-col items-center justify-center py-16 text-gray-400 dark:text-gray-500">
               <FileSearch className="w-10 h-10 mb-3" />
               <p className="text-sm">{emptyMessage}</p>
             </div>
@@ -189,12 +189,12 @@ const DrillDownModal = ({
 
           {!loading && !error && data.length > 0 && (
             <table className="w-full">
-              <thead className="bg-gray-50 sticky top-0">
+              <thead className="bg-surface-sunken dark:bg-gray-700/50 sticky top-0">
                 <tr>
                   {columns.map((col) => (
                     <th
                       key={col.key}
-                      className={`px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider ${
+                      className={`px-4 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider ${
                         col.align === 'right' ? 'text-right' : 'text-left'
                       }`}
                     >
@@ -203,14 +203,14 @@ const DrillDownModal = ({
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
                 {data.map((row, idx) => (
                   <tr
                     key={row.id || idx}
                     className={`${
                       onRowClick
-                        ? 'cursor-pointer hover:bg-green-50'
-                        : 'hover:bg-gray-50'
+                        ? 'cursor-pointer hover:bg-primary-light dark:hover:bg-primary-light'
+                        : 'hover:bg-surface-sunken dark:hover:bg-gray-700/50'
                     } transition-colors`}
                     onClick={onRowClick ? () => onRowClick(row) : undefined}
                   >
@@ -233,7 +233,7 @@ const DrillDownModal = ({
 
         {/* Summary Row */}
         {summaryRow && !loading && !error && data.length > 0 && (
-          <div className="border-t-2 border-gray-200 bg-gray-50 px-4 py-3">
+          <div className="border-t-2 border-border-strong dark:border-gray-600 bg-surface-sunken dark:bg-gray-700/50 px-4 py-3">
             <table className="w-full">
               <tbody>
                 <tr>
@@ -262,7 +262,7 @@ const DrillDownModal = ({
 
         {/* Footer */}
         {!loading && !error && data.length > 0 && (
-          <div className="px-5 py-3 border-t border-gray-200 text-xs text-gray-400 text-right">
+          <div className="px-5 py-3 border-t border-border dark:border-gray-700 text-xs text-gray-400 dark:text-gray-500 text-right">
             {data.length} {data.length === 1 ? 'record' : 'records'}
           </div>
         )}

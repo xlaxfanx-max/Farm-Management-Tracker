@@ -254,7 +254,7 @@ const NutrientApplicationModal = ({
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-gray-50">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-green-100 rounded-lg">
-              <Leaf className="w-5 h-5 text-green-600" />
+              <Leaf className="w-5 h-5 text-primary" />
             </div>
             <div>
               <h2 className="text-lg font-semibold text-gray-900">
@@ -290,7 +290,7 @@ const NutrientApplicationModal = ({
                   value={formData.field}
                   onChange={handleChange}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                 >
                   <option value="">Select field...</option>
                   {availableFields.map(field => (
@@ -311,7 +311,7 @@ const NutrientApplicationModal = ({
                   value={formData.application_date}
                   onChange={handleChange}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                 />
               </div>
             </div>
@@ -333,7 +333,7 @@ const NutrientApplicationModal = ({
                     }}
                     onFocus={() => setShowProductDropdown(true)}
                     placeholder="Search products by name or NPK..."
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                   />
                 </div>
                 
@@ -352,7 +352,7 @@ const NutrientApplicationModal = ({
                           <div className="font-medium text-gray-900">{product.name}</div>
                           <div className="text-sm text-gray-500">{product.manufacturer}</div>
                         </div>
-                        <span className="text-green-600 font-medium">{product.npk_display}</span>
+                        <span className="text-primary font-medium">{product.npk_display}</span>
                       </button>
                     ))}
                   </div>
@@ -360,12 +360,12 @@ const NutrientApplicationModal = ({
               </div>
               
               {selectedProduct && (
-                <div className="mt-2 p-3 bg-green-50 rounded-lg">
+                <div className="mt-2 p-3 bg-primary-light rounded-lg">
                   <div className="flex justify-between items-center">
                     <span className="font-medium text-green-800">{selectedProduct.name}</span>
-                    <span className="text-2xl font-bold text-green-600">{selectedProduct.npk_display}</span>
+                    <span className="text-2xl font-bold text-primary">{selectedProduct.npk_display}</span>
                   </div>
-                  <div className="text-sm text-green-700 mt-1">
+                  <div className="text-sm text-primary mt-1">
                     {selectedProduct.nitrogen_pct}% Nitrogen • {selectedProduct.form}
                     {selectedProduct.is_organic && ' • Organic'}
                   </div>
@@ -388,7 +388,7 @@ const NutrientApplicationModal = ({
                   min="0"
                   required
                   placeholder="e.g., 200"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                 />
               </div>
               
@@ -400,7 +400,7 @@ const NutrientApplicationModal = ({
                   name="rate_unit"
                   value={formData.rate_unit}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                 >
                   {NUTRIENT_CONSTANTS.RATE_UNITS.map(unit => (
                     <option key={unit.value} value={unit.value}>{unit.label}</option>
@@ -420,7 +420,7 @@ const NutrientApplicationModal = ({
                   step="0.01"
                   min="0"
                   placeholder={selectedField ? `${selectedField.total_acres} (field total)` : 'Optional'}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                 />
               </div>
             </div>
@@ -459,7 +459,7 @@ const NutrientApplicationModal = ({
                   name="application_method"
                   value={formData.application_method}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                 >
                   {NUTRIENT_CONSTANTS.APPLICATION_METHODS.map(method => (
                     <option key={method.value} value={method.value}>{method.label}</option>
@@ -476,7 +476,7 @@ const NutrientApplicationModal = ({
                     name="water_source"
                     value={formData.water_source}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                   >
                     <option value="">Select water source...</option>
                     {fertigationSources.map(ws => (
@@ -502,7 +502,7 @@ const NutrientApplicationModal = ({
                     value={formData.applied_by}
                     onChange={handleChange}
                     placeholder="Name of applicator"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                   />
                 </div>
                 
@@ -513,7 +513,7 @@ const NutrientApplicationModal = ({
                       name="custom_applicator"
                       checked={formData.custom_applicator}
                       onChange={handleChange}
-                      className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                      className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
                     />
                     <span className="text-sm text-gray-700">Custom/Commercial Applicator</span>
                   </label>
@@ -531,7 +531,7 @@ const NutrientApplicationModal = ({
                     value={formData.applicator_company}
                     onChange={handleChange}
                     placeholder="Company name"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                   />
                 </div>
               )}
@@ -556,7 +556,7 @@ const NutrientApplicationModal = ({
                       step="0.01"
                       min="0"
                       placeholder="$0.00"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                     />
                   </div>
                   
@@ -572,7 +572,7 @@ const NutrientApplicationModal = ({
                       step="0.01"
                       min="0"
                       placeholder="$0.00"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                     />
                   </div>
                 </div>
@@ -590,7 +590,7 @@ const NutrientApplicationModal = ({
                 onChange={handleChange}
                 rows={3}
                 placeholder="Additional notes about this application..."
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
               />
             </div>
           </div>
@@ -607,7 +607,7 @@ const NutrientApplicationModal = ({
             <button
               type="submit"
               disabled={loading}
-              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
             >
               {loading ? (
                 <>

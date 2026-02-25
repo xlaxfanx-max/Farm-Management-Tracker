@@ -19,7 +19,7 @@ const STATUS_BADGES = {
   extracting: { bg: 'bg-blue-100', text: 'text-blue-700', label: 'Extracting' },
   extracted: { bg: 'bg-yellow-100', text: 'text-yellow-700', label: 'Ready for Review' },
   review: { bg: 'bg-yellow-100', text: 'text-yellow-700', label: 'In Review' },
-  completed: { bg: 'bg-green-100', text: 'text-green-700', label: 'Completed' },
+  completed: { bg: 'bg-green-100', text: 'text-primary', label: 'Completed' },
   failed: { bg: 'bg-red-100', text: 'text-red-700', label: 'Failed' },
 };
 
@@ -154,12 +154,12 @@ const StatementList = ({ packinghouseId = null }) => {
       <div className="p-4 border-b border-gray-200">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-gray-900 flex items-center">
-            <FileText className="w-5 h-5 mr-2 text-green-600" />
+            <FileText className="w-5 h-5 mr-2 text-primary" />
             Uploaded Statements
           </h2>
           <button
             onClick={() => setShowUploadModal(true)}
-            className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+            className="flex items-center px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors"
           >
             <Upload className="w-4 h-4 mr-2" />
             Upload PDFs
@@ -176,7 +176,7 @@ const StatementList = ({ packinghouseId = null }) => {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Search files..."
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
               />
             </div>
           </div>
@@ -184,7 +184,7 @@ const StatementList = ({ packinghouseId = null }) => {
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
           >
             <option value="">All Statuses</option>
             <option value="uploaded">Uploaded</option>
@@ -197,7 +197,7 @@ const StatementList = ({ packinghouseId = null }) => {
           <select
             value={typeFilter}
             onChange={(e) => setTypeFilter(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
           >
             <option value="">All Types</option>
             <option value="packout">Packout</option>
@@ -220,7 +220,7 @@ const StatementList = ({ packinghouseId = null }) => {
       <div className="p-4">
         {loading ? (
           <div className="flex items-center justify-center py-8">
-            <Loader2 className="w-6 h-6 animate-spin text-green-600" />
+            <Loader2 className="w-6 h-6 animate-spin text-primary" />
             <span className="ml-2 text-gray-600">Loading statements...</span>
           </div>
         ) : error ? (
@@ -234,7 +234,7 @@ const StatementList = ({ packinghouseId = null }) => {
             <p className="text-gray-500">No statements found</p>
             <button
               onClick={() => setShowUploadModal(true)}
-              className="mt-3 text-green-600 hover:text-green-700 text-sm"
+              className="mt-3 text-primary hover:text-primary-hover text-sm"
             >
               Upload your first statement
             </button>
@@ -329,7 +329,7 @@ const StatementList = ({ packinghouseId = null }) => {
                             className={`p-1.5 rounded disabled:opacity-50 ${
                               statement.status === 'completed'
                                 ? 'text-blue-600 hover:text-blue-700 hover:bg-blue-50'
-                                : 'text-green-600 hover:text-green-700 hover:bg-green-50'
+                                : 'text-primary hover:text-primary-hover hover:bg-primary-light'
                             }`}
                             title={statement.status === 'completed' ? "Edit Statement" : "Review & Confirm"}
                           >

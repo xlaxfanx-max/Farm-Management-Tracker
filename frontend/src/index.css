@@ -18,106 +18,158 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Grove Master Brand Colors - Light Mode (Default) */
+/* Grove Master Design Tokens - Light Mode (Default) */
 :root {
-  --grove-green: #2D5016;
-  --grove-green-light: #4A7A2A;
-  --citrus-orange: #E8791D;
-  --citrus-gold: #F4A934;
-  --cream: #fafafa;
-  --warm-white: #f9fafb;
-  --bark-brown: #3D2914;
-  --text-primary: #111827;
-  --text-secondary: #4b5563;
+  /* Primary — muted sage green */
+  --gm-primary: #3D7A4A;
+  --gm-primary-hover: #336840;
+  --gm-primary-light: #EDF5EF;
 
-  /* Status Colors for operational indicators */
-  --status-healthy: #22c55e;
-  --status-attention: #f59e0b;
-  --status-critical: #ef4444;
-  --status-neutral: #6b7280;
-  --status-info: #3b82f6;
+  /* Accent — warm clay (use sparingly) */
+  --gm-accent: #C4754B;
+  --gm-accent-light: #FEF3ED;
 
-  /* Background colors - Clean light grays */
-  --bg-primary: #f9fafb;
-  --bg-secondary: #f3f4f6;
-  --bg-tertiary: #e5e7eb;
-  --bg-card: #ffffff;
-  --bg-sidebar: #ffffff;
-  --bg-input: #ffffff;
+  /* Surfaces */
+  --gm-surface: #FAF8F5;
+  --gm-surface-raised: #FFFFFF;
+  --gm-surface-sunken: #F3F0EB;
 
-  /* Border colors */
-  --border-primary: #e5e7eb;
-  --border-secondary: #d1d5db;
-  --border-focus: #3b82f6;
+  /* Sidebar — dark forest */
+  --gm-sidebar: #2C3E2D;
+  --gm-sidebar-hover: #3A5040;
+  --gm-sidebar-active: #4A6350;
 
-  /* Shadow colors */
-  --shadow-color: rgba(0, 0, 0, 0.1);
-  --shadow-color-strong: rgba(0, 0, 0, 0.15);
+  /* Text */
+  --gm-text: #2D2A26;
+  --gm-text-secondary: #78716C;
+  --gm-text-muted: #A8A29E;
+
+  /* Borders */
+  --gm-border: #E7E2DD;
+  --gm-border-strong: #D4CEC8;
+  --gm-border-focus: #3D7A4A;
+
+  /* Status colors */
+  --status-healthy: #3D7A4A;
+  --status-attention: #D97706;
+  --status-critical: #DC2626;
+  --status-neutral: #78716C;
+  --status-info: #2563EB;
+
+  /* Shadows */
+  --shadow-color: rgba(0, 0, 0, 0.06);
+  --shadow-color-strong: rgba(0, 0, 0, 0.1);
+
+  /* Legacy aliases — map old names to new tokens */
+  --grove-green: var(--gm-primary);
+  --grove-green-light: var(--gm-primary-hover);
+  --citrus-orange: var(--gm-accent);
+  --citrus-gold: var(--gm-accent);
+  --cream: var(--gm-surface);
+  --warm-white: var(--gm-surface);
+  --bark-brown: var(--gm-text);
+  --text-primary: var(--gm-text);
+  --text-secondary: var(--gm-text-secondary);
+  --bg-primary: var(--gm-surface);
+  --bg-secondary: var(--gm-surface-sunken);
+  --bg-tertiary: var(--gm-surface-sunken);
+  --bg-card: var(--gm-surface-raised);
+  --bg-sidebar: var(--gm-sidebar);
+  --bg-input: var(--gm-surface-raised);
+  --border-primary: var(--gm-border);
+  --border-secondary: var(--gm-border-strong);
+  --border-focus: var(--gm-border-focus);
 }
 
-/* Grove Master Brand Colors - Dark Mode */
+/* Grove Master Design Tokens - Dark Mode */
 .dark {
-  --grove-green: #4A7A2A;
-  --grove-green-light: #5C9432;
-  --citrus-orange: #F08A3B;
-  --citrus-gold: #F5B54D;
-  --cream: #1a1a1a;
-  --warm-white: #242424;
-  --bark-brown: #D4C4B0;
-  --text-primary: #f3f4f6;
-  --text-secondary: #d1d5db;
+  --gm-primary: #5BA66A;
+  --gm-primary-hover: #4D9159;
+  --gm-primary-light: #1E2E20;
 
-  /* Status Colors - slightly brighter for dark mode */
-  --status-healthy: #34d399;
-  --status-attention: #fbbf24;
-  --status-critical: #f87171;
-  --status-neutral: #9ca3af;
-  --status-info: #60a5fa;
+  --gm-accent: #D4885E;
+  --gm-accent-light: #2E2018;
 
-  /* Background colors */
-  --bg-primary: #121212;
-  --bg-secondary: #1a1a1a;
-  --bg-tertiary: #242424;
-  --bg-card: #1e1e1e;
-  --bg-sidebar: #161616;
-  --bg-input: #2a2a2a;
+  --gm-surface: #1A1917;
+  --gm-surface-raised: #262523;
+  --gm-surface-sunken: #141312;
 
-  /* Border colors */
-  --border-primary: #374151;
-  --border-secondary: #4b5563;
-  --border-focus: #60a5fa;
+  --gm-sidebar: #141312;
+  --gm-sidebar-hover: #262523;
+  --gm-sidebar-active: #33312E;
 
-  /* Shadow colors */
+  --gm-text: #F5F2EF;
+  --gm-text-secondary: #A8A29E;
+  --gm-text-muted: #78716C;
+
+  --gm-border: #33312E;
+  --gm-border-strong: #44413D;
+  --gm-border-focus: #5BA66A;
+
+  /* Status colors — brighter for dark backgrounds */
+  --status-healthy: #5BA66A;
+  --status-attention: #FBBF24;
+  --status-critical: #F87171;
+  --status-neutral: #A8A29E;
+  --status-info: #60A5FA;
+
   --shadow-color: rgba(0, 0, 0, 0.3);
   --shadow-color-strong: rgba(0, 0, 0, 0.5);
+
+  /* Legacy aliases */
+  --grove-green: var(--gm-primary);
+  --grove-green-light: var(--gm-primary-hover);
+  --citrus-orange: var(--gm-accent);
+  --citrus-gold: var(--gm-accent);
+  --cream: var(--gm-surface);
+  --warm-white: var(--gm-surface);
+  --bark-brown: var(--gm-text);
+  --text-primary: var(--gm-text);
+  --text-secondary: var(--gm-text-secondary);
+  --bg-primary: var(--gm-surface);
+  --bg-secondary: var(--gm-surface-sunken);
+  --bg-tertiary: var(--gm-surface-sunken);
+  --bg-card: var(--gm-surface-raised);
+  --bg-sidebar: var(--gm-sidebar);
+  --bg-input: var(--gm-surface-raised);
+  --border-primary: var(--gm-border);
+  --border-secondary: var(--gm-border-strong);
+  --border-focus: var(--gm-border-focus);
 }
 
-/* Grove Master Typography */
+/* Grove Master Typography — DM Sans throughout, weight hierarchy */
 body {
   font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
-  transition: background-color 0.3s ease, color 0.3s ease;
+  background-color: var(--gm-surface);
+  color: var(--gm-text);
+  transition: background-color 0.2s ease-out, color 0.2s ease-out;
+  line-height: 1.5;
 }
 
 /* Dark mode body */
 .dark body,
 body.dark,
 html.dark body {
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
+  background-color: var(--gm-surface);
+  color: var(--gm-text);
 }
 
-h1, h2, h3, h4, h5, h6,
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-weight: 600;
+  color: var(--gm-text);
+  line-height: 1.3;
+}
+
+/* Legacy class — maps to same font now */
 .font-heading {
-  font-family: 'Fraunces', Georgia, serif;
-  color: var(--bark-brown);
+  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-weight: 600;
 }
 
-/* Ensure dark mode headings are readable */
 .dark h1, .dark h2, .dark h3, .dark h4, .dark h5, .dark h6,
 .dark .font-heading {
-  color: var(--text-primary);
+  color: var(--gm-text);
 }
 
 /* =============================================================================
@@ -264,83 +316,71 @@ h1, h2, h3, h4, h5, h6,
 .dark .ring-gray-200 { --tw-ring-color: #374151 !important; }
 .dark .focus\:ring-gray-200:focus { --tw-ring-color: #374151 !important; }
 
-/* Grove Master Color Utility Classes */
-.bg-grove-green { background-color: var(--grove-green); }
-.bg-grove-green-light { background-color: var(--grove-green-light); }
-.bg-citrus-orange { background-color: var(--citrus-orange); }
-.bg-citrus-gold { background-color: var(--citrus-gold); }
-.bg-cream { background-color: var(--cream); }
-.bg-warm-white { background-color: var(--warm-white); }
-.bg-bark-brown { background-color: var(--bark-brown); }
+/* Grove Master Color Utility Classes — legacy (kept for backwards compat) */
+.bg-grove-green { background-color: var(--gm-primary); }
+.bg-grove-green-light { background-color: var(--gm-primary-hover); }
+.bg-citrus-orange { background-color: var(--gm-accent); }
+.bg-citrus-gold { background-color: var(--gm-accent); }
+.bg-cream { background-color: var(--gm-surface); }
+.bg-warm-white { background-color: var(--gm-surface); }
+.bg-bark-brown { background-color: var(--gm-text); }
 
-.text-grove-green { color: var(--grove-green); }
-.text-grove-green-light { color: var(--grove-green-light); }
-.text-citrus-orange { color: var(--citrus-orange); }
-.text-citrus-gold { color: var(--citrus-gold); }
-.text-bark-brown { color: var(--bark-brown); }
+.text-grove-green { color: var(--gm-primary); }
+.text-grove-green-light { color: var(--gm-primary-hover); }
+.text-citrus-orange { color: var(--gm-accent); }
+.text-citrus-gold { color: var(--gm-accent); }
+.text-bark-brown { color: var(--gm-text); }
 
-.border-grove-green { border-color: var(--grove-green); }
-.border-grove-green-light { border-color: var(--grove-green-light); }
-.border-citrus-orange { border-color: var(--citrus-orange); }
-.border-citrus-gold { border-color: var(--citrus-gold); }
+.border-grove-green { border-color: var(--gm-primary); }
+.border-grove-green-light { border-color: var(--gm-primary-hover); }
+.border-citrus-orange { border-color: var(--gm-accent); }
+.border-citrus-gold { border-color: var(--gm-accent); }
 
-/* Override Tailwind green with Grove Master colors - buttons and accents only */
-/* Note: Only override specific button/accent colors, not all greens */
-.bg-green-600 { background-color: #16a34a !important; } /* Keep Tailwind's green-600 */
-.bg-green-700 { background-color: #15803d !important; } /* Keep Tailwind's green-700 */
-.hover\:bg-green-700:hover { background-color: #15803d !important; }
-.hover\:bg-green-600:hover { background-color: #16a34a !important; }
-
-/* Grove-specific green classes (use these for brand elements) */
-.bg-grove-green { background-color: var(--grove-green) !important; }
-.text-grove-green { color: var(--grove-green) !important; }
-.border-grove-green { border-color: var(--grove-green) !important; }
-
-/* Custom scrollbar styles */
+/* Custom scrollbar styles — warm tones */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: var(--gm-surface-sunken);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: var(--gm-border-strong);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: var(--gm-text-muted);
 }
 
 /* Dark mode scrollbar */
 .dark ::-webkit-scrollbar-track {
-  background: #1f2937;
+  background: var(--gm-surface-sunken);
 }
 
 .dark ::-webkit-scrollbar-thumb {
-  background: #4b5563;
+  background: var(--gm-border-strong);
 }
 
 .dark ::-webkit-scrollbar-thumb:hover {
-  background: #6b7280;
+  background: var(--gm-text-muted);
 }
 
-/* Smooth transitions */
+/* Smooth transitions — 200ms ease-out feels responsive but perceptible */
 * {
-  transition-property: background-color, border-color, color, fill, stroke;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 150ms;
+  transition-property: background-color, border-color, color, fill, stroke, opacity, box-shadow;
+  transition-timing-function: ease-out;
+  transition-duration: 200ms;
 }
 
-/* Focus styles */
+/* Focus styles — sage green ring */
 button:focus-visible,
 input:focus-visible,
 select:focus-visible,
 textarea:focus-visible {
-  outline: 2px solid #3b82f6;
+  outline: 2px solid var(--gm-primary);
   outline-offset: 2px;
 }
 
@@ -467,8 +507,10 @@ textarea:focus-visible {
 /* High contrast mode for outdoor readability */
 @media (prefers-contrast: more) {
   :root {
-    --text-primary: #000000;
-    --text-secondary: #1a1a1a;
+    --gm-text: #000000;
+    --gm-text-secondary: #1a1a1a;
+    --gm-text-muted: #333333;
+    --gm-border: #999999;
   }
 
   .border-gray-200 {
@@ -491,21 +533,21 @@ textarea:focus-visible {
 }
 
 .overflow-x-auto::-webkit-scrollbar-thumb {
-  background: #d1d5db;
+  background: var(--gm-border-strong);
   border-radius: 3px;
 }
 
 .overflow-x-auto::-webkit-scrollbar-thumb:hover {
-  background: #9ca3af;
+  background: var(--gm-text-muted);
 }
 
 /* Dark mode horizontal scrollbar */
 .dark .overflow-x-auto::-webkit-scrollbar-thumb {
-  background: #4b5563;
+  background: var(--gm-border-strong);
 }
 
 .dark .overflow-x-auto::-webkit-scrollbar-thumb:hover {
-  background: #6b7280;
+  background: var(--gm-text-muted);
 }
 
 /* Dark mode modal backdrop */
@@ -550,9 +592,9 @@ textarea:focus-visible {
 
 /* Dark mode for specific component backgrounds */
 .dark .bg-cream {
-  background-color: var(--bg-primary) !important;
+  background-color: var(--gm-surface) !important;
 }
 
 .dark .bg-warm-white {
-  background-color: var(--bg-secondary) !important;
+  background-color: var(--gm-surface-sunken) !important;
 }

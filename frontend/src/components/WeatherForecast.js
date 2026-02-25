@@ -22,7 +22,7 @@ import { getWeatherIcon, SprayRatingBadge } from './WeatherWidget';
 // Factor status indicator
 const FactorStatus = ({ status, value, message }) => {
   const config = {
-    good: { icon: <CheckCircle className="w-4 h-4" />, color: 'text-green-600', bg: 'bg-green-50' },
+    good: { icon: <CheckCircle className="w-4 h-4" />, color: 'text-primary', bg: 'bg-green-50' },
     fair: { icon: <AlertTriangle className="w-4 h-4" />, color: 'text-yellow-600', bg: 'bg-yellow-50' },
     poor: { icon: <XCircle className="w-4 h-4" />, color: 'text-red-600', bg: 'bg-red-50' },
   };
@@ -196,7 +196,7 @@ export default function WeatherForecast() {
                 const farm = farms.find(f => f.id === parseInt(e.target.value));
                 setSelectedFarm(farm);
               }}
-              className="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              className="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary focus:border-transparent"
             >
               {farms.map(farm => (
                 <option key={farm.id} value={farm.id}>
@@ -210,7 +210,7 @@ export default function WeatherForecast() {
           <button
             onClick={handleRefresh}
             disabled={loading}
-            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+            className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors disabled:opacity-50"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
             Refresh
@@ -222,7 +222,7 @@ export default function WeatherForecast() {
       {loading && (
         <div className="flex items-center justify-center py-16">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
             <p className="mt-4 text-gray-600">Loading weather data...</p>
           </div>
         </div>

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { companyAPI } from '../services/api';
 import SeasonTemplatesManager from './settings/SeasonTemplatesManager';
+import ModuleVisibilitySettings from './settings/ModuleVisibilitySettings';
 import {
   Building2,
   MapPin,
@@ -19,7 +20,8 @@ import {
   CheckCircle,
   Loader2,
   ChevronLeft,
-  Sprout
+  Sprout,
+  LayoutGrid
 } from 'lucide-react';
 
 const CompanySettings = ({ onBack }) => {
@@ -70,7 +72,7 @@ const CompanySettings = ({ onBack }) => {
   const tierInfo = {
     free: { name: 'Free Trial', color: 'bg-gray-100 text-gray-700', maxFarms: 3, maxUsers: 5 },
     starter: { name: 'Starter', color: 'bg-blue-100 text-blue-700', maxFarms: 5, maxUsers: 10 },
-    professional: { name: 'Professional', color: 'bg-green-100 text-green-700', maxFarms: 15, maxUsers: 25 },
+    professional: { name: 'Professional', color: 'bg-green-100 text-primary', maxFarms: 15, maxUsers: 25 },
     enterprise: { name: 'Enterprise', color: 'bg-purple-100 text-purple-700', maxFarms: 'Unlimited', maxUsers: 'Unlimited' }
   };
 
@@ -142,7 +144,7 @@ const CompanySettings = ({ onBack }) => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <Loader2 className="w-8 h-8 animate-spin text-green-600" />
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
         <span className="ml-2 text-gray-600">Loading company information...</span>
       </div>
     );
@@ -177,7 +179,7 @@ const CompanySettings = ({ onBack }) => {
         
         <div className="flex items-center justify-between">
           <div className="flex items-center">
-            <Building2 className="w-8 h-8 text-green-600 mr-3" />
+            <Building2 className="w-8 h-8 text-primary mr-3" />
             <div>
               <h1 className="text-2xl font-bold text-gray-900">Company Settings</h1>
               <p className="text-gray-500">Manage your company information and settings</p>
@@ -187,7 +189,7 @@ const CompanySettings = ({ onBack }) => {
           {isOwner && !editing && (
             <button
               onClick={() => setEditing(true)}
-              className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+              className="flex items-center px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors"
             >
               <Edit2 className="w-4 h-4 mr-2" />
               Edit
@@ -206,7 +208,7 @@ const CompanySettings = ({ onBack }) => {
               <button
                 onClick={handleSave}
                 disabled={saving}
-                className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+                className="flex items-center px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors disabled:opacity-50"
               >
                 {saving ? (
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -231,10 +233,10 @@ const CompanySettings = ({ onBack }) => {
       )}
       
       {success && (
-        <div className="mb-4 bg-green-50 border border-green-200 rounded-lg p-4">
+        <div className="mb-4 bg-primary-light border border-green-200 rounded-lg p-4">
           <div className="flex items-center">
             <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
-            <span className="text-green-700">{success}</span>
+            <span className="text-primary">{success}</span>
           </div>
         </div>
       )}
@@ -257,7 +259,7 @@ const CompanySettings = ({ onBack }) => {
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
           <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
             <h2 className="text-lg font-semibold text-gray-900 flex items-center">
-              <Building2 className="w-5 h-5 mr-2 text-green-600" />
+              <Building2 className="w-5 h-5 mr-2 text-primary" />
               Basic Information
             </h2>
           </div>
@@ -272,7 +274,7 @@ const CompanySettings = ({ onBack }) => {
                   name="name"
                   value={formData.name || ''}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
                   required
                 />
               ) : (
@@ -291,7 +293,7 @@ const CompanySettings = ({ onBack }) => {
                   value={formData.legal_name || ''}
                   onChange={handleInputChange}
                   placeholder="Official registered business name"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
                 />
               ) : (
                 <p className="text-gray-900 py-2">{company.legal_name || '—'}</p>
@@ -307,7 +309,7 @@ const CompanySettings = ({ onBack }) => {
                   name="primary_crop"
                   value={formData.primary_crop || ''}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
                 >
                   <option value="">Select primary crop...</option>
                   {cropOptions.map(crop => (
@@ -330,7 +332,7 @@ const CompanySettings = ({ onBack }) => {
                   value={formData.estimated_total_acres || ''}
                   onChange={handleInputChange}
                   placeholder="Total farmed acres"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
                 />
               ) : (
                 <p className="text-gray-900 py-2">
@@ -345,7 +347,7 @@ const CompanySettings = ({ onBack }) => {
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
           <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
             <h2 className="text-lg font-semibold text-gray-900 flex items-center">
-              <Phone className="w-5 h-5 mr-2 text-green-600" />
+              <Phone className="w-5 h-5 mr-2 text-primary" />
               Contact Information
             </h2>
           </div>
@@ -360,7 +362,7 @@ const CompanySettings = ({ onBack }) => {
                   name="primary_contact_name"
                   value={formData.primary_contact_name || ''}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
                 />
               ) : (
                 <p className="text-gray-900 py-2">{company.primary_contact_name || '—'}</p>
@@ -378,7 +380,7 @@ const CompanySettings = ({ onBack }) => {
                   value={formData.phone || ''}
                   onChange={handleInputChange}
                   placeholder="(555) 555-5555"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
                 />
               ) : (
                 <p className="text-gray-900 py-2 flex items-center">
@@ -403,7 +405,7 @@ const CompanySettings = ({ onBack }) => {
                   value={formData.email || ''}
                   onChange={handleInputChange}
                   placeholder="company@example.com"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
                 />
               ) : (
                 <p className="text-gray-900 py-2 flex items-center">
@@ -423,7 +425,7 @@ const CompanySettings = ({ onBack }) => {
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
           <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
             <h2 className="text-lg font-semibold text-gray-900 flex items-center">
-              <MapPin className="w-5 h-5 mr-2 text-green-600" />
+              <MapPin className="w-5 h-5 mr-2 text-primary" />
               Business Address
             </h2>
           </div>
@@ -439,7 +441,7 @@ const CompanySettings = ({ onBack }) => {
                   value={formData.address || ''}
                   onChange={handleInputChange}
                   placeholder="123 Farm Road"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
                 />
               ) : (
                 <p className="text-gray-900 py-2">{company.address || '—'}</p>
@@ -456,7 +458,7 @@ const CompanySettings = ({ onBack }) => {
                   name="city"
                   value={formData.city || ''}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
                 />
               ) : (
                 <p className="text-gray-900 py-2">{company.city || '—'}</p>
@@ -472,7 +474,7 @@ const CompanySettings = ({ onBack }) => {
                   name="county"
                   value={formData.county || ''}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
                 >
                   <option value="">Select county...</option>
                   {californiaCounties.map(county => (
@@ -503,7 +505,7 @@ const CompanySettings = ({ onBack }) => {
                   onChange={handleInputChange}
                   placeholder="93001"
                   maxLength="10"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
                 />
               ) : (
                 <p className="text-gray-900 py-2">{company.zip_code || '—'}</p>
@@ -516,7 +518,7 @@ const CompanySettings = ({ onBack }) => {
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
           <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
             <h2 className="text-lg font-semibold text-gray-900 flex items-center">
-              <FileText className="w-5 h-5 mr-2 text-green-600" />
+              <FileText className="w-5 h-5 mr-2 text-primary" />
               Regulatory & Business Information
             </h2>
           </div>
@@ -533,7 +535,7 @@ const CompanySettings = ({ onBack }) => {
                   value={formData.operator_id || ''}
                   onChange={handleInputChange}
                   placeholder="County Agricultural Commissioner ID"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
                 />
               ) : (
                 <p className="text-gray-900 py-2">{company.operator_id || '—'}</p>
@@ -550,7 +552,7 @@ const CompanySettings = ({ onBack }) => {
                   name="business_license"
                   value={formData.business_license || ''}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
                 />
               ) : (
                 <p className="text-gray-900 py-2">{company.business_license || '—'}</p>
@@ -568,7 +570,7 @@ const CompanySettings = ({ onBack }) => {
                   value={formData.pca_license || ''}
                   onChange={handleInputChange}
                   placeholder="PCA license number if applicable"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
                 />
               ) : (
                 <p className="text-gray-900 py-2">{company.pca_license || '—'}</p>
@@ -586,7 +588,7 @@ const CompanySettings = ({ onBack }) => {
                   value={formData.qal_license || ''}
                   onChange={handleInputChange}
                   placeholder="QAL number if applicable"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
                 />
               ) : (
                 <p className="text-gray-900 py-2">{company.qal_license || '—'}</p>
@@ -599,7 +601,7 @@ const CompanySettings = ({ onBack }) => {
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
           <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
             <h2 className="text-lg font-semibold text-gray-900 flex items-center">
-              <CreditCard className="w-5 h-5 mr-2 text-green-600" />
+              <CreditCard className="w-5 h-5 mr-2 text-primary" />
               Subscription
             </h2>
           </div>
@@ -664,7 +666,7 @@ const CompanySettings = ({ onBack }) => {
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
           <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
             <h2 className="text-lg font-semibold text-gray-900 flex items-center">
-              <Shield className="w-5 h-5 mr-2 text-green-600" />
+              <Shield className="w-5 h-5 mr-2 text-primary" />
               Account Status
             </h2>
           </div>
@@ -675,7 +677,7 @@ const CompanySettings = ({ onBack }) => {
                   Account Status
                 </label>
                 <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                  company.is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                  company.is_active ? 'bg-green-100 text-primary' : 'bg-red-100 text-red-700'
                 }`}>
                   {company.is_active ? 'Active' : 'Inactive'}
                 </span>
@@ -686,7 +688,7 @@ const CompanySettings = ({ onBack }) => {
                   Onboarding Status
                 </label>
                 <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                  company.onboarding_completed ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'
+                  company.onboarding_completed ? 'bg-green-100 text-primary' : 'bg-amber-100 text-amber-700'
                 }`}>
                   {company.onboarding_completed ? 'Complete' : `In Progress (${company.onboarding_step})`}
                 </span>
@@ -725,7 +727,7 @@ const CompanySettings = ({ onBack }) => {
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
           <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
             <h2 className="text-lg font-semibold text-gray-900 flex items-center">
-              <Sprout className="w-5 h-5 mr-2 text-green-600" />
+              <Sprout className="w-5 h-5 mr-2 text-primary" />
               Season Templates
             </h2>
             <p className="text-sm text-gray-500 mt-1">
@@ -734,6 +736,22 @@ const CompanySettings = ({ onBack }) => {
           </div>
           <div className="p-6">
             <SeasonTemplatesManager isOwner={isOwner} />
+          </div>
+        </div>
+
+        {/* Module Visibility */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+          <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
+            <h2 className="text-lg font-semibold text-gray-900 flex items-center">
+              <LayoutGrid className="w-5 h-5 mr-2 text-primary" />
+              Sidebar Modules
+            </h2>
+            <p className="text-sm text-gray-500 mt-1">
+              Show or hide modules in the sidebar to reduce clutter
+            </p>
+          </div>
+          <div className="p-6">
+            <ModuleVisibilitySettings />
           </div>
         </div>
 

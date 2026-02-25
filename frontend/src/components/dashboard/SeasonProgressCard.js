@@ -40,7 +40,7 @@ const categoryIcons = {
 // Category colors
 const categoryColors = {
   citrus: { bg: 'from-orange-400 to-yellow-500', light: 'bg-orange-50', text: 'text-orange-600' },
-  subtropical: { bg: 'from-green-500 to-emerald-600', light: 'bg-green-50', text: 'text-green-600' },
+  subtropical: { bg: 'from-green-500 to-emerald-600', light: 'bg-green-50', text: 'text-primary' },
   deciduous_fruit: { bg: 'from-pink-400 to-rose-500', light: 'bg-pink-50', text: 'text-pink-600' },
   vine: { bg: 'from-purple-400 to-violet-500', light: 'bg-purple-50', text: 'text-purple-600' },
   nut: { bg: 'from-amber-500 to-yellow-600', light: 'bg-amber-50', text: 'text-amber-600' },
@@ -136,7 +136,7 @@ const CropSeasonMiniCard = ({ data, onNavigate }) => {
           {binsComparison !== null && (
             <div
               className={`flex items-center justify-center gap-0.5 text-xs ${
-                binsComparison >= 0 ? 'text-green-600' : 'text-red-500'
+                binsComparison >= 0 ? 'text-primary' : 'text-red-500'
               }`}
             >
               {binsComparison >= 0 ? (
@@ -302,7 +302,7 @@ const SeasonProgressCard = ({ onNavigate }) => {
         </div>
         <button
           onClick={() => onNavigate && onNavigate('analytics')}
-          className="text-xs text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 flex items-center gap-1"
+          className="text-xs text-primary dark:text-green-400 hover:text-primary-hover dark:hover:text-green-300 flex items-center gap-1"
         >
           View Analytics
           <ChevronRight className="w-3 h-3" />

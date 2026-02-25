@@ -120,7 +120,7 @@ function QuarantineStatusBadge({
   if (status?.in_quarantine === false) {
     return (
       <div
-        className={`inline-flex items-center gap-1 px-2 py-1 rounded-full bg-green-100 text-green-700 text-xs ${className}`}
+        className={`inline-flex items-center gap-1 px-2 py-1 rounded-full bg-green-100 text-primary text-xs ${className}`}
         title="Not in HLB quarantine zone"
       >
         <CheckCircle className="w-3 h-3" />

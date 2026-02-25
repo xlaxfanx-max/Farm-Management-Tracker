@@ -19,7 +19,7 @@ import {
 const Step7RiskReview = ({ formData, assessment, onCalculateRisk }) => {
   const getRiskColor = (level) => {
     const colors = {
-      low: 'text-green-600 dark:text-green-400',
+      low: 'text-primary dark:text-green-400',
       medium: 'text-yellow-600 dark:text-yellow-400',
       high: 'text-orange-600 dark:text-orange-400',
       critical: 'text-red-600 dark:text-red-400',
@@ -54,8 +54,8 @@ const Step7RiskReview = ({ formData, assessment, onCalculateRisk }) => {
         label: 'No Treatment Required',
         description: 'Water meets FDA standards and can be used without treatment',
         icon: CheckCircle2,
-        color: 'text-green-600 dark:text-green-400',
-        bgColor: 'bg-green-50 dark:bg-green-900/20',
+        color: 'text-primary dark:text-green-400',
+        bgColor: 'bg-primary-light dark:bg-green-900/20',
         borderColor: 'border-green-200 dark:border-green-800',
       },
       treatment_required: {

@@ -14,7 +14,7 @@ function ScoreRing({ score }) {
   else ringColor = '#ef4444';
 
   let textColor;
-  if (score >= 75) textColor = 'text-green-600 dark:text-green-400';
+  if (score >= 75) textColor = 'text-primary dark:text-green-400';
   else if (score >= 50) textColor = 'text-amber-600 dark:text-amber-400';
   else textColor = 'text-red-600 dark:text-red-400';
 
@@ -83,7 +83,7 @@ function GapPill({ item, onNavigate }) {
       onClick={() => item.action_key && onNavigate(item.action_key)}
       className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300 rounded-full text-xs font-medium hover:bg-amber-100 dark:hover:bg-amber-900/40 transition-colors"
     >
-      <span className="font-bold text-green-600 dark:text-green-400">+{item.points} pts</span>
+      <span className="font-bold text-primary dark:text-green-400">+{item.points} pts</span>
       {item.action}
     </button>
   );
@@ -151,7 +151,7 @@ export default function ComplianceScoreBreakdown({ onNavigate }) {
               {gap_items.length} area{gap_items.length !== 1 ? 's' : ''} to improve
             </p>
           ) : (
-            <p className="text-xs text-green-600 dark:text-green-400 mb-2">
+            <p className="text-xs text-primary dark:text-green-400 mb-2">
               All areas complete
             </p>
           )}

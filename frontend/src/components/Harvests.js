@@ -473,7 +473,7 @@ const Harvests = () => {
           {/* Profitability Dashboard - Primary Analytics */}
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
             <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4 flex items-center gap-2">
-              <DollarSign className="text-green-600" size={20} />
+              <DollarSign className="text-primary" size={20} />
               Profitability Analysis
             </h3>
             <ProfitabilityDashboard />
@@ -491,7 +491,7 @@ const Harvests = () => {
           {/* Packinghouse Analytics */}
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
             <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4 flex items-center gap-2">
-              <Boxes className="text-green-600" size={20} />
+              <Boxes className="text-primary" size={20} />
               Packinghouse Analytics
             </h3>
             <PackinghouseAnalytics />
@@ -620,7 +620,7 @@ const Harvests = () => {
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 cursor-pointer hover:shadow-md hover:border-green-200 dark:hover:border-green-700 border border-transparent transition-all" onClick={() => openDrillDown('total_revenue')}>
             <div className="flex items-center gap-3">
               <div className="p-2 bg-green-100 rounded-lg">
-                <DollarSign className="text-green-600" size={24} />
+                <DollarSign className="text-primary" size={24} />
               </div>
               <div>
                 <p className="text-sm text-gray-600 dark:text-gray-400">Total Revenue</p>
@@ -737,7 +737,7 @@ const Harvests = () => {
                       <p className="text-sm text-gray-500 dark:text-gray-400">{harvest.acres_harvested} acres</p>
                     </div>
                     <div className="text-right">
-                      <p className="font-medium text-green-600 dark:text-green-400">
+                      <p className="font-medium text-primary dark:text-green-400">
                         {formatCurrency(harvest.total_revenue)}
                       </p>
                       <p className="text-sm text-gray-500 dark:text-gray-400">{harvest.load_count} loads</p>
@@ -908,7 +908,7 @@ const Harvests = () => {
                       {harvest.status === 'complete' && (
                         <button
                           onClick={(e) => { e.stopPropagation(); handleMarkVerified(harvest.id); }}
-                          className="flex items-center gap-1 px-3 py-1.5 text-sm bg-green-50 text-green-700 rounded-lg hover:bg-green-100"
+                          className="flex items-center gap-1 px-3 py-1.5 text-sm bg-primary-light text-primary rounded-lg hover:bg-green-100"
                         >
                           <CheckCircle size={16} /> Verify (GAP/GHP)
                         </button>
@@ -933,7 +933,7 @@ const Harvests = () => {
                       <div className="grid grid-cols-4 gap-4 text-sm">
                         <div className="flex items-center gap-2">
                           {harvest.phi_verified ? (
-                            <CheckCircle size={16} className="text-green-600" />
+                            <CheckCircle size={16} className="text-primary" />
                           ) : (
                             <Clock size={16} className="text-gray-400" />
                           )}
@@ -941,7 +941,7 @@ const Harvests = () => {
                         </div>
                         <div className="flex items-center gap-2">
                           {harvest.equipment_cleaned ? (
-                            <CheckCircle size={16} className="text-green-600" />
+                            <CheckCircle size={16} className="text-primary" />
                           ) : (
                             <Clock size={16} className="text-gray-400" />
                           )}
@@ -949,7 +949,7 @@ const Harvests = () => {
                         </div>
                         <div className="flex items-center gap-2">
                           {harvest.no_contamination_observed ? (
-                            <CheckCircle size={16} className="text-green-600" />
+                            <CheckCircle size={16} className="text-primary" />
                           ) : (
                             <Clock size={16} className="text-gray-400" />
                           )}
@@ -957,7 +957,7 @@ const Harvests = () => {
                         </div>
                         <div className="flex items-center gap-2">
                           {harvest.supervisor_name ? (
-                            <CheckCircle size={16} className="text-green-600" />
+                            <CheckCircle size={16} className="text-primary" />
                           ) : (
                             <Clock size={16} className="text-gray-400" />
                           )}
@@ -991,7 +991,7 @@ const Harvests = () => {
                                   <td className="px-3 py-2 text-sm">{load.buyer_name || 'N/A'}</td>
                                   <td className="px-3 py-2 text-sm">{load.bins}</td>
                                   <td className="px-3 py-2 text-sm">{load.grade_display}</td>
-                                  <td className="px-3 py-2 text-sm text-green-600">{formatCurrency(load.total_revenue)}</td>
+                                  <td className="px-3 py-2 text-sm text-primary">{formatCurrency(load.total_revenue)}</td>
                                   <td className="px-3 py-2 text-sm">
                                     <span className={`px-2 py-0.5 rounded-full text-xs ${
                                       load.payment_status === 'paid' ? 'bg-green-100 text-green-800' :
@@ -1046,7 +1046,7 @@ const Harvests = () => {
                                   <td className="px-3 py-2 text-sm">{formatCurrency(labor.total_labor_cost)}</td>
                                   <td className="px-3 py-2 text-sm">
                                     {labor.training_verified ? (
-                                      <CheckCircle size={16} className="text-green-600" />
+                                      <CheckCircle size={16} className="text-primary" />
                                     ) : (
                                       <Clock size={16} className="text-gray-400" />
                                     )}

@@ -180,7 +180,7 @@ const SignatureCapture = ({
           disabled
             ? 'border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800'
             : useSaved
-            ? 'border-green-300 dark:border-green-700 bg-green-50 dark:bg-green-900/20'
+            ? 'border-green-300 dark:border-green-700 bg-primary-light dark:bg-green-900/20'
             : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900'
         }`}
         style={{ width: 'fit-content' }}
@@ -238,7 +238,7 @@ const SignatureCapture = ({
                 disabled={disabled}
                 className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
                   useSaved
-                    ? 'text-green-700 dark:text-green-300 bg-green-100 dark:bg-green-900/40'
+                    ? 'text-primary dark:text-green-300 bg-green-100 dark:bg-green-900/40'
                     : 'text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600'
                 }`}
               >

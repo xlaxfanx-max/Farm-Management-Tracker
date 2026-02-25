@@ -80,7 +80,7 @@ export const AnalyticsCard = ({ title, value, subtitle, icon, trend, trendValue,
 export const LoadingState = ({ message = 'Loading analytics...' }) => (
   <div className="flex items-center justify-center py-16">
     <div className="text-center">
-      <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-green-600 mx-auto"></div>
+      <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary mx-auto"></div>
       <p className="mt-4 text-gray-500">{message}</p>
     </div>
   </div>
@@ -127,7 +127,7 @@ export const VarianceIndicator = ({ value, format = 'percent' }) => {
   }
   const isPositive = value > 0;
   const isNegative = value < 0;
-  const colorClass = isPositive ? 'text-green-600' : isNegative ? 'text-red-600' : 'text-gray-500';
+  const colorClass = isPositive ? 'text-primary' : isNegative ? 'text-red-600' : 'text-gray-500';
   const Icon = isPositive ? ArrowUpRight : isNegative ? ArrowDownRight : Minus;
 
   let displayValue;
@@ -156,7 +156,7 @@ export const SectionCard = ({ title, subtitle, icon: Icon, children, className =
     {(title || subtitle) && (
       <div className="p-5 border-b border-gray-200">
         <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-          {Icon && <Icon className="w-5 h-5 text-green-600" />}
+          {Icon && <Icon className="w-5 h-5 text-primary" />}
           {title}
         </h3>
         {subtitle && (
@@ -174,7 +174,7 @@ export const SectionCard = ({ title, subtitle, icon: Icon, children, className =
 
 export const AnalyticsTabs = ({ tabs, activeTab, onChange, accentColor = 'green' }) => {
   const activeColorMap = {
-    green: 'border-green-600 text-green-600',
+    green: 'border-primary text-primary',
     orange: 'border-orange-600 text-orange-600',
     blue: 'border-blue-600 text-blue-600',
   };

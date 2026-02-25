@@ -84,7 +84,7 @@ export default function PURReviewCard({ report, index, farms, onChange }) {
               <Package className="w-3.5 h-3.5" />
               {productStats.total} product{productStats.total !== 1 ? 's' : ''}
               {productStats.matched > 0 && (
-                <span className="text-green-600">
+                <span className="text-primary">
                   ({productStats.matched} matched)
                 </span>
               )}
@@ -98,7 +98,7 @@ export default function PURReviewCard({ report, index, farms, onChange }) {
         {/* Status badges */}
         <div className="flex items-center gap-2">
           {farmStatus === 'auto' && (
-            <span className="px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700 rounded-full">
+            <span className="px-2 py-0.5 text-xs font-medium bg-green-100 text-primary rounded-full">
               Farm matched
             </span>
           )}
@@ -222,7 +222,7 @@ export default function PURReviewCard({ report, index, farms, onChange }) {
                         </td>
                         <td className="py-2">
                           {pm.match_type === 'exact_epa' && (
-                            <span className="inline-flex items-center gap-1 text-green-700 text-xs">
+                            <span className="inline-flex items-center gap-1 text-primary text-xs">
                               <CheckCircle className="w-3.5 h-3.5" />
                               EPA match
                             </span>

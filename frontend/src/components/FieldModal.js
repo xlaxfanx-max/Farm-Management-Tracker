@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { FIELD_CONSTANTS } from '../services/api';
 import { useToast } from '../contexts/ToastContext';
+import CollapsibleSection from './ui/CollapsibleSection';
 
 // California counties for dropdown - prevents typos!
 const CALIFORNIA_COUNTIES = [
@@ -226,7 +227,7 @@ function FieldModal({ field, farms, crops = [], rootstocks = [], preselectedFarm
                 onClick={() => setActiveTab(tab.id)}
                 className={`px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
                   activeTab === tab.id
-                    ? 'border-green-600 text-green-600 dark:text-green-400'
+                    ? 'border-primary text-primary dark:text-green-400'
                     : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
                 }`}
               >
@@ -471,61 +472,63 @@ function FieldModal({ field, farms, crops = [], rootstocks = [], preselectedFarm
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1 text-gray-900 dark:text-gray-200">Row Orientation</label>
-                  <select
-                    value={formData.row_orientation}
-                    onChange={(e) => setFormData({...formData, row_orientation: e.target.value})}
-                    className="w-full p-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                  >
-                    <option value="">Select...</option>
-                    {FIELD_CONSTANTS.ROW_ORIENTATIONS.map(opt => (
-                      <option key={opt.value} value={opt.value}>{opt.label}</option>
-                    ))}
-                  </select>
+              <CollapsibleSection title="Layout & Yield Estimates">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-1 text-gray-900 dark:text-gray-200">Row Orientation</label>
+                    <select
+                      value={formData.row_orientation}
+                      onChange={(e) => setFormData({...formData, row_orientation: e.target.value})}
+                      className="w-full p-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    >
+                      <option value="">Select...</option>
+                      {FIELD_CONSTANTS.ROW_ORIENTATIONS.map(opt => (
+                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1 text-gray-900 dark:text-gray-200">Trellis System</label>
+                    <select
+                      value={formData.trellis_system}
+                      onChange={(e) => setFormData({...formData, trellis_system: e.target.value})}
+                      className="w-full p-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    >
+                      {FIELD_CONSTANTS.TRELLIS_SYSTEMS.map(opt => (
+                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1 text-gray-900 dark:text-gray-200">Trellis System</label>
-                  <select
-                    value={formData.trellis_system}
-                    onChange={(e) => setFormData({...formData, trellis_system: e.target.value})}
-                    className="w-full p-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                  >
-                    {FIELD_CONSTANTS.TRELLIS_SYSTEMS.map(opt => (
-                      <option key={opt.value} value={opt.value}>{opt.label}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1 text-gray-900 dark:text-gray-200">Expected Yield per Acre</label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    value={formData.expected_yield_per_acre}
-                    onChange={(e) => setFormData({...formData, expected_yield_per_acre: e.target.value})}
-                    className="w-full p-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                    placeholder="e.g., 15"
-                  />
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-1 text-gray-900 dark:text-gray-200">Expected Yield per Acre</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={formData.expected_yield_per_acre}
+                      onChange={(e) => setFormData({...formData, expected_yield_per_acre: e.target.value})}
+                      className="w-full p-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                      placeholder="e.g., 15"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1 text-gray-900 dark:text-gray-200">Yield Unit</label>
+                    <select
+                      value={formData.yield_unit}
+                      onChange={(e) => setFormData({...formData, yield_unit: e.target.value})}
+                      className="w-full p-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    >
+                      <option value="bins">Bins</option>
+                      <option value="lbs">Pounds</option>
+                      <option value="tons">Tons</option>
+                      <option value="boxes">Boxes</option>
+                      <option value="lugs">Lugs</option>
+                    </select>
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1 text-gray-900 dark:text-gray-200">Yield Unit</label>
-                  <select
-                    value={formData.yield_unit}
-                    onChange={(e) => setFormData({...formData, yield_unit: e.target.value})}
-                    className="w-full p-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                  >
-                    <option value="bins">Bins</option>
-                    <option value="lbs">Pounds</option>
-                    <option value="tons">Tons</option>
-                    <option value="boxes">Boxes</option>
-                    <option value="lugs">Lugs</option>
-                  </select>
-                </div>
-              </div>
+              </CollapsibleSection>
             </>
           )}
 
@@ -597,7 +600,7 @@ function FieldModal({ field, farms, crops = [], rootstocks = [], preselectedFarm
 
         <div className="p-6 border-t dark:border-gray-700 flex gap-3 justify-end">
           <button onClick={onClose} className="px-6 py-2 border dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300">Cancel</button>
-          <button onClick={handleSubmit} className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">{field ? 'Update Field' : 'Create Field'}</button>
+          <button onClick={handleSubmit} className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover">{field ? 'Update Field' : 'Create Field'}</button>
         </div>
       </div>
     </div>

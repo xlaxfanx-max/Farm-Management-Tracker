@@ -127,7 +127,7 @@ function FarmLayer({ farms }) {
           >
             <Popup>
               <div className="text-sm">
-                <div className="font-bold text-green-700 flex items-center gap-1">
+                <div className="font-bold text-primary flex items-center gap-1">
                   <MapPin className="w-4 h-4" />
                   {farm.name}
                 </div>
@@ -138,7 +138,7 @@ function FarmLayer({ farms }) {
                       <span className={
                         farm.predicted_risk_score >= 60 ? 'text-red-600' :
                         farm.predicted_risk_score >= 40 ? 'text-yellow-600' :
-                        'text-green-600'
+                        'text-primary'
                       }>
                         {farm.predicted_risk_score}/100
                       </span>
@@ -151,7 +151,7 @@ function FarmLayer({ farms }) {
                         farm.predicted_risk_level === 'critical' ? 'text-red-600' :
                         farm.predicted_risk_level === 'high' ? 'text-orange-600' :
                         farm.predicted_risk_level === 'moderate' ? 'text-yellow-600' :
-                        'text-green-600'
+                        'text-primary'
                       }`}>
                         {farm.predicted_risk_level}
                       </span>

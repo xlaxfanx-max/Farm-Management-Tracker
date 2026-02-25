@@ -7,111 +7,111 @@ function StatusBadge({ status, size = 'sm', className = '' }) {
   const statusConfig = {
     // Health/Operational statuses
     healthy: {
-      bg: 'bg-green-100',
-      text: 'text-green-700',
+      bg: 'bg-green-100 dark:bg-green-900/30',
+      text: 'text-green-700 dark:text-green-300',
       label: 'Healthy'
     },
     good: {
-      bg: 'bg-green-100',
-      text: 'text-green-700',
+      bg: 'bg-green-100 dark:bg-green-900/30',
+      text: 'text-green-700 dark:text-green-300',
       label: 'Good'
     },
     attention: {
-      bg: 'bg-amber-100',
-      text: 'text-amber-700',
+      bg: 'bg-amber-100 dark:bg-amber-900/30',
+      text: 'text-amber-700 dark:text-amber-300',
       label: 'Needs Attention'
     },
     warning: {
-      bg: 'bg-amber-100',
-      text: 'text-amber-700',
+      bg: 'bg-amber-100 dark:bg-amber-900/30',
+      text: 'text-amber-700 dark:text-amber-300',
       label: 'Warning'
     },
     critical: {
-      bg: 'bg-red-100',
-      text: 'text-red-700',
+      bg: 'bg-red-100 dark:bg-red-900/30',
+      text: 'text-red-700 dark:text-red-300',
       label: 'Critical'
     },
     urgent: {
-      bg: 'bg-red-100',
-      text: 'text-red-700',
+      bg: 'bg-red-100 dark:bg-red-900/30',
+      text: 'text-red-700 dark:text-red-300',
       label: 'Urgent'
     },
 
     // Task statuses
     pending: {
-      bg: 'bg-orange-100',
-      text: 'text-orange-700',
+      bg: 'bg-orange-100 dark:bg-orange-900/30',
+      text: 'text-orange-700 dark:text-orange-300',
       label: 'Pending'
     },
     pending_signature: {
-      bg: 'bg-orange-100',
-      text: 'text-orange-700',
+      bg: 'bg-orange-100 dark:bg-orange-900/30',
+      text: 'text-orange-700 dark:text-orange-300',
       label: 'Pending Signature'
     },
     in_progress: {
-      bg: 'bg-blue-100',
-      text: 'text-blue-700',
+      bg: 'bg-blue-100 dark:bg-blue-900/30',
+      text: 'text-blue-700 dark:text-blue-300',
       label: 'In Progress'
     },
     complete: {
-      bg: 'bg-green-100',
-      text: 'text-green-700',
+      bg: 'bg-green-100 dark:bg-green-900/30',
+      text: 'text-green-700 dark:text-green-300',
       label: 'Complete'
     },
     completed: {
-      bg: 'bg-green-100',
-      text: 'text-green-700',
+      bg: 'bg-green-100 dark:bg-green-900/30',
+      text: 'text-green-700 dark:text-green-300',
       label: 'Completed'
     },
     submitted: {
-      bg: 'bg-blue-100',
-      text: 'text-blue-700',
+      bg: 'bg-blue-100 dark:bg-blue-900/30',
+      text: 'text-blue-700 dark:text-blue-300',
       label: 'Submitted'
     },
 
     // Priority levels
     high: {
-      bg: 'bg-red-100',
-      text: 'text-red-700',
+      bg: 'bg-red-100 dark:bg-red-900/30',
+      text: 'text-red-700 dark:text-red-300',
       label: 'High'
     },
     medium: {
-      bg: 'bg-amber-100',
-      text: 'text-amber-700',
+      bg: 'bg-amber-100 dark:bg-amber-900/30',
+      text: 'text-amber-700 dark:text-amber-300',
       label: 'Medium'
     },
     low: {
-      bg: 'bg-blue-100',
-      text: 'text-blue-700',
+      bg: 'bg-blue-100 dark:bg-blue-900/30',
+      text: 'text-blue-700 dark:text-blue-300',
       label: 'Low'
     },
 
     // General statuses
     active: {
-      bg: 'bg-green-100',
-      text: 'text-green-700',
+      bg: 'bg-green-100 dark:bg-green-900/30',
+      text: 'text-green-700 dark:text-green-300',
       label: 'Active'
     },
     inactive: {
-      bg: 'bg-gray-100',
-      text: 'text-gray-600',
+      bg: 'bg-gray-100 dark:bg-gray-700',
+      text: 'text-gray-600 dark:text-gray-300',
       label: 'Inactive'
     },
     overdue: {
-      bg: 'bg-red-100',
-      text: 'text-red-700',
+      bg: 'bg-red-100 dark:bg-red-900/30',
+      text: 'text-red-700 dark:text-red-300',
       label: 'Overdue'
     },
     due_soon: {
-      bg: 'bg-amber-100',
-      text: 'text-amber-700',
+      bg: 'bg-amber-100 dark:bg-amber-900/30',
+      text: 'text-amber-700 dark:text-amber-300',
       label: 'Due Soon'
     },
 
     // Default
     default: {
-      bg: 'bg-gray-100',
-      text: 'text-gray-600',
+      bg: 'bg-gray-100 dark:bg-gray-700',
+      text: 'text-gray-600 dark:text-gray-300',
       label: 'Unknown'
     }
   };

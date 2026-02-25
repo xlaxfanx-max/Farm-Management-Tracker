@@ -40,7 +40,7 @@ const getScoreStrokeColor = (score) => {
 };
 
 const getScoreTextColor = (score) => {
-  if (score >= 80) return 'text-green-600 dark:text-green-400';
+  if (score >= 80) return 'text-primary dark:text-green-400';
   if (score >= 60) return 'text-yellow-600 dark:text-yellow-400';
   return 'text-red-600 dark:text-red-400';
 };
@@ -371,7 +371,7 @@ const ModuleCard = ({ module, onClick }) => {
         <div className="flex items-center gap-3">
           <div className={`p-2 rounded-lg ${
             score >= 80
-              ? 'bg-green-100 dark:bg-green-900/40 text-green-600 dark:text-green-400'
+              ? 'bg-green-100 dark:bg-green-900/40 text-primary dark:text-green-400'
               : score >= 60
               ? 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-600 dark:text-yellow-400'
               : 'bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400'

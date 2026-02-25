@@ -37,7 +37,7 @@ const WARNING_BADGE_STYLES = {
   termination: 'bg-red-900 text-red-100 dark:bg-red-950 dark:text-red-300',
 };
 
-const iCls = 'w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm';
+const iCls = 'w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary text-sm';
 const lCls = 'block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1';
 
 const WarningBadge = ({ level }) => {
@@ -119,7 +119,7 @@ const NonConformanceModal = ({ record, onClose, onSave }) => {
         {/* Modal Header */}
         <div className="sticky top-0 bg-white dark:bg-gray-800 flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700 z-10">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-            <UserX className="w-5 h-5 text-green-600 dark:text-green-400" />
+            <UserX className="w-5 h-5 text-primary dark:text-green-400" />
             {record ? 'Edit Non-Conformance' : 'New Non-Conformance'}
           </h2>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
@@ -243,7 +243,7 @@ const NonConformanceModal = ({ record, onClose, onSave }) => {
                 type="checkbox"
                 checked={form.retraining_required}
                 onChange={(e) => set('retraining_required', e.target.checked)}
-                className="rounded border-gray-300 dark:border-gray-600 text-green-600 focus:ring-green-500"
+                className="rounded border-gray-300 dark:border-gray-600 text-primary focus:ring-primary"
               />
               Retraining Required
             </label>
@@ -280,7 +280,7 @@ const NonConformanceModal = ({ record, onClose, onSave }) => {
                 type="checkbox"
                 checked={form.employee_acknowledged}
                 onChange={(e) => set('employee_acknowledged', e.target.checked)}
-                className="rounded border-gray-300 dark:border-gray-600 text-green-600 focus:ring-green-500"
+                className="rounded border-gray-300 dark:border-gray-600 text-primary focus:ring-primary"
               />
               Employee Acknowledged
             </label>
@@ -321,7 +321,7 @@ const NonConformanceModal = ({ record, onClose, onSave }) => {
             <button
               type="submit"
               disabled={saving}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 text-sm font-medium"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors disabled:opacity-50 text-sm font-medium"
             >
               {saving && <Loader2 className="w-4 h-4 animate-spin" />}
               {record ? 'Update' : 'Create'}
@@ -430,7 +430,7 @@ export default function NonConformanceLog() {
         <p className="mb-4">{error}</p>
         <button
           onClick={fetchRecords}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors"
         >
           <RefreshCw className="w-4 h-4" /> Retry
         </button>
@@ -444,7 +444,7 @@ export default function NonConformanceLog() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-            <UserX className="w-6 h-6 text-green-600 dark:text-green-400" />
+            <UserX className="w-6 h-6 text-primary dark:text-green-400" />
             Employee Non-Conformance Log
           </h2>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
@@ -453,7 +453,7 @@ export default function NonConformanceLog() {
         </div>
         <button
           onClick={openCreate}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors text-sm font-medium"
         >
           <Plus className="w-4 h-4" /> New Record
         </button>
@@ -544,7 +544,7 @@ export default function NonConformanceLog() {
           {!filterType && (
             <button
               onClick={openCreate}
-              className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium"
+              className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors text-sm font-medium"
             >
               <Plus className="w-4 h-4" /> New Record
             </button>
@@ -605,7 +605,7 @@ export default function NonConformanceLog() {
                       </td>
                       <td className="px-4 py-3 text-center">
                         {record.employee_acknowledged ? (
-                          <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                          <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-primary dark:bg-green-900/30 dark:text-green-400">
                             {record.acknowledged_date ? formatDate(record.acknowledged_date) : 'Yes'}
                           </span>
                         ) : (

@@ -12,7 +12,7 @@ const formatDate = (str) => {
 };
 
 const ACTIVITY_COLORS = {
-  none: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+  none: 'bg-green-100 text-primary dark:bg-green-900/30 dark:text-green-400',
   low: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
   moderate: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
   high: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
@@ -29,7 +29,7 @@ const EMPTY_PRODUCT = { product_name: '', active_ingredient: '', epa_reg: '', us
 const EMPTY_RESULT = { station_id: '', pest_type: 'rodent', activity: 'none', bait_consumed: false, action_taken: '' };
 const EMPTY_TREATMENT = { product: '', amount: '', area: '', epa_reg: '' };
 
-const iCls = 'w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm';
+const iCls = 'w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary text-sm';
 const lCls = 'block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1';
 const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 
@@ -95,7 +95,7 @@ const ProgramModal = ({ program, onClose, onSave }) => {
           <div>
             <div className="flex items-center justify-between mb-2">
               <label className={lCls}>Monitoring Stations</label>
-              <button type="button" onClick={() => addRow('monitoring_stations', EMPTY_STATION)} className="text-xs text-green-600 hover:text-green-700 dark:text-green-400 flex items-center gap-1"><Plus className="w-3 h-3" />Add</button>
+              <button type="button" onClick={() => addRow('monitoring_stations', EMPTY_STATION)} className="text-xs text-primary hover:text-primary-hover dark:text-green-400 flex items-center gap-1"><Plus className="w-3 h-3" />Add</button>
             </div>
             <table className="w-full text-sm">
               <thead><tr className="bg-gray-50 dark:bg-gray-700/50 text-gray-600 dark:text-gray-300">
@@ -119,7 +119,7 @@ const ProgramModal = ({ program, onClose, onSave }) => {
             <label className={lCls}>Target Pests</label>
             <div className="flex flex-wrap gap-3 mt-1">{PEST_TYPES.map((p) => (
               <label key={p} className="inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
-                <input type="checkbox" checked={(form.target_pests || []).includes(p)} onChange={() => togglePest(p)} className="rounded border-gray-300 dark:border-gray-600 text-green-600 focus:ring-green-500" />{cap(p)}
+                <input type="checkbox" checked={(form.target_pests || []).includes(p)} onChange={() => togglePest(p)} className="rounded border-gray-300 dark:border-gray-600 text-primary focus:ring-primary" />{cap(p)}
               </label>
             ))}</div>
           </div>
@@ -128,7 +128,7 @@ const ProgramModal = ({ program, onClose, onSave }) => {
           <div>
             <div className="flex items-center justify-between mb-2">
               <label className={lCls}>Products Used</label>
-              <button type="button" onClick={() => addRow('products_used', EMPTY_PRODUCT)} className="text-xs text-green-600 hover:text-green-700 dark:text-green-400 flex items-center gap-1"><Plus className="w-3 h-3" />Add</button>
+              <button type="button" onClick={() => addRow('products_used', EMPTY_PRODUCT)} className="text-xs text-primary hover:text-primary-hover dark:text-green-400 flex items-center gap-1"><Plus className="w-3 h-3" />Add</button>
             </div>
             <table className="w-full text-sm">
               <thead><tr className="bg-gray-50 dark:bg-gray-700/50 text-gray-600 dark:text-gray-300">
@@ -150,7 +150,7 @@ const ProgramModal = ({ program, onClose, onSave }) => {
           <div><label className={lCls}>Notes</label><textarea value={form.notes} onChange={(e) => set('notes', e.target.value)} rows={2} className={iCls} /></div>
           <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
             <button type="button" onClick={onClose} className="px-4 py-2 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">Cancel</button>
-            <button type="submit" disabled={saving} className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50">{saving ? 'Saving...' : program ? 'Update' : 'Create Program'}</button>
+            <button type="submit" disabled={saving} className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors disabled:opacity-50">{saving ? 'Saving...' : program ? 'Update' : 'Create Program'}</button>
           </div>
         </form>
       </div>
@@ -203,7 +203,7 @@ const LogModal = ({ log, onClose, onSave }) => {
             <div><label className={lCls}>Farm ID</label><input value={form.farm} onChange={(e) => set('farm', e.target.value)} className={iCls} /></div>
             <div className="flex items-end pb-2">
               <label className="inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
-                <input type="checkbox" checked={form.is_pco_visit} onChange={(e) => set('is_pco_visit', e.target.checked)} className="rounded border-gray-300 dark:border-gray-600 text-green-600 focus:ring-green-500" />PCO Visit
+                <input type="checkbox" checked={form.is_pco_visit} onChange={(e) => set('is_pco_visit', e.target.checked)} className="rounded border-gray-300 dark:border-gray-600 text-primary focus:ring-primary" />PCO Visit
               </label>
             </div>
           </div>
@@ -212,7 +212,7 @@ const LogModal = ({ log, onClose, onSave }) => {
           <div>
             <div className="flex items-center justify-between mb-2">
               <label className={lCls}>Station Results</label>
-              <button type="button" onClick={() => addRow('station_results', EMPTY_RESULT)} className="text-xs text-green-600 hover:text-green-700 dark:text-green-400 flex items-center gap-1"><Plus className="w-3 h-3" />Add</button>
+              <button type="button" onClick={() => addRow('station_results', EMPTY_RESULT)} className="text-xs text-primary hover:text-primary-hover dark:text-green-400 flex items-center gap-1"><Plus className="w-3 h-3" />Add</button>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
@@ -226,7 +226,7 @@ const LogModal = ({ log, onClose, onSave }) => {
                     <td className="px-1 py-1"><input value={r.station_id} onChange={(e) => updateRow('station_results', i, 'station_id', e.target.value)} className={iCls} /></td>
                     <td className="px-1 py-1"><select value={r.pest_type} onChange={(e) => updateRow('station_results', i, 'pest_type', e.target.value)} className={iCls}>{PEST_TYPES.map((t) => <option key={t} value={t}>{cap(t)}</option>)}</select></td>
                     <td className="px-1 py-1"><select value={r.activity} onChange={(e) => updateRow('station_results', i, 'activity', e.target.value)} className={iCls}><option value="none">None</option><option value="low">Low</option><option value="moderate">Moderate</option><option value="high">High</option></select></td>
-                    <td className="px-1 py-1 text-center"><input type="checkbox" checked={r.bait_consumed} onChange={(e) => updateRow('station_results', i, 'bait_consumed', e.target.checked)} className="rounded border-gray-300 dark:border-gray-600 text-green-600 focus:ring-green-500" /></td>
+                    <td className="px-1 py-1 text-center"><input type="checkbox" checked={r.bait_consumed} onChange={(e) => updateRow('station_results', i, 'bait_consumed', e.target.checked)} className="rounded border-gray-300 dark:border-gray-600 text-primary focus:ring-primary" /></td>
                     <td className="px-1 py-1"><input value={r.action_taken} onChange={(e) => updateRow('station_results', i, 'action_taken', e.target.value)} className={iCls} /></td>
                     <td className="px-1 py-1"><button type="button" onClick={() => removeRow('station_results', i)} className="p-1 text-red-500 hover:text-red-700"><Trash2 className="w-3 h-3" /></button></td>
                   </tr>
@@ -243,7 +243,7 @@ const LogModal = ({ log, onClose, onSave }) => {
           <div>
             <div className="flex items-center justify-between mb-2">
               <label className={lCls}>Treatments Applied</label>
-              <button type="button" onClick={() => addRow('treatments_applied', EMPTY_TREATMENT)} className="text-xs text-green-600 hover:text-green-700 dark:text-green-400 flex items-center gap-1"><Plus className="w-3 h-3" />Add</button>
+              <button type="button" onClick={() => addRow('treatments_applied', EMPTY_TREATMENT)} className="text-xs text-primary hover:text-primary-hover dark:text-green-400 flex items-center gap-1"><Plus className="w-3 h-3" />Add</button>
             </div>
             {form.treatments_applied.length > 0 && (
               <table className="w-full text-sm">
@@ -267,7 +267,7 @@ const LogModal = ({ log, onClose, onSave }) => {
           {/* Corrective Actions */}
           <div className="space-y-2">
             <label className="inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
-              <input type="checkbox" checked={form.corrective_actions_needed} onChange={(e) => set('corrective_actions_needed', e.target.checked)} className="rounded border-gray-300 dark:border-gray-600 text-green-600 focus:ring-green-500" />Corrective Actions Needed
+              <input type="checkbox" checked={form.corrective_actions_needed} onChange={(e) => set('corrective_actions_needed', e.target.checked)} className="rounded border-gray-300 dark:border-gray-600 text-primary focus:ring-primary" />Corrective Actions Needed
             </label>
             {form.corrective_actions_needed && <textarea value={form.corrective_action_description} onChange={(e) => set('corrective_action_description', e.target.value)} rows={2} placeholder="Describe corrective actions..." className={iCls} />}
           </div>
@@ -275,7 +275,7 @@ const LogModal = ({ log, onClose, onSave }) => {
           <div><label className={lCls}>Notes</label><textarea value={form.notes} onChange={(e) => set('notes', e.target.value)} rows={2} className={iCls} /></div>
           <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
             <button type="button" onClick={onClose} className="px-4 py-2 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">Cancel</button>
-            <button type="submit" disabled={saving} className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50">{saving ? 'Saving...' : log ? 'Update Log' : 'Create Log'}</button>
+            <button type="submit" disabled={saving} className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors disabled:opacity-50">{saving ? 'Saving...' : log ? 'Update Log' : 'Create Log'}</button>
           </div>
         </form>
       </div>
@@ -359,7 +359,7 @@ export default function PestControlProgram() {
 
   const pcoVisits = logs.filter((l) => l.is_pco_visit).length;
   const withActivity = logs.filter((l) => (l.stations_with_activity || 0) > 0).length;
-  const tabCls = (t) => `px-4 py-2 text-sm font-medium rounded-lg transition-colors ${tab === t ? 'bg-green-600 text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'}`;
+  const tabCls = (t) => `px-4 py-2 text-sm font-medium rounded-lg transition-colors ${tab === t ? 'bg-primary text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'}`;
   const sp = selectedProgram;
 
   return (
@@ -373,8 +373,8 @@ export default function PestControlProgram() {
             <button onClick={() => setTab('logs')} className={tabCls('logs')}>Monitoring Logs</button>
           </div>
           {tab === 'program'
-            ? <button onClick={() => { setEditingProgram(null); setShowProgramModal(true); }} className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"><Plus className="w-4 h-4" />New Program</button>
-            : <button onClick={() => { setEditingLog(null); setShowLogModal(true); }} className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"><Plus className="w-4 h-4" />New Log</button>}
+            ? <button onClick={() => { setEditingProgram(null); setShowProgramModal(true); }} className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors"><Plus className="w-4 h-4" />New Program</button>
+            : <button onClick={() => { setEditingLog(null); setShowLogModal(true); }} className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors"><Plus className="w-4 h-4" />New Log</button>}
         </div>
       </div>
 
@@ -386,7 +386,7 @@ export default function PestControlProgram() {
           <button onClick={tab === 'program' ? fetchPrograms : fetchLogs} className="inline-flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"><RefreshCw className="w-4 h-4" />Retry</button>
         </div>
       )}
-      {loading && !error && <div className="flex items-center justify-center py-12"><Loader2 className="w-6 h-6 text-green-600 animate-spin" /></div>}
+      {loading && !error && <div className="flex items-center justify-center py-12"><Loader2 className="w-6 h-6 text-primary animate-spin" /></div>}
 
       {/* ─── Program Tab ─── */}
       {!loading && !error && tab === 'program' && (<>
@@ -395,7 +395,7 @@ export default function PestControlProgram() {
             <Bug className="w-12 h-12 mx-auto mb-3 text-gray-400" />
             <p className="font-medium text-gray-900 dark:text-white">No pest control programs found</p>
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Create your first program to start managing pest control compliance.</p>
-            <button onClick={() => { setEditingProgram(null); setShowProgramModal(true); }} className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"><Plus className="w-4 h-4" />New Program</button>
+            <button onClick={() => { setEditingProgram(null); setShowProgramModal(true); }} className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors"><Plus className="w-4 h-4" />New Program</button>
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
@@ -403,9 +403,9 @@ export default function PestControlProgram() {
             <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3 space-y-1">
               <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase px-2 mb-2">Programs by Year</p>
               {programs.map((p) => (
-                <button key={p.id} onClick={() => setSelectedProgram(p)} className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors flex items-center justify-between ${sp?.id === p.id ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 font-medium' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/30'} ${p.program_year === currentYear ? 'ring-1 ring-green-300 dark:ring-green-700' : ''}`}>
+                <button key={p.id} onClick={() => setSelectedProgram(p)} className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors flex items-center justify-between ${sp?.id === p.id ? 'bg-primary-light dark:bg-green-900/20 text-primary dark:text-green-400 font-medium' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/30'} ${p.program_year === currentYear ? 'ring-1 ring-green-300 dark:ring-green-700' : ''}`}>
                   <span>{p.program_year}</span>
-                  <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${p.approved ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400'}`}>{p.approved ? 'Approved' : 'Draft'}</span>
+                  <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${p.approved ? 'bg-green-100 text-primary dark:bg-green-900/30 dark:text-green-400' : 'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400'}`}>{p.approved ? 'Approved' : 'Draft'}</span>
                 </button>
               ))}
             </div>
@@ -416,11 +416,11 @@ export default function PestControlProgram() {
               <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 flex flex-wrap items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{sp.program_year} Pest Control Program</h3>
-                  <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${sp.approved ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400'}`}>{sp.approved ? 'Approved' : 'Draft'}</span>
+                  <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${sp.approved ? 'bg-green-100 text-primary dark:bg-green-900/30 dark:text-green-400' : 'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400'}`}>{sp.approved ? 'Approved' : 'Draft'}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-gray-500 dark:text-gray-400">Review: {formatDate(sp.review_date)}</span>
-                  {!sp.approved && <button onClick={() => handleApproveProgram(sp.id)} className="p-1.5 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded transition-colors" title="Approve"><ShieldCheck className="w-4 h-4" /></button>}
+                  {!sp.approved && <button onClick={() => handleApproveProgram(sp.id)} className="p-1.5 text-primary hover:bg-primary-light dark:hover:bg-green-900/20 rounded transition-colors" title="Approve"><ShieldCheck className="w-4 h-4" /></button>}
                   <button onClick={() => { setEditingProgram(sp); setShowProgramModal(true); }} className="p-1.5 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors" title="Edit"><Edit2 className="w-4 h-4" /></button>
                   <button onClick={() => handleDeleteProgram(sp.id)} className="p-1.5 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors" title="Delete"><Trash2 className="w-4 h-4" /></button>
                 </div>
@@ -512,7 +512,7 @@ export default function PestControlProgram() {
             <ClipboardList className="w-12 h-12 mx-auto mb-3 text-gray-400" />
             <p className="font-medium text-gray-900 dark:text-white">No monitoring logs found</p>
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Create your first log to start tracking pest monitoring.</p>
-            <button onClick={() => { setEditingLog(null); setShowLogModal(true); }} className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"><Plus className="w-4 h-4" />New Log</button>
+            <button onClick={() => { setEditingLog(null); setShowLogModal(true); }} className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors"><Plus className="w-4 h-4" />New Log</button>
           </div>
         ) : (
           <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">

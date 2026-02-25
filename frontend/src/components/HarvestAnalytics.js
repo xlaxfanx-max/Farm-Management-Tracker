@@ -76,7 +76,7 @@ const HarvestAnalytics = () => {
             value={selectedSeason}
             onChange={setSelectedSeason}
             cropCategory="citrus"
-            className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
             placeholder="Select Season"
           />
         </div>
@@ -140,7 +140,7 @@ const HarvestAnalytics = () => {
                     <td className={`${tableCellClass} text-right text-gray-700`}>{formatNumber(crop.total_bins)}</td>
                     <td className={`${tableCellClass} text-right text-gray-700`}>{formatCurrency(crop.total_revenue)}</td>
                     <td className={`${tableCellClass} text-right text-gray-700`}>{formatCurrency(crop.total_labor_cost)}</td>
-                    <td className={`${tableCellClass} text-right font-medium ${crop.profit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    <td className={`${tableCellClass} text-right font-medium ${crop.profit >= 0 ? 'text-primary' : 'text-red-600'}`}>
                       {formatCurrency(crop.profit)}
                     </td>
                     <td className={`${tableCellClass} text-right text-gray-700`}>{formatCurrency(crop.avg_cost_per_bin)}</td>
@@ -175,7 +175,7 @@ const HarvestAnalytics = () => {
                     <td className={`${tableCellClass} font-medium text-gray-900`}>{field.field_name}</td>
                     <td className={`${tableCellClass} text-gray-700`}>{field.farm_name}</td>
                     <td className={`${tableCellClass} text-right text-gray-700`}>{field.harvest_count}</td>
-                    <td className={`${tableCellClass} text-right font-medium ${field.profit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    <td className={`${tableCellClass} text-right font-medium ${field.profit >= 0 ? 'text-primary' : 'text-red-600'}`}>
                       {formatCurrency(field.profit)}
                     </td>
                     <td className={`${tableCellClass} text-right text-gray-700`}>{formatCurrency(field.revenue_per_acre)}</td>

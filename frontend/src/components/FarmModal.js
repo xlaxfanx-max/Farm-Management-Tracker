@@ -100,7 +100,7 @@ function FarmModal({ farm, onClose, onSave }) {
                 onClick={() => setActiveTab(tab.id)}
                 className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
                   activeTab === tab.id
-                    ? 'border-green-600 text-green-600'
+                    ? 'border-primary text-primary'
                     : 'border-transparent text-gray-500 hover:text-gray-700'
                 }`}
               >
@@ -246,7 +246,7 @@ function FarmModal({ farm, onClose, onSave }) {
           <button 
             onClick={handleSubmit}
             disabled={loading}
-            className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
+            className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover disabled:opacity-50"
           >
             {loading ? 'Saving...' : 'Save'}
           </button>

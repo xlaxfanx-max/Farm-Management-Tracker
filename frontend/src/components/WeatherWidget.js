@@ -49,7 +49,7 @@ const SprayRatingBadge = ({ rating, showLabel = true }) => {
     good: {
       icon: <CheckCircle className="w-4 h-4" />,
       bg: 'bg-green-100',
-      text: 'text-green-700',
+      text: 'text-primary',
       border: 'border-green-200',
       label: 'Good Spray Conditions',
     },
@@ -185,7 +185,7 @@ export default function WeatherWidget({ onViewForecast }) {
                 const farm = farms.find(f => f.id === parseInt(e.target.value));
                 setSelectedFarm(farm);
               }}
-              className="text-sm border border-gray-200 rounded-lg px-2 py-1 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              className="text-sm border border-gray-200 rounded-lg px-2 py-1 focus:ring-2 focus:ring-primary focus:border-transparent"
             >
               {farms.map(farm => (
                 <option key={farm.id} value={farm.id}>{farm.name}</option>
@@ -206,7 +206,7 @@ export default function WeatherWidget({ onViewForecast }) {
       {/* Loading state */}
       {loading && (
         <div className="flex items-center justify-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         </div>
       )}
 
@@ -287,7 +287,7 @@ export default function WeatherWidget({ onViewForecast }) {
           {onViewForecast && (
             <button
               onClick={() => onViewForecast(selectedFarm)}
-              className="w-full text-center text-sm text-green-600 hover:text-green-700 font-medium mt-2"
+              className="w-full text-center text-sm text-primary hover:text-primary-hover font-medium mt-2"
             >
               View Full Forecast →
             </button>

@@ -34,7 +34,7 @@ const formatDate = (str) => {
 };
 
 const RISK_LEVELS = [
-  { value: 'low', label: 'Low', color: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400', dot: 'bg-green-500' },
+  { value: 'low', label: 'Low', color: 'bg-green-100 text-primary dark:bg-green-900/30 dark:text-green-400', dot: 'bg-green-500' },
   { value: 'medium', label: 'Medium', color: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400', dot: 'bg-yellow-500' },
   { value: 'high', label: 'High', color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400', dot: 'bg-red-500' },
   { value: 'unknown', label: 'Unknown', color: 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400', dot: 'bg-gray-400' },
@@ -151,7 +151,7 @@ const SummaryStatsBar = ({ summary }) => {
       {/* Approved */}
       <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
         <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Approved</p>
-        <p className="text-xl font-bold text-green-600 dark:text-green-400">{summary.approved_count}</p>
+        <p className="text-xl font-bold text-primary dark:text-green-400">{summary.approved_count}</p>
       </div>
 
       {/* Pending */}
@@ -228,7 +228,7 @@ const LandUseTimeline = ({ entries }) => {
           <div className="absolute -left-[21px] top-1.5 w-3 h-3 rounded-full bg-green-500 ring-2 ring-white dark:ring-gray-800 animate-pulse" />
           <div className="flex-1">
             <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-green-700 dark:text-green-400">Current Agricultural Use</span>
+              <span className="text-sm font-medium text-primary dark:text-green-400">Current Agricultural Use</span>
               <span className="text-xs text-gray-500 dark:text-gray-400">{currentYear}</span>
             </div>
           </div>
@@ -291,7 +291,7 @@ const AssessmentDetail = ({ assessment, onRemoveDocument }) => {
           <span className="font-medium text-gray-900 dark:text-white">{a.buffer_period_months} months</span>
           {a.buffer_period_adequate != null && (
             a.buffer_period_adequate ? (
-              <span className="inline-flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
+              <span className="inline-flex items-center gap-1 text-xs text-primary dark:text-green-400">
                 <CheckCircle2 className="w-3 h-3" /> Adequate
               </span>
             ) : (
@@ -314,7 +314,7 @@ const AssessmentDetail = ({ assessment, onRemoveDocument }) => {
             </div>
             <div>
               <span className="text-gray-500 dark:text-gray-400 text-xs">Result:</span>
-              <p className={a.soil_test_passed ? 'text-green-600 dark:text-green-400 font-medium' : 'text-red-600 dark:text-red-400 font-medium'}>
+              <p className={a.soil_test_passed ? 'text-primary dark:text-green-400 font-medium' : 'text-red-600 dark:text-red-400 font-medium'}>
                 {a.soil_test_passed ? 'Passed' : 'Failed'}
               </p>
             </div>
@@ -346,7 +346,7 @@ const AssessmentDetail = ({ assessment, onRemoveDocument }) => {
           <div className="flex items-center justify-between mb-1">
             <p className="text-xs font-medium text-orange-700 dark:text-orange-400 uppercase tracking-wide">Remediation Required</p>
             {a.remediation_verified ? (
-              <span className="inline-flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
+              <span className="inline-flex items-center gap-1 text-xs text-primary dark:text-green-400">
                 <CheckCircle2 className="w-3 h-3" /> Verified
               </span>
             ) : (
@@ -747,7 +747,7 @@ export default function LandHistoryForm() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-            <Map className="w-6 h-6 text-green-600 dark:text-green-400" />
+            <Map className="w-6 h-6 text-primary dark:text-green-400" />
             Land History Assessment
           </h2>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
@@ -756,7 +756,7 @@ export default function LandHistoryForm() {
         </div>
         <button
           onClick={openCreate}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition text-sm font-medium"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition text-sm font-medium"
         >
           <Plus className="w-4 h-4" /> New Assessment
         </button>
@@ -865,7 +865,7 @@ export default function LandHistoryForm() {
                     )}
                     <RiskBadge level={a.contamination_risk} />
                     {a.approved ? (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-primary dark:bg-green-900/30 dark:text-green-400">
                         <CheckCircle2 className="w-3 h-3" /> Approved
                       </span>
                     ) : (
@@ -898,7 +898,7 @@ export default function LandHistoryForm() {
                       {!a.approved && (
                         <button
                           onClick={(e) => { e.stopPropagation(); handleApprove(a.id); }}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-900/20 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/40 transition"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-primary dark:text-green-400 bg-primary-light dark:bg-green-900/20 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/40 transition"
                         >
                           <CheckCircle2 className="w-3.5 h-3.5" /> Approve
                         </button>
@@ -1131,7 +1131,7 @@ export default function LandHistoryForm() {
                       type="checkbox"
                       checked={formData.buffer_period_adequate}
                       onChange={() => handleToggle('buffer_period_adequate')}
-                      className="rounded border-gray-300 text-green-600 dark:border-gray-600 dark:bg-gray-900"
+                      className="rounded border-gray-300 text-primary dark:border-gray-600 dark:bg-gray-900"
                     />
                     <span className="text-sm text-gray-700 dark:text-gray-300">Buffer period adequate</span>
                   </label>
@@ -1177,7 +1177,7 @@ export default function LandHistoryForm() {
                             type="checkbox"
                             checked={formData.soil_test_passed}
                             onChange={() => handleToggle('soil_test_passed')}
-                            className="rounded border-gray-300 text-green-600 dark:border-gray-600 dark:bg-gray-900"
+                            className="rounded border-gray-300 text-primary dark:border-gray-600 dark:bg-gray-900"
                           />
                           <span className="text-xs text-gray-700 dark:text-gray-300">Test Passed</span>
                         </label>
@@ -1249,7 +1249,7 @@ export default function LandHistoryForm() {
                             type="checkbox"
                             checked={formData.remediation_verified}
                             onChange={() => handleToggle('remediation_verified')}
-                            className="rounded border-gray-300 text-green-600 dark:border-gray-600 dark:bg-gray-900"
+                            className="rounded border-gray-300 text-primary dark:border-gray-600 dark:bg-gray-900"
                           />
                           <span className="text-xs text-gray-700 dark:text-gray-300">Remediation Verified</span>
                         </label>
@@ -1388,7 +1388,7 @@ export default function LandHistoryForm() {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium bg-green-600 text-white rounded-lg hover:bg-green-700 transition disabled:opacity-50"
+                  className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium bg-primary text-white rounded-lg hover:bg-primary-hover transition disabled:opacity-50"
                 >
                   {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
                   {editingId ? 'Save Changes' : 'Create Assessment'}

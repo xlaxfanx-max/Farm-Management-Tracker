@@ -239,7 +239,7 @@ const Profile = ({ onBack }) => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <Loader2 className="w-8 h-8 animate-spin text-green-600" />
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
         <span className="ml-2 text-gray-600">Loading profile...</span>
       </div>
     );
@@ -258,7 +258,7 @@ const Profile = ({ onBack }) => {
         </button>
         
         <div className="flex items-center">
-          <User className="w-8 h-8 text-green-600 mr-3" />
+          <User className="w-8 h-8 text-primary mr-3" />
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Profile</h1>
             <p className="text-gray-500">Manage your personal information and preferences</p>
@@ -280,10 +280,10 @@ const Profile = ({ onBack }) => {
       )}
       
       {success && (
-        <div className="mb-4 bg-green-50 border border-green-200 rounded-lg p-4">
+        <div className="mb-4 bg-primary-light border border-green-200 rounded-lg p-4">
           <div className="flex items-center">
             <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
-            <span className="text-green-700">{success}</span>
+            <span className="text-primary">{success}</span>
           </div>
         </div>
       )}
@@ -295,7 +295,7 @@ const Profile = ({ onBack }) => {
           <div className="bg-gradient-to-r from-green-600 to-green-700 px-6 py-8">
             <div className="flex items-center">
               <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-lg">
-                <span className="text-2xl font-bold text-green-600">{getUserInitials()}</span>
+                <span className="text-2xl font-bold text-primary">{getUserInitials()}</span>
               </div>
               <div className="ml-6 text-white">
                 <h2 className="text-2xl font-bold">
@@ -322,13 +322,13 @@ const Profile = ({ onBack }) => {
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
           <div className="bg-gray-50 px-6 py-4 border-b border-gray-200 flex items-center justify-between">
             <h2 className="text-lg font-semibold text-gray-900 flex items-center">
-              <User className="w-5 h-5 mr-2 text-green-600" />
+              <User className="w-5 h-5 mr-2 text-primary" />
               Personal Information
             </h2>
             {!editingProfile && (
               <button
                 onClick={() => setEditingProfile(true)}
-                className="flex items-center px-3 py-1.5 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                className="flex items-center px-3 py-1.5 text-sm bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors"
               >
                 <Edit2 className="w-4 h-4 mr-1" />
                 Edit
@@ -349,7 +349,7 @@ const Profile = ({ onBack }) => {
                       name="first_name"
                       value={profileData.first_name}
                       onChange={handleProfileChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
                       placeholder="Enter first name"
                     />
                   </div>
@@ -362,7 +362,7 @@ const Profile = ({ onBack }) => {
                       name="last_name"
                       value={profileData.last_name}
                       onChange={handleProfileChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
                       placeholder="Enter last name"
                     />
                   </div>
@@ -390,7 +390,7 @@ const Profile = ({ onBack }) => {
                     name="phone"
                     value={profileData.phone}
                     onChange={handleProfileChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
                     placeholder="(555) 555-5555"
                   />
                 </div>
@@ -405,7 +405,7 @@ const Profile = ({ onBack }) => {
                   <button
                     onClick={handleSaveProfile}
                     disabled={saving}
-                    className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+                    className="flex items-center px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors disabled:opacity-50"
                   >
                     {saving ? (
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -453,17 +453,17 @@ const Profile = ({ onBack }) => {
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
           <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
             <h2 className="text-lg font-semibold text-gray-900 flex items-center">
-              <Lock className="w-5 h-5 mr-2 text-green-600" />
+              <Lock className="w-5 h-5 mr-2 text-primary" />
               Password & Security
             </h2>
           </div>
           
           <div className="p-6">
             {passwordSuccess && (
-              <div className="mb-4 bg-green-50 border border-green-200 rounded-lg p-3">
+              <div className="mb-4 bg-primary-light border border-green-200 rounded-lg p-3">
                 <div className="flex items-center">
                   <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
-                  <span className="text-green-700">{passwordSuccess}</span>
+                  <span className="text-primary">{passwordSuccess}</span>
                 </div>
               </div>
             )}
@@ -489,7 +489,7 @@ const Profile = ({ onBack }) => {
                       name="current_password"
                       value={passwordData.current_password}
                       onChange={handlePasswordChange}
-                      className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                      className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
                       placeholder="Enter current password"
                     />
                     <button
@@ -512,7 +512,7 @@ const Profile = ({ onBack }) => {
                       name="new_password"
                       value={passwordData.new_password}
                       onChange={handlePasswordChange}
-                      className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                      className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
                       placeholder="Enter new password"
                     />
                     <button
@@ -535,7 +535,7 @@ const Profile = ({ onBack }) => {
                     name="confirm_password"
                     value={passwordData.confirm_password}
                     onChange={handlePasswordChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
                     placeholder="Confirm new password"
                   />
                 </div>
@@ -550,7 +550,7 @@ const Profile = ({ onBack }) => {
                   <button
                     onClick={handleSavePassword}
                     disabled={savingPassword || !passwordData.current_password || !passwordData.new_password || !passwordData.confirm_password}
-                    className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+                    className="flex items-center px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors disabled:opacity-50"
                   >
                     {savingPassword ? (
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -599,13 +599,13 @@ const Profile = ({ onBack }) => {
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
           <div className="bg-gray-50 px-6 py-4 border-b border-gray-200 flex items-center justify-between">
             <h2 className="text-lg font-semibold text-gray-900 flex items-center">
-              <Bell className="w-5 h-5 mr-2 text-green-600" />
+              <Bell className="w-5 h-5 mr-2 text-primary" />
               Notification Preferences
             </h2>
             {!editingNotifications ? (
               <button
                 onClick={() => setEditingNotifications(true)}
-                className="flex items-center px-3 py-1.5 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                className="flex items-center px-3 py-1.5 text-sm bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors"
               >
                 <Edit2 className="w-4 h-4 mr-1" />
                 Edit
@@ -621,7 +621,7 @@ const Profile = ({ onBack }) => {
                 <button
                   onClick={handleSaveNotifications}
                   disabled={savingNotifications}
-                  className="flex items-center px-3 py-1.5 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
+                  className="flex items-center px-3 py-1.5 text-sm bg-primary text-white rounded-lg hover:bg-primary-hover disabled:opacity-50"
                 >
                   {savingNotifications ? (
                     <Loader2 className="w-4 h-4 mr-1 animate-spin" />
@@ -650,7 +650,7 @@ const Profile = ({ onBack }) => {
                   onClick={() => editingNotifications && handleNotificationToggle('email_pur_reminders')}
                   disabled={!editingNotifications}
                   className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                    notifications.email_pur_reminders ? 'bg-green-600' : 'bg-gray-200'
+                    notifications.email_pur_reminders ? 'bg-primary' : 'bg-gray-200'
                   } ${!editingNotifications ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}`}
                 >
                   <span
@@ -671,7 +671,7 @@ const Profile = ({ onBack }) => {
                   onClick={() => editingNotifications && handleNotificationToggle('email_water_test_due')}
                   disabled={!editingNotifications}
                   className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                    notifications.email_water_test_due ? 'bg-green-600' : 'bg-gray-200'
+                    notifications.email_water_test_due ? 'bg-primary' : 'bg-gray-200'
                   } ${!editingNotifications ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}`}
                 >
                   <span
@@ -692,7 +692,7 @@ const Profile = ({ onBack }) => {
                   onClick={() => editingNotifications && handleNotificationToggle('email_phi_warnings')}
                   disabled={!editingNotifications}
                   className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                    notifications.email_phi_warnings ? 'bg-green-600' : 'bg-gray-200'
+                    notifications.email_phi_warnings ? 'bg-primary' : 'bg-gray-200'
                   } ${!editingNotifications ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}`}
                 >
                   <span
@@ -713,7 +713,7 @@ const Profile = ({ onBack }) => {
                   onClick={() => editingNotifications && handleNotificationToggle('email_weekly_summary')}
                   disabled={!editingNotifications}
                   className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                    notifications.email_weekly_summary ? 'bg-green-600' : 'bg-gray-200'
+                    notifications.email_weekly_summary ? 'bg-primary' : 'bg-gray-200'
                   } ${!editingNotifications ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}`}
                 >
                   <span
@@ -734,7 +734,7 @@ const Profile = ({ onBack }) => {
                   onClick={() => editingNotifications && handleNotificationToggle('email_team_updates')}
                   disabled={!editingNotifications}
                   className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                    notifications.email_team_updates ? 'bg-green-600' : 'bg-gray-200'
+                    notifications.email_team_updates ? 'bg-primary' : 'bg-gray-200'
                   } ${!editingNotifications ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}`}
                 >
                   <span
@@ -752,7 +752,7 @@ const Profile = ({ onBack }) => {
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
           <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
             <h2 className="text-lg font-semibold text-gray-900 flex items-center">
-              <Calendar className="w-5 h-5 mr-2 text-green-600" />
+              <Calendar className="w-5 h-5 mr-2 text-primary" />
               Account Information
             </h2>
           </div>
@@ -770,7 +770,7 @@ const Profile = ({ onBack }) => {
               <div>
                 <label className="block text-sm font-medium text-gray-500 mb-1">Account Status</label>
                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-medium ${
-                  user?.is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                  user?.is_active ? 'bg-green-100 text-primary' : 'bg-red-100 text-red-700'
                 }`}>
                   {user?.is_active ? 'Active' : 'Inactive'}
                 </span>

@@ -52,7 +52,7 @@ export default function Modal({
       {/* Panel */}
       <div
         className={`
-          relative bg-white dark:bg-gray-800 rounded-xl shadow-xl
+          relative bg-surface-raised dark:bg-gray-800 rounded-modal shadow-xl
           w-full ${sizeClasses[size] || sizeClasses.md}
           max-h-[90vh] flex flex-col
           ${className}
@@ -63,8 +63,8 @@ export default function Modal({
           <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
             <div className="flex items-center gap-3 min-w-0">
               {Icon && (
-                <div className="p-2 bg-green-50 dark:bg-green-900/30 rounded-lg flex-shrink-0">
-                  <Icon className="w-5 h-5 text-green-600 dark:text-green-400" />
+                <div className="p-2 bg-primary-light dark:bg-primary-light rounded-lg flex-shrink-0">
+                  <Icon className="w-5 h-5 text-primary dark:text-primary" />
                 </div>
               )}
               <div className="min-w-0">

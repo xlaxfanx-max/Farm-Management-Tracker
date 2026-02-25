@@ -314,12 +314,12 @@ const PDFUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, existi
           <h2 className="text-lg font-semibold text-gray-900 flex items-center">
             {showPreview ? (
               <>
-                <Eye className="w-5 h-5 mr-2 text-green-600" />
+                <Eye className="w-5 h-5 mr-2 text-primary" />
                 Review Extracted Data
               </>
             ) : (
               <>
-                <Upload className="w-5 h-5 mr-2 text-green-600" />
+                <Upload className="w-5 h-5 mr-2 text-primary" />
                 Upload Statement PDF
               </>
             )}
@@ -449,7 +449,7 @@ const PDFUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, existi
                   <select
                     value={selectedPackinghouse}
                     onChange={(e) => setSelectedPackinghouse(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
                     disabled={uploading}
                   >
                     <option value="">Select Packinghouse</option>
@@ -468,7 +468,7 @@ const PDFUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, existi
                   <select
                     value={formatHint}
                     onChange={(e) => setFormatHint(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
                     disabled={uploading}
                   >
                     <option value="">Auto-detect</option>
@@ -488,7 +488,7 @@ const PDFUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, existi
                 onDrop={handleDrop}
                 className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
                   dragActive
-                    ? 'border-green-500 bg-green-50'
+                    ? 'border-primary bg-green-50'
                     : file
                     ? 'border-green-300 bg-green-50'
                     : 'border-gray-300 hover:border-gray-400'
@@ -496,7 +496,7 @@ const PDFUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, existi
               >
                 {file ? (
                   <div className="flex items-center justify-center space-x-3">
-                    <FileText className="w-10 h-10 text-green-600" />
+                    <FileText className="w-10 h-10 text-primary" />
                     <div className="text-left">
                       <p className="font-medium text-gray-900">{file.name}</p>
                       <p className="text-sm text-gray-500">{formatFileSize(file.size)}</p>
@@ -515,7 +515,7 @@ const PDFUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, existi
                       Drag and drop your PDF here, or
                     </p>
                     <label className="inline-block">
-                      <span className="px-4 py-2 bg-green-600 text-white rounded-lg cursor-pointer hover:bg-green-700 transition-colors">
+                      <span className="px-4 py-2 bg-primary text-white rounded-lg cursor-pointer hover:bg-primary-hover transition-colors">
                         Browse Files
                       </span>
                       <input
@@ -575,7 +575,7 @@ const PDFUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, existi
                   <select
                     value={selectedPool}
                     onChange={(e) => setSelectedPool(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
                   >
                     <option value="">Auto-create from PDF</option>
                     {pools.map(p => (
@@ -598,7 +598,7 @@ const PDFUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, existi
                   <select
                     value={selectedField}
                     onChange={(e) => setSelectedField(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
                   >
                     <option value="">
                       {statement?.statement_type === 'settlement' || statement?.statement_type === 'grower_statement'
@@ -613,9 +613,9 @@ const PDFUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, existi
               </div>
 
               {/* Statement Info */}
-              <div className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg">
+              <div className="flex items-center justify-between p-3 bg-primary-light border border-green-200 rounded-lg">
                 <div className="flex items-center">
-                  <CheckCircle className="w-5 h-5 text-green-600 mr-2" />
+                  <CheckCircle className="w-5 h-5 text-primary mr-2" />
                   <span className="text-green-800">
                     Detected: <strong>{statement?.statement_type_display || statement?.statement_type}</strong>
                     {' from '}
@@ -623,7 +623,7 @@ const PDFUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, existi
                   </span>
                 </div>
                 {statement?.extraction_confidence && (
-                  <span className="text-sm text-green-700">
+                  <span className="text-sm text-primary">
                     Confidence: {(statement.extraction_confidence * 100).toFixed(0)}%
                   </span>
                 )}
@@ -675,7 +675,7 @@ const PDFUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, existi
                 <button
                   onClick={handleConfirm}
                   disabled={confirming}
-                  className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+                  className="flex items-center px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors disabled:opacity-50"
                 >
                   {confirming ? (
                     <>
@@ -706,7 +706,7 @@ const PDFUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, existi
                 <button
                   onClick={handleUpload}
                   disabled={uploading || !file || !selectedPackinghouse}
-                  className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+                  className="flex items-center px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors disabled:opacity-50"
                 >
                   {uploading || extracting ? (
                     <>

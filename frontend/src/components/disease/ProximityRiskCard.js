@@ -57,10 +57,10 @@ const ProximityRiskCard = ({ onViewDetails = null, compact = false }) => {
       },
       low: {
         bg: 'bg-green-100 dark:bg-green-900/30',
-        text: 'text-green-700 dark:text-green-300',
-        border: 'border-green-500',
-        icon: 'text-green-600',
-        badge: 'bg-green-600 text-white',
+        text: 'text-primary dark:text-green-300',
+        border: 'border-primary',
+        icon: 'text-primary',
+        badge: 'bg-primary text-white',
       },
     };
     return styles[level] || styles.low;
@@ -111,7 +111,7 @@ const ProximityRiskCard = ({ onViewDetails = null, compact = false }) => {
     return (
       <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
         <div className="flex items-center justify-center h-32">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         </div>
       </div>
     );
@@ -125,7 +125,7 @@ const ProximityRiskCard = ({ onViewDetails = null, compact = false }) => {
           <p className="text-sm text-gray-500">{error}</p>
           <button
             onClick={fetchRiskData}
-            className="mt-2 text-sm text-green-600 hover:text-green-700"
+            className="mt-2 text-sm text-primary hover:text-primary-hover"
           >
             Try again
           </button>
@@ -249,7 +249,7 @@ const ProximityRiskCard = ({ onViewDetails = null, compact = false }) => {
         {onViewDetails && (
           <button
             onClick={onViewDetails}
-            className="mt-4 w-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-green-600 hover:text-green-700 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors"
+            className="mt-4 w-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-primary hover:text-primary-hover hover:bg-primary-light dark:hover:bg-green-900/20 rounded-lg transition-colors"
           >
             View Disease Dashboard
             <ChevronRight className="w-4 h-4" />

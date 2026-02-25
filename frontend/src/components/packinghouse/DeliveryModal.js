@@ -183,7 +183,7 @@ const DeliveryModal = ({ poolId, delivery, onClose, onSave }) => {
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200">
           <h2 className="text-lg font-semibold text-gray-900 flex items-center">
-            <Truck className="w-5 h-5 mr-2 text-green-600" />
+            <Truck className="w-5 h-5 mr-2 text-primary" />
             {delivery ? 'Edit Delivery' : 'Record Delivery'}
           </h2>
           <button
@@ -205,7 +205,7 @@ const DeliveryModal = ({ poolId, delivery, onClose, onSave }) => {
               name="field"
               value={formData.field}
               onChange={handleChange}
-              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 ${
+              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary ${
                 errors.field ? 'border-red-500' : 'border-gray-300'
               }`}
             >
@@ -272,7 +272,7 @@ const DeliveryModal = ({ poolId, delivery, onClose, onSave }) => {
                 value={formData.ticket_number}
                 onChange={handleChange}
                 placeholder="e.g., 182622"
-                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 ${
+                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary ${
                   errors.ticket_number ? 'border-red-500' : 'border-gray-300'
                 }`}
               />
@@ -290,7 +290,7 @@ const DeliveryModal = ({ poolId, delivery, onClose, onSave }) => {
                 name="delivery_date"
                 value={formData.delivery_date}
                 onChange={handleChange}
-                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 ${
+                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary ${
                   errors.delivery_date ? 'border-red-500' : 'border-gray-300'
                 }`}
               />
@@ -314,7 +314,7 @@ const DeliveryModal = ({ poolId, delivery, onClose, onSave }) => {
                 step="0.01"
                 min="0"
                 placeholder="0.00"
-                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 ${
+                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary ${
                   errors.bins ? 'border-red-500' : 'border-gray-300'
                 }`}
               />
@@ -335,7 +335,7 @@ const DeliveryModal = ({ poolId, delivery, onClose, onSave }) => {
                 step="0.01"
                 min="0"
                 placeholder="Optional"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
               />
             </div>
 
@@ -351,7 +351,7 @@ const DeliveryModal = ({ poolId, delivery, onClose, onSave }) => {
                 step="0.01"
                 min="0"
                 placeholder="Optional"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
               />
             </div>
           </div>
@@ -367,7 +367,7 @@ const DeliveryModal = ({ poolId, delivery, onClose, onSave }) => {
               onChange={handleChange}
               rows={2}
               placeholder="Optional notes..."
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
             />
           </div>
 
@@ -383,7 +383,7 @@ const DeliveryModal = ({ poolId, delivery, onClose, onSave }) => {
             <button
               type="submit"
               disabled={saving}
-              className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+              className="flex items-center px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors disabled:opacity-50"
             >
               {saving ? (
                 <>

@@ -54,7 +54,7 @@ function Breadcrumbs({ currentView, onNavigate }) {
     <nav className="flex items-center gap-1 text-sm text-gray-500 mb-4">
       <button
         onClick={() => onNavigate('dashboard')}
-        className="p-1 hover:bg-gray-100 rounded transition-colors"
+        className="p-1 hover:bg-surface-sunken dark:hover:bg-gray-700 rounded transition-colors"
         title="Go to Dashboard"
       >
         <Home className="w-4 h-4" />
@@ -66,7 +66,7 @@ function Breadcrumbs({ currentView, onNavigate }) {
           {crumb.isLink ? (
             <button
               onClick={() => onNavigate(crumb.id)}
-              className="hover:text-gray-700 hover:underline transition-colors"
+              className="hover:text-primary hover:underline transition-colors"
             >
               {crumb.label}
             </button>

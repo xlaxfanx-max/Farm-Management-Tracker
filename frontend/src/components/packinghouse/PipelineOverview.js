@@ -235,7 +235,7 @@ const PipelineOverview = () => {
   const getActivityIcon = (type) => {
     switch (type) {
       case 'packout': return <Package className="w-4 h-4 text-purple-600" />;
-      case 'settlement': return <DollarSign className="w-4 h-4 text-green-600" />;
+      case 'settlement': return <DollarSign className="w-4 h-4 text-primary" />;
       default: return <Clock className="w-4 h-4 text-gray-400" />;
     }
   };
@@ -243,7 +243,7 @@ const PipelineOverview = () => {
   const getActivityBgColor = (type) => {
     switch (type) {
       case 'packout': return 'bg-purple-50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-800';
-      case 'settlement': return 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800';
+      case 'settlement': return 'bg-primary-light dark:bg-green-900/20 border-green-200 dark:border-green-800';
       default: return 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700';
     }
   };
@@ -262,7 +262,7 @@ const PipelineOverview = () => {
   if (loading) {
     return (
       <div className="flex justify-center items-center py-12">
-        <RefreshCw className="w-8 h-8 animate-spin text-green-600" />
+        <RefreshCw className="w-8 h-8 animate-spin text-primary" />
       </div>
     );
   }
@@ -335,7 +335,7 @@ const PipelineOverview = () => {
               <DollarSign className="w-4 h-4" />
               Total Revenue
             </div>
-            <p className="text-2xl font-bold text-green-600">
+            <p className="text-2xl font-bold text-primary">
               {formatCurrency(summary.total_revenue)}
             </p>
             <p className="text-xs text-gray-400 mt-1">Click for details</p>
@@ -420,7 +420,7 @@ const PipelineOverview = () => {
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-sm text-gray-600 dark:text-gray-400">Revenue</span>
-                      <span className="font-semibold text-green-600 dark:text-green-400">
+                      <span className="font-semibold text-primary dark:text-green-400">
                         {formatCurrency(card.revenue)}
                       </span>
                     </div>
@@ -532,7 +532,7 @@ const PipelineOverview = () => {
               <select
                 value={selectedSeason || data?.selected_season || ''}
                 onChange={handleSeasonChange}
-                className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-gray-800 dark:text-gray-200 dark:bg-gray-700 text-sm font-medium"
+                className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-gray-800 dark:text-gray-200 dark:bg-gray-700 text-sm font-medium"
               >
                 {data?.available_seasons?.map((season) => (
                   <option key={season} value={season}>
@@ -561,7 +561,7 @@ const PipelineOverview = () => {
               onClick={() => setBreakdownView(view.id)}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                 breakdownView === view.id
-                  ? 'bg-green-600 text-white shadow-sm'
+                  ? 'bg-primary text-white shadow-sm'
                   : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'
               }`}
             >
@@ -643,12 +643,12 @@ const PipelineOverview = () => {
             {/* Stage 2: Settlement */}
             <div className="flex-1 max-w-xs text-center cursor-pointer group" onClick={() => openDrillDown('settled')}>
               <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-green-100 dark:bg-green-900/30 mb-3 group-hover:ring-2 group-hover:ring-green-300 transition-all">
-                <DollarSign className="w-10 h-10 text-green-600" />
+                <DollarSign className="w-10 h-10 text-primary" />
               </div>
               <h3 className="font-semibold text-gray-900 dark:text-gray-100 text-lg">
                 {pipeline_stages.settlement.label}
               </h3>
-              <p className="text-3xl font-bold text-green-600 mt-2 group-hover:underline decoration-green-300">
+              <p className="text-3xl font-bold text-primary mt-2 group-hover:underline decoration-green-300">
                 {formatCurrency(pipeline_stages.settlement.total_revenue)}
               </p>
               <p className="text-sm text-gray-500">{formatNumber(settledQuantity)} {commodityUnitLabel.toLowerCase()} settled</p>
@@ -735,7 +735,7 @@ const PipelineOverview = () => {
                           {row.avg_pack_percent}%
                         </span>
                       </td>
-                      <td className="py-3 px-3 text-right text-green-600 dark:text-green-400 font-semibold">
+                      <td className="py-3 px-3 text-right text-primary dark:text-green-400 font-semibold">
                         {formatNumber(row.bins_settled)}
                       </td>
                       <td className="py-3 px-3 text-right">
@@ -751,7 +751,7 @@ const PipelineOverview = () => {
                           </span>
                         </div>
                       </td>
-                      <td className="py-3 px-3 text-right text-green-700 dark:text-green-400 font-semibold">
+                      <td className="py-3 px-3 text-right text-primary dark:text-green-400 font-semibold">
                         {formatCurrency(row.revenue)}
                       </td>
                       <td className="py-3 px-3 text-right text-gray-700 dark:text-gray-300">
@@ -770,7 +770,7 @@ const PipelineOverview = () => {
                         {pipeline_stages.packout.avg_pack_percent}%
                       </span>
                     </td>
-                    <td className="py-3 px-3 text-right text-green-600 dark:text-green-400">
+                    <td className="py-3 px-3 text-right text-primary dark:text-green-400">
                       {formatNumber(data.breakdowns.reduce((sum, r) => sum + (r.bins_settled || 0), 0))}
                     </td>
                     <td className="py-3 px-3 text-right">
@@ -778,7 +778,7 @@ const PipelineOverview = () => {
                         {settlementPercent}%
                       </span>
                     </td>
-                    <td className="py-3 px-3 text-right text-green-700 dark:text-green-400">
+                    <td className="py-3 px-3 text-right text-primary dark:text-green-400">
                       {formatCurrency(data.breakdowns.reduce((sum, r) => sum + (r.revenue || 0), 0))}
                     </td>
                     <td className="py-3 px-3 text-right text-gray-700 dark:text-gray-300">
@@ -871,14 +871,14 @@ const PipelineOverview = () => {
                   {item.pack_percent && (
                     <span className={`text-sm font-medium ${
                       item.pack_percent >= (item.house_avg || 0)
-                        ? 'text-green-600'
+                        ? 'text-primary'
                         : 'text-red-600'
                     }`}>
                       {item.pack_percent}%
                     </span>
                   )}
                   {item.net_return && (
-                    <span className="text-sm font-medium text-green-600">
+                    <span className="text-sm font-medium text-primary">
                       {formatCurrency(item.net_return)}
                     </span>
                   )}

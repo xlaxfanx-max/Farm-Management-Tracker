@@ -79,7 +79,7 @@ const AuditBinderDashboard = () => {
     const styles = {
       draft: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300',
       in_progress: 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300',
-      ready: 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300',
+      ready: 'bg-green-100 text-primary dark:bg-green-900 dark:text-green-300',
       submitted: 'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300',
     };
     const labels = {
@@ -98,7 +98,7 @@ const AuditBinderDashboard = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
       </div>
     );
   }
@@ -109,7 +109,7 @@ const AuditBinderDashboard = () => {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-            <BookOpen className="w-5 h-5 text-green-600" />
+            <BookOpen className="w-5 h-5 text-primary" />
             CAC Audit Binder
           </h2>
           <p className="text-sm text-gray-500 dark:text-gray-400">
@@ -125,7 +125,7 @@ const AuditBinderDashboard = () => {
           </button>
           <button
             onClick={() => setShowCreateModal(true)}
-            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary-hover transition-colors"
           >
             <Plus className="w-4 h-4" />
             New Binder
@@ -151,7 +151,7 @@ const AuditBinderDashboard = () => {
           <div className="mt-4">
             <button
               onClick={() => setShowCreateModal(true)}
-              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary-hover transition-colors"
             >
               <Plus className="w-4 h-4" />
               Create First Binder

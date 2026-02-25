@@ -133,10 +133,10 @@ const CategoryCard = ({
 }) => {
   const colorClasses = {
     green: {
-      bg: 'bg-green-50 dark:bg-green-900/20',
-      icon: 'bg-green-100 dark:bg-green-900/40 text-green-600 dark:text-green-400',
+      bg: 'bg-primary-light dark:bg-green-900/20',
+      icon: 'bg-green-100 dark:bg-green-900/40 text-primary dark:text-green-400',
       border: 'border-green-200 dark:border-green-800',
-      hover: 'hover:border-green-400 dark:hover:border-green-600',
+      hover: 'hover:border-green-400 dark:hover:border-primary',
     },
     blue: {
       bg: 'bg-blue-50 dark:bg-blue-900/20',
@@ -167,7 +167,7 @@ const CategoryCard = ({
   const c = colorClasses[color] || colorClasses.green;
 
   const statusColors = {
-    good: 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400',
+    good: 'bg-green-100 dark:bg-green-900/30 text-primary dark:text-green-400',
     warning: 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400',
     critical: 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400',
   };
@@ -428,7 +428,7 @@ const CategorySection = ({ category, modules, moduleScores, primusData, onNaviga
           <div className={`h-full rounded-full transition-all ${barColor}`} style={{ width: `${avgScore}%` }} />
         </div>
         <span className={`text-xs font-bold min-w-[32px] text-right ${
-          avgScore >= 80 ? 'text-green-600 dark:text-green-400' :
+          avgScore >= 80 ? 'text-primary dark:text-green-400' :
           avgScore >= 60 ? 'text-amber-600 dark:text-amber-400' :
           'text-red-600 dark:text-red-400'
         }`}>
@@ -468,11 +468,11 @@ const CategorySection = ({ category, modules, moduleScores, primusData, onNaviga
                   <button
                     key={mod.key}
                     onClick={() => onNavigate?.(`compliance-primusgfs-${mod.tab}`)}
-                    className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 hover:border-green-400 dark:hover:border-green-600 transition-colors"
+                    className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary-light dark:bg-green-900/20 border border-green-200 dark:border-green-800 hover:border-green-400 dark:hover:border-primary transition-colors"
                   >
-                    <ModIcon className="w-3 h-3 text-green-600 dark:text-green-400" />
+                    <ModIcon className="w-3 h-3 text-primary dark:text-green-400" />
                     <span className="text-xs text-gray-700 dark:text-gray-300">{mod.label}</span>
-                    <span className="text-xs font-bold text-green-600 dark:text-green-400">{score}%</span>
+                    <span className="text-xs font-bold text-primary dark:text-green-400">{score}%</span>
                   </button>
                 );
               })}
@@ -525,7 +525,7 @@ const CertificationReadinessSection = ({ primusData, onNavigate }) => {
               <Shield className="w-5 h-5 text-teal-600 dark:text-teal-400" />
               <h3 className="text-base font-semibold text-gray-900 dark:text-white">Primus GFS</h3>
               <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                overallScore >= 80 ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' :
+                overallScore >= 80 ? 'bg-green-100 dark:bg-green-900/30 text-primary dark:text-green-400' :
                 overallScore >= 60 ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400' :
                 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
               }`}>
@@ -724,7 +724,7 @@ export default function ComplianceDashboard({ onNavigate }) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center">
-          <RefreshCw className="w-8 h-8 text-green-600 animate-spin mx-auto" />
+          <RefreshCw className="w-8 h-8 text-primary animate-spin mx-auto" />
           <p className="text-gray-600 dark:text-gray-400 mt-2">Loading compliance data...</p>
         </div>
       </div>
@@ -739,7 +739,7 @@ export default function ComplianceDashboard({ onNavigate }) {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 bg-green-100 dark:bg-green-900/40 rounded-xl flex items-center justify-center">
-                <Shield className="w-6 h-6 text-green-600 dark:text-green-400" />
+                <Shield className="w-6 h-6 text-primary dark:text-green-400" />
               </div>
               <div>
                 <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Compliance Hub</h1>
@@ -819,15 +819,15 @@ export default function ComplianceDashboard({ onNavigate }) {
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
             <button
               onClick={() => onNavigate?.('compliance-deadlines')}
-              className="flex flex-col items-center gap-2 p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-green-400 dark:hover:border-green-600 hover:shadow transition-all"
+              className="flex flex-col items-center gap-2 p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-green-400 dark:hover:border-primary hover:shadow transition-all"
             >
-              <Calendar className="w-6 h-6 text-green-600 dark:text-green-400" />
+              <Calendar className="w-6 h-6 text-primary dark:text-green-400" />
               <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Deadlines</span>
             </button>
 
             <button
               onClick={() => onNavigate?.('compliance-reports')}
-              className="flex flex-col items-center gap-2 p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-green-400 dark:hover:border-green-600 hover:shadow transition-all"
+              className="flex flex-col items-center gap-2 p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-green-400 dark:hover:border-primary hover:shadow transition-all"
             >
               <FileText className="w-6 h-6 text-purple-600 dark:text-purple-400" />
               <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Reports</span>
@@ -867,9 +867,9 @@ export default function ComplianceDashboard({ onNavigate }) {
 
             <button
               onClick={() => onNavigate?.('compliance-inspector-checklist')}
-              className="flex flex-col items-center gap-2 p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-green-400 dark:hover:border-green-600 hover:shadow transition-all"
+              className="flex flex-col items-center gap-2 p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-green-400 dark:hover:border-primary hover:shadow transition-all"
             >
-              <ClipboardCheck className="w-6 h-6 text-green-700 dark:text-green-400" />
+              <ClipboardCheck className="w-6 h-6 text-primary dark:text-green-400" />
               <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Inspector</span>
             </button>
           </div>

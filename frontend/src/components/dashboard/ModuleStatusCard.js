@@ -22,9 +22,9 @@ function ModuleStatusCard({
       hover: 'hover:border-blue-200 dark:hover:border-blue-700'
     },
     green: {
-      bg: 'bg-green-50 dark:bg-green-900/30',
+      bg: 'bg-primary-light dark:bg-green-900/30',
       border: 'border-green-100 dark:border-green-800',
-      icon: 'text-green-600 dark:text-green-400',
+      icon: 'text-primary dark:text-green-400',
       hover: 'hover:border-green-200 dark:hover:border-green-700'
     },
     amber: {

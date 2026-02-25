@@ -146,7 +146,7 @@ const PrefillBanner = ({ module, sourceLabel, onImport, renderItem, params = {} 
       {importResult && (
         <div className={`flex items-center gap-2 px-4 py-2 text-sm ${
           importResult.success
-            ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400'
+            ? 'bg-primary-light dark:bg-green-900/20 text-primary dark:text-green-400'
             : 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400'
         }`}>
           {importResult.success ? (
@@ -225,7 +225,7 @@ const PrefillBanner = ({ module, sourceLabel, onImport, renderItem, params = {} 
                   )}
                 </div>
                 {item.already_imported && (
-                  <span className="inline-flex items-center gap-1 text-xs text-green-600 dark:text-green-400 flex-shrink-0">
+                  <span className="inline-flex items-center gap-1 text-xs text-primary dark:text-green-400 flex-shrink-0">
                     <CheckCircle2 className="w-3 h-3" />
                     Imported
                   </span>

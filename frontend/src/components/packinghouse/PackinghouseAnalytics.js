@@ -179,7 +179,7 @@ const PackinghouseAnalytics = () => {
           <select
             value={groupBy}
             onChange={(e) => setGroupBy(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
           >
             <option value="farm">Group by Farm</option>
             <option value="field">Group by Field</option>
@@ -189,7 +189,7 @@ const PackinghouseAnalytics = () => {
           <select
             value={roiGroupBy}
             onChange={(e) => setRoiGroupBy(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
           >
             <option value="commodity">Group by Commodity</option>
             <option value="variety">Group by Variety</option>
@@ -201,20 +201,20 @@ const PackinghouseAnalytics = () => {
             value={selectedGrade}
             onChange={(e) => setSelectedGrade(e.target.value)}
             placeholder="Filter by grade (e.g., SUNKIST)"
-            className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent w-56"
+            className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-transparent w-56"
           />
         )}
         <SeasonSelector
           value={selectedSeason}
           onChange={setSelectedSeason}
           cropCategory="citrus"
-          className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent"
+          className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
           placeholder="Select Season"
         />
         <select
           value={selectedPackinghouse}
           onChange={(e) => setSelectedPackinghouse(e.target.value)}
-          className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent"
+          className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
         >
           <option value="">All Packinghouses</option>
           {packinghouses.map(ph => (
@@ -224,7 +224,7 @@ const PackinghouseAnalytics = () => {
         <select
           value={selectedCommodity}
           onChange={(e) => setSelectedCommodity(e.target.value)}
-          className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent"
+          className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
         >
           <option value="">All Commodities</option>
           {PACKINGHOUSE_CONSTANTS.commodities.map(c => (
@@ -284,7 +284,7 @@ const PackinghouseAnalytics = () => {
                           <td className={`${tableCellClass} text-right`}>
                             <VarianceIndicator value={row.pack_variance} />
                           </td>
-                          <td className={`${tableCellClass} text-right font-semibold text-green-600`}>
+                          <td className={`${tableCellClass} text-right font-semibold text-primary`}>
                             {formatCurrency(row.net_per_bin)}
                           </td>
                           <td className={`${tableCellClass} text-right`}>
@@ -381,7 +381,7 @@ const PackinghouseAnalytics = () => {
                           <td className={`${tableCellClass} text-gray-600`}>{row.commodity}</td>
                           <td className={`${tableCellClass} text-right`}>{formatNumber(row.total_bins, 2)}</td>
                           <td className={`${tableCellClass} text-right`}>{formatCurrency(row.net_return)}</td>
-                          <td className={`${tableCellClass} text-right font-semibold text-green-600`}>
+                          <td className={`${tableCellClass} text-right font-semibold text-primary`}>
                             {formatCurrency(row.net_per_bin)}
                           </td>
                           <td className={`${tableCellClass} text-right text-blue-600`}>
@@ -620,7 +620,7 @@ const PackinghouseAnalytics = () => {
                               <td className={`${tableCellClass} text-right font-semibold text-blue-600`}>
                                 {formatCurrency(s.weighted_avg_fob)}
                               </td>
-                              <td className={`${tableCellClass} text-right font-semibold text-green-600`}>
+                              <td className={`${tableCellClass} text-right font-semibold text-primary`}>
                                 {formatCurrency(s.total_revenue)}
                               </td>
                               <td className={`${tableCellClass} text-right text-gray-500`}>{s.percent_of_total_revenue}%</td>
@@ -634,7 +634,7 @@ const PackinghouseAnalytics = () => {
                               <td className={`${tableCellClass} text-right`}>{formatNumber(sizePricing.totals.total_quantity)}</td>
                               <td className={`${tableCellClass} text-right`}>100%</td>
                               <td className={`${tableCellClass} text-right text-blue-600`}>{formatCurrency(sizePricing.totals.overall_avg_fob)}</td>
-                              <td className={`${tableCellClass} text-right text-green-600`}>{formatCurrency(sizePricing.totals.total_revenue)}</td>
+                              <td className={`${tableCellClass} text-right text-primary`}>{formatCurrency(sizePricing.totals.total_revenue)}</td>
                               <td className={`${tableCellClass} text-right`}>100%</td>
                             </tr>
                           </tfoot>
@@ -684,7 +684,7 @@ const PackinghouseAnalytics = () => {
                           <td className={`${tableCellClass} text-right`}>{formatNumber(row.total_bins, 1)}</td>
                           <td className={`${tableCellClass} text-right text-gray-600`}>{formatCurrency(row.gross_per_bin)}</td>
                           <td className={`${tableCellClass} text-right text-red-600`}>{formatCurrency(row.deductions_per_bin)}</td>
-                          <td className={`${tableCellClass} text-right font-semibold text-green-600`}>{formatCurrency(row.net_per_bin)}</td>
+                          <td className={`${tableCellClass} text-right font-semibold text-primary`}>{formatCurrency(row.net_per_bin)}</td>
                           <td className={`${tableCellClass} text-right`}>
                             <MarginBadge value={row.margin_percent} />
                           </td>
@@ -868,13 +868,13 @@ const PackinghouseAnalytics = () => {
                       <div className="p-5 grid grid-cols-2 gap-4">
                         <div>
                           <p className="text-xs font-medium text-gray-500 uppercase">Net/Bin</p>
-                          <p className="text-xl font-bold text-green-600">{formatCurrency(ph.metrics.avg_net_per_bin)}</p>
+                          <p className="text-xl font-bold text-primary">{formatCurrency(ph.metrics.avg_net_per_bin)}</p>
                         </div>
                         <div>
                           <p className="text-xs font-medium text-gray-500 uppercase">vs House Avg</p>
                           <p className="text-xl font-bold">
                             {ph.metrics.variance_vs_house != null ? (
-                              <span className={ph.metrics.variance_vs_house >= 0 ? 'text-green-600' : 'text-red-600'}>
+                              <span className={ph.metrics.variance_vs_house >= 0 ? 'text-primary' : 'text-red-600'}>
                                 {ph.metrics.variance_vs_house >= 0 ? '+' : ''}{formatCurrency(ph.metrics.variance_vs_house)}
                               </span>
                             ) : (
@@ -931,7 +931,7 @@ const PackinghouseAnalytics = () => {
                           <div className="flex items-center gap-3 text-sm">
                             {ph.season_trend.slice().reverse().map((t, tIdx) => (
                               <div key={t.season} className="text-center">
-                                <div className={`font-semibold ${t.season === reportCard.season ? 'text-green-600' : 'text-gray-600'}`}>
+                                <div className={`font-semibold ${t.season === reportCard.season ? 'text-primary' : 'text-gray-600'}`}>
                                   {formatCurrency(t.net_per_bin)}
                                 </div>
                                 <div className="text-xs text-gray-400">{t.season}</div>
@@ -1017,7 +1017,7 @@ const PackinghouseAnalytics = () => {
                               <td className={`${tableCellClass} text-right font-semibold text-blue-600`}>
                                 {dp.pack_percent.toFixed(1)}%
                               </td>
-                              <td className={`${tableCellClass} text-right font-semibold text-green-600`}>
+                              <td className={`${tableCellClass} text-right font-semibold text-primary`}>
                                 {formatCurrency(dp.net_per_bin)}
                               </td>
                               {packImpact.regression && (

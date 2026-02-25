@@ -33,7 +33,7 @@ export const inputClasses =
   'w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 ' +
   'bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 ' +
   'placeholder-gray-400 dark:placeholder-gray-500 ' +
-  'focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 ' +
+  'focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary ' +
   'disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed ' +
   'text-sm';
 

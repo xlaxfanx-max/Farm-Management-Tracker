@@ -85,7 +85,7 @@ const SurveyResultsPanel = ({ survey, healthSummary }) => {
       {/* Stats Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
         <StatCard
-          icon={<Trees size={18} className="text-green-600" />}
+          icon={<Trees size={18} className="text-primary" />}
           label="Total Trees"
           value={treeCount.toLocaleString()}
         />

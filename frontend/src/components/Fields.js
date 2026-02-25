@@ -16,7 +16,7 @@ function Fields({ fields, applications, onEditField, onDeleteField, onNewField }
         <h2 className="text-2xl font-bold">Fields</h2>
         <button 
           onClick={onNewField}
-          className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
+          className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-hover"
         >
           <Plus size={20} />
           Add Field
@@ -31,7 +31,7 @@ function Fields({ fields, applications, onEditField, onDeleteField, onNewField }
                 <h3 className="font-bold text-lg">{field.name}</h3>
                 <p className="text-sm text-slate-500">{field.field_number}</p>
               </div>
-              <MapPin className="text-green-600" size={24} />
+              <MapPin className="text-primary" size={24} />
             </div>
             
             <div className="space-y-2 mb-4">

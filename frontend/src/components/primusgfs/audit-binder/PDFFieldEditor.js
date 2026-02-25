@@ -15,7 +15,7 @@ import { primusGFSAPI } from '../../../services/api';
 
 const SOURCE_BADGES = {
   auto_fill: { label: 'Auto-fill', color: 'text-blue-600 bg-blue-50 dark:text-blue-400 dark:bg-blue-900/30' },
-  user_override: { label: 'Edited', color: 'text-green-600 bg-green-50 dark:text-green-400 dark:bg-green-900/30' },
+  user_override: { label: 'Edited', color: 'text-primary bg-primary-light dark:text-green-400 dark:bg-green-900/30' },
   empty: { label: 'Empty', color: 'text-gray-400 bg-gray-50 dark:text-gray-500 dark:bg-gray-800' },
 };
 
@@ -159,7 +159,7 @@ const PDFFieldEditor = ({ sectionId, docNumber, onSaved }) => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full">
-        <Loader2 className="w-8 h-8 animate-spin text-green-600" />
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
       </div>
     );
   }
@@ -188,7 +188,7 @@ const PDFFieldEditor = ({ sectionId, docNumber, onSaved }) => {
               type="checkbox"
               checked={autoSave}
               onChange={(e) => setAutoSave(e.target.checked)}
-              className="w-3 h-3 rounded text-green-600"
+              className="w-3 h-3 rounded text-primary"
             />
             Auto-save
           </label>
@@ -204,7 +204,7 @@ const PDFFieldEditor = ({ sectionId, docNumber, onSaved }) => {
           <button
             onClick={() => handleSave()}
             disabled={saving || dirtyCount === 0}
-            className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-white bg-green-600 rounded hover:bg-green-700 disabled:opacity-50"
+            className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-white bg-primary rounded hover:bg-primary-hover disabled:opacity-50"
           >
             {saving ? (
               <Loader2 className="w-3 h-3 animate-spin" />
@@ -224,7 +224,7 @@ const PDFFieldEditor = ({ sectionId, docNumber, onSaved }) => {
         </div>
       )}
       {successMsg && (
-        <div className="mx-3 mt-2 flex items-center gap-2 p-2 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded text-xs text-green-700 dark:text-green-400">
+        <div className="mx-3 mt-2 flex items-center gap-2 p-2 bg-primary-light dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded text-xs text-primary dark:text-green-400">
           <CheckCircle2 className="w-3.5 h-3.5 flex-shrink-0" />
           {successMsg}
         </div>
@@ -287,7 +287,7 @@ const PDFFieldEditor = ({ sectionId, docNumber, onSaved }) => {
                               type="checkbox"
                               checked={!!localValues[field.name]}
                               onChange={(e) => handleFieldChange(field.name, e.target.checked)}
-                              className="w-4 h-4 text-green-600 rounded border-gray-300 dark:border-gray-600"
+                              className="w-4 h-4 text-primary rounded border-gray-300 dark:border-gray-600"
                             />
                             <span className="text-xs text-gray-500 dark:text-gray-400">
                               {localValues[field.name] ? 'Yes' : 'No'}
@@ -298,7 +298,7 @@ const PDFFieldEditor = ({ sectionId, docNumber, onSaved }) => {
                             type="text"
                             value={localValues[field.name] ?? ''}
                             onChange={(e) => handleFieldChange(field.name, e.target.value)}
-                            className={`w-full px-2 py-1 text-sm border rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-1 focus:ring-green-500 focus:border-green-500 ${
+                            className={`w-full px-2 py-1 text-sm border rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-1 focus:ring-primary focus:border-primary ${
                               isDirty
                                 ? 'border-amber-300 dark:border-amber-600'
                                 : 'border-gray-200 dark:border-gray-600'

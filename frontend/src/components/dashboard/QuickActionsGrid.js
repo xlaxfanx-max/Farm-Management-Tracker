@@ -1,97 +1,71 @@
 import React from 'react';
 import {
-  Droplets,
   Wheat,
   Sprout,
-  FileText,
-  Leaf,
-  Droplet
+  Droplet,
+  FileText
 } from 'lucide-react';
 import { useModal } from '../../contexts/ModalContext';
 
 /**
- * Quick actions grid for the dashboard - provides fast access to common operations
+ * 4 prominent quick-action buttons for the most common operations.
  */
 function QuickActionsGrid({ onNavigate }) {
   const {
     openApplicationModal,
     openWaterTestModal,
     openQuickHarvestModal,
-    openNutrientAppModal
   } = useModal();
 
   const actions = [
     {
-      id: 'irrigation',
-      label: 'Record Irrigation',
-      icon: Droplets,
-      color: 'blue',
-      onClick: () => onNavigate?.('water')
-    },
-    {
-      id: 'harvest',
-      label: 'Quick Harvest',
-      icon: Wheat,
-      color: 'amber',
-      onClick: () => openQuickHarvestModal()
-    },
-    {
       id: 'application',
       label: 'New Application',
       icon: Sprout,
-      color: 'green',
-      onClick: () => openApplicationModal()
+      onClick: () => openApplicationModal(),
+    },
+    {
+      id: 'harvest',
+      label: 'Log Harvest',
+      icon: Wheat,
+      onClick: () => openQuickHarvestModal(),
     },
     {
       id: 'water-test',
       label: 'Water Test',
       icon: Droplet,
-      color: 'cyan',
-      onClick: () => openWaterTestModal()
-    },
-    {
-      id: 'nutrient',
-      label: 'Nutrient App',
-      icon: Leaf,
-      color: 'emerald',
-      onClick: () => openNutrientAppModal()
+      onClick: () => openWaterTestModal(),
     },
     {
       id: 'reports',
-      label: 'View Reports',
+      label: 'Reports',
       icon: FileText,
-      color: 'purple',
-      onClick: () => onNavigate?.('reports')
-    }
+      onClick: () => onNavigate?.('reports'),
+    },
   ];
 
-  const colorClasses = {
-    blue: 'bg-blue-600 hover:bg-blue-700 text-white',
-    green: 'bg-green-600 hover:bg-green-700 text-white',
-    amber: 'bg-amber-500 hover:bg-amber-600 text-white',
-    cyan: 'bg-cyan-600 hover:bg-cyan-700 text-white',
-    emerald: 'bg-emerald-600 hover:bg-emerald-700 text-white',
-    purple: 'bg-purple-600 hover:bg-purple-700 text-white',
-    orange: 'bg-orange-500 hover:bg-orange-600 text-white'
-  };
-
   return (
-    <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
+    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
       {actions.map((action) => (
         <button
           key={action.id}
           onClick={action.onClick}
-          className={`
-            ${colorClasses[action.color]}
-            rounded-lg px-3 py-4
-            flex flex-col items-center justify-center gap-2
-            transition-all hover:shadow-lg transform hover:-translate-y-0.5
+          className="
+            bg-surface-raised dark:bg-gray-800
+            border border-border dark:border-gray-700
+            hover:border-primary dark:hover:border-primary
+            rounded-lg px-4 py-4
+            flex flex-col items-center justify-center gap-2.5
+            transition-all hover:shadow-md
             min-h-[80px]
-            focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-${action.color}-500
-          `}
+            focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1
+            group
+          "
         >
-          <action.icon className="w-6 h-6" />
-          <span className="text-xs font-medium text-center leading-tight">{action.label}</span>
+          <action.icon className="w-5 h-5 text-text-secondary dark:text-gray-400 group-hover:text-primary transition-colors" />
+          <span className="text-sm font-medium text-text dark:text-gray-200 group-hover:text-primary transition-colors">
+            {action.label}
+          </span>
         </button>
       ))}
     </div>

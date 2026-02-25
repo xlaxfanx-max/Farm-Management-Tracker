@@ -322,7 +322,7 @@ const NutrientManagement = () => {
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
-              <Leaf className="w-6 h-6 text-green-600 dark:text-green-400" />
+              <Leaf className="w-6 h-6 text-primary dark:text-green-400" />
             </div>
             <div>
               <p className="text-sm text-gray-500">Applications</p>
@@ -381,7 +381,7 @@ const NutrientManagement = () => {
                 placeholder="Search applications..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-200 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-200 focus:ring-2 focus:ring-primary focus:border-transparent"
               />
             </div>
           </div>
@@ -389,7 +389,7 @@ const NutrientManagement = () => {
           <select
             value={filterYear}
             onChange={(e) => setFilterYear(parseInt(e.target.value))}
-            className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-200 focus:ring-2 focus:ring-green-500"
+            className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-200 focus:ring-2 focus:ring-primary"
           >
             {yearOptions.map(y => (
               <option key={y} value={y}>{y}</option>
@@ -399,7 +399,7 @@ const NutrientManagement = () => {
           <select
             value={filterFarm}
             onChange={(e) => setFilterFarm(e.target.value)}
-            className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-200 focus:ring-2 focus:ring-green-500"
+            className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-200 focus:ring-2 focus:ring-primary"
           >
             <option value="">All Farms</option>
             {farms.map(farm => (
@@ -410,7 +410,7 @@ const NutrientManagement = () => {
           <select
             value={filterMethod}
             onChange={(e) => setFilterMethod(e.target.value)}
-            className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-200 focus:ring-2 focus:ring-green-500"
+            className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-200 focus:ring-2 focus:ring-primary"
           >
             <option value="">All Methods</option>
             {NUTRIENT_CONSTANTS.APPLICATION_METHODS.map(m => (
@@ -460,7 +460,7 @@ const NutrientManagement = () => {
                     <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
                       {formatNumber(app.rate)} {app.rate_unit?.replace('_', '/')}
                     </td>
-                    <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-green-600">
+                    <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-primary">
                       {formatNumber(app.lbs_nitrogen_per_acre)} lbs
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
@@ -514,7 +514,7 @@ const NutrientManagement = () => {
                 placeholder="Search products..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-200 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-200 focus:ring-2 focus:ring-primary focus:border-transparent"
               />
             </div>
           </div>
@@ -561,7 +561,7 @@ const NutrientManagement = () => {
               </div>
               
               <div className="flex items-center gap-4 mb-3">
-                <div className="text-2xl font-bold text-green-600">{product.npk_display}</div>
+                <div className="text-2xl font-bold text-primary">{product.npk_display}</div>
                 <span className={`px-2 py-1 text-xs rounded-full ${
                   product.is_organic 
                     ? 'bg-green-100 text-green-800' 
@@ -587,7 +587,7 @@ const NutrientManagement = () => {
               </div>
               
               {product.omri_listed && (
-                <div className="mt-3 flex items-center gap-1 text-xs text-green-600">
+                <div className="mt-3 flex items-center gap-1 text-xs text-primary">
                   <CheckCircle className="w-3 h-3" />
                   OMRI Listed
                 </div>
@@ -611,7 +611,7 @@ const NutrientManagement = () => {
           <select
             value={filterYear}
             onChange={(e) => setFilterYear(parseInt(e.target.value))}
-            className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-200 focus:ring-2 focus:ring-green-500"
+            className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-200 focus:ring-2 focus:ring-primary"
           >
             {yearOptions.map(y => (
               <option key={y} value={y}>{y}</option>
@@ -621,7 +621,7 @@ const NutrientManagement = () => {
           <select
             value={filterFarm}
             onChange={(e) => setFilterFarm(e.target.value)}
-            className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-200 focus:ring-2 focus:ring-green-500"
+            className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-200 focus:ring-2 focus:ring-primary"
           >
             <option value="">All Farms</option>
             {farms.map(farm => (
@@ -632,7 +632,7 @@ const NutrientManagement = () => {
         
         <button
           onClick={handleExport}
-          className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+          className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover"
         >
           <Download className="w-4 h-4" />
           Export Excel
@@ -688,7 +688,7 @@ const NutrientManagement = () => {
                     <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900 text-right">
                       {formatNumber(row.total_lbs_nitrogen, 0)}
                     </td>
-                    <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-green-600 text-right">
+                    <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-primary text-right">
                       {formatNumber(row.lbs_nitrogen_per_acre)}
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap text-center">
@@ -727,7 +727,7 @@ const NutrientManagement = () => {
                   <td className="px-4 py-3 text-sm font-bold text-gray-900 text-right">
                     {formatNumber(summary.reduce((sum, r) => sum + (r.total_lbs_nitrogen || 0), 0), 0)}
                   </td>
-                  <td className="px-4 py-3 text-sm font-medium text-green-600 text-right">
+                  <td className="px-4 py-3 text-sm font-medium text-primary text-right">
                     {formatNumber(
                       summary.reduce((sum, r) => sum + (r.total_lbs_nitrogen || 0), 0) / 
                       Math.max(summary.reduce((sum, r) => sum + (r.acres || 0), 0), 1)
@@ -753,7 +753,7 @@ const NutrientManagement = () => {
         <select
           value={filterYear}
           onChange={(e) => setFilterYear(parseInt(e.target.value))}
-          className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+          className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
         >
           {yearOptions.map(y => (
             <option key={y} value={y}>{y}</option>
@@ -763,7 +763,7 @@ const NutrientManagement = () => {
         <select
           value={filterFarm}
           onChange={(e) => setFilterFarm(e.target.value)}
-          className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+          className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
         >
           <option value="">All Farms</option>
           {farms.map(farm => (
@@ -806,7 +806,7 @@ const NutrientManagement = () => {
                   <td className="px-4 py-3 text-sm text-gray-900 text-right">
                     {formatNumber(plan.planned_nitrogen_lbs_acre)} lbs/ac
                   </td>
-                  <td className="px-4 py-3 text-sm font-medium text-green-600 text-right">
+                  <td className="px-4 py-3 text-sm font-medium text-primary text-right">
                     {formatNumber(plan.actual_nitrogen_applied_per_acre)} lbs/ac
                   </td>
                   <td className="px-4 py-3 text-sm text-gray-900 text-right">
@@ -864,7 +864,7 @@ const NutrientManagement = () => {
           {activeTab === 'applications' && (
             <button
               onClick={() => openNutrientAppModal( null)}
-              className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+              className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover"
             >
               <Plus className="w-4 h-4" />
               Add Application
@@ -874,7 +874,7 @@ const NutrientManagement = () => {
           {activeTab === 'products' && (
             <button
               onClick={() => openFertilizerProductModal( null)}
-              className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+              className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover"
             >
               <Plus className="w-4 h-4" />
               Add Product
@@ -884,7 +884,7 @@ const NutrientManagement = () => {
           {activeTab === 'plans' && (
             <button
               onClick={() => console.log('Nutrient plan modal not yet implemented')}
-              className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 opacity-50 cursor-not-allowed"
+              className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover opacity-50 cursor-not-allowed"
               disabled
             >
               <Plus className="w-4 h-4" />
@@ -914,7 +914,7 @@ const NutrientManagement = () => {
               }}
               className={`flex items-center gap-2 py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
                 activeTab === tab.id
-                  ? 'border-green-500 text-green-600 dark:text-green-400'
+                  ? 'border-primary text-primary dark:text-green-400'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
               }`}
             >
@@ -922,7 +922,7 @@ const NutrientManagement = () => {
               {tab.label}
               {tab.count !== undefined && (
                 <span className={`ml-2 py-0.5 px-2 rounded-full text-xs ${
-                  activeTab === tab.id ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-600'
+                  activeTab === tab.id ? 'bg-green-100 text-primary' : 'bg-gray-100 text-gray-600'
                 }`}>
                   {tab.count}
                 </span>

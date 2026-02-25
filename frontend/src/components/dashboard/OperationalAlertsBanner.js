@@ -166,13 +166,13 @@ function OperationalAlertsBanner({
   // If no alerts, show success state
   if (alerts.length === 0) {
     return (
-      <div className="bg-green-50 border border-green-200 rounded-lg p-3 flex items-center gap-3">
+      <div className="bg-primary-light border border-green-200 rounded-lg p-3 flex items-center gap-3">
         <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-          <span className="text-green-600 text-lg">✓</span>
+          <span className="text-primary text-lg">✓</span>
         </div>
         <div>
           <p className="text-sm font-medium text-green-800">All systems operational</p>
-          <p className="text-xs text-green-600">No pending tasks or alerts</p>
+          <p className="text-xs text-primary">No pending tasks or alerts</p>
         </div>
       </div>
     );

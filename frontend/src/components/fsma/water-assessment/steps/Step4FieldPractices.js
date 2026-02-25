@@ -118,7 +118,7 @@ const Step4FieldPractices = ({ formData, updateFormData }) => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-32">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
   }
@@ -155,7 +155,7 @@ const Step4FieldPractices = ({ formData, updateFormData }) => {
               key={field.id}
               className={`border-2 rounded-lg transition-all ${
                 isSelected
-                  ? 'border-green-500 bg-green-50 dark:bg-green-900/10'
+                  ? 'border-primary bg-primary-light dark:bg-green-900/10'
                   : 'border-gray-200 dark:border-gray-700'
               }`}
             >
@@ -168,7 +168,7 @@ const Step4FieldPractices = ({ formData, updateFormData }) => {
                   <div
                     className={`w-10 h-10 rounded-lg flex items-center justify-center ${
                       isSelected
-                        ? 'bg-green-600 text-white'
+                        ? 'bg-primary text-white'
                         : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
                     }`}
                   >
@@ -186,7 +186,7 @@ const Step4FieldPractices = ({ formData, updateFormData }) => {
                 <div
                   className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
                     isSelected
-                      ? 'border-green-500 bg-green-500 text-white'
+                      ? 'border-primary bg-green-500 text-white'
                       : 'border-gray-300 dark:border-gray-600'
                   }`}
                 >
@@ -213,7 +213,7 @@ const Step4FieldPractices = ({ formData, updateFormData }) => {
                           }
                           className={`p-2 text-sm rounded-lg border transition-colors ${
                             assessment.application_method === method.value
-                              ? 'border-green-500 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400'
+                              ? 'border-primary bg-primary-light dark:bg-green-900/20 text-primary dark:text-green-400'
                               : 'border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:border-gray-300'
                           }`}
                         >
@@ -221,7 +221,7 @@ const Step4FieldPractices = ({ formData, updateFormData }) => {
                           <span
                             className={`text-xs ${
                               method.risk === 'low'
-                                ? 'text-green-600'
+                                ? 'text-primary'
                                 : method.risk === 'medium'
                                 ? 'text-yellow-600'
                                 : 'text-red-600'

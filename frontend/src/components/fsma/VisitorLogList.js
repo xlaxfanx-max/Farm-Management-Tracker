@@ -349,7 +349,7 @@ const VisitorLogList = () => {
                   </div>
                   <div className="flex items-center gap-3">
                     {visitor.linked_harvest && (
-                      <span className="flex items-center gap-1 text-xs bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-2 py-1 rounded">
+                      <span className="flex items-center gap-1 text-xs bg-green-100 dark:bg-green-900/30 text-primary dark:text-green-400 px-2 py-1 rounded">
                         <LinkIcon className="w-3 h-3" />
                         Linked to Harvest
                       </span>
@@ -629,7 +629,7 @@ const VisitorLogList = () => {
 
               {/* Harvest Link Suggestions */}
               {formData.visitor_type === 'harvester' && harvestSuggestions.length > 0 && (
-                <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
+                <div className="bg-primary-light dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
                   <h4 className="text-sm font-medium text-green-800 dark:text-green-300 mb-2 flex items-center gap-2">
                     <LinkIcon className="w-4 h-4" />
                     Link to Harvest Record
@@ -646,7 +646,7 @@ const VisitorLogList = () => {
                           value={harvest.id}
                           checked={linkedHarvest === harvest.id}
                           onChange={() => setLinkedHarvest(harvest.id)}
-                          className="text-green-600 focus:ring-green-500"
+                          className="text-primary focus:ring-primary"
                         />
                         <span className="text-sm text-gray-700 dark:text-gray-300">
                           {harvest.field_name} - {harvest.crop} ({harvest.harvest_date})

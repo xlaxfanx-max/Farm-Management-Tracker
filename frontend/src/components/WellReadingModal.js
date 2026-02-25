@@ -256,7 +256,7 @@ const WellReadingModal = ({ isOpen, onClose, reading, wellId, wellName, onSave }
                 {previousReading.total_fee && (
                   <div className="flex justify-between text-sm mt-1">
                     <span className="text-gray-500">Total Fee:</span>
-                    <span className="text-green-600">${parseFloat(previousReading.total_fee).toFixed(2)}</span>
+                    <span className="text-primary">${parseFloat(previousReading.total_fee).toFixed(2)}</span>
                   </div>
                 )}
               </div>
@@ -264,8 +264,8 @@ const WellReadingModal = ({ isOpen, onClose, reading, wellId, wellName, onSave }
 
             {/* Fee Rate Info (when editing existing reading with fees) */}
             {reading?.total_fee && (
-              <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-                <div className="flex items-center gap-2 text-sm text-green-700 mb-2 font-medium">
+              <div className="bg-primary-light border border-green-200 rounded-lg p-3">
+                <div className="flex items-center gap-2 text-sm text-primary mb-2 font-medium">
                   Calculated Fees
                 </div>
                 <div className="space-y-1 text-sm">
@@ -295,7 +295,7 @@ const WellReadingModal = ({ isOpen, onClose, reading, wellId, wellName, onSave }
                   )}
                   <div className="flex justify-between pt-1 border-t border-green-200">
                     <span className="text-gray-700 font-medium">Total:</span>
-                    <span className="font-bold text-green-700">${parseFloat(reading.total_fee).toFixed(2)}</span>
+                    <span className="font-bold text-primary">${parseFloat(reading.total_fee).toFixed(2)}</span>
                   </div>
                 </div>
               </div>

@@ -78,7 +78,7 @@ export default function PURReviewStep({ reports, farms, filename, onReportsChang
           {stats.selected} selected
         </span>
         {stats.mapped > 0 && (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-green-50 text-green-700 rounded-full text-sm">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-primary-light text-primary rounded-full text-sm">
             <CheckCircle className="w-4 h-4" />
             {stats.mapped} mapped to farms
           </span>

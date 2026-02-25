@@ -29,7 +29,7 @@ export default function ForgotPassword() {
       <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
         <div className="sm:mx-auto sm:w-full sm:max-w-md">
           <div className="flex justify-center">
-            <div className="w-16 h-16 bg-green-600 rounded-2xl flex items-center justify-center">
+            <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center">
               <CheckCircle className="w-10 h-10 text-white" />
             </div>
           </div>
@@ -44,12 +44,12 @@ export default function ForgotPassword() {
         <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
           <div className="bg-white py-8 px-4 shadow-lg sm:rounded-xl sm:px-10">
             <div className="space-y-4">
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+              <div className="bg-primary-light border border-green-200 rounded-lg p-4">
                 <div className="flex">
-                  <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />
+                  <CheckCircle className="h-5 w-5 text-primary mt-0.5" />
                   <div className="ml-3">
                     <h3 className="text-sm font-medium text-green-800">Email sent</h3>
-                    <p className="mt-1 text-sm text-green-700">
+                    <p className="mt-1 text-sm text-primary">
                       The reset link will expire in 24 hours. Check your spam folder if you don't see it.
                     </p>
                   </div>
@@ -68,7 +68,7 @@ export default function ForgotPassword() {
 
               <Link
                 to="/login"
-                className="w-full flex justify-center items-center gap-2 py-2 px-4 border border-transparent rounded-lg text-sm font-medium text-green-600 hover:text-green-700 transition-colors"
+                className="w-full flex justify-center items-center gap-2 py-2 px-4 border border-transparent rounded-lg text-sm font-medium text-primary hover:text-primary-hover transition-colors"
               >
                 <ArrowLeft className="w-4 h-4" />
                 Back to login
@@ -84,7 +84,7 @@ export default function ForgotPassword() {
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="flex justify-center">
-          <div className="w-16 h-16 bg-green-600 rounded-2xl flex items-center justify-center">
+          <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center">
             <Mail className="w-10 h-10 text-white" />
           </div>
         </div>
@@ -126,7 +126,7 @@ export default function ForgotPassword() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="appearance-none block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent sm:text-sm"
+                  className="appearance-none block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent sm:text-sm"
                   placeholder="you@example.com"
                 />
               </div>
@@ -136,7 +136,7 @@ export default function ForgotPassword() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 {loading ? (
                   <div className="flex items-center gap-2">
@@ -152,7 +152,7 @@ export default function ForgotPassword() {
             <div className="text-center">
               <Link
                 to="/login"
-                className="inline-flex items-center gap-2 text-sm font-medium text-green-600 hover:text-green-700 transition-colors"
+                className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:text-primary-hover transition-colors"
               >
                 <ArrowLeft className="w-4 h-4" />
                 Back to login

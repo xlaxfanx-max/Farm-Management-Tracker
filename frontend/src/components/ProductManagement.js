@@ -183,7 +183,7 @@ function ProductManagement() {
             Manage your pesticide product database for PUR compliance
           </p>
         </div>
-        <Package className="w-12 h-12 text-green-600" />
+        <Package className="w-12 h-12 text-primary" />
       </div>
 
       {/* Action Buttons */}
@@ -194,7 +194,7 @@ function ProductManagement() {
               setEditingProduct(null);
               setShowProductModal(true);
             }}
-            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+            className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-hover"
           >
             <Plus className="w-4 h-4" />
             Add Product
@@ -240,7 +240,7 @@ function ProductManagement() {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Product name, EPA number, manufacturer..."
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
 
@@ -252,7 +252,7 @@ function ProductManagement() {
             <select
               value={filterType}
               onChange={(e) => setFilterType(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary"
             >
               <option value="all">All Types</option>
               <option value="insecticide">Insecticide</option>
@@ -273,7 +273,7 @@ function ProductManagement() {
             <select
               value={filterRestrictedUse}
               onChange={(e) => setFilterRestrictedUse(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary"
             >
               <option value="all">All Products</option>
               <option value="restricted">Restricted Use Only</option>
@@ -501,11 +501,11 @@ function ImportModal({ onClose, importFile, setImportFile, handleImport, importR
           ) : (
             <>
               <div className={`p-4 rounded-lg mb-4 ${
-                importResult.success ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'
+                importResult.success ? 'bg-primary-light border border-green-200' : 'bg-red-50 border border-red-200'
               }`}>
                 <div className="flex items-center gap-2 mb-2">
                   {importResult.success ? (
-                    <CheckCircle className="w-6 h-6 text-green-600" />
+                    <CheckCircle className="w-6 h-6 text-primary" />
                   ) : (
                     <AlertTriangle className="w-6 h-6 text-red-600" />
                   )}
@@ -520,7 +520,7 @@ function ImportModal({ onClose, importFile, setImportFile, handleImport, importR
                   <div className="text-sm mt-2">
                     <div className="grid grid-cols-3 gap-2">
                       <div>
-                        <span className="text-green-700">Created: </span>
+                        <span className="text-primary">Created: </span>
                         <span className="font-semibold">{importResult.statistics.created}</span>
                       </div>
                       <div>
@@ -642,7 +642,7 @@ function ProductModal({ product, onClose, onSave }) {
             <div className="flex gap-3 pt-4">
               <button
                 type="submit"
-                className="flex-1 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+                className="flex-1 px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-hover"
               >
                 Save Product
               </button>

@@ -18,7 +18,7 @@ const DEDUCTION_CATEGORIES = {
   assessment: { label: 'Assessments', icon: FileText, color: 'text-purple-600' },
   pick_haul: { label: 'Pick & Haul', icon: Truck, color: 'text-orange-600' },
   capital: { label: 'Capital Funds', icon: Building2, color: 'text-gray-600' },
-  marketing: { label: 'Marketing', icon: TrendingUp, color: 'text-green-600' },
+  marketing: { label: 'Marketing', icon: TrendingUp, color: 'text-primary' },
   other: { label: 'Other Charges', icon: Minus, color: 'text-gray-500' },
 };
 
@@ -154,7 +154,7 @@ const SettlementDetail = ({ settlementId, onClose }) => {
     return (
       <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
         <div className="bg-white rounded-xl p-8">
-          <Loader2 className="w-8 h-8 animate-spin text-green-600 mx-auto" />
+          <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto" />
           <p className="mt-3 text-gray-600">Loading settlement details...</p>
         </div>
       </div>
@@ -201,7 +201,7 @@ const SettlementDetail = ({ settlementId, onClose }) => {
             <div className="flex items-center space-x-4">
               <div>
                 <h2 className="text-lg font-bold text-gray-900 flex items-center">
-                  <DollarSign className="w-5 h-5 mr-2 text-green-600" />
+                  <DollarSign className="w-5 h-5 mr-2 text-primary" />
                   Settlement Details
                 </h2>
                 <div className="flex items-center space-x-3 text-sm text-gray-600 mt-1">
@@ -346,12 +346,12 @@ const SettlementDetail = ({ settlementId, onClose }) => {
                 {formatNumber(totalBins, 2)}
               </div>
             </div>
-            <div className="bg-green-50 rounded-lg p-4">
-              <div className="text-sm text-green-700">Total Credits</div>
-              <div className="text-2xl font-bold text-green-700">
+            <div className="bg-primary-light rounded-lg p-4">
+              <div className="text-sm text-primary">Total Credits</div>
+              <div className="text-2xl font-bold text-primary">
                 {formatCurrency(totalCredits)}
               </div>
-              <div className="text-sm text-green-600 mt-1">
+              <div className="text-sm text-primary mt-1">
                 {formatCurrency(perBin(totalCredits))}/bin
               </div>
             </div>
@@ -372,7 +372,7 @@ const SettlementDetail = ({ settlementId, onClose }) => {
               <div className="text-sm text-blue-600 mt-1 flex items-center">
                 {formatCurrency(netPerBin)}/bin
                 {variance !== null && (
-                  <span className={`ml-2 flex items-center ${variance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  <span className={`ml-2 flex items-center ${variance >= 0 ? 'text-primary' : 'text-red-600'}`}>
                     {variance >= 0 ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
                     {formatCurrency(Math.abs(variance))}
                   </span>
@@ -389,7 +389,7 @@ const SettlementDetail = ({ settlementId, onClose }) => {
                 <span className="font-medium">{formatCurrency(houseAvgPerBin)}/bin</span>
                 <span className={`px-2 py-1 rounded text-sm font-medium ${
                   variance >= 0
-                    ? 'bg-green-100 text-green-700'
+                    ? 'bg-green-100 text-primary'
                     : 'bg-red-100 text-red-700'
                 }`}>
                   {variance >= 0 ? '+' : ''}{formatCurrency(variance)} vs house
@@ -406,7 +406,7 @@ const SettlementDetail = ({ settlementId, onClose }) => {
                 {settlement.fresh_fruit_percent && (
                   <div>
                     <span className="text-sm text-gray-500">Fresh Fruit:</span>
-                    <span className="ml-2 font-semibold text-green-600">
+                    <span className="ml-2 font-semibold text-primary">
                       {formatPercent(settlement.fresh_fruit_percent)}
                     </span>
                   </div>
@@ -426,7 +426,7 @@ const SettlementDetail = ({ settlementId, onClose }) => {
           {/* REVENUES - Grade Lines */}
           {settlement.grade_lines?.length > 0 && (
             <div className="border border-green-200 rounded-lg overflow-hidden">
-              <div className="bg-green-50 px-4 py-3 border-b border-green-200">
+              <div className="bg-primary-light px-4 py-3 border-b border-green-200">
                 <h3 className="font-semibold text-green-800 flex items-center">
                   <TrendingUp className="w-5 h-5 mr-2" />
                   Revenues by Grade
@@ -435,7 +435,7 @@ const SettlementDetail = ({ settlementId, onClose }) => {
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead className="bg-green-50/50">
-                    <tr className="text-xs text-green-700 uppercase">
+                    <tr className="text-xs text-primary uppercase">
                       <th className="px-4 py-2 text-left">Grade</th>
                       <th className="px-4 py-2 text-left">Size</th>
                       <th className="px-4 py-2 text-right">Quantity</th>
@@ -447,7 +447,7 @@ const SettlementDetail = ({ settlementId, onClose }) => {
                   </thead>
                   <tbody className="divide-y divide-green-100">
                     {settlement.grade_lines.map((line, idx) => (
-                      <tr key={idx} className="hover:bg-green-50/30">
+                      <tr key={idx} className="hover:bg-primary-light/30">
                         <td className="px-4 py-2 font-medium text-gray-900">
                           {line.grade}
                         </td>
@@ -466,10 +466,10 @@ const SettlementDetail = ({ settlementId, onClose }) => {
                         <td className="px-4 py-2 text-right text-gray-700">
                           {line.fob_rate ? formatCurrency(line.fob_rate, 4) : '-'}
                         </td>
-                        <td className="px-4 py-2 text-right font-medium text-green-700">
+                        <td className="px-4 py-2 text-right font-medium text-primary">
                           {formatCurrency(line.total_amount)}
                         </td>
-                        <td className="px-4 py-2 text-right text-green-600 font-medium">
+                        <td className="px-4 py-2 text-right text-primary font-medium">
                           {formatCurrency(perBin(line.total_amount))}
                         </td>
                       </tr>
@@ -604,10 +604,10 @@ const SettlementDetail = ({ settlementId, onClose }) => {
             <div className="grid grid-cols-3 gap-6 text-center">
               <div>
                 <div className="text-sm text-gray-600">Total Credits</div>
-                <div className="text-xl font-bold text-green-700">
+                <div className="text-xl font-bold text-primary">
                   {formatCurrency(totalCredits)}
                 </div>
-                <div className="text-sm text-green-600">
+                <div className="text-sm text-primary">
                   {formatCurrency(perBin(totalCredits))}/bin
                 </div>
               </div>

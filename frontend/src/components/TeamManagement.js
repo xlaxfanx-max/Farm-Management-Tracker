@@ -182,7 +182,7 @@ export default function TeamManagement() {
   if (loading) {
     return (
       <div className="p-6 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
   }
@@ -201,7 +201,7 @@ export default function TeamManagement() {
         {isOwnerOrAdmin() && (
           <button
             onClick={() => setShowInviteModal(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors"
           >
             <UserPlus className="w-5 h-5" />
             Invite Member
@@ -245,7 +245,7 @@ export default function TeamManagement() {
         <div className="bg-white dark:bg-gray-800 rounded-lg border dark:border-gray-700 p-4">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
-              <Shield className="w-5 h-5 text-green-600 dark:text-green-400" />
+              <Shield className="w-5 h-5 text-primary dark:text-green-400" />
             </div>
             <div>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">{roles.length}</p>
@@ -271,7 +271,7 @@ export default function TeamManagement() {
               <div key={member.id} className="px-6 py-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700">
                 <div className="flex items-center gap-4">
                   {/* Avatar */}
-                  <div className="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center">
+                  <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
                     <span className="text-white font-medium">
                       {member.user?.first_name?.[0] || member.user?.email?.[0]?.toUpperCase() || '?'}
                       {member.user?.last_name?.[0] || ''}
@@ -527,7 +527,7 @@ function InviteModal({ roles, onClose, onSuccess }) {
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-md">
         <div className="flex items-center justify-between px-6 py-4 border-b dark:border-gray-700">
           <div className="flex items-center gap-2">
-            <UserPlus className="w-5 h-5 text-green-600 dark:text-green-400" />
+            <UserPlus className="w-5 h-5 text-primary dark:text-green-400" />
             <h2 className="text-lg font-semibold dark:text-white">Invite Team Member</h2>
           </div>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
@@ -551,7 +551,7 @@ function InviteModal({ roles, onClose, onSuccess }) {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-200 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-200 focus:ring-2 focus:ring-primary focus:border-transparent"
               placeholder="colleague@example.com"
               required
             />
@@ -564,7 +564,7 @@ function InviteModal({ roles, onClose, onSuccess }) {
             <select
               value={roleId}
               onChange={(e) => setRoleId(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-200 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-200 focus:ring-2 focus:ring-primary focus:border-transparent"
               required
             >
               {roles.map((role) => (
@@ -587,7 +587,7 @@ function InviteModal({ roles, onClose, onSuccess }) {
             <textarea
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-200 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-200 focus:ring-2 focus:ring-primary focus:border-transparent"
               rows={3}
               placeholder="Welcome to the team!"
             />
@@ -604,7 +604,7 @@ function InviteModal({ roles, onClose, onSuccess }) {
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
+              className="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover disabled:opacity-50"
             >
               {loading ? 'Sending...' : 'Send Invitation'}
             </button>
@@ -643,7 +643,7 @@ function EditRoleModal({ member, roles, onClose, onSave }) {
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-            <div className="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center">
+            <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
               <span className="text-white font-medium">
                 {member.user?.first_name?.[0] || member.user?.email?.[0]?.toUpperCase()}
               </span>
@@ -664,7 +664,7 @@ function EditRoleModal({ member, roles, onClose, onSave }) {
                   key={role.id}
                   className={`flex items-start gap-3 p-3 border rounded-lg cursor-pointer transition-colors ${
                     selectedRoleId === role.id
-                      ? 'border-green-500 bg-green-50 dark:bg-green-900/20'
+                      ? 'border-primary bg-primary-light dark:bg-green-900/20'
                       : 'border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
                   }`}
                 >
@@ -674,7 +674,7 @@ function EditRoleModal({ member, roles, onClose, onSave }) {
                     value={role.id}
                     checked={selectedRoleId === role.id}
                     onChange={(e) => setSelectedRoleId(parseInt(e.target.value))}
-                    className="mt-1 text-green-600 focus:ring-green-500"
+                    className="mt-1 text-primary focus:ring-primary"
                   />
                   <div>
                     <p className="font-medium text-gray-900 dark:text-white">{role.name}</p>
@@ -698,7 +698,7 @@ function EditRoleModal({ member, roles, onClose, onSave }) {
             <button
               type="submit"
               disabled={loading || selectedRoleId === member.role?.id}
-              className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
+              className="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover disabled:opacity-50"
             >
               {loading ? 'Saving...' : 'Save Changes'}
             </button>

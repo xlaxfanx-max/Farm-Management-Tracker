@@ -41,7 +41,7 @@ const CATEGORIES = ['Emergency Services', 'Regulatory Agencies', 'Farm Resources
 const CATEGORY_COLORS = {
   'Emergency Services': 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
   'Regulatory Agencies': 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-  'Farm Resources': 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+  'Farm Resources': 'bg-green-100 text-primary dark:bg-green-900/30 dark:text-green-400',
   'Other': 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400',
 };
 
@@ -111,7 +111,7 @@ const ContactModal = ({ editContact, onClose, onSave }) => {
   };
 
   const inputCls =
-    'w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none';
+    'w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none';
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -274,7 +274,7 @@ const ContactModal = ({ editContact, onClose, onSave }) => {
                 name="active"
                 checked={form.active}
                 onChange={handleChange}
-                className="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-green-600 focus:ring-green-500 focus:ring-offset-0"
+                className="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-primary focus:ring-primary focus:ring-offset-0"
               />
               <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                 Active contact
@@ -294,7 +294,7 @@ const ContactModal = ({ editContact, onClose, onSave }) => {
             <button
               type="submit"
               disabled={saving}
-              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors disabled:opacity-50"
             >
               {saving && <Loader2 className="w-4 h-4 animate-spin" />}
               {isEditing ? 'Save Changes' : 'Add Contact'}
@@ -376,7 +376,7 @@ const ContactCard = ({ contact, onEdit, onDelete }) => {
         <div className="flex items-center gap-1 flex-shrink-0">
           <button
             onClick={() => onEdit(contact)}
-            className="p-1.5 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded transition-colors"
+            className="p-1.5 text-primary hover:bg-primary-light dark:hover:bg-green-900/20 rounded transition-colors"
             title="Edit"
           >
             <Edit2 className="w-3.5 h-3.5" />
@@ -396,7 +396,7 @@ const ContactCard = ({ contact, onEdit, onDelete }) => {
         {contact.phone_primary && (
           <a
             href={`tel:${contact.phone_primary.replace(/\s/g, '')}`}
-            className="flex items-center gap-2 text-sm text-green-700 dark:text-green-400 hover:text-green-800 dark:hover:text-green-300 transition-colors group"
+            className="flex items-center gap-2 text-sm text-primary dark:text-green-400 hover:text-green-800 dark:hover:text-green-300 transition-colors group"
           >
             <Phone className="w-3.5 h-3.5 flex-shrink-0 group-hover:scale-110 transition-transform" />
             <span className="font-medium">{contact.phone_primary}</span>
@@ -405,7 +405,7 @@ const ContactCard = ({ contact, onEdit, onDelete }) => {
         {contact.phone_secondary && (
           <a
             href={`tel:${contact.phone_secondary.replace(/\s/g, '')}`}
-            className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 hover:text-green-700 dark:hover:text-green-400 transition-colors"
+            className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 hover:text-primary-hover dark:hover:text-green-400 transition-colors"
           >
             <Phone className="w-3.5 h-3.5 flex-shrink-0" />
             <span>{contact.phone_secondary}</span>
@@ -417,7 +417,7 @@ const ContactCard = ({ contact, onEdit, onDelete }) => {
       {contact.email && (
         <a
           href={`mailto:${contact.email}`}
-          className="text-xs text-gray-500 dark:text-gray-400 hover:text-green-700 dark:hover:text-green-400 transition-colors truncate block"
+          className="text-xs text-gray-500 dark:text-gray-400 hover:text-primary-hover dark:hover:text-green-400 transition-colors truncate block"
         >
           {contact.email}
         </a>
@@ -517,7 +517,7 @@ export default function EmergencyContacts() {
   if (loading && contacts.length === 0) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 className="w-7 h-7 animate-spin text-green-600 dark:text-green-400" />
+        <Loader2 className="w-7 h-7 animate-spin text-primary dark:text-green-400" />
         <span className="ml-3 text-gray-600 dark:text-gray-400">Loading emergency contacts...</span>
       </div>
     );
@@ -548,7 +548,7 @@ export default function EmergencyContacts() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h2 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-            <Phone className="w-6 h-6 text-green-600 dark:text-green-400" />
+            <Phone className="w-6 h-6 text-primary dark:text-green-400" />
             Emergency Contact Directory
           </h2>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
@@ -562,7 +562,7 @@ export default function EmergencyContacts() {
               type="checkbox"
               checked={showInactive}
               onChange={(e) => setShowInactive(e.target.checked)}
-              className="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-green-600 focus:ring-green-500 focus:ring-offset-0"
+              className="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-primary focus:ring-primary focus:ring-offset-0"
             />
             Show inactive
           </label>
@@ -571,7 +571,7 @@ export default function EmergencyContacts() {
               setEditingContact(null);
               setShowModal(true);
             }}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium flex-shrink-0"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors text-sm font-medium flex-shrink-0"
           >
             <Plus className="w-4 h-4" />
             Add Contact
@@ -613,7 +613,7 @@ export default function EmergencyContacts() {
               setEditingContact(null);
               setShowModal(true);
             }}
-            className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+            className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors"
           >
             <Plus className="w-4 h-4" />
             Add First Contact

@@ -244,7 +244,7 @@ const Reports = () => {
             onClick={() => setActiveTab('pur')}
             className={`flex items-center gap-2 py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
               activeTab === 'pur'
-                ? 'border-green-500 text-green-600 dark:text-green-400'
+                ? 'border-primary text-primary dark:text-green-400'
                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
             }`}
           >
@@ -255,7 +255,7 @@ const Reports = () => {
             onClick={() => setActiveTab('nitrogen')}
             className={`flex items-center gap-2 py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
               activeTab === 'nitrogen'
-                ? 'border-green-500 text-green-600 dark:text-green-400'
+                ? 'border-primary text-primary dark:text-green-400'
                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
             }`}
           >
@@ -279,7 +279,7 @@ const Reports = () => {
                   <select
                     value={nitrogenYear}
                     onChange={(e) => setNitrogenYear(parseInt(e.target.value))}
-                    className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-200 focus:ring-2 focus:ring-green-500"
+                    className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-200 focus:ring-2 focus:ring-primary"
                   >
                     {yearOptions.map(y => (
                       <option key={y} value={y}>{y}</option>
@@ -292,7 +292,7 @@ const Reports = () => {
                   <select
                     value={nitrogenFarm}
                     onChange={(e) => setNitrogenFarm(e.target.value)}
-                    className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-200 focus:ring-2 focus:ring-green-500"
+                    className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-200 focus:ring-2 focus:ring-primary"
                   >
                     <option value="">All Farms</option>
                     {farms.map(farm => (
@@ -304,7 +304,7 @@ const Reports = () => {
               
               <button
                 onClick={handleNitrogenExport}
-                className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover"
               >
                 <Download className="w-4 h-4" />
                 Export Excel
@@ -317,7 +317,7 @@ const Reports = () => {
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
-                  <Leaf className="w-6 h-6 text-green-600 dark:text-green-400" />
+                  <Leaf className="w-6 h-6 text-primary dark:text-green-400" />
                 </div>
                 <div>
                   <p className="text-sm text-gray-500 dark:text-gray-400">Applications</p>
@@ -407,7 +407,7 @@ const Reports = () => {
                         <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white text-right">
                           {row.total_lbs_nitrogen?.toLocaleString(undefined, {maximumFractionDigits: 0})}
                         </td>
-                        <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-green-600 dark:text-green-400 text-right">
+                        <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-primary dark:text-green-400 text-right">
                           {row.lbs_nitrogen_per_acre?.toFixed(1)}
                         </td>
                       </tr>
@@ -420,7 +420,7 @@ const Reports = () => {
                       <td className="px-4 py-3 text-sm font-bold text-gray-900 dark:text-white text-right">
                         {nitrogenTotals.nitrogen.toLocaleString(undefined, {maximumFractionDigits: 0})}
                       </td>
-                      <td className="px-4 py-3 text-sm font-medium text-green-600 dark:text-green-400 text-right">
+                      <td className="px-4 py-3 text-sm font-medium text-primary dark:text-green-400 text-right">
                         {nitrogenTotals.acres > 0 ? (nitrogenTotals.nitrogen / nitrogenTotals.acres).toFixed(1) : '-'}
                       </td>
                     </tr>
@@ -508,7 +508,7 @@ const Reports = () => {
                   type="date"
                   value={filters.start_date}
                   onChange={(e) => handleFilterChange('start_date', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-200 focus:ring-2 focus:ring-green-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-200 focus:ring-2 focus:ring-primary"
                 />
               </div>
               <div>
@@ -517,7 +517,7 @@ const Reports = () => {
                   type="date"
                   value={filters.end_date}
                   onChange={(e) => handleFilterChange('end_date', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-200 focus:ring-2 focus:ring-green-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-200 focus:ring-2 focus:ring-primary"
                 />
               </div>
               <div>
@@ -525,7 +525,7 @@ const Reports = () => {
                 <select
                   value={filters.farm_id}
                   onChange={(e) => handleFilterChange('farm_id', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-200 focus:ring-2 focus:ring-green-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-200 focus:ring-2 focus:ring-primary"
                 >
                   <option value="">All Farms</option>
                   {farms.map(farm => (
@@ -538,7 +538,7 @@ const Reports = () => {
                 <select
                   value={filters.county}
                   onChange={(e) => handleFilterChange('county', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-200 focus:ring-2 focus:ring-green-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-200 focus:ring-2 focus:ring-primary"
                 >
                   <option value="">All Counties</option>
                   {counties.map(county => (
@@ -566,7 +566,7 @@ const Reports = () => {
                   key={format.id}
                   className={`flex items-start p-4 border rounded-lg cursor-pointer transition-colors ${
                     filters.format === format.id
-                      ? 'border-green-500 bg-green-50 dark:bg-green-900/20'
+                      ? 'border-primary bg-primary-light dark:bg-green-900/20'
                       : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
                   }`}
                 >
@@ -576,7 +576,7 @@ const Reports = () => {
                     value={format.id}
                     checked={filters.format === format.id}
                     onChange={(e) => handleFilterChange('format', e.target.value)}
-                    className="mt-1 text-green-600"
+                    className="mt-1 text-primary"
                   />
                   <div className="ml-3">
                     <div className="font-medium text-gray-900 dark:text-white">{format.label}</div>
@@ -598,7 +598,7 @@ const Reports = () => {
               <button
                 onClick={handleExport}
                 disabled={exporting}
-                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2"
+                className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover flex items-center gap-2"
               >
                 <Download className="w-4 h-4" />
                 {exporting ? 'Exporting...' : 'Export Report'}

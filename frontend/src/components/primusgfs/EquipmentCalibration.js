@@ -24,7 +24,7 @@ const typeLabels = Object.fromEntries(TYPE_OPTIONS.filter((o) => o.value).map((o
 const statusStyles = {
   scheduled: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
   in_progress: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
-  passed: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+  passed: 'bg-green-100 text-primary dark:bg-green-900/30 dark:text-green-400',
   failed: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
   overdue: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 animate-pulse',
 };
@@ -39,7 +39,7 @@ const dueDateClass = (dateStr) => {
   if (d === null) return 'text-gray-600 dark:text-gray-400';
   if (d < 7) return 'text-red-600 dark:text-red-400 font-semibold';
   if (d <= 30) return 'text-yellow-600 dark:text-yellow-400 font-medium';
-  return 'text-green-600 dark:text-green-400';
+  return 'text-primary dark:text-green-400';
 };
 
 const INITIAL_FORM = {
@@ -50,7 +50,7 @@ const INITIAL_FORM = {
   corrective_action_taken: '', certificate_number: '', notes: '',
 };
 
-const inputCls = 'w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-green-500';
+const inputCls = 'w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary';
 const labelCls = 'block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1';
 
 const formatFileSize = (bytes) => {
@@ -171,7 +171,7 @@ const CalibrationModal = ({ record, onClose, onSave, completeMode }) => {
             <div><label className={labelCls}>Tolerance</label><input type="text" name="tolerance" value={formData.tolerance} onChange={handleChange} className={inputCls} /></div>
           </div>
           <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
-            <input type="checkbox" name="within_tolerance" checked={formData.within_tolerance} onChange={handleChange} className="rounded border-gray-300 dark:border-gray-600 text-green-600 focus:ring-green-500" />
+            <input type="checkbox" name="within_tolerance" checked={formData.within_tolerance} onChange={handleChange} className="rounded border-gray-300 dark:border-gray-600 text-primary focus:ring-primary" />
             Within Tolerance
           </label>
           {formData.within_tolerance === false && (
@@ -186,16 +186,16 @@ const CalibrationModal = ({ record, onClose, onSave, completeMode }) => {
           <div>
             <label className={labelCls}>Calibration Certificate</label>
             {record?.certificate_file_name && !selectedFile && (
-              <div className="flex items-center gap-2 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
-                <Paperclip className="w-4 h-4 text-green-600 dark:text-green-400 flex-shrink-0" />
-                <span className="text-sm text-green-700 dark:text-green-300 truncate flex-1">{record.certificate_file_name}</span>
+              <div className="flex items-center gap-2 p-3 bg-primary-light dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                <Paperclip className="w-4 h-4 text-primary dark:text-green-400 flex-shrink-0" />
+                <span className="text-sm text-primary dark:text-green-300 truncate flex-1">{record.certificate_file_name}</span>
                 {record.certificate_file_url && (
                   <a href={record.certificate_file_url} target="_blank" rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 text-xs text-green-600 dark:text-green-400 hover:underline flex-shrink-0">
+                    className="inline-flex items-center gap-1 text-xs text-primary dark:text-green-400 hover:underline flex-shrink-0">
                     <Download className="w-3 h-3" /> View
                   </a>
                 )}
-                <label className="text-xs text-gray-500 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400 cursor-pointer flex-shrink-0">
+                <label className="text-xs text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-green-400 cursor-pointer flex-shrink-0">
                   Replace
                   <input type="file" accept={ACCEPTED_FILE_TYPES} onChange={handleFileSelect} className="hidden" />
                 </label>
@@ -216,14 +216,14 @@ const CalibrationModal = ({ record, onClose, onSave, completeMode }) => {
                 onDrop={handleDrop} onDragOver={handleDragOver} onDragLeave={handleDragLeave}
                 className={`relative border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors
                   ${dragOver
-                    ? 'border-green-400 bg-green-50 dark:bg-green-900/20'
-                    : 'border-gray-300 dark:border-gray-600 hover:border-green-400 dark:hover:border-green-500 bg-gray-50 dark:bg-gray-700/30'}`}
+                    ? 'border-green-400 bg-primary-light dark:bg-green-900/20'
+                    : 'border-gray-300 dark:border-gray-600 hover:border-green-400 dark:hover:border-primary bg-gray-50 dark:bg-gray-700/30'}`}
               >
                 <input type="file" accept={ACCEPTED_FILE_TYPES} onChange={handleFileSelect}
                   className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
                 <Upload className="w-8 h-8 mx-auto mb-2 text-gray-400 dark:text-gray-500" />
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  <span className="font-medium text-green-600 dark:text-green-400">Click to upload</span> or drag and drop
+                  <span className="font-medium text-primary dark:text-green-400">Click to upload</span> or drag and drop
                 </p>
                 <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">PDF, JPG, PNG, DOC, DOCX</p>
               </div>
@@ -232,7 +232,7 @@ const CalibrationModal = ({ record, onClose, onSave, completeMode }) => {
 
           <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
             <button type="button" onClick={onClose} className="px-4 py-2 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">Cancel</button>
-            <button type="submit" disabled={saving} className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50">
+            <button type="submit" disabled={saving} className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors disabled:opacity-50">
               {saving ? 'Saving...' : completeMode ? 'Complete Calibration' : record ? 'Update' : 'Create'}
             </button>
           </div>
@@ -300,7 +300,7 @@ export default function EquipmentCalibration() {
           <Wrench className="w-6 h-6" />
           Equipment Calibration
         </h2>
-        <button onClick={openCreate} className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+        <button onClick={openCreate} className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors">
           <Plus className="w-4 h-4" /> New Calibration
         </button>
       </div>
@@ -308,7 +308,7 @@ export default function EquipmentCalibration() {
       {/* Summary Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {[{ label: 'Total Equipment', value: totalCount, icon: Wrench, color: 'text-blue-600 dark:text-blue-400' },
-          { label: 'Current (Passed)', value: passedCount, icon: CheckCircle, color: 'text-green-600 dark:text-green-400' },
+          { label: 'Current (Passed)', value: passedCount, icon: CheckCircle, color: 'text-primary dark:text-green-400' },
           { label: 'Overdue', value: overdueList.length, icon: AlertTriangle, color: 'text-red-600 dark:text-red-400' },
           { label: 'Upcoming', value: upcomingCount, icon: Clock, color: 'text-yellow-600 dark:text-yellow-400' },
         ].map((s) => (
@@ -332,17 +332,17 @@ export default function EquipmentCalibration() {
           <div className="relative flex-1 min-w-[200px]">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input type="text" placeholder="Search equipment..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500" />
+              className="w-full pl-9 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-primary focus:border-primary" />
           </div>
           <div className="flex items-center gap-2">
             <Filter className="w-4 h-4 text-gray-400" />
             <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}
-              className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-green-500">
+              className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary">
               {STATUS_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
             </select>
           </div>
           <select value={filterType} onChange={(e) => setFilterType(e.target.value)}
-            className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-green-500">
+            className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary">
             {TYPE_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
           </select>
         </div>
@@ -357,7 +357,7 @@ export default function EquipmentCalibration() {
         </div>)}
 
       {/* Loading */}
-      {loading && !error && <div className="flex items-center justify-center py-12"><Loader2 className="w-6 h-6 text-green-600 animate-spin" /></div>}
+      {loading && !error && <div className="flex items-center justify-center py-12"><Loader2 className="w-6 h-6 text-primary animate-spin" /></div>}
 
       {/* Empty */}
       {!loading && !error && calibrations.length === 0 && (
@@ -365,7 +365,7 @@ export default function EquipmentCalibration() {
           <Wrench className="w-12 h-12 mx-auto mb-3 text-gray-400" />
           <p className="font-medium text-gray-900 dark:text-white">No calibration records found</p>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Add your first equipment calibration record to start tracking.</p>
-          <button onClick={openCreate} className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"><Plus className="w-4 h-4" /> New Calibration</button>
+          <button onClick={openCreate} className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors"><Plus className="w-4 h-4" /> New Calibration</button>
         </div>)}
 
       {/* Table */}
@@ -394,7 +394,7 @@ export default function EquipmentCalibration() {
                     <td className={`px-4 py-3 ${dueDateClass(rec.next_calibration_date)}`}>{formatDate(rec.next_calibration_date)}</td>
                     <td className="px-4 py-3"><StatusBadge status={rec.status} /></td>
                     <td className="px-4 py-3">
-                      {rec.within_tolerance === true && <span className="text-green-600 dark:text-green-400 font-medium">Pass</span>}
+                      {rec.within_tolerance === true && <span className="text-primary dark:text-green-400 font-medium">Pass</span>}
                       {rec.within_tolerance === false && rec.status === 'failed' && <span className="text-red-600 dark:text-red-400 font-medium">Fail</span>}
                       {rec.within_tolerance == null && <span className="text-gray-400">-</span>}
                     </td>
@@ -402,12 +402,12 @@ export default function EquipmentCalibration() {
                       <div className="flex items-center justify-end gap-1">
                         {rec.certificate_file_url && (
                           <a href={rec.certificate_file_url} target="_blank" rel="noopener noreferrer"
-                            className="p-1.5 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded transition-colors" title="View Certificate">
+                            className="p-1.5 text-primary hover:bg-primary-light dark:hover:bg-green-900/20 rounded transition-colors" title="View Certificate">
                             <Download className="w-4 h-4" />
                           </a>
                         )}
                         {(rec.status === 'scheduled' || rec.status === 'in_progress') && (
-                          <button onClick={() => openComplete(rec)} className="p-1.5 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded transition-colors" title="Complete Calibration">
+                          <button onClick={() => openComplete(rec)} className="p-1.5 text-primary hover:bg-primary-light dark:hover:bg-green-900/20 rounded transition-colors" title="Complete Calibration">
                             <CheckCircle className="w-4 h-4" />
                           </button>
                         )}

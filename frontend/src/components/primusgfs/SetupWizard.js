@@ -40,7 +40,7 @@ export default function SetupWizard({ onTabChange, onDismiss }) {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="w-6 h-6 animate-spin text-green-600" />
+        <Loader2 className="w-6 h-6 animate-spin text-primary" />
       </div>
     );
   }
@@ -61,7 +61,7 @@ export default function SetupWizard({ onTabChange, onDismiss }) {
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-              <Rocket className="w-5 h-5 text-green-600 dark:text-green-400" />
+              <Rocket className="w-5 h-5 text-primary dark:text-green-400" />
             </div>
             <div>
               <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
@@ -110,7 +110,7 @@ export default function SetupWizard({ onTabChange, onDismiss }) {
             <div className="flex-shrink-0">
               {step.completed ? (
                 <div className="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-                  <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
+                  <CheckCircle className="w-5 h-5 text-primary dark:text-green-400" />
                 </div>
               ) : step.partial ? (
                 <div className="w-8 h-8 rounded-full bg-yellow-100 dark:bg-yellow-900/30 flex items-center justify-center">
@@ -131,7 +131,7 @@ export default function SetupWizard({ onTabChange, onDismiss }) {
                 <span
                   className={`text-sm font-medium ${
                     step.completed
-                      ? 'text-green-700 dark:text-green-400 line-through decoration-green-400/50'
+                      ? 'text-primary dark:text-green-400 line-through decoration-green-400/50'
                       : 'text-gray-900 dark:text-white'
                   }`}
                 >

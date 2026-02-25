@@ -29,7 +29,7 @@ const formatDate = (str) => {
 const inputCls =
   'w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg ' +
   'bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm ' +
-  'focus:ring-2 focus:ring-green-500 focus:border-green-500';
+  'focus:ring-2 focus:ring-primary focus:border-primary';
 
 const labelCls = 'block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1';
 
@@ -79,7 +79,7 @@ const STATUS_BADGE = {
     label: 'Under Investigation',
   },
   released: {
-    cls: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+    cls: 'bg-green-100 text-primary dark:bg-green-900/30 dark:text-green-400',
     label: 'Released',
   },
   destroyed: {
@@ -454,7 +454,7 @@ const HoldModal = ({ hold, onClose, onSave }) => {
             <button
               type="submit"
               disabled={saving}
-              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium bg-green-600 text-white rounded-lg hover:bg-green-700 transition disabled:opacity-50"
+              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium bg-primary text-white rounded-lg hover:bg-primary-hover transition disabled:opacity-50"
             >
               {saving && <Loader2 className="w-4 h-4 animate-spin" />}
               {isEdit ? 'Save Changes' : 'Create Hold'}
@@ -615,7 +615,7 @@ export default function ProductHolds() {
         <p className="mb-4 text-center max-w-sm">{error}</p>
         <button
           onClick={fetchHolds}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition text-sm"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition text-sm"
         >
           <RefreshCw className="w-4 h-4" /> Retry
         </button>
@@ -642,7 +642,7 @@ export default function ProductHolds() {
         </div>
         <button
           onClick={openCreate}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition text-sm font-medium"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition text-sm font-medium"
         >
           <Plus className="w-4 h-4" /> New Hold
         </button>
@@ -677,7 +677,7 @@ export default function ProductHolds() {
         {/* Released This Month */}
         <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 flex items-center gap-4">
           <div className="flex-shrink-0 w-10 h-10 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-            <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
+            <CheckCircle className="w-5 h-5 text-primary dark:text-green-400" />
           </div>
           <div>
             <p className="text-2xl font-bold text-gray-900 dark:text-white">{summaryReleasedThisMonth}</p>
@@ -775,7 +775,7 @@ export default function ProductHolds() {
                           <button
                             onClick={() => openEdit(hold)}
                             title="Edit"
-                            className="p-1.5 text-gray-400 hover:text-green-600 dark:hover:text-green-400 rounded transition"
+                            className="p-1.5 text-gray-400 hover:text-primary dark:hover:text-green-400 rounded transition"
                           >
                             <Edit2 className="w-4 h-4" />
                           </button>

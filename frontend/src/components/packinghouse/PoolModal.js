@@ -112,7 +112,7 @@ const PoolModal = ({ pool, packinghouses, onClose, onSave }) => {
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200">
           <h2 className="text-lg font-semibold text-gray-900 flex items-center">
-            <Boxes className="w-5 h-5 mr-2 text-green-600" />
+            <Boxes className="w-5 h-5 mr-2 text-primary" />
             {pool ? 'Edit Pool' : 'Add Pool'}
           </h2>
           <button
@@ -134,7 +134,7 @@ const PoolModal = ({ pool, packinghouses, onClose, onSave }) => {
               name="packinghouse"
               value={formData.packinghouse}
               onChange={handleChange}
-              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 ${
+              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary ${
                 errors.packinghouse ? 'border-red-500' : 'border-gray-300'
               }`}
             >
@@ -162,7 +162,7 @@ const PoolModal = ({ pool, packinghouses, onClose, onSave }) => {
                 value={formData.pool_id}
                 onChange={handleChange}
                 placeholder="e.g., 2520000 D2 POOL"
-                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 ${
+                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary ${
                   errors.pool_id ? 'border-red-500' : 'border-gray-300'
                 }`}
               />
@@ -181,7 +181,7 @@ const PoolModal = ({ pool, packinghouses, onClose, onSave }) => {
                 value={formData.name}
                 onChange={handleChange}
                 placeholder="Friendly name"
-                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 ${
+                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary ${
                   errors.name ? 'border-red-500' : 'border-gray-300'
                 }`}
               />
@@ -201,7 +201,7 @@ const PoolModal = ({ pool, packinghouses, onClose, onSave }) => {
                 name="commodity"
                 value={formData.commodity}
                 onChange={handleChange}
-                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 ${
+                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary ${
                   errors.commodity ? 'border-red-500' : 'border-gray-300'
                 }`}
               >
@@ -225,7 +225,7 @@ const PoolModal = ({ pool, packinghouses, onClose, onSave }) => {
                 value={formData.variety}
                 onChange={handleChange}
                 placeholder="e.g., Cara Navels"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
               />
             </div>
           </div>
@@ -242,7 +242,7 @@ const PoolModal = ({ pool, packinghouses, onClose, onSave }) => {
                 value={formData.season}
                 onChange={handleChange}
                 placeholder="e.g., 2024-2025"
-                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 ${
+                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary ${
                   errors.season ? 'border-red-500' : 'border-gray-300'
                 }`}
               />
@@ -259,7 +259,7 @@ const PoolModal = ({ pool, packinghouses, onClose, onSave }) => {
                 name="pool_type"
                 value={formData.pool_type}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
               >
                 {PACKINGHOUSE_CONSTANTS.poolTypes.map(t => (
                   <option key={t.value} value={t.value}>{t.label}</option>
@@ -275,7 +275,7 @@ const PoolModal = ({ pool, packinghouses, onClose, onSave }) => {
                 name="status"
                 value={formData.status}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
               >
                 {PACKINGHOUSE_CONSTANTS.poolStatuses.map(s => (
                   <option key={s.value} value={s.value}>{s.label}</option>
@@ -295,7 +295,7 @@ const PoolModal = ({ pool, packinghouses, onClose, onSave }) => {
                 name="open_date"
                 value={formData.open_date}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
               />
             </div>
 
@@ -308,7 +308,7 @@ const PoolModal = ({ pool, packinghouses, onClose, onSave }) => {
                 name="close_date"
                 value={formData.close_date}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
               />
             </div>
           </div>
@@ -324,7 +324,7 @@ const PoolModal = ({ pool, packinghouses, onClose, onSave }) => {
               onChange={handleChange}
               rows={3}
               placeholder="Additional notes..."
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
             />
           </div>
 
@@ -340,7 +340,7 @@ const PoolModal = ({ pool, packinghouses, onClose, onSave }) => {
             <button
               type="submit"
               disabled={saving}
-              className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+              className="flex items-center px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors disabled:opacity-50"
             >
               {saving ? (
                 <>

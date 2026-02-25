@@ -23,7 +23,7 @@ const CHEMICAL_TYPES = [
   { value: 'pesticide',  label: 'Pesticide',  color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' },
   { value: 'herbicide',  label: 'Herbicide',  color: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' },
   { value: 'fungicide',  label: 'Fungicide',  color: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' },
-  { value: 'fertilizer', label: 'Fertilizer', color: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' },
+  { value: 'fertilizer', label: 'Fertilizer', color: 'bg-green-100 text-primary dark:bg-green-900/30 dark:text-green-400' },
   { value: 'adjuvant',   label: 'Adjuvant',   color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' },
   { value: 'sanitizer',  label: 'Sanitizer',  color: 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-400' },
   { value: 'cleaning',   label: 'Cleaning',   color: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' },
@@ -91,7 +91,7 @@ const ComplianceIndicator = ({ item }) => {
   const ok = isFullyCompliant(item);
   return ok ? (
     <span
-      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-primary dark:bg-green-900/30 dark:text-green-400"
       title="SDS on file, labeled properly, storage compliant"
     >
       <CheckCircle className="w-3 h-3" /> Compliant
@@ -178,7 +178,7 @@ const ChemicalModal = ({ item, onClose, onSave }) => {
     }
   };
 
-  const inputCls = "w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm";
+  const inputCls = "w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary text-sm";
   const labelCls = "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1";
   const sectionCls = "border border-gray-200 dark:border-gray-700 rounded-lg p-4 space-y-3";
   const sectionTitleCls = "text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2";
@@ -195,7 +195,7 @@ const ChemicalModal = ({ item, onClose, onSave }) => {
         {/* Header */}
         <div className="sticky top-0 bg-white dark:bg-gray-800 flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700 z-10">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-            <FlaskConical className="w-5 h-5 text-green-600" />
+            <FlaskConical className="w-5 h-5 text-primary" />
             {item ? 'Edit Chemical Inventory' : 'New Chemical Inventory Entry'}
           </h2>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
@@ -398,7 +398,7 @@ const ChemicalModal = ({ item, onClose, onSave }) => {
                     name={key}
                     checked={formData[key]}
                     onChange={handleChange}
-                    className="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-green-600 focus:ring-green-500"
+                    className="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-primary focus:ring-primary"
                   />
                   {label}
                 </label>
@@ -407,7 +407,7 @@ const ChemicalModal = ({ item, onClose, onSave }) => {
             {/* Live compliance preview */}
             <div className="mt-3">
               {formData.sds_on_file && formData.labeled_properly && formData.storage_compliant ? (
-                <span className="inline-flex items-center gap-1.5 text-sm text-green-600 dark:text-green-400 font-medium">
+                <span className="inline-flex items-center gap-1.5 text-sm text-primary dark:text-green-400 font-medium">
                   <CheckCircle className="w-4 h-4" /> All compliance requirements met
                 </span>
               ) : (
@@ -443,7 +443,7 @@ const ChemicalModal = ({ item, onClose, onSave }) => {
             <button
               type="submit"
               disabled={saving}
-              className="inline-flex items-center gap-2 px-4 py-2 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+              className="inline-flex items-center gap-2 px-4 py-2 text-sm bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors disabled:opacity-50"
             >
               {saving && <Loader2 className="w-4 h-4 animate-spin" />}
               {saving ? 'Saving...' : item ? 'Update Entry' : 'Add Entry'}
@@ -555,7 +555,7 @@ export default function ChemicalInventory() {
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <h2 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-          <FlaskConical className="w-6 h-6 text-green-600" />
+          <FlaskConical className="w-6 h-6 text-primary" />
           Chemical Inventory Log
         </h2>
         <div className="flex items-center gap-2">
@@ -568,7 +568,7 @@ export default function ChemicalInventory() {
           </button>
           <button
             onClick={handleAdd}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors text-sm font-medium"
           >
             <Plus className="w-4 h-4" /> Add Chemical
           </button>
@@ -609,9 +609,9 @@ export default function ChemicalInventory() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
           { label: 'Total Entries',  value: totalItems,      color: 'text-gray-900 dark:text-white' },
-          { label: 'Compliant',      value: compliantCount,  color: 'text-green-600 dark:text-green-400' },
+          { label: 'Compliant',      value: compliantCount,  color: 'text-primary dark:text-green-400' },
           { label: 'Review Needed',  value: nonCompliant,    color: 'text-yellow-600 dark:text-yellow-400' },
-          { label: 'Compliance Rate', value: `${complianceRate}%`, color: complianceRate >= 80 ? 'text-green-600 dark:text-green-400' : 'text-yellow-600 dark:text-yellow-400' },
+          { label: 'Compliance Rate', value: `${complianceRate}%`, color: complianceRate >= 80 ? 'text-primary dark:text-green-400' : 'text-yellow-600 dark:text-yellow-400' },
         ].map(({ label, value, color }) => (
           <div key={label} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 text-center">
             <p className={`text-2xl font-bold ${color}`}>{value}</p>
@@ -624,7 +624,7 @@ export default function ChemicalInventory() {
       {summary && Array.isArray(summary) && summary.length > 0 && (
         <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
           <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
-            <Calendar className="w-4 h-4 text-green-600" /> Monthly Summary
+            <Calendar className="w-4 h-4 text-primary" /> Monthly Summary
           </h3>
           <div className="flex flex-wrap gap-3">
             {summary.map((s, i) => (
@@ -645,7 +645,7 @@ export default function ChemicalInventory() {
           onClick={() => setTypeFilter('')}
           className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
             typeFilter === ''
-              ? 'bg-green-600 text-white'
+              ? 'bg-primary text-white'
               : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
           }`}
         >
@@ -657,7 +657,7 @@ export default function ChemicalInventory() {
             onClick={() => setTypeFilter(typeFilter === t.value ? '' : t.value)}
             className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
               typeFilter === t.value
-                ? 'bg-green-600 text-white'
+                ? 'bg-primary text-white'
                 : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
             }`}
           >
@@ -683,7 +683,7 @@ export default function ChemicalInventory() {
       {/* Loading */}
       {loading && !error && (
         <div className="flex items-center justify-center py-16">
-          <Loader2 className="w-7 h-7 text-green-600 animate-spin" />
+          <Loader2 className="w-7 h-7 text-primary animate-spin" />
         </div>
       )}
 
@@ -700,7 +700,7 @@ export default function ChemicalInventory() {
           {!typeFilter && (
             <button
               onClick={handleAdd}
-              className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm"
+              className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors text-sm"
             >
               <Plus className="w-4 h-4" /> Add Chemical
             </button>

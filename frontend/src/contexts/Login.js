@@ -48,7 +48,7 @@ export default function Login({ onSwitchToRegister, onForgotPassword }) {
               <path d="M24 4C24 4 20 8 18 10" stroke="#2D5016" strokeWidth="1.5" strokeLinecap="round"/>
             </svg>
           </div>
-          <h1 className="text-2xl font-bold text-bark-brown font-heading">Grove Master</h1>
+          <h1 className="text-2xl font-bold text-bark-brown">Grove Master</h1>
           <p className="text-gray-600 mt-1">Sign in to your account</p>
         </div>
 
@@ -71,7 +71,7 @@ export default function Login({ onSwitchToRegister, onForgotPassword }) {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                 placeholder="you@example.com"
                 required
                 autoComplete="email"
@@ -88,7 +88,7 @@ export default function Login({ onSwitchToRegister, onForgotPassword }) {
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all pr-10"
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all pr-10"
                   placeholder="••••••••"
                   required
                   autoComplete="current-password"
@@ -106,14 +106,14 @@ export default function Login({ onSwitchToRegister, onForgotPassword }) {
             {/* Remember & Forgot */}
             <div className="flex items-center justify-between">
               <label className="flex items-center">
-                <input type="checkbox" className="rounded border-gray-300 text-green-600 focus:ring-green-500" />
+                <input type="checkbox" className="rounded border-gray-300 text-primary focus:ring-primary" />
                 <span className="ml-2 text-sm text-gray-600">Remember me</span>
               </label>
               {onForgotPassword && (
                 <button
                   type="button"
                   onClick={onForgotPassword}
-                  className="text-sm text-green-600 hover:text-green-700"
+                  className="text-sm text-primary hover:text-primary-hover"
                 >
                   Forgot password?
                 </button>
@@ -124,7 +124,7 @@ export default function Login({ onSwitchToRegister, onForgotPassword }) {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-green-600 text-white py-2.5 px-4 rounded-lg font-medium hover:bg-green-700 focus:ring-4 focus:ring-green-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-primary text-white py-2.5 px-4 rounded-lg font-medium hover:bg-primary-hover focus:ring-4 focus:ring-green-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? (
                 <span className="flex items-center justify-center">
@@ -146,7 +146,7 @@ export default function Login({ onSwitchToRegister, onForgotPassword }) {
               Don't have an account?{' '}
               <button
                 onClick={onSwitchToRegister}
-                className="text-green-600 hover:text-green-700 font-medium"
+                className="text-primary hover:text-primary-hover font-medium"
               >
                 Create one
               </button>
@@ -240,7 +240,7 @@ export function Register({ onSwitchToLogin }) {
       <div className="w-full max-w-md">
         {/* Logo/Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-green-600 rounded-xl mb-4">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-primary rounded-xl mb-4">
             <Leaf className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-2xl font-bold text-gray-900">Create Account</h1>
@@ -250,11 +250,11 @@ export function Register({ onSwitchToLogin }) {
         {/* Progress Steps */}
         <div className="flex items-center justify-center mb-6">
           <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-            step >= 1 ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-600'
+            step >= 1 ? 'bg-primary text-white' : 'bg-gray-200 text-gray-600'
           }`}>1</div>
-          <div className={`w-16 h-1 ${step >= 2 ? 'bg-green-600' : 'bg-gray-200'}`} />
+          <div className={`w-16 h-1 ${step >= 2 ? 'bg-primary' : 'bg-gray-200'}`} />
           <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-            step >= 2 ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-600'
+            step >= 2 ? 'bg-primary text-white' : 'bg-gray-200 text-gray-600'
           }`}>2</div>
         </div>
 
@@ -282,7 +282,7 @@ export function Register({ onSwitchToLogin }) {
                     name="companyName"
                     value={formData.companyName}
                     onChange={handleChange}
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                     placeholder="Smith Family Farms"
                     required
                   />
@@ -298,7 +298,7 @@ export function Register({ onSwitchToLogin }) {
                     name="phone"
                     value={formData.phone}
                     onChange={handleChange}
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                     placeholder="(555) 123-4567"
                   />
                 </div>
@@ -307,7 +307,7 @@ export function Register({ onSwitchToLogin }) {
                   type="button"
                   onClick={() => setStep(2)}
                   disabled={!formData.companyName}
-                  className="w-full bg-green-600 text-white py-2.5 px-4 rounded-lg font-medium hover:bg-green-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full bg-primary text-white py-2.5 px-4 rounded-lg font-medium hover:bg-primary-hover transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Continue
                 </button>
@@ -327,7 +327,7 @@ export function Register({ onSwitchToLogin }) {
                       name="firstName"
                       value={formData.firstName}
                       onChange={handleChange}
-                      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                       placeholder="John"
                     />
                   </div>
@@ -340,7 +340,7 @@ export function Register({ onSwitchToLogin }) {
                       name="lastName"
                       value={formData.lastName}
                       onChange={handleChange}
-                      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                       placeholder="Smith"
                     />
                   </div>
@@ -356,7 +356,7 @@ export function Register({ onSwitchToLogin }) {
                     name="email"
                     value={formData.email}
                     onChange={handleChange}
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                     placeholder="you@example.com"
                     required
                   />
@@ -373,7 +373,7 @@ export function Register({ onSwitchToLogin }) {
                       name="password"
                       value={formData.password}
                       onChange={handleChange}
-                      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent pr-10"
+                      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent pr-10"
                       placeholder="••••••••"
                       required
                       minLength={8}
@@ -399,7 +399,7 @@ export function Register({ onSwitchToLogin }) {
                     name="confirmPassword"
                     value={formData.confirmPassword}
                     onChange={handleChange}
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                     placeholder="••••••••"
                     required
                   />
@@ -416,7 +416,7 @@ export function Register({ onSwitchToLogin }) {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="flex-1 bg-green-600 text-white py-2.5 px-4 rounded-lg font-medium hover:bg-green-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex-1 bg-primary text-white py-2.5 px-4 rounded-lg font-medium hover:bg-primary-hover transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {loading ? 'Creating...' : 'Create Account'}
                   </button>
@@ -431,7 +431,7 @@ export function Register({ onSwitchToLogin }) {
               Already have an account?{' '}
               <button
                 onClick={onSwitchToLogin}
-                className="text-green-600 hover:text-green-700 font-medium"
+                className="text-primary hover:text-primary-hover font-medium"
               >
                 Sign in
               </button>

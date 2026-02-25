@@ -75,7 +75,7 @@ const FSMADashboard = ({ onNavigate, initialTab = 'overview' }) => {
   const getStatusColor = (status) => {
     switch (status) {
       case 'excellent':
-        return 'text-green-600 dark:text-green-400';
+        return 'text-primary dark:text-green-400';
       case 'good':
         return 'text-blue-600 dark:text-blue-400';
       case 'warning':
@@ -88,7 +88,7 @@ const FSMADashboard = ({ onNavigate, initialTab = 'overview' }) => {
   };
 
   const getScoreColor = (score) => {
-    if (score >= 90) return 'text-green-600 dark:text-green-400';
+    if (score >= 90) return 'text-primary dark:text-green-400';
     if (score >= 75) return 'text-blue-600 dark:text-blue-400';
     if (score >= 50) return 'text-yellow-600 dark:text-yellow-400';
     return 'text-red-600 dark:text-red-400';
@@ -146,7 +146,7 @@ const FSMADashboard = ({ onNavigate, initialTab = 'overview' }) => {
     return (
       <div className="p-6">
         <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
         </div>
       </div>
     );
@@ -173,7 +173,7 @@ const FSMADashboard = ({ onNavigate, initialTab = 'overview' }) => {
         </div>
         <button
           onClick={() => setActiveTab('audit')}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors"
         >
           <FileText className="w-5 h-5" />
           Generate Audit Binder
@@ -189,7 +189,7 @@ const FSMADashboard = ({ onNavigate, initialTab = 'overview' }) => {
               onClick={() => setActiveTab(tab.id)}
               className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
                 activeTab === tab.id
-                  ? 'border-green-600 text-green-600 dark:text-green-400'
+                  ? 'border-primary text-primary dark:text-green-400'
                   : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300'
               }`}
             >
@@ -296,7 +296,7 @@ const OverviewTab = ({ data, error, onTabChange, onRefresh }) => {
               </div>
             </div>
             <span className={`mt-3 text-lg font-medium capitalize ${
-              data.overall_status === 'excellent' ? 'text-green-600 dark:text-green-400' :
+              data.overall_status === 'excellent' ? 'text-primary dark:text-green-400' :
               data.overall_status === 'good' ? 'text-blue-600 dark:text-blue-400' :
               data.overall_status === 'warning' ? 'text-yellow-600 dark:text-yellow-400' :
               'text-red-600 dark:text-red-400'
@@ -345,7 +345,7 @@ const OverviewTab = ({ data, error, onTabChange, onRefresh }) => {
             </h3>
             <button
               onClick={() => onTabChange('meetings')}
-              className="text-sm text-green-600 dark:text-green-400 hover:underline flex items-center gap-1"
+              className="text-sm text-primary dark:text-green-400 hover:underline flex items-center gap-1"
             >
               View All <ChevronRight className="w-4 h-4" />
             </button>
@@ -354,7 +354,7 @@ const OverviewTab = ({ data, error, onTabChange, onRefresh }) => {
           {data.quarterly_meeting_status && (
             <div className="flex items-center gap-4">
               {data.quarterly_meeting_status.completed ? (
-                <div className="flex items-center gap-2 text-green-600 dark:text-green-400">
+                <div className="flex items-center gap-2 text-primary dark:text-green-400">
                   <CheckCircle2 className="w-8 h-8" />
                   <div>
                     <p className="font-medium">Q{data.quarterly_meeting_status.quarter} Meeting Complete</p>
@@ -386,7 +386,7 @@ const OverviewTab = ({ data, error, onTabChange, onRefresh }) => {
             </h3>
             <button
               onClick={() => onTabChange('inventory')}
-              className="text-sm text-green-600 dark:text-green-400 hover:underline flex items-center gap-1"
+              className="text-sm text-primary dark:text-green-400 hover:underline flex items-center gap-1"
             >
               Manage <ChevronRight className="w-4 h-4" />
             </button>
@@ -404,7 +404,7 @@ const OverviewTab = ({ data, error, onTabChange, onRefresh }) => {
                 </div>
               </div>
             ) : (
-              <div className="flex items-center gap-2 text-green-600 dark:text-green-400">
+              <div className="flex items-center gap-2 text-primary dark:text-green-400">
                 <CheckCircle2 className="w-8 h-8" />
                 <div>
                   <p className="font-medium">All inventory levels OK</p>
@@ -506,7 +506,7 @@ const OverviewTab = ({ data, error, onTabChange, onRefresh }) => {
  */
 const StatusCard = ({ title, value, subtitle, icon: Icon, color, onClick }) => {
   const colorClasses = {
-    green: 'bg-green-100 dark:bg-green-900/40 text-green-600 dark:text-green-400',
+    green: 'bg-green-100 dark:bg-green-900/40 text-primary dark:text-green-400',
     blue: 'bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400',
     yellow: 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-600 dark:text-yellow-400',
     red: 'bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400',
@@ -538,10 +538,10 @@ const StatusCard = ({ title, value, subtitle, icon: Icon, color, onClick }) => {
 const QuickActionButton = ({ icon: Icon, label, onClick }) => (
   <button
     onClick={onClick}
-    className="flex flex-col items-center gap-2 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors group"
+    className="flex flex-col items-center gap-2 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-primary-light dark:hover:bg-green-900/20 transition-colors group"
   >
     <div className="p-3 bg-white dark:bg-gray-700 rounded-full shadow-sm group-hover:bg-green-100 dark:group-hover:bg-green-900/40 transition-colors">
-      <Icon className="w-6 h-6 text-gray-600 dark:text-gray-300 group-hover:text-green-600 dark:group-hover:text-green-400" />
+      <Icon className="w-6 h-6 text-gray-600 dark:text-gray-300 group-hover:text-primary dark:group-hover:text-green-400" />
     </div>
     <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{label}</span>
   </button>

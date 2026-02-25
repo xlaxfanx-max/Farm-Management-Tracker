@@ -1344,7 +1344,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
                       <p className="text-sm text-gray-500">Well is registered with the Groundwater Sustainability Agency</p>
                     </div>
                     {formData.registered_with_gsa && (
-                      <CheckCircle className="w-5 h-5 text-green-600" />
+                      <CheckCircle className="w-5 h-5 text-primary" />
                     )}
                   </label>
 

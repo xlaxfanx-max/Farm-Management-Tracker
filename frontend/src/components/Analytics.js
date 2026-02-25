@@ -180,9 +180,9 @@ const InsightsPanel = ({ topPerformers, needsAttention }) => {
             </h4>
             <div className="space-y-2">
               {topPerformers.slice(0, 3).map((field, index) => (
-                <div key={index} className="flex items-center justify-between p-2 bg-green-50 rounded-lg">
-                  <span className="text-sm font-medium text-green-700">{field.name}</span>
-                  <span className="text-sm text-green-600">{field.yield_per_acre} bins/acre</span>
+                <div key={index} className="flex items-center justify-between p-2 bg-primary-light rounded-lg">
+                  <span className="text-sm font-medium text-primary">{field.name}</span>
+                  <span className="text-sm text-primary">{field.yield_per_acre} bins/acre</span>
                 </div>
               ))}
             </div>
@@ -282,7 +282,7 @@ export default function Analytics() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-            <BarChart3 className="w-7 h-7 text-green-600" />
+            <BarChart3 className="w-7 h-7 text-primary" />
             Analytics {selectedSeason && <span className="text-lg font-normal text-gray-500">• {selectedSeason} Season</span>}
           </h1>
           <p className="text-gray-600">Financial and operational insights for your farm</p>
@@ -293,14 +293,14 @@ export default function Analytics() {
             value={selectedSeason}
             onChange={setSelectedSeason}
             cropCategory="citrus"
-            className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
             placeholder="Select Season"
           />
 
           <select
             value={selectedFarm}
             onChange={(e) => setSelectedFarm(e.target.value)}
-            className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
           >
             <option value="all">All Farms</option>
             {farms.map(f => (
@@ -311,7 +311,7 @@ export default function Analytics() {
           <button
             onClick={loadData}
             disabled={loading}
-            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+            className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors disabled:opacity-50"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
             Refresh
@@ -414,7 +414,7 @@ export default function Analytics() {
                     <div className="text-sm font-medium text-gray-900 truncate" title={product.product_name}>
                       {product.product_name}
                     </div>
-                    <div className="text-lg font-bold text-green-600">{product.count}</div>
+                    <div className="text-lg font-bold text-primary">{product.count}</div>
                     <div className="text-xs text-gray-500">applications</div>
                   </div>
                 ))}

@@ -46,7 +46,7 @@ const willBeCompliant = (f) => {
 };
 
 const ComplianceBadge = ({ compliant }) => compliant ? (
-  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-primary dark:bg-green-900/30 dark:text-green-400">
     <CheckCircle className="w-3 h-3" /> Compliant
   </span>
 ) : (
@@ -97,7 +97,7 @@ const SanitationModal = ({ log, onClose, onSave }) => {
   };
 
   const unitsReq = calcRequired(Number(formData.worker_count) || 0);
-  const inputCls = "w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-green-500";
+  const inputCls = "w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary";
   const labelCls = "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1";
 
   return (
@@ -129,17 +129,17 @@ const SanitationModal = ({ log, onClose, onSave }) => {
             <div className="grid grid-cols-2 gap-2 mt-1">
               {[['soap_available','Soap'],['paper_towels_available','Paper Towels'],['potable_water_available','Potable Water'],['sanitizer_available','Sanitizer']].map(([k,l])=>(
                 <label key={k} className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
-                  <input type="checkbox" name={k} checked={formData[k]} onChange={handleChange} className="rounded border-gray-300 dark:border-gray-600 text-green-600 focus:ring-green-500" />{l}
+                  <input type="checkbox" name={k} checked={formData[k]} onChange={handleChange} className="rounded border-gray-300 dark:border-gray-600 text-primary focus:ring-primary" />{l}
                 </label>
               ))}
             </div>
           </fieldset>
           <div className="grid grid-cols-2 gap-4">
             <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
-              <input type="checkbox" name="units_clean" checked={formData.units_clean} onChange={handleChange} className="rounded border-gray-300 dark:border-gray-600 text-green-600 focus:ring-green-500" /> Units Clean
+              <input type="checkbox" name="units_clean" checked={formData.units_clean} onChange={handleChange} className="rounded border-gray-300 dark:border-gray-600 text-primary focus:ring-primary" /> Units Clean
             </label>
             <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
-              <input type="checkbox" name="service_needed" checked={formData.service_needed} onChange={handleChange} className="rounded border-gray-300 dark:border-gray-600 text-green-600 focus:ring-green-500" /> Service Needed
+              <input type="checkbox" name="service_needed" checked={formData.service_needed} onChange={handleChange} className="rounded border-gray-300 dark:border-gray-600 text-primary focus:ring-primary" /> Service Needed
             </label>
           </div>
           {formData.service_needed && (
@@ -149,13 +149,13 @@ const SanitationModal = ({ log, onClose, onSave }) => {
           <div><label className={labelCls}>Notes</label><textarea name="notes" value={formData.notes} onChange={handleChange} rows={2} className={inputCls} /></div>
           {formData.worker_count > 0 && (
             <div className="text-sm">{willBeCompliant(formData)
-              ? <span className="text-green-600 dark:text-green-400 font-medium">Will be Compliant</span>
+              ? <span className="text-primary dark:text-green-400 font-medium">Will be Compliant</span>
               : <span className="text-red-600 dark:text-red-400 font-medium">Non-Compliant</span>}
             </div>
           )}
           <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
             <button type="button" onClick={onClose} className="px-4 py-2 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">Cancel</button>
-            <button type="submit" disabled={saving} className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50">{saving ? 'Saving...' : log ? 'Update Log' : 'Create Log'}</button>
+            <button type="submit" disabled={saving} className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors disabled:opacity-50">{saving ? 'Saving...' : log ? 'Update Log' : 'Create Log'}</button>
           </div>
         </form>
       </div>
@@ -225,7 +225,7 @@ export default function FieldSanitationTracker() {
         <h2 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
           <Droplets className="w-6 h-6" /> Field Sanitation Tracker
         </h2>
-        <button onClick={() => { setEditingLog(null); setShowModal(true); }} className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+        <button onClick={() => { setEditingLog(null); setShowModal(true); }} className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors">
           <Plus className="w-4 h-4" /> New Log
         </button>
       </div>
@@ -266,10 +266,10 @@ export default function FieldSanitationTracker() {
       <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
         <div className="flex flex-wrap items-center gap-4">
           <Filter className="w-4 h-4 text-gray-400" />
-          <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-green-500" />
+          <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary" />
           <span className="text-gray-400 text-sm">to</span>
-          <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-green-500" />
-          <input type="text" placeholder="Farm filter..." value={farmFilter} onChange={(e) => setFarmFilter(e.target.value)} className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-green-500" />
+          <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary" />
+          <input type="text" placeholder="Farm filter..." value={farmFilter} onChange={(e) => setFarmFilter(e.target.value)} className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary" />
         </div>
       </div>
 
@@ -284,7 +284,7 @@ export default function FieldSanitationTracker() {
 
       {/* Loading */}
       {loading && !error && (
-        <div className="flex items-center justify-center py-12"><Loader2 className="w-6 h-6 text-green-600 animate-spin" /></div>
+        <div className="flex items-center justify-center py-12"><Loader2 className="w-6 h-6 text-primary animate-spin" /></div>
       )}
 
       {/* Empty */}
@@ -293,7 +293,7 @@ export default function FieldSanitationTracker() {
           <Droplets className="w-12 h-12 mx-auto mb-3 text-gray-400" />
           <p className="font-medium text-gray-900 dark:text-white">No sanitation logs found</p>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Create your first field sanitation log to start tracking compliance.</p>
-          <button onClick={() => { setEditingLog(null); setShowModal(true); }} className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"><Plus className="w-4 h-4" /> New Log</button>
+          <button onClick={() => { setEditingLog(null); setShowModal(true); }} className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors"><Plus className="w-4 h-4" /> New Log</button>
         </div>
       )}
 

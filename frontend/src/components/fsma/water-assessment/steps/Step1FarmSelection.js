@@ -41,7 +41,7 @@ const Step1FarmSelection = ({ formData, updateFormData }) => {
           value={formData.farm}
           onChange={(e) => updateFormData({ farm: e.target.value })}
           disabled={loading}
-          className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-transparent"
+          className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent"
         >
           <option value="">Select a farm...</option>
           {farms.map((farm) => (
@@ -64,7 +64,7 @@ const Step1FarmSelection = ({ formData, updateFormData }) => {
         <select
           value={formData.assessment_year}
           onChange={(e) => updateFormData({ assessment_year: parseInt(e.target.value, 10) })}
-          className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-transparent"
+          className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent"
         >
           {years.map((year) => (
             <option key={year} value={year}>
@@ -87,7 +87,7 @@ const Step1FarmSelection = ({ formData, updateFormData }) => {
           type="date"
           value={formData.assessment_date}
           onChange={(e) => updateFormData({ assessment_date: e.target.value })}
-          className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-transparent"
+          className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent"
         />
         <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
           Date the assessment is being conducted
@@ -105,7 +105,7 @@ const Step1FarmSelection = ({ formData, updateFormData }) => {
           onChange={(e) => updateFormData({ notes: e.target.value })}
           rows={4}
           placeholder="Add any general notes about this assessment..."
-          className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
+          className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent resize-none"
         />
       </div>
 

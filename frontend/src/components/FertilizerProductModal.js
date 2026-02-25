@@ -144,7 +144,7 @@ const FertilizerProductModal = ({
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-gray-50">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-green-100 rounded-lg">
-              <Package className="w-5 h-5 text-green-600" />
+              <Package className="w-5 h-5 text-primary" />
             </div>
             <div>
               <h2 className="text-lg font-semibold text-gray-900">
@@ -181,7 +181,7 @@ const FertilizerProductModal = ({
                   onChange={handleChange}
                   required
                   placeholder="e.g., Urea, CAN-17, Triple 15"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                 />
               </div>
               
@@ -193,7 +193,7 @@ const FertilizerProductModal = ({
                   value={formData.manufacturer}
                   onChange={handleChange}
                   placeholder="Optional"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                 />
               </div>
               
@@ -205,7 +205,7 @@ const FertilizerProductModal = ({
                   value={formData.product_code}
                   onChange={handleChange}
                   placeholder="SKU or UPC"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                 />
               </div>
             </div>
@@ -227,7 +227,7 @@ const FertilizerProductModal = ({
                     min="0"
                     max="100"
                     placeholder="0"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-center text-lg font-medium"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-center text-lg font-medium"
                   />
                 </div>
                 <div>
@@ -241,7 +241,7 @@ const FertilizerProductModal = ({
                     min="0"
                     max="100"
                     placeholder="0"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-center text-lg font-medium"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-center text-lg font-medium"
                   />
                 </div>
                 <div>
@@ -255,13 +255,13 @@ const FertilizerProductModal = ({
                     min="0"
                     max="100"
                     placeholder="0"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-center text-lg font-medium"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-center text-lg font-medium"
                   />
                 </div>
               </div>
               
               <div className="mt-3 text-center">
-                <span className="text-3xl font-bold text-green-600">{getNPKDisplay()}</span>
+                <span className="text-3xl font-bold text-primary">{getNPKDisplay()}</span>
               </div>
             </div>
 
@@ -273,7 +273,7 @@ const FertilizerProductModal = ({
                   name="form"
                   value={formData.form}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                 >
                   {NUTRIENT_CONSTANTS.FERTILIZER_FORMS.map(f => (
                     <option key={f.value} value={f.value}>{f.label}</option>
@@ -292,7 +292,7 @@ const FertilizerProductModal = ({
                     step="0.01"
                     min="0"
                     placeholder="e.g., 11.06"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                   />
                 </div>
               )}
@@ -306,7 +306,7 @@ const FertilizerProductModal = ({
                   name="is_organic"
                   checked={formData.is_organic}
                   onChange={handleChange}
-                  className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                  className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
                 />
                 <span className="text-sm text-gray-700">Organic Product</span>
               </label>
@@ -319,7 +319,7 @@ const FertilizerProductModal = ({
                       name="omri_listed"
                       checked={formData.omri_listed}
                       onChange={handleChange}
-                      className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                      className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
                     />
                     <span className="text-sm text-gray-700">OMRI Listed</span>
                   </label>
@@ -330,7 +330,7 @@ const FertilizerProductModal = ({
                       name="cdfa_organic_registered"
                       checked={formData.cdfa_organic_registered}
                       onChange={handleChange}
-                      className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                      className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
                     />
                     <span className="text-sm text-gray-700">CDFA Organic Registered</span>
                   </label>
@@ -360,7 +360,7 @@ const FertilizerProductModal = ({
                       step="0.01"
                       min="0"
                       placeholder="0"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
                     />
                   </div>
                   <div>
@@ -373,7 +373,7 @@ const FertilizerProductModal = ({
                       step="0.01"
                       min="0"
                       placeholder="0"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
                     />
                   </div>
                   <div>
@@ -386,7 +386,7 @@ const FertilizerProductModal = ({
                       step="0.01"
                       min="0"
                       placeholder="0"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
                     />
                   </div>
                 </div>
@@ -402,7 +402,7 @@ const FertilizerProductModal = ({
                 onChange={handleChange}
                 rows={2}
                 placeholder="Additional notes..."
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
               />
             </div>
           </div>
@@ -419,7 +419,7 @@ const FertilizerProductModal = ({
             <button
               type="submit"
               disabled={loading}
-              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 flex items-center gap-2"
+              className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover disabled:opacity-50 flex items-center gap-2"
             >
               {loading ? 'Saving...' : (
                 <>

@@ -41,7 +41,7 @@ function IrrigationZoneCard({ zone, onEdit, onRecordIrrigation, variant = 'norma
     return {
       bg: 'bg-white',
       border: 'border-gray-200',
-      badge: 'bg-green-100 text-green-700',
+      badge: 'bg-green-100 text-primary',
       icon: CheckCircle2,
       iconColor: 'text-green-500'
     };
@@ -156,7 +156,7 @@ function IrrigationZoneCard({ zone, onEdit, onRecordIrrigation, variant = 'norma
               <Satellite className="w-3 h-3 mr-1" />
               <span className="font-medium">Satellite Data</span>
               {zone.details.satellite_adjustment.satellite_data_used ? (
-                <span className="ml-2 px-1.5 py-0.5 bg-green-100 text-green-700 rounded text-xs">
+                <span className="ml-2 px-1.5 py-0.5 bg-green-100 text-primary rounded text-xs">
                   Active
                 </span>
               ) : (
@@ -210,7 +210,7 @@ function IrrigationZoneCard({ zone, onEdit, onRecordIrrigation, variant = 'norma
                     {zone.details.satellite_adjustment.zone_avg_ndvi?.toFixed(2) || 'N/A'}
                     {zone.details.satellite_adjustment.zone_avg_ndvi && (
                       <span className={`text-xs ml-1 ${
-                        zone.details.satellite_adjustment.zone_avg_ndvi >= 0.75 ? 'text-green-600' :
+                        zone.details.satellite_adjustment.zone_avg_ndvi >= 0.75 ? 'text-primary' :
                         zone.details.satellite_adjustment.zone_avg_ndvi >= 0.65 ? 'text-yellow-600' :
                         'text-red-600'
                       }`}>
@@ -246,7 +246,7 @@ function IrrigationZoneCard({ zone, onEdit, onRecordIrrigation, variant = 'norma
                 </span>
                 <span className={`px-1.5 py-0.5 rounded ${
                   zone.details.satellite_adjustment.data_freshness === 'current'
-                    ? 'bg-green-100 text-green-700'
+                    ? 'bg-green-100 text-primary'
                     : zone.details.satellite_adjustment.data_freshness === 'stale'
                     ? 'bg-yellow-100 text-yellow-700'
                     : 'bg-gray-100 text-gray-500'

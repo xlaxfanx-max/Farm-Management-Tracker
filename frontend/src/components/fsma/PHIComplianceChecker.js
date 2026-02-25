@@ -131,7 +131,7 @@ const PHIComplianceChecker = () => {
   const getStatusColor = (status) => {
     switch (status) {
       case 'compliant':
-        return 'text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/30';
+        return 'text-primary dark:text-green-400 bg-green-100 dark:bg-green-900/30';
       case 'non_compliant':
         return 'text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-900/30';
       case 'warning':
@@ -200,10 +200,10 @@ const PHIComplianceChecker = () => {
 
       {/* Status Summary */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+        <div className="p-4 bg-primary-light dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
           <div className="flex items-center gap-2 mb-1">
-            <CheckCircle className="w-4 h-4 text-green-600 dark:text-green-400" />
-            <span className="text-sm text-green-700 dark:text-green-300">Compliant</span>
+            <CheckCircle className="w-4 h-4 text-primary dark:text-green-400" />
+            <span className="text-sm text-primary dark:text-green-300">Compliant</span>
           </div>
           <p className="text-2xl font-bold text-green-800 dark:text-green-200">
             {countByStatus('compliant')}
@@ -393,7 +393,7 @@ const PHIComplianceChecker = () => {
                               key={idx}
                               className={`p-3 rounded-lg ${
                                 app.compliant
-                                  ? 'bg-green-50 dark:bg-green-900/20'
+                                  ? 'bg-primary-light dark:bg-green-900/20'
                                   : 'bg-red-50 dark:bg-red-900/20'
                               }`}
                             >
@@ -402,7 +402,7 @@ const PHIComplianceChecker = () => {
                                   <Leaf
                                     className={`w-4 h-4 ${
                                       app.compliant
-                                        ? 'text-green-600 dark:text-green-400'
+                                        ? 'text-primary dark:text-green-400'
                                         : 'text-red-600 dark:text-red-400'
                                     }`}
                                   />
@@ -572,7 +572,7 @@ const PHIComplianceChecker = () => {
                   <div
                     className={`p-4 rounded-lg ${
                       preCheckResult.status === 'compliant'
-                        ? 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800'
+                        ? 'bg-primary-light dark:bg-green-900/20 border border-green-200 dark:border-green-800'
                         : preCheckResult.status === 'warning'
                         ? 'bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800'
                         : 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800'
@@ -580,7 +580,7 @@ const PHIComplianceChecker = () => {
                   >
                     <div className="flex items-center gap-3">
                       {preCheckResult.status === 'compliant' ? (
-                        <CheckCircle className="w-6 h-6 text-green-600 dark:text-green-400" />
+                        <CheckCircle className="w-6 h-6 text-primary dark:text-green-400" />
                       ) : preCheckResult.status === 'warning' ? (
                         <AlertTriangle className="w-6 h-6 text-yellow-600 dark:text-yellow-400" />
                       ) : (
@@ -605,7 +605,7 @@ const PHIComplianceChecker = () => {
                         <p
                           className={`text-sm ${
                             preCheckResult.status === 'compliant'
-                              ? 'text-green-700 dark:text-green-300'
+                              ? 'text-primary dark:text-green-300'
                               : preCheckResult.status === 'warning'
                               ? 'text-yellow-700 dark:text-yellow-300'
                               : 'text-red-700 dark:text-red-300'
@@ -641,7 +641,7 @@ const PHIComplianceChecker = () => {
                             key={idx}
                             className={`p-2 rounded ${
                               app.compliant
-                                ? 'bg-green-50 dark:bg-green-900/20'
+                                ? 'bg-primary-light dark:bg-green-900/20'
                                 : 'bg-red-50 dark:bg-red-900/20'
                             }`}
                           >
@@ -652,7 +652,7 @@ const PHIComplianceChecker = () => {
                               <span
                                 className={
                                   app.compliant
-                                    ? 'text-green-600 dark:text-green-400'
+                                    ? 'text-primary dark:text-green-400'
                                     : 'text-red-600 dark:text-red-400'
                                 }
                               >

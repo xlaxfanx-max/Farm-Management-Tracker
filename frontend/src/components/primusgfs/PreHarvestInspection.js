@@ -21,7 +21,7 @@ const PASS_OPTIONS = [
 const statusBadgeStyles = {
   scheduled: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
   in_progress: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
-  completed: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+  completed: 'bg-green-100 text-primary dark:bg-green-900/30 dark:text-green-400',
   failed: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
 };
 const StatusBadge = ({ status }) => (
@@ -30,13 +30,13 @@ const StatusBadge = ({ status }) => (
   </span>
 );
 const PassBadge = ({ passed }) => {
-  if (passed === true) return <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">PASSED</span>;
+  if (passed === true) return <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-primary dark:bg-green-900/30 dark:text-green-400">PASSED</span>;
   if (passed === false) return <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400">FAILED</span>;
   return <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400">Pending</span>;
 };
-const inputCls = 'w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-green-500';
-const inputSmCls = 'w-full px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500';
-const textareaCls = 'w-full mt-2 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500';
+const inputCls = 'w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary';
+const inputSmCls = 'w-full px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-primary focus:border-primary';
+const textareaCls = 'w-full mt-2 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-primary focus:border-primary';
 
 const Toggle = ({ label, checked, onChange }) => (
   <label className="flex items-center justify-between py-1.5 cursor-pointer">
@@ -109,7 +109,7 @@ const CreateModal = ({ onClose, onSave }) => {
           </div>
           <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
             <button type="button" onClick={onClose} className="px-4 py-2 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">Cancel</button>
-            <button type="submit" disabled={saving} className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50">
+            <button type="submit" disabled={saving} className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors disabled:opacity-50">
               {saving ? 'Saving...' : 'Schedule Inspection'}
             </button>
           </div>
@@ -222,7 +222,7 @@ const ChecklistView = ({ inspection, onClose, onRefresh }) => {
           </div>
           {/* Pass/Fail Preview */}
           <div className={`rounded-lg p-4 text-center font-medium ${likelyPass
-            ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800'
+            ? 'bg-primary-light dark:bg-green-900/20 text-primary dark:text-green-400 border border-green-200 dark:border-green-800'
             : 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800'}`}>
             {likelyPass ? <span className="flex items-center justify-center gap-2"><CheckCircle className="w-5 h-5" /> Likely Pass</span>
               : <span className="flex items-center justify-center gap-2"><XCircle className="w-5 h-5" /> Likely Fail</span>}
@@ -233,7 +233,7 @@ const ChecklistView = ({ inspection, onClose, onRefresh }) => {
               {saving ? 'Saving...' : 'Save Draft'}</button>
             {d.status !== 'completed' && d.status !== 'failed' && (
               <button type="button" onClick={complete} disabled={saving}
-                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50">Complete Inspection</button>)}
+                className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors disabled:opacity-50">Complete Inspection</button>)}
             {d.status === 'completed' && !d.approved_by && (
               <button type="button" onClick={approve} disabled={saving}
                 className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50">
@@ -318,14 +318,14 @@ export default function PreHarvestInspection() {
         <h2 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
           <ClipboardCheck className="w-6 h-6" /> Pre-Harvest Inspections
         </h2>
-        <button onClick={() => setShowCreateModal(true)} className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+        <button onClick={() => setShowCreateModal(true)} className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors">
           <Plus className="w-4 h-4" /> Schedule Inspection
         </button>
       </div>
       {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {[{ label: 'This Year', value: thisYear.length, icon: ClipboardCheck, color: 'text-blue-600 dark:text-blue-400' },
-          { label: 'Passed', value: passedCount, icon: CheckCircle, color: 'text-green-600 dark:text-green-400' },
+          { label: 'Passed', value: passedCount, icon: CheckCircle, color: 'text-primary dark:text-green-400' },
           { label: 'Failed', value: failedCount, icon: XCircle, color: 'text-red-600 dark:text-red-400' },
           { label: 'Upcoming', value: upcomingCount, icon: Clock, color: 'text-amber-600 dark:text-amber-400' },
         ].map((s) => (
@@ -344,12 +344,12 @@ export default function PreHarvestInspection() {
           <div className="flex items-center gap-2">
             <Filter className="w-4 h-4 text-gray-400" />
             <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}
-              className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-green-500">
+              className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary">
               {STATUS_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
             </select>
           </div>
           <select value={filterPassed} onChange={(e) => setFilterPassed(e.target.value)}
-            className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-green-500">
+            className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary">
             {PASS_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
           </select>
         </div>
@@ -363,14 +363,14 @@ export default function PreHarvestInspection() {
         </div>
       )}
       {loading && !error && (
-        <div className="flex items-center justify-center py-12"><Loader2 className="w-6 h-6 text-green-600 animate-spin" /></div>
+        <div className="flex items-center justify-center py-12"><Loader2 className="w-6 h-6 text-primary animate-spin" /></div>
       )}
       {!loading && !error && inspections.length === 0 && (
         <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-12 text-center">
           <ClipboardCheck className="w-12 h-12 mx-auto mb-3 text-gray-400" />
           <p className="font-medium text-gray-900 dark:text-white">No inspections found</p>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Schedule your first pre-harvest inspection to get started.</p>
-          <button onClick={() => setShowCreateModal(true)} className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+          <button onClick={() => setShowCreateModal(true)} className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors">
             <Plus className="w-4 h-4" /> Schedule Inspection</button>
         </div>
       )}

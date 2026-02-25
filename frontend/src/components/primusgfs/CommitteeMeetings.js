@@ -159,7 +159,7 @@ const QuarterlyStatusBar = ({ status }) => {
           const done = val === 'completed';
           const draft = val === 'draft';
           const colorCls = done
-            ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+            ? 'bg-green-100 text-primary dark:bg-green-900/30 dark:text-green-400'
             : draft
             ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
             : 'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400';
@@ -191,7 +191,7 @@ const ReviewedCount = ({ meeting }) => {
   const pct = Math.round((done / total) * 100);
   const color =
     pct === 100
-      ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+      ? 'bg-green-100 text-primary dark:bg-green-900/30 dark:text-green-400'
       : pct >= 50
       ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
       : 'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400';
@@ -412,7 +412,7 @@ const MeetingModal = ({ editMeeting, onClose, onSave }) => {
 
   // Shared input class
   const inputCls =
-    'w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none';
+    'w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none';
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -509,7 +509,7 @@ const MeetingModal = ({ editMeeting, onClose, onSave }) => {
                 type="button"
                 onClick={loadOrgRoles}
                 disabled={loadingRoles}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-primary dark:text-green-400 bg-primary-light dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors disabled:opacity-50"
               >
                 {loadingRoles ? (
                   <Loader2 className="w-3 h-3 animate-spin" />
@@ -536,7 +536,7 @@ const MeetingModal = ({ editMeeting, onClose, onSave }) => {
               <button
                 type="button"
                 onClick={addAttendee}
-                className="flex-shrink-0 px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                className="flex-shrink-0 px-3 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors"
               >
                 <Plus className="w-4 h-4" />
               </button>
@@ -546,18 +546,18 @@ const MeetingModal = ({ editMeeting, onClose, onSave }) => {
                 {form.attendees.map((att, idx) => (
                   <span
                     key={idx}
-                    className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-300 text-sm rounded-full border border-green-200 dark:border-green-800"
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-primary-light dark:bg-green-900/20 text-green-800 dark:text-green-300 text-sm rounded-full border border-green-200 dark:border-green-800"
                   >
                     {att.name}
                     {att.title && (
-                      <span className="text-green-600 dark:text-green-500 text-xs">
+                      <span className="text-primary dark:text-green-500 text-xs">
                         ({att.title})
                       </span>
                     )}
                     <button
                       type="button"
                       onClick={() => removeAttendee(idx)}
-                      className="text-green-600 hover:text-red-600 dark:text-green-400 dark:hover:text-red-400 transition-colors"
+                      className="text-primary hover:text-red-600 dark:text-green-400 dark:hover:text-red-400 transition-colors"
                     >
                       <X className="w-3 h-3" />
                     </button>
@@ -617,7 +617,7 @@ const MeetingModal = ({ editMeeting, onClose, onSave }) => {
                           checked={reviewed}
                           onClick={(e) => e.stopPropagation()}
                           onChange={() => set(section.reviewedField, !reviewed)}
-                          className="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-green-600 focus:ring-green-500 focus:ring-offset-0"
+                          className="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-primary focus:ring-primary focus:ring-offset-0"
                         />
                         <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
                           {section.label}
@@ -650,7 +650,7 @@ const MeetingModal = ({ editMeeting, onClose, onSave }) => {
                                     onChange={() =>
                                       set(ef.key, form[ef.key] ? null : true)
                                     }
-                                    className="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-green-600 focus:ring-green-500 focus:ring-offset-0"
+                                    className="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-primary focus:ring-primary focus:ring-offset-0"
                                   />
                                   <span className="text-sm text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">
                                     {ef.label}
@@ -730,7 +730,7 @@ const MeetingModal = ({ editMeeting, onClose, onSave }) => {
               <button
                 type="button"
                 onClick={addActionItem}
-                className="flex-shrink-0 px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                className="flex-shrink-0 px-3 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors"
               >
                 <Plus className="w-4 h-4" />
               </button>
@@ -743,7 +743,7 @@ const MeetingModal = ({ editMeeting, onClose, onSave }) => {
                     className="p-3 bg-white dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-lg"
                   >
                     <div className="flex items-start gap-2 mb-2">
-                      <span className="flex-shrink-0 w-5 h-5 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-semibold flex items-center justify-center mt-0.5">
+                      <span className="flex-shrink-0 w-5 h-5 rounded-full bg-green-100 dark:bg-green-900/30 text-primary dark:text-green-400 text-xs font-semibold flex items-center justify-center mt-0.5">
                         {idx + 1}
                       </span>
                       <span className="flex-1 text-sm text-gray-700 dark:text-gray-300">
@@ -813,7 +813,7 @@ const MeetingModal = ({ editMeeting, onClose, onSave }) => {
             <button
               type="submit"
               disabled={saving}
-              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors disabled:opacity-50"
             >
               {saving && <Loader2 className="w-4 h-4 animate-spin" />}
               {isEditing ? 'Save Changes' : 'Record Meeting'}
@@ -893,7 +893,7 @@ export default function CommitteeMeetings() {
   if (loading && meetings.length === 0) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 className="w-7 h-7 animate-spin text-green-600 dark:text-green-400" />
+        <Loader2 className="w-7 h-7 animate-spin text-primary dark:text-green-400" />
         <span className="ml-3 text-gray-600 dark:text-gray-400">Loading committee meetings...</span>
       </div>
     );
@@ -924,7 +924,7 @@ export default function CommitteeMeetings() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h2 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-            <Users className="w-6 h-6 text-green-600 dark:text-green-400" />
+            <Users className="w-6 h-6 text-primary dark:text-green-400" />
             Food Safety Committee Meetings
           </h2>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
@@ -936,7 +936,7 @@ export default function CommitteeMeetings() {
             setEditingMeeting(null);
             setShowModal(true);
           }}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium flex-shrink-0"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors text-sm font-medium flex-shrink-0"
         >
           <Plus className="w-4 h-4" />
           Record Meeting
@@ -966,7 +966,7 @@ export default function CommitteeMeetings() {
               setEditingMeeting(null);
               setShowModal(true);
             }}
-            className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+            className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors"
           >
             <Plus className="w-4 h-4" />
             Record Meeting
@@ -1015,7 +1015,7 @@ export default function CommitteeMeetings() {
                       {/* Quarter */}
                       <td className="px-4 py-3">
                         {meeting.meeting_quarter ? (
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-primary dark:bg-green-900/30 dark:text-green-400">
                             {meeting.meeting_quarter}
                           </span>
                         ) : (
@@ -1026,7 +1026,7 @@ export default function CommitteeMeetings() {
                       {/* Status */}
                       <td className="px-4 py-3">
                         {meeting.status === 'completed' ? (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400">
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-primary-light text-primary dark:bg-green-900/20 dark:text-green-400">
                             <CheckCircle className="w-3 h-3" />
                             Completed
                           </span>
@@ -1079,7 +1079,7 @@ export default function CommitteeMeetings() {
                               setEditingMeeting(meeting);
                               setShowModal(true);
                             }}
-                            className="p-1.5 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded transition-colors"
+                            className="p-1.5 text-primary hover:bg-primary-light dark:hover:bg-green-900/20 rounded transition-colors"
                             title="Edit"
                           >
                             <Edit2 className="w-4 h-4" />

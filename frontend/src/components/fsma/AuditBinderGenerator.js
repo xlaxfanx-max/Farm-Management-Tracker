@@ -209,7 +209,7 @@ const AuditBinderGenerator = () => {
   const getStatusColor = (status) => {
     switch (status) {
       case 'completed':
-        return 'text-green-600 dark:text-green-400';
+        return 'text-primary dark:text-green-400';
       case 'failed':
         return 'text-red-600 dark:text-red-400';
       case 'generating':
@@ -375,7 +375,7 @@ const AuditBinderGenerator = () => {
                     {binder.status === 'completed' && (
                       <button
                         onClick={() => handleDownload(binder.id)}
-                        className="inline-flex items-center gap-1 px-3 py-1.5 text-sm bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded hover:bg-green-200 dark:hover:bg-green-900/50"
+                        className="inline-flex items-center gap-1 px-3 py-1.5 text-sm bg-green-100 dark:bg-green-900/30 text-primary dark:text-green-400 rounded hover:bg-green-200 dark:hover:bg-green-900/50"
                       >
                         <Download className="w-4 h-4" />
                         Download

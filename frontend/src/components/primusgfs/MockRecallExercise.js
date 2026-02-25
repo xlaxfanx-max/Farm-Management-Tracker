@@ -22,7 +22,7 @@ const STATUS_OPTIONS = [
 const statusBadgeStyles = {
   planned: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
   in_progress: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400 animate-pulse',
-  completed: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+  completed: 'bg-green-100 text-primary dark:bg-green-900/30 dark:text-green-400',
   failed: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
 };
 const statusLabels = { planned: 'Planned', in_progress: 'In Progress', completed: 'Completed', failed: 'Failed' };
@@ -31,7 +31,7 @@ const StatusBadge = ({ status }) => (
     {statusLabels[status] || status}
   </span>
 );
-const inputCls = 'w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-green-500';
+const inputCls = 'w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary';
 
 const INITIAL_FORM = {
   recall_number: '', exercise_date: '', scenario_description: '', trigger_reason: '',
@@ -128,7 +128,7 @@ const RecallModal = ({ recall, onClose, onSave }) => {
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Target Lot Numbers</label>
             <div className="flex gap-2">
               <input type="text" value={lotInput} onChange={(e) => setLotInput(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addLot(); } }} placeholder="Add lot number" className={`flex-1 ${inputCls}`} />
-              <button type="button" onClick={addLot} className="px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"><Plus className="w-4 h-4" /></button>
+              <button type="button" onClick={addLot} className="px-3 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors"><Plus className="w-4 h-4" /></button>
             </div>
             {formData.target_lot_numbers.length > 0 && <div className="flex flex-wrap gap-2 mt-2">
               {formData.target_lot_numbers.map((lot) => (
@@ -142,7 +142,7 @@ const RecallModal = ({ recall, onClose, onSave }) => {
           <div>
             <div className="flex items-center justify-between mb-1">
               <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Participants</label>
-              <button type="button" onClick={addParticipant} className="text-xs text-green-600 hover:text-green-700 dark:text-green-400 flex items-center gap-1"><Plus className="w-3 h-3" />Add</button>
+              <button type="button" onClick={addParticipant} className="text-xs text-primary hover:text-primary-hover dark:text-green-400 flex items-center gap-1"><Plus className="w-3 h-3" />Add</button>
             </div>
             {formData.participants.map((p, i) => (
               <div key={i} className="flex gap-2 mb-2">
@@ -160,18 +160,18 @@ const RecallModal = ({ recall, onClose, onSave }) => {
               <div className="flex items-center gap-2 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600">
                 <Paperclip className="w-4 h-4 text-gray-400 flex-shrink-0" />
                 <span className="text-sm text-gray-700 dark:text-gray-300 truncate flex-1">{recall.report_file_name}</span>
-                <label className="text-xs text-green-600 dark:text-green-400 hover:underline cursor-pointer">
+                <label className="text-xs text-primary dark:text-green-400 hover:underline cursor-pointer">
                   Replace
                   <input type="file" className="hidden" accept=".pdf,.doc,.docx,.xls,.xlsx" onChange={handleFileSelect} />
                 </label>
               </div>
             )}
             {selectedFile && (
-              <div className="flex items-center gap-2 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
-                <Paperclip className="w-4 h-4 text-green-600 dark:text-green-400 flex-shrink-0" />
-                <span className="text-sm text-green-700 dark:text-green-300 truncate flex-1">{selectedFile.name}</span>
-                <span className="text-xs text-green-600 dark:text-green-400 flex-shrink-0">{formatFileSize(selectedFile.size)}</span>
-                <button type="button" onClick={() => setSelectedFile(null)} className="p-0.5 text-green-600 dark:text-green-400 hover:text-red-500 dark:hover:text-red-400">
+              <div className="flex items-center gap-2 p-3 bg-primary-light dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+                <Paperclip className="w-4 h-4 text-primary dark:text-green-400 flex-shrink-0" />
+                <span className="text-sm text-primary dark:text-green-300 truncate flex-1">{selectedFile.name}</span>
+                <span className="text-xs text-primary dark:text-green-400 flex-shrink-0">{formatFileSize(selectedFile.size)}</span>
+                <button type="button" onClick={() => setSelectedFile(null)} className="p-0.5 text-primary dark:text-green-400 hover:text-red-500 dark:hover:text-red-400">
                   <X className="w-4 h-4" />
                 </button>
               </div>
@@ -180,11 +180,11 @@ const RecallModal = ({ recall, onClose, onSave }) => {
               <div
                 onDragOver={(e) => e.preventDefault()}
                 onDrop={handleFileDrop}
-                className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center hover:border-green-400 dark:hover:border-green-500 transition-colors"
+                className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center hover:border-green-400 dark:hover:border-primary transition-colors"
               >
                 <Upload className="w-8 h-8 mx-auto mb-2 text-gray-400" />
                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Drag and drop your recall report here</p>
-                <label className="text-sm text-green-600 dark:text-green-400 hover:underline cursor-pointer">
+                <label className="text-sm text-primary dark:text-green-400 hover:underline cursor-pointer">
                   or browse files
                   <input type="file" className="hidden" accept=".pdf,.doc,.docx,.xls,.xlsx" onChange={handleFileSelect} />
                 </label>
@@ -194,7 +194,7 @@ const RecallModal = ({ recall, onClose, onSave }) => {
           </div>
           <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
             <button type="button" onClick={() => { setSelectedFile(null); onClose(); }} className="px-4 py-2 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">Cancel</button>
-            <button type="submit" disabled={saving} className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50">
+            <button type="submit" disabled={saving} className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors disabled:opacity-50">
               {saving ? 'Saving...' : recall ? 'Update Recall' : 'Create Recall'}</button>
           </div>
         </form>
@@ -215,7 +215,7 @@ const LiveExerciseView = ({ recall, onRefresh }) => {
     tick(); const id = setInterval(tick, 1000); return () => clearInterval(id);
   }, [recall.trace_start_time]);
   const hrs = Math.floor(elapsed / 3600), mins = Math.floor((elapsed % 3600) / 60), secs = elapsed % 60;
-  const timerColor = hrs >= 4 ? 'text-red-600 dark:text-red-400' : hrs >= 2 ? 'text-yellow-600 dark:text-yellow-400' : 'text-green-600 dark:text-green-400';
+  const timerColor = hrs >= 4 ? 'text-red-600 dark:text-red-400' : hrs >= 2 ? 'text-yellow-600 dark:text-yellow-400' : 'text-primary dark:text-green-400';
   const handleStart = async () => {
     try { setSaving(true); await primusGFSAPI.startMockRecall(recall.id, {}); onRefresh(); }
     catch (err) { console.error('Failed to start trace:', err); } finally { setSaving(false); }
@@ -248,7 +248,7 @@ const LiveExerciseView = ({ recall, onRefresh }) => {
         <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600">
           <Paperclip className="w-4 h-4 text-gray-400 flex-shrink-0" />
           <span className="text-sm text-gray-700 dark:text-gray-300 truncate flex-1">{recall.report_file_name || 'Recall Report'}</span>
-          <a href={recall.report_file_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-sm text-green-600 dark:text-green-400 hover:underline">
+          <a href={recall.report_file_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-sm text-primary dark:text-green-400 hover:underline">
             <Download className="w-4 h-4" />View / Download
           </a>
         </div>
@@ -257,7 +257,7 @@ const LiveExerciseView = ({ recall, onRefresh }) => {
         {recall.trace_start_time ? (
           <div className={`text-5xl font-mono font-bold ${timerColor}`}>{String(hrs).padStart(2, '0')}:{String(mins).padStart(2, '0')}:{String(secs).padStart(2, '0')}</div>
         ) : (
-          <button onClick={handleStart} disabled={saving} className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 inline-flex items-center gap-2 text-lg font-medium">
+          <button onClick={handleStart} disabled={saving} className="px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors disabled:opacity-50 inline-flex items-center gap-2 text-lg font-medium">
             <Play className="w-5 h-5" />{saving ? 'Starting...' : 'Start Trace'}</button>
         )}
       </div>
@@ -307,7 +307,7 @@ const ResultsView = ({ recall, onRefresh }) => {
           <div className="text-3xl font-bold text-gray-900 dark:text-white">{recall.effectiveness_score ?? '-'}</div>
           <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">Score / 100</div></div>
         <div className="text-center p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-          <div className={`text-lg font-bold ${passed ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+          <div className={`text-lg font-bold ${passed ? 'text-primary dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
             {passed ? <CheckCircle className="w-8 h-8 mx-auto" /> : <XCircle className="w-8 h-8 mx-auto" />}</div>
           <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">{passed ? 'PASSED' : 'FAILED'}</div></div>
         <div className="text-center p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
@@ -321,13 +321,13 @@ const ResultsView = ({ recall, onRefresh }) => {
         <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600">
           <Paperclip className="w-4 h-4 text-gray-400 flex-shrink-0" />
           <span className="text-sm text-gray-700 dark:text-gray-300 truncate flex-1">{recall.report_file_name || 'Recall Report'}</span>
-          <a href={recall.report_file_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-sm text-green-600 dark:text-green-400 hover:underline">
+          <a href={recall.report_file_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-sm text-primary dark:text-green-400 hover:underline">
             <Download className="w-4 h-4" />View / Download
           </a>
         </div>
       )}
       {recall.effectiveness_score == null && <div className="flex justify-end">
-        <button onClick={handleScore} disabled={scoring} className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 inline-flex items-center gap-2">
+        <button onClick={handleScore} disabled={scoring} className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors disabled:opacity-50 inline-flex items-center gap-2">
           <Award className="w-4 h-4" />{scoring ? 'Scoring...' : 'Score Exercise'}</button>
       </div>}
     </div>
@@ -390,13 +390,13 @@ export default function MockRecallExercise() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2"><ClipboardList className="w-6 h-6" />Mock Recall Exercises</h2>
-        <button onClick={() => { setEditingRecall(null); setShowCreateModal(true); }} className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+        <button onClick={() => { setEditingRecall(null); setShowCreateModal(true); }} className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors">
           <Plus className="w-4 h-4" />New Exercise</button>
       </div>
       {/* Summary Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[{ label: 'Total Exercises', value: totalExercises, color: 'text-gray-900 dark:text-white' },
-          { label: 'Passed', value: passedCount, color: 'text-green-600 dark:text-green-400' },
+          { label: 'Passed', value: passedCount, color: 'text-primary dark:text-green-400' },
           { label: 'Avg Score', value: avgScore, color: 'text-gray-900 dark:text-white' },
           { label: 'Last Exercise', value: lastDate, color: 'text-gray-900 dark:text-white' },
         ].map((s) => (
@@ -410,11 +410,11 @@ export default function MockRecallExercise() {
         <div className="flex flex-wrap items-center gap-4">
           <div className="relative flex-1 min-w-[200px]">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <input type="text" placeholder="Search recalls..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full pl-9 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500" />
+            <input type="text" placeholder="Search recalls..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full pl-9 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-primary focus:border-primary" />
           </div>
           <div className="flex items-center gap-2">
             <Filter className="w-4 h-4 text-gray-400" />
-            <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-green-500">
+            <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary">
               {STATUS_OPTIONS.map((opt) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
             </select>
           </div>
@@ -430,7 +430,7 @@ export default function MockRecallExercise() {
           <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600">
             <Paperclip className="w-4 h-4 text-gray-400 flex-shrink-0" />
             <span className="text-sm text-gray-700 dark:text-gray-300 truncate flex-1">{activeRecall.report_file_name || 'Recall Report'}</span>
-            <a href={activeRecall.report_file_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-sm text-green-600 dark:text-green-400 hover:underline">
+            <a href={activeRecall.report_file_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-sm text-primary dark:text-green-400 hover:underline">
               <Download className="w-4 h-4" />View / Download
             </a>
           </div>
@@ -446,14 +446,14 @@ export default function MockRecallExercise() {
           <button onClick={fetchRecalls} className="inline-flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"><RefreshCw className="w-4 h-4" />Retry</button>
         </div>)}
       {/* Loading */}
-      {loading && !error && <div className="flex items-center justify-center py-12"><Loader2 className="w-6 h-6 text-green-600 animate-spin" /></div>}
+      {loading && !error && <div className="flex items-center justify-center py-12"><Loader2 className="w-6 h-6 text-primary animate-spin" /></div>}
       {/* Empty */}
       {!loading && !error && recalls.length === 0 && (
         <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-12 text-center">
           <ClipboardList className="w-12 h-12 mx-auto mb-3 text-gray-400" />
           <p className="font-medium text-gray-900 dark:text-white">No mock recall exercises found</p>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Create your first mock recall exercise to test traceability readiness.</p>
-          <button onClick={() => { setEditingRecall(null); setShowCreateModal(true); }} className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"><Plus className="w-4 h-4" />New Exercise</button>
+          <button onClick={() => { setEditingRecall(null); setShowCreateModal(true); }} className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors"><Plus className="w-4 h-4" />New Exercise</button>
         </div>)}
       {/* Table */}
       {!loading && !error && recalls.length > 0 && (
@@ -467,7 +467,7 @@ export default function MockRecallExercise() {
               </tr></thead>
               <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                 {recalls.map((r) => (
-                  <tr key={r.id} onClick={() => handleRowClick(r)} className={`hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors cursor-pointer ${activeRecall?.id === r.id ? 'bg-green-50 dark:bg-green-900/10' : ''}`}>
+                  <tr key={r.id} onClick={() => handleRowClick(r)} className={`hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors cursor-pointer ${activeRecall?.id === r.id ? 'bg-primary-light dark:bg-green-900/10' : ''}`}>
                     <td className="px-4 py-3 font-mono text-xs text-gray-600 dark:text-gray-400">
                       <span className="inline-flex items-center gap-1">{r.recall_number}{r.has_report && <Paperclip className="w-3 h-3 text-gray-400" title="Has report file" />}</span>
                     </td>
@@ -478,7 +478,7 @@ export default function MockRecallExercise() {
                     <td className="px-4 py-3 text-gray-600 dark:text-gray-400">{r.effectiveness_score ?? '-'}</td>
                     <td className="px-4 py-3">
                       {r.status === 'completed' || r.status === 'failed' ? (r.passed
-                        ? <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">Pass</span>
+                        ? <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-primary dark:bg-green-900/30 dark:text-green-400">Pass</span>
                         : <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400">Fail</span>
                       ) : <span className="text-gray-400">-</span>}</td>
                     <td className="px-4 py-3"><div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>

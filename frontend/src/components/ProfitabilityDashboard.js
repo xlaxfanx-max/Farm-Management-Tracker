@@ -238,7 +238,7 @@ const ProfitabilityDashboard = () => {
   const ProfitIndicator = ({ value, showArrow = true }) => {
     if (value === null || value === undefined) return <span className="text-gray-400">-</span>;
     const isPositive = value >= 0;
-    const colorClass = isPositive ? 'text-green-600' : 'text-red-600';
+    const colorClass = isPositive ? 'text-primary' : 'text-red-600';
 
     return (
       <span className={`flex items-center gap-1 ${colorClass}`}>
@@ -263,7 +263,7 @@ const ProfitabilityDashboard = () => {
           value={selectedSeason}
           onChange={setSelectedSeason}
           cropCategory="citrus"
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent"
+          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
           placeholder="Select Season"
         />
       </div>
@@ -272,7 +272,7 @@ const ProfitabilityDashboard = () => {
         <select
           value={selectedPackinghouse}
           onChange={(e) => setSelectedPackinghouse(e.target.value)}
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent"
+          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
         >
           <option value="">All Packinghouses</option>
           {packinghouses.map(ph => (
@@ -396,7 +396,7 @@ const ProfitabilityDashboard = () => {
                         <td className={`${tableCellClass} text-right text-gray-700`}>
                           {formatNumber(field.total_bins)}
                         </td>
-                        <td className={`${tableCellClass} text-right text-green-600`}>
+                        <td className={`${tableCellClass} text-right text-primary`}>
                           {formatCurrency(field.gross_revenue)}
                         </td>
                         <td className={`${tableCellClass} text-right text-orange-600`}>
@@ -426,7 +426,7 @@ const ProfitabilityDashboard = () => {
                               </div>
                               <div>
                                 <span className="text-gray-500">Gross/{unitSingular}:</span>
-                                <span className="ml-2 text-green-600">{formatCurrency(field.gross_per_bin)}</span>
+                                <span className="ml-2 text-primary">{formatCurrency(field.gross_per_bin)}</span>
                               </div>
                               <div>
                                 <span className="text-gray-500">Deductions/{unitSingular}:</span>
@@ -480,7 +480,7 @@ const ProfitabilityDashboard = () => {
                       <td className={`${tableCellClass} text-right text-gray-700`}>
                         {formatNumber(pool.total_bins)}
                       </td>
-                      <td className={`${tableCellClass} text-right text-green-600`}>
+                      <td className={`${tableCellClass} text-right text-primary`}>
                         {formatCurrency(pool.gross_revenue)}
                       </td>
                       <td className={`${tableCellClass} text-right text-orange-600`}>
@@ -658,7 +658,7 @@ const ProfitabilityDashboard = () => {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-500">Gross Revenue</span>
-                  <span className="text-green-600">{formatCurrency(season.gross_revenue)}</span>
+                  <span className="text-primary">{formatCurrency(season.gross_revenue)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-500">Deductions</span>
@@ -707,7 +707,7 @@ const ProfitabilityDashboard = () => {
                   <tr key={season.season} className="hover:bg-gray-50">
                     <td className={`${tableCellClass} font-medium text-gray-900`}>{season.season}</td>
                     <td className={`${tableCellClass} text-right text-gray-700`}>{formatNumber(season.total_bins)}</td>
-                    <td className={`${tableCellClass} text-right text-green-600`}>{formatCurrency(season.gross_per_bin)}</td>
+                    <td className={`${tableCellClass} text-right text-primary`}>{formatCurrency(season.gross_per_bin)}</td>
                     <td className={`${tableCellClass} text-right text-orange-600`}>{formatCurrency(season.deductions_per_bin)}</td>
                     <td className={`${tableCellClass} text-right font-medium text-blue-600`}>{formatCurrency(season.net_per_bin)}</td>
                     <td className={`${tableCellClass} text-right`}>

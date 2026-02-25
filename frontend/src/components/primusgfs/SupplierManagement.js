@@ -53,7 +53,7 @@ const materialLabel = (val) => MATERIAL_TYPES.find((m) => m.value === val)?.labe
 
 const statusBadgeStyles = {
   pending_approval: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
-  approved: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+  approved: 'bg-green-100 text-primary dark:bg-green-900/30 dark:text-green-400',
   conditional: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
   suspended: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
   removed: 'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400',
@@ -147,7 +147,7 @@ const SupplierModal = ({ supplier, onClose, onSave }) => {
     }
   };
 
-  const inputCls = 'w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-green-500';
+  const inputCls = 'w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary';
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -196,7 +196,7 @@ const SupplierModal = ({ supplier, onClose, onSave }) => {
             <div className="flex flex-wrap gap-2">
               {MATERIAL_TYPES.map((mt) => (
                 <button key={mt.value} type="button" onClick={() => toggleMaterial(mt.value)}
-                  className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-colors ${formData.material_types.includes(mt.value) ? 'bg-green-100 text-green-700 border-green-300 dark:bg-green-900/30 dark:text-green-400 dark:border-green-700' : 'bg-gray-100 text-gray-600 border-gray-300 dark:bg-gray-700 dark:text-gray-400 dark:border-gray-600'}`}>
+                  className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-colors ${formData.material_types.includes(mt.value) ? 'bg-green-100 text-primary border-green-300 dark:bg-green-900/30 dark:text-green-400 dark:border-green-700' : 'bg-gray-100 text-gray-600 border-gray-300 dark:bg-gray-700 dark:text-gray-400 dark:border-gray-600'}`}>
                   {mt.label}
                 </button>
               ))}
@@ -220,7 +220,7 @@ const SupplierModal = ({ supplier, onClose, onSave }) => {
           <div>
             <div className="flex items-center justify-between mb-1">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Certifications</label>
-              <button type="button" onClick={addCert} className="text-xs text-green-600 hover:text-green-700 dark:text-green-400">+ Add</button>
+              <button type="button" onClick={addCert} className="text-xs text-primary hover:text-primary-hover dark:text-green-400">+ Add</button>
             </div>
             {formData.certifications.map((cert, idx) => (
               <div key={idx} className="flex items-center gap-2 mb-2">
@@ -237,7 +237,7 @@ const SupplierModal = ({ supplier, onClose, onSave }) => {
           </div>
           <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
             <button type="button" onClick={onClose} className="px-4 py-2 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">Cancel</button>
-            <button type="submit" disabled={saving} className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50">
+            <button type="submit" disabled={saving} className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors disabled:opacity-50">
               {saving ? 'Saving...' : supplier ? 'Update Supplier' : 'Create Supplier'}
             </button>
           </div>
@@ -272,8 +272,8 @@ const VerificationModal = ({ suppliers, onClose, onSave }) => {
     }
   };
 
-  const inputCls = 'w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-green-500';
-  const checkCls = 'w-4 h-4 text-green-600 border-gray-300 dark:border-gray-600 rounded focus:ring-green-500';
+  const inputCls = 'w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary';
+  const checkCls = 'w-4 h-4 text-primary border-gray-300 dark:border-gray-600 rounded focus:ring-primary';
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -361,7 +361,7 @@ const VerificationModal = ({ suppliers, onClose, onSave }) => {
           </div>
           <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
             <button type="button" onClick={onClose} className="px-4 py-2 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">Cancel</button>
-            <button type="submit" disabled={saving} className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50">
+            <button type="submit" disabled={saving} className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors disabled:opacity-50">
               {saving ? 'Saving...' : 'Create Verification'}
             </button>
           </div>
@@ -463,7 +463,7 @@ export default function SupplierManagement() {
     catch (err) { console.error('Failed to delete verification:', err); }
   };
 
-  const tabCls = (tab) => `px-4 py-2 text-sm font-medium rounded-lg transition-colors ${activeTab === tab ? 'bg-green-600 text-white' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'}`;
+  const tabCls = (tab) => `px-4 py-2 text-sm font-medium rounded-lg transition-colors ${activeTab === tab ? 'bg-primary text-white' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'}`;
 
   return (
     <div className="space-y-4">
@@ -533,17 +533,17 @@ export default function SupplierManagement() {
               <div className="relative flex-1 min-w-[200px]">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input type="text" placeholder="Search suppliers..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-9 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500" />
+                  className="w-full pl-9 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-primary focus:border-primary" />
               </div>
               <div className="flex items-center gap-2">
                 <Filter className="w-4 h-4 text-gray-400" />
                 <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}
-                  className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                  className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary">
                   {STATUS_OPTIONS.map((opt) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
                 </select>
               </div>
               <button onClick={() => { setEditingSupplier(null); setShowSupplierModal(true); }}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+                className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors">
                 <Plus className="w-4 h-4" /> Add Supplier
               </button>
             </>
@@ -552,13 +552,13 @@ export default function SupplierManagement() {
               <div className="flex items-center gap-2">
                 <Filter className="w-4 h-4 text-gray-400" />
                 <select value={filterSupplier} onChange={(e) => setFilterSupplier(e.target.value)}
-                  className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                  className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary">
                   <option value="">All Suppliers</option>
                   {suppliers.map((s) => <option key={s.id} value={s.id}>{s.supplier_name}</option>)}
                 </select>
               </div>
               <button onClick={() => setShowVerificationModal(true)}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+                className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors">
                 <Plus className="w-4 h-4" /> Add Verification
               </button>
             </>
@@ -581,7 +581,7 @@ export default function SupplierManagement() {
       {/* Loading State */}
       {loading && !error && (
         <div className="flex items-center justify-center py-12">
-          <Loader2 className="w-6 h-6 text-green-600 animate-spin" />
+          <Loader2 className="w-6 h-6 text-primary animate-spin" />
         </div>
       )}
 
@@ -626,7 +626,7 @@ export default function SupplierManagement() {
                       <td className="px-4 py-3">
                         <div className="flex items-center justify-end gap-1">
                           {(s.status === 'pending_approval' || s.status === 'conditional') && (
-                            <button onClick={() => handleApprove(s.id)} className="p-1.5 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded transition-colors" title="Approve">
+                            <button onClick={() => handleApprove(s.id)} className="p-1.5 text-primary hover:bg-primary-light dark:hover:bg-green-900/20 rounded transition-colors" title="Approve">
                               <ShieldCheck className="w-4 h-4" />
                             </button>
                           )}
@@ -690,7 +690,7 @@ export default function SupplierManagement() {
                         </div>
                       </td>
                       <td className="px-4 py-3">
-                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${v.accepted ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'}`}>
+                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${v.accepted ? 'bg-green-100 text-primary dark:bg-green-900/30 dark:text-green-400' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'}`}>
                           {v.accepted ? 'Accepted' : 'Rejected'}
                         </span>
                       </td>

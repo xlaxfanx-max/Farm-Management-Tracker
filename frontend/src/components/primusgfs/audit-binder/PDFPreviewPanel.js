@@ -120,7 +120,7 @@ const PDFPreviewPanel = ({ docNumber, sectionId, refreshKey }) => {
       <div className="flex-1 bg-gray-100 dark:bg-gray-900 min-h-0">
         {loading ? (
           <div className="flex items-center justify-center h-full">
-            <Loader2 className="w-10 h-10 animate-spin text-green-600" />
+            <Loader2 className="w-10 h-10 animate-spin text-primary" />
           </div>
         ) : pdfUrl ? (
           <iframe

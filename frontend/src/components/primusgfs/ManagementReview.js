@@ -64,7 +64,7 @@ const STATUS_OPTIONS = [
 const STATUS_BADGE_STYLES = {
   draft: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
   in_review: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-  completed: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+  completed: 'bg-green-100 text-primary dark:bg-green-900/30 dark:text-green-400',
 };
 
 const STATUS_LABELS = {
@@ -147,10 +147,10 @@ const StatusBadge = ({ status }) => (
 );
 
 const inputCls =
-  'w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm';
+  'w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary text-sm';
 
 const textareaCls =
-  'w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm resize-none';
+  'w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary text-sm resize-none';
 
 // ---------------------------------------------------------------------------
 // SectionCard — collapsible card for one of the 12 review sections
@@ -178,7 +178,7 @@ const SectionCard = ({ sectionKey, label, description, formData, onChange }) => 
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="w-full flex items-center justify-between px-4 py-3 text-left rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+        className="w-full flex items-center justify-between px-4 py-3 text-left rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
       >
         <div className="flex items-center gap-3 min-w-0">
           {/* Checkbox (click stops propagation so toggling doesn't collapse the card) */}
@@ -190,7 +190,7 @@ const SectionCard = ({ sectionKey, label, description, formData, onChange }) => 
               onChange(reviewedKey, e.target.checked);
             }}
             onClick={(e) => e.stopPropagation()}
-            className="w-4 h-4 rounded border-gray-300 text-green-600 focus:ring-green-500 flex-shrink-0 cursor-pointer"
+            className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary flex-shrink-0 cursor-pointer"
           />
           <div className="min-w-0">
             <span
@@ -514,7 +514,7 @@ const ReviewModal = ({ editReview, onClose, onSave }) => {
 
             {/* Summary result banner */}
             {summaryResult && !summaryResult.error && (
-              <div className="flex items-start gap-2 p-3 mb-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg text-sm text-green-700 dark:text-green-300">
+              <div className="flex items-start gap-2 p-3 mb-4 bg-primary-light dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg text-sm text-primary dark:text-green-300">
                 <CheckCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
                 <span>
                   {summaryResult.filled} of {summaryResult.total} sections auto-filled.
@@ -591,7 +591,7 @@ const ReviewModal = ({ editReview, onClose, onSave }) => {
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={(e) => e.stopPropagation()}
-                  className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-900/20 hover:bg-green-100 dark:hover:bg-green-900/40 rounded transition-colors flex-shrink-0"
+                  className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium text-primary dark:text-green-400 bg-primary-light dark:bg-green-900/20 hover:bg-green-100 dark:hover:bg-green-900/40 rounded transition-colors flex-shrink-0"
                 >
                   <Download className="w-3 h-3" /> View
                 </a>
@@ -600,18 +600,18 @@ const ReviewModal = ({ editReview, onClose, onSave }) => {
             )}
 
             {selectedFile ? (
-              <div className="flex items-center gap-2 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
-                <Paperclip className="w-4 h-4 text-green-600 dark:text-green-400 flex-shrink-0" />
-                <span className="text-sm text-green-700 dark:text-green-300 truncate flex-1">
+              <div className="flex items-center gap-2 p-3 bg-primary-light dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                <Paperclip className="w-4 h-4 text-primary dark:text-green-400 flex-shrink-0" />
+                <span className="text-sm text-primary dark:text-green-300 truncate flex-1">
                   {selectedFile.name}
                 </span>
-                <span className="text-xs text-green-600 dark:text-green-400 flex-shrink-0">
+                <span className="text-xs text-primary dark:text-green-400 flex-shrink-0">
                   ({formatFileSize(selectedFile.size)})
                 </span>
                 <button
                   type="button"
                   onClick={() => setSelectedFile(null)}
-                  className="p-0.5 text-green-600 hover:text-red-600 dark:text-green-400 dark:hover:text-red-400 transition-colors flex-shrink-0"
+                  className="p-0.5 text-primary hover:text-red-600 dark:text-green-400 dark:hover:text-red-400 transition-colors flex-shrink-0"
                   title="Remove file"
                 >
                   <X className="w-4 h-4" />
@@ -624,7 +624,7 @@ const ReviewModal = ({ editReview, onClose, onSave }) => {
                 onDragLeave={(e) => { e.preventDefault(); setDragOver(false); }}
                 className={`relative border-2 border-dashed rounded-lg p-6 text-center transition-colors cursor-pointer ${
                   dragOver
-                    ? 'border-green-500 bg-green-50 dark:bg-green-900/20'
+                    ? 'border-primary bg-primary-light dark:bg-green-900/20'
                     : 'border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500'
                 }`}
               >
@@ -637,7 +637,7 @@ const ReviewModal = ({ editReview, onClose, onSave }) => {
                 <Upload className="w-6 h-6 mx-auto mb-2 text-gray-400 dark:text-gray-500" />
                 <p className="text-sm text-gray-600 dark:text-gray-400">
                   Drop a file here or{' '}
-                  <span className="text-green-600 dark:text-green-400 font-medium">browse</span>
+                  <span className="text-primary dark:text-green-400 font-medium">browse</span>
                 </p>
                 <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
                   PDF, Word, or Excel files accepted
@@ -660,7 +660,7 @@ const ReviewModal = ({ editReview, onClose, onSave }) => {
             type="submit"
             form="review-form"
             disabled={saving}
-            className="inline-flex items-center gap-2 px-5 py-2 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 font-medium"
+            className="inline-flex items-center gap-2 px-5 py-2 text-sm bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors disabled:opacity-50 font-medium"
           >
             {saving && <Loader2 className="w-4 h-4 animate-spin" />}
             {saving
@@ -715,7 +715,7 @@ const ReviewCard = ({ review, onEdit, onDelete }) => {
           <div className="flex items-center gap-1 flex-shrink-0">
             <button
               onClick={() => onEdit(review)}
-              className="p-1.5 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded transition-colors"
+              className="p-1.5 text-primary hover:bg-primary-light dark:hover:bg-green-900/20 rounded transition-colors"
               title="Edit"
             >
               <Edit2 className="w-4 h-4" />
@@ -757,7 +757,7 @@ const ReviewCard = ({ review, onEdit, onDelete }) => {
               href={review.report_file_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-900/20 hover:bg-green-100 dark:hover:bg-green-900/40 rounded-full transition-colors"
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-primary dark:text-green-400 bg-primary-light dark:bg-green-900/20 hover:bg-green-100 dark:hover:bg-green-900/40 rounded-full transition-colors"
             >
               <Paperclip className="w-3 h-3" />
               Report attached
@@ -796,7 +796,7 @@ const ReviewCard = ({ review, onEdit, onDelete }) => {
                   key={key}
                   className={`flex items-start gap-2 p-3 rounded-lg text-sm ${
                     reviewed
-                      ? 'bg-green-50 dark:bg-green-900/10'
+                      ? 'bg-primary-light dark:bg-green-900/10'
                       : 'bg-gray-50 dark:bg-gray-700/30'
                   }`}
                 >
@@ -937,7 +937,7 @@ export default function ManagementReview() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-            <ClipboardList className="w-6 h-6 text-green-600 dark:text-green-400" />
+            <ClipboardList className="w-6 h-6 text-primary dark:text-green-400" />
             Annual Management Review
           </h2>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
@@ -946,7 +946,7 @@ export default function ManagementReview() {
         </div>
         <button
           onClick={() => { setEditingReview(null); setShowModal(true); }}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium flex-shrink-0"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors text-sm font-medium flex-shrink-0"
         >
           <Plus className="w-4 h-4" />
           New Review
@@ -957,7 +957,7 @@ export default function ManagementReview() {
       {!loading && reviews.length > 0 && (
         <div className="grid grid-cols-3 gap-3">
           <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 text-center">
-            <p className="text-2xl font-bold text-green-600 dark:text-green-400">{completedCount}</p>
+            <p className="text-2xl font-bold text-primary dark:text-green-400">{completedCount}</p>
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Completed</p>
           </div>
           <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 text-center">
@@ -979,7 +979,7 @@ export default function ManagementReview() {
             <select
               value={filterYear}
               onChange={(e) => setFilterYear(e.target.value)}
-              className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary"
             >
               {yearOptions.map((opt) => (
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -989,7 +989,7 @@ export default function ManagementReview() {
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
-            className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-green-500"
+            className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary"
           >
             {STATUS_OPTIONS.map((opt) => (
               <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -1023,7 +1023,7 @@ export default function ManagementReview() {
       {/* Loading state */}
       {loading && !error && (
         <div className="flex items-center justify-center py-16">
-          <Loader2 className="w-7 h-7 text-green-600 animate-spin" />
+          <Loader2 className="w-7 h-7 text-primary animate-spin" />
           <span className="ml-3 text-gray-600 dark:text-gray-400">Loading reviews...</span>
         </div>
       )}
@@ -1038,7 +1038,7 @@ export default function ManagementReview() {
           </p>
           <button
             onClick={() => { setEditingReview(null); setShowModal(true); }}
-            className="mt-5 inline-flex items-center gap-2 px-5 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium"
+            className="mt-5 inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors text-sm font-medium"
           >
             <Plus className="w-4 h-4" /> Create First Review
           </button>

@@ -14,7 +14,7 @@ function formatCountdown(seconds) {
 }
 
 function timerColor(seconds) {
-  if (seconds > 4 * 3600) return 'text-green-600 dark:text-green-400';
+  if (seconds > 4 * 3600) return 'text-primary dark:text-green-400';
   if (seconds > 3600) return 'text-amber-600 dark:text-amber-400';
   return 'text-red-600 dark:text-red-400';
 }
@@ -53,7 +53,7 @@ function REIRow({ entry, onMarkCleared }) {
       {expired && (
         <button
           onClick={() => onMarkCleared(entry.id)}
-          className="flex-shrink-0 text-xs font-semibold px-2.5 py-1 bg-green-600 hover:bg-green-700 text-white rounded-md transition-colors"
+          className="flex-shrink-0 text-xs font-semibold px-2.5 py-1 bg-primary hover:bg-primary-hover text-white rounded-md transition-colors"
         >
           Mark Cleared
         </button>

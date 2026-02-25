@@ -200,7 +200,7 @@ const SectionNav = ({ activeTab, onTabChange, scores = {} }) => {
     const avg = Math.round(childScores.reduce((a, b) => a + b, 0) / childScores.length);
     const color =
       avg >= 80
-        ? 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400'
+        ? 'bg-green-100 text-primary dark:bg-green-900/40 dark:text-green-400'
         : avg >= 60
         ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-400'
         : 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400';
@@ -229,14 +229,14 @@ const SectionNav = ({ activeTab, onTabChange, scores = {} }) => {
                 onClick={() => onTabChange(section.id)}
                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                   isActive
-                    ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400'
+                    ? 'bg-primary-light dark:bg-green-900/20 text-primary dark:text-green-400'
                     : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
                 }`}
               >
                 <SectionIcon className="w-4.5 h-4.5 flex-shrink-0" />
                 <span className="flex-1 text-left">{section.label}</span>
                 {section.id === 'cac-manual' && (
-                  <span className="text-xs px-1.5 py-0.5 rounded-full bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400 font-medium">
+                  <span className="text-xs px-1.5 py-0.5 rounded-full bg-green-100 text-primary dark:bg-green-900/40 dark:text-green-400 font-medium">
                     PDF
                   </span>
                 )}
@@ -253,7 +253,7 @@ const SectionNav = ({ activeTab, onTabChange, scores = {} }) => {
                 onClick={() => toggleSection(section.id)}
                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                   hasActiveChild
-                    ? 'text-green-700 dark:text-green-400'
+                    ? 'text-primary dark:text-green-400'
                     : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'
                 }`}
               >
@@ -279,7 +279,7 @@ const SectionNav = ({ activeTab, onTabChange, scores = {} }) => {
                         onClick={() => onTabChange(child.id)}
                         className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors ${
                           childActive
-                            ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 font-medium'
+                            ? 'bg-primary-light dark:bg-green-900/20 text-primary dark:text-green-400 font-medium'
                             : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'
                         }`}
                       >

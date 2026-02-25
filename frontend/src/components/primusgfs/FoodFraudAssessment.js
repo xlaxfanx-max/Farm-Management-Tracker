@@ -19,7 +19,7 @@ import { primusGFSAPI } from '../../services/api';
 const RISK_LEVELS = ['low', 'medium', 'high'];
 
 const RISK_BADGE = {
-  low: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+  low: 'bg-green-100 text-primary dark:bg-green-900/30 dark:text-green-400',
   medium: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
   high: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
 };
@@ -162,7 +162,7 @@ const AssessmentModal = ({ assessment, onClose, onSave }) => {
   };
 
   const inputCls =
-    'w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm';
+    'w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary text-sm';
   const labelCls = 'block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1';
 
   const suggestedRisk = deriveHighestRisk(form);
@@ -259,7 +259,7 @@ const AssessmentModal = ({ assessment, onClose, onSave }) => {
                           type="checkbox"
                           checked={!!entry.vulnerable}
                           onChange={(e) => updateFraudEntry(key, 'vulnerable', e.target.checked)}
-                          className="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-green-600 focus:ring-green-500"
+                          className="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-primary focus:ring-primary"
                         />
                         <span className="text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap">
                           {label}
@@ -273,7 +273,7 @@ const AssessmentModal = ({ assessment, onClose, onSave }) => {
                           value={entry.risk_level}
                           onChange={(e) => updateFraudEntry(key, 'risk_level', e.target.value)}
                           disabled={!entry.vulnerable}
-                          className={`px-2 py-1 border rounded text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors ${
+                          className={`px-2 py-1 border rounded text-sm focus:ring-2 focus:ring-primary focus:border-primary transition-colors ${
                             entry.vulnerable
                               ? 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white'
                               : 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 text-gray-400 dark:text-gray-500 cursor-not-allowed'
@@ -338,7 +338,7 @@ const AssessmentModal = ({ assessment, onClose, onSave }) => {
                   <button
                     type="button"
                     onClick={handleAutoSuggest}
-                    className="text-xs text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300 underline transition-colors"
+                    className="text-xs text-primary hover:text-primary-hover dark:text-green-400 dark:hover:text-green-300 underline transition-colors"
                   >
                     Use suggested: {capitalize(suggestedRisk)}
                   </button>
@@ -402,7 +402,7 @@ const AssessmentModal = ({ assessment, onClose, onSave }) => {
             <button
               type="submit"
               disabled={saving}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors disabled:opacity-50"
             >
               {saving && <Loader2 className="w-4 h-4 animate-spin" />}
               {saving ? 'Saving...' : assessment ? 'Update Assessment' : 'Create Assessment'}
@@ -498,7 +498,7 @@ const AssessmentDetail = ({ assessment, onEdit, onDelete }) => {
           Identified Vulnerabilities ({vulnerableTypes.length})
         </h4>
         {vulnerableTypes.length === 0 ? (
-          <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400">
+          <div className="flex items-center gap-2 text-sm text-primary dark:text-green-400">
             <CheckCircle className="w-4 h-4" />
             No vulnerabilities identified for this assessment year.
           </div>
@@ -542,7 +542,7 @@ const AssessmentDetail = ({ assessment, onEdit, onDelete }) => {
             {safeTypes.map(({ key, label }) => (
               <span
                 key={key}
-                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800"
+                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-primary-light dark:bg-green-900/20 text-primary dark:text-green-400 border border-green-200 dark:border-green-800"
               >
                 <CheckCircle className="w-3 h-3" />
                 {label}
@@ -658,7 +658,7 @@ export default function FoodFraudAssessment() {
         </h2>
         <button
           onClick={handleNew}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors"
         >
           <Plus className="w-4 h-4" />
           New Assessment
@@ -683,7 +683,7 @@ export default function FoodFraudAssessment() {
       {/* Loading State */}
       {loading && !error && (
         <div className="flex items-center justify-center py-12">
-          <Loader2 className="w-6 h-6 text-green-600 animate-spin" />
+          <Loader2 className="w-6 h-6 text-primary animate-spin" />
         </div>
       )}
 
@@ -697,7 +697,7 @@ export default function FoodFraudAssessment() {
           </p>
           <button
             onClick={handleNew}
-            className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+            className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors"
           >
             <Plus className="w-4 h-4" />
             New Assessment
@@ -719,7 +719,7 @@ export default function FoodFraudAssessment() {
                 onClick={() => setSelectedAssessment(a)}
                 className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors flex items-center justify-between gap-2 ${
                   selectedAssessment?.id === a.id
-                    ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 font-medium'
+                    ? 'bg-primary-light dark:bg-green-900/20 text-primary dark:text-green-400 font-medium'
                     : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/30'
                 } ${a.assessment_year === currentYear ? 'ring-1 ring-green-300 dark:ring-green-700' : ''}`}
               >

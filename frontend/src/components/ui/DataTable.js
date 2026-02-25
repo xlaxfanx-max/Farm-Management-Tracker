@@ -56,9 +56,9 @@ export default function DataTable({
   const SortIcon = ({ colKey }) => {
     if (sort.key !== colKey) return <ChevronsUpDown className="w-3.5 h-3.5 text-gray-400" />;
     return sort.dir === 'asc' ? (
-      <ChevronUp className="w-3.5 h-3.5 text-green-600 dark:text-green-400" />
+      <ChevronUp className="w-3.5 h-3.5 text-primary dark:text-primary" />
     ) : (
-      <ChevronDown className="w-3.5 h-3.5 text-green-600 dark:text-green-400" />
+      <ChevronDown className="w-3.5 h-3.5 text-primary dark:text-primary" />
     );
   };
 
@@ -90,7 +90,7 @@ export default function DataTable({
               key={row[keyField] || idx}
               className={`
                 bg-white dark:bg-gray-800
-                ${onRowClick ? 'cursor-pointer hover:bg-green-50 dark:hover:bg-green-900/10' : 'hover:bg-gray-50 dark:hover:bg-gray-700/30'}
+                ${onRowClick ? 'cursor-pointer hover:bg-primary-light dark:hover:bg-primary-light' : 'hover:bg-surface-sunken dark:hover:bg-gray-700/30'}
                 transition-colors
               `}
               onClick={onRowClick ? () => onRowClick(row) : undefined}

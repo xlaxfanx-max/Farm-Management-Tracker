@@ -100,7 +100,7 @@ const Step3SourceCondition = ({ formData, updateFormData }) => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-32">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
   }
@@ -132,7 +132,7 @@ const Step3SourceCondition = ({ formData, updateFormData }) => {
               onClick={() => setActiveSource(source.id)}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg whitespace-nowrap transition-colors ${
                 activeSource === source.id
-                  ? 'bg-green-600 text-white'
+                  ? 'bg-primary text-white'
                   : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
               }`}
             >
@@ -164,7 +164,7 @@ const Step3SourceCondition = ({ formData, updateFormData }) => {
                   }
                   className={`p-3 rounded-lg border-2 text-left transition-all ${
                     currentAssessment.physical_condition === condition.value
-                      ? 'border-green-500 bg-green-50 dark:bg-green-900/20'
+                      ? 'border-primary bg-primary-light dark:bg-green-900/20'
                       : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
                   }`}
                 >
@@ -191,7 +191,7 @@ const Step3SourceCondition = ({ formData, updateFormData }) => {
                   testing_frequency: e.target.value,
                 })
               }
-              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent"
             >
               {testingFrequencies.map((freq) => (
                 <option key={freq.value} value={freq.value}>
@@ -217,7 +217,7 @@ const Step3SourceCondition = ({ formData, updateFormData }) => {
                   })
                 }
                 placeholder="Enter GM value"
-                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent"
               />
               <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                 FDA threshold: 126 CFU/100mL
@@ -243,7 +243,7 @@ const Step3SourceCondition = ({ formData, updateFormData }) => {
                   })
                 }
                 placeholder="Enter STV value"
-                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent"
               />
               <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                 FDA threshold: 410 CFU/100mL
@@ -302,7 +302,7 @@ const Step3SourceCondition = ({ formData, updateFormData }) => {
               }
               rows={3}
               placeholder="Add notes about this water source..."
-              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
+              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent resize-none"
             />
           </div>
         </div>

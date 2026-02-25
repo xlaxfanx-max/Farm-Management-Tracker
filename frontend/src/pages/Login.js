@@ -182,7 +182,7 @@ const Login = ({ onLogin }) => {
         background: 'white',
         borderRadius: '1.5rem',
         boxShadow: '0 25px 50px rgba(0,0,0,0.15)',
-        border: '4px solid #16a34a',
+        border: '4px solid #3D7A4A',
         padding: '2.5rem',
         position: 'relative',
         zIndex: 10,
@@ -265,7 +265,7 @@ const Login = ({ onLogin }) => {
                       outline: 'none',
                       transition: 'border-color 0.2s'
                     }}
-                    onFocus={(e) => e.target.style.borderColor = '#16a34a'}
+                    onFocus={(e) => e.target.style.borderColor = '#3D7A4A'}
                     onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
                   />
                 </div>
@@ -297,7 +297,7 @@ const Login = ({ onLogin }) => {
                       outline: 'none',
                       transition: 'border-color 0.2s'
                     }}
-                    onFocus={(e) => e.target.style.borderColor = '#16a34a'}
+                    onFocus={(e) => e.target.style.borderColor = '#3D7A4A'}
                     onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
                   />
                 </div>
@@ -326,7 +326,7 @@ const Login = ({ onLogin }) => {
                       outline: 'none',
                       transition: 'border-color 0.2s'
                     }}
-                    onFocus={(e) => e.target.style.borderColor = '#16a34a'}
+                    onFocus={(e) => e.target.style.borderColor = '#3D7A4A'}
                     onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
                   />
                 </div>
@@ -371,7 +371,7 @@ const Login = ({ onLogin }) => {
                   outline: 'none',
                   transition: 'border-color 0.2s'
                 }}
-                onFocus={(e) => e.target.style.borderColor = '#16a34a'}
+                onFocus={(e) => e.target.style.borderColor = '#3D7A4A'}
                 onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
               />
             </div>
@@ -414,7 +414,7 @@ const Login = ({ onLogin }) => {
                   outline: 'none',
                   transition: 'border-color 0.2s'
                 }}
-                onFocus={(e) => e.target.style.borderColor = '#16a34a'}
+                onFocus={(e) => e.target.style.borderColor = '#3D7A4A'}
                 onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
               />
               <button
@@ -475,7 +475,7 @@ const Login = ({ onLogin }) => {
                     outline: 'none',
                     transition: 'border-color 0.2s'
                   }}
-                  onFocus={(e) => e.target.style.borderColor = '#16a34a'}
+                  onFocus={(e) => e.target.style.borderColor = '#3D7A4A'}
                   onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
                 />
               </div>
@@ -511,7 +511,7 @@ const Login = ({ onLogin }) => {
               setError('');
             }}
             style={{
-              color: '#16a34a',
+              color: '#3D7A4A',
               fontWeight: 600,
               background: 'none',
               border: 'none',
@@ -548,8 +548,8 @@ const Login = ({ onLogin }) => {
               transition: 'all 0.2s'
             }}
             onMouseEnter={(e) => {
-              e.target.style.borderColor = '#16a34a';
-              e.target.style.color = '#16a34a';
+              e.target.style.borderColor = '#3D7A4A';
+              e.target.style.color = '#3D7A4A';
             }}
             onMouseLeave={(e) => {
               e.target.style.borderColor = '#e2e8f0';

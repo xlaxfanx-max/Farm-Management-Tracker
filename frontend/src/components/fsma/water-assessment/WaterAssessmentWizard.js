@@ -413,7 +413,7 @@ const WaterAssessmentWizard = ({ assessmentId, onComplete, onCancel }) => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <Loader2 className="w-12 h-12 text-green-600 animate-spin" />
+        <Loader2 className="w-12 h-12 text-primary animate-spin" />
       </div>
     );
   }
@@ -426,7 +426,7 @@ const WaterAssessmentWizard = ({ assessmentId, onComplete, onCancel }) => {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-green-100 dark:bg-green-900/40 rounded-lg">
-              <CheckCircle2 className="w-6 h-6 text-green-600 dark:text-green-400" />
+              <CheckCircle2 className="w-6 h-6 text-primary dark:text-green-400" />
             </div>
             <div>
               <h2 className="text-xl font-bold text-gray-900 dark:text-white">
@@ -462,7 +462,7 @@ const WaterAssessmentWizard = ({ assessmentId, onComplete, onCancel }) => {
               <FileText className="w-5 h-5 text-blue-600" />
               Assessment Summary
             </h3>
-            <span className="px-3 py-1 bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-400 rounded-full text-sm font-medium">
+            <span className="px-3 py-1 bg-green-100 dark:bg-green-900/40 text-primary dark:text-green-400 rounded-full text-sm font-medium">
               Approved
             </span>
           </div>
@@ -483,7 +483,7 @@ const WaterAssessmentWizard = ({ assessmentId, onComplete, onCancel }) => {
             <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3">
               <p className="text-xs text-gray-500 dark:text-gray-400">Risk Level</p>
               <p className={`font-medium mt-1 ${
-                assessment.risk_level === 'low' ? 'text-green-600 dark:text-green-400' :
+                assessment.risk_level === 'low' ? 'text-primary dark:text-green-400' :
                 assessment.risk_level === 'medium' ? 'text-yellow-600 dark:text-yellow-400' :
                 assessment.risk_level === 'high' ? 'text-orange-600 dark:text-orange-400' :
                 'text-red-600 dark:text-red-400'
@@ -544,7 +544,7 @@ const WaterAssessmentWizard = ({ assessmentId, onComplete, onCancel }) => {
           <div className="flex justify-center">
             <button
               onClick={handleDownloadPdf}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors"
             >
               <Download className="w-5 h-5" />
               Download PDF Report
@@ -599,18 +599,18 @@ const WaterAssessmentWizard = ({ assessmentId, onComplete, onCancel }) => {
               <div
                 className={`flex flex-col items-center min-w-[80px] ${
                   currentStep === step.number
-                    ? 'text-green-600 dark:text-green-400'
+                    ? 'text-primary dark:text-green-400'
                     : currentStep > step.number
-                    ? 'text-green-600 dark:text-green-400'
+                    ? 'text-primary dark:text-green-400'
                     : 'text-gray-400 dark:text-gray-500'
                 }`}
               >
                 <div
                   className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
                     currentStep === step.number
-                      ? 'bg-green-600 text-white'
+                      ? 'bg-primary text-white'
                       : currentStep > step.number
-                      ? 'bg-green-600 text-white'
+                      ? 'bg-primary text-white'
                       : 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
                   }`}
                 >
@@ -628,7 +628,7 @@ const WaterAssessmentWizard = ({ assessmentId, onComplete, onCancel }) => {
                 <div
                   className={`flex-1 h-0.5 mx-2 ${
                     currentStep > step.number
-                      ? 'bg-green-600'
+                      ? 'bg-primary'
                       : 'bg-gray-200 dark:bg-gray-700'
                   }`}
                 />
@@ -697,7 +697,7 @@ const WaterAssessmentWizard = ({ assessmentId, onComplete, onCancel }) => {
               disabled={!canProceed() || saving}
               className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
                 canProceed() && !saving
-                  ? 'bg-green-600 text-white hover:bg-green-700'
+                  ? 'bg-primary text-white hover:bg-primary-hover'
                   : 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed'
               }`}
             >

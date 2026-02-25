@@ -95,7 +95,7 @@ const STATUS_OPTIONS = [
 const STATUS_BADGE = {
   draft:       'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300',
   in_progress: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
-  completed:   'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+  completed:   'bg-green-100 text-primary dark:bg-green-900/30 dark:text-green-400',
 };
 
 // ---------------------------------------------------------------------------
@@ -128,9 +128,9 @@ const emptyForm = () => ({
 // ---------------------------------------------------------------------------
 
 const inputCls =
-  'w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm';
+  'w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary text-sm';
 const textareaCls =
-  'w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm resize-none';
+  'w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary text-sm resize-none';
 
 // ---------------------------------------------------------------------------
 // Sub-components
@@ -368,7 +368,7 @@ const ChecklistForm = ({ initial, onClose, onSave }) => {
               <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                 Overall Completion
               </span>
-              <span className={`text-sm font-bold ${pct === 100 ? 'text-green-600 dark:text-green-400' : 'text-gray-600 dark:text-gray-300'}`}>
+              <span className={`text-sm font-bold ${pct === 100 ? 'text-primary dark:text-green-400' : 'text-gray-600 dark:text-gray-300'}`}>
                 {pct}%
               </span>
             </div>
@@ -393,9 +393,9 @@ const ChecklistForm = ({ initial, onClose, onSave }) => {
             {autoFilling ? 'Checking platform data...' : 'Auto-Fill from Platform Data'}
           </button>
           {autoFillResult && !autoFillResult.error && (
-            <div className="flex items-center gap-2 px-3 py-2 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg text-sm">
-              <Database className="w-4 h-4 text-green-600 dark:text-green-400" />
-              <span className="text-green-700 dark:text-green-400">
+            <div className="flex items-center gap-2 px-3 py-2 bg-primary-light dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg text-sm">
+              <Database className="w-4 h-4 text-primary dark:text-green-400" />
+              <span className="text-primary dark:text-green-400">
                 {autoFillResult.checked} items pre-filled ({autoFillResult.percent}%). {TOTAL_ITEMS - autoFillResult.checked} items need manual review.
               </span>
             </div>
@@ -442,7 +442,7 @@ const ChecklistForm = ({ initial, onClose, onSave }) => {
             </button>
             <button
               type="submit" disabled={saving}
-              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 text-sm"
+              className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors disabled:opacity-50 text-sm"
             >
               {saving ? 'Saving...' : initial ? 'Save Changes' : 'Create Checklist'}
             </button>
@@ -521,12 +521,12 @@ export default function PreSeasonChecklist() {
       {/* Page header */}
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-          <ListChecks className="w-6 h-6 text-green-600 dark:text-green-400" />
+          <ListChecks className="w-6 h-6 text-primary dark:text-green-400" />
           Pre-Season Food Safety Checklist
         </h2>
         <button
           onClick={() => setShowForm(true)}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors text-sm"
         >
           <Plus className="w-4 h-4" /> New Checklist
         </button>
@@ -537,7 +537,7 @@ export default function PreSeasonChecklist() {
         {[
           { label: 'Total', value: checklists.length, color: 'text-blue-600 dark:text-blue-400' },
           { label: `${thisYear} Season`, value: thisYearItems.length, color: 'text-purple-600 dark:text-purple-400' },
-          { label: 'Completed', value: completedCount, color: 'text-green-600 dark:text-green-400' },
+          { label: 'Completed', value: completedCount, color: 'text-primary dark:text-green-400' },
           { label: 'In Progress', value: inProgressCount, color: 'text-yellow-600 dark:text-yellow-400' },
         ].map((s) => (
           <div key={s.label} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
@@ -564,7 +564,7 @@ export default function PreSeasonChecklist() {
       {/* Loading state */}
       {loading && !error && (
         <div className="flex items-center justify-center py-12">
-          <Loader2 className="w-6 h-6 text-green-600 animate-spin" />
+          <Loader2 className="w-6 h-6 text-primary animate-spin" />
         </div>
       )}
 
@@ -578,7 +578,7 @@ export default function PreSeasonChecklist() {
           </p>
           <button
             onClick={() => setShowForm(true)}
-            className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm"
+            className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors text-sm"
           >
             <Plus className="w-4 h-4" /> New Checklist
           </button>
@@ -639,7 +639,7 @@ export default function PreSeasonChecklist() {
                 <div className="mb-4 space-y-1">
                   <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
                     <span>Completion</span>
-                    <span className={`font-semibold ${pct === 100 ? 'text-green-600 dark:text-green-400' : ''}`}>
+                    <span className={`font-semibold ${pct === 100 ? 'text-primary dark:text-green-400' : ''}`}>
                       {pct}%
                     </span>
                   </div>
@@ -657,7 +657,7 @@ export default function PreSeasonChecklist() {
                         key={s.key}
                         className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs border ${
                           done
-                            ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800 text-green-700 dark:text-green-400'
+                            ? 'bg-primary-light dark:bg-green-900/20 border-green-200 dark:border-green-800 text-primary dark:text-green-400'
                             : 'bg-gray-50 dark:bg-gray-700/40 border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-400'
                         }`}
                       >

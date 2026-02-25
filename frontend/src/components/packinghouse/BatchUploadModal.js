@@ -387,7 +387,7 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
   };
 
   const getConfidenceColor = (confidence) => {
-    if (confidence >= 0.85) return 'text-green-600 bg-green-100';
+    if (confidence >= 0.85) return 'text-primary bg-green-100';
     if (confidence >= 0.5) return 'text-yellow-600 bg-yellow-100';
     return 'text-red-600 bg-red-100';
   };
@@ -411,7 +411,7 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b border-gray-200">
             <h2 className="text-lg font-semibold text-gray-900 flex items-center">
-              <Upload className="w-5 h-5 mr-2 text-green-600" />
+              <Upload className="w-5 h-5 mr-2 text-primary" />
               Upload Statement PDFs
             </h2>
             <button
@@ -434,7 +434,7 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
                 <select
                   value={selectedPackinghouse}
                   onChange={(e) => setSelectedPackinghouse(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
                   disabled={uploading}
                 >
                   <option value="">Auto-detect from PDF</option>
@@ -456,7 +456,7 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
                 <select
                   value={formatHint}
                   onChange={(e) => setFormatHint(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
                   disabled={uploading}
                 >
                   <option value="">Auto-detect</option>
@@ -476,7 +476,7 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
               onDrop={handleDrop}
               className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
                 dragActive
-                  ? 'border-green-500 bg-green-50'
+                  ? 'border-primary bg-green-50'
                   : files.length > 0
                   ? 'border-green-300 bg-green-50'
                   : 'border-gray-300 hover:border-gray-400'
@@ -487,7 +487,7 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
                 Drag and drop PDF{files.length === 0 ? '(s)' : ''} here, or
               </p>
               <label className="inline-block">
-                <span className="px-4 py-2 bg-green-600 text-white rounded-lg cursor-pointer hover:bg-green-700 transition-colors">
+                <span className="px-4 py-2 bg-primary text-white rounded-lg cursor-pointer hover:bg-primary-hover transition-colors">
                   Browse Files
                 </span>
                 <input
@@ -551,7 +551,7 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
               <button
                 onClick={handleUpload}
                 disabled={uploading || !files.length}
-                className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+                className="flex items-center px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors disabled:opacity-50"
               >
                 {uploading ? (
                   <>
@@ -604,7 +604,7 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
           <div className="flex justify-end p-4 border-t border-gray-200">
             <button
               onClick={onClose}
-              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm font-medium"
+              className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover text-sm font-medium"
             >
               OK
             </button>
@@ -629,7 +629,7 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b border-gray-200">
             <h2 className="text-lg font-semibold text-gray-900 flex items-center">
-              <Eye className="w-5 h-5 mr-2 text-green-600" />
+              <Eye className="w-5 h-5 mr-2 text-primary" />
               Review Extracted Data
             </h2>
             <div className="flex items-center space-x-2">
@@ -721,7 +721,7 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
                       updateOverride(stmt.id, 'farm_id', e.target.value ? parseInt(e.target.value) : null);
                       updateOverride(stmt.id, 'field_id', null);
                     }}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
                   >
                     <option value="">-- Select Farm --</option>
                     {farms.map(f => (
@@ -743,7 +743,7 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
                   <select
                     value={override.field_id || ''}
                     onChange={(e) => updateOverride(stmt.id, 'field_id', e.target.value ? parseInt(e.target.value) : null)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
                     disabled={!override.farm_id}
                   >
                     <option value="">All Fields (Combined)</option>
@@ -758,7 +758,7 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
                   <select
                     value={override.pool_id || ''}
                     onChange={(e) => updateOverride(stmt.id, 'pool_id', e.target.value ? parseInt(e.target.value) : null)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
                   >
                     <option value="">Auto-create from PDF</option>
                     {pools.map(p => (
@@ -770,15 +770,15 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
               </div>
 
               {/* Statement Info */}
-              <div className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg mb-4">
+              <div className="flex items-center justify-between p-3 bg-primary-light border border-green-200 rounded-lg mb-4">
                 <div className="flex items-center">
-                  <CheckCircle className="w-5 h-5 text-green-600 mr-2" />
+                  <CheckCircle className="w-5 h-5 text-primary mr-2" />
                   <span className="text-green-800">
                     Detected: <strong>{stmt.statement_type}</strong>
                   </span>
                 </div>
                 {stmt.extraction_confidence && (
-                  <span className="text-sm text-green-700">
+                  <span className="text-sm text-primary">
                     Confidence: {(stmt.extraction_confidence * 100).toFixed(0)}%
                   </span>
                 )}
@@ -819,7 +819,7 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
                   type="checkbox"
                   checked={saveMappings}
                   onChange={(e) => setSaveMappings(e.target.checked)}
-                  className="mr-2 rounded border-gray-300 text-green-600 focus:ring-green-500"
+                  className="mr-2 rounded border-gray-300 text-primary focus:ring-primary"
                 />
                 Remember this match
               </label>
@@ -829,7 +829,7 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
               <button
                 onClick={handleConfirmAll}
                 disabled={confirming}
-                className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
+                className="flex items-center px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover disabled:opacity-50"
               >
                 {confirming ? (
                   <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Saving...</>
@@ -855,7 +855,7 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200">
           <h2 className="text-lg font-semibold text-gray-900 flex items-center">
-            <CheckCircle className="w-5 h-5 mr-2 text-green-600" />
+            <CheckCircle className="w-5 h-5 mr-2 text-primary" />
             Review Batch Results
           </h2>
           <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg">
@@ -868,7 +868,7 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-6 text-sm">
               <span className="text-gray-600">Total: <strong>{batchResult.total}</strong></span>
-              <span className="text-green-600">Extracted: <strong>{batchResult.success_count}</strong></span>
+              <span className="text-primary">Extracted: <strong>{batchResult.success_count}</strong></span>
               <span className="text-red-600">Failed: <strong>{batchResult.failed_count}</strong></span>
             </div>
             <label className="flex items-center text-sm text-gray-600">
@@ -876,7 +876,7 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
                 type="checkbox"
                 checked={saveMappings}
                 onChange={(e) => setSaveMappings(e.target.checked)}
-                className="mr-2 rounded border-gray-300 text-green-600 focus:ring-green-500"
+                className="mr-2 rounded border-gray-300 text-primary focus:ring-primary"
               />
               Learn from confirmations
             </label>
@@ -991,7 +991,7 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
                       <select
                         value={statementOverrides[stmt.id]?.packinghouse_id || stmt.packinghouse_id || ''}
                         onChange={(e) => updateOverride(stmt.id, 'packinghouse_id', e.target.value ? parseInt(e.target.value) : null)}
-                        className={`w-full px-2 py-1.5 text-sm border rounded focus:ring-2 focus:ring-green-500 ${
+                        className={`w-full px-2 py-1.5 text-sm border rounded focus:ring-2 focus:ring-primary ${
                           !stmt.packinghouse_id && !statementOverrides[stmt.id]?.packinghouse_id
                             ? 'border-orange-300 bg-orange-50'
                             : 'border-gray-300'
@@ -1027,7 +1027,7 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
                           updateOverride(stmt.id, 'farm_id', e.target.value ? parseInt(e.target.value) : null);
                           updateOverride(stmt.id, 'field_id', null);
                         }}
-                        className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-green-500"
+                        className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-primary"
                         disabled={statementOverrides[stmt.id]?.skip}
                       >
                         <option value="">-- Select Farm --</option>
@@ -1039,7 +1039,7 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
                       <select
                         value={statementOverrides[stmt.id]?.field_id || ''}
                         onChange={(e) => updateOverride(stmt.id, 'field_id', e.target.value ? parseInt(e.target.value) : null)}
-                        className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-green-500"
+                        className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-primary"
                         disabled={statementOverrides[stmt.id]?.skip || !statementOverrides[stmt.id]?.farm_id}
                       >
                         <option value="">All Fields (Combined)</option>
@@ -1094,7 +1094,7 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
             <button
               onClick={handleConfirmAll}
               disabled={confirming || batchResult.success_count === 0}
-              className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
+              className="flex items-center px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover disabled:opacity-50"
             >
               {confirming ? (
                 <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Confirming...</>

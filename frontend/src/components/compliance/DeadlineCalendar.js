@@ -44,7 +44,7 @@ const StatusBadge = ({ status }) => {
     overdue: 'bg-red-100 text-red-700',
     due_soon: 'bg-amber-100 text-amber-700',
     upcoming: 'bg-blue-100 text-blue-700',
-    completed: 'bg-green-100 text-green-700',
+    completed: 'bg-green-100 text-primary',
   };
 
   const labels = {
@@ -68,7 +68,7 @@ const CategoryBadge = ({ category }) => {
     training: 'bg-blue-100 text-blue-700',
     testing: 'bg-cyan-100 text-cyan-700',
     renewal: 'bg-amber-100 text-amber-700',
-    inspection: 'bg-green-100 text-green-700',
+    inspection: 'bg-green-100 text-primary',
     other: 'bg-gray-100 text-gray-700',
   };
 
@@ -92,8 +92,8 @@ const DeadlineRow = ({ deadline, onComplete, onEdit, onDelete }) => {
           disabled={deadline.status === 'completed'}
           className={`flex-shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors
             ${deadline.status === 'completed'
-              ? 'bg-green-500 border-green-500 text-white'
-              : 'border-gray-300 hover:border-green-500'
+              ? 'bg-green-500 border-primary text-white'
+              : 'border-gray-300 hover:border-primary'
             }`}
         >
           {deadline.status === 'completed' && <CheckCircle2 className="w-3 h-3" />}
@@ -179,9 +179,9 @@ const CalendarDay = ({ date, deadlines, isCurrentMonth, isToday, onClick }) => {
       onClick={onClick}
       className={`min-h-[100px] p-2 border-b border-r border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors
         ${!isCurrentMonth ? 'bg-gray-50' : 'bg-white'}
-        ${isToday ? 'ring-2 ring-inset ring-green-500' : ''}`}
+        ${isToday ? 'ring-2 ring-inset ring-primary' : ''}`}
     >
-      <span className={`text-sm font-medium ${!isCurrentMonth ? 'text-gray-400' : isToday ? 'text-green-600' : 'text-gray-900'}`}>
+      <span className={`text-sm font-medium ${!isCurrentMonth ? 'text-gray-400' : isToday ? 'text-primary' : 'text-gray-900'}`}>
         {date.getDate()}
       </span>
       <div className="mt-1 space-y-1">
@@ -190,7 +190,7 @@ const CalendarDay = ({ date, deadlines, isCurrentMonth, isToday, onClick }) => {
             key={deadline.id}
             className={`text-xs px-1.5 py-0.5 rounded truncate
               ${deadline.status === 'overdue' ? 'bg-red-100 text-red-700' :
-                deadline.status === 'completed' ? 'bg-green-100 text-green-700' :
+                deadline.status === 'completed' ? 'bg-green-100 text-primary' :
                 'bg-blue-100 text-blue-700'}`}
           >
             {deadline.name}
@@ -250,7 +250,7 @@ const DeadlineModal = ({ deadline, onClose, onSave }) => {
               required
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
               placeholder="e.g., Monthly PUR Report"
             />
           </div>
@@ -260,7 +260,7 @@ const DeadlineModal = ({ deadline, onClose, onSave }) => {
             <textarea
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
               rows={2}
               placeholder="Optional description..."
             />
@@ -273,7 +273,7 @@ const DeadlineModal = ({ deadline, onClose, onSave }) => {
                 required
                 value={formData.category}
                 onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
               >
                 {COMPLIANCE_CONSTANTS.DEADLINE_CATEGORIES.map(cat => (
                   <option key={cat.value} value={cat.value}>{cat.label}</option>
@@ -288,7 +288,7 @@ const DeadlineModal = ({ deadline, onClose, onSave }) => {
                 required
                 value={formData.due_date}
                 onChange={(e) => setFormData({ ...formData, due_date: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
               />
             </div>
           </div>
@@ -299,7 +299,7 @@ const DeadlineModal = ({ deadline, onClose, onSave }) => {
               <select
                 value={formData.frequency}
                 onChange={(e) => setFormData({ ...formData, frequency: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
               >
                 {COMPLIANCE_CONSTANTS.DEADLINE_FREQUENCIES.map(freq => (
                   <option key={freq.value} value={freq.value}>{freq.label}</option>
@@ -315,7 +315,7 @@ const DeadlineModal = ({ deadline, onClose, onSave }) => {
                 max={90}
                 value={formData.warning_days}
                 onChange={(e) => setFormData({ ...formData, warning_days: parseInt(e.target.value) || 14 })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
               />
             </div>
           </div>
@@ -331,7 +331,7 @@ const DeadlineModal = ({ deadline, onClose, onSave }) => {
             <button
               type="submit"
               disabled={saving}
-              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+              className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors disabled:opacity-50"
             >
               {saving ? 'Saving...' : deadline ? 'Update' : 'Create'}
             </button>
@@ -475,7 +475,7 @@ export default function DeadlineCalendar({ onNavigate }) {
       <div className="flex items-center justify-between mb-6">
         <div>
           <div className="flex items-center gap-2 text-sm text-gray-500 mb-1">
-            <button onClick={() => onNavigate?.('compliance')} className="hover:text-green-600">
+            <button onClick={() => onNavigate?.('compliance')} className="hover:text-primary">
               Compliance
             </button>
             <span>/</span>
@@ -494,7 +494,7 @@ export default function DeadlineCalendar({ onNavigate }) {
           </button>
           <button
             onClick={() => { setEditingDeadline(null); setShowModal(true); }}
-            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors"
           >
             <Plus className="w-4 h-4" />
             Add Deadline
@@ -525,12 +525,12 @@ export default function DeadlineCalendar({ onNavigate }) {
           </div>
           <p className="text-sm text-blue-700 mt-1">Upcoming</p>
         </div>
-        <div className="bg-green-50 border border-green-100 rounded-lg p-4">
+        <div className="bg-primary-light border border-green-100 rounded-lg p-4">
           <div className="flex items-center gap-2">
-            <CheckCircle2 className="w-5 h-5 text-green-600" />
-            <span className="text-2xl font-bold text-green-600">{stats.completed}</span>
+            <CheckCircle2 className="w-5 h-5 text-primary" />
+            <span className="text-2xl font-bold text-primary">{stats.completed}</span>
           </div>
-          <p className="text-sm text-green-700 mt-1">Completed</p>
+          <p className="text-sm text-primary mt-1">Completed</p>
         </div>
       </div>
 
@@ -581,7 +581,7 @@ export default function DeadlineCalendar({ onNavigate }) {
               placeholder="Search deadlines..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 w-64"
+              className="pl-9 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-primary w-64"
             />
           </div>
         </div>
@@ -645,7 +645,7 @@ export default function DeadlineCalendar({ onNavigate }) {
                 <p className="text-sm mt-1 mb-4">Try changing your filters, or add your first deadline below</p>
                 <button
                   onClick={() => { setEditingDeadline(null); setShowModal(true); }}
-                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                  className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors"
                 >
                   Add Deadline
                 </button>

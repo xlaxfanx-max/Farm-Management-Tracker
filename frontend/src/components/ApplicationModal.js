@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { X, Search, AlertTriangle, Info, Plus, Trash2, GripVertical } from 'lucide-react';
 import { useToast } from '../contexts/ToastContext';
 import { unifiedProductsAPI, applicationEventsAPI } from '../services/api';
+import CollapsibleSection from './ui/CollapsibleSection';
 
 /**
  * Application Event Modal with Tank Mix Support
@@ -310,49 +311,54 @@ function EnhancedApplicationModal({
               </select>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Applied By</label>
-              <input
-                type="text"
-                value={formData.applied_by}
-                onChange={(e) => setFormData(prev => ({ ...prev, applied_by: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-                placeholder="Applicator name"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Temperature (F)</label>
-              <input
-                type="number"
-                value={formData.temperature_start_f}
-                onChange={(e) => setFormData(prev => ({ ...prev, temperature_start_f: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Wind (mph)</label>
-              <input
-                type="number"
-                step="0.1"
-                value={formData.wind_velocity_mph}
-                onChange={(e) => setFormData(prev => ({ ...prev, wind_velocity_mph: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-              />
-            </div>
-
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Comments</label>
-              <input
-                type="text"
-                value={formData.comments}
-                onChange={(e) => setFormData(prev => ({ ...prev, comments: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-                placeholder="Optional notes"
-              />
-            </div>
           </div>
+
+          <CollapsibleSection title="Weather & Additional Details">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Applied By</label>
+                <input
+                  type="text"
+                  value={formData.applied_by}
+                  onChange={(e) => setFormData(prev => ({ ...prev, applied_by: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                  placeholder="Applicator name"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Temperature (F)</label>
+                <input
+                  type="number"
+                  value={formData.temperature_start_f}
+                  onChange={(e) => setFormData(prev => ({ ...prev, temperature_start_f: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Wind (mph)</label>
+                <input
+                  type="number"
+                  step="0.1"
+                  value={formData.wind_velocity_mph}
+                  onChange={(e) => setFormData(prev => ({ ...prev, wind_velocity_mph: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Comments</label>
+                <input
+                  type="text"
+                  value={formData.comments}
+                  onChange={(e) => setFormData(prev => ({ ...prev, comments: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                  placeholder="Optional notes"
+                />
+              </div>
+            </div>
+          </CollapsibleSection>
 
           {/* Tank Mix Items */}
           <div className="mb-6">
@@ -508,7 +514,7 @@ function EnhancedApplicationModal({
             <button
               type="submit"
               disabled={saving}
-              className="flex-1 px-4 py-2.5 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 font-medium"
+              className="flex-1 px-4 py-2.5 bg-primary text-white rounded-md hover:bg-primary-hover disabled:opacity-50 font-medium"
             >
               {saving ? 'Saving...' : (isEdit ? 'Update Application' : 'Save Application')}
             </button>

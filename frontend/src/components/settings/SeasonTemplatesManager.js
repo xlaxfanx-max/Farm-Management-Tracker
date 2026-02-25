@@ -69,7 +69,7 @@ const TemplateCard = ({ template, isSystem, onEdit, onDelete, expanded, onToggle
         onClick={onToggle}
       >
         <div className="flex items-center gap-3">
-          <Calendar className={`w-5 h-5 ${isSystem ? 'text-blue-500' : 'text-green-600'}`} />
+          <Calendar className={`w-5 h-5 ${isSystem ? 'text-blue-500' : 'text-primary'}`} />
           <div>
             <h4 className="font-medium text-gray-900">{template.name}</h4>
             <p className="text-xs text-gray-500">
@@ -219,7 +219,7 @@ const TemplateEditor = ({ template, onSave, onCancel, saving }) => {
               value={formData.name}
               onChange={(e) => handleChange('name', e.target.value)}
               placeholder="e.g., My Citrus Season"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
               required
             />
           </div>
@@ -233,7 +233,7 @@ const TemplateEditor = ({ template, onSave, onCancel, saving }) => {
               <select
                 value={formData.start_month}
                 onChange={(e) => handleChange('start_month', parseInt(e.target.value))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
               >
                 {MONTHS.map(m => (
                   <option key={m.value} value={m.value}>{m.label}</option>
@@ -250,7 +250,7 @@ const TemplateEditor = ({ template, onSave, onCancel, saving }) => {
                 max="31"
                 value={formData.start_day}
                 onChange={(e) => handleChange('start_day', parseInt(e.target.value))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
               />
             </div>
           </div>
@@ -266,7 +266,7 @@ const TemplateEditor = ({ template, onSave, onCancel, saving }) => {
               max="24"
               value={formData.duration_months}
               onChange={(e) => handleChange('duration_months', parseInt(e.target.value))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
             />
           </div>
 
@@ -277,7 +277,7 @@ const TemplateEditor = ({ template, onSave, onCancel, saving }) => {
                 type="checkbox"
                 checked={formData.crosses_calendar_year}
                 onChange={(e) => handleChange('crosses_calendar_year', e.target.checked)}
-                className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
               />
               <span className="text-sm text-gray-700">
                 Season crosses calendar year (e.g., Oct 2024 - Sep 2025)
@@ -295,7 +295,7 @@ const TemplateEditor = ({ template, onSave, onCancel, saving }) => {
               value={formData.label_format}
               onChange={(e) => handleChange('label_format', e.target.value)}
               placeholder="{start_year} or {start_year}-{end_year}"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 font-mono text-sm"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary font-mono text-sm"
             />
             <p className="text-xs text-gray-500 mt-1">
               Preview: <span className="font-medium">{getPreviewLabel()}</span>
@@ -316,7 +316,7 @@ const TemplateEditor = ({ template, onSave, onCancel, saving }) => {
                   title={cat.description}
                   className={`px-3 py-1.5 text-sm rounded-full border transition-colors ${
                     formData.applicable_categories.includes(cat.value)
-                      ? 'bg-green-100 border-green-300 text-green-700'
+                      ? 'bg-green-100 border-green-300 text-primary'
                       : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'
                   }`}
                 >
@@ -343,7 +343,7 @@ const TemplateEditor = ({ template, onSave, onCancel, saving }) => {
             <button
               type="submit"
               disabled={saving || !formData.name}
-              className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+              className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors disabled:opacity-50"
             >
               {saving ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -456,7 +456,7 @@ const SeasonTemplatesManager = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-8">
-        <Loader2 className="w-6 h-6 animate-spin text-green-600" />
+        <Loader2 className="w-6 h-6 animate-spin text-primary" />
         <span className="ml-2 text-gray-600">Loading templates...</span>
       </div>
     );
@@ -467,12 +467,12 @@ const SeasonTemplatesManager = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Calendar className="w-5 h-5 text-green-600" />
+          <Calendar className="w-5 h-5 text-primary" />
           <h3 className="text-lg font-semibold text-gray-900">Season Templates</h3>
         </div>
         <button
           onClick={handleCreate}
-          className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors"
         >
           <Plus className="w-4 h-4" />
           New Template
@@ -494,9 +494,9 @@ const SeasonTemplatesManager = () => {
       )}
 
       {success && (
-        <div className="bg-green-50 border border-green-200 rounded-lg p-3 flex items-center gap-2">
+        <div className="bg-primary-light border border-green-200 rounded-lg p-3 flex items-center gap-2">
           <CheckCircle className="w-5 h-5 text-green-500" />
-          <span className="text-green-700 text-sm">{success}</span>
+          <span className="text-primary text-sm">{success}</span>
         </div>
       )}
 

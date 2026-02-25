@@ -484,7 +484,7 @@ const HarvestLoadModal = ({
           </div>
 
           {/* Revenue Section */}
-          <div className="border dark:border-gray-700 rounded-lg p-4 bg-green-50 dark:bg-green-900/20">
+          <div className="border dark:border-gray-700 rounded-lg p-4 bg-primary-light dark:bg-green-900/20">
             <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-3">
               Revenue
             </h3>
@@ -515,7 +515,7 @@ const HarvestLoadModal = ({
                             {formData.price_per_unit && (
                               <span className={`ml-2 font-medium ${
                                 parseFloat(formData.price_per_unit) >= pricingStats.avgPrice
-                                  ? 'text-green-600'
+                                  ? 'text-primary'
                                   : 'text-red-600'
                               }`}>
                                 {parseFloat(formData.price_per_unit) >= pricingStats.avgPrice ? '↑ Above avg' : '↓ Below avg'}

@@ -45,7 +45,7 @@ const FeatureImportancePanel = ({ importance }) => {
               <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-700">{feature.label}</span>
                 <span className={`text-sm font-medium ${
-                  isPositive ? 'text-green-600' : 'text-red-600'
+                  isPositive ? 'text-primary' : 'text-red-600'
                 }`}>
                   {isPositive ? '+' : ''}{(feature.value * 100).toFixed(1)}%
                 </span>

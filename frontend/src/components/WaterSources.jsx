@@ -33,7 +33,7 @@ function WaterSources({ waterSources, farms, onEditSource, onDeleteSource, onNew
       return { status: 'inactive', label: 'Inactive', icon: AlertCircle, color: 'text-gray-500' };
     }
     // You can add logic here to check if tests are overdue
-    return { status: 'active', label: 'Active', icon: CheckCircle, color: 'text-green-600' };
+    return { status: 'active', label: 'Active', icon: CheckCircle, color: 'text-primary' };
   };
 
   return (

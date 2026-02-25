@@ -153,14 +153,14 @@ const ExtractedDataPreview = ({ data, statementType, onChange }) => {
               type={type}
               value={tempValue}
               onChange={(e) => setTempValue(e.target.value)}
-              className="w-32 px-2 py-1 text-sm border border-green-500 rounded focus:outline-none"
+              className="w-32 px-2 py-1 text-sm border border-primary rounded focus:outline-none"
               autoFocus
               onKeyDown={(e) => {
                 if (e.key === 'Enter') saveEdit();
                 if (e.key === 'Escape') cancelEdit();
               }}
             />
-            <button onClick={saveEdit} className="p-1 text-green-600 hover:bg-green-50 rounded">
+            <button onClick={saveEdit} className="p-1 text-primary hover:bg-primary-light rounded">
               <Check className="w-4 h-4" />
             </button>
             <button onClick={cancelEdit} className="p-1 text-gray-400 hover:bg-gray-100 rounded">
@@ -359,7 +359,7 @@ const ExtractedDataPreview = ({ data, statementType, onChange }) => {
                                     type="text"
                                     value={line.grade || ''}
                                     onChange={(e) => updateGradeLine(index, 'grade', e.target.value)}
-                                    className="w-24 px-2 py-1 border border-gray-200 rounded text-sm focus:border-green-500 focus:outline-none"
+                                    className="w-24 px-2 py-1 border border-gray-200 rounded text-sm focus:border-primary focus:outline-none"
                                   />
                                 </td>
                                 <td className="py-2">
@@ -367,7 +367,7 @@ const ExtractedDataPreview = ({ data, statementType, onChange }) => {
                                     type="text"
                                     value={line.size || ''}
                                     onChange={(e) => updateGradeLine(index, 'size', e.target.value)}
-                                    className="w-16 px-2 py-1 border border-gray-200 rounded text-sm focus:border-green-500 focus:outline-none"
+                                    className="w-16 px-2 py-1 border border-gray-200 rounded text-sm focus:border-primary focus:outline-none"
                                   />
                                 </td>
                                 <td className="py-2 text-right">
@@ -375,7 +375,7 @@ const ExtractedDataPreview = ({ data, statementType, onChange }) => {
                                     type="number"
                                     value={line.quantity || ''}
                                     onChange={(e) => updateGradeLine(index, 'quantity', parseFloat(e.target.value) || 0)}
-                                    className="w-20 px-2 py-1 border border-gray-200 rounded text-sm text-right focus:border-green-500 focus:outline-none"
+                                    className="w-20 px-2 py-1 border border-gray-200 rounded text-sm text-right focus:border-primary focus:outline-none"
                                   />
                                 </td>
                                 <td className="py-2 text-right">
@@ -384,7 +384,7 @@ const ExtractedDataPreview = ({ data, statementType, onChange }) => {
                                     value={line.percent || ''}
                                     onChange={(e) => updateGradeLine(index, 'percent', parseFloat(e.target.value) || 0)}
                                     step="0.01"
-                                    className="w-16 px-2 py-1 border border-gray-200 rounded text-sm text-right focus:border-green-500 focus:outline-none"
+                                    className="w-16 px-2 py-1 border border-gray-200 rounded text-sm text-right focus:border-primary focus:outline-none"
                                   />
                                 </td>
                                 {(statementType === 'settlement' || statementType === 'grower_statement') && (
@@ -395,7 +395,7 @@ const ExtractedDataPreview = ({ data, statementType, onChange }) => {
                                         value={line.fob_rate || ''}
                                         onChange={(e) => updateGradeLine(index, 'fob_rate', parseFloat(e.target.value) || null)}
                                         step="0.000001"
-                                        className="w-24 px-2 py-1 border border-gray-200 rounded text-sm text-right focus:border-green-500 focus:outline-none"
+                                        className="w-24 px-2 py-1 border border-gray-200 rounded text-sm text-right focus:border-primary focus:outline-none"
                                       />
                                     </td>
                                     <td className="py-2 text-right">
@@ -404,7 +404,7 @@ const ExtractedDataPreview = ({ data, statementType, onChange }) => {
                                         value={line.total_amount || ''}
                                         onChange={(e) => updateGradeLine(index, 'total_amount', parseFloat(e.target.value) || null)}
                                         step="0.01"
-                                        className="w-24 px-2 py-1 border border-gray-200 rounded text-sm text-right focus:border-green-500 focus:outline-none"
+                                        className="w-24 px-2 py-1 border border-gray-200 rounded text-sm text-right focus:border-primary focus:outline-none"
                                       />
                                     </td>
                                   </>
@@ -431,7 +431,7 @@ const ExtractedDataPreview = ({ data, statementType, onChange }) => {
             )}
             <button
               onClick={addGradeLine}
-              className="mt-3 flex items-center text-sm text-green-600 hover:text-green-700"
+              className="mt-3 flex items-center text-sm text-primary hover:text-primary-hover"
             >
               <Plus className="w-4 h-4 mr-1" />
               Add Grade Line
@@ -487,7 +487,7 @@ const ExtractedDataPreview = ({ data, statementType, onChange }) => {
                             <select
                               value={ded.category || 'other'}
                               onChange={(e) => updateDeduction(index, 'category', e.target.value)}
-                              className="px-2 py-1 border border-gray-200 rounded text-sm focus:border-green-500 focus:outline-none"
+                              className="px-2 py-1 border border-gray-200 rounded text-sm focus:border-primary focus:outline-none"
                             >
                               <option value="packing">Packing</option>
                               <option value="assessment">Assessment</option>
@@ -502,7 +502,7 @@ const ExtractedDataPreview = ({ data, statementType, onChange }) => {
                               type="text"
                               value={ded.description || ''}
                               onChange={(e) => updateDeduction(index, 'description', e.target.value)}
-                              className="w-32 px-2 py-1 border border-gray-200 rounded text-sm focus:border-green-500 focus:outline-none"
+                              className="w-32 px-2 py-1 border border-gray-200 rounded text-sm focus:border-primary focus:outline-none"
                             />
                           </td>
                           <td className="py-2 text-right">
@@ -510,7 +510,7 @@ const ExtractedDataPreview = ({ data, statementType, onChange }) => {
                               type="number"
                               value={ded.quantity || ''}
                               onChange={(e) => updateDeduction(index, 'quantity', parseFloat(e.target.value) || 0)}
-                              className="w-20 px-2 py-1 border border-gray-200 rounded text-sm text-right focus:border-green-500 focus:outline-none"
+                              className="w-20 px-2 py-1 border border-gray-200 rounded text-sm text-right focus:border-primary focus:outline-none"
                             />
                           </td>
                           <td className="py-2">
@@ -518,7 +518,7 @@ const ExtractedDataPreview = ({ data, statementType, onChange }) => {
                               type="text"
                               value={ded.unit || ''}
                               onChange={(e) => updateDeduction(index, 'unit', e.target.value)}
-                              className="w-16 px-2 py-1 border border-gray-200 rounded text-sm focus:border-green-500 focus:outline-none"
+                              className="w-16 px-2 py-1 border border-gray-200 rounded text-sm focus:border-primary focus:outline-none"
                             />
                           </td>
                           <td className="py-2 text-right">
@@ -527,7 +527,7 @@ const ExtractedDataPreview = ({ data, statementType, onChange }) => {
                               value={ded.rate || ''}
                               onChange={(e) => updateDeduction(index, 'rate', parseFloat(e.target.value) || 0)}
                               step="0.0000001"
-                              className="w-24 px-2 py-1 border border-gray-200 rounded text-sm text-right focus:border-green-500 focus:outline-none"
+                              className="w-24 px-2 py-1 border border-gray-200 rounded text-sm text-right focus:border-primary focus:outline-none"
                             />
                           </td>
                           <td className="py-2 text-right">
@@ -536,7 +536,7 @@ const ExtractedDataPreview = ({ data, statementType, onChange }) => {
                               value={ded.amount || ''}
                               onChange={(e) => updateDeduction(index, 'amount', parseFloat(e.target.value) || 0)}
                               step="0.01"
-                              className="w-24 px-2 py-1 border border-gray-200 rounded text-sm text-right focus:border-green-500 focus:outline-none"
+                              className="w-24 px-2 py-1 border border-gray-200 rounded text-sm text-right focus:border-primary focus:outline-none"
                             />
                           </td>
                           <td className="py-2">
@@ -557,7 +557,7 @@ const ExtractedDataPreview = ({ data, statementType, onChange }) => {
               )}
               <button
                 onClick={addDeduction}
-                className="mt-3 flex items-center text-sm text-green-600 hover:text-green-700"
+                className="mt-3 flex items-center text-sm text-primary hover:text-primary-hover"
               >
                 <Plus className="w-4 h-4 mr-1" />
                 Add Deduction

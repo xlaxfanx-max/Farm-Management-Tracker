@@ -187,7 +187,7 @@ const FertilizerInventoryManager = () => {
       case 'low':
         return 'text-yellow-600 dark:text-yellow-400 bg-yellow-100 dark:bg-yellow-900/30';
       default:
-        return 'text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/30';
+        return 'text-primary dark:text-green-400 bg-green-100 dark:bg-green-900/30';
     }
   };
 
@@ -207,7 +207,7 @@ const FertilizerInventoryManager = () => {
   const getTransactionColor = (type) => {
     switch (type) {
       case 'purchase':
-        return 'text-green-600 dark:text-green-400';
+        return 'text-primary dark:text-green-400';
       case 'usage':
         return 'text-red-600 dark:text-red-400';
       case 'adjustment':
@@ -334,7 +334,7 @@ const FertilizerInventoryManager = () => {
                             ? 'text-red-600 dark:text-red-400'
                             : status === 'low'
                             ? 'text-yellow-600 dark:text-yellow-400'
-                            : 'text-green-600 dark:text-green-400'
+                            : 'text-primary dark:text-green-400'
                         }`}
                       />
                     </div>
@@ -417,7 +417,7 @@ const FertilizerInventoryManager = () => {
                           }));
                           setShowPurchaseModal(true);
                         }}
-                        className="inline-flex items-center gap-1 px-3 py-1.5 text-sm text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 rounded"
+                        className="inline-flex items-center gap-1 px-3 py-1.5 text-sm text-primary dark:text-green-400 hover:bg-primary-light dark:hover:bg-green-900/20 rounded"
                       >
                         <TrendingUp className="w-4 h-4" />
                         Add Stock
@@ -607,7 +607,7 @@ const FertilizerInventoryManager = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                  className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover"
                 >
                   Record Purchase
                 </button>

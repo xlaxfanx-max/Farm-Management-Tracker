@@ -54,7 +54,7 @@ const StatusBadge = ({ status, expirationDate }) => {
   }
 
   const styles = {
-    active: 'bg-green-100 text-green-700',
+    active: 'bg-green-100 text-primary',
     expiring_soon: 'bg-amber-100 text-amber-700',
     expired: 'bg-red-100 text-red-700',
     suspended: 'bg-gray-100 text-gray-700',
@@ -81,7 +81,7 @@ const LicenseTypeBadge = ({ type }) => {
   const styles = {
     applicator: 'bg-blue-100 text-blue-700',
     pca: 'bg-purple-100 text-purple-700',
-    organic_handler: 'bg-green-100 text-green-700',
+    organic_handler: 'bg-green-100 text-primary',
     food_safety: 'bg-cyan-100 text-cyan-700',
     wps_trainer: 'bg-amber-100 text-amber-700',
     other: 'bg-gray-100 text-gray-700',
@@ -114,7 +114,7 @@ const LicenseCard = ({ license, onEdit, onDelete, onView }) => {
         <div className="flex items-center gap-3">
           <div className={`w-10 h-10 rounded-lg flex items-center justify-center
             ${daysUntil <= 0 ? 'bg-red-100' : daysUntil <= 90 ? 'bg-amber-100' : 'bg-green-100'}`}>
-            <Award className={`w-5 h-5 ${daysUntil <= 0 ? 'text-red-600' : daysUntil <= 90 ? 'text-amber-600' : 'text-green-600'}`} />
+            <Award className={`w-5 h-5 ${daysUntil <= 0 ? 'text-red-600' : daysUntil <= 90 ? 'text-amber-600' : 'text-primary'}`} />
           </div>
           <div>
             <div className="flex items-center gap-2">
@@ -272,7 +272,7 @@ const LicenseModal = ({ license, onClose, onSave }) => {
                 required
                 value={formData.license_type}
                 onChange={(e) => setFormData({ ...formData, license_type: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
               >
                 {COMPLIANCE_CONSTANTS.LICENSE_TYPES.map(type => (
                   <option key={type.value} value={type.value}>{type.label}</option>
@@ -285,7 +285,7 @@ const LicenseModal = ({ license, onClose, onSave }) => {
               <select
                 value={formData.status}
                 onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
               >
                 {COMPLIANCE_CONSTANTS.LICENSE_STATUSES.map(status => (
                   <option key={status.value} value={status.value}>{status.label}</option>
@@ -301,7 +301,7 @@ const LicenseModal = ({ license, onClose, onSave }) => {
               required
               value={formData.license_number}
               onChange={(e) => setFormData({ ...formData, license_number: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
               placeholder="e.g., QAL-12345"
             />
           </div>
@@ -312,7 +312,7 @@ const LicenseModal = ({ license, onClose, onSave }) => {
               type="text"
               value={formData.issuing_authority}
               onChange={(e) => setFormData({ ...formData, issuing_authority: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
               placeholder="e.g., California DPR"
             />
           </div>
@@ -325,7 +325,7 @@ const LicenseModal = ({ license, onClose, onSave }) => {
                 required
                 value={formData.issue_date}
                 onChange={(e) => setFormData({ ...formData, issue_date: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
               />
             </div>
 
@@ -336,7 +336,7 @@ const LicenseModal = ({ license, onClose, onSave }) => {
                 required
                 value={formData.expiration_date}
                 onChange={(e) => setFormData({ ...formData, expiration_date: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
               />
             </div>
           </div>
@@ -349,7 +349,7 @@ const LicenseModal = ({ license, onClose, onSave }) => {
               max={365}
               value={formData.renewal_reminder_days}
               onChange={(e) => setFormData({ ...formData, renewal_reminder_days: parseInt(e.target.value) || 90 })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
             />
             <p className="text-xs text-gray-500 mt-1">You'll receive reminders this many days before expiration</p>
           </div>
@@ -385,7 +385,7 @@ const LicenseModal = ({ license, onClose, onSave }) => {
             <button
               type="submit"
               disabled={saving}
-              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+              className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors disabled:opacity-50"
             >
               {saving ? 'Saving...' : license ? 'Update' : 'Create'}
             </button>
@@ -486,7 +486,7 @@ export default function LicenseManagement({ onNavigate }) {
       <div className="flex items-center justify-between mb-6">
         <div>
           <div className="flex items-center gap-2 text-sm text-gray-500 mb-1">
-            <button onClick={() => onNavigate?.('compliance')} className="hover:text-green-600">
+            <button onClick={() => onNavigate?.('compliance')} className="hover:text-primary">
               Compliance
             </button>
             <span>/</span>
@@ -505,7 +505,7 @@ export default function LicenseManagement({ onNavigate }) {
           </button>
           <button
             onClick={() => { setEditingLicense(null); setShowModal(true); }}
-            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors"
           >
             <Plus className="w-4 h-4" />
             Add License
@@ -522,12 +522,12 @@ export default function LicenseManagement({ onNavigate }) {
           </div>
           <p className="text-sm text-gray-600 mt-1">Total Licenses</p>
         </div>
-        <div className="bg-green-50 border border-green-100 rounded-lg p-4">
+        <div className="bg-primary-light border border-green-100 rounded-lg p-4">
           <div className="flex items-center gap-2">
-            <CheckCircle2 className="w-5 h-5 text-green-600" />
-            <span className="text-2xl font-bold text-green-600">{stats.active}</span>
+            <CheckCircle2 className="w-5 h-5 text-primary" />
+            <span className="text-2xl font-bold text-primary">{stats.active}</span>
           </div>
-          <p className="text-sm text-green-700 mt-1">Active</p>
+          <p className="text-sm text-primary mt-1">Active</p>
         </div>
         <div className="bg-amber-50 border border-amber-100 rounded-lg p-4">
           <div className="flex items-center gap-2">
@@ -568,7 +568,7 @@ export default function LicenseManagement({ onNavigate }) {
             <select
               value={typeFilter}
               onChange={(e) => setTypeFilter(e.target.value)}
-              className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-primary focus:border-primary"
             >
               <option value="all">All Types</option>
               {COMPLIANCE_CONSTANTS.LICENSE_TYPES.map(type => (
@@ -585,7 +585,7 @@ export default function LicenseManagement({ onNavigate }) {
               placeholder="Search licenses..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 w-64"
+              className="pl-9 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-primary w-64"
             />
           </div>
         </div>
@@ -615,7 +615,7 @@ export default function LicenseManagement({ onNavigate }) {
           <p className="text-sm text-gray-500 mt-1">Add your first license or certification to get started</p>
           <button
             onClick={() => { setEditingLicense(null); setShowModal(true); }}
-            className="mt-4 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+            className="mt-4 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors"
           >
             Add License
           </button>

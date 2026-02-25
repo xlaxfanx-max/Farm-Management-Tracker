@@ -253,7 +253,7 @@ const TreeMap = ({ trees = [], field, loading = false }) => {
       {/* Tree count badge */}
       {trees.length > 0 && (
         <div className="absolute top-4 left-4 z-[1000] bg-white rounded-lg shadow-md px-3 py-2 flex items-center gap-2">
-          <Trees size={16} className="text-green-600" />
+          <Trees size={16} className="text-primary" />
           <span className="text-sm font-medium text-slate-700">
             {trees.length.toLocaleString()} trees
           </span>

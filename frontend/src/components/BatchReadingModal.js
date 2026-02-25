@@ -233,7 +233,7 @@ const BatchReadingModal = ({ isOpen, onClose, wells, onSave }) => {
 
         {/* Success Message */}
         {savedCount > 0 && (
-          <div className="mx-4 mt-4 p-3 bg-green-50 border border-green-200 rounded-lg flex items-center gap-2 text-green-700">
+          <div className="mx-4 mt-4 p-3 bg-primary-light border border-green-200 rounded-lg flex items-center gap-2 text-primary">
             <CheckCircle className="w-5 h-5" />
             Successfully saved {savedCount} reading{savedCount > 1 ? 's' : ''}!
           </div>
@@ -285,7 +285,7 @@ const BatchReadingModal = ({ isOpen, onClose, wells, onSave }) => {
                             <span className={`text-xs px-2 py-0.5 rounded-full ${
                               status.color === 'red' ? 'bg-red-100 text-red-700' :
                               status.color === 'yellow' ? 'bg-yellow-100 text-yellow-700' :
-                              status.color === 'green' ? 'bg-green-100 text-green-700' :
+                              status.color === 'green' ? 'bg-green-100 text-primary' :
                               'bg-gray-100 text-gray-600'
                             }`}>
                               {status.label}

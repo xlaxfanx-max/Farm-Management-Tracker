@@ -158,13 +158,13 @@ export default function TodayActionList({ onNavigate }) {
 
   if (data.all_clear) {
     return (
-      <div className="bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-200 dark:border-green-800 p-6 flex items-center gap-4 shadow-sm">
+      <div className="bg-primary-light dark:bg-green-900/20 rounded-xl border border-green-200 dark:border-green-800 p-6 flex items-center gap-4 shadow-sm">
         <CheckCircle2 className="w-10 h-10 text-green-500 dark:text-green-400 flex-shrink-0" />
         <div>
           <p className="font-semibold text-green-800 dark:text-green-200 text-lg">
             All caught up for today!
           </p>
-          <p className="text-sm text-green-600 dark:text-green-400">
+          <p className="text-sm text-primary dark:text-green-400">
             No overdue items, no deadlines today. Keep it up.
           </p>
         </div>

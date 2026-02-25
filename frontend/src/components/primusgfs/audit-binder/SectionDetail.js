@@ -190,7 +190,7 @@ const SectionDetail = ({ sectionId, onBack }) => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
       </div>
     );
   }
@@ -266,9 +266,9 @@ const SectionDetail = ({ sectionId, onBack }) => {
         </div>
       )}
       {successMsg && (
-        <div className="flex items-center gap-2 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
-          <CheckCircle2 className="w-4 h-4 text-green-600 flex-shrink-0" />
-          <span className="text-sm text-green-700 dark:text-green-400">{successMsg}</span>
+        <div className="flex items-center gap-2 p-3 bg-primary-light dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+          <CheckCircle2 className="w-4 h-4 text-primary flex-shrink-0" />
+          <span className="text-sm text-primary dark:text-green-400">{successMsg}</span>
         </div>
       )}
 
@@ -279,7 +279,7 @@ const SectionDetail = ({ sectionId, onBack }) => {
             onClick={() => setActiveTab('details')}
             className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
               activeTab === 'details'
-                ? 'border-green-500 text-green-700 dark:text-green-400'
+                ? 'border-primary text-primary dark:text-green-400'
                 : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
             }`}
           >
@@ -289,7 +289,7 @@ const SectionDetail = ({ sectionId, onBack }) => {
             onClick={() => setActiveTab('pdf_editor')}
             className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors flex items-center gap-1.5 ${
               activeTab === 'pdf_editor'
-                ? 'border-green-500 text-green-700 dark:text-green-400'
+                ? 'border-primary text-primary dark:text-green-400'
                 : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
             }`}
           >
@@ -370,7 +370,7 @@ const SectionDetail = ({ sectionId, onBack }) => {
                 <button
                   onClick={handleSaveSOP}
                   disabled={!sopDirty || saving}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-primary rounded-lg hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   <Save className="w-3.5 h-3.5" />
                   {saving ? 'Saving...' : 'Save'}
@@ -382,7 +382,7 @@ const SectionDetail = ({ sectionId, onBack }) => {
                   setSopContent(e.target.value);
                   setSopDirty(true);
                 }}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-transparent font-mono text-sm"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent font-mono text-sm"
                 rows={12}
                 placeholder="Enter your SOP/policy content here..."
               />
@@ -399,7 +399,7 @@ const SectionDetail = ({ sectionId, onBack }) => {
               <button
                 onClick={handleSaveNotes}
                 disabled={!notesDirty || saving}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-primary rounded-lg hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 <Save className="w-3.5 h-3.5" />
                 {saving ? 'Saving...' : 'Save'}
@@ -411,7 +411,7 @@ const SectionDetail = ({ sectionId, onBack }) => {
                 setNotes(e.target.value);
                 setNotesDirty(true);
               }}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
               rows={3}
               placeholder="Add notes about this section..."
             />
@@ -497,7 +497,7 @@ const SectionDetail = ({ sectionId, onBack }) => {
                 <button
                   onClick={handleMarkComplete}
                   disabled={saving}
-                  className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 disabled:opacity-50 transition-colors"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary-hover disabled:opacity-50 transition-colors"
                 >
                   <CheckCircle2 className="w-4 h-4" />
                   Mark Complete

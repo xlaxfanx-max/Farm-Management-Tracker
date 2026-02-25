@@ -169,7 +169,7 @@ function GeocodePreviewModal({
         <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
           <div>
             <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-              <MapPin className="w-5 h-5 text-green-600" />
+              <MapPin className="w-5 h-5 text-primary" />
               Verify Farm Location
             </h3>
             <p className="text-sm text-gray-500 mt-0.5">{farmName}</p>
@@ -186,7 +186,7 @@ function GeocodePreviewModal({
         <div className="p-6">
           {isLoading ? (
             <div className="flex flex-col items-center justify-center py-12">
-              <RefreshCw className="w-8 h-8 text-green-600 animate-spin mb-3" />
+              <RefreshCw className="w-8 h-8 text-primary animate-spin mb-3" />
               <p className="text-gray-600">Finding location...</p>
             </div>
           ) : error ? (
@@ -208,7 +208,7 @@ function GeocodePreviewModal({
                       value={manualLat}
                       onChange={(e) => setManualLat(e.target.value)}
                       placeholder="36.7378"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                     />
                   </div>
                   <div>
@@ -218,7 +218,7 @@ function GeocodePreviewModal({
                       value={manualLng}
                       onChange={(e) => setManualLng(e.target.value)}
                       placeholder="-119.7871"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                     />
                   </div>
                 </div>
@@ -231,7 +231,7 @@ function GeocodePreviewModal({
                       setDisplayName('Manual coordinates');
                     }
                   }}
-                  className="mt-3 w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm font-medium transition-colors"
+                  className="mt-3 w-full px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover text-sm font-medium transition-colors"
                 >
                   Set Location
                 </button>
@@ -240,7 +240,7 @@ function GeocodePreviewModal({
               {onRetry && (
                 <button
                   onClick={onRetry}
-                  className="mt-4 text-green-600 hover:text-green-700 text-sm font-medium"
+                  className="mt-4 text-primary hover:text-primary-hover text-sm font-medium"
                 >
                   Try again with different address
                 </button>
@@ -278,7 +278,7 @@ function GeocodePreviewModal({
                           type="text"
                           value={manualLat}
                           onChange={(e) => setManualLat(e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                         />
                       </div>
                       <div>
@@ -287,7 +287,7 @@ function GeocodePreviewModal({
                           type="text"
                           value={manualLng}
                           onChange={(e) => setManualLng(e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                         />
                       </div>
                     </div>
@@ -369,7 +369,7 @@ function GeocodePreviewModal({
           <button
             onClick={handleConfirm}
             disabled={!position || isLoading}
-            className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
             <Check className="w-4 h-4" />
             Confirm Location

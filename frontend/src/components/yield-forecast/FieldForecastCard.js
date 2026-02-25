@@ -45,7 +45,7 @@ const ConfidenceBar = ({ lower, predicted, upper, unit, actual }) => {
         {/* Actual marker */}
         {actualPct !== null && (
           <div
-            className="absolute top-0 bottom-0 w-1 bg-green-600 z-20"
+            className="absolute top-0 bottom-0 w-1 bg-primary z-20"
             style={{ left: `${actualPct}%` }}
           />
         )}
@@ -59,7 +59,7 @@ const ConfidenceBar = ({ lower, predicted, upper, unit, actual }) => {
       </div>
       {actual && (
         <div className="text-center text-sm">
-          <span className="text-green-600 font-medium">
+          <span className="text-primary font-medium">
             Actual: {formatNumber(parseFloat(actual), 1)} {unit}/acre
           </span>
         </div>
@@ -97,7 +97,7 @@ const HistoricalYieldChart = ({ yields }) => {
             </span>
             {y.classification && (
               <span className={`text-xs px-1.5 py-0.5 rounded ${
-                y.classification === 'on' ? 'bg-green-100 text-green-700' :
+                y.classification === 'on' ? 'bg-green-100 text-primary' :
                 y.classification === 'off' ? 'bg-red-100 text-red-700' :
                 'bg-gray-100 text-gray-600'
               }`}>
@@ -113,7 +113,7 @@ const HistoricalYieldChart = ({ yields }) => {
 
 const FeatureHighlight = ({ icon: Icon, label, value, unit, status }) => {
   const statusColors = {
-    good: 'text-green-600',
+    good: 'text-primary',
     warning: 'text-yellow-600',
     missing: 'text-gray-400',
   };

@@ -106,7 +106,7 @@ export default function PURUploadStep({ onComplete }) {
           </>
         ) : (
           <div className="flex items-center justify-center gap-4">
-            <FileText className="w-10 h-10 text-green-600" />
+            <FileText className="w-10 h-10 text-primary" />
             <div className="text-left">
               <p className="font-medium text-gray-900">{file.name}</p>
               <p className="text-sm text-gray-500">

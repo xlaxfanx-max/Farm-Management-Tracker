@@ -30,7 +30,7 @@ const Toggle = ({ enabled, onChange, label, description }) => (
       type="button"
       onClick={() => onChange(!enabled)}
       className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors
-        ${enabled ? 'bg-green-600' : 'bg-gray-200'}`}
+        ${enabled ? 'bg-primary' : 'bg-gray-200'}`}
     >
       <span
         className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform
@@ -44,7 +44,7 @@ const Toggle = ({ enabled, onChange, label, description }) => (
 const SectionHeader = ({ icon: Icon, title, description }) => (
   <div className="flex items-start gap-3 mb-4">
     <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
-      <Icon className="w-5 h-5 text-green-600" />
+      <Icon className="w-5 h-5 text-primary" />
     </div>
     <div>
       <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
@@ -71,7 +71,7 @@ const CheckboxGroup = ({ options, selected, onChange, columns = 2 }) => (
               onChange(selected.filter(v => v !== option.value));
             }
           }}
-          className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+          className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
         />
         <span className="text-sm text-gray-700">{option.label}</span>
       </label>
@@ -204,7 +204,7 @@ export default function ComplianceSettings({ onNavigate }) {
       <div className="flex items-center justify-between mb-6">
         <div>
           <div className="flex items-center gap-2 text-sm text-gray-500 mb-1">
-            <button onClick={() => onNavigate?.('compliance')} className="hover:text-green-600">
+            <button onClick={() => onNavigate?.('compliance')} className="hover:text-primary">
               Compliance
             </button>
             <span>/</span>
@@ -214,7 +214,7 @@ export default function ComplianceSettings({ onNavigate }) {
         </div>
 
         {savedMessage && (
-          <div className="flex items-center gap-2 px-4 py-2 bg-green-100 text-green-700 rounded-lg">
+          <div className="flex items-center gap-2 px-4 py-2 bg-green-100 text-primary rounded-lg">
             <CheckCircle2 className="w-4 h-4" />
             <span className="text-sm font-medium">{savedMessage}</span>
           </div>
@@ -237,7 +237,7 @@ export default function ComplianceSettings({ onNavigate }) {
               <select
                 value={profile.primary_state}
                 onChange={(e) => setProfile({ ...profile, primary_state: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
               >
                 {usStates.map(state => (
                   <option key={state.value} value={state.value}>{state.label}</option>
@@ -296,7 +296,7 @@ export default function ComplianceSettings({ onNavigate }) {
               <button
                 onClick={saveProfile}
                 disabled={saving}
-                className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+                className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors disabled:opacity-50"
               >
                 <Save className="w-4 h-4" />
                 {saving ? 'Saving...' : 'Save Profile'}
@@ -329,7 +329,7 @@ export default function ComplianceSettings({ onNavigate }) {
                   <select
                     value={preferences.email_digest}
                     onChange={(e) => setPreferences({ ...preferences, email_digest: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
                   >
                     <option value="instant">Instant</option>
                     <option value="daily">Daily Digest</option>
@@ -401,7 +401,7 @@ export default function ComplianceSettings({ onNavigate }) {
                       type="time"
                       value={preferences.quiet_hours_start}
                       onChange={(e) => setPreferences({ ...preferences, quiet_hours_start: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
                     />
                   </div>
                   <div>
@@ -410,7 +410,7 @@ export default function ComplianceSettings({ onNavigate }) {
                       type="time"
                       value={preferences.quiet_hours_end}
                       onChange={(e) => setPreferences({ ...preferences, quiet_hours_end: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
                     />
                   </div>
                 </div>
@@ -422,7 +422,7 @@ export default function ComplianceSettings({ onNavigate }) {
               <button
                 onClick={savePreferences}
                 disabled={saving}
-                className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+                className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors disabled:opacity-50"
               >
                 <Save className="w-4 h-4" />
                 {saving ? 'Saving...' : 'Save Preferences'}
@@ -471,7 +471,7 @@ export default function ComplianceSettings({ onNavigate }) {
               className="flex items-center gap-3 p-4 rounded-lg border border-gray-200 hover:bg-gray-50 hover:border-green-200 transition-colors text-left"
             >
               <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                <Users className="w-5 h-5 text-green-600" />
+                <Users className="w-5 h-5 text-primary" />
               </div>
               <div>
                 <p className="font-medium text-gray-900">WPS</p>

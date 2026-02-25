@@ -97,7 +97,7 @@ const BuyerModal = ({ isOpen, onClose, onSave, buyer = null }) => {
       <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-4 border-b sticky top-0 bg-white">
           <div className="flex items-center gap-2">
-            <Building className="text-green-600" size={24} />
+            <Building className="text-primary" size={24} />
             <h2 className="text-xl font-semibold">
               {buyer ? 'Edit Buyer' : 'Add New Buyer'}
             </h2>
@@ -303,7 +303,7 @@ const BuyerModal = ({ isOpen, onClose, onSave, buyer = null }) => {
             <button
               type="submit"
               disabled={saving}
-              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
+              className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover disabled:opacity-50"
             >
               {saving ? 'Saving...' : (buyer ? 'Update Buyer' : 'Add Buyer')}
             </button>

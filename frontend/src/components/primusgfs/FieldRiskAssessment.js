@@ -16,7 +16,7 @@ import { primusGFSAPI, farmsAPI } from '../../services/api';
 // =============================================================================
 
 const RISK_LEVELS = [
-  { value: 'low',      label: 'Low',      badge: 'bg-green-100  text-green-700  dark:bg-green-900/30  dark:text-green-400',  dot: 'bg-green-500'  },
+  { value: 'low',      label: 'Low',      badge: 'bg-green-100  text-primary  dark:bg-green-900/30  dark:text-green-400',  dot: 'bg-green-500'  },
   { value: 'medium',   label: 'Medium',   badge: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400', dot: 'bg-yellow-500' },
   { value: 'high',     label: 'High',     badge: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400', dot: 'bg-orange-500' },
   { value: 'critical', label: 'Critical', badge: 'bg-red-100    text-red-700    dark:bg-red-900/30    dark:text-red-400',    dot: 'bg-red-600'    },
@@ -143,7 +143,7 @@ const RiskCategoryCard = ({ category, value, onChange }) => {
           value={value.notes}
           onChange={(e) => onChange({ ...value, notes: e.target.value })}
           rows={2}
-          className="w-full px-2.5 py-2 text-xs border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 resize-none focus:outline-none focus:ring-1 focus:ring-green-500"
+          className="w-full px-2.5 py-2 text-xs border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 resize-none focus:outline-none focus:ring-1 focus:ring-primary"
           placeholder={`Describe ${category.label.toLowerCase()} factors and observations...`}
         />
       </div>
@@ -345,7 +345,7 @@ const AssessmentModal = ({ editingRecord, farms, onClose, onSaved }) => {
   };
 
   const inputCls =
-    'w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-green-500';
+    'w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-primary';
   const labelCls = 'block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1';
 
   return (
@@ -354,7 +354,7 @@ const AssessmentModal = ({ editingRecord, farms, onClose, onSaved }) => {
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
           <div className="flex items-center gap-2">
-            <ShieldAlert className="w-5 h-5 text-green-600 dark:text-green-400" />
+            <ShieldAlert className="w-5 h-5 text-primary dark:text-green-400" />
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
               {isEdit ? 'Edit Field Risk Assessment' : 'New Field Risk Assessment'}
             </h3>
@@ -464,7 +464,7 @@ const AssessmentModal = ({ editingRecord, farms, onClose, onSaved }) => {
                       setOverallManual(false);
                       setForm((p) => ({ ...p, overall_risk_level: suggestOverallRisk(p) }));
                     }}
-                    className="text-xs text-green-600 dark:text-green-400 hover:underline"
+                    className="text-xs text-primary dark:text-green-400 hover:underline"
                   >
                     Reset to suggestion
                   </button>
@@ -534,20 +534,20 @@ const AssessmentModal = ({ editingRecord, farms, onClose, onSaved }) => {
                 </div>
               )}
               {selectedFile ? (
-                <div className="flex items-center gap-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3">
+                <div className="flex items-center gap-3 bg-primary-light dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3">
                   <span className="text-sm text-green-800 dark:text-green-300 truncate flex-1">{selectedFile.name}</span>
-                  <span className="text-xs text-green-600 dark:text-green-400">{(selectedFile.size / 1024).toFixed(0)} KB</span>
+                  <span className="text-xs text-primary dark:text-green-400">{(selectedFile.size / 1024).toFixed(0)} KB</span>
                   <button
                     type="button"
                     onClick={() => setSelectedFile(null)}
-                    className="p-1 text-green-600 dark:text-green-400 hover:text-red-600 dark:hover:text-red-400 transition"
+                    className="p-1 text-primary dark:text-green-400 hover:text-red-600 dark:hover:text-red-400 transition"
                   >
                     <X className="w-4 h-4" />
                   </button>
                 </div>
               ) : (
                 <label
-                  className="flex flex-col items-center gap-2 p-5 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl cursor-pointer hover:border-green-400 dark:hover:border-green-500 hover:bg-green-50/50 dark:hover:bg-green-900/10 transition"
+                  className="flex flex-col items-center gap-2 p-5 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl cursor-pointer hover:border-green-400 dark:hover:border-primary hover:bg-primary-light/50 dark:hover:bg-green-900/10 transition"
                   onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
                   onDrop={(e) => {
                     e.preventDefault();
@@ -559,7 +559,7 @@ const AssessmentModal = ({ editingRecord, farms, onClose, onSaved }) => {
                   <ShieldAlert className="w-6 h-6 text-gray-400" />
                   <span className="text-sm text-gray-500 dark:text-gray-400">
                     Drop file here or{' '}
-                    <span className="text-green-600 dark:text-green-400 font-medium">browse</span>
+                    <span className="text-primary dark:text-green-400 font-medium">browse</span>
                   </span>
                   <span className="text-xs text-gray-400">PDF, JPG, PNG, DOC up to 25 MB</span>
                   <input
@@ -588,7 +588,7 @@ const AssessmentModal = ({ editingRecord, farms, onClose, onSaved }) => {
             <button
               type="submit"
               disabled={submitting}
-              className="inline-flex items-center gap-2 px-5 py-2 text-sm font-medium bg-green-600 text-white rounded-lg hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+              className="inline-flex items-center gap-2 px-5 py-2 text-sm font-medium bg-primary text-white rounded-lg hover:bg-primary-hover transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
               {isEdit ? 'Save Changes' : 'Create Assessment'}
@@ -693,7 +693,7 @@ export default function FieldRiskAssessment() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-            <ShieldAlert className="w-6 h-6 text-green-600 dark:text-green-400" />
+            <ShieldAlert className="w-6 h-6 text-primary dark:text-green-400" />
             Field Risk Assessment
           </h2>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
@@ -702,7 +702,7 @@ export default function FieldRiskAssessment() {
         </div>
         <button
           onClick={openCreate}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition text-sm font-medium flex-shrink-0"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition text-sm font-medium flex-shrink-0"
         >
           <Plus className="w-4 h-4" /> New Assessment
         </button>
@@ -804,7 +804,7 @@ export default function FieldRiskAssessment() {
           </p>
           <button
             onClick={openCreate}
-            className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition text-sm font-medium"
+            className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition text-sm font-medium"
           >
             <Plus className="w-4 h-4" /> New Assessment
           </button>

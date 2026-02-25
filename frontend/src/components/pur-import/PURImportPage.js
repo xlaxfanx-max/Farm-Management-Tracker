@@ -115,7 +115,7 @@ const PURImportPage = () => {
                     <div
                       className={`flex items-center justify-center w-10 h-10 rounded-full border-2 transition-colors ${
                         isComplete
-                          ? 'bg-green-600 border-green-600 text-white'
+                          ? 'bg-primary border-primary text-white'
                           : isCurrent
                             ? 'bg-blue-600 border-blue-600 text-white'
                             : 'bg-white border-gray-300 text-gray-400'
@@ -132,7 +132,7 @@ const PURImportPage = () => {
                         isCurrent
                           ? 'text-blue-600'
                           : isComplete
-                            ? 'text-green-600'
+                            ? 'text-primary'
                             : 'text-gray-400'
                       }`}
                     >
@@ -141,7 +141,7 @@ const PURImportPage = () => {
                     {idx < STEPS.length - 1 && (
                       <div
                         className={`hidden sm:block absolute top-5 left-full w-full h-0.5 -translate-y-1/2 ${
-                          isComplete ? 'bg-green-600' : 'bg-gray-200'
+                          isComplete ? 'bg-primary' : 'bg-gray-200'
                         }`}
                         style={{ width: 'calc(100% - 5rem)' }}
                       />

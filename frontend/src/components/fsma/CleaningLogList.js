@@ -440,7 +440,7 @@ const CleaningLogList = () => {
                     >
                       <div className="flex items-center gap-4">
                         <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
-                          <FacilityIcon className="w-5 h-5 text-green-600 dark:text-green-400" />
+                          <FacilityIcon className="w-5 h-5 text-primary dark:text-green-400" />
                         </div>
                         <div>
                           <h3 className="font-medium text-gray-900 dark:text-white">
@@ -465,7 +465,7 @@ const CleaningLogList = () => {
                         <span
                           className={`text-xs px-2 py-1 rounded ${
                             checklistCount === checklistItems.length
-                              ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
+                              ? 'bg-green-100 dark:bg-green-900/30 text-primary dark:text-green-400'
                               : 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'
                           }`}
                         >
@@ -487,12 +487,12 @@ const CleaningLogList = () => {
                               key={item.key}
                               className={`flex items-center gap-2 p-2 rounded ${
                                 log[item.key]
-                                  ? 'bg-green-50 dark:bg-green-900/20'
+                                  ? 'bg-primary-light dark:bg-green-900/20'
                                   : 'bg-gray-50 dark:bg-gray-700/50'
                               }`}
                             >
                               {log[item.key] ? (
-                                <CheckCircle className="w-4 h-4 text-green-600 dark:text-green-400" />
+                                <CheckCircle className="w-4 h-4 text-primary dark:text-green-400" />
                               ) : (
                                 <X className="w-4 h-4 text-gray-400" />
                               )}
@@ -578,7 +578,7 @@ const CleaningLogList = () => {
                         <FacilityIcon
                           className={`w-5 h-5 ${
                             status === 'compliant'
-                              ? 'text-green-600 dark:text-green-400'
+                              ? 'text-primary dark:text-green-400'
                               : 'text-red-600 dark:text-red-400'
                           }`}
                         />
@@ -628,7 +628,7 @@ const CleaningLogList = () => {
                         setLogFormData((prev) => ({ ...prev, facility: facility.id }));
                         setShowLogModal(true);
                       }}
-                      className="flex-1 inline-flex items-center justify-center gap-1 px-3 py-1.5 text-sm bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded hover:bg-green-200 dark:hover:bg-green-900/50"
+                      className="flex-1 inline-flex items-center justify-center gap-1 px-3 py-1.5 text-sm bg-green-100 dark:bg-green-900/30 text-primary dark:text-green-400 rounded hover:bg-green-200 dark:hover:bg-green-900/50"
                     >
                       <Check className="w-4 h-4" />
                       Log Cleaning
@@ -755,7 +755,7 @@ const CleaningLogList = () => {
                         name={item.key}
                         checked={logFormData[item.key]}
                         onChange={handleLogInputChange}
-                        className="w-5 h-5 rounded border-gray-300 text-green-600 focus:ring-green-500"
+                        className="w-5 h-5 rounded border-gray-300 text-primary focus:ring-primary"
                       />
                       <span className="text-gray-700 dark:text-gray-300">{item.label}</span>
                     </label>
@@ -806,7 +806,7 @@ const CleaningLogList = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                  className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover"
                 >
                   {editingLog ? 'Update' : 'Save'} Log
                 </button>

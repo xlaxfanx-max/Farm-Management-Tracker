@@ -65,7 +65,7 @@ const Step6Environmental = ({ formData, updateFormData }) => {
       {/* CAFO Proximity */}
       <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
         <h4 className="font-medium text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-          <TreePine className="w-5 h-5 text-green-600" />
+          <TreePine className="w-5 h-5 text-primary" />
           Animal Operations Proximity
         </h4>
 
@@ -95,7 +95,7 @@ const Step6Environmental = ({ formData, updateFormData }) => {
                 onClick={() => updateEnvironmental({ cafo_within_1000ft: false })}
                 className={`px-4 py-2 rounded-lg border-2 transition-all ${
                   env.cafo_within_1000ft === false
-                    ? 'border-green-500 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400'
+                    ? 'border-primary bg-primary-light dark:bg-green-900/20 text-primary dark:text-green-400'
                     : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
                 }`}
               >
@@ -121,7 +121,7 @@ const Step6Environmental = ({ formData, updateFormData }) => {
               }
               min="0"
               placeholder="Enter distance in feet"
-              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent"
             />
             {env.nearest_animal_operation_ft && env.nearest_animal_operation_ft < 400 && (
               <p className="mt-1 text-xs text-red-600 dark:text-red-400 flex items-center gap-1">
@@ -164,7 +164,7 @@ const Step6Environmental = ({ formData, updateFormData }) => {
                 onClick={() => updateEnvironmental({ flooding_history: false })}
                 className={`px-4 py-2 rounded-lg border-2 transition-all ${
                   env.flooding_history === false
-                    ? 'border-green-500 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400'
+                    ? 'border-primary bg-primary-light dark:bg-green-900/20 text-primary dark:text-green-400'
                     : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
                 }`}
               >
@@ -197,7 +197,7 @@ const Step6Environmental = ({ formData, updateFormData }) => {
                 onClick={() => updateEnvironmental({ flooding_last_12_months: false })}
                 className={`px-4 py-2 rounded-lg border-2 transition-all ${
                   env.flooding_last_12_months === false
-                    ? 'border-green-500 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400'
+                    ? 'border-primary bg-primary-light dark:bg-green-900/20 text-primary dark:text-green-400'
                     : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
                 }`}
               >
@@ -240,7 +240,7 @@ const Step6Environmental = ({ formData, updateFormData }) => {
                 onClick={() => updateEnvironmental({ septic_nearby: false })}
                 className={`px-4 py-2 rounded-lg border-2 transition-all ${
                   env.septic_nearby === false
-                    ? 'border-green-500 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400'
+                    ? 'border-primary bg-primary-light dark:bg-green-900/20 text-primary dark:text-green-400'
                     : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
                 }`}
               >
@@ -261,7 +261,7 @@ const Step6Environmental = ({ formData, updateFormData }) => {
                   onClick={() => updateEnvironmental({ wildlife_pressure: level.value })}
                   className={`p-3 rounded-lg border-2 text-left transition-all ${
                     env.wildlife_pressure === level.value
-                      ? 'border-green-500 bg-green-50 dark:bg-green-900/20'
+                      ? 'border-primary bg-primary-light dark:bg-green-900/20'
                       : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
                   }`}
                 >
@@ -295,7 +295,7 @@ const Step6Environmental = ({ formData, updateFormData }) => {
                 onClick={() => toggleAdjacentLandUse(use)}
                 className={`px-3 py-1.5 rounded-full text-sm transition-colors ${
                   isSelected
-                    ? 'bg-green-600 text-white'
+                    ? 'bg-primary text-white'
                     : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                 }`}
               >
@@ -315,7 +315,7 @@ const Step6Environmental = ({ formData, updateFormData }) => {
           </h4>
           <button
             onClick={addIdentifiedRisk}
-            className="inline-flex items-center gap-1 text-sm text-green-600 dark:text-green-400 hover:underline"
+            className="inline-flex items-center gap-1 text-sm text-primary dark:text-green-400 hover:underline"
           >
             <Plus className="w-4 h-4" />
             Add Risk
@@ -359,7 +359,7 @@ const Step6Environmental = ({ formData, updateFormData }) => {
           onChange={(e) => updateEnvironmental({ notes: e.target.value })}
           rows={4}
           placeholder="Add notes about environmental conditions..."
-          className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
+          className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent resize-none"
         />
       </div>
 

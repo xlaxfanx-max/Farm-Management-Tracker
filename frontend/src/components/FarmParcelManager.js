@@ -190,7 +190,7 @@ function FarmParcelManager({
             type="button"
             onClick={handleAddNew}
             disabled={newParcel !== null || loading}
-            className="text-sm text-green-600 hover:text-green-700 flex items-center gap-1 disabled:opacity-50"
+            className="text-sm text-primary hover:text-primary-hover flex items-center gap-1 disabled:opacity-50"
           >
             <Plus size={16} />
             Add APN
@@ -262,7 +262,7 @@ function FarmParcelManager({
       {/* Loading indicator */}
       {loading && (
         <div className="text-center py-2">
-          <div className="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-green-600"></div>
+          <div className="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
         </div>
       )}
     </div>
@@ -309,7 +309,7 @@ function ParcelRow({
               value={editData.apn}
               onChange={(e) => handleChange('apn', e.target.value)}
               placeholder={county?.toLowerCase() === 'ventura' ? '123-0-456-789' : '123-456-789'}
-              className="w-full px-2 py-1.5 text-sm border dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              className="w-full px-2 py-1.5 text-sm border dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               autoFocus
             />
           </div>
@@ -323,7 +323,7 @@ function ParcelRow({
               value={editData.acreage || ''}
               onChange={(e) => handleChange('acreage', e.target.value)}
               placeholder="0.00"
-              className="w-full px-2 py-1.5 text-sm border dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              className="w-full px-2 py-1.5 text-sm border dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             />
           </div>
         </div>
@@ -335,7 +335,7 @@ function ParcelRow({
             <select
               value={editData.ownership_type}
               onChange={(e) => handleChange('ownership_type', e.target.value)}
-              className="w-full px-2 py-1.5 text-sm border dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              className="w-full px-2 py-1.5 text-sm border dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             >
               {OWNERSHIP_TYPES.map(type => (
                 <option key={type.value} value={type.value}>{type.label}</option>
@@ -351,7 +351,7 @@ function ParcelRow({
               value={editData.notes || ''}
               onChange={(e) => handleChange('notes', e.target.value)}
               placeholder="Optional notes"
-              className="w-full px-2 py-1.5 text-sm border dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              className="w-full px-2 py-1.5 text-sm border dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             />
           </div>
         </div>
@@ -366,7 +366,7 @@ function ParcelRow({
           <button
             type="button"
             onClick={() => onSave(editData)}
-            className="px-3 py-1.5 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700"
+            className="px-3 py-1.5 text-sm bg-primary text-white rounded-lg hover:bg-primary-hover"
           >
             {isNew ? 'Add' : 'Save'}
           </button>

@@ -7,6 +7,7 @@ import React, { useState, useEffect } from 'react';
 import { X, AlertTriangle, CheckCircle, Info } from 'lucide-react';
 import { harvestsAPI, HARVEST_CONSTANTS, getUnitLabelForCropVariety } from '../services/api';
 import { useToast } from '../contexts/ToastContext';
+import CollapsibleSection from './ui/CollapsibleSection';
 
 const HarvestModal = ({ 
   isOpen, 
@@ -251,9 +252,9 @@ const HarvestModal = ({
         )}
 
         {phiCheck && phiCheck.is_compliant === true && (
-          <div className="mx-4 mt-4 p-3 bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-lg">
+          <div className="mx-4 mt-4 p-3 bg-primary-light dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-lg">
             <div className="flex items-center gap-2">
-              <CheckCircle className="text-green-600 dark:text-green-400" size={20} />
+              <CheckCircle className="text-primary dark:text-green-400" size={20} />
               <span className="text-green-800 dark:text-green-300">{phiCheck.warning_message}</span>
             </div>
           </div>
@@ -417,13 +418,8 @@ const HarvestModal = ({
             )}
           </div>
 
-          {/* GAP/GHP Section */}
-          <div className="border dark:border-gray-700 rounded-lg p-4 bg-gray-50 dark:bg-gray-900">
-            <div className="flex items-center gap-2 mb-3">
-              <Info size={18} className="text-blue-600 dark:text-blue-400" />
-              <h3 className="font-medium text-gray-900 dark:text-white">GAP/GHP Compliance</h3>
-            </div>
-            
+          {/* GAP/GHP Section - Collapsible */}
+          <CollapsibleSection title="GAP/GHP Compliance">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-3">
                 <label className="flex items-center gap-2">
@@ -475,7 +471,7 @@ const HarvestModal = ({
               </div>
             </div>
 
-            <div className="mt-4">
+            <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Field Conditions
               </label>
@@ -488,7 +484,7 @@ const HarvestModal = ({
                 placeholder="Weather, ground conditions, any observations..."
               />
             </div>
-          </div>
+          </CollapsibleSection>
 
           {/* Notes */}
           <div>

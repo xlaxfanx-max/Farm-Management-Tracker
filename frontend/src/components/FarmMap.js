@@ -334,7 +334,7 @@ const FarmMap = ({
                   key={type}
                   onClick={() => { setMapType(type); }}
                   className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-50 flex items-center justify-between ${
-                    mapType === type ? 'text-green-600 font-medium' : 'text-gray-700'
+                    mapType === type ? 'text-primary font-medium' : 'text-gray-700'
                   }`}
                 >
                   {type.charAt(0).toUpperCase() + type.slice(1)}
@@ -397,9 +397,9 @@ const FarmMap = ({
           )}
 
           {pendingBoundary && (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-3">
+            <div className="bg-primary-light border border-green-200 rounded-lg p-3 mb-3">
               <div className="text-sm font-medium text-green-800">Boundary Drawn!</div>
-              <div className="text-sm text-green-700">
+              <div className="text-sm text-primary">
                 Calculated area: <strong>{pendingBoundary.acres} acres</strong>
               </div>
             </div>
@@ -409,7 +409,7 @@ const FarmMap = ({
             {pendingBoundary && (
               <button
                 onClick={saveBoundary}
-                className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm font-semibold shadow-md"
+                className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2.5 bg-primary text-white rounded-lg hover:bg-primary-hover text-sm font-semibold shadow-md"
               >
                 <Save className="w-4 h-4" />
                 Save Boundary
@@ -432,7 +432,7 @@ const FarmMap = ({
           <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Legend</div>
           <div className="space-y-1.5">
             <div className="flex items-center gap-2 text-xs">
-              <div className="w-3 h-3 rounded-full bg-green-600"></div>
+              <div className="w-3 h-3 rounded-full bg-primary"></div>
               <span>Farm</span>
             </div>
             <div className="flex items-center gap-2 text-xs">

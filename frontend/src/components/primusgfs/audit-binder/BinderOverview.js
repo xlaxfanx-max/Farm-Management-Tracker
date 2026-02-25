@@ -122,7 +122,7 @@ const BinderOverview = ({ binderId, onBack }) => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
       </div>
     );
   }
@@ -192,7 +192,7 @@ const BinderOverview = ({ binderId, onBack }) => {
           {/* Big percentage */}
           <div className="text-center">
             <div className={`text-4xl font-bold ${
-              overall.percent === 100 ? 'text-green-600' :
+              overall.percent === 100 ? 'text-primary' :
               overall.percent >= 50 ? 'text-blue-600' : 'text-amber-600'
             }`}>
               {overall.percent || 0}%

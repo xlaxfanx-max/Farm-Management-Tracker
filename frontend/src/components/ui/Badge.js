@@ -1,6 +1,7 @@
 import React from 'react';
 
 const colorMap = {
+  primary: 'bg-primary-light text-primary dark:bg-primary-light dark:text-primary',
   green: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300',
   red: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300',
   amber: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300',
@@ -24,6 +25,7 @@ export default function Badge({
   className = '',
 }) {
   const dotColors = {
+    primary: 'bg-primary',
     green: 'bg-green-500',
     red: 'bg-red-500',
     amber: 'bg-amber-500',

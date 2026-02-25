@@ -45,7 +45,7 @@ export default function SetupChecklist({ scoreData, onNavigate, onDismiss }) {
             key={item.key}
             className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs border transition-colors ${
               item.passed
-                ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800 text-green-700 dark:text-green-300'
+                ? 'bg-primary-light dark:bg-green-900/20 border-green-200 dark:border-green-800 text-primary dark:text-green-300'
                 : 'bg-gray-100 dark:bg-gray-700 border-gray-200 dark:border-gray-600 text-gray-500 dark:text-gray-400'
             }`}
           >

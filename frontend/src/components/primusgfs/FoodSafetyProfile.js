@@ -30,7 +30,7 @@ const formatDate = (str) => {
 };
 
 const inputCls =
-  'w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm transition';
+  'w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-sm transition';
 
 const labelCls = 'block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1';
 
@@ -157,7 +157,7 @@ export default function FoodSafetyProfile() {
         <p className="text-red-600 dark:text-red-400 mb-4 text-sm">{error}</p>
         <button
           onClick={fetchProfile}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition text-sm font-medium"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition text-sm font-medium"
         >
           <RefreshCw className="w-4 h-4" />
           Retry
@@ -186,7 +186,7 @@ export default function FoodSafetyProfile() {
       {/* Header */}
       <div>
         <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-          <FileText className="w-6 h-6 text-green-600 dark:text-green-400" />
+          <FileText className="w-6 h-6 text-primary dark:text-green-400" />
           Food Safety Profile
         </h2>
         <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
@@ -223,7 +223,7 @@ export default function FoodSafetyProfile() {
 
       {/* Success banner */}
       {saveSuccess && (
-        <div className="flex items-center gap-2 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3 text-sm text-green-700 dark:text-green-400">
+        <div className="flex items-center gap-2 bg-primary-light dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3 text-sm text-primary dark:text-green-400">
           <CheckCircle className="w-4 h-4 flex-shrink-0" />
           Food Safety Profile saved successfully.
         </div>
@@ -359,7 +359,7 @@ export default function FoodSafetyProfile() {
                 href={profile.ranch_map_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-900/20 rounded hover:bg-green-100 dark:hover:bg-green-900/40 transition"
+                className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-primary dark:text-green-400 bg-primary-light dark:bg-green-900/20 rounded hover:bg-green-100 dark:hover:bg-green-900/40 transition"
               >
                 View file
               </a>
@@ -368,13 +368,13 @@ export default function FoodSafetyProfile() {
 
           {/* Selected new file */}
           {selectedFile && (
-            <div className="flex items-center gap-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3">
+            <div className="flex items-center gap-3 bg-primary-light dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3">
               <FileText className="w-4 h-4 text-green-500 flex-shrink-0" />
               <div className="flex-1 min-w-0">
-                <p className="text-sm text-green-700 dark:text-green-300 truncate font-medium">
+                <p className="text-sm text-primary dark:text-green-300 truncate font-medium">
                   {selectedFile.name}
                 </p>
-                <p className="text-xs text-green-600 dark:text-green-400">
+                <p className="text-xs text-primary dark:text-green-400">
                   {(selectedFile.size / 1024).toFixed(0)} KB
                   {profile.ranch_map_url ? ' — will replace current file' : ''}
                 </p>
@@ -382,7 +382,7 @@ export default function FoodSafetyProfile() {
               <button
                 type="button"
                 onClick={() => setSelectedFile(null)}
-                className="p-1 text-green-500 hover:text-green-700 dark:hover:text-green-300"
+                className="p-1 text-green-500 hover:text-primary-hover dark:hover:text-green-300"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -392,7 +392,7 @@ export default function FoodSafetyProfile() {
           {/* Drop zone */}
           {!selectedFile && (
             <label
-              className="flex flex-col items-center gap-2 p-6 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer hover:border-green-400 dark:hover:border-green-500 hover:bg-green-50/40 dark:hover:bg-green-900/10 transition"
+              className="flex flex-col items-center gap-2 p-6 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer hover:border-green-400 dark:hover:border-primary hover:bg-primary-light/40 dark:hover:bg-green-900/10 transition"
               onDragOver={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -407,7 +407,7 @@ export default function FoodSafetyProfile() {
               <Upload className="w-6 h-6 text-gray-400" />
               <span className="text-sm text-gray-500 dark:text-gray-400">
                 Drop a file here or{' '}
-                <span className="text-green-600 dark:text-green-400 font-medium">browse</span>
+                <span className="text-primary dark:text-green-400 font-medium">browse</span>
               </span>
               <span className="text-xs text-gray-400">PDF, JPG, PNG up to 25 MB</span>
               <input
@@ -430,7 +430,7 @@ export default function FoodSafetyProfile() {
           <button
             type="submit"
             disabled={saving}
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-white text-sm font-medium rounded-lg hover:bg-primary-hover transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {saving ? (
               <Loader2 className="w-4 h-4 animate-spin" />

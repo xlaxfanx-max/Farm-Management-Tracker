@@ -73,7 +73,7 @@ function FarmCard({
   return (
     <div
       className={`bg-white dark:bg-gray-800 rounded-lg shadow-md border-2 overflow-hidden transition-all ${
-        isSelected ? 'border-green-500 shadow-lg' : 'border-gray-200 dark:border-gray-700'
+        isSelected ? 'border-primary shadow-lg' : 'border-gray-200 dark:border-gray-700'
       }`}
     >
       {/* Farm Header */}
@@ -88,7 +88,7 @@ function FarmCard({
                 >
                   <ExpandIcon className="w-6 h-6 text-gray-700" />
                 </button>
-                <Home className="text-green-600 flex-shrink-0" size={32} />
+                <Home className="text-primary flex-shrink-0" size={32} />
                 <div>
                   <h3 className="font-bold text-2xl text-gray-900">{farm.name}</h3>
                   {farm.farm_number && (
@@ -99,7 +99,7 @@ function FarmCard({
                 {/* GPS Status Badge */}
                 <span className={`ml-2 px-2 py-1 rounded-full text-xs font-medium ${
                   hasCoords
-                    ? 'bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-400'
+                    ? 'bg-green-100 dark:bg-green-900/50 text-primary dark:text-green-400'
                     : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
                 }`}>
                   {hasCoords ? '📍 Mapped' : 'No GPS'}
@@ -149,7 +149,7 @@ function FarmCard({
                     <div className="bg-white/60 dark:bg-gray-800/60 rounded-lg px-3 py-2">
                       <p className="text-xs text-gray-500 dark:text-gray-400">Mapped Fields</p>
                       <p className="text-lg font-bold text-gray-900 dark:text-white">
-                        <span className={stats.mappedFields === stats.fieldCount ? 'text-green-600 dark:text-green-400' : 'text-amber-600 dark:text-amber-400'}>
+                        <span className={stats.mappedFields === stats.fieldCount ? 'text-primary dark:text-green-400' : 'text-amber-600 dark:text-amber-400'}>
                           {stats.mappedFields}
                         </span>
                         <span className="text-gray-400 dark:text-gray-500 text-sm">/{stats.fieldCount}</span>

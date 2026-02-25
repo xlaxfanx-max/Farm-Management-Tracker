@@ -135,7 +135,7 @@ const WaterAssessmentDashboard = ({ onCreateNew, onViewAssessment, onEditAssessm
       draft: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300',
       in_progress: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400',
       submitted: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-400',
-      approved: 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400',
+      approved: 'bg-green-100 text-primary dark:bg-green-900/40 dark:text-green-400',
     };
     const labels = {
       draft: 'Draft',
@@ -153,7 +153,7 @@ const WaterAssessmentDashboard = ({ onCreateNew, onViewAssessment, onEditAssessm
   const getRiskBadge = (riskLevel, riskScore) => {
     if (!riskLevel) return null;
     const styles = {
-      low: 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400',
+      low: 'bg-green-100 text-primary dark:bg-green-900/40 dark:text-green-400',
       medium: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-400',
       high: 'bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-400',
       critical: 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400',
@@ -171,7 +171,7 @@ const WaterAssessmentDashboard = ({ onCreateNew, onViewAssessment, onEditAssessm
   if (loading && assessments.length === 0) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
       </div>
     );
   }
@@ -213,7 +213,7 @@ const WaterAssessmentDashboard = ({ onCreateNew, onViewAssessment, onEditAssessm
         <div className="flex gap-2">
           <button
             onClick={onCreateNew}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors"
           >
             <Plus className="w-5 h-5" />
             New Assessment
@@ -239,7 +239,7 @@ const WaterAssessmentDashboard = ({ onCreateNew, onViewAssessment, onEditAssessm
             placeholder="Search assessments..."
             value={filters.search}
             onChange={(e) => setFilters({ ...filters, search: e.target.value })}
-            className="pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            className="pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent"
           />
         </div>
       </div>
@@ -339,7 +339,7 @@ const WaterAssessmentDashboard = ({ onCreateNew, onViewAssessment, onEditAssessm
           </p>
           <button
             onClick={onCreateNew}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors"
           >
             <Plus className="w-5 h-5" />
             Create Assessment
@@ -415,7 +415,7 @@ const WaterAssessmentDashboard = ({ onCreateNew, onViewAssessment, onEditAssessm
                         {assessment.status !== 'approved' && (
                           <button
                             onClick={() => onEditAssessment?.(assessment.id)}
-                            className="p-1 text-gray-500 hover:text-green-600 dark:hover:text-green-400 transition-colors"
+                            className="p-1 text-gray-500 hover:text-primary dark:hover:text-green-400 transition-colors"
                             title="Edit"
                           >
                             <Edit className="w-5 h-5" />
@@ -465,7 +465,7 @@ const WaterAssessmentDashboard = ({ onCreateNew, onViewAssessment, onEditAssessm
 const SummaryCard = ({ title, value, icon: Icon, color }) => {
   const colorClasses = {
     blue: 'bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400',
-    green: 'bg-green-100 dark:bg-green-900/40 text-green-600 dark:text-green-400',
+    green: 'bg-green-100 dark:bg-green-900/40 text-primary dark:text-green-400',
     yellow: 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-600 dark:text-yellow-400',
     red: 'bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400',
   };

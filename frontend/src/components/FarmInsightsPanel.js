@@ -82,7 +82,7 @@ function FarmInsightsPanel({ farms = [], fields = [], applications = [], waterSo
         className="w-full px-4 py-3 flex items-center justify-between bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/30 dark:to-blue-900/30 hover:from-green-100 hover:to-blue-100 dark:hover:from-green-900/50 dark:hover:to-blue-900/50 transition-colors"
       >
         <div className="flex items-center gap-2">
-          <BarChart3 className="w-5 h-5 text-green-600 dark:text-green-400" />
+          <BarChart3 className="w-5 h-5 text-primary dark:text-green-400" />
           <h3 className="font-semibold text-gray-900 dark:text-white">Farm Insights</h3>
           <span className="text-sm text-gray-500 dark:text-gray-400">
             {insights.totalAcres.toFixed(0)} total acres across {insights.totalFarms} farms
@@ -102,7 +102,7 @@ function FarmInsightsPanel({ farms = [], fields = [], applications = [], waterSo
             {/* Total Acreage */}
             <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3">
               <div className="flex items-center gap-2 mb-1">
-                <Sprout className="w-4 h-4 text-green-600 dark:text-green-400" />
+                <Sprout className="w-4 h-4 text-primary dark:text-green-400" />
                 <span className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">Total Acres</span>
               </div>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">{insights.totalAcres.toFixed(0)}</p>
@@ -125,7 +125,7 @@ function FarmInsightsPanel({ farms = [], fields = [], applications = [], waterSo
             {/* Field Coverage */}
             <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3">
               <div className="flex items-center gap-2 mb-1">
-                <MapPin className="w-4 h-4 text-green-600 dark:text-green-400" />
+                <MapPin className="w-4 h-4 text-primary dark:text-green-400" />
                 <span className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">Field Coverage</span>
               </div>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">

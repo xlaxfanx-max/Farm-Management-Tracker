@@ -53,7 +53,7 @@ const StatusBadge = ({ daysUntil, expired }) => {
   if (daysUntil <= 90) {
     return <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700">Due Soon</span>;
   }
-  return <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">Current</span>;
+  return <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-primary">Current</span>;
 };
 
 // Training type badge
@@ -209,7 +209,7 @@ const TrainingModal = ({ record, onClose, onSave }) => {
               required
               value={formData.trainee_name}
               onChange={(e) => setFormData({ ...formData, trainee_name: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
               placeholder="Full name"
             />
           </div>
@@ -221,7 +221,7 @@ const TrainingModal = ({ record, onClose, onSave }) => {
                 type="text"
                 value={formData.trainee_employee_id}
                 onChange={(e) => setFormData({ ...formData, trainee_employee_id: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
                 placeholder="Optional"
               />
             </div>
@@ -232,7 +232,7 @@ const TrainingModal = ({ record, onClose, onSave }) => {
                 required
                 value={formData.training_type}
                 onChange={(e) => setFormData({ ...formData, training_type: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
               >
                 {COMPLIANCE_CONSTANTS.WPS_TRAINING_TYPES.map(type => (
                   <option key={type.value} value={type.value}>{type.label}</option>
@@ -249,7 +249,7 @@ const TrainingModal = ({ record, onClose, onSave }) => {
                 required
                 value={formData.training_date}
                 onChange={(e) => setFormData({ ...formData, training_date: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
               />
             </div>
 
@@ -260,7 +260,7 @@ const TrainingModal = ({ record, onClose, onSave }) => {
                 required
                 value={formData.expiration_date}
                 onChange={(e) => setFormData({ ...formData, expiration_date: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
               />
               <p className="text-xs text-gray-500 mt-1">WPS training expires annually</p>
             </div>
@@ -273,7 +273,7 @@ const TrainingModal = ({ record, onClose, onSave }) => {
                 type="text"
                 value={formData.trainer_name}
                 onChange={(e) => setFormData({ ...formData, trainer_name: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
               />
             </div>
 
@@ -283,7 +283,7 @@ const TrainingModal = ({ record, onClose, onSave }) => {
                 type="text"
                 value={formData.trainer_certification}
                 onChange={(e) => setFormData({ ...formData, trainer_certification: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
               />
             </div>
           </div>
@@ -294,7 +294,7 @@ const TrainingModal = ({ record, onClose, onSave }) => {
               id="verified"
               checked={formData.verified}
               onChange={(e) => setFormData({ ...formData, verified: e.target.checked })}
-              className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+              className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
             />
             <label htmlFor="verified" className="text-sm text-gray-700">
               Training verified/certified
@@ -312,7 +312,7 @@ const TrainingModal = ({ record, onClose, onSave }) => {
             <button
               type="submit"
               disabled={saving}
-              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+              className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors disabled:opacity-50"
             >
               {saving ? 'Saving...' : record ? 'Update' : 'Create'}
             </button>
@@ -334,7 +334,7 @@ const PostingLocationCard = ({ location, onVerify }) => {
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-            <MapPin className="w-5 h-5 text-green-600" />
+            <MapPin className="w-5 h-5 text-primary" />
           </div>
           <div>
             <h3 className="font-medium text-gray-900">{location.location_name}</h3>
@@ -346,7 +346,7 @@ const PostingLocationCard = ({ location, onVerify }) => {
       <div className="space-y-2 mb-4">
         <div className="flex items-center gap-2">
           {location.has_wps_poster ? (
-            <CheckCircle2 className="w-4 h-4 text-green-600" />
+            <CheckCircle2 className="w-4 h-4 text-primary" />
           ) : (
             <X className="w-4 h-4 text-red-500" />
           )}
@@ -354,7 +354,7 @@ const PostingLocationCard = ({ location, onVerify }) => {
         </div>
         <div className="flex items-center gap-2">
           {location.has_emergency_info ? (
-            <CheckCircle2 className="w-4 h-4 text-green-600" />
+            <CheckCircle2 className="w-4 h-4 text-primary" />
           ) : (
             <X className="w-4 h-4 text-red-500" />
           )}
@@ -362,7 +362,7 @@ const PostingLocationCard = ({ location, onVerify }) => {
         </div>
         <div className="flex items-center gap-2">
           {location.has_sds_available ? (
-            <CheckCircle2 className="w-4 h-4 text-green-600" />
+            <CheckCircle2 className="w-4 h-4 text-primary" />
           ) : (
             <X className="w-4 h-4 text-red-500" />
           )}
@@ -370,7 +370,7 @@ const PostingLocationCard = ({ location, onVerify }) => {
         </div>
         <div className="flex items-center gap-2">
           {location.has_application_info ? (
-            <CheckCircle2 className="w-4 h-4 text-green-600" />
+            <CheckCircle2 className="w-4 h-4 text-primary" />
           ) : (
             <X className="w-4 h-4 text-red-500" />
           )}
@@ -388,7 +388,7 @@ const PostingLocationCard = ({ location, onVerify }) => {
         </div>
         <button
           onClick={() => onVerify(location.id)}
-          className="text-sm text-green-600 hover:text-green-700 font-medium"
+          className="text-sm text-primary hover:text-primary-hover font-medium"
         >
           Verify Now
         </button>
@@ -444,7 +444,7 @@ const REIPostingCard = ({ posting, onMarkPosted, onMarkRemoved }) => {
         {!posting.posted_at ? (
           <button
             onClick={() => onMarkPosted(posting.id)}
-            className="flex-1 px-3 py-1.5 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700"
+            className="flex-1 px-3 py-1.5 text-sm bg-primary text-white rounded-lg hover:bg-primary-hover"
           >
             Mark as Posted
           </button>
@@ -591,7 +591,7 @@ export default function WPSCompliance({ onNavigate }) {
       <div className="flex items-center justify-between mb-6">
         <div>
           <div className="flex items-center gap-2 text-sm text-gray-500 mb-1">
-            <button onClick={() => onNavigate?.('compliance')} className="hover:text-green-600">
+            <button onClick={() => onNavigate?.('compliance')} className="hover:text-primary">
               Compliance
             </button>
             <span>/</span>
@@ -603,7 +603,7 @@ export default function WPSCompliance({ onNavigate }) {
         {activeTab === 'training' && (
           <button
             onClick={() => { setEditingRecord(null); setShowTrainingModal(true); }}
-            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors"
           >
             <Plus className="w-4 h-4" />
             Add Training
@@ -618,7 +618,7 @@ export default function WPSCompliance({ onNavigate }) {
             onClick={() => setActiveTab('training')}
             className={`pb-3 px-1 border-b-2 font-medium text-sm transition-colors flex items-center gap-2
               ${activeTab === 'training'
-                ? 'border-green-600 text-green-600'
+                ? 'border-primary text-primary'
                 : 'border-transparent text-gray-500 hover:text-gray-700'}`}
           >
             <Users className="w-4 h-4" />
@@ -628,7 +628,7 @@ export default function WPSCompliance({ onNavigate }) {
             onClick={() => setActiveTab('posting')}
             className={`pb-3 px-1 border-b-2 font-medium text-sm transition-colors flex items-center gap-2
               ${activeTab === 'posting'
-                ? 'border-green-600 text-green-600'
+                ? 'border-primary text-primary'
                 : 'border-transparent text-gray-500 hover:text-gray-700'}`}
           >
             <MapPin className="w-4 h-4" />
@@ -638,7 +638,7 @@ export default function WPSCompliance({ onNavigate }) {
             onClick={() => setActiveTab('rei')}
             className={`pb-3 px-1 border-b-2 font-medium text-sm transition-colors flex items-center gap-2
               ${activeTab === 'rei'
-                ? 'border-green-600 text-green-600'
+                ? 'border-primary text-primary'
                 : 'border-transparent text-gray-500 hover:text-gray-700'}`}
           >
             <Clock className="w-4 h-4" />
@@ -659,12 +659,12 @@ export default function WPSCompliance({ onNavigate }) {
               </div>
               <p className="text-sm text-gray-600 mt-1">Total Records</p>
             </div>
-            <div className="bg-green-50 border border-green-100 rounded-lg p-4">
+            <div className="bg-primary-light border border-green-100 rounded-lg p-4">
               <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-5 h-5 text-green-600" />
-                <span className="text-2xl font-bold text-green-600">{trainingStats.current}</span>
+                <CheckCircle2 className="w-5 h-5 text-primary" />
+                <span className="text-2xl font-bold text-primary">{trainingStats.current}</span>
               </div>
-              <p className="text-sm text-green-700 mt-1">Current</p>
+              <p className="text-sm text-primary mt-1">Current</p>
             </div>
             <div className="bg-amber-50 border border-amber-100 rounded-lg p-4">
               <div className="flex items-center gap-2">
@@ -708,7 +708,7 @@ export default function WPSCompliance({ onNavigate }) {
                   placeholder="Search employees..."
                   value={trainingSearch}
                   onChange={(e) => setTrainingSearch(e.target.value)}
-                  className="pl-9 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 w-64"
+                  className="pl-9 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-primary w-64"
                 />
               </div>
             </div>
@@ -752,7 +752,7 @@ export default function WPSCompliance({ onNavigate }) {
               <p className="text-sm text-gray-500 mt-1">Add your first WPS training record</p>
               <button
                 onClick={() => { setEditingRecord(null); setShowTrainingModal(true); }}
-                className="mt-4 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                className="mt-4 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors"
               >
                 Add Training
               </button>
