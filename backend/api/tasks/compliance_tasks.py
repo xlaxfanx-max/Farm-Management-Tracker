@@ -1028,7 +1028,7 @@ def check_primusgfs_deadlines():
     """
     from api.models import Company
     from api.models.compliance import ComplianceDeadline
-    from api.models.primusgfs import (
+    from api.models import (
         FoodSafetyCommitteeMeeting,
         PreSeasonChecklist,
         EquipmentCalibration,

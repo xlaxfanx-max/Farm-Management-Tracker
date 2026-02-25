@@ -202,7 +202,7 @@ class CACDataMapper:
     @staticmethod
     def _get_models():
         """Import and return all needed model classes."""
-        from api.models.primusgfs import (
+        from api.models import (
             FoodSafetyProfile,
             FoodSafetyRoleAssignment,
             FoodSafetyCommitteeMeeting,
@@ -3073,7 +3073,7 @@ class CACDataMapper:
         """
         Overlay any captured signatures from CACDocumentSignature.
         """
-        from api.models.primusgfs import CACDocumentSignature
+        from api.models import CACDocumentSignature
 
         signatures = CACDocumentSignature.objects.filter(
             company=self.company,

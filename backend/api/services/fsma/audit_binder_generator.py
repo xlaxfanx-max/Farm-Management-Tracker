@@ -705,7 +705,7 @@ startxref
         story.append(Spacer(1, 0.2 * inch))
 
         try:
-            from api.models.primusgfs import InternalAudit
+            from api.models import InternalAudit
             audits = InternalAudit.objects.filter(
                 company=self.company,
                 planned_date__range=[self.start_date, self.end_date]
@@ -753,7 +753,7 @@ startxref
         story.append(Spacer(1, 0.2 * inch))
 
         try:
-            from api.models.primusgfs import AuditFinding
+            from api.models import AuditFinding
             findings = AuditFinding.objects.filter(
                 audit__company=self.company,
                 status__in=['open', 'in_progress']

@@ -13,7 +13,7 @@ from api.services.primusgfs.cac_pdf_filler import CACPDFFieldFiller
 from api.services.primusgfs.cac_data_mapper import (
     CACDataMapper, DOC_PAGE_MAP, SIGNATURE_REQUIREMENTS,
 )
-from api.models.primusgfs import CACDocumentSignature
+from api.models import CACDocumentSignature
 
 logger = logging.getLogger(__name__)
 

@@ -83,7 +83,7 @@ class CrossDataLinker:
                 }
 
         # Check which are already in ChemicalInventoryLog
-        from api.models.primusgfs import ChemicalInventoryLog
+        from api.models import ChemicalInventoryLog
         existing_epas = set(
             ChemicalInventoryLog.objects.filter(
                 company=self.company,
@@ -115,7 +115,7 @@ class CrossDataLinker:
         Returns list of employees from WPS training and team membership
         that can be imported into PrimusGFS TrainingRecord.
         """
-        from api.models.primusgfs import TrainingRecord
+        from api.models import TrainingRecord
 
         existing_employees = set(
             TrainingRecord.objects.filter(
@@ -189,7 +189,7 @@ class CrossDataLinker:
         Returns list of suppliers from pesticide product manufacturers
         and labor contractors.
         """
-        from api.models.primusgfs import ApprovedSupplier
+        from api.models import ApprovedSupplier
 
         existing_names = set(
             ApprovedSupplier.objects.filter(
@@ -272,7 +272,7 @@ class CrossDataLinker:
             ).order_by('-incident_date')
 
             # Check which incidents already have linked non-conformances
-            from api.models.primusgfs import EmployeeNonConformance
+            from api.models import EmployeeNonConformance
             existing_descriptions = set(
                 EmployeeNonConformance.objects.filter(
                     company=self.company,
@@ -432,7 +432,7 @@ class CrossDataLinker:
 
         # --- Animal Activity (from perimeter monitoring) ---
         try:
-            from api.models.primusgfs import PerimeterMonitoringLog
+            from api.models import PerimeterMonitoringLog
             perimeter = PerimeterMonitoringLog.objects.filter(
                 company=self.company,
                 log_date__gte=q_start,
@@ -471,7 +471,7 @@ class CrossDataLinker:
             pass
 
         try:
-            from api.models.primusgfs import EquipmentCalibration
+            from api.models import EquipmentCalibration
             overdue_cal = EquipmentCalibration.objects.filter(
                 company=self.company,
                 next_calibration_date__lt=today,
@@ -488,7 +488,7 @@ class CrossDataLinker:
             pass
 
         try:
-            from api.models.primusgfs import CorrectiveAction
+            from api.models import CorrectiveAction
             overdue_ca = CorrectiveAction.objects.filter(
                 company=self.company,
                 status__in=['open', 'in_progress'],
@@ -509,7 +509,7 @@ class CrossDataLinker:
         # Build additional_topics summary
         additional = []
         try:
-            from api.models.primusgfs import EmployeeNonConformance
+            from api.models import EmployeeNonConformance
             ncs = EmployeeNonConformance.objects.filter(
                 company=self.company,
                 resolved=False,
@@ -523,7 +523,7 @@ class CrossDataLinker:
 
         # --- Suggested Attendees from Org Roles ---
         try:
-            from api.models.primusgfs import FoodSafetyRoleAssignment
+            from api.models import FoodSafetyRoleAssignment
             roles = FoodSafetyRoleAssignment.objects.filter(
                 company=self.company,
                 active=True,
@@ -543,7 +543,7 @@ class CrossDataLinker:
         carried_forward = []
         prev_meeting_date = None
         try:
-            from api.models.primusgfs import FoodSafetyCommitteeMeeting
+            from api.models import FoodSafetyCommitteeMeeting
             if q_num == 1:
                 prev_q = 'Q4'
                 prev_year = self.season_year - 1
@@ -653,7 +653,7 @@ class CrossDataLinker:
 
         # --- Chemical inventory current? ---
         try:
-            from api.models.primusgfs import ChemicalInventoryLog
+            from api.models import ChemicalInventoryLog
             chem = ChemicalInventoryLog.objects.filter(
                 company=self.company,
                 inventory_year=year,
@@ -666,7 +666,7 @@ class CrossDataLinker:
 
         # --- Perimeter monitoring current? ---
         try:
-            from api.models.primusgfs import PerimeterMonitoringLog
+            from api.models import PerimeterMonitoringLog
             peri = PerimeterMonitoringLog.objects.filter(
                 company=self.company,
                 log_date__gte=today - timedelta(days=30),
@@ -679,7 +679,7 @@ class CrossDataLinker:
 
         # --- Committee meetings current? ---
         try:
-            from api.models.primusgfs import FoodSafetyCommitteeMeeting
+            from api.models import FoodSafetyCommitteeMeeting
             meetings = FoodSafetyCommitteeMeeting.objects.filter(
                 company=self.company,
                 meeting_year=year,
@@ -693,7 +693,7 @@ class CrossDataLinker:
 
         # --- Management review current? ---
         try:
-            from api.models.primusgfs import ManagementVerificationReview
+            from api.models import ManagementVerificationReview
             review = ManagementVerificationReview.objects.filter(
                 company=self.company,
                 review_year=year,
@@ -706,7 +706,7 @@ class CrossDataLinker:
 
         # --- Equipment calibration (first aid kits) ---
         try:
-            from api.models.primusgfs import EquipmentCalibration
+            from api.models import EquipmentCalibration
             cal = EquipmentCalibration.objects.filter(
                 company=self.company,
                 status='passed',
@@ -745,7 +745,7 @@ class CrossDataLinker:
 
         # Section 1: Internal Audits
         try:
-            from api.models.primusgfs import InternalAudit
+            from api.models import InternalAudit
             audits = InternalAudit.objects.filter(
                 company=self.company, planned_date__year=year,
             )
@@ -760,7 +760,7 @@ class CrossDataLinker:
 
         # Section 2: Corrective Actions
         try:
-            from api.models.primusgfs import CorrectiveAction
+            from api.models import CorrectiveAction
             cas = CorrectiveAction.objects.filter(company=self.company)
             total = cas.count()
             open_cas = cas.filter(status__in=['open', 'in_progress']).count()
@@ -790,7 +790,7 @@ class CrossDataLinker:
 
         # Section 4: Training
         try:
-            from api.models.primusgfs import TrainingRecord
+            from api.models import TrainingRecord
             records = TrainingRecord.objects.filter(
                 company=self.company, active=True,
             )
@@ -809,7 +809,7 @@ class CrossDataLinker:
 
         # Section 5: Supplier Control
         try:
-            from api.models.primusgfs import ApprovedSupplier
+            from api.models import ApprovedSupplier
             suppliers = ApprovedSupplier.objects.filter(company=self.company)
             total = suppliers.count()
             approved = suppliers.filter(status='approved').count()
@@ -822,7 +822,7 @@ class CrossDataLinker:
 
         # Section 6: Document Control
         try:
-            from api.models.primusgfs import ControlledDocument
+            from api.models import ControlledDocument
             docs = ControlledDocument.objects.filter(company=self.company)
             total = docs.count()
             approved = docs.filter(status='approved').count()
@@ -838,7 +838,7 @@ class CrossDataLinker:
 
         # Section 7: Equipment Calibration
         try:
-            from api.models.primusgfs import EquipmentCalibration
+            from api.models import EquipmentCalibration
             cals = EquipmentCalibration.objects.filter(company=self.company)
             total = cals.count()
             current = cals.filter(
@@ -856,7 +856,7 @@ class CrossDataLinker:
 
         # Section 8: Pest Control
         try:
-            from api.models.primusgfs import PestControlProgram, PestMonitoringLog
+            from api.models import PestControlProgram, PestMonitoringLog
             programs = PestControlProgram.objects.filter(
                 company=self.company, program_year=year,
             )
@@ -892,7 +892,7 @@ class CrossDataLinker:
 
         # Section 10: Mock Recalls
         try:
-            from api.models.primusgfs import MockRecall
+            from api.models import MockRecall
             recalls = MockRecall.objects.filter(
                 company=self.company, exercise_date__year=year,
             )
@@ -907,7 +907,7 @@ class CrossDataLinker:
 
         # Section 11: Sanitation
         try:
-            from api.models.primusgfs import FieldSanitationLog
+            from api.models import FieldSanitationLog
             san = FieldSanitationLog.objects.filter(
                 company=self.company,
                 log_date__gte=today - timedelta(days=30),
@@ -924,7 +924,7 @@ class CrossDataLinker:
 
         # Section 12: Food Defense
         try:
-            from api.models.primusgfs import FoodDefensePlan
+            from api.models import FoodDefensePlan
             plan = FoodDefensePlan.objects.filter(
                 company=self.company, plan_year=year,
             ).first()
