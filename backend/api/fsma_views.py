@@ -39,15 +39,15 @@ from .models import (
 from .serializers import (
     UserSignatureSerializer,
     FacilityLocationSerializer,
-    FacilityCleaningLogSerializer,
-    VisitorLogSerializer, VisitorQuickEntrySerializer,
-    SafetyMeetingSerializer, SafetyMeetingAttendeeSerializer,
+    FacilityCleaningLogSerializer, FacilityCleaningLogListSerializer,
+    VisitorLogSerializer, VisitorLogListSerializer, VisitorQuickEntrySerializer,
+    SafetyMeetingSerializer, SafetyMeetingListSerializer, SafetyMeetingAttendeeSerializer,
     FertilizerInventorySerializer, FertilizerInventoryListSerializer,
     FertilizerInventoryTransactionSerializer, FertilizerInventoryTransactionListSerializer,
     InventoryPurchaseSerializer, InventoryAdjustmentSerializer,
     MonthlyInventorySnapshotSerializer,
-    PHIComplianceCheckSerializer, PHIPreCheckSerializer,
-    AuditBinderSerializer, AuditBinderGenerateSerializer,
+    PHIComplianceCheckSerializer, PHIComplianceCheckListSerializer, PHIPreCheckSerializer,
+    AuditBinderSerializer, AuditBinderListSerializer, AuditBinderGenerateSerializer,
     FSMADashboardSerializer,
 )
 

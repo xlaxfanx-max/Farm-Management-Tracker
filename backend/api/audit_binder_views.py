@@ -27,9 +27,9 @@ from .models import (
 
 from .audit_binder_serializers import (
     CACBinderTemplateSerializer,
-    AuditBinderInstanceSerializer,
+    AuditBinderInstanceSerializer, AuditBinderInstanceDetailSerializer,
     CreateAuditBinderSerializer,
-    BinderSectionSerializer,
+    BinderSectionSerializer, BinderSectionDetailSerializer,
     BinderSupportingDocumentSerializer,
 )
 
