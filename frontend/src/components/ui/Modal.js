@@ -47,10 +47,14 @@ export default function Modal({
       <div
         className="absolute inset-0 bg-black/50 transition-opacity"
         onClick={onClose}
+        aria-hidden="true"
       />
 
       {/* Panel */}
       <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={title ? 'modal-title' : undefined}
         className={`
           relative bg-surface-raised dark:bg-gray-800 rounded-modal shadow-xl
           w-full ${sizeClasses[size] || sizeClasses.md}
@@ -68,7 +72,7 @@ export default function Modal({
                 </div>
               )}
               <div className="min-w-0">
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-white truncate">
+                <h2 id="modal-title" className="text-lg font-semibold text-gray-900 dark:text-white truncate">
                   {title}
                 </h2>
                 {subtitle && (
@@ -78,7 +82,8 @@ export default function Modal({
             </div>
             <button
               onClick={onClose}
-              className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors flex-shrink-0"
+              className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors flex-shrink-0 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:focus:ring-offset-gray-800"
+              aria-label="Close dialog"
             >
               <X className="w-5 h-5" />
             </button>

@@ -6,7 +6,8 @@ export default function MobileHeader({ onOpenSidebar, isDarkMode, onToggleTheme 
     <div className="sticky top-0 z-30 lg:hidden bg-surface-raised dark:bg-gray-800 border-b border-border dark:border-gray-700 px-4 py-3 flex items-center gap-3">
       <button
         onClick={onOpenSidebar}
-        className="p-2 -ml-2 text-gray-600 dark:text-gray-300 hover:bg-surface-sunken dark:hover:bg-gray-700 rounded-lg"
+        className="p-2 -ml-2 text-gray-600 dark:text-gray-300 hover:bg-surface-sunken dark:hover:bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:focus:ring-offset-gray-800"
+        aria-label="Open navigation menu"
       >
         <Menu className="w-5 h-5" />
       </button>
@@ -21,7 +22,8 @@ export default function MobileHeader({ onOpenSidebar, isDarkMode, onToggleTheme 
       </div>
       <button
         onClick={onToggleTheme}
-        className="ml-auto p-2 text-gray-600 dark:text-gray-300 hover:bg-surface-sunken dark:hover:bg-gray-700 rounded-lg"
+        className="ml-auto p-2 text-gray-600 dark:text-gray-300 hover:bg-surface-sunken dark:hover:bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:focus:ring-offset-gray-800"
+        aria-label={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
       >
         {isDarkMode ? <Sun className="w-5 h-5 text-yellow-500" /> : <Moon className="w-5 h-5" />}
       </button>

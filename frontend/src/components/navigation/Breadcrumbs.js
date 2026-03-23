@@ -51,27 +51,28 @@ function Breadcrumbs({ currentView, onNavigate }) {
   }
 
   return (
-    <nav className="flex items-center gap-1 text-sm text-gray-500 mb-4">
+    <nav className="flex items-center gap-1 text-sm text-gray-500 mb-4" aria-label="Breadcrumb">
       <button
         onClick={() => onNavigate('dashboard')}
-        className="p-1 hover:bg-surface-sunken dark:hover:bg-gray-700 rounded transition-colors"
+        className="p-1 hover:bg-surface-sunken dark:hover:bg-gray-700 rounded transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:focus:ring-offset-gray-800"
         title="Go to Dashboard"
+        aria-label="Go to Dashboard"
       >
         <Home className="w-4 h-4" />
       </button>
 
       {breadcrumbs.map((crumb, index) => (
         <React.Fragment key={crumb.id}>
-          <ChevronRight className="w-4 h-4 text-gray-300" />
+          <ChevronRight className="w-4 h-4 text-gray-300" aria-hidden="true" />
           {crumb.isLink ? (
             <button
               onClick={() => onNavigate(crumb.id)}
-              className="hover:text-primary hover:underline transition-colors"
+              className="hover:text-primary hover:underline transition-colors rounded focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:focus:ring-offset-gray-800 px-1"
             >
               {crumb.label}
             </button>
           ) : (
-            <span className="text-gray-900 font-medium">{crumb.label}</span>
+            <span className="text-gray-900 dark:text-white font-medium" aria-current="page">{crumb.label}</span>
           )}
         </React.Fragment>
       ))}

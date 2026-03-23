@@ -36,14 +36,14 @@ export default function ConfirmDialog({
 
   return ReactDOM.createPortal(
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/50" onClick={loading ? undefined : onCancel} />
-      <div className="relative bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-sm w-full p-6">
+      <div className="absolute inset-0 bg-black/50" onClick={loading ? undefined : onCancel} aria-hidden="true" />
+      <div className="relative bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-sm w-full p-6" role="alertdialog" aria-modal="true" aria-labelledby="confirm-dialog-title">
         <div className="flex items-start gap-4">
           <div className={`p-2 rounded-lg flex-shrink-0 ${config.iconBg}`}>
             <IconComponent className={`w-5 h-5 ${config.iconColor}`} />
           </div>
           <div className="flex-1 min-w-0">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+            <h3 id="confirm-dialog-title" className="text-lg font-semibold text-gray-900 dark:text-white">
               {title}
             </h3>
             {message && (

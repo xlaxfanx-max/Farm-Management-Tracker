@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Home, Plus, Edit, Trash2, MapPin, ChevronDown, ChevronRight, Locate, Satellite, MoreVertical } from 'lucide-react';
+import StatusBadge from './ui/StatusBadge';
 import QuarantineStatusBadge from './QuarantineStatusBadge';
 import FieldCard from './FieldCard';
 
@@ -84,9 +85,11 @@ function FarmCard({
               <div className="flex items-center gap-3 mb-3">
                 <button
                   onClick={() => onToggleExpand(farm.id)}
-                  className="p-1 hover:bg-white dark:hover:bg-gray-700 rounded transition-colors"
+                  className="p-1 hover:bg-white dark:hover:bg-gray-700 rounded transition-colors focus:outline-none focus:ring-2 focus:ring-primary"
+                  aria-expanded={isExpanded}
+                  aria-label={isExpanded ? `Collapse ${farm.name} fields` : `Expand ${farm.name} fields`}
                 >
-                  <ExpandIcon className="w-6 h-6 text-gray-700" />
+                  <ExpandIcon className="w-6 h-6 text-gray-700 dark:text-gray-300" />
                 </button>
                 <Home className="text-primary flex-shrink-0" size={32} />
                 <div>
@@ -97,13 +100,12 @@ function FarmCard({
                 </div>
 
                 {/* GPS Status Badge */}
-                <span className={`ml-2 px-2 py-1 rounded-full text-xs font-medium ${
-                  hasCoords
-                    ? 'bg-green-100 dark:bg-green-900/50 text-primary dark:text-green-400'
-                    : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
-                }`}>
-                  {hasCoords ? '📍 Mapped' : 'No GPS'}
-                </span>
+                <StatusBadge
+                  status={hasCoords ? 'active' : 'inactive'}
+                  label={hasCoords ? 'Mapped' : 'No GPS'}
+                  colorScheme={hasCoords ? 'green' : 'gray'}
+                  className="ml-2"
+                />
 
                 {/* HLB Quarantine Status Badge */}
                 {hasCoords && (
@@ -207,15 +209,17 @@ function FarmCard({
               </button>
               <button
                 onClick={() => onEdit(farm)}
-                className="p-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                className="p-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
                 title="Edit Farm"
+                aria-label={`Edit ${farm.name}`}
               >
                 <Edit size={18} />
               </button>
               <button
                 onClick={() => onDelete(farm.id)}
-                className="p-2 bg-white border border-gray-300 text-red-600 rounded-lg hover:bg-red-50 transition-colors"
+                className="p-2 bg-white border border-gray-300 text-red-600 rounded-lg hover:bg-red-50 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
                 title="Delete Farm"
+                aria-label={`Delete ${farm.name}`}
               >
                 <Trash2 size={18} />
               </button>
@@ -237,8 +241,10 @@ function FarmCard({
               <div className="relative" ref={mobileMenuRef}>
                 <button
                   onClick={() => setShowMobileMenu(!showMobileMenu)}
-                  className="p-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                  className="p-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
                   title="More actions"
+                  aria-label={`More actions for ${farm.name}`}
+                  aria-expanded={showMobileMenu}
                 >
                   <MoreVertical size={18} />
                 </button>

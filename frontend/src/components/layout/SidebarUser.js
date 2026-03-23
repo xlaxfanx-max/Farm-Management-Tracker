@@ -32,8 +32,9 @@ export default function SidebarUser({
       <div className="p-3 border-t border-white/10">
         <button
           onClick={handleLogout}
-          className="w-full flex justify-center p-2 hover:bg-sidebar-hover rounded-md text-gray-300 hover:text-red-400 transition-colors"
+          className="w-full flex justify-center p-2 hover:bg-sidebar-hover rounded-md text-gray-300 hover:text-red-400 transition-colors focus:outline-none focus:ring-2 focus:ring-white/50"
           title="Sign Out"
+          aria-label="Sign out"
         >
           <LogOut className="w-[18px] h-[18px]" />
         </button>
@@ -55,7 +56,9 @@ export default function SidebarUser({
                   navigate(VIEW_TO_PATH['company']);
                 }
               }}
-              className="w-full flex items-center gap-2 px-3 py-2 bg-white/5 rounded-md hover:bg-white/10 transition-colors"
+              className="w-full flex items-center gap-2 px-3 py-2 bg-white/5 rounded-md hover:bg-white/10 transition-colors focus:outline-none focus:ring-2 focus:ring-white/50"
+              aria-label={companies.length > 1 ? 'Switch company' : 'Company settings'}
+              aria-expanded={companies.length > 1 ? showCompanyMenu : undefined}
             >
               <Building2 className="w-4 h-4 text-gray-400" />
               <span className="text-sm font-medium text-gray-200 truncate flex-1 text-left">
@@ -103,7 +106,9 @@ export default function SidebarUser({
         <div className="relative">
           <button
             onClick={() => setShowUserMenu(!showUserMenu)}
-            className="w-full flex items-center gap-3 px-3 py-2 rounded-md hover:bg-sidebar-hover transition-colors"
+            className="w-full flex items-center gap-3 px-3 py-2 rounded-md hover:bg-sidebar-hover transition-colors focus:outline-none focus:ring-2 focus:ring-white/50"
+            aria-label="User menu"
+            aria-expanded={showUserMenu}
           >
             <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center flex-shrink-0">
               <span className="text-xs font-medium text-white">{getUserInitials()}</span>

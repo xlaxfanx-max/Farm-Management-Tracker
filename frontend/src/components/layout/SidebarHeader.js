@@ -20,14 +20,16 @@ export default function SidebarHeader({ collapsed, onToggleCollapse, isDarkMode,
         <div className="flex items-center gap-1">
           <button
             onClick={onToggleTheme}
-            className="p-1.5 hover:bg-sidebar-hover rounded transition-colors"
+            className="p-1.5 hover:bg-sidebar-hover rounded transition-colors focus:outline-none focus:ring-2 focus:ring-white/50"
             title={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+            aria-label={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
           >
             {isDarkMode ? <Sun className="w-4 h-4 text-yellow-400" /> : <Moon className="w-4 h-4 text-gray-300" />}
           </button>
           <button
             onClick={onToggleCollapse}
-            className="p-1.5 hover:bg-sidebar-hover rounded transition-colors text-gray-300"
+            className="p-1.5 hover:bg-sidebar-hover rounded transition-colors text-gray-300 focus:outline-none focus:ring-2 focus:ring-white/50"
+            aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           >
             {collapsed ? <Menu className="w-4 h-4" /> : <X className="w-4 h-4" />}
           </button>

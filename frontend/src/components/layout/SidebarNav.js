@@ -136,7 +136,9 @@ export default function SidebarNav({ collapsed, onMobileClose }) {
             {group.label && !collapsed && (
               <button
                 onClick={() => toggleGroup(group.id)}
-                className="w-full flex items-center justify-between px-3 mb-1 group"
+                className="w-full flex items-center justify-between px-3 mb-1 group rounded focus:outline-none focus:ring-2 focus:ring-white/50"
+                aria-expanded={!isCollapsed}
+                aria-label={`${group.label} section`}
               >
                 <span className="text-[11px] font-semibold uppercase tracking-[0.05em] text-gray-400">
                   {group.label}
@@ -159,7 +161,7 @@ export default function SidebarNav({ collapsed, onMobileClose }) {
                     end={item.id === 'dashboard' || item.id === 'compliance'}
                     onClick={onMobileClose}
                     className={({ isActive }) =>
-                      `flex items-center gap-3 px-3 h-10 rounded-md transition-colors ${
+                      `flex items-center gap-3 px-3 h-10 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-white/50 ${
                         isActive
                           ? 'bg-sidebar-active text-white border-l-[3px] border-white/60'
                           : 'text-gray-300 hover:bg-sidebar-hover hover:text-white'

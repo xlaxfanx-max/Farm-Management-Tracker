@@ -23,6 +23,7 @@ export default function Sidebar({
         <div
           className="fixed inset-0 bg-black/50 z-40 lg:hidden"
           onClick={onMobileClose}
+          aria-hidden="true"
         />
       )}
 
@@ -33,6 +34,8 @@ export default function Sidebar({
           fixed lg:sticky top-0 h-screen z-50
           ${mobileOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0
         `}
+        role="navigation"
+        aria-label="Main navigation"
       >
         <div className="flex flex-col h-full">
           <SidebarHeader

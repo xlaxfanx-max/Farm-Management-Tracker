@@ -181,7 +181,7 @@ function FieldCard({
       <div className="hidden sm:flex gap-2 pt-3 border-t border-gray-100 dark:border-gray-700" onClick={e => e.stopPropagation()}>
         <button
           onClick={() => onDrawBoundary(field, farmId)}
-          className="flex-1 flex items-center justify-center gap-1 px-3 py-1.5 bg-primary-light dark:bg-green-900/30 text-primary dark:text-green-400 rounded hover:bg-green-100 dark:hover:bg-green-900/50 text-sm font-medium transition-colors"
+          className="flex-1 flex items-center justify-center gap-1 px-3 py-1.5 bg-primary-light dark:bg-green-900/30 text-primary dark:text-green-400 rounded hover:bg-green-100 dark:hover:bg-green-900/50 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-primary"
         >
           <MapPin size={14} />
           {hasBoundary ? 'Edit Map' : 'Draw Map'}
@@ -190,15 +190,17 @@ function FieldCard({
           <>
             <button
               onClick={() => onTreeSummary(field.id)}
-              className="flex items-center justify-center gap-1 px-3 py-1.5 bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded hover:bg-purple-100 dark:hover:bg-purple-900/50 text-sm font-medium transition-colors"
+              className="flex items-center justify-center gap-1 px-3 py-1.5 bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded hover:bg-purple-100 dark:hover:bg-purple-900/50 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500"
               title="View Satellite Tree Detection"
+              aria-label={`View tree detection for ${field.name}`}
             >
               <TreeDeciduous size={14} />
             </button>
             <button
               onClick={() => onLiDARSummary(field.id)}
-              className="flex items-center justify-center gap-1 px-3 py-1.5 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded hover:bg-emerald-100 dark:hover:bg-emerald-900/50 text-sm font-medium transition-colors"
+              className="flex items-center justify-center gap-1 px-3 py-1.5 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded hover:bg-emerald-100 dark:hover:bg-emerald-900/50 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500"
               title="View LiDAR Analysis"
+              aria-label={`View LiDAR analysis for ${field.name}`}
             >
               <Mountain size={14} />
             </button>
@@ -206,14 +208,14 @@ function FieldCard({
         )}
         <button
           onClick={() => onEdit(field)}
-          className="flex-1 flex items-center justify-center gap-1 px-3 py-1.5 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded hover:bg-blue-100 dark:hover:bg-blue-900/50 text-sm font-medium transition-colors"
+          className="flex-1 flex items-center justify-center gap-1 px-3 py-1.5 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded hover:bg-blue-100 dark:hover:bg-blue-900/50 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           <Edit size={14} />
           Edit
         </button>
         <button
           onClick={() => onDelete(field.id)}
-          className="flex-1 flex items-center justify-center gap-1 px-3 py-1.5 bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded hover:bg-red-100 dark:hover:bg-red-900/50 text-sm font-medium transition-colors"
+          className="flex-1 flex items-center justify-center gap-1 px-3 py-1.5 bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded hover:bg-red-100 dark:hover:bg-red-900/50 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-red-500"
         >
           <Trash2 size={14} />
           Delete
@@ -235,8 +237,10 @@ function FieldCard({
         <div className="relative" ref={mobileMenuRef}>
           <button
             onClick={() => setShowMobileMenu(!showMobileMenu)}
-            className="p-2 bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+            className="p-2 bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-primary"
             title="More actions"
+            aria-label={`More actions for ${field.name}`}
+            aria-expanded={showMobileMenu}
           >
             <MoreVertical size={16} />
           </button>

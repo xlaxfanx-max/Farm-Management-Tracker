@@ -1,9 +1,15 @@
 import React from 'react';
 
 /**
- * Consistent status badge component for use across the application
+ * Consistent status badge component for use across the application.
+ *
+ * @param {string} status - Status key used to look up colors and default label.
+ * @param {string} [label] - Override the default label text for this status.
+ * @param {string} [colorScheme] - Override color scheme: 'green', 'red', 'amber', 'blue', 'orange', 'gray', 'purple', 'yellow'.
+ * @param {string} [size='sm'] - Badge size: 'xs', 'sm', 'md', or 'lg'.
+ * @param {string} [className] - Additional CSS classes.
  */
-function StatusBadge({ status, size = 'sm', className = '' }) {
+function StatusBadge({ status, label, colorScheme, size = 'sm', className = '' }) {
   const statusConfig = {
     // Health/Operational statuses
     healthy: {
@@ -123,14 +129,27 @@ function StatusBadge({ status, size = 'sm', className = '' }) {
     lg: 'px-3 py-1.5 text-sm'
   };
 
+  const colorSchemes = {
+    green:  { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-700 dark:text-green-300' },
+    red:    { bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-700 dark:text-red-300' },
+    amber:  { bg: 'bg-amber-100 dark:bg-amber-900/30', text: 'text-amber-700 dark:text-amber-300' },
+    blue:   { bg: 'bg-blue-100 dark:bg-blue-900/30', text: 'text-blue-700 dark:text-blue-300' },
+    orange: { bg: 'bg-orange-100 dark:bg-orange-900/30', text: 'text-orange-700 dark:text-orange-300' },
+    gray:   { bg: 'bg-gray-100 dark:bg-gray-700', text: 'text-gray-600 dark:text-gray-300' },
+    purple: { bg: 'bg-purple-100 dark:bg-purple-900/30', text: 'text-purple-700 dark:text-purple-300' },
+    yellow: { bg: 'bg-yellow-100 dark:bg-yellow-900/30', text: 'text-yellow-700 dark:text-yellow-300' },
+  };
+
   const config = statusConfig[status] || statusConfig.default;
+  const colors = colorScheme ? (colorSchemes[colorScheme] || config) : config;
   const sizeClass = sizeClasses[size] || sizeClasses.sm;
+  const displayLabel = label || config.label;
 
   return (
     <span
-      className={`${config.bg} ${config.text} ${sizeClass} font-medium rounded-full inline-flex items-center ${className}`}
+      className={`${colors.bg} ${colors.text} ${sizeClass} font-medium rounded-full inline-flex items-center ${className}`}
     >
-      {config.label}
+      {displayLabel}
     </span>
   );
 }
