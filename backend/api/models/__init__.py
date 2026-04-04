@@ -5,6 +5,8 @@ api.models package — re-exports every public name so that existing imports
 
 # -- helpers & mixins --------------------------------------------------------
 from .base import (
+    TimestampedModel,
+    OwnedModel,
     LocationMixin,
     default_deadline_reminder_days,
     default_license_reminder_days,
@@ -294,7 +296,7 @@ from .yield_forecast import (
 
 __all__ = [
     # base
-    'LocationMixin',
+    'TimestampedModel', 'OwnedModel', 'LocationMixin',
     'default_deadline_reminder_days',
     'default_license_reminder_days',
     # auth

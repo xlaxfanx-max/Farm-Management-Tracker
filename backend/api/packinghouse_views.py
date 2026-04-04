@@ -6,11 +6,12 @@ Handles deliveries, packout reports, settlements, and grower ledger entries.
 Supports commodity-aware units (bins for citrus, lbs for avocados).
 """
 
-from rest_framework import viewsets, status
+from rest_framework import status
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
+from .view_helpers import CompanyFilteredViewSet
 from django.db.models import Sum, Avg, Count, F, Q, Subquery, OuterRef, DecimalField
 from django.db.models.functions import Coalesce
 from django.db import transaction
@@ -92,8 +93,7 @@ from .services import PDFExtractionService, StatementMatcher
 import uuid
 from django.utils import timezone
 
-
-class PackinghouseViewSet(viewsets.ModelViewSet):
+class PackinghouseViewSet(CompanyFilteredViewSet):
     """
     ViewSet for Packinghouse CRUD operations.
 
@@ -108,33 +108,26 @@ class PackinghouseViewSet(viewsets.ModelViewSet):
     - pools: GET /api/packinghouses/{id}/pools/
     - ledger: GET /api/packinghouses/{id}/ledger/
     """
-    permission_classes = [IsAuthenticated]
+    model = Packinghouse
+    company_field = 'company'
+    default_ordering = ('name',)
 
     def get_queryset(self):
-        user = self.request.user
-        if not user.current_company:
-            return Packinghouse.objects.none()
-
-        queryset = Packinghouse.objects.filter(
-            company=user.current_company
-        ).annotate(
+        # Need to add pool_count annotation beyond standard filtering
+        return super().get_queryset().annotate(
             pool_count_annotated=Count('pools')
         )
 
-        # Filter by active status
+    def filter_queryset_by_params(self, queryset):
         is_active = self.request.query_params.get('is_active')
         if is_active is not None:
             queryset = queryset.filter(is_active=is_active.lower() == 'true')
-
-        return queryset.order_by('name')
+        return queryset
 
     def get_serializer_class(self):
         if self.action == 'list':
             return PackinghouseListSerializer
         return PackinghouseSerializer
-
-    def perform_create(self, serializer):
-        serializer.save(company=self.request.user.current_company)
 
     @action(detail=True, methods=['get'])
     def pools(self, request, pk=None):
@@ -187,7 +180,7 @@ class PackinghouseViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 
-class PoolViewSet(viewsets.ModelViewSet):
+class PoolViewSet(CompanyFilteredViewSet):
     """
     ViewSet for Pool CRUD operations.
 
@@ -204,40 +197,37 @@ class PoolViewSet(viewsets.ModelViewSet):
     - settlements: GET /api/pools/{id}/settlements/
     - summary: GET /api/pools/{id}/summary/
     """
-    permission_classes = [IsAuthenticated]
+    model = Pool
+    company_field = 'packinghouse__company'
+    select_related_fields = ('packinghouse',)
+    default_ordering = ('-season', 'commodity', 'name')
 
     def get_queryset(self):
-        user = self.request.user
-        if not user.current_company:
-            return Pool.objects.none()
+        # Need to add pool aggregate annotations beyond standard filtering
+        return _annotate_pool_aggregates(super().get_queryset())
 
-        queryset = _annotate_pool_aggregates(
-            Pool.objects.filter(
-                packinghouse__company=user.current_company
-            ).select_related('packinghouse')
-        )
-
-        # Filter by packinghouse
+    def filter_queryset_by_params(self, queryset):
         packinghouse_id = self.request.query_params.get('packinghouse')
         if packinghouse_id:
             queryset = queryset.filter(packinghouse_id=packinghouse_id)
 
-        # Filter by status
         pool_status = self.request.query_params.get('status')
         if pool_status:
             queryset = queryset.filter(status=pool_status)
 
-        # Filter by season
         season = self.request.query_params.get('season')
         if season:
             queryset = queryset.filter(season=season)
 
-        # Filter by commodity
         commodity = self.request.query_params.get('commodity')
         if commodity:
             queryset = queryset.filter(commodity__icontains=commodity)
 
-        return queryset.order_by('-season', 'commodity', 'name')
+        return queryset
+
+    def perform_create(self, serializer):
+        # Company is established through packinghouse FK (provided in request data)
+        serializer.save()
 
     def get_serializer_class(self):
         if self.action == 'list':
@@ -373,7 +363,7 @@ class PoolViewSet(viewsets.ModelViewSet):
         })
 
 
-class PackinghouseDeliveryViewSet(viewsets.ModelViewSet):
+class PackinghouseDeliveryViewSet(CompanyFilteredViewSet):
     """
     ViewSet for PackinghouseDelivery CRUD operations.
 
@@ -384,33 +374,24 @@ class PackinghouseDeliveryViewSet(viewsets.ModelViewSet):
     partial_update: PATCH /api/packinghouse-deliveries/{id}/
     destroy: DELETE /api/packinghouse-deliveries/{id}/
     """
-    permission_classes = [IsAuthenticated]
+    model = PackinghouseDelivery
+    company_field = 'pool__packinghouse__company'
+    select_related_fields = ('pool', 'pool__packinghouse', 'field', 'field__farm', 'harvest')
+    default_ordering = ('-delivery_date', '-created_at')
 
-    def get_queryset(self):
-        user = self.request.user
-        if not user.current_company:
-            return PackinghouseDelivery.objects.none()
-
-        queryset = PackinghouseDelivery.objects.filter(
-            pool__packinghouse__company=user.current_company
-        ).select_related('pool', 'pool__packinghouse', 'field', 'field__farm', 'harvest')
-
-        # Filter by pool
+    def filter_queryset_by_params(self, queryset):
         pool_id = self.request.query_params.get('pool')
         if pool_id:
             queryset = queryset.filter(pool_id=pool_id)
 
-        # Filter by field
         field_id = self.request.query_params.get('field')
         if field_id:
             queryset = queryset.filter(field_id=field_id)
 
-        # Filter by packinghouse
         packinghouse_id = self.request.query_params.get('packinghouse')
         if packinghouse_id:
             queryset = queryset.filter(pool__packinghouse_id=packinghouse_id)
 
-        # Date range filter
         start_date = self.request.query_params.get('start_date')
         end_date = self.request.query_params.get('end_date')
         if start_date:
@@ -418,7 +399,11 @@ class PackinghouseDeliveryViewSet(viewsets.ModelViewSet):
         if end_date:
             queryset = queryset.filter(delivery_date__lte=end_date)
 
-        return queryset.order_by('-delivery_date', '-created_at')
+        return queryset
+
+    def perform_create(self, serializer):
+        # Company is established through pool FK (provided in request data)
+        serializer.save()
 
     def get_serializer_class(self):
         if self.action == 'list':
@@ -426,7 +411,7 @@ class PackinghouseDeliveryViewSet(viewsets.ModelViewSet):
         return PackinghouseDeliverySerializer
 
 
-class PackoutReportViewSet(viewsets.ModelViewSet):
+class PackoutReportViewSet(CompanyFilteredViewSet):
     """
     ViewSet for PackoutReport CRUD operations.
 
@@ -440,45 +425,38 @@ class PackoutReportViewSet(viewsets.ModelViewSet):
     Custom actions:
     - grade_lines: GET/POST /api/packout-reports/{id}/grade-lines/
     """
-    permission_classes = [IsAuthenticated]
+    model = PackoutReport
+    company_field = 'pool__packinghouse__company'
+    select_related_fields = ('pool', 'pool__packinghouse', 'field', 'field__farm')
+    prefetch_related_fields = ('grade_lines',)
+    default_ordering = ('-report_date',)
 
-    def get_queryset(self):
-        user = self.request.user
-        if not user.current_company:
-            return PackoutReport.objects.none()
-
-        queryset = PackoutReport.objects.filter(
-            pool__packinghouse__company=user.current_company
-        ).select_related(
-            'pool', 'pool__packinghouse', 'field', 'field__farm'
-        ).prefetch_related('grade_lines')
-
-        # Filter by pool
+    def filter_queryset_by_params(self, queryset):
         pool_id = self.request.query_params.get('pool')
         if pool_id:
             queryset = queryset.filter(pool_id=pool_id)
 
-        # Filter by field
         field_id = self.request.query_params.get('field')
         if field_id:
             queryset = queryset.filter(field_id=field_id)
 
-        # Filter by packinghouse
         packinghouse_id = self.request.query_params.get('packinghouse')
         if packinghouse_id:
             queryset = queryset.filter(pool__packinghouse_id=packinghouse_id)
 
-        # Filter by commodity (pool commodity)
         commodity = self.request.query_params.get('commodity')
         if commodity:
             queryset = queryset.filter(pool__commodity__iexact=commodity)
 
-        # Filter by season (pool season)
         season = self.request.query_params.get('season')
         if season:
             queryset = queryset.filter(pool__season=season)
 
-        return queryset.order_by('-report_date')
+        return queryset
+
+    def perform_create(self, serializer):
+        # Company is established through pool FK (provided in request data)
+        serializer.save()
 
     def get_serializer_class(self):
         if self.action == 'list':
@@ -509,7 +487,7 @@ class PackoutReportViewSet(viewsets.ModelViewSet):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class PoolSettlementViewSet(viewsets.ModelViewSet):
+class PoolSettlementViewSet(CompanyFilteredViewSet):
     """
     ViewSet for PoolSettlement CRUD operations.
 
@@ -524,45 +502,34 @@ class PoolSettlementViewSet(viewsets.ModelViewSet):
     - grade_lines: GET/POST /api/pool-settlements/{id}/grade-lines/
     - deductions: GET/POST /api/pool-settlements/{id}/deductions/
     """
-    permission_classes = [IsAuthenticated]
+    model = PoolSettlement
+    company_field = 'pool__packinghouse__company'
+    select_related_fields = ('pool', 'pool__packinghouse', 'field', 'field__farm', 'source_statement')
+    prefetch_related_fields = ('grade_lines', 'deductions')
+    default_ordering = ('-statement_date',)
 
-    def get_queryset(self):
-        user = self.request.user
-        if not user.current_company:
-            return PoolSettlement.objects.none()
-
-        queryset = PoolSettlement.objects.filter(
-            pool__packinghouse__company=user.current_company
-        ).select_related(
-            'pool', 'pool__packinghouse', 'field', 'field__farm', 'source_statement'
-        ).prefetch_related('grade_lines', 'deductions')
-
-        # Filter by pool
+    def filter_queryset_by_params(self, queryset):
         pool_id = self.request.query_params.get('pool')
         if pool_id:
             queryset = queryset.filter(pool_id=pool_id)
 
-        # Filter by field
         field_id = self.request.query_params.get('field')
         if field_id:
             queryset = queryset.filter(field_id=field_id)
 
-        # Filter by packinghouse
         packinghouse_id = self.request.query_params.get('packinghouse')
         if packinghouse_id:
             queryset = queryset.filter(pool__packinghouse_id=packinghouse_id)
 
-        # Filter by commodity (pool commodity)
         commodity = self.request.query_params.get('commodity')
         if commodity:
             queryset = queryset.filter(pool__commodity__iexact=commodity)
 
-        # Filter by season (pool season)
         season = self.request.query_params.get('season')
         if season:
             queryset = queryset.filter(pool__season=season)
 
-        return queryset.order_by('-statement_date')
+        return queryset
 
     def get_serializer_class(self):
         if self.action == 'list':
@@ -570,6 +537,37 @@ class PoolSettlementViewSet(viewsets.ModelViewSet):
         if self.action == 'create':
             return PoolSettlementCreateSerializer
         return PoolSettlementSerializer
+
+    def perform_create(self, serializer):
+        with transaction.atomic():
+            settlement = serializer.save()
+            self._settlement_warnings = _finalize_settlement(settlement)
+
+    def perform_update(self, serializer):
+        with transaction.atomic():
+            settlement = serializer.save()
+            self._settlement_warnings = _finalize_settlement(settlement)
+
+    def create(self, request, *args, **kwargs):
+        response = super().create(request, *args, **kwargs)
+        warnings = getattr(self, '_settlement_warnings', None)
+        if warnings and isinstance(response.data, dict):
+            response.data['warnings'] = warnings
+        return response
+
+    def update(self, request, *args, **kwargs):
+        response = super().update(request, *args, **kwargs)
+        warnings = getattr(self, '_settlement_warnings', None)
+        if warnings and isinstance(response.data, dict):
+            response.data['warnings'] = warnings
+        return response
+
+    def partial_update(self, request, *args, **kwargs):
+        response = super().partial_update(request, *args, **kwargs)
+        warnings = getattr(self, '_settlement_warnings', None)
+        if warnings and isinstance(response.data, dict):
+            response.data['warnings'] = warnings
+        return response
 
     @action(detail=True, methods=['get', 'post'], url_path='grade-lines')
     def grade_lines(self, request, pk=None):
@@ -584,12 +582,17 @@ class PoolSettlementViewSet(viewsets.ModelViewSet):
         # POST - add grade lines
         serializer = SettlementGradeLineSerializer(data=request.data, many=True)
         if serializer.is_valid():
-            for item in serializer.validated_data:
-                SettlementGradeLine.objects.create(
-                    settlement=settlement,
-                    **item
-                )
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            with transaction.atomic():
+                for item in serializer.validated_data:
+                    SettlementGradeLine.objects.create(
+                        settlement=settlement,
+                        **item
+                    )
+                warnings = _finalize_settlement(settlement)
+            return Response({
+                'grade_lines': serializer.data,
+                'warnings': warnings,
+            }, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=True, methods=['get', 'post'])
@@ -605,16 +608,21 @@ class PoolSettlementViewSet(viewsets.ModelViewSet):
         # POST - add deductions
         serializer = SettlementDeductionSerializer(data=request.data, many=True)
         if serializer.is_valid():
-            for item in serializer.validated_data:
-                SettlementDeduction.objects.create(
-                    settlement=settlement,
-                    **item
-                )
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            with transaction.atomic():
+                for item in serializer.validated_data:
+                    SettlementDeduction.objects.create(
+                        settlement=settlement,
+                        **item
+                    )
+                warnings = _finalize_settlement(settlement)
+            return Response({
+                'deductions': serializer.data,
+                'warnings': warnings,
+            }, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class GrowerLedgerEntryViewSet(viewsets.ModelViewSet):
+class GrowerLedgerEntryViewSet(CompanyFilteredViewSet):
     """
     ViewSet for GrowerLedgerEntry CRUD operations.
 
@@ -625,33 +633,24 @@ class GrowerLedgerEntryViewSet(viewsets.ModelViewSet):
     partial_update: PATCH /api/grower-ledger/{id}/
     destroy: DELETE /api/grower-ledger/{id}/
     """
-    permission_classes = [IsAuthenticated]
+    model = GrowerLedgerEntry
+    company_field = 'packinghouse__company'
+    select_related_fields = ('packinghouse', 'pool')
+    default_ordering = ('-entry_date', '-created_at')
 
-    def get_queryset(self):
-        user = self.request.user
-        if not user.current_company:
-            return GrowerLedgerEntry.objects.none()
-
-        queryset = GrowerLedgerEntry.objects.filter(
-            packinghouse__company=user.current_company
-        ).select_related('packinghouse', 'pool')
-
-        # Filter by packinghouse
+    def filter_queryset_by_params(self, queryset):
         packinghouse_id = self.request.query_params.get('packinghouse')
         if packinghouse_id:
             queryset = queryset.filter(packinghouse_id=packinghouse_id)
 
-        # Filter by pool
         pool_id = self.request.query_params.get('pool')
         if pool_id:
             queryset = queryset.filter(pool_id=pool_id)
 
-        # Filter by entry type
         entry_type = self.request.query_params.get('entry_type')
         if entry_type:
             queryset = queryset.filter(entry_type=entry_type)
 
-        # Date range filter
         start_date = self.request.query_params.get('start_date')
         end_date = self.request.query_params.get('end_date')
         if start_date:
@@ -659,7 +658,11 @@ class GrowerLedgerEntryViewSet(viewsets.ModelViewSet):
         if end_date:
             queryset = queryset.filter(entry_date__lte=end_date)
 
-        return queryset.order_by('-entry_date', '-created_at')
+        return queryset
+
+    def perform_create(self, serializer):
+        # Company is established through packinghouse FK (provided in request data)
+        serializer.save()
 
     def get_serializer_class(self):
         if self.action == 'list':
@@ -2468,7 +2471,7 @@ def harvest_packing_pipeline(request):
 # PACKINGHOUSE STATEMENT UPLOAD & EXTRACTION
 # =============================================================================
 
-class PackinghouseStatementViewSet(viewsets.ModelViewSet):
+class PackinghouseStatementViewSet(CompanyFilteredViewSet):
     """
     ViewSet for PackinghouseStatement CRUD and PDF extraction operations.
 
@@ -2482,39 +2485,30 @@ class PackinghouseStatementViewSet(viewsets.ModelViewSet):
     - confirm: POST /api/packinghouse-statements/{id}/confirm/
     - reprocess: POST /api/packinghouse-statements/{id}/reprocess/
     """
-    permission_classes = [IsAuthenticated]
+    model = PackinghouseStatement
+    company_field = 'packinghouse__company'
+    select_related_fields = ('packinghouse', 'pool', 'field', 'field__farm', 'uploaded_by')
+    default_ordering = ('-created_at',)
     parser_classes = [MultiPartParser, FormParser, JSONParser]
 
-    def get_queryset(self):
-        user = self.request.user
-        if not user.current_company:
-            return PackinghouseStatement.objects.none()
-
-        queryset = PackinghouseStatement.objects.filter(
-            packinghouse__company=user.current_company
-        ).select_related('packinghouse', 'pool', 'field', 'field__farm', 'uploaded_by')
-
-        # Filter by packinghouse
+    def filter_queryset_by_params(self, queryset):
         packinghouse_id = self.request.query_params.get('packinghouse')
         if packinghouse_id:
             queryset = queryset.filter(packinghouse_id=packinghouse_id)
 
-        # Filter by status
         status_filter = self.request.query_params.get('status')
         if status_filter:
             queryset = queryset.filter(status=status_filter)
 
-        # Filter by statement type
         statement_type = self.request.query_params.get('statement_type')
         if statement_type:
             queryset = queryset.filter(statement_type=statement_type)
 
-        # Filter by pool
         pool_id = self.request.query_params.get('pool')
         if pool_id:
             queryset = queryset.filter(pool_id=pool_id)
 
-        return queryset.order_by('-created_at')
+        return queryset
 
     def get_serializer_class(self):
         if self.action == 'list':

@@ -9,12 +9,9 @@ from django.utils import timezone
 from rest_framework import viewsets, filters, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 
-from .permissions import HasCompanyAccess
-from .audit_utils import AuditLogMixin
-from .view_helpers import get_user_company, require_company
+from .view_helpers import get_user_company, require_company, CompanyFilteredViewSet
 
 from .models import (
     CACBinderTemplate,
@@ -38,21 +35,14 @@ from .audit_binder_serializers import (
 # CAC BINDER TEMPLATE VIEWSET
 # =============================================================================
 
-class CACBinderTemplateViewSet(AuditLogMixin, viewsets.ModelViewSet):
+class CACBinderTemplateViewSet(CompanyFilteredViewSet):
     """
     API endpoint for CAC Food Safety Manual templates.
     Templates define the 39 document sections and store the fillable PDF.
     """
-    permission_classes = [IsAuthenticated, HasCompanyAccess]
-    parser_classes = [MultiPartParser, FormParser, JSONParser]
-
+    model = CACBinderTemplate
     serializer_class = CACBinderTemplateSerializer
-
-    def get_queryset(self):
-        company = get_user_company(self.request.user)
-        if not company:
-            return CACBinderTemplate.objects.none()
-        return CACBinderTemplate.objects.filter(company=company)
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
 
     def perform_create(self, serializer):
         company = require_company(self.request.user)
@@ -75,28 +65,21 @@ class CACBinderTemplateViewSet(AuditLogMixin, viewsets.ModelViewSet):
 # AUDIT BINDER INSTANCE VIEWSET
 # =============================================================================
 
-class AuditBinderInstanceViewSet(AuditLogMixin, viewsets.ModelViewSet):
+class AuditBinderInstanceViewSet(CompanyFilteredViewSet):
     """
     API endpoint for audit binder instances.
     Each instance represents a specific audit preparation (e.g. '2026 Pre-Season').
     """
-    permission_classes = [IsAuthenticated, HasCompanyAccess]
+    model = AuditBinderInstance
+    serializer_class = AuditBinderInstanceSerializer
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['name', 'notes']
     ordering_fields = ['name', 'season_year', 'status', 'created_at']
-    ordering = ['-created_at']
+    default_ordering = ('-created_at',)
+    select_related_fields = ('template', 'farm', 'created_by')
+    prefetch_related_fields = ('sections',)
 
-    serializer_class = AuditBinderInstanceSerializer
-
-    def get_queryset(self):
-        company = get_user_company(self.request.user)
-        if not company:
-            return AuditBinderInstance.objects.none()
-
-        queryset = AuditBinderInstance.objects.filter(
-            company=company
-        ).select_related('template', 'farm', 'created_by').prefetch_related('sections')
-
+    def filter_queryset_by_params(self, queryset):
         # Filter by status
         status_filter = self.request.query_params.get('status')
         if status_filter:
@@ -215,25 +198,19 @@ class AuditBinderInstanceViewSet(AuditLogMixin, viewsets.ModelViewSet):
 # BINDER SECTION VIEWSET
 # =============================================================================
 
-class BinderSectionViewSet(AuditLogMixin, viewsets.ModelViewSet):
+class BinderSectionViewSet(CompanyFilteredViewSet):
     """
     API endpoint for individual binder sections (documents 1-39).
     Nested under a binder instance via URL: /primusgfs/binder-sections/?binder=<id>
     """
-    permission_classes = [IsAuthenticated, HasCompanyAccess]
+    model = BinderSection
+    serializer_class = BinderSectionSerializer
+    company_field = 'binder__company'
+    select_related_fields = ('binder', 'completed_by')
+    prefetch_related_fields = ('supporting_documents',)
     http_method_names = ['get', 'post', 'patch', 'head', 'options']  # No create/delete via standard CRUD
 
-    serializer_class = BinderSectionSerializer
-
-    def get_queryset(self):
-        company = get_user_company(self.request.user)
-        if not company:
-            return BinderSection.objects.none()
-
-        queryset = BinderSection.objects.filter(
-            binder__company=company
-        ).select_related('binder', 'completed_by').prefetch_related('supporting_documents')
-
+    def filter_queryset_by_params(self, queryset):
         # Filter by binder
         binder_id = self.request.query_params.get('binder')
         if binder_id:
@@ -495,28 +472,21 @@ class BinderSectionViewSet(AuditLogMixin, viewsets.ModelViewSet):
 # BINDER SUPPORTING DOCUMENT VIEWSET
 # =============================================================================
 
-class BinderSupportingDocumentViewSet(AuditLogMixin, viewsets.ModelViewSet):
+class BinderSupportingDocumentViewSet(CompanyFilteredViewSet):
     """
     API endpoint for supporting documents attached to binder sections.
     """
-    permission_classes = [IsAuthenticated, HasCompanyAccess]
-    parser_classes = [MultiPartParser, FormParser, JSONParser]
+    model = BinderSupportingDocument
     serializer_class = BinderSupportingDocumentSerializer
+    company_field = 'section__binder__company'
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
+    select_related_fields = ('uploaded_by',)
 
-    def get_queryset(self):
-        company = get_user_company(self.request.user)
-        if not company:
-            return BinderSupportingDocument.objects.none()
-
-        queryset = BinderSupportingDocument.objects.filter(
-            section__binder__company=company
-        ).select_related('uploaded_by')
-
+    def filter_queryset_by_params(self, queryset):
         # Filter by section
         section_id = self.request.query_params.get('section')
         if section_id:
             queryset = queryset.filter(section_id=section_id)
-
         return queryset
 
     def perform_create(self, serializer):

@@ -4,9 +4,6 @@ Farm, Field, Crop, Rootstock, and FarmParcel views.
 from rest_framework import viewsets, filters, status, serializers
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
-from .permissions import HasCompanyAccess
-from .audit_utils import AuditLogMixin
 from django.db.models import Q
 from decimal import Decimal
 import math
@@ -313,33 +310,41 @@ class FieldViewSet(CompanyFilteredViewSet):
 # CROP & ROOTSTOCK VIEWSETS
 # =============================================================================
 
-class CropViewSet(AuditLogMixin, viewsets.ModelViewSet):
+class CropViewSet(CompanyFilteredViewSet):
     """
     API endpoint for managing crops.
 
     System defaults (company=null) are read-only.
     Companies can create custom crops.
     """
+    model = Crop
     serializer_class = CropSerializer
-    permission_classes = [IsAuthenticated, HasCompanyAccess]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['name', 'variety', 'scientific_name']
     ordering_fields = ['name', 'category', 'created_at']
-    ordering = ['category', 'name']
+    default_ordering = ('category', 'name')
 
     def get_queryset(self):
-        """Return system defaults + company-specific crops."""
-        user = self.request.user
-        company = get_user_company(user)
+        """Return system defaults + company-specific crops.
+
+        Overrides the base get_queryset because Crop uses a union query
+        (company IS NULL OR company=<current>) instead of a simple
+        company=<current> filter.
+        """
+        company = get_user_company(self.request.user)
         queryset = Crop.objects.filter(active=True)
 
         if company:
-            # System defaults (company=null) + company's custom crops
             queryset = queryset.filter(Q(company__isnull=True) | Q(company=company))
         else:
-            # Only system defaults
             queryset = queryset.filter(company__isnull=True)
 
+        if self.default_ordering:
+            queryset = queryset.order_by(*self.default_ordering)
+
+        return self.filter_queryset_by_params(queryset)
+
+    def filter_queryset_by_params(self, queryset):
         # Filter by category
         category = self.request.query_params.get('category')
         if category:
@@ -399,23 +404,28 @@ class CropViewSet(AuditLogMixin, viewsets.ModelViewSet):
         return Response(CropSerializer(queryset, many=True).data)
 
 
-class RootstockViewSet(AuditLogMixin, viewsets.ModelViewSet):
+class RootstockViewSet(CompanyFilteredViewSet):
     """
     API endpoint for managing rootstocks.
 
     System defaults (company=null) are read-only.
     Companies can create custom rootstocks.
     """
+    model = Rootstock
     serializer_class = RootstockSerializer
-    permission_classes = [IsAuthenticated, HasCompanyAccess]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['name', 'code']
     ordering_fields = ['name', 'primary_category']
-    ordering = ['primary_category', 'name']
+    default_ordering = ('primary_category', 'name')
 
     def get_queryset(self):
-        user = self.request.user
-        company = get_user_company(user)
+        """Return system defaults + company-specific rootstocks.
+
+        Overrides the base get_queryset because Rootstock uses a union query
+        (company IS NULL OR company=<current>) instead of a simple
+        company=<current> filter.
+        """
+        company = get_user_company(self.request.user)
         queryset = Rootstock.objects.filter(active=True)
 
         if company:
@@ -423,6 +433,12 @@ class RootstockViewSet(AuditLogMixin, viewsets.ModelViewSet):
         else:
             queryset = queryset.filter(company__isnull=True)
 
+        if self.default_ordering:
+            queryset = queryset.order_by(*self.default_ordering)
+
+        return self.filter_queryset_by_params(queryset)
+
+    def filter_queryset_by_params(self, queryset):
         # Filter by category
         category = self.request.query_params.get('category')
         if category:

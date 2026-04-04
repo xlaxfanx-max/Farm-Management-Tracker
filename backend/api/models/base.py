@@ -2,6 +2,54 @@ from django.db import models
 import requests
 
 
+# =============================================================================
+# ABSTRACT BASE MODELS
+# =============================================================================
+
+class TimestampedModel(models.Model):
+    """
+    Abstract base providing created_at/updated_at timestamps.
+    Use for all new models to ensure consistent timestamp fields.
+    """
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        abstract = True
+
+
+class OwnedModel(TimestampedModel):
+    """
+    Abstract base for company-scoped models with audit fields.
+    Provides company FK, created_by, and timestamps.
+
+    Use for all new models that belong to a company:
+        class MyModel(OwnedModel):
+            name = models.CharField(max_length=200)
+            class Meta(OwnedModel.Meta):
+                ...
+    """
+    company = models.ForeignKey(
+        'Company',
+        on_delete=models.CASCADE,
+        related_name='%(class)ss',
+    )
+    created_by = models.ForeignKey(
+        'User',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='created_%(class)ss',
+    )
+
+    class Meta:
+        abstract = True
+
+
+# =============================================================================
+# HELPERS
+# =============================================================================
+
 def default_deadline_reminder_days():
     """Default days before deadline to send reminders."""
     return [30, 14, 7, 1]

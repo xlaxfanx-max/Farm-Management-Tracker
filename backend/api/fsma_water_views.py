@@ -12,11 +12,7 @@ from django.http import FileResponse
 from rest_framework import viewsets, filters, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
 from rest_framework import serializers as drf_serializers
-
-from .permissions import HasCompanyAccess
-from .audit_utils import AuditLogMixin
 from .models import (
     FSMAWaterAssessment, FSMASourceAssessment, FSMAFieldAssessment,
     FSMAEnvironmentalAssessment, FSMAMitigationAction,
@@ -33,14 +29,14 @@ from .serializers import (
 from .services.fsma.water_risk_calculator import FSMAWaterRiskCalculator
 
 
-from .view_helpers import get_user_company, require_company
+from .view_helpers import get_user_company, require_company, CompanyFilteredViewSet
 
 
 # =============================================================================
 # FSMA WATER ASSESSMENT VIEWSET
 # =============================================================================
 
-class FSMAWaterAssessmentViewSet(AuditLogMixin, viewsets.ModelViewSet):
+class FSMAWaterAssessmentViewSet(CompanyFilteredViewSet):
     """
     API endpoint for FSMA Water Assessments.
 
@@ -66,26 +62,25 @@ class FSMAWaterAssessmentViewSet(AuditLogMixin, viewsets.ModelViewSet):
     - POST /api/fsma/water-assessments/{id}/duplicate/ - Duplicate for new year
     - GET /api/fsma/water-assessments/summary/ - Get summary statistics
     """
-    permission_classes = [IsAuthenticated, HasCompanyAccess]
+    model = FSMAWaterAssessment
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['farm__name', 'assessor_name']
     ordering_fields = ['assessment_year', 'farm__name', 'status', 'created_at']
-    ordering = ['-assessment_year', 'farm__name']
+    default_ordering = ('-assessment_year', 'farm__name')
+    select_related_fields = ('farm', 'submitted_by', 'approved_by')
+    prefetch_related_fields = (
+        'source_assessments',
+        'field_assessments',
+        'environmental_assessments',
+        'mitigation_actions',
+    )
 
     def get_serializer_class(self):
         if self.action in ('create', 'update', 'partial_update'):
             return FSMAWaterAssessmentSerializer
         return FSMAWaterAssessmentDetailSerializer
 
-    def get_queryset(self):
-        company = get_user_company(self.request.user)
-        if not company:
-            return FSMAWaterAssessment.objects.none()
-
-        queryset = FSMAWaterAssessment.objects.filter(
-            company=company
-        ).select_related('farm', 'submitted_by', 'approved_by')
-
+    def filter_queryset_by_params(self, queryset):
         # Filter by farm
         farm_id = self.request.query_params.get('farm')
         if farm_id:
@@ -104,12 +99,7 @@ class FSMAWaterAssessmentViewSet(AuditLogMixin, viewsets.ModelViewSet):
         if status_filter:
             queryset = queryset.filter(status=status_filter)
 
-        return queryset.prefetch_related(
-            'source_assessments',
-            'field_assessments',
-            'environmental_assessments',
-            'mitigation_actions'
-        )
+        return queryset
 
     def perform_create(self, serializer):
         company = require_company(self.request.user)
@@ -641,7 +631,7 @@ class FSMAWaterAssessmentViewSet(AuditLogMixin, viewsets.ModelViewSet):
 # FSMA SOURCE ASSESSMENT VIEWSET
 # =============================================================================
 
-class FSMASourceAssessmentViewSet(AuditLogMixin, viewsets.ModelViewSet):
+class FSMASourceAssessmentViewSet(CompanyFilteredViewSet):
     """
     API endpoint for water source assessments within a main assessment.
 
@@ -651,18 +641,12 @@ class FSMASourceAssessmentViewSet(AuditLogMixin, viewsets.ModelViewSet):
     - PUT /api/fsma/source-assessments/{id}/ - Update source assessment
     - DELETE /api/fsma/source-assessments/{id}/ - Delete source assessment
     """
+    model = FSMASourceAssessment
     serializer_class = FSMASourceAssessmentSerializer
-    permission_classes = [IsAuthenticated, HasCompanyAccess]
+    company_field = 'assessment__company'
+    select_related_fields = ('assessment', 'water_source', 'water_source__farm')
 
-    def get_queryset(self):
-        company = get_user_company(self.request.user)
-        if not company:
-            return FSMASourceAssessment.objects.none()
-
-        queryset = FSMASourceAssessment.objects.filter(
-            assessment__company=company
-        ).select_related('assessment', 'water_source', 'water_source__farm')
-
+    def filter_queryset_by_params(self, queryset):
         # Filter by assessment
         assessment_id = self.request.query_params.get('assessment')
         if assessment_id:
@@ -680,7 +664,7 @@ class FSMASourceAssessmentViewSet(AuditLogMixin, viewsets.ModelViewSet):
 # FSMA FIELD ASSESSMENT VIEWSET
 # =============================================================================
 
-class FSMAFieldAssessmentViewSet(AuditLogMixin, viewsets.ModelViewSet):
+class FSMAFieldAssessmentViewSet(CompanyFilteredViewSet):
     """
     API endpoint for field assessments within a main assessment.
 
@@ -690,18 +674,12 @@ class FSMAFieldAssessmentViewSet(AuditLogMixin, viewsets.ModelViewSet):
     - PUT /api/fsma/field-assessments/{id}/ - Update field assessment
     - DELETE /api/fsma/field-assessments/{id}/ - Delete field assessment
     """
+    model = FSMAFieldAssessment
     serializer_class = FSMAFieldAssessmentSerializer
-    permission_classes = [IsAuthenticated, HasCompanyAccess]
+    company_field = 'assessment__company'
+    select_related_fields = ('assessment', 'field', 'field__farm', 'water_source')
 
-    def get_queryset(self):
-        company = get_user_company(self.request.user)
-        if not company:
-            return FSMAFieldAssessment.objects.none()
-
-        queryset = FSMAFieldAssessment.objects.filter(
-            assessment__company=company
-        ).select_related('assessment', 'field', 'field__farm', 'water_source')
-
+    def filter_queryset_by_params(self, queryset):
         # Filter by assessment
         assessment_id = self.request.query_params.get('assessment')
         if assessment_id:
@@ -719,7 +697,7 @@ class FSMAFieldAssessmentViewSet(AuditLogMixin, viewsets.ModelViewSet):
 # FSMA ENVIRONMENTAL ASSESSMENT VIEWSET
 # =============================================================================
 
-class FSMAEnvironmentalAssessmentViewSet(AuditLogMixin, viewsets.ModelViewSet):
+class FSMAEnvironmentalAssessmentViewSet(CompanyFilteredViewSet):
     """
     API endpoint for environmental assessments.
 
@@ -729,18 +707,12 @@ class FSMAEnvironmentalAssessmentViewSet(AuditLogMixin, viewsets.ModelViewSet):
     - PUT /api/fsma/environmental-assessments/{id}/ - Update
     - DELETE /api/fsma/environmental-assessments/{id}/ - Delete
     """
+    model = FSMAEnvironmentalAssessment
     serializer_class = FSMAEnvironmentalAssessmentSerializer
-    permission_classes = [IsAuthenticated, HasCompanyAccess]
+    company_field = 'assessment__company'
+    select_related_fields = ('assessment', 'assessment__farm')
 
-    def get_queryset(self):
-        company = get_user_company(self.request.user)
-        if not company:
-            return FSMAEnvironmentalAssessment.objects.none()
-
-        queryset = FSMAEnvironmentalAssessment.objects.filter(
-            assessment__company=company
-        ).select_related('assessment', 'assessment__farm')
-
+    def filter_queryset_by_params(self, queryset):
         # Filter by assessment
         assessment_id = self.request.query_params.get('assessment')
         if assessment_id:
@@ -753,7 +725,7 @@ class FSMAEnvironmentalAssessmentViewSet(AuditLogMixin, viewsets.ModelViewSet):
 # FSMA MITIGATION ACTION VIEWSET
 # =============================================================================
 
-class FSMAMitigationActionViewSet(AuditLogMixin, viewsets.ModelViewSet):
+class FSMAMitigationActionViewSet(CompanyFilteredViewSet):
     """
     API endpoint for mitigation action tracking.
 
@@ -769,21 +741,15 @@ class FSMAMitigationActionViewSet(AuditLogMixin, viewsets.ModelViewSet):
     - POST /api/fsma/mitigation-actions/{id}/complete/ - Mark as complete
     - POST /api/fsma/mitigation-actions/{id}/verify/ - Verify completion
     """
+    model = FSMAMitigationAction
     serializer_class = FSMAMitigationActionSerializer
-    permission_classes = [IsAuthenticated, HasCompanyAccess]
+    company_field = 'assessment__company'
     filter_backends = [filters.OrderingFilter]
     ordering_fields = ['priority', 'due_date', 'status', 'created_at']
-    ordering = ['-priority', 'due_date']
+    default_ordering = ('-priority', 'due_date')
+    select_related_fields = ('assessment', 'assessment__farm', 'completed_by', 'verified_by')
 
-    def get_queryset(self):
-        company = get_user_company(self.request.user)
-        if not company:
-            return FSMAMitigationAction.objects.none()
-
-        queryset = FSMAMitigationAction.objects.filter(
-            assessment__company=company
-        ).select_related('assessment', 'assessment__farm', 'completed_by', 'verified_by')
-
+    def filter_queryset_by_params(self, queryset):
         # Filter by assessment
         assessment_id = self.request.query_params.get('assessment')
         if assessment_id:

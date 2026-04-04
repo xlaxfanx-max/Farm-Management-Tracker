@@ -34,6 +34,9 @@ redis>=4.5.0
 # MCP Server for AI Agent Integration
 mcp>=1.25.0
 
+# Error Monitoring
+sentry-sdk>=2.0.0
+
 # PDF Extraction & Generation
 anthropic>=0.18.0
 PyPDF2>=3.0.0

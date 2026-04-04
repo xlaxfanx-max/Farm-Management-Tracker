@@ -27,7 +27,6 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import serializers as drf_serializers
 
 from .permissions import HasCompanyAccess
-from .audit_utils import AuditLogMixin
 
 from .models import (
     ComplianceProfile, ComplianceDeadline, ComplianceAlert,
@@ -58,22 +57,17 @@ from .view_helpers import get_user_company, require_company, CompanyFilteredView
 # COMPLIANCE PROFILE VIEWSET
 # =============================================================================
 
-class ComplianceProfileViewSet(AuditLogMixin, viewsets.ModelViewSet):
+class ComplianceProfileViewSet(CompanyFilteredViewSet):
     """
     API endpoint for managing company compliance profiles.
 
     Each company has exactly one compliance profile that defines
     which regulatory frameworks apply to them.
     """
+    model = ComplianceProfile
     serializer_class = ComplianceProfileSerializer
-    permission_classes = [IsAuthenticated, HasCompanyAccess]
+    company_field = 'company'
     http_method_names = ['get', 'put', 'patch']  # No create/delete - auto-created with company
-
-    def get_queryset(self):
-        company = get_user_company(self.request.user)
-        if company:
-            return ComplianceProfile.objects.filter(company=company)
-        return ComplianceProfile.objects.none()
 
     def get_object(self):
         """Get or create profile for current company."""
@@ -296,42 +290,36 @@ class ComplianceDeadlineViewSet(CompanyFilteredViewSet):
 # COMPLIANCE ALERT VIEWSET
 # =============================================================================
 
-class ComplianceAlertViewSet(AuditLogMixin, viewsets.ModelViewSet):
+class ComplianceAlertViewSet(CompanyFilteredViewSet):
     """
     API endpoint for managing compliance alerts.
 
     Alerts are system-generated notifications about compliance issues.
     """
+    model = ComplianceAlert
     serializer_class = ComplianceAlertSerializer
-    permission_classes = [IsAuthenticated, HasCompanyAccess]
     http_method_names = ['get', 'post']  # No direct create/update/delete
     filter_backends = [filters.OrderingFilter]
-    ordering = ['-priority', '-created_at']
+    default_ordering = ('-priority', '-created_at')
 
-    def get_queryset(self):
-        company = get_user_company(self.request.user)
-        if not company:
-            return ComplianceAlert.objects.none()
-
-        queryset = ComplianceAlert.objects.filter(company=company)
+    def filter_queryset_by_params(self, queryset):
+        params = self.request.query_params
 
         # By default, only show active alerts
-        active_only = self.request.query_params.get('active', 'true')
+        active_only = params.get('active', 'true')
         if active_only.lower() == 'true':
             queryset = queryset.filter(is_active=True)
 
         # Filter by priority
-        priority = self.request.query_params.get('priority')
-        if priority:
-            queryset = queryset.filter(priority=priority)
+        if params.get('priority'):
+            queryset = queryset.filter(priority=params['priority'])
 
         # Filter by type
-        alert_type = self.request.query_params.get('type')
-        if alert_type:
-            queryset = queryset.filter(alert_type=alert_type)
+        if params.get('type'):
+            queryset = queryset.filter(alert_type=params['type'])
 
         # Filter acknowledged
-        acknowledged = self.request.query_params.get('acknowledged')
+        acknowledged = params.get('acknowledged')
         if acknowledged:
             queryset = queryset.filter(is_acknowledged=acknowledged.lower() == 'true')
 
@@ -553,32 +541,25 @@ class CentralPostingLocationViewSet(CompanyFilteredViewSet):
 # REI POSTING RECORD VIEWSET
 # =============================================================================
 
-class REIPostingRecordViewSet(AuditLogMixin, viewsets.ModelViewSet):
+class REIPostingRecordViewSet(CompanyFilteredViewSet):
     """
     API endpoint for managing REI posting records.
     """
+    model = REIPostingRecord
     serializer_class = REIPostingRecordSerializer
-    permission_classes = [IsAuthenticated, HasCompanyAccess]
+    company_field = 'application__field__farm__company'
+    select_related_fields = (
+        'application', 'application__field', 'application__product',
+        'posted_by', 'removed_by',
+    )
+    default_ordering = ('-rei_end_datetime',)
     http_method_names = ['get', 'post']
 
-    def get_queryset(self):
-        company = get_user_company(self.request.user)
-        if not company:
-            return REIPostingRecord.objects.none()
-
-        queryset = REIPostingRecord.objects.filter(
-            application__field__farm__company=company
-        ).select_related(
-            'application', 'application__field', 'application__product',
-            'posted_by', 'removed_by'
-        )
-
-        # Filter active only
+    def filter_queryset_by_params(self, queryset):
         active_only = self.request.query_params.get('active')
         if active_only and active_only.lower() == 'true':
             queryset = queryset.filter(rei_end_datetime__gt=timezone.now())
-
-        return queryset.order_by('-rei_end_datetime')
+        return queryset
 
     @action(detail=False, methods=['get'])
     def active(self, request):
@@ -631,18 +612,102 @@ class ComplianceReportViewSet(CompanyFilteredViewSet):
             queryset = queryset.filter(status=params['status'])
         return queryset
 
+    def _validate_report_content(self, report):
+        errors = []
+        warnings = []
+
+        if report.reporting_period_start > report.reporting_period_end:
+            errors.append('Reporting period start must be on or before reporting period end.')
+
+        if not isinstance(report.report_data, dict):
+            errors.append('Report data must be a JSON object.')
+            return errors, warnings
+
+        if not report.report_data:
+            errors.append('Report data is empty.')
+            return errors, warnings
+
+        if report.report_type in ['pur_monthly', 'pur_annual']:
+            applications = report.report_data.get('applications')
+            if not isinstance(applications, list) or not applications:
+                errors.append('PUR report must include at least one application record.')
+                return errors, warnings
+
+            declared_total = report.report_data.get('total_applications')
+            if declared_total is not None and declared_total != len(applications):
+                warnings.append(
+                    f"Report data says {declared_total} applications but contains {len(applications)} rows."
+                )
+            if report.record_count and report.record_count != len(applications):
+                warnings.append(
+                    f"Record count says {report.record_count} but report data contains {len(applications)} application rows."
+                )
+
+            for idx, app in enumerate(applications, start=1):
+                missing_required = [
+                    label for key, label in (
+                        ('date', 'date'),
+                        ('farm', 'farm'),
+                        ('field', 'field'),
+                        ('product', 'product'),
+                        ('epa_reg_no', 'EPA registration number'),
+                    )
+                    if not app.get(key)
+                ]
+                if missing_required:
+                    errors.append(
+                        f"Application row {idx} is missing required fields: {', '.join(missing_required)}."
+                    )
+
+                missing_warn = [
+                    label for key, label in (
+                        ('rate', 'application rate'),
+                        ('area_treated', 'treated area'),
+                        ('total_applied', 'total applied'),
+                    )
+                    if not app.get(key)
+                ]
+                if missing_warn:
+                    warnings.append(
+                        f"Application row {idx} is missing advisory fields: {', '.join(missing_warn)}."
+                    )
+
+        elif report.report_type == 'sgma_semi_annual':
+            wells = report.report_data.get('wells')
+            if not isinstance(wells, list) or not wells:
+                errors.append('SGMA report must include at least one well entry.')
+            if report.report_data.get('compliance_status') == 'error':
+                errors.append('SGMA report is in an error state and cannot be marked ready.')
+            for note in report.report_data.get('notes', []) or []:
+                warnings.append(str(note))
+
+        elif report.report_type == 'wps_annual':
+            records = report.report_data.get('records') or report.report_data.get('training_records')
+            summary = report.report_data.get('summary')
+            if not summary and not records:
+                errors.append('WPS annual report must include a summary or training records.')
+
+        else:
+            if report.record_count == 0:
+                warnings.append('Report has zero records.')
+
+        return errors, warnings
+
     @action(detail=True, methods=['post'])
     def validate(self, request, pk=None):
         """Run validation on a report."""
         report = self.get_object()
-
-        # TODO: Implement actual validation logic based on report type
-        # For now, just mark as validated
+        errors, warnings = self._validate_report_content(report)
         report.validation_run_at = timezone.now()
-        report.validation_errors = []
-        report.validation_warnings = []
-        report.is_valid = True
-        report.status = 'ready'
+        report.validation_errors = errors
+        report.validation_warnings = warnings
+        report.is_valid = not errors and not warnings
+        if errors:
+            report.status = 'draft'
+        elif warnings:
+            report.status = 'pending_review'
+        else:
+            report.status = 'ready'
         report.save()
 
         return Response(ComplianceReportSerializer(report).data)
@@ -802,12 +867,15 @@ class IncidentReportViewSet(CompanyFilteredViewSet):
 # NOTIFICATION PREFERENCE VIEWSET
 # =============================================================================
 
-class NotificationPreferenceViewSet(viewsets.ModelViewSet):
+class NotificationPreferenceViewSet(CompanyFilteredViewSet):
     """
     API endpoint for managing user notification preferences.
+
+    Note: This model is user-scoped (OneToOne to User), not company-scoped,
+    so get_queryset and get_object are overridden to filter by user.
     """
+    model = NotificationPreference
     serializer_class = NotificationPreferenceSerializer
-    permission_classes = [IsAuthenticated]
     http_method_names = ['get', 'put', 'patch']
 
     def get_queryset(self):
@@ -1655,37 +1723,55 @@ class NOISubmissionSerializer(drf_serializers.ModelSerializer):
         fields = '__all__'
         read_only_fields = ['company', 'created_by']
 
+    def validate(self, attrs):
+        request = self.context.get('request')
+        company = getattr(request.user, 'current_company', None) if request and request.user.is_authenticated else None
 
-class NOISubmissionViewSet(viewsets.ModelViewSet):
+        field = attrs.get('field') if 'field' in attrs else getattr(self.instance, 'field', None)
+        product = attrs.get('product') if 'product' in attrs else getattr(self.instance, 'product', None)
+        pesticide_application = (
+            attrs.get('pesticide_application')
+            if 'pesticide_application' in attrs
+            else getattr(self.instance, 'pesticide_application', None)
+        )
+
+        errors = {}
+
+        if company and field and field.farm.company_id != company.id:
+            errors['field'] = 'Selected field must belong to the current company.'
+
+        if pesticide_application:
+            if company and pesticide_application.field.farm.company_id != company.id:
+                errors['pesticide_application'] = 'Selected pesticide application must belong to the current company.'
+            if field and pesticide_application.field_id != field.id:
+                errors['pesticide_application'] = 'Selected pesticide application must belong to the selected field.'
+            if product and pesticide_application.product_id != product.id:
+                errors['pesticide_application'] = 'Selected pesticide application must use the selected product.'
+
+        if errors:
+            raise drf_serializers.ValidationError(errors)
+
+        return attrs
+
+
+class NOISubmissionViewSet(CompanyFilteredViewSet):
     """
     API endpoint for NOI (Notice of Intent) submission tracking.
 
     Tracks when farmers file NOIs with the County Ag Commissioner
     for restricted use pesticide applications.
     """
+    model = NOISubmission
     serializer_class = NOISubmissionSerializer
-    permission_classes = [IsAuthenticated, HasCompanyAccess]
+    select_related_fields = ('product', 'field', 'field__farm', 'pesticide_application')
 
-    def get_queryset(self):
-        from .models import NOISubmission
-        company = require_company(self.request.user)
-        queryset = NOISubmission.objects.filter(
-            company=company
-        ).select_related('product', 'field', 'field__farm', 'pesticide_application')
-
-        status_filter = self.request.query_params.get('status')
-        if status_filter:
-            queryset = queryset.filter(status=status_filter)
-
-        field_id = self.request.query_params.get('field')
-        if field_id:
-            queryset = queryset.filter(field_id=field_id)
-
+    def filter_queryset_by_params(self, queryset):
+        params = self.request.query_params
+        if params.get('status'):
+            queryset = queryset.filter(status=params['status'])
+        if params.get('field'):
+            queryset = queryset.filter(field_id=params['field'])
         return queryset
-
-    def perform_create(self, serializer):
-        company = require_company(self.request.user)
-        serializer.save(company=company, created_by=self.request.user)
 
     @action(detail=True, methods=['post'])
     def submit(self, request, pk=None):

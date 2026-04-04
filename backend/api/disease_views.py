@@ -23,7 +23,6 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework import serializers as drf_serializers
 
 from .permissions import HasCompanyAccess
-from .audit_utils import AuditLogMixin
 from .view_helpers import get_user_company, require_company, CompanyFilteredViewSet
 
 from .models import (
@@ -48,23 +47,35 @@ from .services.proximity_calculator import ProximityCalculator
 # EXTERNAL DETECTION VIEWSET
 # =============================================================================
 
-class ExternalDetectionViewSet(viewsets.ReadOnlyModelViewSet):
+class ExternalDetectionViewSet(CompanyFilteredViewSet):
     """
     API endpoint for viewing external disease detections.
 
     External detections are imported from CDFA, USDA, and other authorities.
     These are read-only for regular users - admin/system updates them.
+
+    NOTE: ExternalDetection has no company FK -- it stores public government
+    data.  We inherit CompanyFilteredViewSet for consistent permission_classes
+    and audit logging, but override get_queryset to return all records.
     """
+    model = ExternalDetection
     serializer_class = ExternalDetectionSerializer
-    permission_classes = [IsAuthenticated, HasCompanyAccess]
+    http_method_names = ['get', 'head', 'options']
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['disease_name', 'county', 'city']
     ordering_fields = ['detection_date', 'county', 'disease_type']
-    ordering = ['-detection_date']
+    default_ordering = ('-detection_date',)
 
     def get_queryset(self):
+        """Return all detections (public data, not company-scoped)."""
         queryset = ExternalDetection.objects.all()
 
+        if self.default_ordering:
+            queryset = queryset.order_by(*self.default_ordering)
+
+        return self.filter_queryset_by_params(queryset)
+
+    def filter_queryset_by_params(self, queryset):
         # Filter by disease type
         disease_type = self.request.query_params.get('disease_type')
         if disease_type:
@@ -200,7 +211,7 @@ class ExternalDetectionViewSet(viewsets.ReadOnlyModelViewSet):
 # DISEASE ALERT VIEWSET
 # =============================================================================
 
-class DiseaseAlertViewSet(AuditLogMixin, viewsets.ModelViewSet):
+class DiseaseAlertViewSet(CompanyFilteredViewSet):
     """
     API endpoint for managing disease alerts.
 
@@ -209,20 +220,15 @@ class DiseaseAlertViewSet(AuditLogMixin, viewsets.ModelViewSet):
     - Field health analysis anomalies
     - Verified scouting reports
     """
+    model = DiseaseAlert
     serializer_class = DiseaseAlertSerializer
-    permission_classes = [IsAuthenticated, HasCompanyAccess]
     filter_backends = [filters.OrderingFilter]
     ordering_fields = ['created_at', 'priority']
-    ordering = ['-created_at']
+    default_ordering = ('-created_at',)
+    select_related_fields = ('farm', 'field', 'related_detection')
     http_method_names = ['get', 'patch', 'delete']  # No create - system generated
 
-    def get_queryset(self):
-        company = get_user_company(self.request.user)
-        if not company:
-            return DiseaseAlert.objects.none()
-
-        queryset = DiseaseAlert.objects.filter(company=company)
-
+    def filter_queryset_by_params(self, queryset):
         # Filter by active status
         is_active = self.request.query_params.get('is_active')
         if is_active is not None:
@@ -243,7 +249,7 @@ class DiseaseAlertViewSet(AuditLogMixin, viewsets.ModelViewSet):
         if acknowledged is not None:
             queryset = queryset.filter(is_acknowledged=acknowledged.lower() == 'true')
 
-        return queryset.select_related('farm', 'field', 'related_detection')
+        return queryset
 
     @action(detail=False, methods=['get'])
     def active(self, request):
@@ -386,27 +392,22 @@ class DiseaseAlertRuleViewSet(CompanyFilteredViewSet):
 # DISEASE ANALYSIS RUN VIEWSET
 # =============================================================================
 
-class DiseaseAnalysisRunViewSet(AuditLogMixin, viewsets.ModelViewSet):
+class DiseaseAnalysisRunViewSet(CompanyFilteredViewSet):
     """
     API endpoint for disease/health analysis runs.
 
     Analysis runs process satellite imagery to assess field health,
     detect anomalies, and generate health scores.
     """
+    model = DiseaseAnalysisRun
     serializer_class = DiseaseAnalysisRunSerializer
-    permission_classes = [IsAuthenticated, HasCompanyAccess]
     filter_backends = [filters.OrderingFilter]
     ordering_fields = ['created_at', 'health_score']
-    ordering = ['-created_at']
+    default_ordering = ('-created_at',)
+    select_related_fields = ('field', 'field__farm')
     http_method_names = ['get', 'post', 'delete']
 
-    def get_queryset(self):
-        company = get_user_company(self.request.user)
-        if not company:
-            return DiseaseAnalysisRun.objects.none()
-
-        queryset = DiseaseAnalysisRun.objects.filter(company=company)
-
+    def filter_queryset_by_params(self, queryset):
         # Filter by field
         field_id = self.request.query_params.get('field_id')
         if field_id:
@@ -422,7 +423,7 @@ class DiseaseAnalysisRunViewSet(AuditLogMixin, viewsets.ModelViewSet):
         if risk_level:
             queryset = queryset.filter(risk_level=risk_level)
 
-        return queryset.select_related('field', 'field__farm')
+        return queryset
 
     def perform_create(self, serializer):
         """Create analysis run and trigger async processing."""

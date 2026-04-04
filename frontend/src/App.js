@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 
 // Contexts
@@ -11,43 +11,57 @@ import { SeasonProvider } from './contexts/SeasonContext';
 // Route config
 import { VIEW_TO_PATH, PATH_TO_VIEW } from './routes';
 
-// Layout
+// Eagerly loaded (always needed)
 import AppLayout from './components/layout/AppLayout';
-
-// Components
 import Dashboard from './components/Dashboard';
-import CompanySettings from './components/CompanySettings';
-import Profile from './components/Profile';
-import Farms from './components/Farms';
-import WaterManagement from './components/WaterManagement';
-import Reports from './components/Reports';
-import Harvests from './components/Harvests';
-import NutrientManagement from './components/NutrientManagement';
-import AuditLogViewer from './components/AuditLogViewer';
-import TeamManagement from './components/TeamManagement';
 import OnboardingWizard from './components/OnboardingWizard';
 import GlobalModals from './components/GlobalModals';
-import WeatherForecast from './components/WeatherForecast';
-import Analytics from './components/Analytics';
-import ComplianceDashboard from './components/compliance/ComplianceDashboard';
-import DeadlineCalendar from './components/compliance/DeadlineCalendar';
-import LicenseManagement from './components/compliance/LicenseManagement';
-import WPSCompliance from './components/compliance/WPSCompliance';
-import ComplianceReports from './components/compliance/ComplianceReports';
-import ComplianceSettings from './components/compliance/ComplianceSettings';
-import { DiseaseDashboard } from './components/disease';
-import { FSMADashboard } from './components/fsma';
-import { PrimusGFSDashboard } from './components/primusgfs';
-import Breadcrumbs from './components/navigation/Breadcrumbs';
-import YieldForecastDashboard from './components/yield-forecast/YieldForecastDashboard';
-import { TreeDetectionPage } from './components/tree-detection';
-import InspectorChecklist from './components/compliance/InspectorChecklist';
-
-import PURImportPage from './components/pur-import/PURImportPage';
 import CommandPalette from './components/CommandPalette';
 import ErrorBoundary from './components/ui/ErrorBoundary';
+import Breadcrumbs from './components/navigation/Breadcrumbs';
 import { onboardingAPI } from './services/api';
 import './components/OnboardingWizard.css';
+
+// Lazy-loaded components (code-split per route)
+const CompanySettings = lazy(() => import('./components/CompanySettings'));
+const Profile = lazy(() => import('./components/Profile'));
+const Farms = lazy(() => import('./components/Farms'));
+const WaterManagement = lazy(() => import('./components/WaterManagement'));
+const Reports = lazy(() => import('./components/Reports'));
+const Harvests = lazy(() => import('./components/Harvests'));
+const NutrientManagement = lazy(() => import('./components/NutrientManagement'));
+const AuditLogViewer = lazy(() => import('./components/AuditLogViewer'));
+const TeamManagement = lazy(() => import('./components/TeamManagement'));
+const WeatherForecast = lazy(() => import('./components/WeatherForecast'));
+const Analytics = lazy(() => import('./components/Analytics'));
+const ComplianceDashboard = lazy(() => import('./components/compliance/ComplianceDashboard'));
+const DeadlineCalendar = lazy(() => import('./components/compliance/DeadlineCalendar'));
+const LicenseManagement = lazy(() => import('./components/compliance/LicenseManagement'));
+const WPSCompliance = lazy(() => import('./components/compliance/WPSCompliance'));
+const ComplianceReports = lazy(() => import('./components/compliance/ComplianceReports'));
+const ComplianceSettings = lazy(() => import('./components/compliance/ComplianceSettings'));
+const DiseaseDashboard = lazy(() => import('./components/disease').then(m => ({ default: m.DiseaseDashboard })));
+const FSMADashboard = lazy(() => import('./components/fsma').then(m => ({ default: m.FSMADashboard })));
+const PrimusGFSDashboard = lazy(() => import('./components/primusgfs').then(m => ({ default: m.PrimusGFSDashboard })));
+const YieldForecastDashboard = lazy(() => import('./components/yield-forecast/YieldForecastDashboard'));
+const TreeDetectionPage = lazy(() => import('./components/tree-detection').then(m => ({ default: m.TreeDetectionPage })));
+const InspectorChecklist = lazy(() => import('./components/compliance/InspectorChecklist'));
+const PURImportPage = lazy(() => import('./components/pur-import/PURImportPage'));
+
+// =============================================================================
+// ROUTE LOADING FALLBACK
+// =============================================================================
+
+function RouteLoadingFallback() {
+  return (
+    <div className="flex items-center justify-center min-h-[400px]">
+      <div className="text-center">
+        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+        <p className="text-sm text-gray-500 dark:text-gray-400">Loading...</p>
+      </div>
+    </div>
+  );
+}
 
 // =============================================================================
 // MAIN APP COMPONENT (WRAPPED WITH PROVIDERS)
@@ -191,6 +205,7 @@ function AppContent() {
       onSwitchCompany={handleSwitchCompany}
     >
       <ErrorBoundary level="section" name="Page Content" key={currentView}>
+        <Suspense fallback={<RouteLoadingFallback />}>
         <Routes>
             <Route index element={<Dashboard onNavigate={handleNavigate} />} />
             <Route path="farms" element={
@@ -323,6 +338,7 @@ function AppContent() {
             {/* Catch-all redirect to dashboard */}
             <Route path="*" element={<Dashboard onNavigate={handleNavigate} />} />
         </Routes>
+        </Suspense>
       </ErrorBoundary>
 
       {/* Global Modals */}
