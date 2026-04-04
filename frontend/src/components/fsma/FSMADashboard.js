@@ -15,6 +15,7 @@ import {
   Clock,
   Leaf,
   Droplets,
+  ScanLine,
 } from 'lucide-react';
 import { fsmaAPI } from '../../services/api';
 import MetricCard from '../ui/MetricCard';
@@ -25,6 +26,7 @@ import FertilizerInventoryManager from './FertilizerInventoryManager';
 import PHIComplianceChecker from './PHIComplianceChecker';
 import AuditBinderGenerator from './AuditBinderGenerator';
 import { WaterAssessmentDashboard, WaterAssessmentWizard } from './water-assessment';
+import { TraceabilityDashboard } from './traceability';
 
 /**
  * FSMADashboard Component
@@ -102,6 +104,7 @@ const FSMADashboard = ({ onNavigate, initialTab = 'overview' }) => {
     { id: 'inventory', label: 'Inventory', icon: Package },
     { id: 'phi', label: 'PHI Checks', icon: Leaf },
     { id: 'water-assessment', label: 'Water Assessment', icon: Droplets },
+    { id: 'traceability', label: 'Rule 204 Traceability', icon: ScanLine },
     { id: 'audit', label: 'Audit Binder', icon: FileText },
   ];
 
@@ -229,6 +232,7 @@ const FSMADashboard = ({ onNavigate, initialTab = 'overview' }) => {
           />
         )
       )}
+      {activeTab === 'traceability' && <TraceabilityDashboard />}
       {activeTab === 'audit' && <AuditBinderGenerator />}
     </div>
   );

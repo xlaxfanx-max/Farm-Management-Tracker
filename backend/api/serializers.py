@@ -22,3 +22,4 @@ from .season_serializers import *
 from .yield_serializers import *
 from .primusgfs_serializers import *
 from .pur_serializers import *
+from .traceability_serializers import *

@@ -268,6 +268,22 @@ from .pur import (
     PURImportBatch,
 )
 
+# -- FSMA Rule 204 traceability -----------------------------------------------
+from .traceability import (
+    LOT_STATUS_CHOICES,
+    CTE_TYPE_CHOICES,
+    DISPOSITION_TYPE_CHOICES,
+    CONTAMINATION_TYPE_CHOICES,
+    CONTAMINATION_LOCATION_CHOICES,
+    INCIDENT_STATUS_CHOICES,
+    CORRECTIVE_ACTION_STATUS_CHOICES as INCIDENT_CA_STATUS_CHOICES,
+    TraceabilityLot,
+    TraceabilityEvent,
+    LotDisposition,
+    ContaminationIncident,
+    IncidentCorrectiveAction,
+)
+
 # -- yield forecast / soil survey --------------------------------------------
 from .yield_forecast import (
     ExternalDataSource,
@@ -386,4 +402,10 @@ __all__ = [
     'AMOUNT_UNIT_CHOICES', 'RATE_UNIT_CHOICES',
     'Product', 'Applicator', 'ApplicationEvent', 'TankMixItem',
     'PURImportBatch',
+    # traceability (FSMA Rule 204)
+    'LOT_STATUS_CHOICES', 'CTE_TYPE_CHOICES', 'DISPOSITION_TYPE_CHOICES',
+    'CONTAMINATION_TYPE_CHOICES', 'CONTAMINATION_LOCATION_CHOICES',
+    'INCIDENT_STATUS_CHOICES', 'INCIDENT_CA_STATUS_CHOICES',
+    'TraceabilityLot', 'TraceabilityEvent', 'LotDisposition',
+    'ContaminationIncident', 'IncidentCorrectiveAction',
 ]

@@ -232,6 +232,15 @@ from .pur_views import (
     pur_import_batch_pdf,
 )
 
+# Import FSMA Rule 204 Traceability views
+from .traceability_views import (
+    TraceabilityLotViewSet,
+    TraceabilityEventViewSet,
+    LotDispositionViewSet,
+    ContaminationIncidentViewSet,
+    IncidentCorrectiveActionViewSet,
+)
+
 # Import FSMA Water Assessment views
 from .fsma_water_views import (
     FSMAWaterAssessmentViewSet,
@@ -341,6 +350,13 @@ router.register(r'fsma/source-assessments', FSMASourceAssessmentViewSet, basenam
 router.register(r'fsma/field-assessments', FSMAFieldAssessmentViewSet, basename='fsma-field-assessment')
 router.register(r'fsma/environmental-assessments', FSMAEnvironmentalAssessmentViewSet, basename='fsma-environmental-assessment')
 router.register(r'fsma/mitigation-actions', FSMAMitigationActionViewSet, basename='fsma-mitigation-action')
+
+# FSMA Rule 204 Traceability
+router.register(r'fsma/traceability-lots', TraceabilityLotViewSet, basename='fsma-traceability-lot')
+router.register(r'fsma/traceability-events', TraceabilityEventViewSet, basename='fsma-traceability-event')
+router.register(r'fsma/lot-dispositions', LotDispositionViewSet, basename='fsma-lot-disposition')
+router.register(r'fsma/contamination-incidents', ContaminationIncidentViewSet, basename='fsma-contamination-incident')
+router.register(r'fsma/incident-corrective-actions', IncidentCorrectiveActionViewSet, basename='fsma-incident-ca')
 
 # Primus GFS Compliance
 router.register(r'primusgfs/documents', ControlledDocumentViewSet, basename='primusgfs-document')
