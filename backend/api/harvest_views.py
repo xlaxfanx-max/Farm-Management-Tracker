@@ -468,10 +468,7 @@ class HarvestViewSet(AuditLogMixin, viewsets.ModelViewSet):
 
         return queryset.order_by('-harvest_date', '-created_at')
 
-    def get_serializer_class(self):
-        if self.action == 'list':
-            return HarvestListSerializer
-        return HarvestSerializer
+    # DynamicFieldsMixin on HarvestSerializer handles list vs detail automatically.
 
     @action(detail=False, methods=['post'])
     def check_phi(self, request):

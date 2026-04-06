@@ -120,10 +120,10 @@ IrrigationRecommendationListSerializer = IrrigationRecommendationSerializer
 
 
 class IrrigationZoneSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
-    """Serializer for irrigation zones.
+    """Serializer for irrigation zones (dynamic list/detail via DynamicFieldsMixin).
 
     On list action, returns only ``list_fields``.  Detail/create/update
-    actions return the full field set.
+    actions return the full field set including nested relationships.
     """
 
     list_fields = [
@@ -138,7 +138,14 @@ class IrrigationZoneSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     farm_name = serializers.CharField(source='field.farm.name', read_only=True)
     water_source_name = serializers.CharField(source='water_source.name', read_only=True, allow_null=True)
 
+    # Nested relationships (detail only — excluded on list via list_fields)
+    kc_profiles = CropCoefficientProfileSerializer(many=True, read_only=True)
+    recent_events = serializers.SerializerMethodField()
+    recent_recommendations = serializers.SerializerMethodField()
+    current_recommendation = serializers.SerializerMethodField()
+
     # Computed fields
+    zone_status = serializers.SerializerMethodField()
     soil_capacity_inches = serializers.SerializerMethodField()
     mad_threshold_inches = serializers.SerializerMethodField()
 
@@ -158,6 +165,9 @@ class IrrigationZoneSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
             'ndvi_stress_modifier_enabled', 'ndvi_healthy_threshold', 'ndvi_stress_multiplier',
             'soil_capacity_inches', 'mad_threshold_inches',
             'active', 'notes',
+            # Nested data (detail only)
+            'kc_profiles', 'recent_events', 'recent_recommendations', 'current_recommendation',
+            'zone_status',
             'created_at', 'updated_at',
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']
@@ -174,9 +184,40 @@ class IrrigationZoneSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
         mad_pct = obj.management_allowable_depletion or 50
         return float(capacity * (mad_pct / 100))
 
+    def get_recent_events(self, obj):
+        """Get last 5 irrigation events for this zone."""
+        events = obj.irrigation_events.order_by('-date')[:5]
+        return IrrigationZoneEventSerializer(events, many=True).data
 
-# Backward-compatible alias
+    def get_recent_recommendations(self, obj):
+        """Get last 5 recommendations for this zone."""
+        recs = obj.recommendations.order_by('-created_at')[:5]
+        return IrrigationRecommendationSerializer(recs, many=True).data
+
+    def get_current_recommendation(self, obj):
+        """Get the current pending recommendation if any."""
+        rec = obj.recommendations.filter(status='pending').order_by('-created_at').first()
+        if rec:
+            return IrrigationRecommendationSerializer(rec).data
+        return None
+
+    def get_zone_status(self, obj):
+        """Calculate current irrigation status for the zone."""
+        from .services.irrigation_scheduler import IrrigationScheduler
+        try:
+            scheduler = IrrigationScheduler(obj)
+            return scheduler.get_zone_status_summary()
+        except Exception as e:
+            return {
+                'status': 'error',
+                'status_label': 'Unable to calculate',
+                'error': str(e),
+            }
+
+
+# Backward-compatible aliases
 IrrigationZoneListSerializer = IrrigationZoneSerializer
+IrrigationZoneDetailSerializer = IrrigationZoneSerializer
 
 
 class IrrigationZoneEventSerializer(serializers.ModelSerializer):
@@ -226,92 +267,6 @@ class IrrigationZoneEventCreateSerializer(serializers.ModelSerializer):
                 data['depth_inches'] = Decimal(str(data['duration_hours'])) * zone.application_rate
 
         return data
-
-
-class IrrigationZoneDetailSerializer(serializers.ModelSerializer):
-    """
-    Detailed serializer for irrigation zone with nested relationships.
-    Includes recent events, current recommendation, and Kc profile.
-    """
-
-    # Related object names
-    field_name = serializers.CharField(source='field.name', read_only=True)
-    farm_id = serializers.IntegerField(source='field.farm.id', read_only=True)
-    farm_name = serializers.CharField(source='field.farm.name', read_only=True)
-    water_source_name = serializers.CharField(source='water_source.name', read_only=True, allow_null=True)
-
-    # Nested relationships
-    kc_profiles = CropCoefficientProfileSerializer(many=True, read_only=True)
-    recent_events = serializers.SerializerMethodField()
-    recent_recommendations = serializers.SerializerMethodField()
-    current_recommendation = serializers.SerializerMethodField()
-
-    # Computed status
-    zone_status = serializers.SerializerMethodField()
-    soil_capacity_inches = serializers.SerializerMethodField()
-    mad_threshold_inches = serializers.SerializerMethodField()
-
-    class Meta:
-        model = IrrigationZone
-        fields = [
-            'id', 'name', 'field', 'field_name', 'farm_id', 'farm_name',
-            'water_source', 'water_source_name',
-            'acres', 'crop_type', 'tree_age', 'tree_spacing_ft',
-            'irrigation_method', 'emitters_per_tree', 'emitter_gph',
-            'application_rate', 'distribution_uniformity',
-            'soil_type', 'soil_water_holding_capacity', 'root_depth_inches',
-            'management_allowable_depletion',
-            'cimis_target', 'cimis_target_type',
-            'soil_capacity_inches', 'mad_threshold_inches',
-            'active', 'notes',
-            # Nested data
-            'kc_profiles', 'recent_events', 'recent_recommendations', 'current_recommendation',
-            'zone_status',
-            'created_at', 'updated_at',
-        ]
-        read_only_fields = ['id', 'created_at', 'updated_at']
-
-    def get_soil_capacity_inches(self, obj):
-        """Calculate total soil water holding capacity in inches."""
-        whc = float(obj.soil_water_holding_capacity or 1.5)
-        root_depth = float(obj.root_depth_inches or 36)
-        return whc * (root_depth / 12)
-
-    def get_mad_threshold_inches(self, obj):
-        """Calculate MAD threshold in inches."""
-        capacity = self.get_soil_capacity_inches(obj)
-        mad_pct = obj.management_allowable_depletion or 50
-        return float(capacity * (mad_pct / 100))
-
-    def get_recent_events(self, obj):
-        """Get last 5 irrigation events for this zone."""
-        events = obj.irrigation_events.order_by('-date')[:5]
-        return IrrigationZoneEventSerializer(events, many=True).data
-
-    def get_recent_recommendations(self, obj):
-        """Get last 5 recommendations for this zone."""
-        recs = obj.recommendations.order_by('-created_at')[:5]
-        return IrrigationRecommendationListSerializer(recs, many=True).data
-
-    def get_current_recommendation(self, obj):
-        """Get the current pending recommendation if any."""
-        rec = obj.recommendations.filter(status='pending').order_by('-created_at').first()
-        if rec:
-            return IrrigationRecommendationSerializer(rec).data
-        return None
-
-    def get_zone_status(self, obj):
-        """Calculate current irrigation status for the zone."""
-        from .services.irrigation_scheduler import IrrigationScheduler
-        try:
-            scheduler = IrrigationScheduler(obj)
-            return scheduler.get_zone_status_summary()
-        except Exception as e:
-            return {
-                'status': 'error',
-                'status_label': 'Unable to calculate',
-                'error': str(e),
-            }
 
 
 class IrrigationDashboardSerializer(serializers.Serializer):

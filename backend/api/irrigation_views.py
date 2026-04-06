@@ -17,7 +17,7 @@ from .models import (
     IrrigationRecommendation, SoilMoistureReading, IrrigationEvent,
 )
 from .serializers import (
-    IrrigationZoneSerializer, IrrigationZoneListSerializer, IrrigationZoneDetailSerializer,
+    IrrigationZoneSerializer, IrrigationZoneListSerializer,
     IrrigationZoneEventSerializer, IrrigationZoneEventCreateSerializer,
     IrrigationRecommendationSerializer, IrrigationRecommendationListSerializer,
     CropCoefficientProfileSerializer, CIMISDataSerializer, SoilMoistureReadingSerializer,
@@ -38,10 +38,7 @@ class IrrigationZoneViewSet(AuditLogMixin, viewsets.ModelViewSet):
     search_fields = ['name', 'crop_type', 'field__name', 'field__farm__name']
     ordering_fields = ['name', 'acres', 'created_at']
 
-    def get_serializer_class(self):
-        if self.action == 'retrieve':
-            return IrrigationZoneDetailSerializer
-        return IrrigationZoneSerializer
+    serializer_class = IrrigationZoneSerializer
 
     def get_queryset(self):
         """Filter zones by current user's company through field.farm."""

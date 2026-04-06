@@ -6,6 +6,12 @@ from .models import (
 )
 
 
+# NOTE: HarvestLoadSerializer and HarvestLaborSerializer are intentionally
+# kept as plain ModelSerializers (no DynamicFieldsMixin) because they are
+# only used as nested inline serializers inside HarvestSerializer, never
+# served independently through list/detail views.
+
+
 # -----------------------------------------------------------------------------
 # BUYER SERIALIZER
 # -----------------------------------------------------------------------------
@@ -189,7 +195,19 @@ class HarvestLaborSerializer(serializers.ModelSerializer):
 # HARVEST SERIALIZER (Main)
 # -----------------------------------------------------------------------------
 
-class HarvestSerializer(serializers.ModelSerializer):
+class HarvestSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+    """Serializer for harvests (dynamic list/detail via DynamicFieldsMixin)."""
+    list_fields = [
+        'id', 'field', 'field_name', 'farm_name',
+        'harvest_date', 'harvest_number',
+        'crop_variety', 'crop_variety_display',
+        'total_bins', 'acres_harvested',
+        'lot_number', 'status', 'status_display',
+        'phi_compliant', 'total_revenue', 'load_count',
+        'loads', 'labor_records',
+        'created_at',
+    ]
+
     # Read-only computed fields
     field_name = serializers.CharField(source='field.name', read_only=True)
     farm_id = serializers.IntegerField(source='field.farm.id', read_only=True)
@@ -346,33 +364,8 @@ class HarvestSerializer(serializers.ModelSerializer):
         return data
 
 
-class HarvestListSerializer(serializers.ModelSerializer):
-    """Simplified serializer for list views."""
-    field_name = serializers.CharField(source='field.name', read_only=True)
-    farm_name = serializers.CharField(source='field.farm.name', read_only=True)
-    crop_variety_display = serializers.CharField(source='get_crop_variety_display', read_only=True)
-    status_display = serializers.CharField(source='get_status_display', read_only=True)
-    total_revenue = serializers.DecimalField(max_digits=12, decimal_places=2, read_only=True)
-    load_count = serializers.SerializerMethodField()
-    phi_compliant = serializers.BooleanField(read_only=True)
-    loads = HarvestLoadSerializer(many=True, read_only=True)
-    labor_records = HarvestLaborSerializer(many=True, read_only=True)
-
-    class Meta:
-        model = Harvest
-        fields = [
-            'id', 'field', 'field_name', 'farm_name',
-            'harvest_date', 'harvest_number',
-            'crop_variety', 'crop_variety_display',
-            'total_bins', 'acres_harvested',
-            'lot_number', 'status', 'status_display',
-            'phi_compliant', 'total_revenue', 'load_count',
-            'loads', 'labor_records',
-            'created_at'
-        ]
-
-    def get_load_count(self, obj):
-        return obj.loads.count()
+# Backward-compatible alias
+HarvestListSerializer = HarvestSerializer
 
 
 # -----------------------------------------------------------------------------
