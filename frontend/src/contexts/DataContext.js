@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from './AuthContext';
 import {
   farmsAPI,
@@ -187,7 +187,7 @@ export function DataProvider({ children }) {
   const deleteWaterSource = useCallback(makeDelete(waterSourcesAPI, refreshWaterSources, 'water source', { refreshExtra: refreshWaterTests }), [refreshWaterSources, refreshWaterTests]);
   const saveWaterTest = useCallback(makeSave(waterTestsAPI, refreshWaterTests, 'water test'), [refreshWaterTests]);
 
-  const value = {
+  const value = useMemo(() => ({
     farms, fields, applications, products, waterSources, waterTests,
     crops, rootstocks, applicationEvents, unifiedProducts, applicators,
     loading, error, loadData,
@@ -197,7 +197,17 @@ export function DataProvider({ children }) {
     saveApplicationEvent, deleteApplicationEvent,
     refreshApplicationEvents, refreshUnifiedProducts, refreshApplicators,
     saveWaterSource, deleteWaterSource, saveWaterTest,
-  };
+  }), [
+    farms, fields, applications, products, waterSources, waterTests,
+    crops, rootstocks, applicationEvents, unifiedProducts, applicators,
+    loading, error, loadData,
+    saveFarm, updateFarm, patchFarm, deleteFarm,
+    saveField, deleteField,
+    saveApplication, deleteApplication,
+    saveApplicationEvent, deleteApplicationEvent,
+    refreshApplicationEvents, refreshUnifiedProducts, refreshApplicators,
+    saveWaterSource, deleteWaterSource, saveWaterTest,
+  ]);
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;
 }
