@@ -212,7 +212,7 @@ class TraceabilityLotViewSet(CompanyFilteredViewSet):
             one_step_back['field'] = {
                 'id': lot.field.id,
                 'name': lot.field.name,
-                'acreage': str(lot.field.acreage) if lot.field.acreage else None,
+                'acreage': str(lot.field.total_acres) if lot.field.total_acres else None,
             }
 
         if lot.farm:
