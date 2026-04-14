@@ -102,7 +102,7 @@ export const complianceReportsAPI = {
   validate: (id) => api.post(`/compliance/reports/${id}/validate/`),
   submit: (id, data = {}) => api.post(`/compliance/reports/${id}/submit/`, data),
   generatePUR: (periodStart, periodEnd) =>
-    api.post('/compliance/reports/generate-pur/', { period_start: periodStart, period_end: periodEnd }),
+    api.post('/compliance/reports/generate_pur/', { period_start: periodStart, period_end: periodEnd }),
 };
 
 /**
@@ -133,7 +133,7 @@ export const complianceDashboardAPI = {
   get: () => api.get('/compliance/dashboard/'),
 
   /** Get additive compliance score with breakdown */
-  getSmartScore: () => api.get('/compliance/dashboard/smart-score/'),
+  getSmartScore: () => api.get('/compliance/dashboard/smart_score/'),
 
   /** Get today's priority compliance actions */
   getToday: () => api.get('/compliance/dashboard/today/'),

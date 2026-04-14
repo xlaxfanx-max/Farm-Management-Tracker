@@ -427,7 +427,7 @@ const GenerateReportModal = ({ onClose, onGenerate }) => {
     if (!formData.reporting_period_start || !formData.reporting_period_end) return;
     setPurLoading(true);
     try {
-      const res = await api.post('/compliance/reports/generate-pur/', {
+      const res = await api.post('/compliance/reports/generate_pur/', {
         period_start: formData.reporting_period_start,
         period_end: formData.reporting_period_end,
       });

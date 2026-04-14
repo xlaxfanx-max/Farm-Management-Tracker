@@ -123,7 +123,10 @@ function UnifiedTaskList({
           module: 'reports',
           icon: FileSignature,
           title: 'PUR Event Draft',
-          description: `${evt.farm_name || 'Unknown Farm'} - ${(evt.tank_mix_items || []).length} product${(evt.tank_mix_items || []).length !== 1 ? 's' : ''}`,
+          description: (() => {
+            const n = evt.product_count ?? (evt.tank_mix_items || []).length;
+            return `${evt.farm_name || 'Unknown Farm'} - ${n} product${n !== 1 ? 's' : ''}`;
+          })(),
           date: new Date(evt.date_started),
           priority: 'medium',
           cta: 'Review',

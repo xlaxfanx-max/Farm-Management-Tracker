@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useAuth } from './AuthContext';
 import {
   farmsAPI,
@@ -96,6 +96,12 @@ export function DataProvider({ children }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Dedupe concurrent loadData() calls. StrictMode double-mounts in dev,
+  // and isAuthenticated/currentCompany can flip more than once during auth
+  // bootstrap — both would otherwise refire the 11-endpoint Promise.all
+  // multiple times on every dashboard mount.
+  const inFlightRef = useRef(false);
+
   // Refresh helpers
   const refreshFarms = useCallback(async () => setFarms(extractResults(await farmsAPI.getAll())), []);
   const refreshFields = useCallback(async () => setFields(extractResults(await fieldsAPI.getAll())), []);
@@ -109,6 +115,11 @@ export function DataProvider({ children }) {
   // Initial load
   const loadData = useCallback(async () => {
     if (!isAuthenticated) { setLoading(false); return; }
+    // Bail out if a load is already in flight (StrictMode replay, rapid
+    // auth state churn, etc.). The trailing finally{} resets the flag so
+    // genuine subsequent loads (e.g., after company switch) still work.
+    if (inFlightRef.current) return;
+    inFlightRef.current = true;
     setLoading(true);
     setError(null);
     try {
@@ -134,12 +145,20 @@ export function DataProvider({ children }) {
       console.error('Error loading data:', err);
     } finally {
       setLoading(false);
+      inFlightRef.current = false;
     }
   }, [isAuthenticated]);
 
+  // Use currentCompany?.id (a primitive) instead of the whole object so a
+  // re-render that produces a new-but-equivalent object reference doesn't
+  // refire loadData. We deliberately do NOT include `loadData` itself in
+  // the deps — its identity flips with isAuthenticated, and the in-flight
+  // ref guard inside loadData() already handles concurrent reentry.
+  const currentCompanyId = currentCompany?.id ?? null;
   useEffect(() => {
-    if (isAuthenticated && currentCompany) loadData();
-  }, [isAuthenticated, currentCompany, loadData]);
+    if (isAuthenticated && currentCompanyId) loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated, currentCompanyId]);
 
   // CRUD operations (generated via factories)
   const saveFarm = useCallback(makeSave(farmsAPI, refreshFarms, 'farm'), [refreshFarms]);

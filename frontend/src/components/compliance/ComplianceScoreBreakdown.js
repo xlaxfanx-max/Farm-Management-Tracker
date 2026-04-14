@@ -99,7 +99,7 @@ export default function ComplianceScoreBreakdown({ onNavigate }) {
     setLoading(true);
     setError(null);
     try {
-      const res = await api.get('/compliance/dashboard/smart-score/');
+      const res = await api.get('/compliance/dashboard/smart_score/');
       setData(res.data);
     } catch {
       setError('Could not load compliance score.');

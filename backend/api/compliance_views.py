@@ -1259,7 +1259,7 @@ class ComplianceDashboardViewSet(viewsets.ViewSet):
             company=company,
             due_date=today,
             status__in=['upcoming', 'due_soon']
-        ).order_by('title')[:10]
+        ).order_by('name')[:10]
 
         # Due this week
         week_from_now = today + timedelta(days=7)
@@ -1283,20 +1283,36 @@ class ComplianceDashboardViewSet(viewsets.ViewSet):
             expiration_date__lte=thirty_days
         ).order_by('expiration_date')[:5]
 
-        # Active REIs
+        # Active REIs — REIPostingRecord doesn't carry a direct company FK,
+        # so scope through application -> field -> farm -> company.
         active_reis = REIPostingRecord.objects.filter(
-            company=company,
+            application__field__farm__company=company,
             rei_end_datetime__gt=timezone.now(),
             removed_at__isnull=True
         ).select_related('application__field', 'application__product')[:10]
 
-        # PHI blocked fields - applications where PHI end date is in future
+        # PHI blocked fields - applications where PHI end date is still in
+        # the future. PHI end date isn't stored — it's application_date +
+        # product.phi_days. Pre-filter to the last ~year of apps with a PHI,
+        # then refine in Python (cheap because each company has dozens, not
+        # millions, of recent apps).
         from .models import PesticideApplication, Field
-        today_dt = timezone.now()
-        phi_apps = PesticideApplication.objects.filter(
-            field__farm__company=company,
-            phi_end_date__gt=today
-        ).select_related('field', 'product')[:10]
+        recent_cutoff = today - timedelta(days=365)
+        candidate_apps = (
+            PesticideApplication.objects
+            .filter(
+                field__farm__company=company,
+                application_date__gte=recent_cutoff,
+                product__phi_days__isnull=False,
+                product__phi_days__gt=0,
+            )
+            .select_related('field', 'product')
+            .order_by('-application_date')
+        )
+        phi_apps = [
+            a for a in candidate_apps
+            if (a.application_date + timedelta(days=a.product.phi_days)) > today
+        ][:10]
 
         # Pending PUR month
         first_of_month = today.replace(day=1)
@@ -1356,7 +1372,8 @@ class ComplianceDashboardViewSet(viewsets.ViewSet):
             not expired_lic.exists() and
             not expiring_training.exists() and
             not active_reis.exists() and
-            not phi_apps.exists() and
+            not phi_apps and  # phi_apps is a Python list, not a queryset
+
             pending_pur is None and
             pending_noi_count == 0
         )
@@ -1364,7 +1381,7 @@ class ComplianceDashboardViewSet(viewsets.ViewSet):
         def serialize_deadline(d):
             return {
                 'id': d.id,
-                'title': d.title,
+                'title': d.name,
                 'due_date': d.due_date.isoformat(),
                 'category': d.category,
                 'days_overdue': (today - d.due_date).days if d.due_date < today else 0,
