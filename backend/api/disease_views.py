@@ -849,3 +849,46 @@ class DiseaseDashboardViewSet(viewsets.ViewSet):
             'detections': list(detections),
             'quarantine_zones': quarantine_zones,
         })
+
+    @action(detail=False, methods=['get'], url_path='hlb-risk')
+    def hlb_risk(self, request):
+        """Per-field HLB risk scores across the current company, highest first.
+
+        Query params:
+          - lookback_days (default 90)
+          - field_id (optional, returns a single assessment instead of the list)
+        """
+        from .services.hlb_risk_service import (
+            score_company_hlb_risk, score_field_hlb_risk,
+        )
+        company = require_company(request.user)
+
+        try:
+            lookback_days = int(request.query_params.get('lookback_days', 90))
+        except (TypeError, ValueError):
+            lookback_days = 90
+
+        field_id = request.query_params.get('field_id')
+        if field_id:
+            try:
+                field = Field.objects.select_related('farm', 'crop').get(
+                    id=field_id, farm__company=company,
+                )
+            except Field.DoesNotExist:
+                return Response(
+                    {'detail': 'Field not found or not accessible.'},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+            assessment = score_field_hlb_risk(field, lookback_days=lookback_days)
+            return Response(assessment.to_dict())
+
+        assessments = score_company_hlb_risk(company, lookback_days=lookback_days)
+        level_counts = {'low': 0, 'moderate': 0, 'high': 0, 'critical': 0}
+        for a in assessments:
+            level_counts[a.risk_level] += 1
+
+        return Response({
+            'lookback_days': lookback_days,
+            'level_counts': level_counts,
+            'fields': [a.to_dict() for a in assessments],
+        })

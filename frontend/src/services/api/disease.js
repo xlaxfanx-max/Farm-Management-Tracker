@@ -99,6 +99,9 @@ export const diseaseDashboardAPI = {
 
   /** Get threat map data (farms, detections, quarantine zones) */
   getMapData: () => api.get('/disease/dashboard/map_data/'),
+
+  /** HLB risk per field (all fields by default, or ?field_id=X for one) */
+  getHLBRisk: (params = {}) => api.get('/disease/dashboard/hlb-risk/', { params }),
 };
 
 /**

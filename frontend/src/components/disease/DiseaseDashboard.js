@@ -21,6 +21,7 @@ import {
 } from '../../services/api';
 import DiseaseAlertsList from './DiseaseAlertsList';
 import ProximityRiskCard from './ProximityRiskCard';
+import HLBRiskPanel from './HLBRiskPanel';
 
 // Lazy load ThreatMap to avoid SSR issues with Leaflet
 const ThreatMap = lazy(() => import('./ThreatMap'));
@@ -243,6 +244,9 @@ function DiseaseDashboard() {
             </div>
           )}
         </div>
+
+        {/* Per-field HLB risk scoring */}
+        <HLBRiskPanel />
 
         {/* Main Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
