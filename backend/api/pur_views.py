@@ -170,6 +170,67 @@ class ApplicationEventViewSet(CompanyFilteredViewSet):
         return qs
 
     # -----------------------------------------------------------------
+    # IPM Rotation Pre-check
+    # -----------------------------------------------------------------
+
+    @action(detail=False, methods=['post'], url_path='check-rotation')
+    def check_rotation(self, request):
+        """Pre-save MOA rotation check so the modal can warn the user before
+        committing. Accepts {field_id, date, product_ids: []} and returns one
+        warning per incoming product that would extend a same-MOA streak.
+
+        Returns [] when there's nothing to worry about — safe to call freely."""
+        from datetime import date as date_cls
+        from .services.ipm_rotation import check_moa_rotation_for_event
+
+        field_id = request.data.get('field_id')
+        raw_date = request.data.get('date')
+        product_ids = request.data.get('product_ids') or []
+
+        if not field_id or not raw_date or not product_ids:
+            return Response([])
+
+        try:
+            parsed_date = date_cls.fromisoformat(raw_date)
+        except (TypeError, ValueError):
+            return Response(
+                {'detail': 'date must be YYYY-MM-DD'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        company = get_user_company(request.user)
+        try:
+            field = Field.objects.select_related('farm').get(
+                id=field_id, farm__company=company,
+            )
+        except Field.DoesNotExist:
+            return Response(
+                {'detail': 'Field not found or not accessible.'},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        products = Product.objects.filter(id__in=product_ids).filter(
+            Q(company__isnull=True) | Q(company=company)
+        )
+
+        exclude_event_id = request.data.get('exclude_event_id')
+        warnings = []
+        for product in products:
+            warning = check_moa_rotation_for_event(
+                field=field,
+                product=product,
+                event_date=parsed_date,
+                exclude_event_id=exclude_event_id,
+            )
+            if warning:
+                entry = warning.to_dict()
+                entry['product_id'] = product.id
+                entry['product_name'] = product.product_name
+                warnings.append(entry)
+
+        return Response(warnings)
+
+    # -----------------------------------------------------------------
     # PUR Reporting Actions
     # -----------------------------------------------------------------
 

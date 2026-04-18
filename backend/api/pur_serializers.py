@@ -59,14 +59,24 @@ class TankMixItemSerializer(serializers.ModelSerializer):
     product_type = serializers.CharField(
         source='product.product_type', read_only=True
     )
+    moa_code = serializers.CharField(source='product.moa_code', read_only=True)
+    moa_group_name = serializers.CharField(source='product.moa_group_name', read_only=True)
+    item_cost = serializers.DecimalField(
+        max_digits=12, decimal_places=2, read_only=True, allow_null=True,
+    )
+    cost_per_acre = serializers.DecimalField(
+        max_digits=12, decimal_places=2, read_only=True, allow_null=True,
+    )
 
     class Meta:
         model = TankMixItem
         fields = [
             'id', 'product', 'product_name', 'epa_registration_number',
             'active_ingredient', 'product_type',
+            'moa_code', 'moa_group_name',
             'total_amount', 'amount_unit', 'rate', 'rate_unit',
             'dilution_gallons', 'sort_order',
+            'item_cost', 'cost_per_acre',
         ]
 
 
@@ -98,6 +108,13 @@ class ApplicationEventSerializer(DynamicFieldsMixin, serializers.ModelSerializer
     product_count = serializers.SerializerMethodField()
     pur_status_display = serializers.CharField(source='get_pur_status_display', read_only=True)
     method_display = serializers.CharField(source='get_application_method_display', read_only=True)
+    total_cost = serializers.DecimalField(
+        max_digits=12, decimal_places=2, read_only=True, allow_null=True,
+    )
+    cost_per_acre = serializers.DecimalField(
+        max_digits=12, decimal_places=2, read_only=True, allow_null=True,
+    )
+    rotation_warnings = serializers.SerializerMethodField()
 
     list_fields = [
         'id', 'pur_number', 'pur_status', 'pur_status_display',
@@ -107,8 +124,35 @@ class ApplicationEventSerializer(DynamicFieldsMixin, serializers.ModelSerializer
         'treated_area_acres', 'commodity_name',
         'application_method', 'method_display',
         'product_count', 'rei_hours', 'phi_days',
+        'total_cost', 'cost_per_acre',
         'imported_from', 'created_at',
     ]
+
+    def get_rotation_warnings(self, obj):
+        """One warning per tank-mix product that extends a MOA streak on
+        this field. Only surface on detail responses — skipping for list
+        avoids N+1 on the applications index."""
+        if self.context.get('view') and getattr(
+            self.context['view'], 'action', None
+        ) == 'list':
+            return None
+        from .services.ipm_rotation import check_moa_rotation_for_event
+        if not obj.field or not obj.date_started:
+            return []
+        event_date = obj.date_started.date() if hasattr(obj.date_started, 'date') else obj.date_started
+        warnings = []
+        for item in obj.tank_mix_items.select_related('product').all():
+            warning = check_moa_rotation_for_event(
+                field=obj.field,
+                product=item.product,
+                event_date=event_date,
+                exclude_event_id=obj.id,
+            )
+            if warning:
+                entry = warning.to_dict()
+                entry['product_name'] = item.product.product_name
+                warnings.append(entry)
+        return warnings
 
     class Meta:
         model = ApplicationEvent

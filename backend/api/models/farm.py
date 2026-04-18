@@ -1306,6 +1306,33 @@ class PesticideProduct(models.Model):
         help_text="Cost per unit (for cost tracking)"
     )
 
+    cost_unit = models.CharField(
+        max_length=20,
+        blank=True,
+        choices=[
+            ('gal', 'Gallons'),
+            ('lbs', 'Pounds'),
+            ('oz', 'Ounces'),
+            ('pt', 'Pints'),
+            ('qt', 'Quarts'),
+        ],
+        help_text="Unit of measure for cost_per_unit (must match application unit to auto-compute cost)"
+    )
+
+    # IPM / Resistance Management — mode-of-action grouping per IRAC/FRAC/HRAC
+    moa_code = models.CharField(
+        max_length=20,
+        blank=True,
+        db_index=True,
+        help_text="IRAC/FRAC/HRAC mode-of-action code (e.g. 'IRAC-4A', 'FRAC-11', 'HRAC-9')"
+    )
+
+    moa_group_name = models.CharField(
+        max_length=120,
+        blank=True,
+        help_text="Human-readable MOA group (e.g. 'Neonicotinoids', 'Strobilurins', 'EPSP synthase inhibitors')"
+    )
+
     # Additional Information
     label_url = models.URLField(  # NEW
         blank=True,
@@ -1499,6 +1526,30 @@ class PesticideApplication(models.Model):
 
     def __str__(self):
         return f"{self.field.name} - {self.product.product_name} on {self.application_date}"
+
+    @property
+    def application_cost(self):
+        """Total dollar cost of this application when product cost is in the
+        same unit as amount_used. Returns None when the product has no cost
+        configured or when the cost unit doesn't match — rather than silently
+        producing a wrong number."""
+        if not self.product_id:
+            return None
+        cost = self.product.cost_per_unit
+        cost_unit = self.product.cost_unit
+        if cost is None or not cost_unit:
+            return None
+        if cost_unit != self.unit_of_measure:
+            return None
+        return (self.amount_used or 0) * cost
+
+    @property
+    def cost_per_acre(self):
+        """Dollars per acre for this application; None if cost or acres unknown."""
+        total = self.application_cost
+        if total is None or not self.acres_treated:
+            return None
+        return total / self.acres_treated
 
 
 # =============================================================================

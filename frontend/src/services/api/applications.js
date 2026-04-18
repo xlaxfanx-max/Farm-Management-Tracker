@@ -27,6 +27,7 @@ export const applicationEventsAPI = {
   exportPURCSV: (data) => api.post('/application-events/export_pur_csv/', data, {
     responseType: 'blob',
   }),
+  checkRotation: (data) => api.post('/application-events/check-rotation/', data),
 };
 
 export const unifiedProductsAPI = {

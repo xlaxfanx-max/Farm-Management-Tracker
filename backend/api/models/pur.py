@@ -153,6 +153,27 @@ class Product(models.Model):
     notes = models.TextField(blank=True)
     is_active = models.BooleanField(default=True)
 
+    # Cost tracking (optional) — unit of cost_unit must match the amount_unit
+    # on the tank-mix line for auto-computed cost to surface.
+    cost_per_unit = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True,
+        help_text="Dollar cost per unit (unit defined by cost_unit)"
+    )
+    cost_unit = models.CharField(
+        max_length=10, blank=True,
+        help_text="Unit of measure for cost_per_unit (Lb, Oz, Ga, Qt, Pt, Fl Oz, Kg, L)"
+    )
+
+    # IPM / Resistance management — IRAC/FRAC/HRAC MOA grouping
+    moa_code = models.CharField(
+        max_length=20, blank=True, db_index=True,
+        help_text="IRAC/FRAC/HRAC mode-of-action code (e.g. 'IRAC-4A', 'FRAC-11', 'HRAC-9')"
+    )
+    moa_group_name = models.CharField(
+        max_length=120, blank=True,
+        help_text="Human-readable MOA group (e.g. 'Neonicotinoids', 'Strobilurins')"
+    )
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -374,6 +395,28 @@ class ApplicationEvent(models.Model):
         self.phi_days = max(phis) if phis else None
         self.save(update_fields=['rei_hours', 'phi_days'])
 
+    @property
+    def total_cost(self):
+        """Sum of tank-mix item costs. None if any item's product has no cost
+        configured or unit mismatch — so we don't silently show a partial total."""
+        costs = []
+        for item in self.tank_mix_items.select_related('product').all():
+            item_cost = item.item_cost
+            if item_cost is None:
+                return None
+            costs.append(item_cost)
+        if not costs:
+            return None
+        total = sum(costs)
+        return total
+
+    @property
+    def cost_per_acre(self):
+        total = self.total_cost
+        if total is None or not self.treated_area_acres:
+            return None
+        return total / self.treated_area_acres
+
 
 # =============================================================================
 # TANK MIX ITEM (product line items within an application)
@@ -418,6 +461,26 @@ class TankMixItem(models.Model):
 
     def __str__(self):
         return f"{self.product.product_name}: {self.total_amount} {self.amount_unit}"
+
+    @property
+    def item_cost(self):
+        """Cost for this tank-mix line. Requires product cost configured in
+        the same unit as amount_unit — otherwise returns None rather than
+        guessing a conversion."""
+        cost = self.product.cost_per_unit
+        cost_unit = self.product.cost_unit
+        if cost is None or not cost_unit:
+            return None
+        if cost_unit != self.amount_unit:
+            return None
+        return (self.total_amount or 0) * cost
+
+    @property
+    def cost_per_acre(self):
+        total = self.item_cost
+        if total is None or not self.application_event.treated_area_acres:
+            return None
+        return total / self.application_event.treated_area_acres
 
 
 # =============================================================================

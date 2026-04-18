@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { X, Search, AlertTriangle, Info, Plus, Trash2, GripVertical } from 'lucide-react';
 import { useToast } from '../contexts/ToastContext';
 import { unifiedProductsAPI, applicationEventsAPI } from '../services/api';
@@ -88,6 +88,8 @@ function EnhancedApplicationModal({
   const searchTimeoutRef = useRef(null);
 
   const [saving, setSaving] = useState(false);
+  const [rotationWarnings, setRotationWarnings] = useState([]);
+  const rotationCheckRef = useRef(null);
 
   // Load unified products
   useEffect(() => {
@@ -241,6 +243,59 @@ function EnhancedApplicationModal({
   const getProductInfo = (productId) => {
     return allProducts.find(p => p.id === parseInt(productId));
   };
+
+  // Cost preview per tank-mix line. Only shown when product cost is
+  // configured in the same unit the user entered — otherwise silence beats a
+  // wrong number.
+  const computeLineCost = useCallback((item) => {
+    if (!item.product || !item.total_amount) return null;
+    const product = allProducts.find(p => p.id === parseInt(item.product));
+    if (!product || product.cost_per_unit == null || !product.cost_unit) return null;
+    if (product.cost_unit !== item.amount_unit) return null;
+    const amt = parseFloat(item.total_amount);
+    if (!amt || Number.isNaN(amt)) return null;
+    return Number(product.cost_per_unit) * amt;
+  }, [allProducts]);
+
+  const totalCost = useMemo(() => {
+    const costs = tankMixItems.map(computeLineCost);
+    if (costs.some(c => c === null)) return null;
+    if (costs.length === 0) return null;
+    return costs.reduce((a, b) => a + b, 0);
+  }, [tankMixItems, computeLineCost]);
+
+  const costPerAcre = useMemo(() => {
+    const acres = parseFloat(formData.treated_area_acres);
+    if (totalCost == null || !acres || Number.isNaN(acres)) return null;
+    return totalCost / acres;
+  }, [totalCost, formData.treated_area_acres]);
+
+  // Pre-save MOA rotation check. Debounces so we don't hit the API on every
+  // keystroke, and skips the call when inputs are incomplete.
+  useEffect(() => {
+    const productIds = tankMixItems
+      .map(i => i.product)
+      .filter(Boolean)
+      .map(Number);
+    if (!formData.field || !formData.date_started || productIds.length === 0) {
+      setRotationWarnings([]);
+      return undefined;
+    }
+    if (rotationCheckRef.current) clearTimeout(rotationCheckRef.current);
+    rotationCheckRef.current = setTimeout(() => {
+      applicationEventsAPI.checkRotation({
+        field_id: parseInt(formData.field),
+        date: formData.date_started,
+        product_ids: productIds,
+        exclude_event_id: application?.id,
+      })
+        .then(res => setRotationWarnings(res.data || []))
+        .catch(() => setRotationWarnings([]));
+    }, 400);
+    return () => {
+      if (rotationCheckRef.current) clearTimeout(rotationCheckRef.current);
+    };
+  }, [formData.field, formData.date_started, tankMixItems, application?.id]);
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -427,7 +482,7 @@ function EnhancedApplicationModal({
 
                         {/* Product badges */}
                         {productInfo && (
-                          <div className="flex items-center gap-2 mt-1.5">
+                          <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                             {productInfo.epa_registration_number && (
                               <span className="text-xs text-gray-500">
                                 EPA: {productInfo.epa_registration_number}
@@ -438,11 +493,28 @@ function EnhancedApplicationModal({
                                 {productInfo.product_type}
                               </span>
                             )}
+                            {productInfo.moa_code && (
+                              <span
+                                className="px-1.5 py-0.5 text-xs bg-indigo-50 text-indigo-700 rounded font-medium"
+                                title={productInfo.moa_group_name || ''}
+                              >
+                                MOA {productInfo.moa_code}
+                              </span>
+                            )}
                             {productInfo.active_ingredient && (
                               <span className="text-xs text-gray-400 truncate max-w-[200px]">
                                 {productInfo.active_ingredient}
                               </span>
                             )}
+                            {(() => {
+                              const cost = computeLineCost(item);
+                              if (cost == null) return null;
+                              return (
+                                <span className="text-xs text-emerald-700 font-medium">
+                                  ${cost.toFixed(2)}
+                                </span>
+                              );
+                            })()}
                           </div>
                         )}
                       </div>
@@ -509,8 +581,54 @@ function EnhancedApplicationModal({
             </div>
           </div>
 
+          {/* MOA rotation advisories — non-blocking, IRAC/FRAC guidance */}
+          {rotationWarnings.length > 0 && (
+            <div className="mt-4 space-y-2" data-testid="rotation-warnings">
+              {rotationWarnings.map((w, idx) => {
+                const isCritical = w.severity === 'critical';
+                return (
+                  <div
+                    key={`${w.product_id || idx}-${w.code}`}
+                    className={`flex items-start gap-2 rounded-md p-3 text-sm ${
+                      isCritical
+                        ? 'bg-red-50 border border-red-200 text-red-800'
+                        : 'bg-amber-50 border border-amber-200 text-amber-800'
+                    }`}
+                  >
+                    <AlertTriangle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <div className="font-medium">
+                        {w.product_name}
+                        {isCritical ? ' — resistance risk' : ' — rotation reminder'}
+                      </div>
+                      <div className="text-xs mt-0.5 opacity-90">{w.message}</div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Cost preview */}
+          {totalCost != null && (
+            <div
+              className="mt-4 flex items-center justify-between rounded-md bg-emerald-50 border border-emerald-200 px-3 py-2 text-sm"
+              data-testid="cost-preview"
+            >
+              <span className="text-emerald-800 font-medium">Estimated cost</span>
+              <span className="text-emerald-900">
+                ${totalCost.toFixed(2)}
+                {costPerAcre != null && (
+                  <span className="ml-3 text-emerald-700">
+                    ${costPerAcre.toFixed(2)}/acre
+                  </span>
+                )}
+              </span>
+            </div>
+          )}
+
           {/* Action Buttons */}
-          <div className="flex gap-3 pt-4 border-t border-gray-200">
+          <div className="flex gap-3 pt-4 border-t border-gray-200 mt-4">
             <button
               type="submit"
               disabled={saving}
