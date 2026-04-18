@@ -41,6 +41,7 @@ import HarvestFilters from './HarvestFilters';
 import HarvestStatistics from './HarvestStatistics';
 import HarvestList from './HarvestList';
 import HarvestAnalyticsTab from './HarvestAnalyticsTab';
+import CropReports from './CropReports';
 
 const Harvests = () => {
   const { fields, farms } = useData();
@@ -226,6 +227,7 @@ const Harvests = () => {
   // Tab definitions - unified harvest to packing pipeline
   const tabs = [
     { id: 'overview', label: 'Overview', icon: TrendingUp },
+    { id: 'crop-reports', label: 'Crop Reports', icon: DollarSign },
     { id: 'harvests', label: 'Harvests', icon: Wheat },
     { id: 'packinghouses', label: 'Packinghouses', icon: Building2 },
     { id: 'pools', label: 'Pools', icon: Layers },
@@ -407,6 +409,11 @@ const Harvests = () => {
       {/* Overview Tab - Pipeline Visualization */}
       {activeTab === 'overview' && (
         <PipelineOverview />
+      )}
+
+      {/* Crop Reports Tab - Ranch × Crop P&L */}
+      {activeTab === 'crop-reports' && (
+        <CropReports />
       )}
 
       {/* Packinghouses Tab */}

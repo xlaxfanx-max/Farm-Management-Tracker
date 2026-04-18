@@ -63,6 +63,15 @@ export const harvestLaborAPI = {
 };
 
 // =============================================================================
+// CROP REPORTS API — ranch-crop level P&L cards
+// =============================================================================
+
+export const cropReportsAPI = {
+  list: (params = {}) => api.get('/crop-reports/', { params }),
+  detail: (params = {}) => api.get('/crop-reports/detail/', { params }),
+};
+
+// =============================================================================
 // HARVEST PROFITABILITY ANALYTICS API
 // =============================================================================
 
