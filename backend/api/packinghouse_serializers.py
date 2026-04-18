@@ -110,6 +110,28 @@ class PackinghouseDeliverySerializer(DynamicFieldsMixin, serializers.ModelSerial
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']
 
+    def validate(self, attrs):
+        pool = attrs.get('pool') or getattr(self.instance, 'pool', None)
+        field = attrs.get('field') or getattr(self.instance, 'field', None)
+        harvest = attrs.get('harvest') if 'harvest' in attrs else getattr(self.instance, 'harvest', None)
+
+        if pool and field and field.farm.company_id != pool.packinghouse.company_id:
+            raise serializers.ValidationError(
+                {'field': 'Selected field must belong to the same company as the pool.'}
+            )
+
+        if harvest:
+            if field and harvest.field_id != field.id:
+                raise serializers.ValidationError(
+                    {'harvest': 'Selected harvest must belong to the same field as the delivery.'}
+                )
+            if pool and harvest.field.farm.company_id != pool.packinghouse.company_id:
+                raise serializers.ValidationError(
+                    {'harvest': 'Selected harvest must belong to the same company as the pool.'}
+                )
+
+        return attrs
+
 
 # Backward-compatible alias
 PackinghouseDeliveryListSerializer = PackinghouseDeliverySerializer
@@ -178,6 +200,17 @@ class PackoutReportCreateSerializer(serializers.ModelSerializer):
             'juice_percent', 'cull_percent', 'quality_notes',
             'grade_data_json', 'grade_lines'
         ]
+
+    def validate(self, attrs):
+        pool = attrs.get('pool') or getattr(self.instance, 'pool', None)
+        field = attrs.get('field') if 'field' in attrs else getattr(self.instance, 'field', None)
+
+        if pool and field and field.farm.company_id != pool.packinghouse.company_id:
+            raise serializers.ValidationError(
+                {'field': 'Selected field must belong to the same company as the pool.'}
+            )
+
+        return attrs
 
     def create(self, validated_data):
         grade_lines_data = validated_data.pop('grade_lines', [])
@@ -320,6 +353,17 @@ class PoolSettlementCreateSerializer(serializers.ModelSerializer):
             'settlement_data_json',
             'grade_lines', 'deductions'
         ]
+
+    def validate(self, attrs):
+        pool = attrs.get('pool') or getattr(self.instance, 'pool', None)
+        field = attrs.get('field') if 'field' in attrs else getattr(self.instance, 'field', None)
+
+        if pool and field and field.farm.company_id != pool.packinghouse.company_id:
+            raise serializers.ValidationError(
+                {'field': 'Selected field must belong to the same company as the pool.'}
+            )
+
+        return attrs
 
     def create(self, validated_data):
         grade_lines_data = validated_data.pop('grade_lines', [])

@@ -14,3 +14,24 @@ from .compliance_tasks import (
     send_daily_compliance_digest,
     cleanup_old_alerts,
 )
+
+# Disease prevention tasks
+from .disease_tasks import (
+    analyze_field_health,
+    check_proximity_alerts,
+    sync_external_detections,
+    send_disease_alert_digest,
+)
+
+# FSMA compliance tasks
+from .fsma_tasks import (
+    check_cleaning_compliance,
+    check_quarterly_meeting_compliance,
+    generate_monthly_inventory_snapshot,
+    generate_audit_binder,
+    check_low_inventory_alerts,
+    check_phi_compliance_for_upcoming_harvests,
+    send_fsma_daily_reminder,
+    generate_water_assessment_pdf,
+    cleanup_old_fsma_data,
+)
