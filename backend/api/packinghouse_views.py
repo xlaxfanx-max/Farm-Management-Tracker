@@ -622,6 +622,16 @@ class PoolSettlementViewSet(CompanyFilteredViewSet):
             }, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    @action(detail=True, methods=['get'])
+    def audit(self, request, pk=None):
+        """Run the settlement audit — reconciliation, deduction drift, block
+        variance, house variance, and historical outliers. Returns ephemeral
+        findings (no persistence) sorted by dollar impact."""
+        from .services.settlement_audit import audit_settlement
+        settlement = self.get_object()
+        report = audit_settlement(settlement)
+        return Response(report.to_dict())
+
 
 class GrowerLedgerEntryViewSet(CompanyFilteredViewSet):
     """

@@ -35,6 +35,7 @@ export const poolSettlementsAPI = {
   ...createCRUDAPI('pool-settlements'),
   addGradeLines: (id, gradeLines) => api.post(`/pool-settlements/${id}/grade-lines/`, gradeLines),
   addDeductions: (id, deductions) => api.post(`/pool-settlements/${id}/deductions/`, deductions),
+  audit: (id) => api.get(`/pool-settlements/${id}/audit/`),
 };
 
 export const growerLedgerAPI = {

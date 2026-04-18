@@ -11,6 +11,7 @@ import {
   FileIcon, PanelLeftClose, PanelLeft, ExternalLink, Download
 } from 'lucide-react';
 import { poolSettlementsAPI, getApiUrl } from '../../services/api';
+import SettlementAuditReport from './SettlementAuditReport';
 
 // Group deductions by category for display
 const DEDUCTION_CATEGORIES = {
@@ -397,6 +398,15 @@ const SettlementDetail = ({ settlementId, onClose }) => {
               </div>
             </div>
           )}
+
+          {/* Settlement Audit — reconciliation, drift, block variance, house variance, outliers */}
+          <div className="bg-white rounded-lg border border-gray-200 p-4">
+            <h4 className="font-medium text-gray-700 mb-3 flex items-center">
+              <span className="inline-block w-2 h-2 rounded-full bg-indigo-500 mr-2" />
+              Settlement Audit
+            </h4>
+            <SettlementAuditReport settlementId={settlementId} />
+          </div>
 
           {/* Pack Percentages */}
           {(settlement.fresh_fruit_percent || settlement.products_percent) && (

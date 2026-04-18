@@ -9,6 +9,7 @@ export { default as PoolList } from './PoolList';
 export { default as PoolModal } from './PoolModal';
 export { default as PoolDetail } from './PoolDetail';
 export { default as SettlementDetail } from './SettlementDetail';
+export { default as SettlementAuditReport } from './SettlementAuditReport';
 export { default as DeliveryModal } from './DeliveryModal';
 export { default as PackoutReportModal } from './PackoutReportModal';
 export { default as PackinghouseAnalytics } from './PackinghouseAnalytics';
