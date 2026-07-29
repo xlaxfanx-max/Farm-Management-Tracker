@@ -107,19 +107,25 @@ class Farm(LocationMixin, models.Model):
 
     @property
     def apn_list(self):
-        """Returns a comma-separated string of all APNs."""
-        return ', '.join(self.parcels.values_list('apn', flat=True))
+        """Returns a comma-separated string of all APNs.
+
+        Iterates self.parcels.all() so a prefetch_related('parcels') cache
+        is reused instead of issuing a fresh query per farm.
+        """
+        return ', '.join(sorted(p.apn for p in self.parcels.all()))
 
     @property
     def total_parcel_acreage(self):
-        """Sum of all parcel acreages."""
-        result = self.parcels.aggregate(total=models.Sum('acreage'))
-        return result['total'] or Decimal('0')
+        """Sum of all parcel acreages (prefetch-cache friendly)."""
+        return sum(
+            (p.acreage for p in self.parcels.all() if p.acreage is not None),
+            Decimal('0'),
+        )
 
     @property
     def parcel_count(self):
-        """Number of parcels."""
-        return self.parcels.count()
+        """Number of parcels (prefetch-cache friendly)."""
+        return len(self.parcels.all())
 
 class FarmParcel(models.Model):
     """

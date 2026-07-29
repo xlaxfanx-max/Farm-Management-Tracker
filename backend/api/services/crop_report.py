@@ -52,8 +52,17 @@ def _normalize_tokens(s) -> Set[str]:
 
 
 def _crops_match(a, b) -> bool:
-    """True iff the two crop strings share at least one meaningful token."""
-    return bool(_normalize_tokens(a) & _normalize_tokens(b))
+    """True iff one crop's token set contains the other's.
+
+    Plain overlap is too loose: 'valencia_orange' and 'navel_orange' share
+    the 'orange' token but are different crops. Subset containment still
+    lets terse external names ('NAVELS', 'ORANGES') match their canonical
+    variety codes.
+    """
+    ta, tb = _normalize_tokens(a), _normalize_tokens(b)
+    if not ta or not tb:
+        return False
+    return ta <= tb or tb <= ta
 
 
 def _crop_display(crop_variety: str) -> str:
@@ -180,9 +189,8 @@ def _fields_for_combo(farm_id: int, crop_variety: str):
     historical combos where the crop has been replanted)."""
     from ..models import Field, Harvest
 
-    target_tokens = _normalize_tokens(crop_variety)
     fields = list(Field.objects.filter(farm_id=farm_id).select_related('farm', 'crop'))
-    matches = [f for f in fields if _normalize_tokens(f.current_crop) & target_tokens]
+    matches = [f for f in fields if _crops_match(f.current_crop, crop_variety)]
     if matches:
         return matches
 
@@ -235,7 +243,6 @@ def _ranch_level_spray_cost(
     who record applications at ranch granularity."""
     from ..models import ApplicationEvent
 
-    target_tokens = _normalize_tokens(crop_variety)
     events = (
         ApplicationEvent.objects
         .filter(
@@ -248,7 +255,7 @@ def _ranch_level_spray_cost(
     total = Decimal(0)
     matched = 0
     for event in events:
-        if not _normalize_tokens(event.commodity_name) & target_tokens:
+        if not _crops_match(event.commodity_name, crop_variety):
             continue
         matched += 1
         ev_total = event.total_cost
@@ -293,13 +300,12 @@ def _revenue_for_combo(
         seen_pools.add(s.pool_id)
 
     # Null-field fallback — commodity matches and not already counted
-    target_tokens = _normalize_tokens(crop_variety)
     null_field = base_qs.filter(field__isnull=True).exclude(pool_id__in=seen_pools)
     # Constrain to settlements whose pool is plausibly for this farm:
     # either the pool has deliveries from our fields, or the grower only
     # has one farm (can't tell otherwise).
     for s in null_field:
-        if not _normalize_tokens(s.pool.commodity) & target_tokens:
+        if not _crops_match(s.pool.commodity, crop_variety):
             continue
         # Require a delivery or harvest-link to a field on this farm before
         # attributing the pool to this farm. Avoids cross-farm leakage.

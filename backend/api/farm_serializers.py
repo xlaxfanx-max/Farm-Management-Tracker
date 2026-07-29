@@ -50,6 +50,10 @@ class FarmSerializer(serializers.ModelSerializer):
         ]
 
     def get_field_count(self, obj):
+        # List views annotate this to avoid a COUNT query per farm.
+        annotated = getattr(obj, 'field_count_annotated', None)
+        if annotated is not None:
+            return annotated
         return obj.fields.count()
 
 class FieldSerializer(serializers.ModelSerializer):
@@ -116,4 +120,8 @@ class FieldSerializer(serializers.ModelSerializer):
         ]
 
     def get_application_count(self, obj):
+        # List views annotate this to avoid a COUNT query per field.
+        annotated = getattr(obj, 'application_count_annotated', None)
+        if annotated is not None:
+            return annotated
         return obj.applications.count()

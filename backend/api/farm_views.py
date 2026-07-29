@@ -4,7 +4,7 @@ Farm, Field, Crop, Rootstock, and FarmParcel views.
 from rest_framework import viewsets, filters, status, serializers
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from django.db.models import Q
+from django.db.models import Count, Q
 from decimal import Decimal
 import math
 from .view_helpers import get_user_company, require_company, CompanyFilteredViewSet
@@ -113,9 +113,12 @@ class FarmViewSet(CompanyFilteredViewSet):
     search_fields = ['name', 'farm_number', 'owner_name', 'county']
     ordering_fields = ['name', 'created_at']
     default_ordering = ('-id',)
+    prefetch_related_fields = ('parcels',)
 
     def filter_queryset_by_params(self, qs):
-        return qs.filter(active=True)
+        return qs.filter(active=True).annotate(
+            field_count_annotated=Count('fields', distinct=True),
+        )
 
     @action(detail=True, methods=['get'])
     def fields(self, request, pk=None):
@@ -289,13 +292,15 @@ class FieldViewSet(CompanyFilteredViewSet):
     model = Field
     serializer_class = FieldSerializer
     company_field = 'farm__company'
-    select_related_fields = ('farm',)
+    select_related_fields = ('farm', 'crop', 'rootstock')
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['name', 'field_number', 'current_crop', 'county']
     ordering_fields = ['name', 'total_acres', 'created_at']
 
     def filter_queryset_by_params(self, qs):
-        return qs.filter(active=True)
+        return qs.filter(active=True).annotate(
+            application_count_annotated=Count('applications', distinct=True),
+        )
 
     @action(detail=True, methods=['get'])
     def applications(self, request, pk=None):

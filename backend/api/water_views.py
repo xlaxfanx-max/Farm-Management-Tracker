@@ -1,6 +1,9 @@
 """
 Water source and water test views.
 """
+from datetime import date
+
+from django.db.models import Q, Sum
 from rest_framework import viewsets, filters, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -10,6 +13,14 @@ from .view_helpers import CompanyFilteredViewSet, get_user_company
 from .audit_utils import AuditLogMixin
 from .models import WaterSource, WaterTest
 from .serializers import WaterSourceSerializer, WaterTestSerializer
+
+
+def current_water_year_start(today=None):
+    """CA water year runs Oct 1 – Sep 30."""
+    today = today or date.today()
+    if today.month >= 10:
+        return date(today.year, 10, 1)
+    return date(today.year - 1, 10, 1)
 
 
 class WaterSourceViewSet(CompanyFilteredViewSet):
@@ -29,7 +40,14 @@ class WaterSourceViewSet(CompanyFilteredViewSet):
     ordering_fields = ['name', 'created_at']
 
     def filter_queryset_by_params(self, qs):
-        return qs.filter(active=True)
+        # Annotate the water-year extraction total so the serializer does
+        # not run a SUM query per source on list views.
+        return qs.filter(active=True).annotate(
+            ytd_extraction_annotated=Sum(
+                'readings__extraction_acre_feet',
+                filter=Q(readings__reading_date__gte=current_water_year_start()),
+            ),
+        )
 
     @action(detail=True, methods=['get'])
     def tests(self, request, pk=None):

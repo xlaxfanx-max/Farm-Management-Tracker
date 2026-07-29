@@ -222,7 +222,12 @@ class TraceabilityLot(models.Model):
 
     @property
     def completeness_score(self):
-        """Calculate how complete the traceability record is (0-100)."""
+        """Calculate how complete the traceability record is (0-100).
+
+        Iterates events.all()/dispositions.all() so list views that
+        prefetch these relations don't pay 4 queries per lot.
+        """
+        event_types = {e.event_type for e in self.events.all()}
         checks = [
             bool(self.lot_number),
             bool(self.product_description),
@@ -230,10 +235,10 @@ class TraceabilityLot(models.Model):
             bool(self.harvest_date),
             bool(self.quantity_bins or self.quantity_weight_lbs),
             self.phi_compliant is not None,
-            self.events.filter(event_type='growing').exists(),
-            self.events.filter(event_type='shipping').exists(),
-            self.events.filter(event_type='receiving').exists(),
-            self.dispositions.exists(),
+            'growing' in event_types,
+            'shipping' in event_types,
+            'receiving' in event_types,
+            bool(self.dispositions.all()),
         ]
         return int(sum(checks) / len(checks) * 100)
 

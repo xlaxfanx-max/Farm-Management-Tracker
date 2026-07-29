@@ -35,7 +35,6 @@ from django.db.models import Q
 # =============================================================================
 
 RECONCILIATION_TOLERANCE = Decimal('5.00')        # accept ≤$5 rounding slack
-RECONCILIATION_PCT = Decimal('0.01')              # or 1% of pool value
 DRIFT_PCT = Decimal('0.10')                       # 10% change flags drift
 DRIFT_MIN_BASE_PER_BIN = Decimal('0.05')          # ignore drift on tiny bases
 DRIFT_LOOKBACK_POOLS = 6
@@ -143,10 +142,10 @@ def _check_reconciliation(settlement) -> List[Finding]:
     amount_due = _dec(settlement.amount_due) or Decimal(0)
 
     pool_total = max(total_credits, abs(net_return), Decimal('1'))
-    tolerance = max(
-        RECONCILIATION_TOLERANCE,
-        pool_total * RECONCILIATION_PCT,
-    )
+    # Reconciliation is exact statement arithmetic — the tolerance only
+    # absorbs rounding, and deliberately does NOT scale with pool value
+    # (scale-aware thresholds belong to the variance checks).
+    tolerance = RECONCILIATION_TOLERANCE
 
     # credits - deductions = net_return
     internal_diff = total_credits - total_deductions - net_return
@@ -232,12 +231,14 @@ def _check_deduction_drift(settlement) -> List[Finding]:
             statement_date__lt=settlement.statement_date,
         )
         .exclude(id=settlement.id)
-        .prefetch_related('deductions')
-        .order_by('-statement_date')[:DRIFT_LOOKBACK_POOLS]
     )
     if settlement.field_id:
         prior_qs = prior_qs.filter(field_id=settlement.field_id)
-    prior_settlements = list(prior_qs)
+    prior_settlements = list(
+        prior_qs
+        .prefetch_related('deductions')
+        .order_by('-statement_date')[:DRIFT_LOOKBACK_POOLS]
+    )
     if not prior_settlements:
         return findings
 

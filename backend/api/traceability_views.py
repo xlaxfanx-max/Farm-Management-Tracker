@@ -48,6 +48,7 @@ class TraceabilityLotViewSet(CompanyFilteredViewSet):
     model = TraceabilityLot
     serializer_class = TraceabilityLotSerializer
     select_related_fields = ('field', 'farm', 'harvest')
+    prefetch_related_fields = ('events', 'dispositions')
     default_ordering = ('-harvest_date', '-created_at')
 
     def get_queryset(self):

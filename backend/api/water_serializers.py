@@ -60,9 +60,12 @@ class WaterSourceSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
         return latest.status if latest else None
 
     def get_ytd_extraction_af(self, obj):
-        if obj.is_well:
-            return float(obj.get_ytd_extraction_af())
-        return None
+        if not obj.is_well:
+            return None
+        # List views annotate this to avoid a SUM query per source.
+        if hasattr(obj, 'ytd_extraction_annotated'):
+            return float(obj.ytd_extraction_annotated or 0)
+        return float(obj.get_ytd_extraction_af())
 
     def get_current_year_allocation_af(self, obj):
         if obj.is_well:

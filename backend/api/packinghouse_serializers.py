@@ -31,9 +31,16 @@ class PackinghouseSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
         read_only_fields = ['id', 'company', 'created_at', 'updated_at']
 
     def get_pool_count(self, obj):
+        # List views annotate this to avoid a COUNT query per packinghouse.
+        annotated = getattr(obj, 'pool_count_annotated', None)
+        if annotated is not None:
+            return annotated
         return obj.pools.count()
 
     def get_active_pools_count(self, obj):
+        annotated = getattr(obj, 'active_pool_count_annotated', None)
+        if annotated is not None:
+            return annotated
         return obj.pools.filter(status='active').count()
 
 
@@ -190,6 +197,11 @@ PackoutReportListSerializer = PackoutReportSerializer
 class PackoutReportCreateSerializer(serializers.ModelSerializer):
     """Serializer for creating packout reports with nested grade lines."""
     grade_lines = PackoutGradeLineSerializer(many=True, required=False)
+    # Many packout statements only report period bins; default cumulative
+    # to the period count on create rather than rejecting the payload.
+    bins_cumulative = serializers.DecimalField(
+        max_digits=10, decimal_places=2, required=False,
+    )
 
     class Meta:
         model = PackoutReport
@@ -209,6 +221,9 @@ class PackoutReportCreateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 {'field': 'Selected field must belong to the same company as the pool.'}
             )
+
+        if self.instance is None and attrs.get('bins_cumulative') is None:
+            attrs['bins_cumulative'] = attrs.get('bins_this_period')
 
         return attrs
 

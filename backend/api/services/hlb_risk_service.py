@@ -414,6 +414,20 @@ def score_field_hlb_risk(field, lookback_days: int = 90) -> HLBRiskAssessment:
         + zone_score * WEIGHTS['zone_exposure']
         + climate_score * WEIGHTS['climate']
     )
+
+    # Regulatory floor: a nearby active HLB find dominates risk no matter
+    # how little other data exists — the weighted average would otherwise
+    # dilute an on-field detection down to 'moderate' when the survey /
+    # climate components are simply missing. CDFA mandates quarantine and
+    # treatment around finds, so mirror that: within ACP flight range
+    # (~1 mile) is never below 'high'; within the 5-mile quarantine radius
+    # is never below 'moderate'.
+    if nearest_miles is not None:
+        if nearest_miles <= 1.0:
+            total = max(total, 60.0)
+        elif nearest_miles <= 5.0:
+            total = max(total, 40.0)
+
     total = round(min(100.0, max(0.0, total)), 1)
 
     assessment = HLBRiskAssessment(

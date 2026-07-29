@@ -114,9 +114,12 @@ class PackinghouseViewSet(CompanyFilteredViewSet):
     default_ordering = ('name',)
 
     def get_queryset(self):
-        # Need to add pool_count annotation beyond standard filtering
+        # Need to add pool count annotations beyond standard filtering
         return super().get_queryset().annotate(
-            pool_count_annotated=Count('pools')
+            pool_count_annotated=Count('pools', distinct=True),
+            active_pool_count_annotated=Count(
+                'pools', filter=Q(pools__status='active'), distinct=True
+            ),
         )
 
     def filter_queryset_by_params(self, queryset):
