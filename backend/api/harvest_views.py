@@ -493,12 +493,60 @@ class HarvestViewSet(AuditLogMixin, viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # Get most recent application
-        last_app = PesticideApplication.objects.filter(
-            field_id=field_id
-        ).select_related('product').order_by('-application_date').first()
+        # Collect PHI constraints from BOTH spray models — the legacy
+        # PesticideApplication and the tank-mix ApplicationEvent. The
+        # binding constraint is the one whose PHI window ends latest,
+        # not simply the most recent spray (an older spray with a long
+        # PHI can still block while a newer short-PHI spray doesn't).
+        from .models import ApplicationEvent
 
-        if not last_app:
+        lookback = proposed_date - timedelta(days=180)
+        constraints = []  # (application_date, product_name, phi_days)
+
+        legacy_apps = (
+            PesticideApplication.objects
+            .filter(field_id=field_id, application_date__gte=lookback)
+            .select_related('product')
+        )
+        any_application = False
+        for app in legacy_apps:
+            any_application = True
+            phi = app.product.phi_days if app.product else None
+            if phi:
+                constraints.append(
+                    (app.application_date, app.product.product_name, phi)
+                )
+
+        events = (
+            ApplicationEvent.objects
+            .filter(field_id=field_id, date_started__date__gte=lookback)
+            .prefetch_related('tank_mix_items__product')
+        )
+        for event in events:
+            any_application = True
+            if not event.phi_days:
+                continue
+            # Name the product that drives the event's PHI
+            mix_products = [
+                i.product for i in event.tank_mix_items.all() if i.product_id
+            ]
+            binding_product = max(
+                (p for p in mix_products if p.phi_days),
+                key=lambda p: p.phi_days,
+                default=None,
+            )
+            constraints.append((
+                event.date_started.date(),
+                binding_product.product_name if binding_product else 'tank mix',
+                event.phi_days,
+            ))
+
+        if not constraints:
+            message = (
+                'No PHI-restricted applications on this field.'
+                if any_application else
+                'No pesticide applications found for this field.'
+            )
             return Response({
                 'field_id': field_id,
                 'proposed_harvest_date': proposed_date_str,
@@ -507,28 +555,33 @@ class HarvestViewSet(AuditLogMixin, viewsets.ModelViewSet):
                 'phi_required_days': None,
                 'days_since_application': None,
                 'is_compliant': True,
-                'warning_message': 'No pesticide applications found for this field.'
+                'warning_message': message,
             })
 
-        days_since = (proposed_date - last_app.application_date).days
-        phi_required = last_app.product.phi_days if last_app.product else None
-        is_compliant = days_since >= phi_required if phi_required else None
+        app_date, product_name, phi_required = max(
+            constraints, key=lambda c: c[0] + timedelta(days=c[2]),
+        )
+        phi_end = app_date + timedelta(days=phi_required)
+        days_since = (proposed_date - app_date).days
+        is_compliant = proposed_date >= phi_end
 
-        warning_message = None
-        if is_compliant is False:
+        if is_compliant:
+            warning_message = (
+                f"PHI compliant. {days_since} days since application of "
+                f"{product_name} (required: {phi_required})."
+            )
+        else:
             warning_message = (
                 f"PHI VIOLATION: Only {days_since} days since application of "
-                f"{last_app.product.product_name}. Required: {phi_required} days. "
-                f"Earliest safe harvest date: {last_app.application_date + timedelta(days=phi_required)}"
+                f"{product_name}. Required: {phi_required} days. "
+                f"Earliest safe harvest date: {phi_end}"
             )
-        elif is_compliant is True:
-            warning_message = f"PHI compliant. {days_since} days since last application (required: {phi_required})."
 
         return Response({
             'field_id': field_id,
             'proposed_harvest_date': proposed_date_str,
-            'last_application_date': last_app.application_date,
-            'last_application_product': last_app.product.product_name if last_app.product else None,
+            'last_application_date': app_date,
+            'last_application_product': product_name,
             'phi_required_days': phi_required,
             'days_since_application': days_since,
             'is_compliant': is_compliant,

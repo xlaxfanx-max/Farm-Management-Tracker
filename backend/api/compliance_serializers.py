@@ -242,28 +242,35 @@ class CentralPostingLocationSerializer(serializers.ModelSerializer):
 # -----------------------------------------------------------------------------
 
 class REIPostingRecordSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
-    """Serializer for REI posting records (dynamic list/detail)."""
+    """Serializer for REI posting records (dynamic list/detail).
+
+    Records are sourced from either a legacy PesticideApplication or a
+    tank-mix ApplicationEvent; names resolve through the model's
+    source-agnostic properties.
+    """
     list_fields = [
         'id', 'field_name', 'product_name',
         'rei_hours', 'rei_end_datetime', 'is_active',
+        'time_remaining_seconds',
         'posted_at', 'posting_compliant',
     ]
 
-    application_date = serializers.DateField(source='application.application_date', read_only=True)
-    field_name = serializers.CharField(source='application.field.name', read_only=True)
-    product_name = serializers.CharField(source='application.product.product_name', read_only=True)
+    application_date = serializers.SerializerMethodField()
+    field_name = serializers.CharField(source='location_display', read_only=True)
+    product_name = serializers.CharField(source='product_display', read_only=True)
     is_active = serializers.BooleanField(read_only=True)
     time_remaining = serializers.DurationField(read_only=True)
+    time_remaining_seconds = serializers.SerializerMethodField()
     posted_by_name = serializers.CharField(source='posted_by.get_full_name', read_only=True)
     removed_by_name = serializers.CharField(source='removed_by.get_full_name', read_only=True)
 
     class Meta:
         model = REIPostingRecord
         fields = [
-            'id', 'application', 'application_date',
+            'id', 'application', 'event', 'application_date',
             'field_name', 'product_name',
             'rei_hours', 'rei_end_datetime',
-            'is_active', 'time_remaining',
+            'is_active', 'time_remaining', 'time_remaining_seconds',
             'posted_at', 'posted_by', 'posted_by_name',
             'removed_at', 'removed_by', 'removed_by_name',
             'posting_compliant', 'removal_compliant',
@@ -271,11 +278,22 @@ class REIPostingRecordSerializer(DynamicFieldsMixin, serializers.ModelSerializer
             'notes', 'created_at', 'updated_at',
         ]
         read_only_fields = [
-            'application', 'rei_hours', 'rei_end_datetime',
+            'application', 'event', 'rei_hours', 'rei_end_datetime',
             'posted_at', 'posted_by', 'removed_at', 'removed_by',
             'posting_compliant', 'removal_compliant',
             'created_at', 'updated_at',
         ]
+
+    def get_application_date(self, obj):
+        if obj.application_id:
+            return obj.application.application_date
+        if obj.event_id and obj.event.date_started:
+            return obj.event.date_started.date()
+        return None
+
+    def get_time_remaining_seconds(self, obj):
+        remaining = obj.time_remaining
+        return int(remaining.total_seconds()) if remaining else 0
 
 
 REIPostingRecordListSerializer = REIPostingRecordSerializer

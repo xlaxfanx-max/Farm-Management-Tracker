@@ -387,13 +387,58 @@ class ApplicationEvent(models.Model):
         return f"{self.field} - {date_str} ({self.get_application_method_display()})"
 
     def update_compliance_from_items(self):
-        """Recalculate REI/PHI from tank mix items."""
+        """Recalculate REI/PHI from tank mix items and sync the REI posting."""
         items = self.tank_mix_items.select_related('product').all()
         reis = [i.product.rei_hours for i in items if i.product.rei_hours]
         phis = [i.product.phi_days for i in items if i.product.phi_days]
         self.rei_hours = max(reis) if reis else None
         self.phi_days = max(phis) if phis else None
         self.save(update_fields=['rei_hours', 'phi_days'])
+        self.sync_rei_posting()
+
+    def sync_rei_posting(self):
+        """Create/refresh the worker-safety REI posting for this event.
+
+        Only REIs that are still running get a posting — backfilling
+        long-expired REIs (e.g. historical PDF imports) would flood the
+        'REI ended, remove signs' alert stream with noise.
+        """
+        import math
+        from datetime import timedelta
+
+        from django.utils import timezone
+
+        from .compliance import REIPostingRecord
+
+        existing = REIPostingRecord.objects.filter(event=self).first()
+
+        if not self.rei_hours or not self.date_started:
+            # No REI applies; drop a stale posting unless signs were
+            # actually posted (that's a real compliance record).
+            if existing and not existing.posted_at:
+                existing.delete()
+            return None
+
+        rei_end = self.date_started + timedelta(hours=float(self.rei_hours))
+        rei_hours_int = int(math.ceil(float(self.rei_hours)))
+
+        if existing:
+            if (existing.rei_hours != rei_hours_int
+                    or existing.rei_end_datetime != rei_end):
+                existing.rei_hours = rei_hours_int
+                existing.rei_end_datetime = rei_end
+                existing.save(update_fields=['rei_hours', 'rei_end_datetime'])
+            return existing
+
+        if rei_end <= timezone.now():
+            return None  # historical record — REI already over
+
+        return REIPostingRecord.objects.create(
+            event=self,
+            rei_hours=rei_hours_int,
+            rei_end_datetime=rei_end,
+            posting_compliant=False,
+        )
 
     @property
     def total_cost(self):

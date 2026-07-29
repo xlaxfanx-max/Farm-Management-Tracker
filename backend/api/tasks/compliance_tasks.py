@@ -697,7 +697,7 @@ def auto_generate_monthly_pur_report(company_id: int = None):
 
         # Gather applications for the period
         applications = PesticideApplication.objects.filter(
-            company=company,
+            field__farm__company=company,
             application_date__gte=period_start,
             application_date__lte=period_end,
         ).select_related('field', 'field__farm', 'product')
@@ -714,12 +714,12 @@ def auto_generate_monthly_pur_report(company_id: int = None):
                 'date': app.application_date.isoformat(),
                 'farm': app.field.farm.name if app.field and app.field.farm else None,
                 'field': app.field.name if app.field else None,
-                'product': app.product.trade_name if app.product else None,
+                'product': app.product.product_name if app.product else None,
                 'epa_reg_no': app.product.epa_registration_number if app.product else None,
-                'rate': str(app.application_rate) if app.application_rate else None,
-                'rate_unit': app.application_rate_unit,
-                'area_treated': str(app.area_treated) if app.area_treated else None,
-                'total_applied': str(app.total_amount_applied) if app.total_amount_applied else None,
+                'amount_used': str(app.amount_used) if app.amount_used is not None else None,
+                'unit_of_measure': app.unit_of_measure,
+                'acres_treated': str(app.acres_treated) if app.acres_treated is not None else None,
+                'application_method': app.application_method,
             })
 
         # Create the report
@@ -761,33 +761,46 @@ def generate_rei_posting_records():
     # Get applications without REI posting records
     # that have a product with REI > 0
     applications = PesticideApplication.objects.filter(
-        rei_posting_record__isnull=True,
+        rei_posting__isnull=True,
         product__rei_hours__gt=0,
-    ).select_related('product', 'field', 'company')
+    ).select_related('product', 'field')
 
     for app in applications:
         stats['applications_checked'] += 1
 
-        # Calculate REI end time
-        if app.application_datetime:
-            app_time = app.application_datetime
-        else:
-            # Use midnight on application date
-            from datetime import datetime, time
-            app_time = timezone.make_aware(
-                datetime.combine(app.application_date, time(0, 0))
-            )
+        # REI clock starts when the application starts; fall back to
+        # midnight when no start time was recorded.
+        from datetime import datetime, time
+        app_time = timezone.make_aware(
+            datetime.combine(app.application_date, app.start_time or time(0, 0))
+        )
 
-        rei_hours = app.product.rei_hours or 0
+        rei_hours = int(app.product.rei_hours or 0)
         rei_end = app_time + timedelta(hours=rei_hours)
 
         REIPostingRecord.objects.create(
             application=app,
+            rei_hours=rei_hours,
             rei_end_datetime=rei_end,
             posting_compliant=False,  # Not yet posted
         )
 
         stats['records_created'] += 1
+
+    # Tank-mix ApplicationEvents: normally synced at save time, but PDF
+    # imports set rei_hours directly — backfill any event whose REI is
+    # still running and has no posting yet.
+    from api.models import ApplicationEvent
+
+    events = ApplicationEvent.objects.filter(
+        rei_posting__isnull=True,
+        rei_hours__gt=0,
+    ).select_related('farm')
+
+    for event in events:
+        stats['applications_checked'] += 1
+        if event.sync_rei_posting() is not None:
+            stats['records_created'] += 1
 
     logger.info(f"REI posting record generation complete: {stats}")
     return stats
@@ -814,10 +827,17 @@ def check_active_reis():
         'alerts_created': 0,
     }
 
-    # Get active REI postings (not yet removed)
+    # Get active REI postings (not yet removed) — both legacy applications
+    # and tank-mix events
     active_reis = REIPostingRecord.objects.filter(
         removed_at__isnull=True,
-    ).select_related('application', 'application__field', 'application__company')
+    ).select_related(
+        'application',
+        'application__field__farm',
+        'application__product',
+        'event__field',
+        'event__farm',
+    ).prefetch_related('event__tank_mix_items__product')
 
     for rei in active_reis:
         stats['records_checked'] += 1
@@ -850,9 +870,15 @@ def _create_rei_alert(rei, priority, alert_type):
     if existing:
         return None
 
-    app = rei.application
-    field_name = app.field.name if app.field else 'Unknown field'
-    product_name = app.product.trade_name if app.product else 'Unknown product'
+    company = rei.source_company
+    if company is None:
+        # Without a farm there is no company to route the alert to.
+        logger.warning(
+            f"REIPostingRecord {rei.id} has no farm/company; skipping alert."
+        )
+        return None
+    field_name = rei.location_display
+    product_name = rei.product_display
 
     if alert_type == 'ended':
         title = f"REI Ended: {field_name}"
@@ -863,7 +889,7 @@ def _create_rei_alert(rei, priority, alert_type):
         message = f"The REI for {product_name} on {field_name} ends in {minutes} minutes at {rei.rei_end_datetime.strftime('%I:%M %p')}."
 
     return ComplianceAlert.objects.create(
-        company=app.company,
+        company=company,
         alert_type='rei_alert',
         priority=priority,
         title=title,

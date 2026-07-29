@@ -544,16 +544,32 @@ class CentralPostingLocationViewSet(CompanyFilteredViewSet):
 class REIPostingRecordViewSet(CompanyFilteredViewSet):
     """
     API endpoint for managing REI posting records.
+
+    Records come from two sources — legacy PesticideApplications and
+    tank-mix ApplicationEvents — so company scoping unions both paths.
     """
     model = REIPostingRecord
     serializer_class = REIPostingRecordSerializer
-    company_field = 'application__field__farm__company'
-    select_related_fields = (
-        'application', 'application__field', 'application__product',
-        'posted_by', 'removed_by',
-    )
     default_ordering = ('-rei_end_datetime',)
     http_method_names = ['get', 'post']
+
+    def _company_scoped(self, company):
+        return REIPostingRecord.objects.filter(
+            Q(application__field__farm__company=company)
+            | Q(event__farm__company=company)
+        ).select_related(
+            'application', 'application__field', 'application__field__farm',
+            'application__product',
+            'event', 'event__field', 'event__farm',
+            'posted_by', 'removed_by',
+        ).prefetch_related('event__tank_mix_items__product')
+
+    def get_queryset(self):
+        company = get_user_company(self.request.user)
+        if not company:
+            return REIPostingRecord.objects.none()
+        qs = self._company_scoped(company).order_by(*self.default_ordering)
+        return self.filter_queryset_by_params(qs)
 
     def filter_queryset_by_params(self, queryset):
         active_only = self.request.query_params.get('active')
@@ -566,11 +582,9 @@ class REIPostingRecordViewSet(CompanyFilteredViewSet):
         """Get currently active REIs."""
         company = require_company(request.user)
 
-        active_reis = REIPostingRecord.objects.filter(
-            application__field__farm__company=company,
-            rei_end_datetime__gt=timezone.now()
-        ).select_related(
-            'application', 'application__field', 'application__product'
+        active_reis = self._company_scoped(company).filter(
+            rei_end_datetime__gt=timezone.now(),
+            removed_at__isnull=True,
         ).order_by('rei_end_datetime')
 
         serializer = REIPostingRecordSerializer(active_reis, many=True)

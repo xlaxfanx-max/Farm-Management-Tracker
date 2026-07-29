@@ -288,8 +288,15 @@ class ComplianceDeadline(models.Model):
         return f"{self.name} - Due {self.due_date} ({self.get_status_display()})"
 
     def save(self, *args, **kwargs):
-        """Auto-update status based on due date."""
-        self._update_status()
+        """Auto-update status based on due date.
+
+        Skipped when the caller explicitly persists a status via
+        update_fields — recomputing here would silently override the
+        value the caller just set (e.g. the daily deadline task).
+        """
+        update_fields = kwargs.get('update_fields')
+        if not (update_fields and 'status' in update_fields):
+            self._update_status()
         super().save(*args, **kwargs)
 
     def _update_status(self):
@@ -297,8 +304,8 @@ class ComplianceDeadline(models.Model):
         if self.status in ['completed', 'skipped']:
             return  # Don't change completed/skipped items
 
-        from datetime import date
-        today = date.today()
+        from django.utils import timezone
+        today = timezone.localdate()
         days_until_due = (self.due_date - today).days
 
         if days_until_due < 0:
@@ -951,14 +958,24 @@ class CentralPostingLocation(models.Model):
 
 class REIPostingRecord(models.Model):
     """
-    Tracks REI posting for each pesticide application.
-    Auto-generated from PesticideApplication with REI requirements.
+    Tracks REI posting for a spray. Sourced from either the legacy
+    PesticideApplication model or the tank-mix ApplicationEvent model —
+    exactly one of the two links is set.
     """
 
     application = models.OneToOneField(
         'PesticideApplication',
         on_delete=models.CASCADE,
-        related_name='rei_posting'
+        related_name='rei_posting',
+        null=True,
+        blank=True,
+    )
+    event = models.OneToOneField(
+        'ApplicationEvent',
+        on_delete=models.CASCADE,
+        related_name='rei_posting',
+        null=True,
+        blank=True,
     )
 
     # REI details (cached from product at time of application)
@@ -1032,9 +1049,66 @@ class REIPostingRecord(models.Model):
         indexes = [
             models.Index(fields=['rei_end_datetime'], name='idx_rei_end_datetime'),
         ]
+        constraints = [
+            models.CheckConstraint(
+                check=(
+                    (models.Q(application__isnull=False) & models.Q(event__isnull=True))
+                    | (models.Q(application__isnull=True) & models.Q(event__isnull=False))
+                ),
+                name='rei_posting_exactly_one_source',
+            ),
+        ]
 
     def __str__(self):
-        return f"REI for {self.application} - Ends {self.rei_end_datetime}"
+        return f"REI for {self.application or self.event} - Ends {self.rei_end_datetime}"
+
+    # -- Source-agnostic accessors -------------------------------------------
+    # Everything downstream (serializers, alerts) should use these instead of
+    # reaching through .application directly.
+
+    @property
+    def source_field(self):
+        """The Field the REI applies to (None for farm-level events)."""
+        if self.application_id:
+            return self.application.field
+        if self.event_id:
+            return self.event.field
+        return None
+
+    @property
+    def source_farm(self):
+        if self.application_id and self.application.field_id:
+            return self.application.field.farm
+        if self.event_id:
+            return self.event.farm
+        return None
+
+    @property
+    def source_company(self):
+        farm = self.source_farm
+        return farm.company if farm else None
+
+    @property
+    def location_display(self):
+        field = self.source_field
+        if field:
+            return field.name
+        farm = self.source_farm
+        return farm.name if farm else 'Unknown field'
+
+    @property
+    def product_display(self):
+        if self.application_id and self.application.product_id:
+            return self.application.product.product_name
+        if self.event_id:
+            names = [
+                i.product.product_name
+                for i in self.event.tank_mix_items.all()
+                if i.product_id
+            ]
+            if names:
+                return names[0] if len(names) == 1 else f"{names[0]} +{len(names) - 1} more"
+        return 'Unknown product'
 
     @property
     def is_active(self):
@@ -1053,13 +1127,16 @@ class REIPostingRecord(models.Model):
         self.posted_at = timezone.now()
         self.posted_by = user
         # Check if posted before/at time of application
-        if self.application.start_time:
-            from datetime import datetime, date
-            app_datetime = datetime.combine(
+        app_datetime = None
+        if self.application_id and self.application.start_time:
+            from datetime import datetime
+            app_datetime = timezone.make_aware(datetime.combine(
                 self.application.application_date,
                 self.application.start_time
-            )
-            app_datetime = timezone.make_aware(app_datetime)
+            ))
+        elif self.event_id:
+            app_datetime = self.event.date_started
+        if app_datetime:
             self.posting_compliant = self.posted_at <= app_datetime
         self.save()
 
