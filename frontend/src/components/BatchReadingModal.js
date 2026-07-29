@@ -1,14 +1,8 @@
-// =============================================================================
-// BATCH READING MODAL COMPONENT
-// =============================================================================
-// src/components/BatchReadingModal.js
-// Modal for entering meter readings for multiple wells at once
-// Ideal for "reading day" when visiting all wells
-// =============================================================================
-
 import React, { useState, useEffect } from 'react';
-import { X, Gauge, Save, AlertCircle, CheckCircle, Clock, AlertTriangle, ChevronDown, ChevronUp } from 'lucide-react';
+import { Gauge, Save, AlertCircle, CheckCircle, ChevronDown, ChevronUp } from 'lucide-react';
 import api from '../services/api';
+import Modal from './ui/Modal';
+import FormField, { inputClasses } from './ui/FormField';
 
 const BatchReadingModal = ({ isOpen, onClose, wells, onSave }) => {
   const [readingDate, setReadingDate] = useState(new Date().toISOString().split('T')[0]);
@@ -21,18 +15,16 @@ const BatchReadingModal = ({ isOpen, onClose, wells, onSave }) => {
   const [savedCount, setSavedCount] = useState(0);
   const [expandedWell, setExpandedWell] = useState(null);
 
-  // Fetch previous readings for all wells
   useEffect(() => {
     if (isOpen && wells?.length > 0) {
       fetchPreviousReadings();
-      // Initialize readings state
       const initialReadings = {};
-      wells.forEach(well => {
+      wells.forEach((well) => {
         initialReadings[well.id] = {
           meter_reading: '',
           pump_hours: '',
           water_level_ft: '',
-          notes: ''
+          notes: '',
         };
       });
       setReadings(initialReadings);
@@ -45,12 +37,11 @@ const BatchReadingModal = ({ isOpen, onClose, wells, onSave }) => {
     setLoading(true);
     try {
       const prevReadings = {};
-      // Fetch in parallel for better performance
       await Promise.all(
         wells.map(async (well) => {
           try {
             const response = await api.get('/well-readings/', {
-              params: { water_source: well.id, limit: 1 }
+              params: { water_source: well.id, limit: 1 },
             });
             if (response.data?.length > 0) {
               prevReadings[well.id] = response.data[0];
@@ -67,17 +58,13 @@ const BatchReadingModal = ({ isOpen, onClose, wells, onSave }) => {
   };
 
   const handleReadingChange = (wellId, field, value) => {
-    setReadings(prev => ({
+    setReadings((prev) => ({
       ...prev,
-      [wellId]: {
-        ...prev[wellId],
-        [field]: value
-      }
+      [wellId]: { ...prev[wellId], [field]: value },
     }));
 
-    // Clear error for this well
     if (errors[wellId]) {
-      setErrors(prev => {
+      setErrors((prev) => {
         const newErrors = { ...prev };
         delete newErrors[wellId];
         return newErrors;
@@ -88,20 +75,16 @@ const BatchReadingModal = ({ isOpen, onClose, wells, onSave }) => {
   const calculateExtraction = (wellId, currentReading) => {
     const prev = previousReadings[wellId];
     if (!prev || !currentReading) return null;
-
     const current = parseFloat(currentReading);
     const previous = parseFloat(prev.meter_reading);
-
     if (isNaN(current) || isNaN(previous)) return null;
-    if (current < previous) return null; // Would need rollover handling
-
+    if (current < previous) return null;
     return (current - previous).toFixed(4);
   };
 
   const getDaysSinceLastReading = (wellId) => {
     const prev = previousReadings[wellId];
     if (!prev) return null;
-
     const lastDate = new Date(prev.reading_date);
     const today = new Date();
     const diffTime = Math.abs(today - lastDate);
@@ -123,9 +106,8 @@ const BatchReadingModal = ({ isOpen, onClose, wells, onSave }) => {
 
     for (const well of wells) {
       const reading = readings[well.id];
-      if (!reading?.meter_reading) continue; // Skip wells without readings
+      if (!reading?.meter_reading) continue;
 
-      // Validate
       const current = parseFloat(reading.meter_reading);
       const prev = previousReadings[well.id];
 
@@ -139,7 +121,6 @@ const BatchReadingModal = ({ isOpen, onClose, wells, onSave }) => {
         continue;
       }
 
-      // Save
       try {
         await api.post('/well-readings/', {
           water_source: well.id,
@@ -149,7 +130,7 @@ const BatchReadingModal = ({ isOpen, onClose, wells, onSave }) => {
           pump_hours: reading.pump_hours || null,
           water_level_ft: reading.water_level_ft || null,
           recorded_by: recordedBy || null,
-          notes: reading.notes || null
+          notes: reading.notes || null,
         });
         successCount++;
       } catch (err) {
@@ -163,7 +144,6 @@ const BatchReadingModal = ({ isOpen, onClose, wells, onSave }) => {
     setSaving(false);
 
     if (Object.keys(newErrors).length === 0 && successCount > 0) {
-      // All successful, close after brief delay
       setTimeout(() => {
         onSave();
         onClose();
@@ -171,285 +151,285 @@ const BatchReadingModal = ({ isOpen, onClose, wells, onSave }) => {
     }
   };
 
-  const filledCount = Object.values(readings).filter(r => r?.meter_reading).length;
+  const filledCount = Object.values(readings).filter((r) => r?.meter_reading).length;
 
-  if (!isOpen) return null;
+  const statusColorClasses = {
+    red: 'bg-red-500',
+    yellow: 'bg-yellow-500',
+    green: 'bg-green-500',
+    gray: 'bg-gray-400',
+  };
+
+  const statusBadgeClasses = {
+    red: 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300',
+    yellow: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300',
+    green: 'bg-green-100 dark:bg-green-900/30 text-primary dark:text-green-300',
+    gray: 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300',
+  };
+
+  const footer = (
+    <>
+      <div className="flex-1 text-sm text-gray-500 dark:text-gray-400">
+        {filledCount > 0 ? (
+          <span className="text-cyan-600 dark:text-cyan-400 font-medium">
+            {filledCount} reading{filledCount > 1 ? 's' : ''} ready to save
+          </span>
+        ) : (
+          <span>Enter meter readings above</span>
+        )}
+      </div>
+      <button
+        type="button"
+        onClick={onClose}
+        className="px-4 py-2 rounded-button border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"
+      >
+        Cancel
+      </button>
+      <button
+        type="button"
+        onClick={handleSaveAll}
+        disabled={saving || filledCount === 0}
+        className="flex items-center gap-2 px-6 py-2 rounded-button bg-cyan-600 text-white hover:bg-cyan-700 disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        <Save className="w-5 h-5" />
+        {saving ? 'Saving…' : `Save ${filledCount} Reading${filledCount !== 1 ? 's' : ''}`}
+      </button>
+    </>
+  );
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col">
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b bg-gradient-to-r from-cyan-50 to-blue-50">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-cyan-100 rounded-lg">
-              <Gauge className="w-6 h-6 text-cyan-600" />
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Batch Meter Readings"
+      subtitle="Enter readings for multiple wells at once"
+      icon={Gauge}
+      size="xl"
+      footer={footer}
+    >
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pb-4 mb-4 border-b border-gray-200 dark:border-gray-700">
+        <FormField label="Reading Date" htmlFor="br-date" required>
+          <input
+            id="br-date"
+            type="date"
+            value={readingDate}
+            onChange={(e) => setReadingDate(e.target.value)}
+            className={inputClasses}
+          />
+        </FormField>
+        <FormField label="Recorded By" htmlFor="br-by">
+          <input
+            id="br-by"
+            type="text"
+            value={recordedBy}
+            onChange={(e) => setRecordedBy(e.target.value)}
+            placeholder="Your name"
+            className={inputClasses}
+          />
+        </FormField>
+        <div className="flex items-end">
+          <div className="bg-surface dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2 w-full">
+            <div className="text-sm text-gray-500 dark:text-gray-400">Wells to record</div>
+            <div className="text-xl font-bold text-cyan-600 dark:text-cyan-400">
+              {filledCount} / {wells?.length || 0}
             </div>
-            <div>
-              <h2 className="text-lg font-semibold text-gray-900">Batch Meter Readings</h2>
-              <p className="text-sm text-gray-500">Enter readings for multiple wells at once</p>
-            </div>
-          </div>
-          <button onClick={onClose} className="p-2 hover:bg-gray-200 rounded-lg">
-            <X className="w-5 h-5 text-gray-500" />
-          </button>
-        </div>
-
-        {/* Global Settings */}
-        <div className="p-4 border-b bg-gray-50">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Reading Date <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="date"
-                value={readingDate}
-                onChange={(e) => setReadingDate(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Recorded By
-              </label>
-              <input
-                type="text"
-                value={recordedBy}
-                onChange={(e) => setRecordedBy(e.target.value)}
-                placeholder="Your name"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
-              />
-            </div>
-            <div className="flex items-end">
-              <div className="bg-white border border-gray-200 rounded-lg px-4 py-2 w-full">
-                <div className="text-sm text-gray-500">Wells to record</div>
-                <div className="text-xl font-bold text-cyan-600">
-                  {filledCount} / {wells?.length || 0}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Success Message */}
-        {savedCount > 0 && (
-          <div className="mx-4 mt-4 p-3 bg-primary-light border border-green-200 rounded-lg flex items-center gap-2 text-primary">
-            <CheckCircle className="w-5 h-5" />
-            Successfully saved {savedCount} reading{savedCount > 1 ? 's' : ''}!
-          </div>
-        )}
-
-        {/* Wells List */}
-        <div className="flex-1 overflow-y-auto p-4">
-          {loading ? (
-            <div className="flex items-center justify-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-cyan-600"></div>
-              <span className="ml-3 text-gray-500">Loading well data...</span>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {wells?.map(well => {
-                const prev = previousReadings[well.id];
-                const reading = readings[well.id] || {};
-                const extraction = calculateExtraction(well.id, reading.meter_reading);
-                const status = getReadingStatus(well.id);
-                const error = errors[well.id];
-                const isExpanded = expandedWell === well.id;
-
-                return (
-                  <div
-                    key={well.id}
-                    className={`border rounded-xl overflow-hidden transition-all ${
-                      error ? 'border-red-300 bg-red-50' :
-                      reading.meter_reading ? 'border-green-300 bg-green-50' :
-                      'border-gray-200 bg-white'
-                    }`}
-                  >
-                    {/* Well Row */}
-                    <div className="p-4">
-                      <div className="flex items-center gap-4">
-                        {/* Status Indicator */}
-                        <div className={`w-3 h-3 rounded-full flex-shrink-0 ${
-                          status.color === 'red' ? 'bg-red-500' :
-                          status.color === 'yellow' ? 'bg-yellow-500' :
-                          status.color === 'green' ? 'bg-green-500' :
-                          'bg-gray-400'
-                        }`} />
-
-                        {/* Well Info */}
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <h3 className="font-medium text-gray-900 truncate">
-                              {well.well_name || well.name}
-                            </h3>
-                            <span className={`text-xs px-2 py-0.5 rounded-full ${
-                              status.color === 'red' ? 'bg-red-100 text-red-700' :
-                              status.color === 'yellow' ? 'bg-yellow-100 text-yellow-700' :
-                              status.color === 'green' ? 'bg-green-100 text-primary' :
-                              'bg-gray-100 text-gray-600'
-                            }`}>
-                              {status.label}
-                            </span>
-                          </div>
-                          <p className="text-sm text-gray-500 truncate">
-                            {well.farm_name} {well.gsa && `• ${well.gsa.toUpperCase()}`}
-                          </p>
-                        </div>
-
-                        {/* Previous Reading */}
-                        <div className="text-right flex-shrink-0 w-32">
-                          <div className="text-xs text-gray-500">Previous</div>
-                          <div className="font-medium text-gray-700">
-                            {prev ? parseFloat(prev.meter_reading).toLocaleString() : '-'}
-                          </div>
-                        </div>
-
-                        {/* Meter Reading Input */}
-                        <div className="flex-shrink-0 w-40">
-                          <input
-                            type="number"
-                            value={reading.meter_reading || ''}
-                            onChange={(e) => handleReadingChange(well.id, 'meter_reading', e.target.value)}
-                            placeholder="New reading"
-                            step="0.01"
-                            className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-cyan-500 text-right font-mono ${
-                              error ? 'border-red-500' : 'border-gray-300'
-                            }`}
-                          />
-                        </div>
-
-                        {/* Extraction Preview */}
-                        <div className="text-right flex-shrink-0 w-24">
-                          <div className="text-xs text-gray-500">Extraction</div>
-                          <div className={`font-medium ${extraction ? 'text-cyan-600' : 'text-gray-400'}`}>
-                            {extraction ? `${extraction} AF` : '-'}
-                          </div>
-                        </div>
-
-                        {/* Expand Button */}
-                        <button
-                          onClick={() => setExpandedWell(isExpanded ? null : well.id)}
-                          className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg"
-                        >
-                          {isExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
-                        </button>
-                      </div>
-
-                      {/* Error Message */}
-                      {error && (
-                        <div className="mt-2 flex items-center gap-2 text-red-600 text-sm">
-                          <AlertCircle className="w-4 h-4" />
-                          {error}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Expanded Details */}
-                    {isExpanded && (
-                      <div className="px-4 pb-4 pt-0 border-t border-gray-200 bg-gray-50">
-                        <div className="grid grid-cols-3 gap-4 mt-4">
-                          <div>
-                            <label className="block text-xs font-medium text-gray-500 mb-1">
-                              Pump Hours
-                            </label>
-                            <input
-                              type="number"
-                              value={reading.pump_hours || ''}
-                              onChange={(e) => handleReadingChange(well.id, 'pump_hours', e.target.value)}
-                              placeholder="Hour meter"
-                              step="0.1"
-                              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-xs font-medium text-gray-500 mb-1">
-                              Water Level (ft)
-                            </label>
-                            <input
-                              type="number"
-                              value={reading.water_level_ft || ''}
-                              onChange={(e) => handleReadingChange(well.id, 'water_level_ft', e.target.value)}
-                              placeholder="Depth to water"
-                              step="0.1"
-                              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-xs font-medium text-gray-500 mb-1">
-                              Notes
-                            </label>
-                            <input
-                              type="text"
-                              value={reading.notes || ''}
-                              onChange={(e) => handleReadingChange(well.id, 'notes', e.target.value)}
-                              placeholder="Any observations"
-                              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
-                            />
-                          </div>
-                        </div>
-
-                        {/* Fee Estimate */}
-                        {extraction && well.base_extraction_rate && (
-                          <div className="mt-3 p-3 bg-white rounded-lg border border-gray-200">
-                            <div className="text-xs font-medium text-gray-500 mb-2">Estimated Fees</div>
-                            <div className="flex gap-4 text-sm">
-                              {well.base_extraction_rate && (
-                                <div>
-                                  <span className="text-gray-500">Base: </span>
-                                  <span className="font-medium">
-                                    ${(parseFloat(extraction) * parseFloat(well.base_extraction_rate)).toFixed(2)}
-                                  </span>
-                                </div>
-                              )}
-                              {well.gsp_rate && (
-                                <div>
-                                  <span className="text-gray-500">GSP: </span>
-                                  <span className="font-medium">
-                                    ${(parseFloat(extraction) * parseFloat(well.gsp_rate)).toFixed(2)}
-                                  </span>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-
-        {/* Footer */}
-        <div className="flex items-center justify-between p-4 border-t bg-gray-50">
-          <div className="text-sm text-gray-500">
-            {filledCount > 0 ? (
-              <span className="text-cyan-600 font-medium">{filledCount} reading{filledCount > 1 ? 's' : ''} ready to save</span>
-            ) : (
-              <span>Enter meter readings above</span>
-            )}
-          </div>
-          <div className="flex gap-3">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleSaveAll}
-              disabled={saving || filledCount === 0}
-              className="flex items-center gap-2 px-6 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <Save className="w-5 h-5" />
-              {saving ? 'Saving...' : `Save ${filledCount} Reading${filledCount !== 1 ? 's' : ''}`}
-            </button>
           </div>
         </div>
       </div>
-    </div>
+
+      {savedCount > 0 && (
+        <div className="mb-4 p-3 bg-primary-light dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg flex items-center gap-2 text-primary dark:text-green-300">
+          <CheckCircle className="w-5 h-5" />
+          Successfully saved {savedCount} reading{savedCount > 1 ? 's' : ''}!
+        </div>
+      )}
+
+      {loading ? (
+        <div className="flex items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-cyan-600"></div>
+          <span className="ml-3 text-gray-500 dark:text-gray-400">Loading well data…</span>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {wells?.map((well) => {
+            const prev = previousReadings[well.id];
+            const reading = readings[well.id] || {};
+            const extraction = calculateExtraction(well.id, reading.meter_reading);
+            const status = getReadingStatus(well.id);
+            const error = errors[well.id];
+            const isExpanded = expandedWell === well.id;
+
+            return (
+              <div
+                key={well.id}
+                className={`border rounded-xl overflow-hidden transition-all ${
+                  error
+                    ? 'border-red-300 dark:border-red-800 bg-red-50 dark:bg-red-900/20'
+                    : reading.meter_reading
+                    ? 'border-green-300 dark:border-green-800 bg-green-50 dark:bg-green-900/20'
+                    : 'border-gray-200 dark:border-gray-700 bg-surface-raised dark:bg-gray-800/50'
+                }`}
+              >
+                <div className="p-4">
+                  <div className="flex items-center gap-4">
+                    <div
+                      className={`w-3 h-3 rounded-full flex-shrink-0 ${statusColorClasses[status.color]}`}
+                    />
+
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-medium text-gray-900 dark:text-gray-100 truncate">
+                          {well.well_name || well.name}
+                        </h3>
+                        <span
+                          className={`text-xs px-2 py-0.5 rounded-full ${statusBadgeClasses[status.color]}`}
+                        >
+                          {status.label}
+                        </span>
+                      </div>
+                      <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
+                        {well.farm_name} {well.gsa && `• ${well.gsa.toUpperCase()}`}
+                      </p>
+                    </div>
+
+                    <div className="text-right flex-shrink-0 w-32">
+                      <div className="text-xs text-gray-500 dark:text-gray-400">Previous</div>
+                      <div className="font-medium text-gray-700 dark:text-gray-200">
+                        {prev ? parseFloat(prev.meter_reading).toLocaleString() : '-'}
+                      </div>
+                    </div>
+
+                    <div className="flex-shrink-0 w-40">
+                      <input
+                        type="number"
+                        value={reading.meter_reading || ''}
+                        onChange={(e) =>
+                          handleReadingChange(well.id, 'meter_reading', e.target.value)
+                        }
+                        placeholder="New reading"
+                        step="0.01"
+                        className={`${inputClasses} text-right font-mono ${
+                          error ? 'border-red-500 dark:border-red-500' : ''
+                        }`}
+                      />
+                    </div>
+
+                    <div className="text-right flex-shrink-0 w-24">
+                      <div className="text-xs text-gray-500 dark:text-gray-400">Extraction</div>
+                      <div
+                        className={`font-medium ${
+                          extraction
+                            ? 'text-cyan-600 dark:text-cyan-400'
+                            : 'text-gray-400 dark:text-gray-500'
+                        }`}
+                      >
+                        {extraction ? `${extraction} AF` : '-'}
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => setExpandedWell(isExpanded ? null : well.id)}
+                      className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+                      aria-label={isExpanded ? 'Collapse details' : 'Expand details'}
+                    >
+                      {isExpanded ? (
+                        <ChevronUp className="w-5 h-5" />
+                      ) : (
+                        <ChevronDown className="w-5 h-5" />
+                      )}
+                    </button>
+                  </div>
+
+                  {error && (
+                    <div className="mt-2 flex items-center gap-2 text-red-600 dark:text-red-400 text-sm">
+                      <AlertCircle className="w-4 h-4" />
+                      {error}
+                    </div>
+                  )}
+                </div>
+
+                {isExpanded && (
+                  <div className="px-4 pb-4 pt-0 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/30">
+                    <div className="grid grid-cols-3 gap-4 mt-4">
+                      <FormField label="Pump Hours" htmlFor={`br-pump-${well.id}`}>
+                        <input
+                          id={`br-pump-${well.id}`}
+                          type="number"
+                          value={reading.pump_hours || ''}
+                          onChange={(e) =>
+                            handleReadingChange(well.id, 'pump_hours', e.target.value)
+                          }
+                          placeholder="Hour meter"
+                          step="0.1"
+                          className={inputClasses}
+                        />
+                      </FormField>
+                      <FormField label="Water Level (ft)" htmlFor={`br-level-${well.id}`}>
+                        <input
+                          id={`br-level-${well.id}`}
+                          type="number"
+                          value={reading.water_level_ft || ''}
+                          onChange={(e) =>
+                            handleReadingChange(well.id, 'water_level_ft', e.target.value)
+                          }
+                          placeholder="Depth to water"
+                          step="0.1"
+                          className={inputClasses}
+                        />
+                      </FormField>
+                      <FormField label="Notes" htmlFor={`br-notes-${well.id}`}>
+                        <input
+                          id={`br-notes-${well.id}`}
+                          type="text"
+                          value={reading.notes || ''}
+                          onChange={(e) =>
+                            handleReadingChange(well.id, 'notes', e.target.value)
+                          }
+                          placeholder="Any observations"
+                          className={inputClasses}
+                        />
+                      </FormField>
+                    </div>
+
+                    {extraction && well.base_extraction_rate && (
+                      <div className="mt-3 p-3 bg-surface-raised dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                        <div className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">
+                          Estimated Fees
+                        </div>
+                        <div className="flex gap-4 text-sm">
+                          {well.base_extraction_rate && (
+                            <div>
+                              <span className="text-gray-500 dark:text-gray-400">Base: </span>
+                              <span className="font-medium text-gray-900 dark:text-gray-100">
+                                ${(
+                                  parseFloat(extraction) *
+                                  parseFloat(well.base_extraction_rate)
+                                ).toFixed(2)}
+                              </span>
+                            </div>
+                          )}
+                          {well.gsp_rate && (
+                            <div>
+                              <span className="text-gray-500 dark:text-gray-400">GSP: </span>
+                              <span className="font-medium text-gray-900 dark:text-gray-100">
+                                ${(
+                                  parseFloat(extraction) * parseFloat(well.gsp_rate)
+                                ).toFixed(2)}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </Modal>
   );
 };
 

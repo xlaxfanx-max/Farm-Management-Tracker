@@ -1,78 +1,53 @@
-// =============================================================================
-// LABOR CONTRACTOR MODAL COMPONENT
-// Save as: frontend/src/components/LaborContractorModal.js
-// =============================================================================
-
 import React, { useState, useEffect } from 'react';
-import { X, Users, AlertTriangle } from 'lucide-react';
+import { Users, AlertTriangle } from 'lucide-react';
 import { laborContractorsAPI } from '../services/api';
+import Modal from './ui/Modal';
+import FormField, { inputClasses, textareaClasses } from './ui/FormField';
+
+const EMPTY_FORM = {
+  company_name: '',
+  contact_name: '',
+  phone: '',
+  email: '',
+  address: '',
+  city: '',
+  state: 'CA',
+  zip_code: '',
+  contractor_license: '',
+  license_expiration: '',
+  insurance_carrier: '',
+  insurance_policy_number: '',
+  insurance_expiration: '',
+  workers_comp_carrier: '',
+  workers_comp_policy: '',
+  workers_comp_expiration: '',
+  food_safety_training_current: false,
+  training_expiration: '',
+  default_hourly_rate: '',
+  default_piece_rate: '',
+  active: true,
+  notes: '',
+};
 
 const LaborContractorModal = ({ isOpen, onClose, onSave, contractor = null }) => {
-  const [formData, setFormData] = useState({
-    company_name: '',
-    contact_name: '',
-    phone: '',
-    email: '',
-    address: '',
-    city: '',
-    state: 'CA',
-    zip_code: '',
-    contractor_license: '',
-    license_expiration: '',
-    insurance_carrier: '',
-    insurance_policy_number: '',
-    insurance_expiration: '',
-    workers_comp_carrier: '',
-    workers_comp_policy: '',
-    workers_comp_expiration: '',
-    food_safety_training_current: false,
-    training_expiration: '',
-    default_hourly_rate: '',
-    default_piece_rate: '',
-    active: true,
-    notes: ''
-  });
-
+  const [formData, setFormData] = useState(EMPTY_FORM);
   const [errors, setErrors] = useState({});
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
       if (contractor) {
-        setFormData({ 
+        setFormData({
           ...contractor,
           license_expiration: contractor.license_expiration || '',
           insurance_expiration: contractor.insurance_expiration || '',
           workers_comp_expiration: contractor.workers_comp_expiration || '',
           training_expiration: contractor.training_expiration || '',
           default_hourly_rate: contractor.default_hourly_rate || '',
-          default_piece_rate: contractor.default_piece_rate || ''
+          default_piece_rate: contractor.default_piece_rate || '',
         });
       } else {
-        setFormData({
-          company_name: '',
-          contact_name: '',
-          phone: '',
-          email: '',
-          address: '',
-          city: '',
-          state: 'CA',
-          zip_code: '',
-          contractor_license: '',
-          license_expiration: '',
-          insurance_carrier: '',
-          insurance_policy_number: '',
-          insurance_expiration: '',
-          workers_comp_carrier: '',
-          workers_comp_policy: '',
-          workers_comp_expiration: '',
-          food_safety_training_current: false,
-          training_expiration: '',
-          default_hourly_rate: '',
-          default_piece_rate: '',
-          active: true,
-          notes: ''
-        });
+        setFormData(EMPTY_FORM);
       }
       setErrors({});
     }
@@ -80,9 +55,9 @@ const LaborContractorModal = ({ isOpen, onClose, onSave, contractor = null }) =>
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value
+      [name]: type === 'checkbox' ? checked : value,
     }));
   };
 
@@ -105,8 +80,12 @@ const LaborContractorModal = ({ isOpen, onClose, onSave, contractor = null }) =>
         insurance_expiration: formData.insurance_expiration || null,
         workers_comp_expiration: formData.workers_comp_expiration || null,
         training_expiration: formData.training_expiration || null,
-        default_hourly_rate: formData.default_hourly_rate ? parseFloat(formData.default_hourly_rate) : null,
-        default_piece_rate: formData.default_piece_rate ? parseFloat(formData.default_piece_rate) : null
+        default_hourly_rate: formData.default_hourly_rate
+          ? parseFloat(formData.default_hourly_rate)
+          : null,
+        default_piece_rate: formData.default_piece_rate
+          ? parseFloat(formData.default_piece_rate)
+          : null,
       };
 
       if (contractor) {
@@ -126,7 +105,6 @@ const LaborContractorModal = ({ isOpen, onClose, onSave, contractor = null }) =>
     }
   };
 
-  // Check for expiring dates
   const isExpiringSoon = (dateStr) => {
     if (!dateStr) return false;
     const date = new Date(dateStr);
@@ -140,395 +118,328 @@ const LaborContractorModal = ({ isOpen, onClose, onSave, contractor = null }) =>
     return new Date(dateStr) < new Date();
   };
 
-  if (!isOpen) return null;
+  const dateInputClass = (dateStr) => {
+    if (isExpired(dateStr)) return `${inputClasses} border-red-500 dark:border-red-500 bg-red-50 dark:bg-red-900/20`;
+    if (isExpiringSoon(dateStr)) return `${inputClasses} border-yellow-500 dark:border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20`;
+    return inputClasses;
+  };
+
+  const footer = (
+    <>
+      <button
+        type="button"
+        onClick={onClose}
+        className="px-4 py-2 rounded-button border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"
+      >
+        Cancel
+      </button>
+      <button
+        type="submit"
+        form="labor-contractor-form"
+        disabled={saving}
+        className="px-4 py-2 rounded-button bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-50"
+      >
+        {saving ? 'Saving…' : contractor ? 'Update Contractor' : 'Add Contractor'}
+      </button>
+    </>
+  );
+
+  const sectionHeading = 'text-sm font-semibold text-gray-700 dark:text-gray-200 uppercase tracking-wide mb-3';
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between p-4 border-b sticky top-0 bg-white">
-          <div className="flex items-center gap-2">
-            <Users className="text-purple-600" size={24} />
-            <h2 className="text-xl font-semibold">
-              {contractor ? 'Edit Labor Contractor' : 'Add New Labor Contractor'}
-            </h2>
-          </div>
-          <button onClick={onClose} className="p-1 hover:bg-gray-100 rounded">
-            <X size={24} />
-          </button>
-        </div>
-
-        <form onSubmit={handleSubmit} className="p-4 space-y-6">
-          {/* Company Info */}
-          <div>
-            <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">
-              Company Information
-            </h3>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Company Name <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  name="company_name"
-                  value={formData.company_name}
-                  onChange={handleChange}
-                  className={`w-full border rounded-lg px-3 py-2 ${errors.company_name ? 'border-red-500' : ''}`}
-                  required
-                />
-                {errors.company_name && <p className="text-red-500 text-sm mt-1">{errors.company_name}</p>}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Contact Name
-                </label>
-                <input
-                  type="text"
-                  name="contact_name"
-                  value={formData.contact_name}
-                  onChange={handleChange}
-                  className="w-full border rounded-lg px-3 py-2"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4 mt-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Phone
-                </label>
-                <input
-                  type="tel"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleChange}
-                  className="w-full border rounded-lg px-3 py-2"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Email
-                </label>
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  className="w-full border rounded-lg px-3 py-2"
-                />
-              </div>
-            </div>
-
-            <div className="mt-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Address
-              </label>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={contractor ? 'Edit Labor Contractor' : 'Add New Labor Contractor'}
+      icon={Users}
+      size="lg"
+      footer={footer}
+    >
+      <form id="labor-contractor-form" onSubmit={handleSubmit} className="space-y-6">
+        <div>
+          <h3 className={sectionHeading}>Company Information</h3>
+          <div className="grid grid-cols-2 gap-4">
+            <FormField label="Company Name" htmlFor="lc-company" required error={errors.company_name}>
               <input
+                id="lc-company"
+                type="text"
+                name="company_name"
+                value={formData.company_name}
+                onChange={handleChange}
+                className={inputClasses}
+                required
+              />
+            </FormField>
+            <FormField label="Contact Name" htmlFor="lc-contact">
+              <input
+                id="lc-contact"
+                type="text"
+                name="contact_name"
+                value={formData.contact_name}
+                onChange={handleChange}
+                className={inputClasses}
+              />
+            </FormField>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4 mt-4">
+            <FormField label="Phone" htmlFor="lc-phone">
+              <input
+                id="lc-phone"
+                type="tel"
+                name="phone"
+                value={formData.phone}
+                onChange={handleChange}
+                className={inputClasses}
+              />
+            </FormField>
+            <FormField label="Email" htmlFor="lc-email">
+              <input
+                id="lc-email"
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                className={inputClasses}
+              />
+            </FormField>
+          </div>
+
+          <div className="mt-4">
+            <FormField label="Address" htmlFor="lc-address">
+              <input
+                id="lc-address"
                 type="text"
                 name="address"
                 value={formData.address}
                 onChange={handleChange}
-                className="w-full border rounded-lg px-3 py-2"
+                className={inputClasses}
               />
-            </div>
-
-            <div className="grid grid-cols-3 gap-4 mt-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  City
-                </label>
-                <input
-                  type="text"
-                  name="city"
-                  value={formData.city}
-                  onChange={handleChange}
-                  className="w-full border rounded-lg px-3 py-2"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  State
-                </label>
-                <input
-                  type="text"
-                  name="state"
-                  value={formData.state}
-                  onChange={handleChange}
-                  maxLength={2}
-                  className="w-full border rounded-lg px-3 py-2"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  ZIP Code
-                </label>
-                <input
-                  type="text"
-                  name="zip_code"
-                  value={formData.zip_code}
-                  onChange={handleChange}
-                  className="w-full border rounded-lg px-3 py-2"
-                />
-              </div>
-            </div>
+            </FormField>
           </div>
 
-          {/* License & Insurance */}
-          <div className="border rounded-lg p-4 bg-yellow-50">
-            <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">
-              License & Insurance
-            </h3>
-            
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  FLC License Number
-                </label>
-                <input
-                  type="text"
-                  name="contractor_license"
-                  value={formData.contractor_license}
-                  onChange={handleChange}
-                  className="w-full border rounded-lg px-3 py-2"
-                  placeholder="Farm Labor Contractor License"
-                />
-              </div>
+          <div className="grid grid-cols-3 gap-4 mt-4">
+            <FormField label="City" htmlFor="lc-city">
+              <input
+                id="lc-city"
+                type="text"
+                name="city"
+                value={formData.city}
+                onChange={handleChange}
+                className={inputClasses}
+              />
+            </FormField>
+            <FormField label="State" htmlFor="lc-state">
+              <input
+                id="lc-state"
+                type="text"
+                name="state"
+                value={formData.state}
+                onChange={handleChange}
+                maxLength={2}
+                className={inputClasses}
+              />
+            </FormField>
+            <FormField label="ZIP Code" htmlFor="lc-zip">
+              <input
+                id="lc-zip"
+                type="text"
+                name="zip_code"
+                value={formData.zip_code}
+                onChange={handleChange}
+                className={inputClasses}
+              />
+            </FormField>
+          </div>
+        </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  License Expiration
-                </label>
-                <input
-                  type="date"
-                  name="license_expiration"
-                  value={formData.license_expiration}
-                  onChange={handleChange}
-                  className={`w-full border rounded-lg px-3 py-2 ${
-                    isExpired(formData.license_expiration) ? 'border-red-500 bg-red-50' :
-                    isExpiringSoon(formData.license_expiration) ? 'border-yellow-500 bg-yellow-50' : ''
-                  }`}
-                />
-                {isExpired(formData.license_expiration) && (
-                  <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
-                    <AlertTriangle size={12} /> Expired
-                  </p>
-                )}
-                {!isExpired(formData.license_expiration) && isExpiringSoon(formData.license_expiration) && (
-                  <p className="text-yellow-600 text-xs mt-1 flex items-center gap-1">
-                    <AlertTriangle size={12} /> Expiring soon
-                  </p>
-                )}
-              </div>
-            </div>
+        <div className="border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 bg-yellow-50 dark:bg-yellow-900/20">
+          <h3 className={sectionHeading}>License & Insurance</h3>
 
-            <div className="grid grid-cols-3 gap-4 mt-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Insurance Carrier
-                </label>
-                <input
-                  type="text"
-                  name="insurance_carrier"
-                  value={formData.insurance_carrier}
-                  onChange={handleChange}
-                  className="w-full border rounded-lg px-3 py-2"
-                />
-              </div>
+          <div className="grid grid-cols-2 gap-4">
+            <FormField label="FLC License Number" htmlFor="lc-license">
+              <input
+                id="lc-license"
+                type="text"
+                name="contractor_license"
+                value={formData.contractor_license}
+                onChange={handleChange}
+                className={inputClasses}
+                placeholder="Farm Labor Contractor License"
+              />
+            </FormField>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Policy Number
-                </label>
-                <input
-                  type="text"
-                  name="insurance_policy_number"
-                  value={formData.insurance_policy_number}
-                  onChange={handleChange}
-                  className="w-full border rounded-lg px-3 py-2"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Insurance Expiration
-                </label>
-                <input
-                  type="date"
-                  name="insurance_expiration"
-                  value={formData.insurance_expiration}
-                  onChange={handleChange}
-                  className={`w-full border rounded-lg px-3 py-2 ${
-                    isExpired(formData.insurance_expiration) ? 'border-red-500 bg-red-50' :
-                    isExpiringSoon(formData.insurance_expiration) ? 'border-yellow-500 bg-yellow-50' : ''
-                  }`}
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-3 gap-4 mt-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Workers Comp Carrier
-                </label>
-                <input
-                  type="text"
-                  name="workers_comp_carrier"
-                  value={formData.workers_comp_carrier}
-                  onChange={handleChange}
-                  className="w-full border rounded-lg px-3 py-2"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Workers Comp Policy
-                </label>
-                <input
-                  type="text"
-                  name="workers_comp_policy"
-                  value={formData.workers_comp_policy}
-                  onChange={handleChange}
-                  className="w-full border rounded-lg px-3 py-2"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Workers Comp Expiration
-                </label>
-                <input
-                  type="date"
-                  name="workers_comp_expiration"
-                  value={formData.workers_comp_expiration}
-                  onChange={handleChange}
-                  className={`w-full border rounded-lg px-3 py-2 ${
-                    isExpired(formData.workers_comp_expiration) ? 'border-red-500 bg-red-50' :
-                    isExpiringSoon(formData.workers_comp_expiration) ? 'border-yellow-500 bg-yellow-50' : ''
-                  }`}
-                />
-              </div>
-            </div>
+            <FormField label="License Expiration" htmlFor="lc-licenseexp">
+              <input
+                id="lc-licenseexp"
+                type="date"
+                name="license_expiration"
+                value={formData.license_expiration}
+                onChange={handleChange}
+                className={dateInputClass(formData.license_expiration)}
+              />
+              {isExpired(formData.license_expiration) && (
+                <p className="text-red-500 dark:text-red-400 text-xs mt-1 flex items-center gap-1">
+                  <AlertTriangle size={12} /> Expired
+                </p>
+              )}
+              {!isExpired(formData.license_expiration) && isExpiringSoon(formData.license_expiration) && (
+                <p className="text-yellow-600 dark:text-yellow-400 text-xs mt-1 flex items-center gap-1">
+                  <AlertTriangle size={12} /> Expiring soon
+                </p>
+              )}
+            </FormField>
           </div>
 
-          {/* Training & Rates */}
-          <div className="grid grid-cols-2 gap-6">
-            <div className="border rounded-lg p-4 bg-blue-50">
-              <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">
-                Food Safety Training
-              </h3>
-              
-              <label className="flex items-center gap-2 mb-4">
-                <input
-                  type="checkbox"
-                  name="food_safety_training_current"
-                  checked={formData.food_safety_training_current}
-                  onChange={handleChange}
-                  className="rounded"
-                />
-                <span className="text-sm">Training is current</span>
-              </label>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Training Expiration
-                </label>
-                <input
-                  type="date"
-                  name="training_expiration"
-                  value={formData.training_expiration}
-                  onChange={handleChange}
-                  className="w-full border rounded-lg px-3 py-2"
-                />
-              </div>
-            </div>
-
-            <div className="border rounded-lg p-4 bg-green-50">
-              <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">
-                Default Rates
-              </h3>
-              
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Hourly Rate ($/hour)
-                  </label>
-                  <input
-                    type="number"
-                    name="default_hourly_rate"
-                    value={formData.default_hourly_rate}
-                    onChange={handleChange}
-                    step="0.01"
-                    min="0"
-                    className="w-full border rounded-lg px-3 py-2"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Piece Rate ($/bin)
-                  </label>
-                  <input
-                    type="number"
-                    name="default_piece_rate"
-                    value={formData.default_piece_rate}
-                    onChange={handleChange}
-                    step="0.01"
-                    min="0"
-                    className="w-full border rounded-lg px-3 py-2"
-                  />
-                </div>
-              </div>
-            </div>
+          <div className="grid grid-cols-3 gap-4 mt-4">
+            <FormField label="Insurance Carrier" htmlFor="lc-ins-carrier">
+              <input
+                id="lc-ins-carrier"
+                type="text"
+                name="insurance_carrier"
+                value={formData.insurance_carrier}
+                onChange={handleChange}
+                className={inputClasses}
+              />
+            </FormField>
+            <FormField label="Policy Number" htmlFor="lc-ins-policy">
+              <input
+                id="lc-ins-policy"
+                type="text"
+                name="insurance_policy_number"
+                value={formData.insurance_policy_number}
+                onChange={handleChange}
+                className={inputClasses}
+              />
+            </FormField>
+            <FormField label="Insurance Expiration" htmlFor="lc-ins-exp">
+              <input
+                id="lc-ins-exp"
+                type="date"
+                name="insurance_expiration"
+                value={formData.insurance_expiration}
+                onChange={handleChange}
+                className={dateInputClass(formData.insurance_expiration)}
+              />
+            </FormField>
           </div>
 
-          {/* Notes */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Notes
+          <div className="grid grid-cols-3 gap-4 mt-4">
+            <FormField label="Workers Comp Carrier" htmlFor="lc-wc-carrier">
+              <input
+                id="lc-wc-carrier"
+                type="text"
+                name="workers_comp_carrier"
+                value={formData.workers_comp_carrier}
+                onChange={handleChange}
+                className={inputClasses}
+              />
+            </FormField>
+            <FormField label="Workers Comp Policy" htmlFor="lc-wc-policy">
+              <input
+                id="lc-wc-policy"
+                type="text"
+                name="workers_comp_policy"
+                value={formData.workers_comp_policy}
+                onChange={handleChange}
+                className={inputClasses}
+              />
+            </FormField>
+            <FormField label="Workers Comp Expiration" htmlFor="lc-wc-exp">
+              <input
+                id="lc-wc-exp"
+                type="date"
+                name="workers_comp_expiration"
+                value={formData.workers_comp_expiration}
+                onChange={handleChange}
+                className={dateInputClass(formData.workers_comp_expiration)}
+              />
+            </FormField>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-6">
+          <div className="border border-blue-200 dark:border-blue-800 rounded-lg p-4 bg-blue-50 dark:bg-blue-900/20">
+            <h3 className={sectionHeading}>Food Safety Training</h3>
+
+            <label className="flex items-center gap-2 mb-4">
+              <input
+                type="checkbox"
+                name="food_safety_training_current"
+                checked={formData.food_safety_training_current}
+                onChange={handleChange}
+                className="rounded border-gray-300 dark:border-gray-600 text-primary focus:ring-primary"
+              />
+              <span className="text-sm text-gray-700 dark:text-gray-200">Training is current</span>
             </label>
-            <textarea
-              name="notes"
-              value={formData.notes}
-              onChange={handleChange}
-              rows={2}
-              className="w-full border rounded-lg px-3 py-2"
-            />
+
+            <FormField label="Training Expiration" htmlFor="lc-training-exp">
+              <input
+                id="lc-training-exp"
+                type="date"
+                name="training_expiration"
+                value={formData.training_expiration}
+                onChange={handleChange}
+                className={inputClasses}
+              />
+            </FormField>
           </div>
 
-          <label className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              name="active"
-              checked={formData.active}
-              onChange={handleChange}
-              className="rounded"
-            />
-            <span className="text-sm">Active contractor</span>
-          </label>
+          <div className="border border-green-200 dark:border-green-800 rounded-lg p-4 bg-primary-light dark:bg-green-900/20">
+            <h3 className={sectionHeading}>Default Rates</h3>
 
-          <div className="flex justify-end gap-3 pt-4 border-t">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 border rounded-lg hover:bg-gray-50"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={saving}
-              className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50"
-            >
-              {saving ? 'Saving...' : (contractor ? 'Update Contractor' : 'Add Contractor')}
-            </button>
+            <div className="space-y-4">
+              <FormField label="Hourly Rate ($/hour)" htmlFor="lc-hourly">
+                <input
+                  id="lc-hourly"
+                  type="number"
+                  name="default_hourly_rate"
+                  value={formData.default_hourly_rate}
+                  onChange={handleChange}
+                  step="0.01"
+                  min="0"
+                  className={inputClasses}
+                />
+              </FormField>
+              <FormField label="Piece Rate ($/bin)" htmlFor="lc-piece">
+                <input
+                  id="lc-piece"
+                  type="number"
+                  name="default_piece_rate"
+                  value={formData.default_piece_rate}
+                  onChange={handleChange}
+                  step="0.01"
+                  min="0"
+                  className={inputClasses}
+                />
+              </FormField>
+            </div>
           </div>
-        </form>
-      </div>
-    </div>
+        </div>
+
+        <FormField label="Notes" htmlFor="lc-notes">
+          <textarea
+            id="lc-notes"
+            name="notes"
+            value={formData.notes}
+            onChange={handleChange}
+            rows={2}
+            className={textareaClasses}
+          />
+        </FormField>
+
+        <label className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            name="active"
+            checked={formData.active}
+            onChange={handleChange}
+            className="rounded border-gray-300 dark:border-gray-600 text-primary focus:ring-primary"
+          />
+          <span className="text-sm text-gray-700 dark:text-gray-200">Active contractor</span>
+        </label>
+      </form>
+    </Modal>
   );
 };
 

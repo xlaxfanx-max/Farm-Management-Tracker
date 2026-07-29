@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard,
   Home as HomeIcon,
@@ -18,6 +18,7 @@ import {
   Users,
   Building2,
   ChevronDown,
+  ChevronRight,
 } from 'lucide-react';
 import { VIEW_TO_PATH } from '../../routes';
 import { getHiddenModules } from '../settings/ModuleVisibilitySettings';
@@ -52,7 +53,22 @@ const NAV_GROUPS = [
     id: 'compliance',
     label: 'Compliance & Safety',
     items: [
-      { id: 'compliance', label: 'Compliance Hub', icon: Shield },
+      {
+        id: 'compliance',
+        label: 'Compliance Hub',
+        icon: Shield,
+        children: [
+          { id: 'compliance-pesticide', label: 'Pesticide' },
+          { id: 'compliance-wps', label: 'WPS' },
+          { id: 'compliance-fsma', label: 'FSMA' },
+          { id: 'compliance-primusgfs', label: 'PrimusGFS' },
+          { id: 'compliance-deadlines', label: 'Deadlines' },
+          { id: 'compliance-licenses', label: 'Licenses' },
+          { id: 'compliance-inspector-checklist', label: 'Inspector Checklist' },
+          { id: 'compliance-reports', label: 'Reports' },
+          { id: 'compliance-settings', label: 'Settings' },
+        ],
+      },
       { id: 'disease', label: 'Disease Prevention', icon: Bug },
     ],
   },
@@ -76,10 +92,10 @@ const NAV_GROUPS = [
   },
 ];
 
-// Items that can never be hidden (always in sidebar)
 const ALWAYS_VISIBLE = new Set(['dashboard', 'company']);
 
 const STORAGE_KEY = 'gm-sidebar-groups';
+const EXPANDED_KEY = 'gm-sidebar-expanded';
 
 function getInitialGroupState() {
   try {
@@ -89,15 +105,115 @@ function getInitialGroupState() {
   return {};
 }
 
+function getInitialExpandedState() {
+  try {
+    const saved = localStorage.getItem(EXPANDED_KEY);
+    if (saved) return JSON.parse(saved);
+  } catch {}
+  return {};
+}
+
+function NavItem({ item, collapsed, onMobileClose, expandedItems, toggleItem, isAutoExpanded }) {
+  const hasChildren = Array.isArray(item.children) && item.children.length > 0;
+  const path = VIEW_TO_PATH[item.id];
+  const isExpanded = expandedItems[item.id] ?? isAutoExpanded;
+
+  const rowBase =
+    'flex items-center gap-3 px-3 h-10 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-white/50';
+
+  if (!hasChildren) {
+    return (
+      <NavLink
+        to={path}
+        end={item.id === 'dashboard' || item.id === 'compliance'}
+        onClick={onMobileClose}
+        className={({ isActive }) =>
+          `${rowBase} ${
+            isActive
+              ? 'bg-sidebar-active text-white border-l-[3px] border-white/60'
+              : 'text-gray-300 hover:bg-sidebar-hover hover:text-white'
+          } ${collapsed ? 'justify-center px-0' : ''}`
+        }
+        title={collapsed ? item.label : undefined}
+      >
+        <item.icon className="w-[18px] h-[18px] flex-shrink-0" />
+        {!collapsed && <span className="text-sm font-medium truncate">{item.label}</span>}
+      </NavLink>
+    );
+  }
+
+  return (
+    <div>
+      <div className="flex items-stretch">
+        <NavLink
+          to={path}
+          end
+          onClick={onMobileClose}
+          className={({ isActive }) =>
+            `${rowBase} flex-1 ${
+              isActive
+                ? 'bg-sidebar-active text-white border-l-[3px] border-white/60'
+                : 'text-gray-300 hover:bg-sidebar-hover hover:text-white'
+            } ${collapsed ? 'justify-center px-0' : ''}`
+          }
+          title={collapsed ? item.label : undefined}
+        >
+          <item.icon className="w-[18px] h-[18px] flex-shrink-0" />
+          {!collapsed && <span className="text-sm font-medium truncate">{item.label}</span>}
+        </NavLink>
+        {!collapsed && (
+          <button
+            type="button"
+            onClick={() => toggleItem(item.id)}
+            className="px-2 text-gray-400 hover:text-white hover:bg-sidebar-hover rounded-md focus:outline-none focus:ring-2 focus:ring-white/50"
+            aria-expanded={isExpanded}
+            aria-label={`${isExpanded ? 'Collapse' : 'Expand'} ${item.label}`}
+          >
+            <ChevronRight
+              className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-90' : ''}`}
+            />
+          </button>
+        )}
+      </div>
+
+      {!collapsed && isExpanded && (
+        <div className="mt-1 ml-6 pl-3 border-l border-white/10 space-y-0.5">
+          {item.children.map((child) => (
+            <NavLink
+              key={child.id}
+              to={VIEW_TO_PATH[child.id]}
+              onClick={onMobileClose}
+              className={({ isActive }) =>
+                `block px-3 h-8 leading-8 rounded-md text-xs transition-colors focus:outline-none focus:ring-2 focus:ring-white/50 truncate ${
+                  isActive
+                    ? 'bg-sidebar-active text-white'
+                    : 'text-gray-400 hover:bg-sidebar-hover hover:text-white'
+                }`
+              }
+            >
+              {child.label}
+            </NavLink>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function SidebarNav({ collapsed, onMobileClose }) {
   const [collapsedGroups, setCollapsedGroups] = useState(getInitialGroupState);
+  const [expandedItems, setExpandedItems] = useState(getInitialExpandedState);
   const [hiddenModules, setHiddenModules] = useState(() => getHiddenModules());
+  const location = useLocation();
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(collapsedGroups));
   }, [collapsedGroups]);
 
-  // Listen for visibility changes from Settings
+  useEffect(() => {
+    localStorage.setItem(EXPANDED_KEY, JSON.stringify(expandedItems));
+  }, [expandedItems]);
+
   useEffect(() => {
     const handler = () => setHiddenModules(getHiddenModules());
     window.addEventListener('gm-module-visibility-changed', handler);
@@ -108,21 +224,27 @@ export default function SidebarNav({ collapsed, onMobileClose }) {
     };
   }, []);
 
-  // Filter groups based on visibility
   const visibleGroups = useMemo(() => {
-    return NAV_GROUPS.map(group => ({
+    return NAV_GROUPS.map((group) => ({
       ...group,
-      items: group.items.filter(item =>
-        ALWAYS_VISIBLE.has(item.id) || !hiddenModules.has(item.id)
+      items: group.items.filter(
+        (item) => ALWAYS_VISIBLE.has(item.id) || !hiddenModules.has(item.id)
       ),
-    })).filter(group => group.items.length > 0);
+    })).filter((group) => group.items.length > 0);
   }, [hiddenModules]);
 
   const toggleGroup = (groupId) => {
-    setCollapsedGroups((prev) => ({
-      ...prev,
-      [groupId]: !prev[groupId],
-    }));
+    setCollapsedGroups((prev) => ({ ...prev, [groupId]: !prev[groupId] }));
+  };
+
+  const toggleItem = (itemId) => {
+    setExpandedItems((prev) => ({ ...prev, [itemId]: !(prev[itemId] ?? isOnDescendant(itemId)) }));
+  };
+
+  const isOnDescendant = (itemId) => {
+    const parentPath = VIEW_TO_PATH[itemId];
+    if (!parentPath) return false;
+    return location.pathname.startsWith(parentPath + '/');
   };
 
   return (
@@ -132,7 +254,6 @@ export default function SidebarNav({ collapsed, onMobileClose }) {
 
         return (
           <div key={group.id}>
-            {/* Group header */}
             {group.label && !collapsed && (
               <button
                 onClick={() => toggleGroup(group.id)}
@@ -151,29 +272,18 @@ export default function SidebarNav({ collapsed, onMobileClose }) {
               </button>
             )}
 
-            {/* Group items */}
             {(!group.label || !isCollapsed) && (
               <div className="space-y-0.5">
                 {group.items.map((item) => (
-                  <NavLink
+                  <NavItem
                     key={item.id}
-                    to={VIEW_TO_PATH[item.id]}
-                    end={item.id === 'dashboard' || item.id === 'compliance'}
-                    onClick={onMobileClose}
-                    className={({ isActive }) =>
-                      `flex items-center gap-3 px-3 h-10 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-white/50 ${
-                        isActive
-                          ? 'bg-sidebar-active text-white border-l-[3px] border-white/60'
-                          : 'text-gray-300 hover:bg-sidebar-hover hover:text-white'
-                      } ${collapsed ? 'justify-center px-0' : ''}`
-                    }
-                    title={collapsed ? item.label : undefined}
-                  >
-                    <item.icon className="w-[18px] h-[18px] flex-shrink-0" />
-                    {!collapsed && (
-                      <span className="text-sm font-medium truncate">{item.label}</span>
-                    )}
-                  </NavLink>
+                    item={item}
+                    collapsed={collapsed}
+                    onMobileClose={onMobileClose}
+                    expandedItems={expandedItems}
+                    toggleItem={toggleItem}
+                    isAutoExpanded={isOnDescendant(item.id)}
+                  />
                 ))}
               </div>
             )}

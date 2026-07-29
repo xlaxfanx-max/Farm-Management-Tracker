@@ -7,12 +7,13 @@
 // =============================================================================
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { 
-  X, Droplets, Save, MapPin, Gauge, Building2, AlertCircle,
+import {
+  Droplets, Save, MapPin, Gauge, Building2, AlertCircle,
   Info, CheckCircle, Navigation, Crosshair
 } from 'lucide-react';
 import api from '../services/api';
 import { useToast } from '../contexts/ToastContext';
+import Modal from './ui/Modal';
 
 // =============================================================================
 // CONSTANTS
@@ -630,48 +631,68 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
   // ---------------------------------------------------------------------------
   // Render
   // ---------------------------------------------------------------------------
+  const footer = (
+    <>
+      <button
+        type="button"
+        onClick={onClose}
+        className="px-4 py-2 rounded-button border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+      >
+        Cancel
+      </button>
+      <button
+        type="submit"
+        form="well-source-form"
+        disabled={loading}
+        className="flex items-center gap-2 px-6 py-2 rounded-button bg-cyan-600 text-white hover:bg-cyan-700 disabled:opacity-50 transition-colors"
+      >
+        {loading ? (
+          <>
+            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            Saving…
+          </>
+        ) : (
+          <>
+            <Save className="w-5 h-5" />
+            {wellSource ? 'Update Well' : 'Create Well'}
+          </>
+        )}
+      </button>
+    </>
+  );
+
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b bg-gradient-to-r from-cyan-50 to-blue-50">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-cyan-100 rounded-lg">
-              <Droplets className="w-6 h-6 text-cyan-600" />
-            </div>
-            <div>
-              <h2 className="text-lg font-semibold text-gray-900">
-                {wellSource ? 'Edit Well' : 'Add New Well'}
-              </h2>
-              <p className="text-sm text-gray-500">Water source with SGMA compliance details</p>
-            </div>
-          </div>
-          <button onClick={onClose} className="p-2 hover:bg-white/50 rounded-lg transition-colors">
-            <X className="w-5 h-5 text-gray-500" />
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={wellSource ? 'Edit Well' : 'Add New Well'}
+      subtitle="Water source with SGMA compliance details"
+      icon={Droplets}
+      size="xl"
+      footer={footer}
+    >
+      <div className="flex border-b border-gray-200 dark:border-gray-700 -mx-6 -mt-4 mb-4 bg-gray-50 dark:bg-gray-800/50" role="tablist">
+        {tabs.map(tab => (
+          <button
+            key={tab.id}
+            type="button"
+            role="tab"
+            aria-selected={activeTab === tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={`flex items-center gap-2 px-4 py-3 border-b-2 transition-colors ${
+              activeTab === tab.id
+                ? 'border-cyan-600 text-cyan-600 dark:text-cyan-400 bg-surface-raised dark:bg-gray-800'
+                : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'
+            }`}
+          >
+            <tab.icon className="w-4 h-4" />
+            <span className="text-sm font-medium">{tab.label}</span>
           </button>
-        </div>
+        ))}
+      </div>
 
-        {/* Tabs */}
-        <div className="flex border-b bg-gray-50">
-          {tabs.map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-4 py-3 border-b-2 transition-colors ${
-                activeTab === tab.id
-                  ? 'border-cyan-600 text-cyan-600 bg-white'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-100'
-              }`}
-            >
-              <tab.icon className="w-4 h-4" />
-              <span className="text-sm font-medium">{tab.label}</span>
-            </button>
-          ))}
-        </div>
-
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="flex-1 overflow-hidden flex flex-col">
-          <div className="flex-1 overflow-y-auto p-6">
+      <form id="well-source-form" onSubmit={handleSubmit}>
+        <div>
             {/* General Error */}
             {errors.general && (
               <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-red-700">
@@ -1529,37 +1550,8 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
               </div>
             )}
           </div>
-
-          {/* Footer */}
-          <div className="flex items-center justify-between p-4 border-t bg-gray-50">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="flex items-center gap-2 px-6 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 disabled:opacity-50 transition-colors"
-            >
-              {loading ? (
-                <>
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  Saving...
-                </>
-              ) : (
-                <>
-                  <Save className="w-5 h-5" />
-                  {wellSource ? 'Update Well' : 'Create Well'}
-                </>
-              )}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+      </form>
+    </Modal>
   );
 };
 

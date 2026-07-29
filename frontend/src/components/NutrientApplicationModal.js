@@ -6,12 +6,13 @@
 // =============================================================================
 
 import React, { useState, useEffect } from 'react';
-import { X, Leaf, Search, AlertTriangle, Calculator } from 'lucide-react';
-import { 
-  nutrientApplicationsAPI, 
+import { Leaf, Search, AlertTriangle, Calculator } from 'lucide-react';
+import {
+  nutrientApplicationsAPI,
   fertilizerProductsAPI,
-  NUTRIENT_CONSTANTS 
+  NUTRIENT_CONSTANTS
 } from '../services/api';
+import Modal from './ui/Modal';
 
 const NutrientApplicationModal = ({ 
   isOpen, 
@@ -245,32 +246,48 @@ const NutrientApplicationModal = ({
     }
   };
 
-  if (!isOpen) return null;
+  const footer = (
+    <>
+      <button
+        type="button"
+        onClick={onClose}
+        className="px-4 py-2 rounded-button text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"
+      >
+        Cancel
+      </button>
+      <button
+        type="submit"
+        form="nutrient-app-form"
+        disabled={loading}
+        className="px-4 py-2 rounded-button bg-primary text-white hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+      >
+        {loading ? (
+          <>
+            <span className="animate-spin">⏳</span>
+            Saving…
+          </>
+        ) : (
+          <>
+            <Leaf className="w-4 h-4" />
+            {application ? 'Update Application' : 'Save Application'}
+          </>
+        )}
+      </button>
+    </>
+  );
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-hidden">
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-gray-50">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-green-100 rounded-lg">
-              <Leaf className="w-5 h-5 text-primary" />
-            </div>
-            <div>
-              <h2 className="text-lg font-semibold text-gray-900">
-                {application ? 'Edit Application' : 'Add Nutrient Application'}
-              </h2>
-              <p className="text-sm text-gray-500">Record fertilizer application details</p>
-            </div>
-          </div>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="overflow-y-auto max-h-[calc(90vh-140px)]">
-          <div className="p-6 space-y-6">
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={application ? 'Edit Application' : 'Add Nutrient Application'}
+      subtitle="Record fertilizer application details"
+      icon={Leaf}
+      size="lg"
+      footer={footer}
+    >
+      <form id="nutrient-app-form" onSubmit={handleSubmit}>
+        <div className="space-y-6">
             {/* Error Display */}
             {error && (
               <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex items-center gap-2">
@@ -594,37 +611,8 @@ const NutrientApplicationModal = ({
               />
             </div>
           </div>
-
-          {/* Footer */}
-          <div className="flex justify-end gap-3 px-6 py-4 border-t border-gray-200 bg-gray-50">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-100"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-            >
-              {loading ? (
-                <>
-                  <span className="animate-spin">⏳</span>
-                  Saving...
-                </>
-              ) : (
-                <>
-                  <Leaf className="w-4 h-4" />
-                  {application ? 'Update Application' : 'Save Application'}
-                </>
-              )}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+      </form>
+    </Modal>
   );
 };
 
