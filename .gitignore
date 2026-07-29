@@ -25,6 +25,7 @@ __pycache__/
 *.log
 local_settings.py
 db.sqlite3
+*.sqlite3
 media/
 
 # Build
@@ -39,3 +40,19 @@ nul
 # ML training logs
 lightning_logs/
 backend/lightning_logs/
+
+# Python virtualenvs
+venv/
+.venv/
+
+# Collected static files
+backend/staticfiles/
+
+# LiDAR point clouds and derived data (pipeline removed Feb 2026)
+backend/lidar/
+*.laz
+
+# Claude Code local state (settings.json may be shared; local files are per-machine)
+.claude/settings.local.json
+.claude/scheduled_tasks.lock
+.claude/worktrees/

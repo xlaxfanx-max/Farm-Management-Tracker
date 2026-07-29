@@ -17,11 +17,15 @@ data_*.dump
 *_export.json
 *_export.csv
 
-# Test databases
+# Test / local dev databases
 test_db.sqlite3
+*.sqlite3
 
 # ML logs
 lightning_logs/
 
 # Claude settings
 .claude/
+
+# Stale pip-freeze artifact of the global env (use pip-tools for real locking)
+requirements.lock
