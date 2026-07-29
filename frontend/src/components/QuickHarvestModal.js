@@ -4,7 +4,7 @@
 // Simplified harvest entry with only essential fields for fast data entry
 
 import React, { useState, useEffect } from 'react';
-import { X, Zap } from 'lucide-react';
+import { AlertTriangle, X, Zap } from 'lucide-react';
 import { harvestsAPI, HARVEST_CONSTANTS, getUnitLabelForCropVariety } from '../services/api';
 import { useToast } from '../contexts/ToastContext';
 
@@ -26,6 +26,10 @@ const QuickHarvestModal = ({
   const [errors, setErrors] = useState({});
   const [saving, setSaving] = useState(false);
   const [lastCropUsed, setLastCropUsed] = useState(null);
+  // Quick entry still needs the PHI guardrail — a violating harvest can
+  // mean the whole load is rejected at the packinghouse.
+  const [phiCheck, setPhiCheck] = useState(null);
+  const [phiOverride, setPhiOverride] = useState(false);
   const toast = useToast();
 
   // Dynamic unit label based on selected crop variety
@@ -64,7 +68,23 @@ const QuickHarvestModal = ({
       notes: ''
     });
     setErrors({});
+    setPhiCheck(null);
+    setPhiOverride(false);
   };
+
+  // Live PHI check whenever field or date changes
+  useEffect(() => {
+    if (!formData.field || !formData.harvest_date) {
+      setPhiCheck(null);
+      return;
+    }
+    let cancelled = false;
+    setPhiOverride(false);
+    harvestsAPI.checkPHI(formData.field, formData.harvest_date)
+      .then(res => { if (!cancelled) setPhiCheck(res.data); })
+      .catch(() => { if (!cancelled) setPhiCheck(null); });
+    return () => { cancelled = true; };
+  }, [formData.field, formData.harvest_date]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -101,6 +121,14 @@ const QuickHarvestModal = ({
     e.preventDefault();
 
     if (!validateForm()) {
+      return;
+    }
+
+    if (phiCheck?.is_compliant === false && !phiOverride) {
+      toast.error(
+        'This harvest date violates the Pre-Harvest Interval. '
+        + 'Acknowledge the warning to record it anyway.'
+      );
       return;
     }
 
@@ -228,6 +256,30 @@ const QuickHarvestModal = ({
             />
             {errors.harvest_date && <p className="text-red-500 text-sm mt-1">{errors.harvest_date}</p>}
           </div>
+
+          {/* PHI Violation Warning */}
+          {phiCheck && phiCheck.is_compliant === false && (
+            <div className="p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg">
+              <div className="flex items-start gap-2">
+                <AlertTriangle className="text-red-600 flex-shrink-0 mt-0.5" size={18} />
+                <div>
+                  <p className="text-sm font-semibold text-red-800 dark:text-red-300">PHI Violation Warning</p>
+                  {phiCheck.warning_message && (
+                    <p className="text-xs text-red-700 dark:text-red-400 mt-1">{phiCheck.warning_message}</p>
+                  )}
+                  <label className="mt-2 flex items-start gap-2 text-xs font-medium text-red-800 dark:text-red-300 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={phiOverride}
+                      onChange={(e) => setPhiOverride(e.target.checked)}
+                      className="mt-0.5 rounded border-red-400 text-red-600 focus:ring-red-500"
+                    />
+                    <span>I understand this harvest may violate the PHI and want to record it anyway</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Total Bins/Lbs */}
           <div>

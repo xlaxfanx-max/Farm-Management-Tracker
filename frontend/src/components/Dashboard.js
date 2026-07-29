@@ -12,6 +12,7 @@ import SeasonProgressCard from './dashboard/SeasonProgressCard';
 
 // Existing Widgets
 import WeatherWidget from './WeatherWidget';
+import ActiveREITicker from './compliance/ActiveREITicker';
 
 // Disease Prevention Components
 import { ProximityRiskCard } from './disease';
@@ -67,6 +68,9 @@ function Dashboard({ onNavigate }) {
           onNavigate={handleNavigate}
           onOpenWaterTestModal={openWaterTestModal}
         />
+
+        {/* 1b. Worker safety — live REI countdowns (hidden when none active) */}
+        <ActiveREITicker />
 
         {/* 2. Quick Actions (4 buttons) */}
         <QuickActionsGrid onNavigate={handleNavigate} />

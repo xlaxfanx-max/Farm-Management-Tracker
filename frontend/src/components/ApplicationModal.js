@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { X, Search, AlertTriangle, Info, Plus, Trash2, GripVertical } from 'lucide-react';
+import { Search, AlertTriangle, History, Plus, Trash2 } from 'lucide-react';
 import { useToast } from '../contexts/ToastContext';
 import { unifiedProductsAPI, applicationEventsAPI } from '../services/api';
 import CollapsibleSection from './ui/CollapsibleSection';
+import Modal from './ui/Modal';
 
 /**
  * Application Event Modal with Tank Mix Support
@@ -66,6 +67,9 @@ function EnhancedApplicationModal({
     farm: '',
     field: '',
     date_started: new Date().toISOString().split('T')[0],
+    // REI countdowns and PUR filings need the start time, not just the
+    // date — default to "now" for records entered as they happen.
+    start_time: new Date().toTimeString().slice(0, 5),
     date_completed: '',
     treated_area_acres: '',
     application_method: 'ground',
@@ -91,6 +95,10 @@ function EnhancedApplicationModal({
   const [rotationWarnings, setRotationWarnings] = useState([]);
   const rotationCheckRef = useRef(null);
 
+  // "Copy last spray" — most recent event for the selected farm/field
+  const [lastEvent, setLastEvent] = useState(null);
+  const [copyingLast, setCopyingLast] = useState(false);
+
   // Load unified products
   useEffect(() => {
     unifiedProductsAPI.getAll().then(res => {
@@ -106,6 +114,9 @@ function EnhancedApplicationModal({
         farm: application.farm || '',
         field: application.field || '',
         date_started: application.date_started?.split('T')[0] || '',
+        start_time: application.date_started?.includes('T')
+          ? application.date_started.split('T')[1].slice(0, 5)
+          : '00:00',
         date_completed: application.date_completed?.split('T')[0] || '',
         treated_area_acres: application.treated_area_acres || '',
         application_method: application.application_method || 'ground',
@@ -202,8 +213,11 @@ function EnhancedApplicationModal({
 
     setSaving(true);
     try {
+      const { start_time, ...eventData } = formData;
       const payload = {
-        ...formData,
+        ...eventData,
+        // Combine date + time so REI clocks start when the spray did
+        date_started: `${formData.date_started}T${start_time || '00:00'}:00`,
         farm: parseInt(formData.farm),
         field: formData.field ? parseInt(formData.field) : null,
         treated_area_acres: formData.treated_area_acres ? parseFloat(formData.treated_area_acres) : null,
@@ -270,6 +284,78 @@ function EnhancedApplicationModal({
     return totalCost / acres;
   }, [totalCost, formData.treated_area_acres]);
 
+  // Fields belonging to the selected farm
+  const farmFields = useMemo(
+    () => (fields || []).filter(f => String(f.farm) === String(formData.farm) && f.active !== false),
+    [fields, formData.farm]
+  );
+
+  const handleFieldChange = useCallback((e) => {
+    const fieldId = e.target.value;
+    setFormData(prev => {
+      const next = { ...prev, field: fieldId };
+      // Convenience: default treated acres to the block's acreage
+      if (fieldId && !prev.treated_area_acres) {
+        const f = (fields || []).find(x => String(x.id) === String(fieldId));
+        if (f?.total_acres) next.treated_area_acres = String(f.total_acres);
+      }
+      return next;
+    });
+  }, [fields]);
+
+  // Look up the most recent application on this farm/field so the grower
+  // can repeat a spray program without retyping the tank mix.
+  useEffect(() => {
+    if (isEdit || (!formData.farm && !formData.field)) {
+      setLastEvent(null);
+      return undefined;
+    }
+    let cancelled = false;
+    const params = formData.field
+      ? { field: formData.field, page_size: 1 }
+      : { farm: formData.farm, page_size: 1 };
+    applicationEventsAPI.getAll(params)
+      .then(res => {
+        if (cancelled) return;
+        const results = res.data.results || res.data || [];
+        setLastEvent(results[0] || null);
+      })
+      .catch(() => { if (!cancelled) setLastEvent(null); });
+    return () => { cancelled = true; };
+  }, [isEdit, formData.farm, formData.field]);
+
+  const handleCopyLastSpray = useCallback(async () => {
+    if (!lastEvent) return;
+    setCopyingLast(true);
+    try {
+      const res = await applicationEventsAPI.getById(lastEvent.id);
+      const ev = res.data;
+      setFormData(prev => ({
+        ...prev,
+        application_method: ev.application_method || prev.application_method,
+        applied_by: ev.applied_by || prev.applied_by,
+        treated_area_acres: prev.treated_area_acres || ev.treated_area_acres || '',
+        field: prev.field || (ev.field != null ? String(ev.field) : ''),
+      }));
+      if (ev.tank_mix_items?.length) {
+        setTankMixItems(ev.tank_mix_items.map(item => ({
+          product: item.product || '',
+          product_name: item.product_name || '',
+          total_amount: item.total_amount || '',
+          amount_unit: item.amount_unit || 'Ga',
+          rate: item.rate || '',
+          rate_unit: item.rate_unit || 'Ga/A',
+          dilution_gallons: item.dilution_gallons || '',
+        })));
+      }
+      toast.success('Copied mix and details from the last application');
+    } catch (err) {
+      toast.error('Could not load the last application');
+    } finally {
+      setCopyingLast(false);
+    }
+  }, [lastEvent, toast]);
+
   // Pre-save MOA rotation check. Debounces so we don't hit the API on every
   // keystroke, and skips the call when inputs are incomplete.
   useEffect(() => {
@@ -298,30 +384,42 @@ function EnhancedApplicationModal({
   }, [formData.field, formData.date_started, tankMixItems, application?.id]);
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-5xl w-full max-h-[90vh] overflow-y-auto">
-        <form onSubmit={handleSubmit} className="p-6">
-          {/* Header */}
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold text-gray-900">
-              {isEdit ? 'Edit Application Event' : 'New Application Event'}
-            </h2>
-            <button type="button" onClick={onClose} className="text-gray-500 hover:text-gray-700">
-              <X className="w-6 h-6" />
-            </button>
-          </div>
+    <Modal
+      isOpen={true}
+      onClose={onClose}
+      title={isEdit ? 'Edit Application Event' : 'New Application Event'}
+      size="full"
+    >
+      <form id="application-form" onSubmit={handleSubmit}>
+        {activeSearchIdx !== null && (
+          <div
+            className="fixed inset-0 z-10"
+            onClick={() => setActiveSearchIdx(null)}
+            aria-hidden="true"
+          />
+        )}
 
           {/* Event fields */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Date *</label>
-              <input
-                type="date"
-                required
-                value={formData.date_started}
-                onChange={(e) => setFormData(prev => ({ ...prev, date_started: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-              />
+              <label className="block text-sm font-medium text-gray-700 mb-1">Date & Start Time *</label>
+              <div className="flex gap-2">
+                <input
+                  type="date"
+                  required
+                  value={formData.date_started}
+                  onChange={(e) => setFormData(prev => ({ ...prev, date_started: e.target.value }))}
+                  className="flex-1 min-w-0 px-3 py-2 border border-gray-300 rounded-md text-sm"
+                />
+                <input
+                  type="time"
+                  required
+                  value={formData.start_time}
+                  onChange={(e) => setFormData(prev => ({ ...prev, start_time: e.target.value }))}
+                  className="w-28 px-2 py-2 border border-gray-300 rounded-md text-sm"
+                  title="When the application started — the REI clock runs from this time"
+                />
+              </div>
             </div>
 
             <div>
@@ -339,6 +437,28 @@ function EnhancedApplicationModal({
                   </option>
                 ))}
               </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Field / Block</label>
+              <select
+                value={formData.field}
+                onChange={handleFieldChange}
+                disabled={!formData.farm}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm disabled:bg-gray-100 disabled:text-gray-500"
+              >
+                <option value="">
+                  {formData.farm ? 'Whole farm (no block)' : 'Select farm first'}
+                </option>
+                {farmFields.map(f => (
+                  <option key={f.id} value={f.id}>
+                    {f.name}{f.total_acres ? ` — ${f.total_acres} ac` : ''}
+                  </option>
+                ))}
+              </select>
+              <p className="mt-1 text-xs text-gray-500">
+                Block-level records power PHI checks, MOA rotation, and per-block costs
+              </p>
             </div>
 
             <div>
@@ -367,6 +487,30 @@ function EnhancedApplicationModal({
             </div>
 
           </div>
+
+          {/* Copy-last-spray shortcut — spray programs repeat; save the retyping */}
+          {!isEdit && lastEvent && (
+            <div className="mb-6 p-3 bg-emerald-50 border border-emerald-200 rounded-lg flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center gap-2 text-sm text-emerald-800 min-w-0">
+                <History className="w-4 h-4 flex-shrink-0" />
+                <span className="truncate">
+                  Last spray {formData.field ? 'on this block' : 'on this farm'}:{' '}
+                  <strong>{lastEvent.date_started?.split('T')[0]}</strong>
+                  {lastEvent.tank_mix_items?.length
+                    ? ` — ${lastEvent.tank_mix_items.length} product${lastEvent.tank_mix_items.length > 1 ? 's' : ''} in mix`
+                    : ''}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={handleCopyLastSpray}
+                disabled={copyingLast}
+                className="text-sm font-medium px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white rounded-md transition-colors flex-shrink-0"
+              >
+                {copyingLast ? 'Copying…' : 'Copy mix & details'}
+              </button>
+            </div>
+          )}
 
           <CollapsibleSection title="Weather & Additional Details">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -627,34 +771,25 @@ function EnhancedApplicationModal({
             </div>
           )}
 
-          {/* Action Buttons */}
-          <div className="flex gap-3 pt-4 border-t border-gray-200 mt-4">
-            <button
-              type="submit"
-              disabled={saving}
-              className="flex-1 px-4 py-2.5 bg-primary text-white rounded-md hover:bg-primary-hover disabled:opacity-50 font-medium"
-            >
-              {saving ? 'Saving...' : (isEdit ? 'Update Application' : 'Save Application')}
-            </button>
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2.5 border border-gray-300 rounded-md hover:bg-gray-50 text-gray-700"
-            >
-              Cancel
-            </button>
-          </div>
-        </form>
-      </div>
-
-      {/* Click outside search to close dropdown */}
-      {activeSearchIdx !== null && (
-        <div
-          className="fixed inset-0 z-10"
-          onClick={() => setActiveSearchIdx(null)}
-        />
-      )}
-    </div>
+        {/* Action Buttons */}
+        <div className="flex gap-3 pt-4 border-t border-gray-200 dark:border-gray-700 mt-4">
+          <button
+            type="submit"
+            disabled={saving}
+            className="flex-1 px-4 py-2.5 bg-primary text-white rounded-md hover:bg-primary-hover disabled:opacity-50 font-medium"
+          >
+            {saving ? 'Saving…' : isEdit ? 'Update Application' : 'Save Application'}
+          </button>
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200"
+          >
+            Cancel
+          </button>
+        </div>
+      </form>
+    </Modal>
   );
 }
 

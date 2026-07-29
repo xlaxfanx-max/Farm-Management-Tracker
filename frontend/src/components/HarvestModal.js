@@ -38,6 +38,9 @@ const HarvestModal = ({
 
   const [phiCheck, setPhiCheck] = useState(null);
   const [phiLoading, setPhiLoading] = useState(false);
+  // A PHI-violating harvest must be explicitly acknowledged before saving —
+  // a missed PHI can mean rejection of the entire load at the packinghouse.
+  const [phiOverride, setPhiOverride] = useState(false);
   const [errors, setErrors] = useState({});
   const [saving, setSaving] = useState(false);
   const [reconciliationStatus, setReconciliationStatus] = useState(null);
@@ -105,6 +108,7 @@ const HarvestModal = ({
   // Check PHI when field or date changes
   useEffect(() => {
     if (formData.field && formData.harvest_date) {
+      setPhiOverride(false);
       checkPHI();
     }
   }, [formData.field, formData.harvest_date]);
@@ -175,8 +179,16 @@ const HarvestModal = ({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!validate()) return;
+
+    if (phiCheck?.is_compliant === false && !phiOverride) {
+      toast.error(
+        'This harvest date violates the Pre-Harvest Interval. '
+        + 'Acknowledge the warning above to record it anyway.'
+      );
+      return;
+    }
 
     setSaving(true);
     try {
@@ -243,9 +255,20 @@ const HarvestModal = ({
                 <p className="font-semibold text-red-800 dark:text-red-300">PHI Violation Warning</p>
                 <p className="text-sm text-red-700 dark:text-red-400 mt-1">{phiCheck.warning_message}</p>
                 <p className="text-sm text-red-600 dark:text-red-400 mt-2">
-                  Proceeding may violate Pre-Harvest Interval requirements. 
+                  Proceeding may violate Pre-Harvest Interval requirements.
                   Consider selecting a later harvest date.
                 </p>
+                <label className="mt-3 flex items-start gap-2 text-sm font-medium text-red-800 dark:text-red-300 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={phiOverride}
+                    onChange={(e) => setPhiOverride(e.target.checked)}
+                    className="mt-0.5 rounded border-red-400 text-red-600 focus:ring-red-500"
+                  />
+                  <span>
+                    I understand this harvest may violate the PHI and want to record it anyway
+                  </span>
+                </label>
               </div>
             </div>
           </div>
