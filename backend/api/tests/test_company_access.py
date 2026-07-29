@@ -3,7 +3,7 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from .models import Company
+from api.models import Company
 
 
 class CompanyAccessTests(APITestCase):

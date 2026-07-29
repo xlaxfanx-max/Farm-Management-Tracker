@@ -1,4 +1,4 @@
-"""
+﻿"""
 Company Isolation / Row-Level Security Tests
 
 Verifies that multi-tenancy is enforced correctly across all major
@@ -211,7 +211,7 @@ class CompanyIsolationTests(TestCase):
             self.company_a, lot_number='LOT-ALPHA-001'
         )
 
-        response = self.client_b.get('/api/traceability-lots/')
+        response = self.client_b.get('/api/fsma/traceability-lots/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         results = self._get_results(response)
         lot_numbers = [lot['lot_number'] for lot in results]
@@ -227,13 +227,13 @@ class CompanyIsolationTests(TestCase):
             self.company_b, lot_number='LOT-BETA-001'
         )
 
-        resp_a = self.client_a.get('/api/traceability-lots/')
+        resp_a = self.client_a.get('/api/fsma/traceability-lots/')
         results_a = self._get_results(resp_a)
         lots_a = [lot['lot_number'] for lot in results_a]
         self.assertIn('LOT-ALPHA-001', lots_a)
         self.assertNotIn('LOT-BETA-001', lots_a)
 
-        resp_b = self.client_b.get('/api/traceability-lots/')
+        resp_b = self.client_b.get('/api/fsma/traceability-lots/')
         results_b = self._get_results(resp_b)
         lots_b = [lot['lot_number'] for lot in results_b]
         self.assertIn('LOT-BETA-001', lots_b)
@@ -275,10 +275,10 @@ class CompanyIsolationTests(TestCase):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_cross_company_lot_detail_returns_404(self):
-        """GET /api/traceability-lots/{id}/ for another company's lot yields 404."""
+        """GET /api/fsma/traceability-lots/{id}/ for another company's lot yields 404."""
         lot_a = self.factory.create_traceability_lot(self.company_a)
 
-        response = self.client_b.get(f'/api/traceability-lots/{lot_a.pk}/')
+        response = self.client_b.get(f'/api/fsma/traceability-lots/{lot_a.pk}/')
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     # =====================================================================

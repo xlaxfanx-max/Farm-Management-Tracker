@@ -1,7 +1,9 @@
-Django==4.2
-djangorestframework==3.14
-djangorestframework-simplejwt>=5.3.0
-django-cors-headers==4.3
+# Django 5.2 LTS (supported until April 2028); floating within the LTS line
+# picks up security patches on each rebuild.
+Django>=5.2.16,<6.0
+djangorestframework>=3.16,<3.17
+djangorestframework-simplejwt>=5.4.0
+django-cors-headers>=4.6
 psycopg2-binary>=2.9.0
 python-decouple==3.8
 Pillow>=10.1.0

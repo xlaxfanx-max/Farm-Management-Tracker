@@ -568,7 +568,7 @@ class NutrientApplicationsQueryPerformanceTests(TestCase):
                 application_date=date.today() - timedelta(days=i),
                 rate=Decimal('200.000'),
                 rate_unit='lbs_acre',
-                acres_treated=fields[i % 4].acreage,
+                acres_treated=fields[i % 4].total_acres,
             )
 
         with CaptureQueriesContext(connection) as ctx:

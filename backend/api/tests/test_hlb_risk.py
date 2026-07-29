@@ -153,6 +153,7 @@ class HLBRiskScoringTests(TestCase):
 
     def test_stressed_trees_drive_host_vulnerability(self):
         survey = TreeSurvey.objects.create(
+            company=self.company,
             field=self.field,
             status='completed',
             image_type='multispectral',
@@ -164,6 +165,8 @@ class HLBRiskScoringTests(TestCase):
             DetectedTree.objects.create(
                 survey=survey,
                 latitude=34.2 + i * 0.001, longitude=-119.1,
+                bbox_x_min=i * 100, bbox_y_min=0,
+                bbox_x_max=i * 100 + 80, bbox_y_max=80,
                 confidence=0.9,
                 canopy_diameter_m=3.0,
                 ndvi_mean=0.75,
@@ -173,6 +176,8 @@ class HLBRiskScoringTests(TestCase):
             DetectedTree.objects.create(
                 survey=survey,
                 latitude=34.2 + (8 + i) * 0.001, longitude=-119.1,
+                bbox_x_min=(8 + i) * 100, bbox_y_min=0,
+                bbox_x_max=(8 + i) * 100 + 80, bbox_y_max=80,
                 confidence=0.9,
                 canopy_diameter_m=2.0,
                 ndvi_mean=0.3,
@@ -231,7 +236,7 @@ class HLBRiskScoringTests(TestCase):
         )
         assessment = score_field_hlb_risk(orphan_field)
         self.assertIn(
-            'no GPS coordinates',
+            'no gps coordinates',
             ' '.join(assessment.data_gaps).lower(),
         )
         # Still returns a valid assessment (score stays low)

@@ -16,7 +16,7 @@ Usage:
             self.field = self.factory.create_field(self.farm)
 """
 
-from datetime import date, timedelta
+from datetime import date, time, timedelta
 from decimal import Decimal
 from django.contrib.auth import get_user_model
 from rest_framework.test import APIClient
@@ -185,11 +185,14 @@ class TestDataFactory:
     # =========================================================================
 
     def create_pesticide_product(self, company=None, **kwargs):
+        # `company` accepted for call-site symmetry but unused:
+        # PesticideProduct is a global product database with no company FK.
         n = self._next_id()
         return PesticideProduct.objects.create(
-            company=company,
             product_name=kwargs.pop('product_name', f'Test Pesticide {n}'),
-            epa_registration=kwargs.pop('epa_registration', f'12345-{n}'),
+            epa_registration_number=kwargs.pop(
+                'epa_registration_number', f'12345-{n}'
+            ),
             phi_days=kwargs.pop('phi_days', 14),
             rei_hours=kwargs.pop('rei_hours', 12),
             **kwargs,
@@ -202,7 +205,13 @@ class TestDataFactory:
             field=field,
             product=product,
             application_date=kwargs.pop('application_date', date.today() - timedelta(days=30)),
+            start_time=kwargs.pop('start_time', time(6, 0)),
+            end_time=kwargs.pop('end_time', time(10, 0)),
             acres_treated=kwargs.pop('acres_treated', field.total_acres or Decimal('10.00')),
+            amount_used=kwargs.pop('amount_used', Decimal('25.00')),
+            unit_of_measure=kwargs.pop('unit_of_measure', 'gal'),
+            application_method=kwargs.pop('application_method', 'Ground Spray'),
+            applicator_name=kwargs.pop('applicator_name', 'Test Applicator'),
             **kwargs,
         )
 

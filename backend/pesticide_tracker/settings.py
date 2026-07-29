@@ -1,4 +1,5 @@
 import os
+import sys
 from pathlib import Path
 from dotenv import load_dotenv
 
@@ -29,6 +30,24 @@ ALLOWED_HOSTS = [h.strip() for h in _allowed_hosts if h.strip()]
 # Railway uses random subdomains - allow all .railway.app domains
 if os.environ.get('RAILWAY_ENVIRONMENT'):
     ALLOWED_HOSTS.append('.railway.app')
+
+# =============================================================================
+# PRODUCTION SECURITY HARDENING
+# =============================================================================
+# Railway terminates TLS at its edge proxy and forwards over HTTP with
+# X-Forwarded-Proto set, so Django must trust that header to know the
+# original request was secure.
+# The test runner forces DEBUG=False, so exempt test runs or every
+# test request would 301-redirect to https.
+TESTING = 'test' in sys.argv
+if not DEBUG and not TESTING:
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SECURE_SSL_REDIRECT = os.environ.get('SECURE_SSL_REDIRECT', 'True').lower() in ('true', '1', 'yes')
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_HSTS_SECONDS = int(os.environ.get('SECURE_HSTS_SECONDS', 31536000))
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = False  # other subdomains may not serve HTTPS
+    SECURE_REFERRER_POLICY = 'same-origin'
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -111,6 +130,20 @@ else:
             'PORT': os.environ.get('DB_PORT', '5432'),
         }
     }
+
+# Several migrations embed raw Postgres statements (row-level security
+# policies) that SQLite cannot execute. When tests run against SQLite,
+# build the test schema directly from models instead of replaying
+# migrations — RLS is Postgres-only defense-in-depth and is not what the
+# test suite asserts.
+if DATABASES['default']['ENGINE'].endswith('sqlite3'):
+    DATABASES['default'].setdefault('TEST', {})['MIGRATE'] = False
+
+# Local-dev convenience for the same reason: SKIP_MIGRATIONS=1 lets
+# `manage.py migrate --run-syncdb` build a dev SQLite schema directly from
+# models. Never set this in production.
+if os.environ.get('SKIP_MIGRATIONS') == '1':
+    MIGRATION_MODULES = {'api': None}
 
 CACHE_URL = os.environ.get('CACHE_URL', '')
 CACHES = {
@@ -284,6 +317,14 @@ REST_FRAMEWORK = {
         'password_reset': '3/hour',  # Very strict for password reset
     },
 }
+
+# Throttle counters live in the shared cache and leak across test cases,
+# so full-suite runs would 429 on auth endpoints. Keep the throttle classes
+# wired but effectively unlimited under test.
+if TESTING:
+    REST_FRAMEWORK['DEFAULT_THROTTLE_RATES'] = {
+        scope: '10000/minute' for scope in REST_FRAMEWORK['DEFAULT_THROTTLE_RATES']
+    }
 
 from datetime import timedelta
 SIMPLE_JWT = {
@@ -527,6 +568,44 @@ CELERY_BEAT_SCHEDULE = {
     'cleanup-old-fsma-data': {
         'task': 'api.tasks.fsma_tasks.cleanup_old_fsma_data',
         'schedule': crontab(day_of_month=1, hour=3, minute=0),
+    },
+}
+
+# =============================================================================
+# LOGGING
+# =============================================================================
+# Console-only logging: Railway captures stdout/stderr. Errors from Django and
+# the api app are visible in deploy logs even without Sentry configured.
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'standard': {
+            'format': '{levelname} {asctime} {name} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'standard',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': os.environ.get('LOG_LEVEL', 'INFO'),
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': os.environ.get('DJANGO_LOG_LEVEL', 'INFO'),
+            'propagate': False,
+        },
+        'api': {
+            'handlers': ['console'],
+            'level': os.environ.get('LOG_LEVEL', 'INFO'),
+            'propagate': False,
+        },
     },
 }
 
