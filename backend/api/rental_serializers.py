@@ -157,6 +157,15 @@ class RentalLedgerEntrySerializer(serializers.ModelSerializer):
     property_name = serializers.CharField(
         source='rental_property.name', read_only=True
     )
+    # Carried on the row so a roll-up can group on-ranch against off-ranch
+    # without a second request. The two are reported separately, never summed:
+    # on-ranch is annual P&L grain, off-ranch is monthly statement grain.
+    property_location_type = serializers.CharField(
+        source='rental_property.location_type', read_only=True
+    )
+    farm_name = serializers.CharField(
+        source='rental_property.farm.name', read_only=True
+    )
     unit_label = serializers.CharField(source='unit.unit_label', read_only=True)
     category_name = serializers.CharField(source='category.name', read_only=True)
     category_kind = serializers.CharField(source='category.kind', read_only=True)
@@ -171,6 +180,7 @@ class RentalLedgerEntrySerializer(serializers.ModelSerializer):
         model = RentalLedgerEntry
         fields = [
             'id', 'rental_property', 'property_name',
+            'property_location_type', 'farm_name',
             'unit', 'unit_label',
             'category', 'category_name', 'category_kind',
             'period_year', 'period_month', 'grain',

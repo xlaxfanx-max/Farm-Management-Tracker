@@ -27,7 +27,7 @@ from .models import (
     RentalProperty,
     RentalUnit,
 )
-from .permissions import HasCompanyAccess, IsAuthenticated
+from .permissions import HasCompanyAccess, HasPermission, IsAuthenticated
 from .rental_serializers import (
     LeaseSerializer,
     PortfolioRentRollSerializer,
@@ -46,7 +46,25 @@ def _as_bool(value):
     return str(value).lower() in ('1', 'true', 'yes')
 
 
-class RentalPropertyViewSet(CompanyFilteredViewSet):
+class _RentalCrudViewSet(CompanyFilteredViewSet):
+    """Company-scoped CRUD: read with view_rentals, write with manage_rentals.
+
+    Field roles get neither. Rent figures and occupant labels have no bearing
+    on farm work, and the fewer places they appear the better.
+    """
+
+    permission_classes = [IsAuthenticated, HasCompanyAccess, HasPermission]
+    permission_map = {
+        'list': 'view_rentals',
+        'retrieve': 'view_rentals',
+        'create': 'manage_rentals',
+        'update': 'manage_rentals',
+        'partial_update': 'manage_rentals',
+        'destroy': 'manage_rentals',
+    }
+
+
+class RentalPropertyViewSet(_RentalCrudViewSet):
     model = RentalProperty
     serializer_class = RentalPropertySerializer
     select_related_fields = ('farm', 'owning_entity', 'parcel')
@@ -77,7 +95,7 @@ class RentalPropertyViewSet(CompanyFilteredViewSet):
         return queryset.annotate(unit_count_annotated=Count('units', distinct=True))
 
 
-class RentalCategoryViewSet(CompanyFilteredViewSet):
+class RentalCategoryViewSet(_RentalCrudViewSet):
     model = RentalCategory
     serializer_class = RentalCategorySerializer
     default_ordering = ('kind', 'name')
@@ -89,7 +107,7 @@ class RentalCategoryViewSet(CompanyFilteredViewSet):
         return queryset
 
 
-class RentalUnitViewSet(CompanyFilteredViewSet):
+class RentalUnitViewSet(_RentalCrudViewSet):
     model = RentalUnit
     serializer_class = RentalUnitSerializer
     company_field = 'rental_property__company'
@@ -128,7 +146,7 @@ class RentalUnitViewSet(CompanyFilteredViewSet):
         return serializer.save()
 
 
-class LeaseViewSet(CompanyFilteredViewSet):
+class LeaseViewSet(_RentalCrudViewSet):
     model = Lease
     serializer_class = LeaseSerializer
     company_field = 'unit__rental_property__company'
@@ -159,7 +177,7 @@ class LeaseViewSet(CompanyFilteredViewSet):
         return serializer.save()
 
 
-class RentalLedgerEntryViewSet(CompanyFilteredViewSet):
+class RentalLedgerEntryViewSet(_RentalCrudViewSet):
     model = RentalLedgerEntry
     serializer_class = RentalLedgerEntrySerializer
     select_related_fields = ('rental_property', 'unit', 'category')
@@ -220,7 +238,8 @@ class RanchRentalSummaryView(APIView):
     field. See RanchRentalSummarySerializer — the omission is the point.
     """
 
-    permission_classes = [IsAuthenticated, HasCompanyAccess]
+    permission_classes = [IsAuthenticated, HasCompanyAccess, HasPermission]
+    required_permission = 'view_rentals'
 
     def get(self, request, farm_id):
         company = get_user_company(request.user)
@@ -308,7 +327,8 @@ class PortfolioRentRollView(APIView):
     so the two can be compared rather than conflated.
     """
 
-    permission_classes = [IsAuthenticated, HasCompanyAccess]
+    permission_classes = [IsAuthenticated, HasCompanyAccess, HasPermission]
+    required_permission = 'view_rentals'
 
     def get(self, request):
         company = get_user_company(request.user)

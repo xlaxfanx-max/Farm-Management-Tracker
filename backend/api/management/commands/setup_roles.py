@@ -32,6 +32,10 @@ class Command(BaseCommand):
             {'codename': 'view_pick_haul', 'name': 'View Pick & Haul', 'category': 'harvests', 'description': 'Can view pick & haul receipts, house charges, invoices, and reconciliation'},
             {'codename': 'manage_pick_haul', 'name': 'Manage Pick & Haul', 'category': 'harvests', 'description': 'Can enter and edit pick & haul invoices and manual picks'},
 
+            # Rentals
+            {'codename': 'view_rentals', 'name': 'View Rentals', 'category': 'rentals', 'description': 'Can view rental properties, leases, and rental income'},
+            {'codename': 'manage_rentals', 'name': 'Manage Rentals', 'category': 'rentals', 'description': 'Can create and edit rental properties, units, leases, and ledger entries'},
+
             # Water
             {'codename': 'view_water', 'name': 'View Water Data', 'category': 'water', 'description': 'Can view water sources and tests'},
             {'codename': 'manage_water', 'name': 'Manage Water Data', 'category': 'water', 'description': 'Can manage water sources and tests'},
@@ -82,6 +86,7 @@ class Command(BaseCommand):
                     'view_applications', 'create_applications', 'manage_applications',
                     'view_harvests', 'manage_harvests',
                     'view_pick_haul', 'manage_pick_haul',
+                    'view_rentals', 'manage_rentals',
                     'view_water', 'manage_water',
                     'view_reports', 'export_reports',
                     'view_users', 'invite_users', 'manage_users',
@@ -97,6 +102,10 @@ class Command(BaseCommand):
                     'view_applications', 'create_applications', 'manage_applications',
                     'view_harvests', 'manage_harvests',
                     'view_pick_haul', 'manage_pick_haul',
+                    # View only: a farm manager reads the ranch rental panel to
+                    # see whether a ranch is carried by fruit or by houses, but
+                    # the rent book is not theirs to edit.
+                    'view_rentals',
                     'view_water', 'manage_water',
                     'view_reports', 'export_reports',
                     'view_users', 'invite_users',
@@ -134,6 +143,7 @@ class Command(BaseCommand):
                     'view_applications',
                     'view_harvests',
                     'view_pick_haul',
+                    'view_rentals',
                     'view_water',
                     'view_reports',
                 ],
@@ -153,11 +163,12 @@ class Command(BaseCommand):
             {
                 'codename': 'accountant',
                 'name': 'Accountant',
-                'description': 'Access to financial and reporting data; enters pick & haul invoices',
+                'description': 'Access to financial and reporting data; enters pick & haul invoices and rent ledger',
                 'permissions': [
                     'view_farms',
                     'view_harvests',
                     'view_pick_haul', 'manage_pick_haul',
+                    'view_rentals', 'manage_rentals',
                     'view_reports', 'export_reports',
                 ],
             },

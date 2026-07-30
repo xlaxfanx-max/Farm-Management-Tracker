@@ -15,6 +15,7 @@ import {
   Activity,
   Users,
   Truck,
+  KeyRound,
 } from 'lucide-react';
 
 const STORAGE_KEY = 'gm-module-visibility';
@@ -22,6 +23,7 @@ const STORAGE_KEY = 'gm-module-visibility';
 // Modules that can be toggled (Dashboard + Settings are always visible)
 const TOGGLEABLE_MODULES = [
   { id: 'farms', label: 'Farms & Fields', icon: HomeIcon, group: 'Operations' },
+  { id: 'rentals', label: 'Rental Income', icon: KeyRound, group: 'Operations' },
   { id: 'applications', label: 'Applications', icon: FlaskConical, group: 'Operations' },
   { id: 'water', label: 'Water Management', icon: Droplets, group: 'Operations' },
   { id: 'nutrients', label: 'Nutrients', icon: Leaf, group: 'Operations' },

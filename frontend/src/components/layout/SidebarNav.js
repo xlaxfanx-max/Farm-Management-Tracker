@@ -20,7 +20,7 @@ import {
   ChevronDown,
   ChevronRight,
 } from 'lucide-react';
-import { Truck } from 'lucide-react';
+import { KeyRound, Truck } from 'lucide-react';
 import { VIEW_TO_PATH } from '../../routes';
 import { getHiddenModules } from '../settings/ModuleVisibilitySettings';
 import { useAuth } from '../../contexts/AuthContext';
@@ -37,6 +37,7 @@ const NAV_GROUPS = [
     label: 'Operations',
     items: [
       { id: 'farms', label: 'Farms & Fields', icon: HomeIcon },
+      { id: 'rentals', label: 'Rental Income', icon: KeyRound, permission: 'view_rentals' },
       { id: 'applications', label: 'Applications', icon: FlaskConical },
       { id: 'water', label: 'Water Management', icon: Droplets },
       { id: 'nutrients', label: 'Nutrients', icon: Leaf },

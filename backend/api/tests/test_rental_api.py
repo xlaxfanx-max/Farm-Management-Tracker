@@ -10,29 +10,40 @@ because those are the regressions worth preventing:
 """
 
 from decimal import Decimal
+from io import StringIO
 
+from django.core.management import call_command
 from django.db import IntegrityError, transaction
 from django.test import TestCase
 from django.urls import reverse
 
 from api.models import (
+    CompanyMembership,
     Lease,
     LegalEntity,
     RentalCategory,
     RentalLedgerEntry,
     RentalProperty,
     RentalUnit,
+    Role,
 )
 from api.tests.factories import TestDataFactory
 
 
 class RentalScenarioMixin:
-    """A company with one ranch, one on-ranch house, one off-ranch building."""
+    """A company with one ranch, one on-ranch house, one off-ranch building.
+
+    Runs the real ``setup_roles`` wiring so the view_rentals / manage_rentals
+    gates are tested against the actual role definitions rather than a
+    stand-in that happens to allow everything.
+    """
 
     def setUp(self):
         super().setUp()
         self.factory = TestDataFactory()
+        call_command('setup_roles', stdout=StringIO())
         self.company, self.owner = self.factory.create_company_with_user()
+        self._wire_owner(self.owner, self.company)
         self.client = self.factory.create_authenticated_client(self.owner)
 
         self.farm = self.factory.create_farm(self.company, name='Thacher Creek')
@@ -65,6 +76,13 @@ class RentalScenarioMixin:
         )
         self.utilities = RentalCategory.objects.create(
             company=self.company, name='Utilities', kind='expense',
+        )
+
+    def _wire_owner(self, user, company):
+        """Point a membership at the setup_roles-wired owner role."""
+        owner_role = Role.objects.get(codename='owner')
+        CompanyMembership.objects.filter(user=user, company=company).update(
+            role=owner_role
         )
 
 
@@ -391,6 +409,7 @@ class RentalTenancyTests(RentalScenarioMixin, TestCase):
         self.other_company, self.other_owner = (
             self.factory.create_company_with_user(company_name='Other Co')
         )
+        self._wire_owner(self.other_owner, self.other_company)
         self.other_client = self.factory.create_authenticated_client(
             self.other_owner
         )

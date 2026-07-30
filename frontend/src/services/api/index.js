@@ -181,6 +181,7 @@ export * from './compliance';
 export * from './disease';
 export * from './packinghouse';
 export * from './pickhaul';
+export * from './rentals';
 export * from './fsma';
 export * from './traceability';
 export * from './primusgfs';

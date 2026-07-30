@@ -24,5 +24,8 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'pesticide_tracker.settings')
 from django.core.management import execute_from_command_line  # noqa: E402
 
 if __name__ == '__main__':
-    args = sys.argv[1:] or ['runserver', '127.0.0.1:8000', '--noreload']
+    # PORT lets a second dev server run alongside one that already holds 8000,
+    # which happens whenever two sessions work in this folder at once.
+    _PORT = os.environ.get('PORT', '8000')
+    args = sys.argv[1:] or ['runserver', f'127.0.0.1:{_PORT}', '--noreload']
     execute_from_command_line([sys.argv[0]] + args)

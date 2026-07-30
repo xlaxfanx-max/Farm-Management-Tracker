@@ -50,6 +50,7 @@ const TreeDetectionPage = lazy(() => import('./components/tree-detection').then(
 const InspectorChecklist = lazy(() => import('./components/compliance/InspectorChecklist'));
 const PURImportPage = lazy(() => import('./components/pur-import/PURImportPage'));
 const PickHaulDashboard = lazy(() => import('./components/pickhaul'));
+const RentalsDashboard = lazy(() => import('./components/rentals'));
 
 // =============================================================================
 // ROUTE LOADING FALLBACK
@@ -214,6 +215,24 @@ function AppContent() {
     </PermissionGate>
   );
 
+  // Rentals is gated as a unit too. Rent figures and occupant names have no
+  // bearing on field work, so field roles do not carry view_rentals at all.
+  const rentalsRoute = (tab) => (
+    <PermissionGate
+      permission="view_rentals"
+      fallback={
+        <div className="p-6">
+          <EmptyState
+            title="No access"
+            message="Ask an owner for the Rentals permission."
+          />
+        </div>
+      }
+    >
+      <RentalsDashboard initialTab={tab} onNavigate={handleNavigate} />
+    </PermissionGate>
+  );
+
   // Accountants log in to work the chase list, not the family dashboard.
   const isAccountant = currentCompany?.role_codename === 'accountant';
 
@@ -372,6 +391,8 @@ function AppContent() {
             <Route path="pick-haul/receipts" element={pickHaulRoute('receipts')} />
             <Route path="pick-haul/charges" element={pickHaulRoute('charges')} />
             <Route path="pick-haul/checks" element={pickHaulRoute('checks')} />
+            <Route path="rentals" element={rentalsRoute('overview')} />
+            <Route path="rentals/rent-roll" element={rentalsRoute('rent-roll')} />
             {/* Catch-all redirect to dashboard */}
             <Route path="*" element={<Dashboard onNavigate={handleNavigate} />} />
         </Routes>
