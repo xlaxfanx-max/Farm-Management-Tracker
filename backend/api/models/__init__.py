@@ -59,6 +59,21 @@ from .pickhaul import (
     PICKHAUL_KIND_CHOICES,
 )
 
+# -- on-ranch & off-ranch rentals (structurally outside every farming margin) -
+from .rental import (
+    LOCATION_TYPE_CHOICES,
+    PNL_TREATMENT_CHOICES,
+    PROPERTY_TYPE_CHOICES,
+    LEDGER_GRAIN_CHOICES,
+    CATEGORY_KIND_CHOICES,
+    LEDGER_SOURCE_CHOICES,
+    RentalProperty,
+    RentalUnit,
+    Lease,
+    RentalCategory,
+    RentalLedgerEntry,
+)
+
 # -- farm / field / crop / pesticide -----------------------------------------
 from .farm import (
     Farm,
@@ -343,6 +358,11 @@ __all__ = [
     'PickHaulDirectCharge', 'PickHaulInvoice', 'PickHaulInvoiceReceipt',
     'PickHaulChargeMatch', 'PickHaulManualPick', 'PickHaulCheckResult',
     'PICKHAUL_KIND_CHOICES',
+    # rentals
+    'LOCATION_TYPE_CHOICES', 'PNL_TREATMENT_CHOICES', 'PROPERTY_TYPE_CHOICES',
+    'LEDGER_GRAIN_CHOICES', 'CATEGORY_KIND_CHOICES', 'LEDGER_SOURCE_CHOICES',
+    'RentalProperty', 'RentalUnit', 'Lease', 'RentalCategory',
+    'RentalLedgerEntry',
     'CompanyMembership', 'Invitation', 'PasswordResetToken', 'AuditLog',
     # farm
     'Farm', 'FarmParcel', 'CropCategory', 'CropType', 'SeasonType',

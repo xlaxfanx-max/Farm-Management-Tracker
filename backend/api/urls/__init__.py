@@ -61,6 +61,7 @@ urlpatterns = [
     path('', include('api.urls.fsma_urls')),
     path('', include('api.urls.packinghouse_urls')),
     path('', include('api.urls.pickhaul_urls')),
+    path('', include('api.urls.rental_urls')),
     path('', include('api.urls.primusgfs_urls')),
     path('', include('api.urls.other_urls')),
 
