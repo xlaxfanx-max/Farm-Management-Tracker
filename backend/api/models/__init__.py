@@ -44,6 +44,21 @@ from .block_scoring import (
     BlockEvidenceRef,
 )
 
+# -- pick & haul (synced from the local pipeline; invoices entered here) -----
+from .pickhaul import (
+    MachineApiToken,
+    PickHaulSyncBatch,
+    PickHaulPull,
+    PickHaulReceipt,
+    PickHaulDirectCharge,
+    PickHaulInvoice,
+    PickHaulInvoiceReceipt,
+    PickHaulChargeMatch,
+    PickHaulManualPick,
+    PickHaulCheckResult,
+    PICKHAUL_KIND_CHOICES,
+)
+
 # -- farm / field / crop / pesticide -----------------------------------------
 from .farm import (
     Farm,
@@ -323,6 +338,11 @@ __all__ = [
     'RanchCropAcreage', 'CROP_CODE_CHOICES', 'ACREAGE_SOURCE_CHOICES',
     'BlockScoreSnapshot', 'ScoringUnit', 'BlockScorecard', 'BlockSeasonMetric',
     'BlockScoreGate', 'BlockScoreBenchmark', 'BlockEvidenceRef',
+    # pick & haul
+    'MachineApiToken', 'PickHaulSyncBatch', 'PickHaulPull', 'PickHaulReceipt',
+    'PickHaulDirectCharge', 'PickHaulInvoice', 'PickHaulInvoiceReceipt',
+    'PickHaulChargeMatch', 'PickHaulManualPick', 'PickHaulCheckResult',
+    'PICKHAUL_KIND_CHOICES',
     'CompanyMembership', 'Invitation', 'PasswordResetToken', 'AuditLog',
     # farm
     'Farm', 'FarmParcel', 'CropCategory', 'CropType', 'SeasonType',

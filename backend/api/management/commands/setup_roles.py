@@ -28,6 +28,10 @@ class Command(BaseCommand):
             {'codename': 'view_harvests', 'name': 'View Harvests', 'category': 'harvests', 'description': 'Can view harvest records'},
             {'codename': 'manage_harvests', 'name': 'Manage Harvests', 'category': 'harvests', 'description': 'Can create, edit, delete harvests'},
 
+            # Pick & Haul
+            {'codename': 'view_pick_haul', 'name': 'View Pick & Haul', 'category': 'harvests', 'description': 'Can view pick & haul receipts, house charges, invoices, and reconciliation'},
+            {'codename': 'manage_pick_haul', 'name': 'Manage Pick & Haul', 'category': 'harvests', 'description': 'Can enter and edit pick & haul invoices and manual picks'},
+
             # Water
             {'codename': 'view_water', 'name': 'View Water Data', 'category': 'water', 'description': 'Can view water sources and tests'},
             {'codename': 'manage_water', 'name': 'Manage Water Data', 'category': 'water', 'description': 'Can manage water sources and tests'},
@@ -77,6 +81,7 @@ class Command(BaseCommand):
                     'view_farms', 'manage_farms',
                     'view_applications', 'create_applications', 'manage_applications',
                     'view_harvests', 'manage_harvests',
+                    'view_pick_haul', 'manage_pick_haul',
                     'view_water', 'manage_water',
                     'view_reports', 'export_reports',
                     'view_users', 'invite_users', 'manage_users',
@@ -91,6 +96,7 @@ class Command(BaseCommand):
                     'view_farms', 'manage_farms',
                     'view_applications', 'create_applications', 'manage_applications',
                     'view_harvests', 'manage_harvests',
+                    'view_pick_haul', 'manage_pick_haul',
                     'view_water', 'manage_water',
                     'view_reports', 'export_reports',
                     'view_users', 'invite_users',
@@ -127,6 +133,7 @@ class Command(BaseCommand):
                     'view_farms',
                     'view_applications',
                     'view_harvests',
+                    'view_pick_haul',
                     'view_water',
                     'view_reports',
                 ],
@@ -146,10 +153,11 @@ class Command(BaseCommand):
             {
                 'codename': 'accountant',
                 'name': 'Accountant',
-                'description': 'Access to financial and reporting data',
+                'description': 'Access to financial and reporting data; enters pick & haul invoices',
                 'permissions': [
                     'view_farms',
                     'view_harvests',
+                    'view_pick_haul', 'manage_pick_haul',
                     'view_reports', 'export_reports',
                 ],
             },

@@ -252,7 +252,16 @@ def login(request):
         )
     
     current_membership = memberships.filter(company=user.current_company).first()
-    
+
+    # Permissions for the current company, same shape as /auth/me/ — the
+    # frontend gates on these immediately after login (e.g. the accountant's
+    # pick & haul landing), so login cannot omit them.
+    permissions = []
+    if current_membership:
+        permissions = list(
+            current_membership.role.permissions.values_list('codename', flat=True)
+        )
+
     response = Response({
         'user': {
             'id': user.id,
@@ -269,6 +278,7 @@ def login(request):
             'role_codename': current_membership.role.codename if current_membership else None,
         } if user.current_company else None,
         'companies': companies,
+        'permissions': permissions,
         'tokens': {
             'access': str(refresh.access_token),
             'refresh': str(refresh),

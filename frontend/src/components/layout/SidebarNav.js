@@ -20,8 +20,10 @@ import {
   ChevronDown,
   ChevronRight,
 } from 'lucide-react';
+import { Truck } from 'lucide-react';
 import { VIEW_TO_PATH } from '../../routes';
 import { getHiddenModules } from '../settings/ModuleVisibilitySettings';
+import { useAuth } from '../../contexts/AuthContext';
 
 const NAV_GROUPS = [
   {
@@ -45,6 +47,7 @@ const NAV_GROUPS = [
     label: 'Production',
     items: [
       { id: 'harvests', label: 'Harvest & Packing', icon: Wheat },
+      { id: 'pick-haul', label: 'Pick & Haul', icon: Truck, permission: 'view_pick_haul' },
       { id: 'yield-forecast', label: 'Yield Forecast', icon: TrendingUp },
       { id: 'tree-detection', label: 'Tree Detection', icon: TreePine },
     ],
@@ -204,6 +207,7 @@ export default function SidebarNav({ collapsed, onMobileClose }) {
   const [collapsedGroups, setCollapsedGroups] = useState(getInitialGroupState);
   const [expandedItems, setExpandedItems] = useState(getInitialExpandedState);
   const [hiddenModules, setHiddenModules] = useState(() => getHiddenModules());
+  const { hasPermission } = useAuth();
   const location = useLocation();
 
   useEffect(() => {
@@ -228,10 +232,13 @@ export default function SidebarNav({ collapsed, onMobileClose }) {
     return NAV_GROUPS.map((group) => ({
       ...group,
       items: group.items.filter(
-        (item) => ALWAYS_VISIBLE.has(item.id) || !hiddenModules.has(item.id)
+        (item) =>
+          // An item may declare a required permission; most don't.
+          (!item.permission || hasPermission(item.permission)) &&
+          (ALWAYS_VISIBLE.has(item.id) || !hiddenModules.has(item.id))
       ),
     })).filter((group) => group.items.length > 0);
-  }, [hiddenModules]);
+  }, [hiddenModules, hasPermission]);
 
   const toggleGroup = (groupId) => {
     setCollapsedGroups((prev) => ({ ...prev, [groupId]: !prev[groupId] }));

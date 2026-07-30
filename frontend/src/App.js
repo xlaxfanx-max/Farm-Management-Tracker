@@ -1,8 +1,10 @@
 import React, { useState, useEffect, Suspense, lazy } from 'react';
-import { Routes, Route, useLocation, useNavigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 
 // Contexts
 import { useAuth } from './contexts/AuthContext';
+import { PermissionGate } from './contexts/AuthComponents';
+import EmptyState from './components/ui/EmptyState';
 import { DataProvider } from './contexts/DataContext';
 import { ModalProvider } from './contexts/ModalContext';
 import { ThemeProvider, useTheme } from './contexts/ThemeContext';
@@ -47,6 +49,7 @@ const YieldForecastDashboard = lazy(() => import('./components/yield-forecast/Yi
 const TreeDetectionPage = lazy(() => import('./components/tree-detection').then(m => ({ default: m.TreeDetectionPage })));
 const InspectorChecklist = lazy(() => import('./components/compliance/InspectorChecklist'));
 const PURImportPage = lazy(() => import('./components/pur-import/PURImportPage'));
+const PickHaulDashboard = lazy(() => import('./components/pickhaul'));
 
 // =============================================================================
 // ROUTE LOADING FALLBACK
@@ -194,6 +197,26 @@ function AppContent() {
   // ============================================================================
   // MAIN AUTHENTICATED UI
   // ============================================================================
+  // The whole Pick & Haul module is permission-gated as a unit.
+  const pickHaulRoute = (tab) => (
+    <PermissionGate
+      permission="view_pick_haul"
+      fallback={
+        <div className="p-6">
+          <EmptyState
+            title="No access"
+            message="Ask an owner for the Pick & Haul permission."
+          />
+        </div>
+      }
+    >
+      <PickHaulDashboard initialTab={tab} onNavigate={handleNavigate} />
+    </PermissionGate>
+  );
+
+  // Accountants log in to work the chase list, not the family dashboard.
+  const isAccountant = currentCompany?.role_codename === 'accountant';
+
   return (
     <AppLayout
       isDarkMode={isDarkMode}
@@ -207,7 +230,14 @@ function AppContent() {
       <ErrorBoundary level="section" name="Page Content" key={currentView}>
         <Suspense fallback={<RouteLoadingFallback />}>
         <Routes>
-            <Route index element={<Dashboard onNavigate={handleNavigate} />} />
+            <Route
+              index
+              element={
+                isAccountant
+                  ? <Navigate to="/dashboard/pick-haul" replace />
+                  : <Dashboard onNavigate={handleNavigate} />
+              }
+            />
             <Route path="farms" element={
               <div className="p-6">
                 <Breadcrumbs currentView="farms" onNavigate={handleNavigate} />
@@ -335,6 +365,13 @@ function AppContent() {
             <Route path="compliance/pesticide" element={<DeadlineCalendar onNavigate={handleNavigate} />} />
             <Route path="compliance/inspector-checklist" element={<InspectorChecklist onNavigate={handleNavigate} />} />
             <Route path="yield-forecast" element={<YieldForecastDashboard />} />
+            <Route path="pick-haul" element={pickHaulRoute('owed')} />
+            <Route path="pick-haul/owed" element={pickHaulRoute('owed')} />
+            <Route path="pick-haul/invoices" element={pickHaulRoute('invoices')} />
+            <Route path="pick-haul/manual-picks" element={pickHaulRoute('manual-picks')} />
+            <Route path="pick-haul/receipts" element={pickHaulRoute('receipts')} />
+            <Route path="pick-haul/charges" element={pickHaulRoute('charges')} />
+            <Route path="pick-haul/checks" element={pickHaulRoute('checks')} />
             {/* Catch-all redirect to dashboard */}
             <Route path="*" element={<Dashboard onNavigate={handleNavigate} />} />
         </Routes>

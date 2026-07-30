@@ -10,7 +10,8 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { Building2, ChevronDown, Check, Plus } from 'lucide-react';
+import { Building2, ChevronDown, Check, Plus, X, UserPlus, AlertCircle } from 'lucide-react';
+import { authAPI, rolesAPI } from '../services/api';
 
 export function CompanySelector() {
   const { currentCompany, companies, switchCompany } = useAuth();
@@ -285,12 +286,11 @@ export function RoleBadge({ role, size = 'sm' }) {
 // =============================================================================
 //
 // Modal for inviting new users to the company
+// (imports live at the top of the file — this file was unused until
+// PermissionGate got its first real consumer, which surfaced a duplicate
+// mid-file import block that lived here)
 //
 // =============================================================================
-
-import React, { useState, useEffect } from 'react';
-import { X, UserPlus, AlertCircle } from 'lucide-react';
-import { authAPI, rolesAPI } from '../services/api';
 
 export function InviteUserModal({ isOpen, onClose, onSuccess }) {
   const [email, setEmail] = useState('');
