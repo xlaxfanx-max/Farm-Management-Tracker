@@ -23,12 +23,14 @@ import {
   FileText,
   TrendingUp
 } from 'lucide-react';
-import { harvestsAPI, harvestLoadsAPI, harvestLaborAPI } from '../../services/api';
+import { harvestsAPI, harvestLoadsAPI, harvestLaborAPI, pickHaulStatusAPI } from '../../services/api';
 import DrillDownModal from '../ui/DrillDownModal';
+import CollapsibleSection from '../ui/CollapsibleSection';
 import { useData } from '../../contexts/DataContext';
 import { useModal } from '../../contexts/ModalContext';
 import { useConfirm } from '../../contexts/ConfirmContext';
 import { useToast } from '../../contexts/ToastContext';
+import { useAuth } from '../../contexts/AuthContext';
 import HarvestAnalytics from '../HarvestAnalytics';
 import {
   PackinghouseList,
@@ -42,6 +44,12 @@ import HarvestStatistics from './HarvestStatistics';
 import HarvestList from './HarvestList';
 import HarvestAnalyticsTab from './HarvestAnalyticsTab';
 import CropReports from './CropReports';
+// Pick & haul is rolled into this section: receipts ARE the harvest record.
+import DeliveriesView from '../pickhaul/DeliveriesView';
+import InvoicesTab from '../pickhaul/InvoicesTab';
+import ChecksTab from '../pickhaul/ChecksTab';
+import HouseChargesTab from '../pickhaul/HouseChargesTab';
+import SyncFreshnessBanner from '../pickhaul/SyncFreshnessBanner';
 
 const Harvests = () => {
   const { fields, farms } = useData();
@@ -56,8 +64,15 @@ const Harvests = () => {
     unregisterRefreshCallback
   } = useModal();
 
+  const { hasPermission } = useAuth();
+  const hasPickHaul = hasPermission('view_pick_haul');
+
   // Main tab state: overview, harvests, packinghouses, pools, analytics
   const [activeTab, setActiveTab] = useState('overview');
+  // Inside the Harvests tab: the real deliveries (portal receipts + manual
+  // picks), the contractor invoice register, or the legacy hand-entered list.
+  const [harvestsView, setHarvestsView] = useState(hasPickHaul ? 'deliveries' : 'hand-entered');
+  const [syncStatus, setSyncStatus] = useState(null);
   const [showAnalytics, setShowAnalytics] = useState(false);
   const [harvests, setHarvests] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -252,6 +267,15 @@ const Harvests = () => {
     fetchStatistics();
   }, [filters]);
 
+  const fetchSyncStatus = useCallback(() => {
+    if (!hasPickHaul) return;
+    pickHaulStatusAPI.getSyncStatus()
+      .then((res) => setSyncStatus(res.data))
+      .catch(() => {});
+  }, [hasPickHaul]);
+
+  useEffect(fetchSyncStatus, [fetchSyncStatus]);
+
   const fetchHarvests = async () => {
     try {
       setLoading(true);
@@ -339,7 +363,7 @@ const Harvests = () => {
           <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Harvest & Packing</h1>
           <p className="text-gray-600 dark:text-gray-400">Track harvests from field to packinghouse</p>
         </div>
-        {activeTab === 'harvests' && (
+        {activeTab === 'harvests' && harvestsView === 'hand-entered' && (
           <div className="flex gap-2">
             <button
               onClick={() => setShowAnalytics(!showAnalytics)}
@@ -408,7 +432,15 @@ const Harvests = () => {
 
       {/* Overview Tab - Pipeline Visualization */}
       {activeTab === 'overview' && (
-        <PipelineOverview />
+        <div className="space-y-4">
+          {hasPickHaul && <SyncFreshnessBanner syncStatus={syncStatus} />}
+          <PipelineOverview />
+          {hasPickHaul && (
+            <CollapsibleSection title="Reconciliation checks & data sources">
+              <ChecksTab season={new Date().getFullYear()} syncStatus={syncStatus} />
+            </CollapsibleSection>
+          )}
+        </div>
       )}
 
       {/* Crop Reports Tab - Ranch × Crop P&L */}
@@ -426,9 +458,19 @@ const Harvests = () => {
         <PoolList />
       )}
 
-      {/* Statements Tab */}
+      {/* Statements Tab — house paperwork: statements and charge-backs */}
       {activeTab === 'statements' && (
-        <StatementList />
+        <div className="space-y-6">
+          <StatementList />
+          {hasPickHaul && (
+            <div className="space-y-2">
+              <h3 className="text-sm font-medium text-gray-700 dark:text-gray-200">
+                House charge-backs (pick &amp; haul)
+              </h3>
+              <HouseChargesTab season={Number(filters.season) || new Date().getFullYear()} />
+            </div>
+          )}
+        </div>
       )}
 
       {/* Analytics Tab (Combined) */}
@@ -439,6 +481,46 @@ const Harvests = () => {
       {/* Harvests Tab Content */}
       {activeTab === 'harvests' && (
         <>
+          {/* Sub-view: the real deliveries vs. the invoice register vs. the
+              legacy hand-entered records. Receipts are the harvest record. */}
+          {hasPickHaul && (
+            <div className="flex gap-1 bg-gray-100 dark:bg-gray-800 rounded-lg p-1 w-fit">
+              {[
+                { id: 'deliveries', label: 'Deliveries' },
+                { id: 'invoices', label: 'Contractor Invoices' },
+                { id: 'hand-entered', label: 'Hand-entered' },
+              ].map((view) => (
+                <button
+                  key={view.id}
+                  onClick={() => setHarvestsView(view.id)}
+                  className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                    harvestsView === view.id
+                      ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
+                      : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                  }`}
+                >
+                  {view.label}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {harvestsView === 'deliveries' && hasPickHaul && (
+            <DeliveriesView
+              season={Number(filters.season) || new Date().getFullYear()}
+              refresh={fetchSyncStatus}
+            />
+          )}
+
+          {harvestsView === 'invoices' && hasPickHaul && (
+            <InvoicesTab
+              season={Number(filters.season) || new Date().getFullYear()}
+              refresh={fetchSyncStatus}
+            />
+          )}
+
+          {harvestsView === 'hand-entered' && (
+          <>
           {/* Filters Panel */}
           {showFilters && (
             <HarvestFilters
@@ -491,6 +573,8 @@ const Harvests = () => {
               handleMarkVerified={handleMarkVerified}
               handleDelete={handleDelete}
             />
+          )}
+          </>
           )}
         </>
       )}

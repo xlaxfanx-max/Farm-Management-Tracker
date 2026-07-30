@@ -49,7 +49,6 @@ const YieldForecastDashboard = lazy(() => import('./components/yield-forecast/Yi
 const TreeDetectionPage = lazy(() => import('./components/tree-detection').then(m => ({ default: m.TreeDetectionPage })));
 const InspectorChecklist = lazy(() => import('./components/compliance/InspectorChecklist'));
 const PURImportPage = lazy(() => import('./components/pur-import/PURImportPage'));
-const PickHaulDashboard = lazy(() => import('./components/pickhaul'));
 const RentalsDashboard = lazy(() => import('./components/rentals'));
 
 // =============================================================================
@@ -198,24 +197,7 @@ function AppContent() {
   // ============================================================================
   // MAIN AUTHENTICATED UI
   // ============================================================================
-  // The whole Pick & Haul module is permission-gated as a unit.
-  const pickHaulRoute = (tab) => (
-    <PermissionGate
-      permission="view_pick_haul"
-      fallback={
-        <div className="p-6">
-          <EmptyState
-            title="No access"
-            message="Ask an owner for the Pick & Haul permission."
-          />
-        </div>
-      }
-    >
-      <PickHaulDashboard initialTab={tab} onNavigate={handleNavigate} />
-    </PermissionGate>
-  );
-
-  // Rentals is gated as a unit too. Rent figures and occupant names have no
+  // Rentals is gated as a unit. Rent figures and occupant names have no
   // bearing on field work, so field roles do not carry view_rentals at all.
   const rentalsRoute = (tab) => (
     <PermissionGate
@@ -233,7 +215,8 @@ function AppContent() {
     </PermissionGate>
   );
 
-  // Accountants log in to work the chase list, not the family dashboard.
+  // Accountants log in to work the chase list, which lives in Harvest &
+  // Packing now that pick & haul is rolled into the harvest section.
   const isAccountant = currentCompany?.role_codename === 'accountant';
 
   return (
@@ -253,7 +236,7 @@ function AppContent() {
               index
               element={
                 isAccountant
-                  ? <Navigate to="/dashboard/pick-haul" replace />
+                  ? <Navigate to="/dashboard/harvests" replace />
                   : <Dashboard onNavigate={handleNavigate} />
               }
             />
@@ -384,13 +367,8 @@ function AppContent() {
             <Route path="compliance/pesticide" element={<DeadlineCalendar onNavigate={handleNavigate} />} />
             <Route path="compliance/inspector-checklist" element={<InspectorChecklist onNavigate={handleNavigate} />} />
             <Route path="yield-forecast" element={<YieldForecastDashboard />} />
-            <Route path="pick-haul" element={pickHaulRoute('owed')} />
-            <Route path="pick-haul/owed" element={pickHaulRoute('owed')} />
-            <Route path="pick-haul/invoices" element={pickHaulRoute('invoices')} />
-            <Route path="pick-haul/manual-picks" element={pickHaulRoute('manual-picks')} />
-            <Route path="pick-haul/receipts" element={pickHaulRoute('receipts')} />
-            <Route path="pick-haul/charges" element={pickHaulRoute('charges')} />
-            <Route path="pick-haul/checks" element={pickHaulRoute('checks')} />
+            {/* Pick & haul rolled into Harvest & Packing; old links land there. */}
+            <Route path="pick-haul/*" element={<Navigate to="/dashboard/harvests" replace />} />
             <Route path="rentals" element={rentalsRoute('overview')} />
             <Route path="rentals/rent-roll" element={rentalsRoute('rent-roll')} />
             {/* Catch-all redirect to dashboard */}

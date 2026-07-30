@@ -237,6 +237,73 @@ class GateTests(TestCase):
         self.assertEqual(self._gate(8).count(), 1)  # replaced, not appended
 
 
+class HarvestActivityTests(TestCase):
+    """The unified deliveries view: receipts ARE the harvest record."""
+
+    def setUp(self):
+        self.s = PickHaulScenario()
+        self.client = APIClient()
+        self.client.force_authenticate(user=self.s.owner)
+
+    def _get(self):
+        res = self.client.get('/api/pickhaul/harvest-activity/')
+        self.assertEqual(res.status_code, 200, res.data)
+        return res.data
+
+    def test_invoice_cost_allocates_proportional_to_bins(self):
+        # One $300 pick invoice over a 20-bin and a 10-bin receipt: $200/$100.
+        r1 = self.s.receipt('1', pick_date=date(2026, 4, 11), bins='20')
+        r2 = self.s.receipt('2', pick_date=date(2026, 4, 12), bins='10')
+        self.s.invoice('300.00', block='SESPE',
+                       date_from=date(2026, 4, 10), date_to=date(2026, 4, 15))
+        relink_season(self.s.company, SEASON)
+        data = self._get()
+        block = data['blocks'][0]
+        by_no = {d['receipt_no']: d for d in block['deliveries']}
+        self.assertEqual(Decimal(str(by_no['1']['pick_cost'])), Decimal('200'))
+        self.assertEqual(Decimal(str(by_no['2']['pick_cost'])), Decimal('100'))
+        self.assertEqual(by_no['1']['cost_basis'], 'allocated')
+        self.assertEqual(Decimal(str(block['pick_cost'])), Decimal('300'))
+
+    def test_manual_picks_join_the_record_and_respect_count_flags(self):
+        from api.models import PickHaulManualPick
+        for row_no, (cost, count) in enumerate([('100.00', True), ('100.00', False)], 1):
+            PickHaulManualPick.objects.create(
+                company=self.s.company, packinghouse=self.s.sla, entity=self.s.jpf,
+                season=SEASON, sheet='Limoneira', ranch='Rancho', block='A',
+                pick_date=date(2026, 4, 1), bins=Decimal('5'),
+                cost=Decimal(cost), count_cost=count, row_no=row_no,
+            )
+        data = self._get()
+        # The repeat row displays but does not double the totals.
+        self.assertEqual(Decimal(str(data['stats']['pick_cost'])), Decimal('100'))
+        self.assertEqual(Decimal(str(data['stats']['bins_delivered'])), Decimal('10'))
+        manual_block = data['blocks'][0]
+        self.assertEqual(len(manual_block['deliveries']), 2)
+        self.assertEqual(manual_block['deliveries'][0]['cost_basis'], 'keyed')
+
+    def test_inactive_receipts_display_but_do_not_count(self):
+        self.s.receipt('1', bins='20')
+        self.s.receipt('2', bins='30', is_active=False)
+        data = self._get()
+        self.assertEqual(Decimal(str(data['stats']['bins_delivered'])), Decimal('20'))
+        self.assertEqual(data['stats']['deliveries'], 2)  # still visible
+
+    def test_owed_and_unmatched_travel_in_stats(self):
+        self.s.invoice('5000.00', date_emailed=date(2026, 6, 1))
+        self.s.charge('7777.00', ap_reference='APM-SL-00999')
+        run_reconciliation(self.s.company, SEASON)
+        data = self._get()
+        self.assertEqual(Decimal(str(data['stats']['owed_total'])), Decimal('5000.00'))
+        self.assertEqual(data['stats']['unmatched_charges']['rows'], 1)
+
+    def test_requires_pick_haul_permission(self):
+        worker = self.s.member('worker')
+        client = APIClient()
+        client.force_authenticate(user=worker)
+        self.assertEqual(client.get('/api/pickhaul/harvest-activity/').status_code, 403)
+
+
 class AgingSummaryTests(TestCase):
     def setUp(self):
         self.s = PickHaulScenario()

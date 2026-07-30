@@ -14,7 +14,6 @@ import {
   FlaskConical,
   Activity,
   Users,
-  Truck,
   KeyRound,
 } from 'lucide-react';
 
@@ -28,7 +27,6 @@ const TOGGLEABLE_MODULES = [
   { id: 'water', label: 'Water Management', icon: Droplets, group: 'Operations' },
   { id: 'nutrients', label: 'Nutrients', icon: Leaf, group: 'Operations' },
   { id: 'harvests', label: 'Harvest & Packing', icon: Wheat, group: 'Production' },
-  { id: 'pick-haul', label: 'Pick & Haul', icon: Truck, group: 'Production' },
   { id: 'yield-forecast', label: 'Yield Forecast', icon: TrendingUp, group: 'Production' },
   { id: 'tree-detection', label: 'Tree Detection', icon: TreePine, group: 'Production' },
   { id: 'compliance', label: 'Compliance Hub', icon: Shield, group: 'Compliance' },

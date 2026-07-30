@@ -20,7 +20,7 @@ import {
   ChevronDown,
   ChevronRight,
 } from 'lucide-react';
-import { KeyRound, Truck } from 'lucide-react';
+import { KeyRound } from 'lucide-react';
 import { VIEW_TO_PATH } from '../../routes';
 import { getHiddenModules } from '../settings/ModuleVisibilitySettings';
 import { useAuth } from '../../contexts/AuthContext';
@@ -48,7 +48,6 @@ const NAV_GROUPS = [
     label: 'Production',
     items: [
       { id: 'harvests', label: 'Harvest & Packing', icon: Wheat },
-      { id: 'pick-haul', label: 'Pick & Haul', icon: Truck, permission: 'view_pick_haul' },
       { id: 'yield-forecast', label: 'Yield Forecast', icon: TrendingUp },
       { id: 'tree-detection', label: 'Tree Detection', icon: TreePine },
     ],

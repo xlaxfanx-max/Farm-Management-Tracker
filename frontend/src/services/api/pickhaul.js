@@ -40,6 +40,8 @@ export const pickHaulStatusAPI = {
   getChecks: (params = {}) => api.get('/pickhaul/checks/', { params }),
   getSyncStatus: (params = {}) => api.get('/pickhaul/sync-status/', { params }),
   getSyncBatches: (params = {}) => api.get('/pickhaul/sync-batches/', { params }),
+  // The season's real deliveries: receipts + manual picks with allocated costs.
+  getHarvestActivity: (params = {}) => api.get('/pickhaul/harvest-activity/', { params }),
 };
 
 export const PICKHAUL_CONSTANTS = {

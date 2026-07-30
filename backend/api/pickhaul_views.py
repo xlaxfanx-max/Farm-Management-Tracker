@@ -332,6 +332,25 @@ class PickHaulSyncBatchViewSet(_PickHaulReadOnlyViewSet):
         return qs
 
 
+class PickHaulHarvestActivityView(APIView):
+    """GET /api/pickhaul/harvest-activity/ — the season's real deliveries.
+
+    Portal receipts + manual picks, block-grouped, each carrying its share of
+    the matched contractor invoices. This is what the Harvest & Packing
+    section's Harvests tab renders: receipts ARE the harvest record.
+    """
+
+    permission_classes = [IsAuthenticated, HasCompanyAccess, HasPermission]
+    required_permission = 'view_pick_haul'
+
+    def get(self, request):
+        from .services.pickhaul.activity import harvest_activity
+
+        company = get_user_company(request.user)
+        season = _season_param(request, company)
+        return Response(harvest_activity(company, season))
+
+
 class PickHaulEntitiesView(APIView):
     """GET /api/pickhaul/entities/ — the company's legal entities, for the
     entry forms' dropdowns. (No general LegalEntity endpoint exists yet.)"""

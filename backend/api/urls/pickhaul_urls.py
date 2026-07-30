@@ -5,6 +5,7 @@ from ..pickhaul_views import (
     PickHaulCheckResultViewSet,
     PickHaulDirectChargeViewSet,
     PickHaulEntitiesView,
+    PickHaulHarvestActivityView,
     PickHaulInvoiceViewSet,
     PickHaulManualPickViewSet,
     PickHaulReceiptViewSet,
@@ -25,6 +26,7 @@ router.register(r'pickhaul/sync-batches', PickHaulSyncBatchViewSet, basename='pi
 urlpatterns = router.urls + [
     path('pickhaul/sync/', PickHaulSyncView.as_view(), name='pickhaul-sync'),
     path('pickhaul/entities/', PickHaulEntitiesView.as_view(), name='pickhaul-entities'),
+    path('pickhaul/harvest-activity/', PickHaulHarvestActivityView.as_view(), name='pickhaul-harvest-activity'),
     path('pickhaul/summary/aging/', PickHaulSummaryView.as_view(), name='pickhaul-summary-aging'),
     path('pickhaul/sync-status/', PickHaulSyncStatusView.as_view(), name='pickhaul-sync-status'),
 ]
