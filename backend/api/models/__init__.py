@@ -33,6 +33,17 @@ from .acreage import (
     ACREAGE_SOURCE_CHOICES,
 )
 
+# -- block report card (imported from the scoring engine) --------------------
+from .block_scoring import (
+    BlockScoreSnapshot,
+    ScoringUnit,
+    BlockScorecard,
+    BlockSeasonMetric,
+    BlockScoreGate,
+    BlockScoreBenchmark,
+    BlockEvidenceRef,
+)
+
 # -- farm / field / crop / pesticide -----------------------------------------
 from .farm import (
     Farm,
@@ -310,6 +321,8 @@ __all__ = [
     # auth
     'UserManager', 'Company', 'LegalEntity', 'User', 'Role', 'Permission',
     'RanchCropAcreage', 'CROP_CODE_CHOICES', 'ACREAGE_SOURCE_CHOICES',
+    'BlockScoreSnapshot', 'ScoringUnit', 'BlockScorecard', 'BlockSeasonMetric',
+    'BlockScoreGate', 'BlockScoreBenchmark', 'BlockEvidenceRef',
     'CompanyMembership', 'Invitation', 'PasswordResetToken', 'AuditLog',
     # farm
     'Farm', 'FarmParcel', 'CropCategory', 'CropType', 'SeasonType',
