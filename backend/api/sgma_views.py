@@ -558,13 +558,16 @@ class WellViewSet(AuditLogMixin, viewsets.ModelViewSet):
         water_year = request.query_params.get('water_year', get_current_water_year())
         wy_dates = get_water_year_dates(water_year)
 
-        # Get extraction
+        # Get extraction. Only billing rows are summed — UWCD reads quarterly
+        # but bills semi-annually, and the June/December rows already span the
+        # interim March/September reads. reading_count stays unfiltered: it is
+        # how many times the meter was read, not how many periods were billed.
         extraction = water_source.readings.filter(
             reading_date__gte=wy_dates['start'],
             reading_date__lte=wy_dates['end']
         ).aggregate(
-            total_af=Sum('extraction_acre_feet'),
-            total_gallons=Sum('extraction_gallons'),
+            total_af=Sum('extraction_acre_feet', filter=Q(is_billing_row=True)),
+            total_gallons=Sum('extraction_gallons', filter=Q(is_billing_row=True)),
             reading_count=Count('id')
         )
 
@@ -770,7 +773,8 @@ class WaterAllocationViewSet(CompanyFilteredViewSet):
 
             extraction = water_source.readings.filter(
                 reading_date__gte=wy_dates['start'],
-                reading_date__lte=wy_dates['end']
+                reading_date__lte=wy_dates['end'],
+                is_billing_row=True,
             ).aggregate(total=Sum('extraction_acre_feet'))['total'] or Decimal('0')
 
             remaining = allocation - extraction
@@ -1033,10 +1037,13 @@ def sgma_dashboard(request):
     wells_with_ami = wells.filter(has_ami=True).count()
 
     # YTD extraction
+    # Billing rows only — see the note on WellReading.is_billing_row. Summing
+    # every row inflates UWCD wells badly (FIN0002 2022: 59.46 vs 32.72 AF).
     ytd_extraction = WellReading.objects.filter(
         water_source__in=wells,
         reading_date__gte=wy_dates['start'],
-        reading_date__lte=date.today()
+        reading_date__lte=date.today(),
+        is_billing_row=True,
     ).aggregate(total=Sum('extraction_acre_feet'))['total'] or Decimal('0')
 
     # YTD allocation
@@ -1054,7 +1061,8 @@ def sgma_dashboard(request):
     current_period_extraction = WellReading.objects.filter(
         water_source__in=wells,
         reading_date__gte=current_period['start'],
-        reading_date__lte=min(current_period['end'], date.today())
+        reading_date__lte=min(current_period['end'], date.today()),
+        is_billing_row=True,
     ).aggregate(total=Sum('extraction_acre_feet'))['total'] or Decimal('0')
 
     # Calibration status
@@ -1129,7 +1137,10 @@ def sgma_dashboard(request):
         active_count=Count('id', filter=Q(active=True)),
         ytd_extraction=Sum(
             'readings__extraction_acre_feet',
-            filter=Q(readings__reading_date__gte=wy_dates['start'])
+            filter=Q(
+                readings__reading_date__gte=wy_dates['start'],
+                readings__is_billing_row=True,
+            )
         )
     ).order_by('gsa')
 

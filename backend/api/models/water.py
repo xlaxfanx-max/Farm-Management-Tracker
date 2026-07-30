@@ -15,8 +15,12 @@ from .base import LocationMixin
 
 # -----------------------------------------------------------------------------
 # FIRST BLOCK CONSTANTS (lines 2379-2409)
-# NOTE: GSA_CHOICES below includes 'uwcd' but is overridden later in this file
-# by the second block's GSA_CHOICES which does NOT include 'uwcd'.
+#
+# GSA_CHOICES is defined ONCE, here. It previously had a second definition
+# further down this file that omitted 'uwcd'; because that one came later it
+# silently won, which made 9 of the 14 real Finch wells (the UWCD ones —
+# FIN0002/0009/0010, UND0002/0004, Helicopter, both Rio Vista wells) impossible
+# to select in the UI. The duplicate has been removed — do not reintroduce it.
 # -----------------------------------------------------------------------------
 
 GSA_CHOICES = [
@@ -401,7 +405,13 @@ class WaterSource(LocationMixin, models.Model):
             wy_start = date(today.year, 10, 1)
         else:
             wy_start = date(today.year - 1, 10, 1)
-        total = self.readings.filter(reading_date__gte=wy_start).aggregate(Sum('extraction_acre_feet'))['extraction_acre_feet__sum']
+        # Billing rows only — see WellReading.is_billing_row. Interim quarterly
+        # reads are already contained in the semi-annual billing row that
+        # follows them, so summing every row double-counts the year.
+        total = self.readings.filter(
+            reading_date__gte=wy_start,
+            is_billing_row=True,
+        ).aggregate(Sum('extraction_acre_feet'))['extraction_acre_feet__sum']
         return total or Decimal('0')
 
     def get_allocation_for_year(self, water_year=None):
@@ -536,20 +546,13 @@ class WaterTest(models.Model):
 
 # -----------------------------------------------------------------------------
 # SECOND BLOCK CONSTANTS (lines 3733-3868)
-# GSA_CHOICES is redefined here WITHOUT 'uwcd' - this is the active definition.
 # GROUNDWATER_BASIN_CHOICES, BASIN_PRIORITY_CHOICES, PUMP_TYPE_CHOICES,
 # POWER_SOURCE_CHOICES, FLOWMETER_UNIT_CHOICES, WELL_STATUS_CHOICES are
 # redefined identically (overriding the first block definitions above).
+#
+# GSA_CHOICES is deliberately NOT redefined here — see the note at the top of
+# this file. The old duplicate omitted 'uwcd' and shadowed the real list.
 # -----------------------------------------------------------------------------
-
-GSA_CHOICES = [
-    ('obgma', 'Ojai Basin Groundwater Management Agency (OBGMA)'),
-    ('fpbgsa', 'Fillmore and Piru Basins GSA'),
-    ('uvrga', 'Upper Ventura River Groundwater Agency'),
-    ('fcgma', 'Fox Canyon Groundwater Management Agency'),
-    ('other', 'Other'),
-    ('none', 'Not in GSA Jurisdiction'),
-]
 
 GROUNDWATER_BASIN_CHOICES = [
     ('ojai_valley', 'Ojai Valley (4-002)'),
@@ -614,6 +617,21 @@ READING_TYPE_CHOICES = [
     ('estimated', 'Estimated'),
     ('initial', 'Initial Reading'),
     ('final', 'Final Reading'),
+]
+
+# Where a reading's extraction_acre_feet came from. This decides whether save()
+# is allowed to recompute it from the meter delta.
+#
+# 'agency_billed' means the figure was printed by the water agency (UWCD, OBGMA)
+# and is the number Finch was actually billed on. It is authoritative and must
+# never be recalculated: the meter registers do not read in acre-feet directly
+# (they run x0.001, x0.01, gallons, or cubic-feet x10 depending on the well),
+# and the meters roll over at 1,000,000. Recomputing an agency figure with the
+# wrong register scale silently replaces a real 59.14 AF with 18,386 AF.
+AF_SOURCE_CHOICES = [
+    ('agency_billed', 'Agency-billed (authoritative — never recomputed)'),
+    ('meter_derived', 'Derived from meter delta'),
+    ('estimated', 'Estimated'),
 ]
 
 CALIBRATION_TYPE_CHOICES = [
@@ -749,6 +767,40 @@ class WellReading(models.Model):
         default='manual'
     )
 
+    # === PROVENANCE OF extraction_acre_feet ===
+    af_source = models.CharField(
+        max_length=20,
+        choices=AF_SOURCE_CHOICES,
+        default='meter_derived',
+        db_index=True,
+        help_text=(
+            "Where extraction_acre_feet came from. 'agency_billed' figures are "
+            "authoritative and are never recomputed from the meter delta."
+        ),
+    )
+
+    # === BILLING PERIOD ===
+    # UWCD bills semi-annually (June and December) but the meter is also read at
+    # the end of Q1 and Q3. Those interim rows are NOT separate usage — the June
+    # row spans December->June and already contains March; the December row spans
+    # June->December and already contains September. Summing all four rows
+    # double-counts the year (Saticoy FIN0002 2022: 59.46 AF summed vs 32.72 AF
+    # actually billed). Only rows with is_billing_row=True may be summed.
+    is_billing_row = models.BooleanField(
+        default=True,
+        db_index=True,
+        help_text=(
+            "True if this reading closes a billing period and its extraction may "
+            "be summed into period totals. False for interim reads whose usage is "
+            "already contained in a later billing row."
+        ),
+    )
+    billing_period_start = models.DateField(
+        null=True,
+        blank=True,
+        help_text="First day covered by this billing row (null if unknown)",
+    )
+
     # === DOCUMENTATION ===
     meter_photo = models.ImageField(
         upload_to='meter_readings/',
@@ -851,41 +903,83 @@ class WellReading(models.Model):
         return f"{self.water_source.name} - {self.reading_date}: {self.meter_reading}"
 
     def save(self, *args, **kwargs):
-        """Auto-calculate extraction and fees on save."""
-        # Get previous reading if not set
-        if self.previous_reading is None:
-            prev = WellReading.objects.filter(
-                water_source=self.water_source,
-                reading_date__lt=self.reading_date
-            ).order_by('-reading_date', '-reading_time').first()
+        """Auto-calculate extraction and fees on save.
 
-            if prev:
-                self.previous_reading = prev.meter_reading
-                self.previous_reading_date = prev.reading_date
+        An agency-billed reading is NEVER recalculated from the meter delta.
+        The agencies print acre-feet directly and that is the figure Finch was
+        billed on; the meter registers behind those figures are not in acre-feet
+        (they run x0.001, x0.01, gallons, or cubic-feet x10 depending on the
+        well) and they roll over at 1,000,000. Recomputing one with the wrong
+        register scale turns a real 59.14 AF into 18,386 AF and a plausible
+        water bill into a seven-figure one.
+        """
+        self._backfill_previous_reading()
 
-        # Calculate extraction
-        if self.previous_reading is not None and self.meter_reading is not None:
-            multiplier = self.water_source.flowmeter_multiplier or Decimal('1.0')
+        if self.af_source != 'agency_billed':
+            self._recompute_extraction()
 
-            # Handle meter rollover
-            if self.meter_rollover:
-                # Meter rolled over: usage = (rollover - previous) + current
-                raw_extraction = ((self.meter_rollover - self.previous_reading) + self.meter_reading) * multiplier
-            else:
-                raw_extraction = (self.meter_reading - self.previous_reading) * multiplier
-
-            self.extraction_native_units = raw_extraction
-            self.extraction_acre_feet = self._convert_to_acre_feet(raw_extraction)
-            if self.extraction_acre_feet:
-                self.extraction_gallons = self.extraction_acre_feet * Decimal('325851')
-
-            # Split domestic/irrigation extraction
-            self._calculate_usage_split()
-
-            # Calculate fees
-            self._calculate_fees()
+        # Safe for both paths: these are pure functions of extraction_acre_feet
+        # (which is now either authoritative or freshly derived) and the rate
+        # configuration on the water source.
+        self._calculate_usage_split()
+        self._calculate_fees()
 
         super().save(*args, **kwargs)
+
+    def _backfill_previous_reading(self):
+        """Record which reading this one follows. Breadcrumb only — never used
+        to overwrite an agency-billed extraction figure."""
+        if self.previous_reading is not None:
+            return
+        prev = WellReading.objects.filter(
+            water_source=self.water_source,
+            reading_date__lt=self.reading_date,
+        ).order_by('-reading_date', '-reading_time').first()
+        if prev:
+            self.previous_reading = prev.meter_reading
+            self.previous_reading_date = prev.reading_date
+
+    def _infer_meter_rollover(self):
+        """Infer the register capacity when the meter has visibly wrapped.
+
+        A totalizer that reads lower than it did last time has rolled past its
+        capacity, which is a power of ten (these are 6-digit registers, so
+        1,000,000). Returns None when the reading has not gone backwards.
+        """
+        if self.meter_reading is None or self.previous_reading is None:
+            return None
+        if self.meter_reading >= self.previous_reading:
+            return None
+        digits = len(str(int(abs(self.previous_reading))))
+        return Decimal(10) ** digits
+
+    def _recompute_extraction(self):
+        """Derive extraction from the meter delta. Only ever called for readings
+        that are not agency-billed."""
+        if self.previous_reading is None or self.meter_reading is None:
+            return
+
+        multiplier = self.water_source.flowmeter_multiplier or Decimal('1.0')
+        rollover = self.meter_rollover or self._infer_meter_rollover()
+
+        if rollover:
+            raw_extraction = ((rollover - self.previous_reading) + self.meter_reading) * multiplier
+        else:
+            raw_extraction = (self.meter_reading - self.previous_reading) * multiplier
+
+        if raw_extraction < 0:
+            # Went backwards and rollover did not explain it — the meter was
+            # replaced or reset, or a reading is wrong. Record nothing rather
+            # than a negative extraction; leave it for a human.
+            self.extraction_native_units = None
+            self.extraction_acre_feet = None
+            self.extraction_gallons = None
+            return
+
+        self.extraction_native_units = raw_extraction
+        self.extraction_acre_feet = self._convert_to_acre_feet(raw_extraction)
+        if self.extraction_acre_feet:
+            self.extraction_gallons = self.extraction_acre_feet * Decimal('325851')
 
     def _calculate_usage_split(self):
         """Split extraction into domestic and irrigation based on well type."""

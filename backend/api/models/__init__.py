@@ -16,6 +16,7 @@ from .base import (
 from .auth import (
     UserManager,
     Company,
+    LegalEntity,
     User,
     Role,
     Permission,
@@ -23,6 +24,13 @@ from .auth import (
     Invitation,
     PasswordResetToken,
     AuditLog,
+)
+
+# -- shared acreage denominator ----------------------------------------------
+from .acreage import (
+    RanchCropAcreage,
+    CROP_CODE_CHOICES,
+    ACREAGE_SOURCE_CHOICES,
 )
 
 # -- farm / field / crop / pesticide -----------------------------------------
@@ -300,7 +308,8 @@ __all__ = [
     'default_deadline_reminder_days',
     'default_license_reminder_days',
     # auth
-    'UserManager', 'Company', 'User', 'Role', 'Permission',
+    'UserManager', 'Company', 'LegalEntity', 'User', 'Role', 'Permission',
+    'RanchCropAcreage', 'CROP_CODE_CHOICES', 'ACREAGE_SOURCE_CHOICES',
     'CompanyMembership', 'Invitation', 'PasswordResetToken', 'AuditLog',
     # farm
     'Farm', 'FarmParcel', 'CropCategory', 'CropType', 'SeasonType',

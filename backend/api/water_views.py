@@ -42,10 +42,17 @@ class WaterSourceViewSet(CompanyFilteredViewSet):
     def filter_queryset_by_params(self, qs):
         # Annotate the water-year extraction total so the serializer does
         # not run a SUM query per source on list views.
+        # Only billing rows are summed. UWCD reads the meter quarterly but bills
+        # semi-annually, and the June/December rows already span the interim
+        # March/September reads — summing all four double-counts the year
+        # (Saticoy FIN0002 2022: 59.46 AF summed vs 32.72 AF actually billed).
         return qs.filter(active=True).annotate(
             ytd_extraction_annotated=Sum(
                 'readings__extraction_acre_feet',
-                filter=Q(readings__reading_date__gte=current_water_year_start()),
+                filter=Q(
+                    readings__reading_date__gte=current_water_year_start(),
+                    readings__is_billing_row=True,
+                ),
             ),
         )
 

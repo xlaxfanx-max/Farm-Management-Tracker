@@ -26,6 +26,28 @@ class Farm(LocationMixin, models.Model):
         blank=True
     )
 
+    # === LEGAL OWNERSHIP ===
+    owning_entity = models.ForeignKey(
+        'LegalEntity',
+        on_delete=models.PROTECT,
+        related_name='farms',
+        null=True,
+        blank=True,
+        help_text="Legal entity holding title to this ranch (its QuickBooks file)",
+    )
+    finch_ownership_pct = models.DecimalField(
+        max_digits=5,
+        decimal_places=4,
+        default=Decimal('1.0000'),
+        validators=[MinValueValidator(Decimal('0')), MaxValueValidator(Decimal('1'))],
+        help_text=(
+            "Family ownership share as a fraction, e.g. 0.9000 for 90%. Used to "
+            "present an owner's-share view alongside 100% gross. Per-ACRE and "
+            "per-unit metrics are never scaled by this — a share of the income "
+            "is still earned on the whole acre."
+        ),
+    )
+
     # Owner/Operator information
     owner_name = models.CharField(max_length=200, blank=True)
     operator_name = models.CharField(max_length=200, blank=True)
@@ -126,6 +148,47 @@ class Farm(LocationMixin, models.Model):
     def parcel_count(self):
         """Number of parcels (prefetch-cache friendly)."""
         return len(self.parcels.all())
+
+    # -------------------------------------------------------------------------
+    # Acreage denominators
+    #
+    # These read RanchCropAcreage, never Field.total_acres. A ranch's blocks do
+    # not necessarily add up to the ranch (Foster Park's graded lemon blocks
+    # total 73.60 against a ranch figure of 84.89), so summing blocks would
+    # silently understate the denominator wherever block detail is incomplete.
+    # -------------------------------------------------------------------------
+
+    def _acreage_rows(self, year=None, crop_code=None):
+        qs = self.crop_acreage.filter(is_superseded=False)
+        if year is not None:
+            qs = qs.filter(year=year)
+        if crop_code is not None:
+            qs = qs.filter(crop_code=crop_code)
+        return qs
+
+    def bearing_acres(self, year=None, crop_code=None):
+        """Acres in production. The denominator for yield and revenue rates."""
+        return self._acreage_rows(year, crop_code).aggregate(
+            total=models.Sum('bearing_acres')
+        )['total'] or Decimal('0')
+
+    def planted_acres(self, year=None, crop_code=None):
+        """Bearing plus non-bearing. Excludes grazing ground."""
+        rows = self._acreage_rows(year, crop_code).aggregate(
+            bearing=models.Sum('bearing_acres'),
+            non_bearing=models.Sum('non_bearing_acres'),
+        )
+        return (rows['bearing'] or Decimal('0')) + (rows['non_bearing'] or Decimal('0'))
+
+    def irrigated_acres(self, year=None, crop_code=None):
+        """Acres that actually take water — the denominator for water cost.
+
+        Grazing ground is excluded. Foster Park carries ~181 grazing acres
+        against ~137 bearing; dividing its water bill by total ground instead
+        of irrigated ground understates intensity by more than half.
+        """
+        return self.planted_acres(year=year, crop_code=crop_code)
+
 
 class FarmParcel(models.Model):
     """
@@ -699,6 +762,40 @@ class Field(LocationMixin, models.Model):
 
     # Field characteristics
     total_acres = models.DecimalField(max_digits=10, decimal_places=2)
+
+    # === ACREAGE PROVENANCE ===
+    # total_acres is the denominator of every per-acre figure this platform
+    # publishes, including two of the five block report-card grades. Where the
+    # number came from therefore has to travel with it: a block graded against
+    # a surveyed acre and one graded against an even split are not comparable,
+    # and presenting them identically is the fastest way to lose a grower's
+    # trust in the whole card. Nothing renders a per-acre figure without
+    # showing acres_confidence alongside it.
+    ACRES_CONFIDENCE_CHOICES = [
+        ('surveyed', 'Surveyed / legally described'),
+        ('statement', 'Derived from packinghouse statement'),
+        ('pnl', 'From the ranch P&L acreage tab'),
+        ('even_split', 'Ranch acreage divided evenly across blocks'),
+        ('placeholder', 'Placeholder — not a real measurement'),
+    ]
+
+    acres_source = models.CharField(
+        max_length=200,
+        blank=True,
+        help_text="Specific origin, e.g. 'V6.17 Setup - Acreage' or 'SLA pool statement 2025'",
+    )
+    acres_confidence = models.CharField(
+        max_length=20,
+        choices=ACRES_CONFIDENCE_CHOICES,
+        default='placeholder',
+        db_index=True,
+        help_text="How much weight total_acres can carry",
+    )
+    acres_as_of = models.DateField(
+        null=True,
+        blank=True,
+        help_text="Date the acreage figure was established",
+    )
 
     # === LEGACY CROP FIELD (kept for backward compatibility) ===
     current_crop = models.CharField(

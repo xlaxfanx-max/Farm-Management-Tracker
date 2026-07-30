@@ -265,6 +265,73 @@ class Company(models.Model):
         self.onboarding_completed_at = None
         self.save(update_fields=['onboarding_completed', 'onboarding_step', 'onboarding_completed_at'])
 
+
+# =============================================================================
+# LEGAL ENTITY
+# =============================================================================
+
+class LegalEntity(models.Model):
+    """A legal entity that owns ranches and/or rental property.
+
+    A Company is the tenant boundary (one login domain, one set of users). A
+    LegalEntity sits underneath it and is the thing that actually holds title
+    and files a tax return. Finch Agricultural runs one operation across five
+    of them, each with its own QuickBooks file, and a single ranch can be split
+    across several — so entity cannot be modelled as a field on Company.
+
+    This lives beside Company rather than in its own module because Farm needs
+    it and farm.py already refers to Company by string reference; a separate
+    module would introduce a circular import.
+    """
+
+    ENTITY_TYPE_CHOICES = [
+        ('llc', 'LLC'),
+        ('trust', 'Trust'),
+        ('partnership', 'Partnership'),
+        ('corporation', 'Corporation'),
+        ('individual', 'Individual'),
+        ('other', 'Other'),
+    ]
+
+    company = models.ForeignKey(
+        Company,
+        on_delete=models.CASCADE,
+        related_name='legal_entities',
+    )
+    name = models.CharField(max_length=200, help_text="e.g. 'Thacher Creek LLC'")
+    short_code = models.CharField(
+        max_length=20,
+        help_text="Short code used in workbooks and QuickBooks, e.g. 'TCC'",
+    )
+    entity_type = models.CharField(
+        max_length=20,
+        choices=ENTITY_TYPE_CHOICES,
+        default='llc',
+    )
+    qb_file_name = models.CharField(
+        max_length=200,
+        blank=True,
+        help_text="QuickBooks company file this entity's books live in",
+    )
+    notes = models.TextField(blank=True)
+    active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name_plural = 'legal entities'
+        ordering = ['name']
+        constraints = [
+            models.UniqueConstraint(
+                fields=['company', 'short_code'],
+                name='uniq_legalentity_company_shortcode',
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.name} ({self.short_code})"
+
+
 # =============================================================================
 # CUSTOM USER MODEL
 # =============================================================================

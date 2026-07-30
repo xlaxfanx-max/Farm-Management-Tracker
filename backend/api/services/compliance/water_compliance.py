@@ -336,11 +336,14 @@ class WaterComplianceService:
                 total=Sum('allocated_acre_feet')
             )['total'] or Decimal('0')
 
-            # Get extraction for this water year
+            # Get extraction for this water year. Billing rows only — summing
+            # interim reads as well would overstate use and raise allocation
+            # violations that never happened. See WellReading.is_billing_row.
             extraction_sum = WellReading.objects.filter(
                 water_source=well,
                 reading_date__gte=wy_dates['start'],
-                reading_date__lte=min(wy_dates['end'], date.today())
+                reading_date__lte=min(wy_dates['end'], date.today()),
+                is_billing_row=True,
             ).aggregate(
                 total=Sum('extraction_acre_feet')
             )['total'] or Decimal('0')
@@ -443,7 +446,8 @@ class WaterComplianceService:
         extraction = WellReading.objects.filter(
             water_source=well,
             reading_date__gte=wy_dates['start'],
-            reading_date__lte=date.today()
+            reading_date__lte=date.today(),
+            is_billing_row=True,
         ).aggregate(
             total=Sum('extraction_acre_feet')
         )['total'] or Decimal('0')
@@ -628,11 +632,12 @@ class WaterComplianceService:
 
             monthly_avgs = {h['reading_date__month']: float(h['avg_extraction'] or 0) for h in historical}
 
-            # Get current year usage
+            # Get current year usage (billing rows only)
             ytd_use = WellReading.objects.filter(
                 water_source=well,
                 reading_date__gte=wy_dates['start'],
-                reading_date__lte=date.today()
+                reading_date__lte=date.today(),
+                is_billing_row=True,
             ).aggregate(
                 total=Sum('extraction_acre_feet')
             )['total'] or Decimal('0')
@@ -756,11 +761,12 @@ class WaterComplianceService:
         notes = []
 
         for well in wells:
-            # Get extraction for the period
+            # Get extraction for the period (billing rows only)
             extraction = WellReading.objects.filter(
                 water_source=well,
                 reading_date__gte=period_start,
-                reading_date__lte=min(period_end, date.today())
+                reading_date__lte=min(period_end, date.today()),
+                is_billing_row=True,
             ).aggregate(
                 total=Sum('extraction_acre_feet')
             )['total'] or Decimal('0')
