@@ -106,21 +106,21 @@ const OverviewTab = ({
 
       {/* Quick Actions */}
       <div>
-        <h3 className="text-sm text-text-secondary uppercase tracking-wider mb-4">Quick Actions</h3>
+        <h3 className="finch-eyebrow mb-4">Quick actions</h3>
         <div className="flex flex-wrap gap-3">
-          <QuickActionButton icon={Plus} label="Add Well" onClick={() => openWellSourceModal()} color="cyan" />
-          <QuickActionButton icon={Gauge} label="Batch Readings" onClick={() => {
+          <QuickActionButton icon={Plus} label="Add well" onClick={() => openWellSourceModal()} variant="primary" />
+          <QuickActionButton icon={Gauge} label="Batch readings" onClick={() => {
             if (wells.length > 0) openBatchReadingModal(wells);
             else toast.info('Add wells first to record readings');
-          }} color="cyan" />
-          <QuickActionButton icon={Gauge} label="Single Reading" onClick={() => {
+          }} variant="secondary" />
+          <QuickActionButton icon={Gauge} label="Single reading" onClick={() => {
             if (wells.length > 0) openWellReadingModal(wells[0].id, wells[0].well_name);
             else toast.info('Add a well first to record readings');
-          }} color="blue" />
-          <QuickActionButton icon={FileText} label="Add Water Test" onClick={() => {
+          }} variant="secondary" />
+          <QuickActionButton icon={FileText} label="Add water test" onClick={() => {
             if (waterSources.length > 0) openWaterTestModal(null, waterSources[0]);
             else toast.info('Add a water source first');
-          }} color="blue" />
+          }} variant="secondary" />
         </div>
       </div>
 

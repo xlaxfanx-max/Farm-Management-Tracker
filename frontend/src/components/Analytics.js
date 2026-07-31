@@ -282,11 +282,10 @@ export default function Analytics() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-2xl text-heading flex items-center gap-2">
-            <BarChart3 className="w-7 h-7 text-primary" />
-            Analytics {selectedSeason && <span className="text-lg font-normal text-text-secondary">• {selectedSeason} Season</span>}
-          </h1>
-          <p className="text-bark-600">Financial and operational insights for your farm</p>
+          <p className="text-text-secondary">
+            Financial and operational insights for your farm
+            {selectedSeason && <span className="text-text-muted"> · {selectedSeason} season</span>}
+          </p>
         </div>
 
         <div className="flex items-center gap-3">
@@ -330,7 +329,7 @@ export default function Analytics() {
       {data && !loading && !error && (
         <div className="space-y-6">
           {/* KPI Cards Row */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6 gap-4">
             <AnalyticsCard
               title="Total Revenue"
               value={formatCurrency(data.financial?.total_revenue, { compact: true })}

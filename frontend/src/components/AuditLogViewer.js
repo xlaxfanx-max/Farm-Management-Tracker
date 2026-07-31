@@ -259,7 +259,6 @@ const AuditLogViewer = () => {
     <div className="p-6 max-w-full">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-2xl text-heading">Activity Log</h1>
         <p className="text-bark-600 mt-1">
           Track all changes and actions across your grove management system
         </p>

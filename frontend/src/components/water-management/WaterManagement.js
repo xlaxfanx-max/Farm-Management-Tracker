@@ -283,7 +283,6 @@ const WaterManagement = () => {
       <div className="bg-surface-raised border-b border-border px-6 py-5">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl text-heading">Water Management</h1>
             <p className="text-text-secondary mt-1">Track water sources, wells, and SGMA compliance</p>
           </div>
           <div className="flex items-center gap-3">

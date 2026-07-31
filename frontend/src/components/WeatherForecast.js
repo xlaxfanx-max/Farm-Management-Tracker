@@ -183,7 +183,6 @@ export default function WeatherForecast() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl text-heading">Weather & Spray Forecast</h1>
           <p className="text-bark-600">Real-time weather and spray condition assessment</p>
         </div>
 

@@ -210,7 +210,6 @@ export default function ComplianceSettings({ onNavigate }) {
             <span>/</span>
             <span>Settings</span>
           </div>
-          <h1 className="text-2xl text-heading">Compliance Settings</h1>
         </div>
 
         {savedMessage && (

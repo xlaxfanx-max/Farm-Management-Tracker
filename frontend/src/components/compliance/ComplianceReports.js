@@ -657,7 +657,6 @@ export default function ComplianceReports({ onNavigate }) {
             <span>/</span>
             <span>Reports</span>
           </div>
-          <h1 className="text-2xl text-heading">Compliance Reports</h1>
         </div>
 
         <div className="flex items-center gap-3">

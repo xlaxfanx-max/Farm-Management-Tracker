@@ -250,7 +250,6 @@ const Profile = ({ onBack }) => {
         <div className="flex items-center">
           <User className="w-8 h-8 text-primary mr-3" />
           <div>
-            <h1 className="text-2xl text-heading">Profile</h1>
             <p className="text-text-secondary">Manage your personal information and preferences</p>
           </div>
         </div>

@@ -51,9 +51,6 @@ export default function RentalsDashboard({ initialTab = 'overview', onNavigate }
             <KeyRound className="w-6 h-6 text-primary" />
           </div>
           <div>
-            <h1 className="text-xl text-heading">
-              Rental Income
-            </h1>
             <p className={mutedText}>
               On-ranch houses and off-ranch property, kept out of every farming margin
             </p>

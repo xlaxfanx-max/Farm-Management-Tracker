@@ -10,7 +10,6 @@ import {
   ClipboardCheck,
   CheckCircle2,
   ArrowLeft,
-  FileText,
   History,
 } from 'lucide-react';
 import { useData } from '../../contexts/DataContext';
@@ -97,12 +96,6 @@ const PURImportPage = () => {
     <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
       {/* Header */}
       <div className="mb-6">
-        <div className="flex items-center gap-3 mb-2">
-          <FileText className="w-7 h-7 text-link" />
-          <h1 className="text-2xl text-heading">
-            Import PUR Reports
-          </h1>
-        </div>
         <p className="text-text-secondary text-sm">
           Upload a Pesticide Use Report PDF to extract and import application
           events into your records.

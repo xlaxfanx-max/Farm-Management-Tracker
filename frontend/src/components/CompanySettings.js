@@ -176,7 +176,6 @@ const CompanySettings = ({ onBack }) => {
           <div className="flex items-center">
             <Building2 className="w-8 h-8 text-primary mr-3" />
             <div>
-              <h1 className="text-2xl text-heading">Company Settings</h1>
               <p className="text-text-secondary">Manage your company information and settings</p>
             </div>
           </div>

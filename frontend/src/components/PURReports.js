@@ -140,7 +140,6 @@ function PURReports({ farms }) {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl text-heading">PUR Report Generator</h1>
           <p className="text-bark-600 mt-1">
             Generate California Pesticide Use Report (PUR) compliant exports
           </p>

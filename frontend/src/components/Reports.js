@@ -166,7 +166,6 @@ const Reports = () => {
     <div className="p-6">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-3xl text-heading mb-2">Reports & Compliance</h1>
         <p className="text-bark-600">
           Generate PUR reports for pesticide compliance
         </p>

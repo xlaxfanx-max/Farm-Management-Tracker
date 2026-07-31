@@ -55,14 +55,18 @@ function MetricCard({
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
-          <p className="text-xs font-semibold uppercase tracking-caps text-text-secondary mb-2 truncate">
+          {/* Tracked caps wrap rather than truncate — six-up KPI strips give
+              each label ~140px and half of them are two words. */}
+          <p className="text-xs font-semibold uppercase tracking-caps text-text-secondary mb-2 leading-tight">
             {heading}
           </p>
-          <p className="font-display text-3xl text-heading leading-none">
+          {/* Serif figure steps up only when the tile has room for it. Never
+              break-words here — it would split a currency figure mid-number. */}
+          <p className="font-display text-2xl xl:text-3xl text-heading leading-tight">
             {value}
             {unit && <span className="ml-1.5 font-mono text-base text-text-secondary">{unit}</span>}
           </p>
-          {foot && <p className="mt-2 text-sm text-text-secondary truncate">{foot}</p>}
+          {foot && <p className="mt-2 text-sm text-text-secondary">{foot}</p>}
           {trend && (
             <div className="flex items-center mt-2.5 text-sm">
               {trendDirection === 'up' ? (

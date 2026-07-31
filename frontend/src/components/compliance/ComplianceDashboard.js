@@ -380,7 +380,6 @@ export default function ComplianceDashboard({ onNavigate }) {
                 <Shield className="w-6 h-6 text-primary" />
               </div>
               <div>
-                <h1 className="text-2xl text-heading">Compliance Hub</h1>
                 <p className="text-text-secondary text-sm">
                   Manage all regulatory and food safety compliance
                 </p>

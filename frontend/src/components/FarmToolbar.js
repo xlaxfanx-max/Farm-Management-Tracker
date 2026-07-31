@@ -55,7 +55,6 @@ function FarmToolbar({
       {/* Header Row */}
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <div>
-          <h2 className="text-2xl text-heading">Farms & Fields</h2>
           <p className="text-bark-600 mt-1">
             {filteredCount === totalFarms
               ? `${totalFarms} farms · ${totalFields} fields`

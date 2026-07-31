@@ -361,7 +361,6 @@ const Harvests = () => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl text-heading">Harvest & Packing</h1>
           <p className="text-bark-600">Track harvests from field to packinghouse</p>
         </div>
         {activeTab === 'harvests' && harvestsView === 'hand-entered' && (

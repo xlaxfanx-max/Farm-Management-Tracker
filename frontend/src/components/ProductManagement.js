@@ -178,7 +178,6 @@ function ProductManagement() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl text-heading">Pesticide Product Catalog</h1>
           <p className="text-bark-600 mt-1">
             Manage your pesticide product database for PUR compliance
           </p>

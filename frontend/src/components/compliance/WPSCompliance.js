@@ -597,7 +597,6 @@ export default function WPSCompliance({ onNavigate }) {
             <span>/</span>
             <span>WPS Compliance</span>
           </div>
-          <h1 className="text-2xl text-heading">Worker Protection Standard</h1>
         </div>
 
         {activeTab === 'training' && (

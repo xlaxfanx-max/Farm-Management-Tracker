@@ -492,7 +492,6 @@ export default function LicenseManagement({ onNavigate }) {
             <span>/</span>
             <span>Licenses</span>
           </div>
-          <h1 className="text-2xl text-heading">Licenses & Certifications</h1>
         </div>
 
         <div className="flex items-center gap-3">

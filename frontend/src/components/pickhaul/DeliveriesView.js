@@ -79,7 +79,7 @@ export default function DeliveriesView({ season, refresh }) {
   return (
     <div className="space-y-4">
       {/* Money + volume strip */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-3 2xl:grid-cols-6 gap-3">
         <MetricCard
           title="Bins delivered"
           value={formatNumber(stats.bins_delivered)}

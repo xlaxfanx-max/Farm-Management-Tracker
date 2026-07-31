@@ -104,7 +104,7 @@ export default function SeasonOverview() {
 
       {/* 1. Delivery strip — live all season */}
       {hasPickHaul && delivery && (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-3 2xl:grid-cols-6 gap-3">
           <MetricCard
             title="Bins delivered"
             value={formatNumber(delivery.bins_delivered)}
