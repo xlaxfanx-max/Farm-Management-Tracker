@@ -137,7 +137,7 @@ export default function AnalyticsWidget({ onViewAnalytics }) {
             <BarChart3 className="w-5 h-5 text-text-muted" />
             Analytics
           </h3>
-          <button
+          <button aria-label="Refresh"
             onClick={loadData}
             className="p-1.5 text-text-muted hover:text-bark-600 hover:bg-cream-100 rounded-lg"
           >

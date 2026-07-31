@@ -77,7 +77,7 @@ function WaterSourceModal({ source, farms, fields, onClose, onSave }) {
               {source ? 'Edit Water Source' : 'Add Water Source'}
             </h2>
           </div>
-          <button
+          <button aria-label="Close"
             onClick={onClose}
             className="text-text-muted hover:text-bark-600"
           >

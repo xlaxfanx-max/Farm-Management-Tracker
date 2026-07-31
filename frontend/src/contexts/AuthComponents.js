@@ -73,7 +73,7 @@ export function CompanySelector() {
       {isOpen && (
         <div className="absolute top-full left-0 mt-1 w-full bg-surface-raised border border-border rounded-card shadow-lg z-50 py-1">
           {companies.map((company) => (
-            <button
+            <button aria-label="Confirm"
               key={company.id}
               onClick={() => handleSwitch(company.id)}
               className="w-full flex items-center gap-2 px-3 py-2 hover:bg-cream-50 transition-colors"
@@ -349,7 +349,7 @@ export function InviteUserModal({ isOpen, onClose, onSuccess }) {
             <UserPlus className="w-5 h-5 text-primary" />
             <h2 className="text-lg">Invite Team Member</h2>
           </div>
-          <button
+          <button aria-label="Close"
             onClick={handleClose}
             className="text-text-muted hover:text-bark-600"
           >

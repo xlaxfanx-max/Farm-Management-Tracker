@@ -256,7 +256,7 @@ const SettlementDetail = ({ settlementId, onClose }) => {
                   <ExternalLink className="w-4 h-4" />
                 </a>
               )}
-              <button
+              <button aria-label="Close"
                 onClick={onClose}
                 className="p-2 hover:bg-cream-100/60 rounded-lg transition-colors"
               >

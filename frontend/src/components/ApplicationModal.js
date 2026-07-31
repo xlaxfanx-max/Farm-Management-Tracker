@@ -710,7 +710,7 @@ function EnhancedApplicationModal({
                       </div>
 
                       {/* Remove */}
-                      <button
+                      <button aria-label="Delete"
                         type="button"
                         onClick={() => removeItem(idx)}
                         className="p-1.5 text-text-muted hover:text-danger mt-0.5"

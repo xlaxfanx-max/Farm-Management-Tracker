@@ -99,7 +99,7 @@ const PoolDetail = ({ pool, onBack, onEdit, onRefresh }) => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
-          <button
+          <button aria-label="Back"
             onClick={onBack}
             className="p-2 hover:bg-cream-100 rounded-lg transition-colors"
           >

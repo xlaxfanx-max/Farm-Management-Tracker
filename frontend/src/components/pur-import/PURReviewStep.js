@@ -168,7 +168,7 @@ export default function PURReviewStep({ reports, farms, filename, pdfFile, onRep
             <span className="text-sm font-medium text-bark-700">
               Original PDF — Page {activePdfPage}
             </span>
-            <button
+            <button aria-label="Close"
               onClick={() => setShowPdf(false)}
               className="p-1 text-text-muted hover:text-bark-600 rounded"
             >

@@ -83,7 +83,7 @@ const LedgerEntryModal = ({ packinghouseId, poolId, entry, onClose, onSave }) =>
             <DollarSign className="w-5 h-5 mr-2 text-primary" />
             {entry ? 'Edit Entry' : 'Record Advance / Payment'}
           </h3>
-          <button onClick={onClose} className="p-1 text-text-muted hover:text-bark-600 rounded">
+          <button aria-label="Close" onClick={onClose} className="p-1 text-text-muted hover:text-bark-600 rounded">
             <X className="w-5 h-5" />
           </button>
         </div>

@@ -292,7 +292,7 @@ export default function ComplianceSettings({ onNavigate }) {
 
             {/* Save Button */}
             <div className="pt-4 border-t border-border">
-              <button
+              <button aria-label="Save"
                 onClick={saveProfile}
                 disabled={saving}
                 className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors disabled:opacity-50"
@@ -418,7 +418,7 @@ export default function ComplianceSettings({ onNavigate }) {
 
             {/* Save Button */}
             <div className="pt-4 border-t border-border">
-              <button
+              <button aria-label="Save"
                 onClick={savePreferences}
                 disabled={saving}
                 className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors disabled:opacity-50"

@@ -45,7 +45,7 @@ function UrgentActionCard({ priority = 'medium', label, cta, onClick }) {
       <Icon className={`w-4 h-4 flex-shrink-0 ${style.iconColor}`} />
       <span className="text-sm text-text flex-1">{label}</span>
       {cta && (
-        <button
+        <button aria-label="Forward"
           onClick={onClick}
           className={`
             inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium

@@ -414,7 +414,7 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
               <Upload className="w-5 h-5 mr-2 text-primary" />
               Upload Statement PDFs
             </h2>
-            <button
+            <button aria-label="Close"
               onClick={onClose}
               className="p-2 hover:bg-cream-100 rounded-lg transition-colors"
             >
@@ -515,7 +515,7 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
                         <p className="text-xs text-text-secondary">{formatFileSize(file.size)}</p>
                       </div>
                     </div>
-                    <button
+                    <button aria-label="Delete"
                       onClick={() => removeFile(index)}
                       className="p-1 text-text-muted hover:text-danger"
                       disabled={uploading}
@@ -584,7 +584,7 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
               <AlertCircle className="w-5 h-5 mr-2 text-yellow-500" />
               Statement Saved with Warnings
             </h2>
-            <button onClick={onClose} className="text-text-muted hover:text-bark-600">
+            <button aria-label="Close" onClick={onClose} className="text-text-muted hover:text-bark-600">
               <X className="w-5 h-5" />
             </button>
           </div>
@@ -659,7 +659,7 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
                   </a>
                 </>
               )}
-              <button onClick={onClose} className="p-2 hover:bg-cream-100 rounded-lg">
+              <button aria-label="Close" onClick={onClose} className="p-2 hover:bg-cream-100 rounded-lg">
                 <X className="w-5 h-5 text-text-secondary" />
               </button>
             </div>
@@ -858,7 +858,7 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
             <CheckCircle className="w-5 h-5 mr-2 text-primary" />
             Review Batch Results
           </h2>
-          <button onClick={onClose} className="p-2 hover:bg-cream-100 rounded-lg">
+          <button aria-label="Close" onClick={onClose} className="p-2 hover:bg-cream-100 rounded-lg">
             <X className="w-5 h-5 text-text-secondary" />
           </button>
         </div>

@@ -74,7 +74,7 @@ const CommitmentModal = ({ season, houses, commitment, onClose, onSave }) => {
             <Building2 className="w-5 h-5 mr-2 text-primary" />
             {commitment ? 'Edit Commitment' : 'Add Commitment'}
           </h3>
-          <button onClick={onClose} className="p-1 text-text-muted hover:text-bark-600 rounded">
+          <button aria-label="Close" onClick={onClose} className="p-1 text-text-muted hover:text-bark-600 rounded">
             <X className="w-5 h-5" />
           </button>
         </div>

@@ -133,7 +133,7 @@ function WaterTestModal({ test, waterSource, onClose, onSave }) {
               )}
             </div>
           </div>
-          <button
+          <button aria-label="Close"
             onClick={onClose}
             className="text-text-muted hover:text-bark-600"
           >

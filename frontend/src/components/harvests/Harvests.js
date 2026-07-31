@@ -383,7 +383,7 @@ const Harvests = () => {
               <Filter size={18} />
               Filters
             </button>
-            <button
+            <button aria-label="Refresh"
               onClick={() => { fetchHarvests(); fetchStatistics(); }}
               className="flex items-center gap-2 px-4 py-2 border rounded-lg hover:bg-cream-50"
             >

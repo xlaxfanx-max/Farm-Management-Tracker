@@ -115,7 +115,7 @@ const PoolModal = ({ pool, packinghouses, onClose, onSave }) => {
             <Boxes className="w-5 h-5 mr-2 text-primary" />
             {pool ? 'Edit Pool' : 'Add Pool'}
           </h2>
-          <button
+          <button aria-label="Close"
             onClick={onClose}
             className="p-2 hover:bg-cream-100 rounded-lg transition-colors"
           >

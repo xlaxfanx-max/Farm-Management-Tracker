@@ -113,7 +113,7 @@ export default function PURUploadStep({ onComplete }) {
                 {(file.size / 1024).toFixed(1)} KB
               </p>
             </div>
-            <button
+            <button aria-label="Close"
               onClick={handleRemoveFile}
               className="p-1.5 text-text-muted hover:text-danger rounded-full hover:bg-danger-bg"
             >

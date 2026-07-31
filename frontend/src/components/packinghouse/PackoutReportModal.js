@@ -177,7 +177,7 @@ const PackoutReportModal = ({ poolId, report, onClose, onSave }) => {
             <FileText className="w-5 h-5 mr-2 text-primary" />
             {report ? 'Edit Packout Report' : 'Add Packout Report'}
           </h2>
-          <button
+          <button aria-label="Close"
             onClick={onClose}
             className="p-2 hover:bg-cream-100 rounded-lg transition-colors"
           >
@@ -446,7 +446,7 @@ const PackoutReportModal = ({ poolId, report, onClose, onSave }) => {
                       step="0.01"
                       className="px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                     />
-                    <button
+                    <button aria-label="Delete"
                       type="button"
                       onClick={() => handleRemoveGradeLine(index)}
                       className="p-1 text-danger hover:bg-danger-bg rounded"

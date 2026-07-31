@@ -307,7 +307,7 @@ const Reports = () => {
             </div>
 
             <div className="flex gap-3">
-              <button
+              <button aria-label="Confirm"
                 onClick={handleValidate}
                 disabled={validating}
                 className="px-4 py-2 border border-border-strong rounded-button hover:bg-cream-50 flex items-center gap-2"
@@ -315,7 +315,7 @@ const Reports = () => {
                 <CheckCircle className="w-4 h-4" />
                 {validating ? 'Validating...' : 'Validate'}
               </button>
-              <button
+              <button aria-label="Download"
                 onClick={handleExport}
                 disabled={exporting}
                 className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover flex items-center gap-2"

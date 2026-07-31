@@ -128,7 +128,7 @@ const LicenseCard = ({ license, onEdit, onDelete, onView }) => {
         </div>
 
         <div className="relative">
-          <button
+          <button aria-label="More actions"
             onClick={() => setShowMenu(!showMenu)}
             className="p-1 text-text-muted hover:text-bark-600 rounded"
           >
@@ -259,7 +259,7 @@ const LicenseModal = ({ license, onClose, onSave }) => {
           <h2 className="text-lg text-heading">
             {license ? 'Edit License' : 'Add License'}
           </h2>
-          <button onClick={onClose} className="text-text-muted hover:text-bark-600">
+          <button aria-label="Close" onClick={onClose} className="text-text-muted hover:text-bark-600">
             <X className="w-5 h-5" />
           </button>
         </div>

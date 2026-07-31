@@ -266,7 +266,7 @@ function GeocodePreviewModal({
                   Coordinates: {position[0].toFixed(6)}, {position[1].toFixed(6)}
                 </p>
               </div>
-              <button
+              <button aria-label="Edit"
                 type="button"
                 onClick={() => setManualMode(!manualMode)}
                 className="px-3 py-1.5 text-sm text-bark-600 hover:text-text hover:bg-cream-100 rounded-lg flex items-center gap-1 flex-shrink-0"

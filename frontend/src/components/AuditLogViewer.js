@@ -309,7 +309,7 @@ const AuditLogViewer = () => {
               Refresh
             </button>
 
-            <button
+            <button aria-label="Download"
               onClick={handleExport}
               disabled={exporting || totalCount === 0}
               className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors disabled:opacity-50"
@@ -548,7 +548,7 @@ const AuditLogViewer = () => {
                         onClick={() => setExpandedRow(isExpanded ? null : log.id)}
                       >
                         <td className="px-4 py-3">
-                          <button className="text-text-muted hover:text-bark-600">
+                          <button aria-label="Show or hide the value" className="text-text-muted hover:text-bark-600">
                             {isExpanded ? (
                               <EyeOff className="w-5 h-5" />
                             ) : (

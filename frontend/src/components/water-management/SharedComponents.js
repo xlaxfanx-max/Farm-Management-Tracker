@@ -73,7 +73,7 @@ export const AlertBanner = ({ type, title, message, action, onAction }) => {
         {message && <p className={`text-sm ${textColor} opacity-80 mt-0.5`}>{message}</p>}
       </div>
       {action && (
-        <button
+        <button aria-label="Open"
           onClick={onAction}
           className={`text-sm font-medium ${textColor} hover:underline flex items-center gap-1`}
         >

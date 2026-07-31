@@ -171,7 +171,7 @@ const WellReadingModal = ({ isOpen, onClose, reading, wellId, wellName, onSave }
       >
         Cancel
       </button>
-      <button
+      <button aria-label="Save"
         type="submit"
         form="well-reading-form"
         disabled={loading}

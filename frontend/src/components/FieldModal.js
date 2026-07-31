@@ -215,7 +215,7 @@ function FieldModal({ field, farms, crops = [], rootstocks = [], preselectedFarm
       <div className="bg-surface-raised rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto">
         <div className="p-6 border-b flex justify-between items-center">
           <h2 className="text-2xl text-heading">{field ? 'Edit Field' : 'Add Field'}</h2>
-          <button onClick={onClose} className="p-2 hover:bg-cream-100 rounded-lg text-text-secondary"><X size={24} /></button>
+          <button aria-label="Close" onClick={onClose} className="p-2 hover:bg-cream-100 rounded-lg text-text-secondary"><X size={24} /></button>
         </div>
 
         {/* Tabs */}

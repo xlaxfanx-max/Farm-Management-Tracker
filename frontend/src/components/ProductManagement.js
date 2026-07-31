@@ -445,7 +445,7 @@ function ImportModal({ onClose, importFile, setImportFile, handleImport, importR
         <div className="p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl text-heading">Import Products from CSV</h2>
-            <button onClick={onClose} className="text-text-secondary hover:text-bark-700">
+            <button aria-label="Close" onClick={onClose} className="text-text-secondary hover:text-bark-700">
               <X className="w-6 h-6" />
             </button>
           </div>
@@ -598,7 +598,7 @@ function ProductModal({ product, onClose, onSave }) {
             <h2 className="text-xl text-heading">
               {product ? 'Edit Product' : 'Add Product'}
             </h2>
-            <button type="button" onClick={onClose} className="text-text-secondary hover:text-bark-700">
+            <button aria-label="Close" type="button" onClick={onClose} className="text-text-secondary hover:text-bark-700">
               <X className="w-6 h-6" />
             </button>
           </div>

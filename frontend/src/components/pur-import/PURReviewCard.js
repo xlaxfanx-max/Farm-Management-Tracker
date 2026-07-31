@@ -52,7 +52,7 @@ export default function PURReviewCard({ report, index, farms, onChange, onViewPd
         className="flex items-center gap-3 p-4 cursor-pointer hover:bg-cream-50"
         onClick={() => setExpanded(!expanded)}
       >
-        <button
+        <button aria-label="Confirm"
           onClick={(e) => { e.stopPropagation(); handleToggleSelected(); }}
           className={`flex-shrink-0 w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
             report._selected

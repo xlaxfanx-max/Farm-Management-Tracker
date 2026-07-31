@@ -52,7 +52,7 @@ function SectionCard({ section, onNavigate }) {
     <div className={`bg-surface-raised rounded-card border shadow-sm overflow-hidden ${
       allGood ? 'border-green-200' : 'border-border'
     }`}>
-      <button
+      <button aria-label="Expand or collapse"
         onClick={() => setOpen((v) => !v)}
         className="w-full flex items-center justify-between px-5 py-4 hover:bg-cream-50 transition-colors"
       >
@@ -207,7 +207,7 @@ export default function InspectorChecklist({ onNavigate }) {
                 {passedItems} of {totalItems} checks pass
                 {gapCount > 0 && ` — ${gapCount} item${gapCount !== 1 ? 's' : ''} to fix`}
               </p>
-              <button
+              <button aria-label="Download"
                 onClick={handleDownloadPDF}
                 disabled={downloading}
                 className="inline-flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-hover text-white text-sm rounded-lg transition-colors disabled:opacity-50"

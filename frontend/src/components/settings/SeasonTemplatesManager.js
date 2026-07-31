@@ -200,7 +200,7 @@ const TemplateEditor = ({ template, onSave, onCancel, saving }) => {
           <h3 className="text-lg text-heading">
             {isEditing ? 'Edit Season Template' : 'Create Season Template'}
           </h3>
-          <button
+          <button aria-label="Close"
             onClick={onCancel}
             className="p-1 hover:bg-cream-100 rounded transition-colors"
           >

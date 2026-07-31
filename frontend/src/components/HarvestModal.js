@@ -237,7 +237,7 @@ const HarvestModal = ({
           <h2 className="text-xl text-heading">
             {harvest ? 'Edit Harvest' : 'Record New Harvest'}
           </h2>
-          <button onClick={onClose} className="p-1 hover:bg-cream-100 rounded text-text-secondary">
+          <button aria-label="Close" onClick={onClose} className="p-1 hover:bg-cream-100 rounded text-text-secondary">
             <X size={24} />
           </button>
         </div>

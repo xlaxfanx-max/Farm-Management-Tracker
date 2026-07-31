@@ -309,7 +309,7 @@ const HarvestLoadModal = ({
               {load ? 'Edit Load' : 'Add Load to Harvest'}
             </h2>
           </div>
-          <button onClick={onClose} className="p-1 hover:bg-cream-100 rounded text-text-secondary">
+          <button aria-label="Close" onClick={onClose} className="p-1 hover:bg-cream-100 rounded text-text-secondary">
             <X size={24} />
           </button>
         </div>

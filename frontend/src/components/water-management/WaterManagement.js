@@ -286,7 +286,7 @@ const WaterManagement = () => {
             <p className="text-text-secondary mt-1">Track water sources, wells, and SGMA compliance</p>
           </div>
           <div className="flex items-center gap-3">
-            <button
+            <button aria-label="Refresh"
               onClick={handleRefresh}
               disabled={loading}
               className="p-2.5 text-text-secondary hover:text-bark-700 hover:bg-cream-100 rounded-lg transition-colors"

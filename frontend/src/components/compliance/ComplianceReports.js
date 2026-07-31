@@ -129,7 +129,7 @@ const ReportCard = ({ report, onView, onDownload, onSubmit, onDelete }) => {
         </div>
 
         <div className="relative">
-          <button
+          <button aria-label="More actions"
             onClick={() => setShowMenu(!showMenu)}
             className="p-1 text-text-muted hover:text-bark-600 rounded"
           >
@@ -273,7 +273,7 @@ const ReportDetailModal = ({ report, onClose, onValidate, onSubmit }) => {
               {report.report_type_display || report.report_type}
             </h2>
           </div>
-          <button onClick={onClose} className="text-text-muted hover:text-bark-600">
+          <button aria-label="Close" onClick={onClose} className="text-text-muted hover:text-bark-600">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -462,7 +462,7 @@ const GenerateReportModal = ({ onClose, onGenerate }) => {
       <div className={`relative bg-surface-raised rounded-card shadow-xl w-full ${maxWidth} overflow-y-auto max-h-[90vh]`}>
         <div className="flex items-center justify-between px-6 py-4 border-b border-border">
           <h2 className="text-lg text-heading">Generate Report</h2>
-          <button onClick={onClose} className="text-text-muted hover:text-bark-600">
+          <button aria-label="Close" onClick={onClose} className="text-text-muted hover:text-bark-600">
             <X className="w-5 h-5" />
           </button>
         </div>

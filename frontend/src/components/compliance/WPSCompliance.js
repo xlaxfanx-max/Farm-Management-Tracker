@@ -116,7 +116,7 @@ const TrainingRow = ({ record, onEdit, onDelete }) => {
       </td>
       <td className="px-4 py-3">
         <div className="relative">
-          <button
+          <button aria-label="More actions"
             onClick={() => setShowMenu(!showMenu)}
             className="p-1 text-text-muted hover:text-bark-600 rounded"
           >
@@ -196,7 +196,7 @@ const TrainingModal = ({ record, onClose, onSave }) => {
           <h2 className="text-lg text-heading">
             {record ? 'Edit Training Record' : 'Add Training Record'}
           </h2>
-          <button onClick={onClose} className="text-text-muted hover:text-bark-600">
+          <button aria-label="Close" onClick={onClose} className="text-text-muted hover:text-bark-600">
             <X className="w-5 h-5" />
           </button>
         </div>

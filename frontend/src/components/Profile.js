@@ -261,7 +261,7 @@ const Profile = ({ onBack }) => {
           <div className="flex items-center">
             <AlertCircle className="w-5 h-5 text-danger mr-2" />
             <span className="text-danger">{error}</span>
-            <button onClick={() => setError(null)} className="ml-auto text-danger hover:text-danger">
+            <button aria-label="Close" onClick={() => setError(null)} className="ml-auto text-danger hover:text-danger">
               <X className="w-4 h-4" />
             </button>
           </div>
@@ -472,7 +472,7 @@ const Profile = ({ onBack }) => {
                       className="w-full pr-10 px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                       placeholder="Enter current password"
                     />
-                    <button
+                    <button aria-label="Show or hide the value"
                       type="button"
                       onClick={() => setShowCurrentPassword(!showCurrentPassword)}
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-bark-600"
@@ -494,7 +494,7 @@ const Profile = ({ onBack }) => {
                       className="w-full pr-10 px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                       placeholder="Enter new password"
                     />
-                    <button
+                    <button aria-label="Show or hide the value"
                       type="button"
                       onClick={() => setShowNewPassword(!showNewPassword)}
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-bark-600"

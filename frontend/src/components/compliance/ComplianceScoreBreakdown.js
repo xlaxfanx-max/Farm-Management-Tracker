@@ -156,7 +156,7 @@ export default function ComplianceScoreBreakdown({ onNavigate }) {
               All areas complete
             </p>
           )}
-          <button
+          <button aria-label="Expand or collapse"
             onClick={() => setExpanded((v) => !v)}
             className="inline-flex items-center gap-1 text-xs font-medium text-link hover:underline"
           >

@@ -103,7 +103,7 @@ const PackinghouseModal = ({ packinghouse, onClose, onSave }) => {
             <Building2 className="w-5 h-5 mr-2 text-primary" />
             {packinghouse ? 'Edit Packinghouse' : 'Add Packinghouse'}
           </h2>
-          <button
+          <button aria-label="Close"
             onClick={onClose}
             className="p-2 hover:bg-cream-100 rounded-lg transition-colors"
           >

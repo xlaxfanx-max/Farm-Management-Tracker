@@ -266,7 +266,7 @@ function UnifiedTaskList({
                 </span>
 
                 {/* Inline CTA */}
-                <button
+                <button aria-label="Forward"
                   onClick={(e) => {
                     e.stopPropagation();
                     onTaskClick?.(task.module, task);

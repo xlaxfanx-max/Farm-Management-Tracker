@@ -160,10 +160,10 @@ const ExtractedDataPreview = ({ data, statementType, onChange }) => {
                 if (e.key === 'Escape') cancelEdit();
               }}
             />
-            <button onClick={saveEdit} className="p-1 text-primary hover:bg-primary-light rounded">
+            <button aria-label="Confirm" onClick={saveEdit} className="p-1 text-primary hover:bg-primary-light rounded">
               <Check className="w-4 h-4" />
             </button>
-            <button onClick={cancelEdit} className="p-1 text-text-muted hover:bg-cream-100 rounded">
+            <button aria-label="Close" onClick={cancelEdit} className="p-1 text-text-muted hover:bg-cream-100 rounded">
               <X className="w-4 h-4" />
             </button>
           </div>
@@ -172,7 +172,7 @@ const ExtractedDataPreview = ({ data, statementType, onChange }) => {
             <span className="text-sm font-medium text-heading">
               {value ?? '-'}
             </span>
-            <button
+            <button aria-label="Edit"
               onClick={() => startEditing(path, value)}
               className="p-1 text-text-muted hover:text-bark-600 hover:bg-cream-100 rounded"
             >
@@ -410,7 +410,7 @@ const ExtractedDataPreview = ({ data, statementType, onChange }) => {
                                   </>
                                 )}
                                 <td className="py-2">
-                                  <button
+                                  <button aria-label="Delete"
                                     onClick={() => removeGradeLine(index)}
                                     className="p-1 text-danger hover:text-danger hover:bg-danger-bg rounded"
                                   >
@@ -540,7 +540,7 @@ const ExtractedDataPreview = ({ data, statementType, onChange }) => {
                             />
                           </td>
                           <td className="py-2">
-                            <button
+                            <button aria-label="Delete"
                               onClick={() => removeDeduction(index)}
                               className="p-1 text-danger hover:text-danger hover:bg-danger-bg rounded"
                             >

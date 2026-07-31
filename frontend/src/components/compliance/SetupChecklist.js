@@ -62,7 +62,7 @@ export default function SetupChecklist({ scoreData, onNavigate, onDismiss }) {
       {firstThreeActions.length > 0 && (
         <div className="space-y-1.5">
           {firstThreeActions.map((item) => (
-            <button
+            <button aria-label="Next"
               key={item.key}
               onClick={() => onNavigate(item.action_key)}
               className="w-full flex items-center gap-2 px-3 py-2 bg-surface-raised border border-green-200 rounded-button text-sm text-green-800 hover:bg-green-50 transition-colors text-left"

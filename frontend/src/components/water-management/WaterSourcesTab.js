@@ -59,7 +59,7 @@ const WaterSourcesTab = ({
             <option key={value} value={value}>{label}</option>
           ))}
         </select>
-        <button
+        <button aria-label="Refresh"
           onClick={handleRefresh}
           className="p-2.5 border border-border rounded-button hover:bg-cream-50 text-bark-600"
         >
@@ -167,7 +167,7 @@ const WaterSourcesTab = ({
                       SGMA
                     </button>
                   )}
-                  <button
+                  <button aria-label="Edit"
                     onClick={() => isWell ? openWellSourceModal(source) : openWaterSourceModal(source)}
                     className="px-3 py-2 text-sm text-bark-600 bg-cream-100 rounded-lg hover:bg-sand-200 transition-colors"
                   >

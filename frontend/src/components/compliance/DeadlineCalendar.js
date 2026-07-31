@@ -125,7 +125,7 @@ const DeadlineRow = ({ deadline, onComplete, onEdit, onDelete }) => {
         <StatusBadge status={deadline.status} />
 
         <div className="relative">
-          <button
+          <button aria-label="More actions"
             onClick={() => setShowMenu(!showMenu)}
             className="p-1 text-text-muted hover:text-bark-600 rounded"
           >
@@ -237,7 +237,7 @@ const DeadlineModal = ({ deadline, onClose, onSave }) => {
           <h2 className="text-lg text-heading">
             {deadline ? 'Edit Deadline' : 'Add Deadline'}
           </h2>
-          <button onClick={onClose} className="text-text-muted hover:text-bark-600">
+          <button aria-label="Close" onClick={onClose} className="text-text-muted hover:text-bark-600">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -588,7 +588,7 @@ export default function DeadlineCalendar({ onNavigate }) {
         {/* Calendar Month Navigation */}
         {view === 'calendar' && (
           <div className="flex items-center justify-between px-4 py-3 border-t border-border">
-            <button
+            <button aria-label="Previous"
               onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1))}
               className="p-1 text-bark-600 hover:bg-cream-100 rounded"
             >
@@ -597,7 +597,7 @@ export default function DeadlineCalendar({ onNavigate }) {
             <h2 className="text-lg text-heading">
               {currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
             </h2>
-            <button
+            <button aria-label="Next"
               onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1))}
               className="p-1 text-bark-600 hover:bg-cream-100 rounded"
             >

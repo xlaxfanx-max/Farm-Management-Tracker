@@ -268,7 +268,7 @@ export default function TeamManagement() {
                   {/* Actions Dropdown */}
                   {isOwnerOrAdmin() && member.user?.id !== user?.id && member.role?.codename !== 'owner' && (
                     <div className="relative">
-                      <button
+                      <button aria-label="More actions"
                         onClick={() => setActiveDropdown(activeDropdown === member.id ? null : member.id)}
                         className="p-2 hover:bg-cream-100 rounded-lg"
                       >
@@ -474,7 +474,7 @@ function InviteModal({ roles, onClose, onSuccess }) {
             <UserPlus className="w-5 h-5 text-primary" />
             <h2 className="text-lg">Invite Team Member</h2>
           </div>
-          <button onClick={onClose} className="text-text-muted hover:text-bark-600">
+          <button aria-label="Close" onClick={onClose} className="text-text-muted hover:text-bark-600">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -580,7 +580,7 @@ function EditRoleModal({ member, roles, onClose, onSave }) {
       <div className="bg-surface-raised rounded-card shadow-xl w-full max-w-md">
         <div className="flex items-center justify-between px-6 py-4 border-b">
           <h2 className="text-lg">Change Role</h2>
-          <button onClick={onClose} className="text-text-muted hover:text-bark-600">
+          <button aria-label="Close" onClick={onClose} className="text-text-muted hover:text-bark-600">
             <X className="w-5 h-5" />
           </button>
         </div>

@@ -205,7 +205,7 @@ const QuickHarvestModal = ({
             <Zap size={20} className="text-orange-600" />
             <h2 className="text-xl text-heading">Quick Harvest Entry</h2>
           </div>
-          <button onClick={onClose} className="p-1 hover:bg-cream-100 rounded text-text-secondary">
+          <button aria-label="Close" onClick={onClose} className="p-1 hover:bg-cream-100 rounded text-text-secondary">
             <X size={24} />
           </button>
         </div>

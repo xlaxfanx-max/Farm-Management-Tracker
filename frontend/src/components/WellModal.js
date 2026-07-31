@@ -138,7 +138,7 @@ const WellModal = ({ isOpen, onClose, well, waterSources, onSave }) => {
       >
         Cancel
       </button>
-      <button
+      <button aria-label="Save"
         type="submit"
         form="well-form"
         disabled={loading}

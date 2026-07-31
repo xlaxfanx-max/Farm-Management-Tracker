@@ -244,7 +244,7 @@ const AlertBanner = ({ alerts, onDismiss }) => {
             ))}
           </ul>
         </div>
-        <button
+        <button aria-label="Close"
           onClick={() => onDismiss()}
           className="text-danger hover:text-danger"
         >
@@ -396,14 +396,14 @@ export default function ComplianceDashboard({ onNavigate }) {
                   </p>
                 </div>
               </div>
-              <button
+              <button aria-label="Refresh"
                 onClick={handleRefresh}
                 disabled={refreshing}
                 className="p-2 text-bark-600 hover:bg-cream-100 rounded-lg transition-colors"
               >
                 <RefreshCw className={`w-5 h-5 ${refreshing ? 'animate-spin' : ''}`} />
               </button>
-              <button
+              <button aria-label="Settings"
                 onClick={() => onNavigate?.('compliance-settings')}
                 className="p-2 text-bark-600 hover:bg-cream-100 rounded-lg transition-colors"
               >

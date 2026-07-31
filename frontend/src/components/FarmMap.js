@@ -357,7 +357,7 @@ const FarmMap = ({
                   : `Drawing boundary for Field: ${drawingTargetName}`}
               </span>
             </div>
-            <button
+            <button aria-label="Close"
               onClick={cancelDrawing}
               className="p-1 hover:bg-cream-100 rounded"
             >
@@ -474,7 +474,7 @@ const FarmMap = ({
                   <p className="text-sm text-bark-600">{farm.county} County</p>
 
                   <div className="mt-3 flex flex-wrap gap-2">
-                    <button
+                    <button aria-label="Edit"
                       onClick={(e) => {
                         e.stopPropagation();
                         e.preventDefault();
@@ -518,7 +518,7 @@ const FarmMap = ({
                               <p className="font-medium text-sm text-text truncate">{field.name}</p>
                               <p className="text-xs text-text-secondary">{field.total_acres} acres · {field.current_crop || 'No crop'}</p>
                             </div>
-                            <button
+                            <button aria-label="Edit"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 e.preventDefault();

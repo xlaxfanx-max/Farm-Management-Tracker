@@ -123,7 +123,7 @@ const WellsTab = ({
         </button>
 
         {/* Refresh */}
-        <button onClick={handleRefresh} className="p-2.5 border border-border rounded-button hover:bg-cream-50">
+        <button aria-label="Refresh" onClick={handleRefresh} className="p-2.5 border border-border rounded-button hover:bg-cream-50">
           <RefreshCw className={`w-5 h-5 text-bark-600 ${loading ? 'animate-spin' : ''}`} />
         </button>
       </div>

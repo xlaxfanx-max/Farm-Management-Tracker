@@ -261,7 +261,7 @@ const Wells = ({ onOpenModal }) => {
           </div>
 
           {/* Refresh Button */}
-          <button
+          <button aria-label="Refresh"
             onClick={fetchWells}
             className="px-4 py-2 border border-border-strong rounded-button hover:bg-cream-50 transition-colors"
           >

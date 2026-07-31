@@ -250,7 +250,7 @@ function PURReports({ farms }) {
 
         {/* Action Buttons */}
         <div className="flex gap-3 mt-6">
-          <button
+          <button aria-label="Confirm"
             onClick={handleValidate}
             disabled={loading}
             className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover disabled:bg-bark-400"

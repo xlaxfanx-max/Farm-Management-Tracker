@@ -23,7 +23,7 @@ const WaterTestsTab = ({
       <div className="bg-cream-100 border border-orange-200 rounded-card p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <button
+            <button aria-label="Back"
               onClick={() => setSelectedSource(null)}
               className="p-2 hover:bg-surface-raised rounded-lg transition-colors"
             >

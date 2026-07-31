@@ -606,7 +606,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
       >
         Cancel
       </button>
-      <button
+      <button aria-label="Save"
         type="submit"
         form="well-source-form"
         disabled={loading}

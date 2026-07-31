@@ -360,7 +360,7 @@ const PDFUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, existi
                 </a>
               </>
             )}
-            <button
+            <button aria-label="Close"
               onClick={onClose}
               className="p-2 hover:bg-cream-100 rounded-lg transition-colors"
             >
@@ -501,7 +501,7 @@ const PDFUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, existi
                       <p className="font-medium text-heading">{file.name}</p>
                       <p className="text-sm text-text-secondary">{formatFileSize(file.size)}</p>
                     </div>
-                    <button
+                    <button aria-label="Close"
                       onClick={() => setFile(null)}
                       className="p-1 text-text-muted hover:text-danger"
                     >
