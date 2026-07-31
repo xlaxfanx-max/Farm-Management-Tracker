@@ -603,12 +603,15 @@ class HarvestViewSet(AuditLogMixin, viewsets.ModelViewSet):
             total_acres_harvested=Coalesce(Sum('acres_harvested'), Decimal('0')),
         )
 
-        # Revenue from loads
+        # Revenue from loads. The aliases must not be named `total_revenue`:
+        # inside a single aggregate() call an alias shadows the model field
+        # for every later expression, so Sum('total_revenue', filter=...)
+        # would resolve to the alias and raise FieldError under Django 5.
         load_stats = HarvestLoad.objects.filter(
             harvest__in=queryset
         ).aggregate(
-            total_revenue=Coalesce(Sum('total_revenue'), Decimal('0')),
-            pending_payments=Coalesce(
+            revenue_total=Coalesce(Sum('total_revenue'), Decimal('0')),
+            revenue_pending=Coalesce(
                 Sum('total_revenue', filter=Q(payment_status='pending')),
                 Decimal('0')
             ),
@@ -665,11 +668,11 @@ class HarvestViewSet(AuditLogMixin, viewsets.ModelViewSet):
             'total_bins': stats['total_bins'],
             'total_weight_lbs': stats['total_weight_lbs'],
             'total_acres_harvested': stats['total_acres_harvested'],
-            'total_revenue': load_stats['total_revenue'],
+            'total_revenue': load_stats['revenue_total'],
             'total_labor_cost': labor_stats['total_labor_cost'],
             'avg_yield_per_acre': round(avg_yield, 1),
             'avg_price_per_bin': load_stats['avg_price_per_bin'],
-            'pending_payments': load_stats['pending_payments'],
+            'pending_payments': load_stats['revenue_pending'],
             'phi_violations': phi_violations,
             'by_crop': by_crop,
             'by_buyer': by_buyer,
