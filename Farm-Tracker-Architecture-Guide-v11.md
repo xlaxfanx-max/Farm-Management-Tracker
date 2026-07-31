@@ -31,6 +31,64 @@
 
 ---
 
+> ## 🎨 JULY 2026 FINCH RESKIN (branch `finch-ui-overhaul`)
+>
+> The whole React frontend was reskinned to the **Finch Investments design
+> system** on 2026-07-31. Any UI description below this banner that mentions
+> sage green, DM Sans, `--gm-*` tokens or dark mode is historical.
+>
+> **Palette** — Valencia orange `#E2721B` is `primary` (it was green; audit
+> for spots where `primary` used to encode *success* and use the green/success
+> tokens there instead). Grove greens `#1C3A21`–`#F2F7EB` carry dark surfaces,
+> water and success. Meyer yellow `#F2B705` is a sparing highlight and the
+> active-nav colour. Neutrals are warm only — cream `#FBF7EF`/`#F4ECDD` pages
+> and wells, sand `#E7DBC6`/`#D6C6A8`/`#BEA981` borders, bark `#8A7A63`–
+> `#1F1810` ink. **Never cool gray or pure black.**
+>
+> **Type** — Sorts Mill Goudy (display serif) for `h1`–`h4`, large figures and
+> card titles; Hanken Grotesk for body/UI; IBM Plex Mono `tabular-nums` for
+> figures, tables and deltas. Served from the Google Fonts CDN. The serif has
+> one weight — never add `font-bold` to an `h1`–`h4`.
+>
+> **Where things live**
+> - `src/index.css` — the single `:root` token block, `@layer base` (serif
+>   headings, `svg.lucide` stroke 1.75, focus ring) and `@layer components`
+>   (`.finch-eyebrow`, `.finch-eyebrow-dark`, `.finch-data`, `.modal-backdrop`).
+> - `tailwind.config.js` — semantic tokens (`primary`, `surface`, `border`,
+>   `text`, `link`, `ring`, `success`/`warning`/`danger`/`info`), the full
+>   Finch scales, and warm guardrail remaps of stock `gray`/`red`/`amber`.
+>   Cool families (blue, purple, cyan…) are deliberately **not** remapped, so
+>   any new cool-coloured class is visually obvious.
+> - `src/theme/finchChartTheme.js` — the only place besides `index.css`
+>   allowed to hold raw hexes: recharts series/grid/tick/tooltip, Leaflet map
+>   and crop colours, `STATUS_HEX`, and `sequential(n)` for ramps.
+> - `src/components/ui/` — the primitive set. `Button`, `IconButton`, `Card`
+>   + `CardHeader`, `Badge`, `StatusBadge`, `MetricCard`/`StatCard`,
+>   `DataTable`, `FormField` + `Input`/`Select`/`Textarea`, `Checkbox`,
+>   `Switch`, `RadioGroup`, `Alert`, `Modal`, `ConfirmDialog`, `Tabs`,
+>   `Toast`, `Spinner`, `EmptyState`, `CollapsibleSection`, `ErrorBoundary`.
+> - `src/components/layout/PageShell.js` — every route's frame. It owns the
+>   eyebrow and the serif page title (from `VIEW_NAMES`/`VIEW_EYEBROWS` in
+>   `src/routes.js`), so **pages must not render their own `<h1>`**.
+>
+> **Shape** — cards `rounded-card` (12px) with a sand hairline and a warm
+> shadow; controls and buttons `rounded-button` (8px); pills `rounded-pill`.
+> Focus is an orange border plus a 3px `--ring`. Motion is 120/200/360ms on
+> `cubic-bezier(.22,.61,.36,1)`; buttons press with `active:translate-y-px`.
+>
+> **Dark mode is gone** — `ThemeContext`, every `dark:` variant and the
+> `.dark` CSS layer were deleted. Do not reintroduce them.
+>
+> **Still open** — ~145 references to the deprecated `inputClasses`/
+> `selectClasses`/`textareaClasses` strings remain. They now hold the exact
+> Finch control recipe, so those controls render correctly, but the intended
+> end state is zero references and the exports deleted in favour of the
+> `Input`/`Select`/`Textarea` primitives. Likewise most raw `<button>`s and
+> the 47 raw `<table>`s carry the canonical Finch classes rather than the
+> `Button`/`DataTable` primitives.
+
+---
+
 ## DOCUMENT PURPOSE
 
 This document provides comprehensive architecture documentation for the **Farm Management Tracker** (also known as **Finch Farms Dashboard**) application. It is specifically designed to:
