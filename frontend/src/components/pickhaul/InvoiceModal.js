@@ -159,7 +159,7 @@ export default function InvoiceModal({ isOpen, onClose, onSave, invoice = null, 
       <button
         type="button"
         onClick={onClose}
-        className="px-4 py-2 rounded-button border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"
+        className="px-4 py-2 rounded-button border border-gray-300 text-gray-700 hover:bg-gray-50"
       >
         Cancel
       </button>

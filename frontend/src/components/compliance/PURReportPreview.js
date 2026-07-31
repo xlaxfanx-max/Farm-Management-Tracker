@@ -55,20 +55,20 @@ export default function PURReportPreview({ data, reportId, onMarkSubmitted }) {
   return (
     <div className="space-y-4 mt-4">
       {/* Summary bar */}
-      <div className="flex flex-wrap items-center gap-4 px-4 py-3 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg text-sm">
-        <span className="font-semibold text-purple-800 dark:text-purple-200">
+      <div className="flex flex-wrap items-center gap-4 px-4 py-3 bg-purple-50 border border-purple-200 rounded-lg text-sm">
+        <span className="font-semibold text-purple-800">
           {rows.length} application{rows.length !== 1 ? 's' : ''} found
         </span>
-        <span className="text-gray-500 dark:text-gray-400">
+        <span className="text-gray-500">
           {period_start} – {period_end}
         </span>
         {summary.total_acres && (
-          <span className="text-gray-600 dark:text-gray-300">
+          <span className="text-gray-600">
             {Number(summary.total_acres).toFixed(1)} acres treated
           </span>
         )}
         {hasWarnings && (
-          <span className="flex items-center gap-1 text-amber-700 dark:text-amber-300">
+          <span className="flex items-center gap-1 text-amber-700">
             <AlertTriangle className="w-4 h-4" />
             Some rows need attention
           </span>
@@ -76,9 +76,9 @@ export default function PURReportPreview({ data, reportId, onMarkSubmitted }) {
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
+      <div className="overflow-x-auto rounded-lg border border-gray-200">
         <table className="w-full text-sm">
-          <thead className="bg-gray-50 dark:bg-gray-800 text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+          <thead className="bg-gray-50 text-xs text-gray-500 uppercase tracking-wide">
             <tr>
               <th className="px-3 py-2 text-left">Date</th>
               <th className="px-3 py-2 text-left">Field</th>
@@ -90,7 +90,7 @@ export default function PURReportPreview({ data, reportId, onMarkSubmitted }) {
               <th className="px-3 py-2 text-left w-8">OK</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+          <tbody className="divide-y divide-gray-100">
             {rows.map((row, idx) => {
               const hasRowWarning = row.warnings && row.warnings.length > 0;
               return (
@@ -98,32 +98,32 @@ export default function PURReportPreview({ data, reportId, onMarkSubmitted }) {
                   key={idx}
                   className={
                     hasRowWarning
-                      ? 'bg-amber-50 dark:bg-amber-900/10'
-                      : 'bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800/50'
+                      ? 'bg-amber-50'
+                      : 'bg-white hover:bg-gray-50'
                   }
                 >
-                  <td className="px-3 py-2 text-gray-900 dark:text-gray-100 whitespace-nowrap">{row.date}</td>
-                  <td className="px-3 py-2 text-gray-700 dark:text-gray-300 max-w-[110px] truncate">{row.field_name}</td>
-                  <td className="px-3 py-2 text-gray-700 dark:text-gray-300 max-w-[140px] truncate">{row.product_name}</td>
+                  <td className="px-3 py-2 text-gray-900 whitespace-nowrap">{row.date}</td>
+                  <td className="px-3 py-2 text-gray-700 max-w-[110px] truncate">{row.field_name}</td>
+                  <td className="px-3 py-2 text-gray-700 max-w-[140px] truncate">{row.product_name}</td>
                   <td className="px-3 py-2">
                     {row.epa_reg_number ? (
-                      <span className="font-mono text-xs text-gray-700 dark:text-gray-300">{row.epa_reg_number}</span>
+                      <span className="font-mono text-xs text-gray-700">{row.epa_reg_number}</span>
                     ) : (
                       <span className="text-xs text-red-500">Missing</span>
                     )}
                   </td>
-                  <td className="px-3 py-2 text-right text-gray-700 dark:text-gray-300 whitespace-nowrap">
+                  <td className="px-3 py-2 text-right text-gray-700 whitespace-nowrap">
                     {row.rate ? `${row.rate} ${row.rate_unit || ''}` : <span className="text-xs text-amber-500">—</span>}
                   </td>
-                  <td className="px-3 py-2 text-right text-gray-700 dark:text-gray-300">
+                  <td className="px-3 py-2 text-right text-gray-700">
                     {row.acres_treated || <span className="text-xs text-amber-500">—</span>}
                   </td>
                   <td className="px-3 py-2">
                     {row.applicator_name ? (
                       <div>
-                        <p className="text-gray-700 dark:text-gray-300 truncate max-w-[110px]">{row.applicator_name}</p>
+                        <p className="text-gray-700 truncate max-w-[110px]">{row.applicator_name}</p>
                         {row.applicator_license ? (
-                          <p className="text-xs font-mono text-gray-400 dark:text-gray-500">{row.applicator_license}</p>
+                          <p className="text-xs font-mono text-gray-400">{row.applicator_license}</p>
                         ) : (
                           <p className="text-xs text-amber-500">No license #</p>
                         )}
@@ -153,7 +153,7 @@ export default function PURReportPreview({ data, reportId, onMarkSubmitted }) {
 
       {/* Actions */}
       <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
-        <p className="text-xs text-gray-500 dark:text-gray-400">
+        <p className="text-xs text-gray-500">
           {hasWarnings
             ? 'Fix highlighted rows before submitting to your county.'
             : 'All rows look good — ready for county submission.'}
@@ -161,7 +161,7 @@ export default function PURReportPreview({ data, reportId, onMarkSubmitted }) {
         <div className="flex gap-2">
           <button
             onClick={handleExportCSV}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-gray-700"
           >
             <Download className="w-4 h-4" />
             Export CSV

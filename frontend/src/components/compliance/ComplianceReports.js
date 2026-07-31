@@ -459,22 +459,22 @@ const GenerateReportModal = ({ onClose, onGenerate }) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className={`relative bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full ${maxWidth} overflow-y-auto max-h-[90vh]`}>
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Generate Report</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+      <div className={`relative bg-white rounded-xl shadow-xl w-full ${maxWidth} overflow-y-auto max-h-[90vh]`}>
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+          <h2 className="text-lg font-semibold text-gray-900">Generate Report</h2>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
             <X className="w-5 h-5" />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Report Type *</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Report Type *</label>
             <select
               required
               value={formData.report_type}
               onChange={(e) => setFormData({ ...formData, report_type: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary bg-white text-gray-900"
             >
               {COMPLIANCE_CONSTANTS.REPORT_TYPES.map(type => (
                 <option key={type.value} value={type.value}>{type.label}</option>
@@ -484,32 +484,32 @@ const GenerateReportModal = ({ onClose, onGenerate }) => {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Period Start *</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Period Start *</label>
               <input
                 type="date"
                 required
                 value={formData.reporting_period_start}
                 onChange={(e) => setFormData({ ...formData, reporting_period_start: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary bg-white text-gray-900"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Period End *</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Period End *</label>
               <input
                 type="date"
                 required
                 value={formData.reporting_period_end}
                 onChange={(e) => setFormData({ ...formData, reporting_period_end: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary bg-white text-gray-900"
               />
             </div>
           </div>
 
           {/* PUR auto-fill */}
           {isPUR && (
-            <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg p-3 space-y-2">
+            <div className="bg-purple-50 border border-purple-200 rounded-lg p-3 space-y-2">
               <div className="flex items-center justify-between">
-                <p className="text-sm text-purple-800 dark:text-purple-200 font-medium">
+                <p className="text-sm text-purple-800 font-medium">
                   Auto-fill from Application Records
                 </p>
                 <button
@@ -521,7 +521,7 @@ const GenerateReportModal = ({ onClose, onGenerate }) => {
                   {purLoading ? 'Loading...' : 'Preview Applications'}
                 </button>
               </div>
-              <p className="text-xs text-purple-600 dark:text-purple-400">
+              <p className="text-xs text-purple-600">
                 Pulls pesticide application records for the selected period and maps to PUR format.
               </p>
             </div>
@@ -536,11 +536,11 @@ const GenerateReportModal = ({ onClose, onGenerate }) => {
             />
           )}
 
-          <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+          <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
             >
               Cancel
             </button>

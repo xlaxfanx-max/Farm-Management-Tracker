@@ -5,7 +5,7 @@ import { useToast } from '../contexts/ToastContext';
 
 /**
  * PUR Report Generator Component
- * 
+ *
  * Allows users to:
  * - Select date range and farm for PUR reports
  * - Validate applications for PUR compliance
@@ -27,7 +27,6 @@ function PURReports({ farms }) {
     const now = new Date();
     const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
     const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-    
     setStartDate(firstDay.toISOString().split('T')[0]);
     setEndDate(lastDay.toISOString().split('T')[0]);
   }, []);
@@ -47,7 +46,6 @@ function PURReports({ farms }) {
         start_date: startDate,
         end_date: endDate,
       };
-      
       if (selectedFarm) {
         payload.farm_id = selectedFarm;
       }
@@ -58,7 +56,6 @@ function PURReports({ farms }) {
       // Also get summary
       const summaryResponse = await applicationEventsAPI.purSummary(payload);
       setSummary(summaryResponse.data.summary);
-      
       setShowResults(true);
     } catch (error) {
       console.error('Validation error:', error);
@@ -82,7 +79,6 @@ function PURReports({ farms }) {
         start_date: startDate,
         end_date: endDate,
       };
-      
       if (selectedFarm) {
         payload.farm_id = selectedFarm;
       }
@@ -171,7 +167,6 @@ function PURReports({ farms }) {
       {/* Filter Panel */}
       <div className="bg-white rounded-lg shadow-md p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">Report Parameters</h2>
-        
         {/* Quick Range Buttons */}
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -280,11 +275,10 @@ function PURReports({ farms }) {
       {showResults && validation && (
         <div className="bg-white rounded-lg shadow-md p-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">Validation Results</h2>
-          
           {/* Status Summary */}
           <div className={`p-4 rounded-lg mb-4 ${
-            validation.valid 
-              ? 'bg-primary-light border border-green-200' 
+            validation.valid
+              ? 'bg-primary-light border border-green-200'
               : 'bg-red-50 border border-red-200'
           }`}>
             <div className="flex items-center gap-2">
@@ -357,7 +351,6 @@ function PURReports({ farms }) {
       {showResults && summary && (
         <div className="bg-white rounded-lg shadow-md p-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">Report Summary</h2>
-          
           {/* Overview Stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
             <div className="bg-blue-50 p-4 rounded-lg">
@@ -366,21 +359,18 @@ function PURReports({ farms }) {
               </div>
               <div className="text-sm text-blue-700">Total Applications</div>
             </div>
-            
             <div className="bg-primary-light p-4 rounded-lg">
               <div className="text-2xl font-bold text-green-900">
                 {summary.total_acres_treated.toFixed(1)}
               </div>
               <div className="text-sm text-primary">Acres Treated</div>
             </div>
-            
             <div className="bg-purple-50 p-4 rounded-lg">
               <div className="text-2xl font-bold text-purple-900">
                 {summary.unique_products}
               </div>
               <div className="text-sm text-purple-700">Unique Products</div>
             </div>
-            
             <div className="bg-orange-50 p-4 rounded-lg">
               <div className="text-2xl font-bold text-orange-900">
                 {summary.restricted_use_applications}

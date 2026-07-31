@@ -134,7 +134,7 @@ const WellModal = ({ isOpen, onClose, well, waterSources, onSave }) => {
       <button
         type="button"
         onClick={onClose}
-        className="px-4 py-2 rounded-button border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"
+        className="px-4 py-2 rounded-button border border-gray-300 text-gray-700 hover:bg-gray-50"
       >
         Cancel
       </button>
@@ -160,7 +160,7 @@ const WellModal = ({ isOpen, onClose, well, waterSources, onSave }) => {
       size="xl"
       footer={footer}
     >
-      <div className="flex border-b border-gray-200 dark:border-gray-700 -mx-6 -mt-4 mb-4 px-6" role="tablist">
+      <div className="flex border-b border-gray-200 -mx-6 -mt-4 mb-4 px-6" role="tablist">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -173,8 +173,8 @@ const WellModal = ({ isOpen, onClose, well, waterSources, onSave }) => {
               onClick={() => setActiveTab(tab.id)}
               className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-inset ${
                 isActive
-                  ? 'border-blue-600 text-blue-600 dark:text-blue-400 dark:border-blue-400'
-                  : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                  ? 'border-blue-600 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700'
               }`}
             >
               <Icon className="w-4 h-4" />
@@ -187,7 +187,7 @@ const WellModal = ({ isOpen, onClose, well, waterSources, onSave }) => {
       <form id="well-form" onSubmit={handleSubmit}>
         {errors.general && (
           <div
-            className="mb-4 p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg flex items-center gap-2 text-red-700 dark:text-red-300"
+            className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-red-700"
             role="alert"
           >
             <AlertCircle className="w-5 h-5" />
@@ -418,9 +418,9 @@ const WellModal = ({ isOpen, onClose, well, waterSources, onSave }) => {
                 name="has_flowmeter"
                 checked={formData.has_flowmeter}
                 onChange={handleChange}
-                className="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500"
+                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
               />
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
+              <span className="text-sm font-medium text-gray-700">
                 Has Flowmeter
               </span>
             </label>
@@ -486,9 +486,9 @@ const WellModal = ({ isOpen, onClose, well, waterSources, onSave }) => {
                   name="registered_with_gsa"
                   checked={formData.registered_with_gsa}
                   onChange={handleChange}
-                  className="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500"
+                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                 />
-                <span className="text-sm text-gray-700 dark:text-gray-200">Registered with GSA</span>
+                <span className="text-sm text-gray-700">Registered with GSA</span>
               </label>
 
               <label className="flex items-center gap-2">
@@ -497,9 +497,9 @@ const WellModal = ({ isOpen, onClose, well, waterSources, onSave }) => {
                   name="is_de_minimis"
                   checked={formData.is_de_minimis}
                   onChange={handleChange}
-                  className="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500"
+                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                 />
-                <span className="text-sm text-gray-700 dark:text-gray-200">
+                <span className="text-sm text-gray-700">
                   De Minimis Extractor (&lt;2 AF/year domestic)
                 </span>
               </label>
@@ -520,11 +520,11 @@ const WellModal = ({ isOpen, onClose, well, waterSources, onSave }) => {
               </FormField>
             </div>
 
-            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-              <h4 className="font-medium text-blue-900 dark:text-blue-200 mb-2">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <h4 className="font-medium text-blue-900 mb-2">
                 SGMA Compliance Notes
               </h4>
-              <ul className="text-sm text-blue-800 dark:text-blue-300 space-y-1">
+              <ul className="text-sm text-blue-800 space-y-1">
                 <li>• All non-de minimis wells require meter calibration every 3 years</li>
                 <li>• Semi-annual extraction reports due April 1 and October 1</li>
                 <li>• Meter accuracy must be within ±5%</li>

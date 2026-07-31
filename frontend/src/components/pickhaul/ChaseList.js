@@ -43,42 +43,42 @@ export default function ChaseList({ invoices, agingDays = 45, onSelect, onMarkRe
   return (
     <div className="space-y-4">
       {houseGroups.map((group) => (
-        <div key={group.key} className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
-          <div className="flex items-center justify-between px-4 py-2.5 bg-gray-50 dark:bg-gray-700/50">
+        <div key={group.key} className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+          <div className="flex items-center justify-between px-4 py-2.5 bg-gray-50">
             <div className="flex items-center gap-2">
-              <span className="font-medium text-gray-900 dark:text-white">{group.house}</span>
+              <span className="font-medium text-gray-900">{group.house}</span>
               <Badge color="gray" size="xs">{group.entity}</Badge>
             </div>
             <div className="flex items-center gap-3 text-sm">
-              <span className="text-gray-500 dark:text-gray-400">
+              <span className="text-gray-500">
                 {group.invoices.length} outstanding
               </span>
               <Badge color={AGING_BADGE_COLORS[agingBucket(group.oldest)]} size="xs">
                 oldest {group.oldest}d
               </Badge>
-              <span className="font-semibold text-gray-900 dark:text-white">
+              <span className="font-semibold text-gray-900">
                 {formatCurrency(group.total)}
               </span>
             </div>
           </div>
-          <div className="divide-y divide-gray-100 dark:divide-gray-700">
+          <div className="divide-y divide-gray-100">
             {group.invoices.map((inv) => (
               <div
                 key={inv.id}
                 onClick={() => onSelect?.(inv)}
-                className="flex flex-wrap items-center gap-x-4 gap-y-1 px-4 py-2.5 cursor-pointer hover:bg-surface-sunken dark:hover:bg-gray-700/30 transition-colors"
+                className="flex flex-wrap items-center gap-x-4 gap-y-1 px-4 py-2.5 cursor-pointer hover:bg-surface-sunken transition-colors"
               >
                 <Badge color={inv.kind === 'PICK' ? 'green' : 'blue'} size="xs">{inv.kind}</Badge>
-                <span className="text-sm text-gray-900 dark:text-gray-100 min-w-[7rem]">
+                <span className="text-sm text-gray-900 min-w-[7rem]">
                   {inv.contractor || '—'} #{inv.invoice_no}
                 </span>
-                <span className="text-sm font-medium text-gray-900 dark:text-white min-w-[6rem]">
+                <span className="text-sm font-medium text-gray-900 min-w-[6rem]">
                   {formatCurrency(inv.amount)}
                 </span>
-                <span className="text-xs text-gray-500 dark:text-gray-400 flex-1">
+                <span className="text-xs text-gray-500 flex-1">
                   {inv.block_raw || ''}
                 </span>
-                <span className="text-xs text-gray-500 dark:text-gray-400">
+                <span className="text-xs text-gray-500">
                   paid {formatDate(inv.date_paid)} · emailed {formatDate(inv.date_emailed)}
                 </span>
                 <Badge color={AGING_BADGE_COLORS[agingBucket(inv.days_outstanding)]} size="xs">
@@ -88,7 +88,7 @@ export default function ChaseList({ invoices, agingDays = 45, onSelect, onMarkRe
                   <Badge color="red" size="xs">{agingDays}d+</Badge>
                 )}
                 {inv.date_rec_from_ph ? (
-                  <span className="text-xs text-gray-500 dark:text-gray-400 italic"
+                  <span className="text-xs text-gray-500 italic"
                         title="Money received; still awaiting the house's posted charge to match.">
                     rec'd {formatDate(inv.date_rec_from_ph)}, awaiting charge-back match
                   </span>

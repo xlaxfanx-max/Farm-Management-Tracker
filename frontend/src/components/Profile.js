@@ -23,21 +23,18 @@ import {
 
 const Profile = ({ onBack }) => {
   const { user, refreshUser, currentCompany } = useAuth();
-  
   // Profile state
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [editingProfile, setEditingProfile] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
-  
   // Profile form data
   const [profileData, setProfileData] = useState({
     first_name: '',
     last_name: '',
     phone: '',
   });
-  
   // Password change state
   const [changingPassword, setChangingPassword] = useState(false);
   const [passwordData, setPasswordData] = useState({
@@ -50,7 +47,6 @@ const Profile = ({ onBack }) => {
   const [passwordError, setPasswordError] = useState(null);
   const [passwordSuccess, setPasswordSuccess] = useState(null);
   const [savingPassword, setSavingPassword] = useState(false);
-  
   // Notification preferences state
   const [editingNotifications, setEditingNotifications] = useState(false);
   const [notifications, setNotifications] = useState({
@@ -70,7 +66,6 @@ const Profile = ({ onBack }) => {
         last_name: user.last_name || '',
         phone: user.phone || '',
       });
-      
       // Load notification preferences if available
       if (user.notification_preferences) {
         setNotifications(user.notification_preferences);
@@ -106,7 +101,6 @@ const Profile = ({ onBack }) => {
   const handleSaveProfile = async () => {
     setSaving(true);
     setError(null);
-    
     try {
       await authAPI.updateProfile(profileData);
       await refreshUser();
@@ -161,10 +155,8 @@ const Profile = ({ onBack }) => {
   // Save new password
   const handleSavePassword = async () => {
     if (!validatePassword()) return;
-    
     setSavingPassword(true);
     setPasswordError(null);
-    
     try {
       await authAPI.changePassword(passwordData.current_password, passwordData.new_password);
       setPasswordSuccess('Password changed successfully');
@@ -204,7 +196,6 @@ const Profile = ({ onBack }) => {
   // Save notification preferences
   const handleSaveNotifications = async () => {
     setSavingNotifications(true);
-    
     try {
       await authAPI.updateProfile({ notification_preferences: notifications });
       await refreshUser();
@@ -256,7 +247,6 @@ const Profile = ({ onBack }) => {
           <ChevronLeft className="w-5 h-5 mr-1" />
           Back to Dashboard
         </button>
-        
         <div className="flex items-center">
           <User className="w-8 h-8 text-primary mr-3" />
           <div>
@@ -278,7 +268,6 @@ const Profile = ({ onBack }) => {
           </div>
         </div>
       )}
-      
       {success && (
         <div className="mb-4 bg-primary-light border border-green-200 rounded-lg p-4">
           <div className="flex items-center">
@@ -289,7 +278,6 @@ const Profile = ({ onBack }) => {
       )}
 
       <div className="space-y-6">
-        
         {/* Profile Overview Card */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
           <div className="bg-gradient-to-r from-green-600 to-green-700 px-6 py-8">
@@ -299,7 +287,7 @@ const Profile = ({ onBack }) => {
               </div>
               <div className="ml-6 text-white">
                 <h2 className="text-2xl font-bold">
-                  {user?.first_name && user?.last_name 
+                  {user?.first_name && user?.last_name
                     ? `${user.first_name} ${user.last_name}`
                     : user?.email}
                 </h2>
@@ -335,7 +323,6 @@ const Profile = ({ onBack }) => {
               </button>
             )}
           </div>
-          
           <div className="p-6">
             {editingProfile ? (
               <div className="space-y-4">
@@ -367,7 +354,6 @@ const Profile = ({ onBack }) => {
                     />
                   </div>
                 </div>
-                
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Email Address
@@ -380,7 +366,6 @@ const Profile = ({ onBack }) => {
                   />
                   <p className="text-xs text-gray-500 mt-1">Contact support to change your email address</p>
                 </div>
-                
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Phone Number
@@ -394,7 +379,6 @@ const Profile = ({ onBack }) => {
                     placeholder="(555) 555-5555"
                   />
                 </div>
-                
                 <div className="flex gap-2 pt-2">
                   <button
                     onClick={handleCancelProfile}
@@ -457,7 +441,6 @@ const Profile = ({ onBack }) => {
               Password & Security
             </h2>
           </div>
-          
           <div className="p-6">
             {passwordSuccess && (
               <div className="mb-4 bg-primary-light border border-green-200 rounded-lg p-3">
@@ -467,7 +450,6 @@ const Profile = ({ onBack }) => {
                 </div>
               </div>
             )}
-            
             {changingPassword ? (
               <div className="space-y-4 max-w-md">
                 {passwordError && (
@@ -478,7 +460,6 @@ const Profile = ({ onBack }) => {
                     </div>
                   </div>
                 )}
-                
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Current Password
@@ -501,7 +482,6 @@ const Profile = ({ onBack }) => {
                     </button>
                   </div>
                 </div>
-                
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     New Password
@@ -525,7 +505,6 @@ const Profile = ({ onBack }) => {
                   </div>
                   <p className="text-xs text-gray-500 mt-1">Must be at least 8 characters</p>
                 </div>
-                
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Confirm New Password
@@ -539,7 +518,6 @@ const Profile = ({ onBack }) => {
                     placeholder="Confirm new password"
                   />
                 </div>
-                
                 <div className="flex gap-2 pt-2">
                   <button
                     onClick={handleCancelPassword}
@@ -576,7 +554,6 @@ const Profile = ({ onBack }) => {
                 </button>
               </div>
             )}
-            
             {/* Two-Factor Authentication - Future Feature */}
             <div className="mt-6 pt-6 border-t border-gray-200">
               <div className="flex items-center justify-between">
@@ -633,12 +610,10 @@ const Profile = ({ onBack }) => {
               </div>
             )}
           </div>
-          
           <div className="p-6">
             <p className="text-sm text-gray-500 mb-4">
               Choose which notifications you'd like to receive via email.
             </p>
-            
             <div className="space-y-4">
               {/* PUR Reminders */}
               <div className="flex items-center justify-between py-2">
@@ -660,7 +635,6 @@ const Profile = ({ onBack }) => {
                   />
                 </button>
               </div>
-              
               {/* Water Test Due */}
               <div className="flex items-center justify-between py-2 border-t border-gray-100">
                 <div>
@@ -681,7 +655,6 @@ const Profile = ({ onBack }) => {
                   />
                 </button>
               </div>
-              
               {/* PHI Warnings */}
               <div className="flex items-center justify-between py-2 border-t border-gray-100">
                 <div>
@@ -702,7 +675,6 @@ const Profile = ({ onBack }) => {
                   />
                 </button>
               </div>
-              
               {/* Weekly Summary */}
               <div className="flex items-center justify-between py-2 border-t border-gray-100">
                 <div>
@@ -723,7 +695,6 @@ const Profile = ({ onBack }) => {
                   />
                 </button>
               </div>
-              
               {/* Team Updates */}
               <div className="flex items-center justify-between py-2 border-t border-gray-100">
                 <div>
@@ -756,7 +727,6 @@ const Profile = ({ onBack }) => {
               Account Information
             </h2>
           </div>
-          
           <div className="p-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>

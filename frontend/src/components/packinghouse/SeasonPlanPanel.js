@@ -68,7 +68,7 @@ const SeasonPlanPanel = ({ season }) => {
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <p className="text-sm text-gray-500 dark:text-gray-400">
+        <p className="text-sm text-gray-500">
           Where each commodity goes this season. Receipts showing a different
           house get flagged — unless the commodity is marked flex.
         </p>
@@ -84,7 +84,7 @@ const SeasonPlanPanel = ({ season }) => {
       {loading ? (
         <div className="text-center py-6 text-gray-500">Loading…</div>
       ) : commitments.length === 0 ? (
-        <div className="text-center py-6 bg-gray-50 dark:bg-gray-800 rounded-lg">
+        <div className="text-center py-6 bg-gray-50 rounded-lg">
           <Building2 className="w-10 h-10 mx-auto text-gray-300 mb-2" />
           <p className="text-gray-500 text-sm">
             No commitments recorded for the {season} season yet.
@@ -95,11 +95,11 @@ const SeasonPlanPanel = ({ season }) => {
           {Object.entries(byCommodity).map(([commodity, group]) => (
             <div
               key={commodity}
-              className="border border-gray-200 dark:border-gray-700 rounded-lg p-3 bg-white dark:bg-gray-800"
+              className="border border-gray-200 rounded-lg p-3 bg-white"
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <span className="font-medium text-gray-900 dark:text-white">{commodity}</span>
+                  <span className="font-medium text-gray-900">{commodity}</span>
                   {group.default ? (
                     <>
                       <span className="text-gray-400">→</span>
@@ -137,7 +137,7 @@ const SeasonPlanPanel = ({ season }) => {
                 <div className="mt-2 ml-4 space-y-1">
                   {group.overrides.map((o) => (
                     <div key={o.id} className="flex items-center justify-between text-sm">
-                      <span className="text-gray-600 dark:text-gray-300">
+                      <span className="text-gray-600">
                         {o.farm_name ? `${o.farm_name} · ` : ''}{o.field_name}
                         <span className="text-gray-400 mx-1">→</span>
                         <span className="font-medium">{o.packinghouse_short_code || o.packinghouse_name}</span>

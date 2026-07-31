@@ -140,7 +140,7 @@ export default function InvoicesTab({ season, refresh }) {
               e.stopPropagation();
               handleDelete(row);
             }}
-            className="text-xs text-red-600 dark:text-red-400 hover:underline"
+            className="text-xs text-red-600 hover:underline"
           >
             Delete
           </button>

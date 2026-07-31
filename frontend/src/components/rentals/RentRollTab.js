@@ -78,7 +78,7 @@ export default function RentRollTab() {
 
   if (error) {
     return (
-      <div className="rounded-lg border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 p-4 text-sm text-red-700 dark:text-red-300">
+      <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
         {error}
       </div>
     );
@@ -96,7 +96,7 @@ export default function RentRollTab() {
           <select
             value={locationType}
             onChange={(e) => setLocationType(e.target.value)}
-            className="rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-2 py-1.5 text-sm text-gray-900 dark:text-white"
+            className="rounded-md border border-gray-300 bg-white px-2 py-1.5 text-sm text-gray-900"
           >
             {LOCATION_FILTERS.map((f) => (
               <option key={f.value} value={f.value}>{f.label}</option>
@@ -132,7 +132,7 @@ export default function RentRollTab() {
             />
           </div>
 
-          <div className="flex items-start gap-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/40 p-3">
+          <div className="flex items-start gap-2 rounded-lg border border-gray-200 bg-gray-50 p-3">
             <Info className="w-4 h-4 text-gray-400 mt-0.5 shrink-0" />
             <p className={mutedText}>
               Units and occupants are counted separately and deliberately. Rent
@@ -151,10 +151,10 @@ export default function RentRollTab() {
 function MetricCard({ label, value, hint }) {
   return (
     <div className={cardClasses}>
-      <p className="text-xs uppercase tracking-wide text-gray-400 dark:text-gray-500">
+      <p className="text-xs uppercase tracking-wide text-gray-400">
         {label}
       </p>
-      <p className="mt-1 text-2xl font-semibold text-gray-900 dark:text-white">
+      <p className="mt-1 text-2xl font-semibold text-gray-900">
         {value}
       </p>
       {hint && <p className={`${mutedText} mt-1`}>{hint}</p>}
@@ -172,11 +172,11 @@ function UnitTable({ units, leaseByUnit }) {
   }
 
   return (
-    <div className="rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+    <div className="rounded-xl border border-gray-200 overflow-hidden">
       <div className="overflow-x-auto">
         <table className="min-w-full text-sm">
-          <thead className="bg-gray-50 dark:bg-gray-800/60">
-            <tr className="text-left text-gray-500 dark:text-gray-400">
+          <thead className="bg-gray-50">
+            <tr className="text-left text-gray-500">
               <th className="px-4 py-2.5 font-medium">Property</th>
               <th className="px-4 py-2.5 font-medium">Unit</th>
               <th className="px-4 py-2.5 font-medium">Occupant</th>
@@ -185,38 +185,38 @@ function UnitTable({ units, leaseByUnit }) {
               <th className="px-4 py-2.5 font-medium">Controls</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+          <tbody className="divide-y divide-gray-200">
             {units.map((u) => {
               const lease = leaseByUnit.get(u.id);
               return (
-                <tr key={u.id} className="bg-white dark:bg-gray-800">
-                  <td className="px-4 py-2.5 text-gray-600 dark:text-gray-300">
+                <tr key={u.id} className="bg-white">
+                  <td className="px-4 py-2.5 text-gray-600">
                     {u.property_name}
                   </td>
-                  <td className="px-4 py-2.5 font-medium text-gray-900 dark:text-white">
+                  <td className="px-4 py-2.5 font-medium text-gray-900">
                     {u.unit_label}
                   </td>
-                  <td className="px-4 py-2.5 text-gray-600 dark:text-gray-300">
+                  <td className="px-4 py-2.5 text-gray-600">
                     {u.occupant_label || (
-                      <span className="text-gray-400 dark:text-gray-500">vacant</span>
+                      <span className="text-gray-400">vacant</span>
                     )}
                   </td>
-                  <td className="px-4 py-2.5 text-right font-medium text-gray-900 dark:text-white">
+                  <td className="px-4 py-2.5 text-right font-medium text-gray-900">
                     {formatCurrency(lease?.monthly_rent ?? u.current_rent)}
                   </td>
                   {/* Nullable on purpose: not one lease date exists in any
                       source file, and inventing one would be worse. */}
-                  <td className="px-4 py-2.5 text-gray-600 dark:text-gray-300">
+                  <td className="px-4 py-2.5 text-gray-600">
                     {formatDate(lease?.start_date)}
                   </td>
                   <td className="px-4 py-2.5">
                     {u.is_rent_controlled ? (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-700">
                         <Lock className="w-3 h-3" />
                         Rent controlled
                       </span>
                     ) : (
-                      <span className="text-gray-400 dark:text-gray-500">—</span>
+                      <span className="text-gray-400">—</span>
                     )}
                   </td>
                 </tr>

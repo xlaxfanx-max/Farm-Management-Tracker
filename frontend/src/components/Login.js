@@ -261,7 +261,6 @@ export function Register({ onSwitchToLogin }) {
             {step === 1 ? (
               <>
                 <h3 className="text-lg font-medium text-gray-900 mb-4">Company Information</h3>
-                
                 {/* Company Name */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -305,7 +304,6 @@ export function Register({ onSwitchToLogin }) {
             ) : (
               <>
                 <h3 className="text-lg font-medium text-gray-900 mb-4">Your Information</h3>
-                
                 {/* Name Row */}
                 <div className="grid grid-cols-2 gap-4">
                   <div>

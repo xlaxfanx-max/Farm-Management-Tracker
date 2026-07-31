@@ -111,7 +111,7 @@ export default function HouseChargesTab({ season }) {
               <button
                 onClick={(e) => { e.stopPropagation(); handleAck(row); }}
                 title="The contractor bills the house directly — no grower invoice will exist"
-                className="text-xs text-blue-600 dark:text-blue-400 hover:underline whitespace-nowrap"
+                className="text-xs text-blue-600 hover:underline whitespace-nowrap"
               >
                 Mark expected
               </button>
@@ -152,7 +152,7 @@ export default function HouseChargesTab({ season }) {
             className={`${inputClasses} pl-8`}
           />
         </div>
-        <span className="text-sm text-gray-500 dark:text-gray-400 ml-auto">
+        <span className="text-sm text-gray-500 ml-auto">
           {data.length} charge{data.length === 1 ? '' : 's'}
         </span>
       </div>

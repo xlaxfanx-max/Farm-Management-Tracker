@@ -628,18 +628,18 @@ export default function DeadlineCalendar({ onNavigate }) {
           ) : (
             <div className="py-12 px-6">
               {/* Auto-population hint banner */}
-              <div className="max-w-xl mx-auto mb-6 bg-teal-50 dark:bg-teal-900/20 border border-teal-200 dark:border-teal-800 rounded-xl p-4 flex gap-3">
+              <div className="max-w-xl mx-auto mb-6 bg-teal-50 border border-teal-200 rounded-xl p-4 flex gap-3">
                 <span className="text-2xl flex-shrink-0">🗓️</span>
                 <div>
-                  <p className="text-sm font-semibold text-teal-800 dark:text-teal-200">Deadlines auto-generate on first visit</p>
-                  <p className="text-xs text-teal-600 dark:text-teal-400 mt-0.5">
+                  <p className="text-sm font-semibold text-teal-800">Deadlines auto-generate on first visit</p>
+                  <p className="text-xs text-teal-600 mt-0.5">
                     Common recurring deadlines (monthly PUR, quarterly water tests, annual licenses) will be
                     pre-populated automatically the first time you visit the Compliance Hub.
                     You can then add, edit, or remove any deadline.
                   </p>
                 </div>
               </div>
-              <div className="text-center text-gray-500 dark:text-gray-400">
+              <div className="text-center text-gray-500">
                 <Calendar className="w-10 h-10 mx-auto mb-3 text-gray-400" />
                 <p className="font-medium">No deadlines found</p>
                 <p className="text-sm mt-1 mb-4">Try changing your filters, or add your first deadline below</p>

@@ -35,7 +35,7 @@ function Dashboard({ onNavigate }) {
   };
 
   return (
-    <div className="min-h-screen bg-surface dark:bg-gray-900 transition-colors">
+    <div className="min-h-screen bg-surface transition-colors">
       <div className="max-w-7xl mx-auto px-6 py-6 space-y-6">
         {/* 1. Agentic Hero — greeting + urgent action items */}
         <AgenticHero

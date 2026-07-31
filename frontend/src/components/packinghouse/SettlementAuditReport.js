@@ -13,23 +13,23 @@ import { poolSettlementsAPI } from '../../services/api';
 
 const SEVERITY_STYLES = {
   critical: {
-    bg: 'bg-red-50 dark:bg-red-900/20',
+    bg: 'bg-red-50',
     border: 'border-red-500',
-    text: 'text-red-800 dark:text-red-200',
+    text: 'text-red-800',
     icon: 'text-red-600',
     badge: 'bg-red-600',
   },
   warning: {
-    bg: 'bg-amber-50 dark:bg-amber-900/20',
+    bg: 'bg-amber-50',
     border: 'border-amber-500',
-    text: 'text-amber-800 dark:text-amber-200',
+    text: 'text-amber-800',
     icon: 'text-amber-600',
     badge: 'bg-amber-500',
   },
   info: {
-    bg: 'bg-sky-50 dark:bg-sky-900/20',
+    bg: 'bg-sky-50',
     border: 'border-sky-500',
-    text: 'text-sky-800 dark:text-sky-200',
+    text: 'text-sky-800',
     icon: 'text-sky-600',
     badge: 'bg-sky-500',
   },
@@ -37,21 +37,21 @@ const SEVERITY_STYLES = {
 
 const STATUS_BANNER = {
   clean: {
-    bg: 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-500',
+    bg: 'bg-emerald-50 border-emerald-500',
     icon: CheckCircle2,
     iconColor: 'text-emerald-600',
     title: 'Clean',
     message: 'No anomalies detected on this settlement.',
   },
   review: {
-    bg: 'bg-amber-50 dark:bg-amber-900/20 border-amber-500',
+    bg: 'bg-amber-50 border-amber-500',
     icon: AlertTriangle,
     iconColor: 'text-amber-600',
     title: 'Needs review',
     message: null,
   },
   critical: {
-    bg: 'bg-red-50 dark:bg-red-900/20 border-red-500',
+    bg: 'bg-red-50 border-red-500',
     icon: ShieldAlert,
     iconColor: 'text-red-600',
     title: 'Critical variance',
@@ -93,7 +93,7 @@ function FindingCard({ finding, reviewedSet, onToggleReviewed }) {
             {finding.title}
           </div>
           {!expanded && (
-            <div className="text-xs mt-0.5 text-gray-600 dark:text-gray-400 line-clamp-2">
+            <div className="text-xs mt-0.5 text-gray-600 line-clamp-2">
               {finding.message}
             </div>
           )}
@@ -118,7 +118,7 @@ function FindingCard({ finding, reviewedSet, onToggleReviewed }) {
       </button>
 
       {expanded && (
-        <div className="px-4 pb-4 pt-1 border-t border-gray-200 dark:border-gray-700">
+        <div className="px-4 pb-4 pt-1 border-t border-gray-200">
           <p className={`text-sm ${style.text} mb-3`}>{finding.message}</p>
 
           {finding.details && Object.keys(finding.details).length > 0 && (
@@ -126,12 +126,12 @@ function FindingCard({ finding, reviewedSet, onToggleReviewed }) {
               {Object.entries(finding.details).map(([key, val]) => (
                 <div
                   key={key}
-                  className="bg-white dark:bg-gray-800 rounded p-2 border border-gray-200 dark:border-gray-700"
+                  className="bg-white rounded p-2 border border-gray-200"
                 >
-                  <div className="text-[11px] text-gray-500 dark:text-gray-400">
+                  <div className="text-[11px] text-gray-500">
                     {key.replace(/_/g, ' ')}
                   </div>
-                  <div className="text-sm font-medium text-gray-800 dark:text-gray-100">
+                  <div className="text-sm font-medium text-gray-800">
                     {typeof val === 'number'
                       ? Math.abs(val) < 1 && Math.abs(val) > 0
                         ? val.toFixed(4)
@@ -143,7 +143,7 @@ function FindingCard({ finding, reviewedSet, onToggleReviewed }) {
             </div>
           )}
 
-          <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+          <div className="flex items-center justify-between text-xs text-gray-500">
             <span>Source: {finding.source_ref || 'settlement'}</span>
             <button
               type="button"
@@ -151,7 +151,7 @@ function FindingCard({ finding, reviewedSet, onToggleReviewed }) {
                 e.stopPropagation();
                 onToggleReviewed(finding.code);
               }}
-              className="px-2 py-1 rounded border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700"
+              className="px-2 py-1 rounded border border-gray-300 hover:bg-gray-100"
             >
               {reviewed ? 'Unmark reviewed' : 'Mark reviewed'}
             </button>
@@ -230,15 +230,15 @@ function SettlementAuditReport({ settlementId }) {
         <div className="flex items-start gap-3">
           <BannerIcon className={`w-6 h-6 ${banner.iconColor} flex-shrink-0`} />
           <div className="flex-1">
-            <div className="font-semibold text-gray-900 dark:text-white">
+            <div className="font-semibold text-gray-900">
               {banner.title}
             </div>
-            <div className="text-sm text-gray-700 dark:text-gray-300 mt-0.5">
+            <div className="text-sm text-gray-700 mt-0.5">
               {bannerMessage}
             </div>
           </div>
           {totalImpact > 0 && (
-            <div className="flex items-center gap-1 text-sm font-medium text-gray-700 dark:text-gray-200">
+            <div className="flex items-center gap-1 text-sm font-medium text-gray-700">
               <DollarSign className="w-4 h-4" />
               <span>
                 {totalImpact.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
@@ -249,7 +249,7 @@ function SettlementAuditReport({ settlementId }) {
           <button
             type="button"
             onClick={load}
-            className="p-2 text-gray-500 hover:text-gray-700 rounded hover:bg-gray-100 dark:hover:bg-gray-700"
+            className="p-2 text-gray-500 hover:text-gray-700 rounded hover:bg-gray-100"
             title="Re-run audit"
           >
             <RefreshCw className="w-4 h-4" />

@@ -175,10 +175,10 @@ function CommandPalette() {
       />
 
       {/* Palette */}
-      <div className="relative w-full max-w-lg mx-4 bg-surface-raised dark:bg-gray-800 rounded-xl shadow-2xl border border-border dark:border-gray-700 overflow-hidden">
+      <div className="relative w-full max-w-lg mx-4 bg-surface-raised rounded-xl shadow-2xl border border-border overflow-hidden">
         {/* Search input */}
-        <div className="flex items-center gap-3 px-4 py-3 border-b border-border dark:border-gray-700">
-          <Search className="w-5 h-5 text-text-muted dark:text-gray-500 flex-shrink-0" />
+        <div className="flex items-center gap-3 px-4 py-3 border-b border-border">
+          <Search className="w-5 h-5 text-text-muted flex-shrink-0" />
           <input
             ref={inputRef}
             type="text"
@@ -186,9 +186,9 @@ function CommandPalette() {
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Search pages, farms, fields..."
-            className="flex-1 bg-transparent text-text dark:text-white text-sm outline-none placeholder-text-muted dark:placeholder-gray-500"
+            className="flex-1 bg-transparent text-text text-sm outline-none placeholder-text-muted"
           />
-          <kbd className="hidden sm:inline-flex items-center px-1.5 py-0.5 text-[10px] font-medium text-text-muted dark:text-gray-500 bg-surface-sunken dark:bg-gray-700 rounded border border-border dark:border-gray-600">
+          <kbd className="hidden sm:inline-flex items-center px-1.5 py-0.5 text-[10px] font-medium text-text-muted bg-surface-sunken rounded border border-border">
             ESC
           </kbd>
         </div>
@@ -197,7 +197,7 @@ function CommandPalette() {
         <div ref={listRef} className="max-h-[320px] overflow-y-auto py-2">
           {filteredItems.length === 0 ? (
             <div className="px-4 py-8 text-center">
-              <p className="text-sm text-text-muted dark:text-gray-500">No results found</p>
+              <p className="text-sm text-text-muted">No results found</p>
             </div>
           ) : (
             filteredItems.map((item, index) => {
@@ -211,20 +211,20 @@ function CommandPalette() {
                   className={`
                     w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors
                     ${isSelected
-                      ? 'bg-primary-light dark:bg-primary/10 text-primary dark:text-green-400'
-                      : 'text-text dark:text-gray-200 hover:bg-surface-sunken dark:hover:bg-gray-700'
+                      ? 'bg-primary-light text-primary'
+                      : 'text-text hover:bg-surface-sunken'
                     }
                   `}
                 >
-                  <Icon className={`w-4 h-4 flex-shrink-0 ${isSelected ? 'text-primary dark:text-green-400' : 'text-text-muted dark:text-gray-500'}`} />
+                  <Icon className={`w-4 h-4 flex-shrink-0 ${isSelected ? 'text-primary' : 'text-text-muted'}`} />
                   <div className="flex-1 min-w-0">
                     <span className="text-sm font-medium truncate block">{item.label}</span>
                     {item.sublabel && (
-                      <span className="text-xs text-text-muted dark:text-gray-500">{item.sublabel}</span>
+                      <span className="text-xs text-text-muted">{item.sublabel}</span>
                     )}
                   </div>
                   {item.type === 'navigation' && isSelected && (
-                    <ArrowRight className="w-3.5 h-3.5 text-text-muted dark:text-gray-500 flex-shrink-0" />
+                    <ArrowRight className="w-3.5 h-3.5 text-text-muted flex-shrink-0" />
                   )}
                 </button>
               );
@@ -233,17 +233,17 @@ function CommandPalette() {
         </div>
 
         {/* Footer hint */}
-        <div className="px-4 py-2 border-t border-border dark:border-gray-700 flex items-center gap-4 text-[10px] text-text-muted dark:text-gray-500">
+        <div className="px-4 py-2 border-t border-border flex items-center gap-4 text-[10px] text-text-muted">
           <span className="flex items-center gap-1">
-            <kbd className="px-1 py-0.5 bg-surface-sunken dark:bg-gray-700 rounded border border-border dark:border-gray-600">↑↓</kbd>
+            <kbd className="px-1 py-0.5 bg-surface-sunken rounded border border-border">↑↓</kbd>
             navigate
           </span>
           <span className="flex items-center gap-1">
-            <kbd className="px-1 py-0.5 bg-surface-sunken dark:bg-gray-700 rounded border border-border dark:border-gray-600">↵</kbd>
+            <kbd className="px-1 py-0.5 bg-surface-sunken rounded border border-border">↵</kbd>
             open
           </span>
           <span className="flex items-center gap-1">
-            <kbd className="px-1 py-0.5 bg-surface-sunken dark:bg-gray-700 rounded border border-border dark:border-gray-600">esc</kbd>
+            <kbd className="px-1 py-0.5 bg-surface-sunken rounded border border-border">esc</kbd>
             close
           </span>
         </div>

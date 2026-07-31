@@ -51,9 +51,9 @@ function QuickActionsGrid({ onNavigate }) {
           key={action.id}
           onClick={action.onClick}
           className="
-            bg-surface-raised dark:bg-gray-800
-            border border-border dark:border-gray-700
-            hover:border-primary dark:hover:border-primary
+            bg-surface-raised
+            border border-border
+            hover:border-primary
             rounded-lg px-4 py-4
             flex flex-col items-center justify-center gap-2.5
             transition-all hover:shadow-md
@@ -62,8 +62,8 @@ function QuickActionsGrid({ onNavigate }) {
             group
           "
         >
-          <action.icon className="w-5 h-5 text-text-secondary dark:text-gray-400 group-hover:text-primary transition-colors" />
-          <span className="text-sm font-medium text-text dark:text-gray-200 group-hover:text-primary transition-colors">
+          <action.icon className="w-5 h-5 text-text-secondary group-hover:text-primary transition-colors" />
+          <span className="text-sm font-medium text-text group-hover:text-primary transition-colors">
             {action.label}
           </span>
         </button>

@@ -86,7 +86,7 @@ export default function ModuleVisibilitySettings() {
     <div className="space-y-4">
       {hiddenCount > 0 && (
         <div className="flex items-center justify-between">
-          <p className="text-sm text-text-secondary dark:text-gray-400">
+          <p className="text-sm text-text-secondary">
             {hiddenCount} module{hiddenCount !== 1 ? 's' : ''} hidden
           </p>
           <button
@@ -100,7 +100,7 @@ export default function ModuleVisibilitySettings() {
 
       {Object.entries(groups).map(([groupName, modules]) => (
         <div key={groupName}>
-          <h4 className="text-xs font-semibold uppercase tracking-wide text-text-muted dark:text-gray-500 mb-2">
+          <h4 className="text-xs font-semibold uppercase tracking-wide text-text-muted mb-2">
             {groupName}
           </h4>
           <div className="space-y-1">
@@ -110,7 +110,7 @@ export default function ModuleVisibilitySettings() {
               return (
                 <label
                   key={mod.id}
-                  className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-surface-sunken dark:hover:bg-gray-800 cursor-pointer transition-colors"
+                  className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-surface-sunken cursor-pointer transition-colors"
                 >
                   <input
                     type="checkbox"
@@ -118,8 +118,8 @@ export default function ModuleVisibilitySettings() {
                     onChange={() => toggle(mod.id)}
                     className="rounded border-gray-300 text-primary focus:ring-primary"
                   />
-                  <Icon className="w-4 h-4 text-text-secondary dark:text-gray-400" />
-                  <span className={`text-sm ${isVisible ? 'text-text dark:text-gray-200' : 'text-text-muted dark:text-gray-500'}`}>
+                  <Icon className="w-4 h-4 text-text-secondary" />
+                  <span className={`text-sm ${isVisible ? 'text-text' : 'text-text-muted'}`}>
                     {mod.label}
                   </span>
                 </label>

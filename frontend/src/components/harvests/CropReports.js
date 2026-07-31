@@ -43,19 +43,19 @@ function TrendIndicator({ current, prior }) {
 function MetricCell({ label, value, hint, highlight }) {
   return (
     <div className="flex flex-col">
-      <span className="text-[11px] uppercase tracking-wide text-gray-500 dark:text-gray-400">
+      <span className="text-[11px] uppercase tracking-wide text-gray-500">
         {label}
       </span>
       <span
         className={`text-lg font-semibold ${
-          highlight === 'positive' ? 'text-emerald-700 dark:text-emerald-300'
-          : highlight === 'negative' ? 'text-red-700 dark:text-red-300'
-          : 'text-gray-900 dark:text-white'
+          highlight === 'positive' ? 'text-emerald-700'
+          : highlight === 'negative' ? 'text-red-700'
+          : 'text-gray-900'
         }`}
       >
         {value}
       </span>
-      {hint && <span className="text-[11px] text-gray-500 dark:text-gray-400">{hint}</span>}
+      {hint && <span className="text-[11px] text-gray-500">{hint}</span>}
     </div>
   );
 }
@@ -67,22 +67,22 @@ function CropCard({ card }) {
 
   return (
     <div
-      className={`rounded-lg border bg-white dark:bg-gray-800 ${
+      className={`rounded-lg border bg-white ${
         showNegative
-          ? 'border-red-300 dark:border-red-700'
-          : 'border-gray-200 dark:border-gray-700'
+          ? 'border-red-300'
+          : 'border-gray-200'
       }`}
       data-testid="crop-report-card"
     >
       {/* Header */}
-      <div className="px-4 py-3 flex items-start gap-3 border-b border-gray-100 dark:border-gray-700">
+      <div className="px-4 py-3 flex items-start gap-3 border-b border-gray-100">
         <Wheat className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" />
         <div className="flex-1 min-w-0">
-          <div className="font-semibold text-gray-900 dark:text-white truncate">
+          <div className="font-semibold text-gray-900 truncate">
             {card.crop_variety_display}
             <span className="text-gray-500 font-normal"> · {card.farm_name}</span>
           </div>
-          <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 flex items-center gap-3 flex-wrap">
+          <div className="text-xs text-gray-500 mt-0.5 flex items-center gap-3 flex-wrap">
             <span>{card.season_label}</span>
             <span>·</span>
             <span>{formatNumber(card.total_acres)} acres</span>
@@ -94,7 +94,7 @@ function CropCard({ card }) {
             )}
             {card.has_block_level_data && (
               <span
-                className="px-1.5 py-0.5 text-[10px] rounded bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300 font-medium"
+                className="px-1.5 py-0.5 text-[10px] rounded bg-indigo-50 text-indigo-700 font-medium"
                 title="Settlement or field data is tagged by block"
               >
                 block detail
@@ -105,11 +105,11 @@ function CropCard({ card }) {
         {netPerAcre != null && (
           <div className="text-right">
             <div className={`text-xl font-bold ${
-              showNegative ? 'text-red-700 dark:text-red-300' : 'text-emerald-700 dark:text-emerald-300'
+              showNegative ? 'text-red-700' : 'text-emerald-700'
             }`}>
               {formatCurrency(netPerAcre)}/ac
             </div>
-            <div className="text-[11px] text-gray-500 dark:text-gray-400">net per acre</div>
+            <div className="text-[11px] text-gray-500">net per acre</div>
             <TrendIndicator current={netPerAcre} prior={card.prior_season_net_per_acre} />
           </div>
         )}
@@ -143,17 +143,17 @@ function CropCard({ card }) {
       {/* Compliance + health pills */}
       <div className="px-4 pb-3 flex flex-wrap gap-2 text-xs">
         {card.phi_compliant === true && (
-          <span className="inline-flex items-center gap-1 px-2 py-1 rounded bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
+          <span className="inline-flex items-center gap-1 px-2 py-1 rounded bg-emerald-50 text-emerald-700">
             <CheckCircle2 className="w-3 h-3" /> PHI clean
           </span>
         )}
         {card.phi_compliant === false && (
-          <span className="inline-flex items-center gap-1 px-2 py-1 rounded bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-300">
+          <span className="inline-flex items-center gap-1 px-2 py-1 rounded bg-red-50 text-red-700">
             <AlertTriangle className="w-3 h-3" /> PHI needs review
           </span>
         )}
         {card.moa_rotation_warnings > 0 && (
-          <span className="inline-flex items-center gap-1 px-2 py-1 rounded bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300">
+          <span className="inline-flex items-center gap-1 px-2 py-1 rounded bg-amber-50 text-amber-700">
             <AlertTriangle className="w-3 h-3" />
             {card.moa_rotation_warnings} MOA rotation warning{card.moa_rotation_warnings !== 1 ? 's' : ''}
           </span>
@@ -161,9 +161,9 @@ function CropCard({ card }) {
         {card.hlb_risk_max != null && (
           <span
             className={`inline-flex items-center gap-1 px-2 py-1 rounded ${
-              card.hlb_risk_max >= 60 ? 'bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-300'
-              : card.hlb_risk_max >= 40 ? 'bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300'
-              : 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300'
+              card.hlb_risk_max >= 60 ? 'bg-red-50 text-red-700'
+              : card.hlb_risk_max >= 40 ? 'bg-amber-50 text-amber-700'
+              : 'bg-emerald-50 text-emerald-700'
             }`}
             title="Highest HLB risk across blocks in this ranch+crop"
           >
@@ -171,7 +171,7 @@ function CropCard({ card }) {
           </span>
         )}
         {card.avg_health_score != null && (
-          <span className="inline-flex items-center gap-1 px-2 py-1 rounded bg-sky-50 text-sky-700 dark:bg-sky-900/30 dark:text-sky-300">
+          <span className="inline-flex items-center gap-1 px-2 py-1 rounded bg-sky-50 text-sky-700">
             Avg NDVI × 100: {card.avg_health_score}
           </span>
         )}
@@ -182,7 +182,7 @@ function CropCard({ card }) {
         <button
           type="button"
           onClick={() => setExpanded(!expanded)}
-          className="w-full px-4 py-2 flex items-center justify-between text-xs font-medium text-gray-600 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-700 border-t border-gray-100 dark:border-gray-700"
+          className="w-full px-4 py-2 flex items-center justify-between text-xs font-medium text-gray-600 hover:bg-gray-50 border-t border-gray-100"
         >
           <span className="flex items-center gap-1">
             <MapPin className="w-3 h-3" />
@@ -193,7 +193,7 @@ function CropCard({ card }) {
       )}
 
       {expanded && card.fields.length > 0 && (
-        <div className="border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/40">
+        <div className="border-t border-gray-100 bg-gray-50">
           <table className="w-full text-sm">
             <thead>
               <tr className="text-[11px] uppercase tracking-wide text-gray-500">
@@ -207,26 +207,26 @@ function CropCard({ card }) {
             </thead>
             <tbody>
               {card.fields.map(f => (
-                <tr key={f.field_id} className="border-t border-gray-100 dark:border-gray-700">
-                  <td className="px-4 py-2 text-gray-900 dark:text-white">
+                <tr key={f.field_id} className="border-t border-gray-100">
+                  <td className="px-4 py-2 text-gray-900">
                     {f.field_name}
                     {!f.has_harvest && !f.has_applications && (
                       <span className="ml-2 text-[10px] text-gray-400">no data</span>
                     )}
                   </td>
-                  <td className="px-4 py-2 text-right text-gray-700 dark:text-gray-300">
+                  <td className="px-4 py-2 text-right text-gray-700">
                     {formatNumber(f.acres)}
                   </td>
-                  <td className="px-4 py-2 text-right text-gray-700 dark:text-gray-300">
+                  <td className="px-4 py-2 text-right text-gray-700">
                     {formatNumber(f.bins)}
                   </td>
-                  <td className="px-4 py-2 text-right text-gray-700 dark:text-gray-300">
+                  <td className="px-4 py-2 text-right text-gray-700">
                     {formatCurrency(f.spray_cost)}
                   </td>
-                  <td className="px-4 py-2 text-right text-gray-700 dark:text-gray-300">
+                  <td className="px-4 py-2 text-right text-gray-700">
                     {f.hlb_risk_score != null ? Math.round(f.hlb_risk_score) : '—'}
                   </td>
-                  <td className="px-4 py-2 text-right text-gray-700 dark:text-gray-300">
+                  <td className="px-4 py-2 text-right text-gray-700">
                     {f.avg_ndvi != null ? f.avg_ndvi.toFixed(2) : '—'}
                   </td>
                 </tr>
@@ -238,7 +238,7 @@ function CropCard({ card }) {
 
       {/* Data gaps footer — always visible, nudge the user to improve data */}
       {card.data_gaps.length > 0 && (
-        <div className="px-4 py-2 text-[11px] text-gray-500 dark:text-gray-400 border-t border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/30 flex items-start gap-1">
+        <div className="px-4 py-2 text-[11px] text-gray-500 border-t border-gray-100 bg-gray-50/50 flex items-start gap-1">
           <Info className="w-3 h-3 mt-0.5 flex-shrink-0" />
           <span>{card.data_gaps.join(' · ')}</span>
         </div>
@@ -290,11 +290,11 @@ function CropReports() {
       {/* Header */}
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+          <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
             <DollarSign className="w-5 h-5 text-emerald-600" />
             Ranch × Crop Report
           </h3>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+          <p className="text-sm text-gray-500 mt-0.5">
             {season ? (
               <>Season {season.label} · {cards.length} ranch-crop combination{cards.length !== 1 ? 's' : ''}</>
             ) : 'Loading…'}
@@ -303,7 +303,7 @@ function CropReports() {
         <button
           type="button"
           onClick={load}
-          className="flex items-center gap-1 px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 rounded"
+          className="flex items-center gap-1 px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-100 rounded"
         >
           <RefreshCw className="w-4 h-4" /> Refresh
         </button>
@@ -311,7 +311,7 @@ function CropReports() {
 
       {/* Cards */}
       {cards.length === 0 ? (
-        <div className="text-center py-10 text-gray-500 dark:text-gray-400">
+        <div className="text-center py-10 text-gray-500">
           <Wheat className="w-8 h-8 mx-auto mb-2 opacity-40" />
           <p>No crop activity in this window. Add harvests, spray records, or pool settlements to populate this view.</p>
         </div>

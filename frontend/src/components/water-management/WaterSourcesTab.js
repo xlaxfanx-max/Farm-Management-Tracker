@@ -27,7 +27,7 @@ const WaterSourcesTab = ({
 }) => (
   <div className="space-y-6">
     {/* Search and Filters */}
-    <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
+    <div className="bg-white rounded-xl border border-gray-200 p-4">
       <div className="flex flex-col md:flex-row gap-4">
         <div className="flex-1 relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -36,13 +36,13 @@ const WaterSourcesTab = ({
             placeholder="Search water sources..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
         <select
           value={filterFarm}
           onChange={(e) => setFilterFarm(e.target.value)}
-          className="px-4 py-2.5 border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 dark:text-gray-200"
+          className="px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white"
         >
           <option value="">All Farms</option>
           {farms.map(farm => (
@@ -52,7 +52,7 @@ const WaterSourcesTab = ({
         <select
           value={filterSourceType}
           onChange={(e) => setFilterSourceType(e.target.value)}
-          className="px-4 py-2.5 border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 dark:text-gray-200"
+          className="px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white"
         >
           <option value="">All Types</option>
           {Object.entries(SOURCE_TYPE_LABELS).map(([value, label]) => (
@@ -61,7 +61,7 @@ const WaterSourcesTab = ({
         </select>
         <button
           onClick={handleRefresh}
-          className="p-2.5 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400"
+          className="p-2.5 border border-gray-200 rounded-lg hover:bg-gray-50 text-gray-600"
         >
           <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
         </button>
@@ -70,10 +70,10 @@ const WaterSourcesTab = ({
 
     {/* Sources Grid */}
     {filteredSources.length === 0 ? (
-      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-12 text-center">
-        <Droplet className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
-        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No water sources found</h3>
-        <p className="text-gray-500 dark:text-gray-400 mb-6">Get started by adding your first well or water source.</p>
+      <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
+        <Droplet className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+        <h3 className="text-lg font-medium text-gray-900 mb-2">No water sources found</h3>
+        <p className="text-gray-500 mb-6">Get started by adding your first well or water source.</p>
         <div className="flex justify-center gap-3">
           <button
             onClick={() => openWellSourceModal()}
@@ -100,7 +100,7 @@ const WaterSourcesTab = ({
           return (
             <div
               key={source.id}
-              className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-md transition-all overflow-hidden"
+              className="bg-white rounded-xl border border-gray-200 hover:border-gray-300 hover:shadow-md transition-all overflow-hidden"
             >
               {/* Card Header */}
               <div className={`px-4 py-3 ${isWell ? 'bg-gradient-to-r from-cyan-50 to-blue-50 border-b border-cyan-100' : 'bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-blue-100'}`}>
@@ -126,8 +126,8 @@ const WaterSourcesTab = ({
 
               {/* Card Body */}
               <div className="p-4">
-                <h3 className="font-semibold text-gray-900 dark:text-white mb-1">{source.name}</h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">{farm?.name}</p>
+                <h3 className="font-semibold text-gray-900 mb-1">{source.name}</h3>
+                <p className="text-sm text-gray-500 mb-4">{farm?.name}</p>
 
                 {/* Usage Tags */}
                 <div className="flex flex-wrap gap-1.5 mb-4">
@@ -143,13 +143,13 @@ const WaterSourcesTab = ({
                 </div>
 
                 {/* Test Frequency */}
-                <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-4">
+                <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
                   <Clock className="w-4 h-4" />
                   <span>Tests every {source.test_frequency_days || 365} days</span>
                 </div>
 
                 {/* Actions */}
-                <div className="flex gap-2 pt-3 border-t border-gray-100 dark:border-gray-700">
+                <div className="flex gap-2 pt-3 border-t border-gray-100">
                   <button
                     onClick={() => {
                       setSelectedSource(source);

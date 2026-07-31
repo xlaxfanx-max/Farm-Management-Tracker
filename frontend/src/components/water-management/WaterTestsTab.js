@@ -46,21 +46,21 @@ const WaterTestsTab = ({
         </div>
       </div>
     ) : (
-      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
-        <h3 className="font-medium text-gray-700 dark:text-gray-300 mb-3">Select a water source to view tests</h3>
+      <div className="bg-white rounded-xl border border-gray-200 p-5">
+        <h3 className="font-medium text-gray-700 mb-3">Select a water source to view tests</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           {waterSources.map(source => (
             <button
               key={source.id}
               onClick={() => setSelectedSource(source)}
-              className="flex items-center gap-3 p-3 border border-gray-200 dark:border-gray-600 rounded-lg hover:border-blue-300 dark:hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all text-left"
+              className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-all text-left"
             >
               <div className={`p-2 rounded-lg ${source.source_type === 'well' ? 'bg-cyan-100' : 'bg-blue-100'}`}>
                 <Droplet className={`w-4 h-4 ${source.source_type === 'well' ? 'text-cyan-600' : 'text-blue-600'}`} />
               </div>
               <div>
-                <p className="font-medium text-gray-900 dark:text-white">{source.name}</p>
-                <p className="text-sm text-gray-500 dark:text-gray-400">{SOURCE_TYPE_LABELS[source.source_type]}</p>
+                <p className="font-medium text-gray-900">{source.name}</p>
+                <p className="text-sm text-gray-500">{SOURCE_TYPE_LABELS[source.source_type]}</p>
               </div>
             </button>
           ))}
@@ -71,10 +71,10 @@ const WaterTestsTab = ({
     {/* Tests List */}
     {selectedSource && (
       waterTests.length === 0 ? (
-        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-12 text-center">
-          <FileText className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No test records</h3>
-          <p className="text-gray-500 dark:text-gray-400 mb-6">Start tracking water quality by adding your first test result.</p>
+        <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
+          <FileText className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-gray-900 mb-2">No test records</h3>
+          <p className="text-gray-500 mb-6">Start tracking water quality by adding your first test result.</p>
           <button
             onClick={() => openWaterTestModal(null, selectedSource)}
             className="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
@@ -92,14 +92,14 @@ const WaterTestsTab = ({
             return (
               <div
                 key={test.id}
-                className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-sm transition-all cursor-pointer overflow-hidden"
+                className="bg-white rounded-xl border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all cursor-pointer overflow-hidden"
                 onClick={() => openWaterTestModal(test)}
               >
                 <div className="p-4">
                   <div className="flex items-start justify-between mb-3">
                     <div>
-                      <h3 className="font-semibold text-gray-900 dark:text-white">{formatDate(test.test_date)}</h3>
-                      <span className="text-sm text-gray-500 dark:text-gray-400">
+                      <h3 className="font-semibold text-gray-900">{formatDate(test.test_date)}</h3>
+                      <span className="text-sm text-gray-500">
                         {test.test_type === 'microbial' ? 'Microbial' :
                          test.test_type === 'chemical' ? 'Chemical' : 'Microbial & Chemical'}
                       </span>
@@ -112,15 +112,15 @@ const WaterTestsTab = ({
 
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     {test.ecoli_result !== null && (
-                      <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-2">
-                        <p className="text-gray-500 dark:text-gray-400 text-xs">E. coli</p>
-                        <p className="font-semibold text-gray-900 dark:text-white">{test.ecoli_result} CFU/100mL</p>
+                      <div className="bg-gray-50 rounded-lg p-2">
+                        <p className="text-gray-500 text-xs">E. coli</p>
+                        <p className="font-semibold text-gray-900">{test.ecoli_result} CFU/100mL</p>
                       </div>
                     )}
                     {test.ph_level !== null && (
-                      <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-2">
-                        <p className="text-gray-500 dark:text-gray-400 text-xs">pH Level</p>
-                        <p className="font-semibold text-gray-900 dark:text-white">{test.ph_level}</p>
+                      <div className="bg-gray-50 rounded-lg p-2">
+                        <p className="text-gray-500 text-xs">pH Level</p>
+                        <p className="font-semibold text-gray-900">{test.ph_level}</p>
                       </div>
                     )}
                   </div>

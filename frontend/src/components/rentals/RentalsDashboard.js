@@ -47,11 +47,11 @@ export default function RentalsDashboard({ initialTab = 'overview', onNavigate }
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-primary-light dark:bg-primary-light">
+          <div className="p-2 rounded-lg bg-primary-light">
             <KeyRound className="w-6 h-6 text-primary" />
           </div>
           <div>
-            <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
+            <h1 className="text-xl font-semibold text-gray-900">
               Rental Income
             </h1>
             <p className={mutedText}>
@@ -66,7 +66,7 @@ export default function RentalsDashboard({ initialTab = 'overview', onNavigate }
             <select
               value={year ?? ''}
               onChange={(e) => setYear(Number(e.target.value))}
-              className="rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-2 py-1.5 text-sm text-gray-900 dark:text-white"
+              className="rounded-md border border-gray-300 bg-white px-2 py-1.5 text-sm text-gray-900"
             >
               {yearOptions.map((y) => (
                 <option key={y} value={y}>{y}</option>
@@ -76,7 +76,7 @@ export default function RentalsDashboard({ initialTab = 'overview', onNavigate }
         )}
       </div>
 
-      <div className="border-b border-gray-200 dark:border-gray-700">
+      <div className="border-b border-gray-200">
         <nav className="flex gap-1 overflow-x-auto -mb-px">
           {TABS.map((tab) => {
             const isActive = tab.id === activeTab;
@@ -87,7 +87,7 @@ export default function RentalsDashboard({ initialTab = 'overview', onNavigate }
                 className={`px-4 py-2.5 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
                   isActive
                     ? 'border-primary text-primary'
-                    : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:border-gray-300'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }`}
               >
                 {tab.label}

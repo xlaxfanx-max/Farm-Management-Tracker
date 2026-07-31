@@ -40,16 +40,16 @@ function FarmStatusStrip({ farms = [], fields = [], applications = [], applicati
 
   if (farms.length === 0) {
     return (
-      <div className="bg-surface-raised dark:bg-gray-800 rounded-lg border border-border dark:border-gray-700 p-4">
-        <p className="text-sm text-text-muted dark:text-gray-500 text-center">No farms yet. Add your first farm to get started.</p>
+      <div className="bg-surface-raised rounded-lg border border-border p-4">
+        <p className="text-sm text-text-muted text-center">No farms yet. Add your first farm to get started.</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-surface-raised dark:bg-gray-800 rounded-lg border border-border dark:border-gray-700 p-4">
-      <h3 className="text-sm font-semibold text-text dark:text-gray-200 mb-3 flex items-center gap-2">
-        <MapPin className="w-4 h-4 text-text-secondary dark:text-gray-400" />
+    <div className="bg-surface-raised rounded-lg border border-border p-4">
+      <h3 className="text-sm font-semibold text-text mb-3 flex items-center gap-2">
+        <MapPin className="w-4 h-4 text-text-secondary" />
         Farm Overview
       </h3>
 
@@ -61,17 +61,17 @@ function FarmStatusStrip({ farms = [], fields = [], applications = [], applicati
             className={`
               flex-shrink-0 min-w-[180px] p-3 rounded-lg border-2 cursor-pointer
               transition-all hover:shadow-md
-              ${health === 'healthy' ? 'border-primary/30 bg-primary-light dark:bg-primary/5 dark:border-primary/20 hover:border-primary/50' : ''}
-              ${health === 'attention' ? 'border-amber-200 bg-amber-50/50 dark:bg-amber-900/10 dark:border-amber-800 hover:border-amber-300' : ''}
-              ${health === 'critical' ? 'border-red-200 bg-red-50/50 dark:bg-red-900/10 dark:border-red-800 hover:border-red-300' : ''}
+              ${health === 'healthy' ? 'border-primary/30 bg-primary-light hover:border-primary/50' : ''}
+              ${health === 'attention' ? 'border-amber-200 bg-amber-50/50 hover:border-amber-300' : ''}
+              ${health === 'critical' ? 'border-red-200 bg-red-50/50 hover:border-red-300' : ''}
             `}
           >
             <div className="flex items-center justify-between mb-2">
-              <h4 className="font-medium text-text dark:text-gray-200 text-sm truncate flex-1">{farm.name}</h4>
+              <h4 className="font-medium text-text text-sm truncate flex-1">{farm.name}</h4>
               <StatusDot status={health} size="md" className="ml-2 flex-shrink-0" />
             </div>
 
-            <div className="space-y-1 text-xs text-text-secondary dark:text-gray-400">
+            <div className="space-y-1 text-xs text-text-secondary">
               <div className="flex items-center gap-1.5">
                 <Sprout className="w-3 h-3 text-primary" />
                 <span>{activeFields} field{activeFields !== 1 ? 's' : ''}</span>
@@ -87,9 +87,9 @@ function FarmStatusStrip({ farms = [], fields = [], applications = [], applicati
             </div>
 
             {alerts.length > 0 && (
-              <div className="mt-2 pt-2 border-t border-border dark:border-gray-600">
+              <div className="mt-2 pt-2 border-t border-border">
                 {alerts.map((alert, idx) => (
-                  <div key={idx} className="flex items-center gap-1 text-xs text-amber-600 dark:text-amber-400">
+                  <div key={idx} className="flex items-center gap-1 text-xs text-amber-600">
                     <AlertTriangle className="w-3 h-3" />
                     <span>{alert}</span>
                   </div>

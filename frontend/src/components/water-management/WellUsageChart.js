@@ -162,17 +162,17 @@ const WellUsageChart = ({ readings }) => {
   return (
     <div className="mt-6 mb-2">
       <div className="flex items-center justify-between mb-3">
-        <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider flex items-center gap-2">
-          <BarChart3 className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
+        <h4 className="text-sm font-semibold text-gray-700 uppercase tracking-wider flex items-center gap-2">
+          <BarChart3 className="w-4 h-4 text-cyan-600" />
           Extraction History
         </h4>
-        <div className="flex bg-gray-200 dark:bg-gray-700 rounded-lg p-0.5">
+        <div className="flex bg-gray-200 rounded-lg p-0.5">
           <button
             onClick={() => setChartMode('line')}
             className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
               chartMode === 'line'
-                ? 'bg-white dark:bg-gray-600 text-cyan-700 dark:text-cyan-300 shadow-sm'
-                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+                ? 'bg-white text-cyan-700 shadow-sm'
+                : 'text-gray-500 hover:text-gray-700'
             }`}
           >
             Per Reading
@@ -181,15 +181,15 @@ const WellUsageChart = ({ readings }) => {
             onClick={() => setChartMode('bar')}
             className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
               chartMode === 'bar'
-                ? 'bg-white dark:bg-gray-600 text-cyan-700 dark:text-cyan-300 shadow-sm'
-                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+                ? 'bg-white text-cyan-700 shadow-sm'
+                : 'text-gray-500 hover:text-gray-700'
             }`}
           >
             Annual Total
           </button>
         </div>
       </div>
-      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+      <div className="bg-white rounded-lg border border-gray-200 p-4">
         {chartMode === 'line' ? (
           <ExtractionLineChart readings={validReadings} />
         ) : (

@@ -106,7 +106,6 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
     fields_served: [],
     test_frequency_days: 365,
     active: true,
-    
     // === Well SGMA Fields ===
     well_name: '',
     state_well_number: '',
@@ -120,7 +119,6 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
     casing_diameter_inches: '',
     well_construction_date: '', // Correct field name
     well_permit_number: '',
-    
     // Location - defaults from farm, can override
     gps_latitude: '',
     gps_longitude: '',
@@ -128,14 +126,12 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
     range_value: '',
     section: '',
     parcel_apn: '',
-    
     // Pump info
     pump_type: '',
     pump_horsepower: '',
     pump_flow_rate_gpm: '',
     power_source: '',
     utility_meter_number: '',
-    
     // Flowmeter
     has_flowmeter: true,
     flowmeter_make: '',
@@ -144,12 +140,10 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
     flowmeter_units: 'gallons',
     flowmeter_multiplier: '1.0',
     flowmeter_installation_date: '', // Correct field name
-    
     // AMI (Automated Meter Infrastructure)
     has_ami: false,
     ami_vendor: '',
     ami_device_id: '',
-    
     // Status & Compliance
     status: 'active',
     is_de_minimis: false,
@@ -189,7 +183,6 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
   // ---------------------------------------------------------------------------
   useEffect(() => {
     if (!isOpen) return;
-    
     if (wellSource) {
       // Editing existing - load both water source and well data
       const loadExisting = async () => {
@@ -206,7 +199,6 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
             fields_served: wellSource.fields_served || [],
             test_frequency_days: wellSource.test_frequency_days || 365,
             active: wellSource.active ?? true,
-            
             // Well-specific fields are now directly on WaterSource
             well_name: wellSource.well_name || wellSource.name || '',
             state_well_number: wellSource.state_well_number || '',
@@ -261,16 +253,13 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
           }
 
           setFormData(newFormData);
-          
           // Set selected farm
           const farm = farms.find(f => f.id === wellSource.farm);
           setSelectedFarm(farm || null);
-          
         } catch (err) {
           console.error('Error loading well data:', err);
         }
       };
-      
       loadExisting();
     } else {
       // Creating new - reset form
@@ -334,7 +323,6 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
       setSelectedFarm(null);
       setUseCustomLocation(false);
     }
-    
     setErrors({});
     setActiveTab('basic');
   }, [isOpen, wellSource, farms]);
@@ -350,7 +338,6 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
       farm: farmId,
       fields_served: [], // Reset fields when farm changes
     }));
-    
     // If not using custom location, update location from farm
     if (!useCustomLocation && farm) {
       setFormData(prev => ({
@@ -372,7 +359,6 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
   // ---------------------------------------------------------------------------
   const handleCustomLocationToggle = (useCustom) => {
     setUseCustomLocation(useCustom);
-    
     if (!useCustom && selectedFarm) {
       // Revert to farm location
       setFormData(prev => ({
@@ -395,7 +381,6 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
       toast.error('Geolocation is not supported by your browser');
       return;
     }
-    
     navigator.geolocation.getCurrentPosition(
       (position) => {
         setFormData(prev => ({
@@ -404,7 +389,6 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
           gps_longitude: position.coords.longitude.toFixed(7),
         }));
         setUseCustomLocation(true);
-        
         // Auto-lookup PLSS from coordinates
         lookupPLSS(position.coords.latitude, position.coords.longitude);
       },
@@ -471,7 +455,6 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
   // ---------------------------------------------------------------------------
   const validate = () => {
     const newErrors = {};
-    
     if (!formData.farm) {
       newErrors.farm = 'Farm is required';
     }
@@ -481,7 +464,6 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
     if (!formData.gsa) {
       newErrors.gsa = 'GSA selection is required';
     }
-    
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -491,13 +473,11 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
   // ---------------------------------------------------------------------------
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
     if (!validate()) {
       // Switch to tab with first error
       if (errors.farm || errors.name) setActiveTab('basic');
       return;
     }
-    
     setLoading(true);
     try {
       // Prepare unified water source data (includes all well fields)
@@ -512,23 +492,19 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
         used_for_pesticide_mixing: formData.used_for_pesticide_mixing,
         test_frequency_days: parseInt(formData.test_frequency_days) || 365,
         active: formData.active,
-        
         // Well identification fields
         well_name: formData.well_name || formData.name,
         state_well_number: formData.state_well_number || '',
         local_well_id: formData.local_well_id || '',
         gsa_well_id: formData.gsa_well_id || '',
-        
         // GSA/Basin fields
         gsa: formData.gsa || 'obgma',
         gsa_account_number: formData.gsa_account_number || '',
         basin: formData.basin || 'ojai_valley',
         basin_priority: formData.basin_priority || 'medium',
-        
         // Physical characteristics
         well_depth_ft: formData.well_depth_ft ? parseFloat(formData.well_depth_ft) : null,
         casing_diameter_inches: formData.casing_diameter_inches ? parseFloat(formData.casing_diameter_inches) : null,
-        
         // Location (from LocationMixin)
         gps_latitude: formData.gps_latitude ? parseFloat(formData.gps_latitude) : null,
         gps_longitude: formData.gps_longitude ? parseFloat(formData.gps_longitude) : null,
@@ -536,14 +512,12 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
         plss_range: formData.range_value || formData.plss_range || '',
         plss_section: formData.section || formData.plss_section || '',
         parcel_apn: formData.parcel_apn || '',
-        
         // Pump info
         pump_type: formData.pump_type || '',
         pump_horsepower: formData.pump_horsepower ? parseFloat(formData.pump_horsepower) : null,
         pump_flow_rate_gpm: formData.pump_flow_rate_gpm ? parseFloat(formData.pump_flow_rate_gpm) : null,
         power_source: formData.power_source || '',
         utility_meter_number: formData.utility_meter_number || '',
-        
         // Flowmeter
         has_flowmeter: formData.has_flowmeter ?? true,
         flowmeter_make: formData.flowmeter_make || '',
@@ -552,16 +526,13 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
         flowmeter_units: formData.flowmeter_units || 'gallons',
         flowmeter_multiplier: formData.flowmeter_multiplier ? parseFloat(formData.flowmeter_multiplier) : 1.0,
         flowmeter_installation_date: formData.flowmeter_installation_date || null,
-        
         // AMI telemetry
         has_ami: formData.has_ami ?? false,
         ami_vendor: formData.ami_vendor || '',
         ami_device_id: formData.ami_device_id || '',
-        
         // Construction/permits
         well_construction_date: formData.well_construction_date || null,
         well_permit_number: formData.well_permit_number || '',
-        
         // Status and compliance
         well_status: formData.status || 'active',
         is_de_minimis: formData.is_de_minimis ?? false,
@@ -579,14 +550,11 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
         // Notes
         notes: formData.notes || '',
       };
-      
       // Only include fields_served if it has values
       if (formData.fields_served && formData.fields_served.length > 0) {
         waterSourceData.fields_served = formData.fields_served;
       }
-      
       console.log('Saving unified water source (well) data:', waterSourceData);
-      
       // Save water source (create or update)
       if (wellSource?.id) {
         await api.put(`/water-sources/${wellSource.id}/`, waterSourceData);
@@ -595,7 +563,6 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
         const response = await api.post('/water-sources/', waterSourceData);
         console.log('Water source (well) created successfully:', response.data);
       }
-      
       onSave();
       onClose();
     } catch (err) {
@@ -620,7 +587,6 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
   // Computed values
   // ---------------------------------------------------------------------------
   const farmFields = fields.filter(f => f.farm === parseInt(formData.farm));
-  
   const tabs = [
     { id: 'basic', label: 'Basic Info', icon: Droplets },
     { id: 'location', label: 'Location', icon: MapPin },
@@ -636,7 +602,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
       <button
         type="button"
         onClick={onClose}
-        className="px-4 py-2 rounded-button border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+        className="px-4 py-2 rounded-button border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
       >
         Cancel
       </button>
@@ -671,7 +637,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
       size="xl"
       footer={footer}
     >
-      <div className="flex border-b border-gray-200 dark:border-gray-700 -mx-6 -mt-4 mb-4 bg-gray-50 dark:bg-gray-800/50" role="tablist">
+      <div className="flex border-b border-gray-200 -mx-6 -mt-4 mb-4 bg-gray-50" role="tablist">
         {tabs.map(tab => (
           <button
             key={tab.id}
@@ -681,8 +647,8 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
             onClick={() => setActiveTab(tab.id)}
             className={`flex items-center gap-2 px-4 py-3 border-b-2 transition-colors ${
               activeTab === tab.id
-                ? 'border-cyan-600 text-cyan-600 dark:text-cyan-400 bg-surface-raised dark:bg-gray-800'
-                : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'
+                ? 'border-cyan-600 text-cyan-600 bg-surface-raised'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-100'
             }`}
           >
             <tab.icon className="w-4 h-4" />
@@ -953,7 +919,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
                     <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
                     <div className="flex-1">
                       <p className="text-sm text-blue-800">
-                        By default, the well location is derived from the selected farm. 
+                        By default, the well location is derived from the selected farm.
                         Toggle "Specify exact location" to set a custom GPS position.
                       </p>
                     </div>
@@ -965,9 +931,9 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
                   <div>
                     <p className="font-medium text-gray-900">Specify exact well location</p>
                     <p className="text-sm text-gray-500">
-                      {useCustomLocation 
-                        ? 'Using custom GPS coordinates' 
-                        : selectedFarm 
+                      {useCustomLocation
+                        ? 'Using custom GPS coordinates'
+                        : selectedFarm
                           ? `Using location from ${selectedFarm.name}`
                           : 'Select a farm first'}
                     </p>
@@ -1543,7 +1509,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
                 <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
                   <h4 className="font-medium text-gray-900 mb-2">California Water Year</h4>
                   <p className="text-sm text-gray-600">
-                    The water year runs from <strong>October 1</strong> to <strong>September 30</strong>. 
+                    The water year runs from <strong>October 1</strong> to <strong>September 30</strong>.
                     For example, Water Year 2025 runs from October 1, 2024 to September 30, 2025.
                   </p>
                 </div>

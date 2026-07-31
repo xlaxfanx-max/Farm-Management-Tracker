@@ -72,11 +72,9 @@ const getFieldColor = (crop) => {
 // Calculate polygon area in acres
 const calculateAcres = (latlngs) => {
   if (!latlngs || latlngs.length < 3) return 0;
-  
   const coords = latlngs.map(p => [p.lat || p[0], p.lng || p[1]]);
   let area = 0;
   const n = coords.length;
-  
   for (let i = 0; i < n; i++) {
     const j = (i + 1) % n;
     const lat1 = coords[i][0] * Math.PI / 180;
@@ -85,18 +83,16 @@ const calculateAcres = (latlngs) => {
     const lng2 = coords[j][1] * Math.PI / 180;
     area += (lng2 - lng1) * (2 + Math.sin(lat1) + Math.sin(lat2));
   }
-  
   const earthRadius = 6371000;
   area = Math.abs(area * earthRadius * earthRadius / 2);
   const acres = area * 0.000247105;
-  
   return Math.round(acres * 100) / 100;
 };
 
 // Main FarmMap Component
-const FarmMap = ({ 
-  farms = [], 
-  fields = [], 
+const FarmMap = ({
+  farms = [],
+  fields = [],
   selectedFarmId = null,
   selectedFieldId = null,
   onFieldSelect,
@@ -127,7 +123,6 @@ const FarmMap = ({
   const getMapCenter = () => {
     const farmsWithCoords = farms.filter(f => f.gps_latitude && f.gps_longitude);
     const fieldsWithCoords = fields.filter(f => f.gps_latitude && f.gps_longitude);
-    
     if (farmsWithCoords.length > 0) {
       const lat = farmsWithCoords.reduce((sum, f) => sum + parseFloat(f.gps_latitude), 0) / farmsWithCoords.length;
       const lng = farmsWithCoords.reduce((sum, f) => sum + parseFloat(f.gps_longitude), 0) / farmsWithCoords.length;
@@ -165,13 +160,11 @@ const FarmMap = ({
     console.log('[FarmMap] latlngs:', latlngs);
     const acres = calculateAcres(latlngs);
     console.log('[FarmMap] calculated acres:', acres);
-    
     const geojson = {
       type: 'Polygon',
       coordinates: [latlngs.map(p => [p.lng, p.lat])],
     };
     console.log('[FarmMap] geojson:', geojson);
-    
     setPendingBoundary({ geojson, acres, latlngs });
     console.log('[FarmMap] pendingBoundary set');
   };
@@ -182,7 +175,6 @@ const FarmMap = ({
     console.log('[FarmMap] pendingBoundary:', pendingBoundary);
     console.log('[FarmMap] drawingTargetId:', drawingTargetId);
     console.log('[FarmMap] onBoundaryUpdate exists:', !!onBoundaryUpdate);
-    
     if (pendingBoundary && drawingTargetId) {
       if (drawingType === 'field' && onBoundaryUpdate) {
         console.log('[FarmMap] Calling onBoundaryUpdate with:', {
@@ -315,7 +307,7 @@ const FarmMap = ({
   }, [mapReady]);
 
   return (
-    <div 
+    <div
       className={`relative rounded-xl overflow-hidden shadow-lg border border-gray-200 ${
         isExpanded ? 'fixed inset-0 z-50' : ''
       }`}
@@ -339,7 +331,6 @@ const FarmMap = ({
           >
             <Layers className="w-5 h-5 text-gray-700" />
           </button>
-          
           {showLayerMenu && (
             <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 py-2">
               <div className="px-3 py-1 text-xs font-semibold text-gray-400 uppercase">Base Map</div>
@@ -525,7 +516,6 @@ const FarmMap = ({
                       Auto from Fields
                     </button>
                   </div>
-                  
                   {farmFields.length > 0 ? (
                     <div className="mt-3 border-t pt-3">
                       <p className="text-xs font-semibold text-gray-500 uppercase mb-2">Fields ({farmFields.length})</p>
@@ -569,7 +559,6 @@ const FarmMap = ({
           if (!field.boundary_geojson) return null;
           const colors = getFieldColor(field.current_crop);
           const coords = field.boundary_geojson.coordinates[0].map(c => [c[1], c[0]]);
-          
           return (
             <Polygon
               key={`boundary-${field.id}`}
@@ -647,7 +636,6 @@ const FarmMap = ({
         {fields.map((field) => {
           if (field.boundary_geojson) return null;
           if (!field.gps_latitude || !field.gps_longitude) return null;
-          
           const colors = getFieldColor(field.current_crop);
           return (
             <Marker

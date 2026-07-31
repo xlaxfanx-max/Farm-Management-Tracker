@@ -40,7 +40,6 @@ export function CompanySelector() {
     await switchCompany(companyId);
     setLoading(false);
     setIsOpen(false);
-    
     // Optionally refresh the page to reload all data
     window.location.reload();
   };
@@ -131,7 +130,7 @@ export function UserMenu() {
     // You may want to redirect to login page
   };
 
-  const initials = user 
+  const initials = user
     ? `${user.first_name?.[0] || ''}${user.last_name?.[0] || ''}`.toUpperCase() || user.email[0].toUpperCase()
     : '?';
 
@@ -219,12 +218,12 @@ export function UserMenu() {
 //
 // =============================================================================
 
-export function PermissionGate({ 
-  permission, 
+export function PermissionGate({
+  permission,
   permissions, // Array of permissions (any match)
   requireAll = false, // If true with array, require all permissions
   fallback = null, // What to render if permission denied
-  children 
+  children
 }) {
   const { hasPermission, hasAnyPermission, hasAllPermissions } = useAuth();
 
@@ -233,7 +232,7 @@ export function PermissionGate({
   if (permission) {
     hasAccess = hasPermission(permission);
   } else if (permissions) {
-    hasAccess = requireAll 
+    hasAccess = requireAll
       ? hasAllPermissions(permissions)
       : hasAnyPermission(permissions);
   } else {

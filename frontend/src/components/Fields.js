@@ -14,7 +14,7 @@ function Fields({ fields, applications, onEditField, onDeleteField, onNewField }
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Fields</h2>
-        <button 
+        <button
           onClick={onNewField}
           className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-hover"
         >
@@ -33,7 +33,6 @@ function Fields({ fields, applications, onEditField, onDeleteField, onNewField }
               </div>
               <MapPin className="text-primary" size={24} />
             </div>
-            
             <div className="space-y-2 mb-4">
               <div className="flex justify-between text-sm">
                 <span className="text-slate-600">Crop:</span>
@@ -62,14 +61,14 @@ function Fields({ fields, applications, onEditField, onDeleteField, onNewField }
             </div>
 
             <div className="flex gap-2">
-              <button 
+              <button
                 onClick={() => onEditField(field)}
                 className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 text-sm font-medium"
               >
                 <Edit size={16} />
                 Edit
               </button>
-              <button 
+              <button
                 onClick={() => onDeleteField(field.id)}
                 className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 text-sm font-medium"
               >

@@ -91,18 +91,18 @@ const CropSeasonMiniCard = ({ data, onNavigate }) => {
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-md transition-shadow">
+    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
       {/* Header */}
-      <div className={`px-4 py-3 ${colors.light} dark:bg-gray-700/50`}>
+      <div className={`px-4 py-3 ${colors.light}`}>
         <div className="flex items-center gap-2">
           <div className={`w-8 h-8 bg-gradient-to-br ${colors.bg} rounded-full flex items-center justify-center`}>
             <Icon className="w-4 h-4 text-white" />
           </div>
           <div className="flex-1 min-w-0">
-            <h4 className="font-semibold text-gray-900 dark:text-white text-sm truncate">
+            <h4 className="font-semibold text-gray-900 text-sm truncate">
               {data.category_display}
             </h4>
-            <p className="text-xs text-gray-500 dark:text-gray-400">
+            <p className="text-xs text-gray-500">
               {season.label} • {data.field_count} field{data.field_count !== 1 ? 's' : ''}
             </p>
           </div>
@@ -110,12 +110,12 @@ const CropSeasonMiniCard = ({ data, onNavigate }) => {
       </div>
 
       {/* Progress Bar */}
-      <div className="px-4 py-2 border-b border-gray-100 dark:border-gray-700">
-        <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 mb-1">
+      <div className="px-4 py-2 border-b border-gray-100">
+        <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
           <span>{formatDateRange()}</span>
           <span>{season.progress_percent}%</span>
         </div>
-        <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+        <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
           <div
             className={`h-full bg-gradient-to-r ${colors.bg} rounded-full transition-all duration-500`}
             style={{ width: `${season.progress_percent}%` }}
@@ -130,7 +130,7 @@ const CropSeasonMiniCard = ({ data, onNavigate }) => {
           <div className="flex items-center justify-center gap-1 mb-0.5">
             <Package className="w-3 h-3 text-orange-500" />
           </div>
-          <p className="text-lg font-bold text-gray-900 dark:text-white">
+          <p className="text-lg font-bold text-gray-900">
             {formatNumber(current.harvest_bins)}
           </p>
           {binsComparison !== null && (
@@ -157,7 +157,7 @@ const CropSeasonMiniCard = ({ data, onNavigate }) => {
           <div className="flex items-center justify-center gap-1 mb-0.5">
             <FileText className="w-3 h-3 text-blue-500" />
           </div>
-          <p className="text-lg font-bold text-gray-900 dark:text-white">
+          <p className="text-lg font-bold text-gray-900">
             {formatNumber(current.applications)}
           </p>
           <p className="text-xs text-gray-400">apps</p>
@@ -168,7 +168,7 @@ const CropSeasonMiniCard = ({ data, onNavigate }) => {
           <div className="flex items-center justify-center gap-1 mb-0.5">
             <DollarSign className="w-3 h-3 text-green-500" />
           </div>
-          <p className="text-lg font-bold text-gray-900 dark:text-white">
+          <p className="text-lg font-bold text-gray-900">
             {formatCurrency(current.revenue)}
           </p>
           <p className="text-xs text-gray-400">revenue</p>
@@ -209,24 +209,24 @@ const SeasonProgressCard = ({ onNavigate }) => {
     return (
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Season Progress</h2>
+          <h2 className="text-sm font-semibold text-gray-700">Season Progress</h2>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {[1, 2].map((i) => (
-            <div key={i} className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
+            <div key={i} className="bg-white rounded-xl border border-gray-200 p-4">
               <div className="animate-pulse space-y-3">
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+                  <div className="w-8 h-8 bg-gray-200 rounded-full"></div>
                   <div className="flex-1">
-                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-20"></div>
-                    <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-32 mt-1"></div>
+                    <div className="h-4 bg-gray-200 rounded w-20"></div>
+                    <div className="h-3 bg-gray-200 rounded w-32 mt-1"></div>
                   </div>
                 </div>
-                <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+                <div className="h-2 bg-gray-200 rounded-full"></div>
                 <div className="grid grid-cols-3 gap-2">
-                  <div className="h-12 bg-gray-200 dark:bg-gray-700 rounded"></div>
-                  <div className="h-12 bg-gray-200 dark:bg-gray-700 rounded"></div>
-                  <div className="h-12 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                  <div className="h-12 bg-gray-200 rounded"></div>
+                  <div className="h-12 bg-gray-200 rounded"></div>
+                  <div className="h-12 bg-gray-200 rounded"></div>
                 </div>
               </div>
             </div>
@@ -238,8 +238,8 @@ const SeasonProgressCard = ({ onNavigate }) => {
 
   if (error) {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
-        <div className="text-center text-red-500 dark:text-red-400">
+      <div className="bg-white rounded-xl border border-gray-200 p-6">
+        <div className="text-center text-red-500">
           <AlertTriangle className="w-8 h-8 mx-auto mb-2" />
           <p className="text-sm mb-3">{error}</p>
           <button
@@ -268,8 +268,8 @@ const SeasonProgressCard = ({ onNavigate }) => {
 
   if (categories.length === 0) {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
-        <div className="text-center text-gray-500 dark:text-gray-400">
+      <div className="bg-white rounded-xl border border-gray-200 p-6">
+        <div className="text-center text-gray-500">
           <Calendar className="w-8 h-8 mx-auto mb-2" />
           <p>No crop data available. Add crops to your fields to see season progress.</p>
         </div>
@@ -282,17 +282,17 @@ const SeasonProgressCard = ({ onNavigate }) => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Season Progress</h2>
+          <h2 className="text-sm font-semibold text-gray-700">Season Progress</h2>
           {(tasks.overdue > 0 || tasks.due_this_week > 0) && (
             <div className="flex items-center gap-3 text-xs">
               {tasks.overdue > 0 && (
-                <span className="flex items-center gap-1 text-red-600 dark:text-red-400">
+                <span className="flex items-center gap-1 text-red-600">
                   <AlertTriangle className="w-3 h-3" />
                   {tasks.overdue} overdue
                 </span>
               )}
               {tasks.due_this_week > 0 && (
-                <span className="flex items-center gap-1 text-orange-600 dark:text-orange-400">
+                <span className="flex items-center gap-1 text-orange-600">
                   <Clock className="w-3 h-3" />
                   {tasks.due_this_week} due this week
                 </span>
@@ -302,7 +302,7 @@ const SeasonProgressCard = ({ onNavigate }) => {
         </div>
         <button
           onClick={() => onNavigate && onNavigate('analytics')}
-          className="text-xs text-primary dark:text-green-400 hover:text-primary-hover dark:hover:text-green-300 flex items-center gap-1"
+          className="text-xs text-primary hover:text-primary-hover flex items-center gap-1"
         >
           View Analytics
           <ChevronRight className="w-3 h-3" />

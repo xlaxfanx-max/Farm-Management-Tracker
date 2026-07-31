@@ -75,7 +75,7 @@ const BuyerModal = ({ isOpen, onClose, onSave, buyer = null }) => {
       <button
         type="button"
         onClick={onClose}
-        className="px-4 py-2 rounded-button border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"
+        className="px-4 py-2 rounded-button border border-gray-300 text-gray-700 hover:bg-gray-50"
       >
         Cancel
       </button>
@@ -256,9 +256,9 @@ const BuyerModal = ({ isOpen, onClose, onSave, buyer = null }) => {
             name="active"
             checked={formData.active}
             onChange={handleChange}
-            className="rounded border-gray-300 dark:border-gray-600 text-primary focus:ring-primary"
+            className="rounded border-gray-300 text-primary focus:ring-primary"
           />
-          <span className="text-sm text-gray-700 dark:text-gray-200">Active buyer</span>
+          <span className="text-sm text-gray-700">Active buyer</span>
         </label>
       </form>
     </Modal>

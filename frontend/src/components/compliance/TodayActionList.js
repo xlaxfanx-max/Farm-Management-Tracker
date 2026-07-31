@@ -35,7 +35,7 @@ function LoadingSkeleton() {
   return (
     <div className="space-y-3 animate-pulse">
       {[1, 2, 3].map((i) => (
-        <div key={i} className="h-14 bg-gray-200 dark:bg-gray-700 rounded-lg" />
+        <div key={i} className="h-14 bg-gray-200 rounded-lg" />
       ))}
     </div>
   );
@@ -52,10 +52,10 @@ function SectionHeader({ label, colorClass }) {
 function ActionItem({ item, onNavigate, urgency }) {
   const borderColor =
     urgency === 'overdue'
-      ? 'border-red-300 dark:border-red-700'
+      ? 'border-red-300'
       : urgency === 'today'
-      ? 'border-amber-300 dark:border-amber-700'
-      : 'border-blue-200 dark:border-blue-800';
+      ? 'border-amber-300'
+      : 'border-blue-200';
 
   const buttonColor =
     urgency === 'overdue'
@@ -64,16 +64,16 @@ function ActionItem({ item, onNavigate, urgency }) {
 
   return (
     <div
-      className={`flex items-center gap-3 p-3 bg-white dark:bg-gray-800 rounded-lg border ${borderColor} shadow-sm`}
+      className={`flex items-center gap-3 p-3 bg-white rounded-lg border ${borderColor} shadow-sm`}
     >
-      <div className="flex-shrink-0 text-gray-500 dark:text-gray-400">
+      <div className="flex-shrink-0 text-gray-500">
         <CategoryIcon category={item.category} />
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+        <p className="text-sm font-medium text-gray-900 truncate">
           {item.title}
         </p>
-        <p className="text-xs text-gray-500 dark:text-gray-400">
+        <p className="text-xs text-gray-500">
           {urgency === 'overdue'
             ? `${item.days_overdue} day${item.days_overdue !== 1 ? 's' : ''} overdue`
             : `Due ${item.due_date}`}
@@ -95,8 +95,8 @@ function QuickWinChip({ win, onNavigate }) {
   const IconComponent = ICON_MAP[win.icon] || FileText;
   const chipColor =
     win.priority === 'high'
-      ? 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 hover:bg-red-100 dark:hover:bg-red-900/40'
-      : 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/40';
+      ? 'bg-red-50 border-red-200 text-red-700 hover:bg-red-100'
+      : 'bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100';
 
   return (
     <button
@@ -137,9 +137,9 @@ export default function TodayActionList({ onNavigate }) {
 
   if (loading) {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 shadow-sm">
+      <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
         <div className="flex items-center justify-between mb-4">
-          <div className="h-5 w-40 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+          <div className="h-5 w-40 bg-gray-200 rounded animate-pulse" />
         </div>
         <LoadingSkeleton />
       </div>
@@ -148,8 +148,8 @@ export default function TodayActionList({ onNavigate }) {
 
   if (error) {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-xl border border-red-200 dark:border-red-800 p-4 shadow-sm">
-        <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+      <div className="bg-white rounded-xl border border-red-200 p-4 shadow-sm">
+        <p className="text-sm text-red-600">{error}</p>
       </div>
     );
   }
@@ -158,13 +158,13 @@ export default function TodayActionList({ onNavigate }) {
 
   if (data.all_clear) {
     return (
-      <div className="bg-primary-light dark:bg-green-900/20 rounded-xl border border-green-200 dark:border-green-800 p-6 flex items-center gap-4 shadow-sm">
-        <CheckCircle2 className="w-10 h-10 text-green-500 dark:text-green-400 flex-shrink-0" />
+      <div className="bg-primary-light rounded-xl border border-green-200 p-6 flex items-center gap-4 shadow-sm">
+        <CheckCircle2 className="w-10 h-10 text-green-500 flex-shrink-0" />
         <div>
-          <p className="font-semibold text-green-800 dark:text-green-200 text-lg">
+          <p className="font-semibold text-green-800 text-lg">
             All caught up for today!
           </p>
-          <p className="text-sm text-primary dark:text-green-400">
+          <p className="text-sm text-primary">
             No overdue items, no deadlines today. Keep it up.
           </p>
         </div>
@@ -182,18 +182,18 @@ export default function TodayActionList({ onNavigate }) {
   const hasQuickWins = data.quick_wins && data.quick_wins.length > 0;
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 shadow-sm space-y-4">
+    <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">
+          <h2 className="text-base font-semibold text-gray-900">
             Today's Actions
           </h2>
-          <p className="text-xs text-gray-500 dark:text-gray-400">{data.date}</p>
+          <p className="text-xs text-gray-500">{data.date}</p>
         </div>
         <button
           onClick={() => fetchData(true)}
           disabled={refreshing}
-          className="p-1.5 rounded-md text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+          className="p-1.5 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
           title="Refresh"
         >
           <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
@@ -202,7 +202,7 @@ export default function TodayActionList({ onNavigate }) {
 
       {hasOverdue && (
         <div>
-          <SectionHeader label="Overdue" colorClass="text-red-600 dark:text-red-400" />
+          <SectionHeader label="Overdue" colorClass="text-red-600" />
           <div className="space-y-2">
             {(data.overdue_deadlines || []).map((item) => (
               <ActionItem key={`od-${item.id}`} item={item} onNavigate={onNavigate} urgency="overdue" />
@@ -230,7 +230,7 @@ export default function TodayActionList({ onNavigate }) {
 
       {hasToday && (
         <div>
-          <SectionHeader label="Today" colorClass="text-amber-600 dark:text-amber-400" />
+          <SectionHeader label="Today" colorClass="text-amber-600" />
           <div className="space-y-2">
             {data.due_today.map((item) => (
               <ActionItem key={`dt-${item.id}`} item={item} onNavigate={onNavigate} urgency="today" />
@@ -241,7 +241,7 @@ export default function TodayActionList({ onNavigate }) {
 
       {hasThisWeek && (
         <div>
-          <SectionHeader label="This Week" colorClass="text-blue-600 dark:text-blue-400" />
+          <SectionHeader label="This Week" colorClass="text-blue-600" />
           <div className="space-y-2">
             {(data.due_this_week || []).map((item) => (
               <ActionItem key={`dw-${item.id}`} item={item} onNavigate={onNavigate} urgency="week" />
@@ -266,7 +266,7 @@ export default function TodayActionList({ onNavigate }) {
 
       {hasQuickWins && (
         <div>
-          <p className="text-xs font-bold tracking-widest uppercase text-gray-400 dark:text-gray-500 px-1 mb-2">
+          <p className="text-xs font-bold tracking-widest uppercase text-gray-400 px-1 mb-2">
             Quick Actions
           </p>
           <div className="flex flex-wrap gap-2">
@@ -278,14 +278,14 @@ export default function TodayActionList({ onNavigate }) {
       )}
 
       {data.pending_pur_month && (
-        <div className="flex items-center gap-2 px-3 py-2 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg">
-          <FileText className="w-4 h-4 text-orange-500 dark:text-orange-400 flex-shrink-0" />
-          <p className="text-xs text-orange-700 dark:text-orange-300 flex-1">
+        <div className="flex items-center gap-2 px-3 py-2 bg-orange-50 border border-orange-200 rounded-lg">
+          <FileText className="w-4 h-4 text-orange-500 flex-shrink-0" />
+          <p className="text-xs text-orange-700 flex-1">
             <span className="font-semibold">{data.pending_pur_month}</span> PUR report not yet submitted
           </p>
           <button
             onClick={() => onNavigate('compliance-reports')}
-            className="text-xs font-semibold text-orange-700 dark:text-orange-300 hover:underline flex-shrink-0"
+            className="text-xs font-semibold text-orange-700 hover:underline flex-shrink-0"
           >
             Submit
           </button>

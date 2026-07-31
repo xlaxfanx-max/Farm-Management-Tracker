@@ -72,23 +72,23 @@ function FarmCard({
 
   return (
     <div
-      className={`bg-white dark:bg-gray-800 rounded-lg shadow-md border-2 overflow-hidden transition-all ${
-        isSelected ? 'border-primary shadow-lg' : 'border-gray-200 dark:border-gray-700'
+      className={`bg-white rounded-lg shadow-md border-2 overflow-hidden transition-all ${
+        isSelected ? 'border-primary shadow-lg' : 'border-gray-200'
       }`}
     >
       {/* Farm Header */}
-      <div className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/30 dark:to-blue-900/30 border-b border-gray-200 dark:border-gray-700">
+      <div className="bg-gradient-to-r from-green-50 to-blue-50 border-b border-gray-200">
         <div className="p-6">
           <div className="flex items-start justify-between">
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-3">
                 <button
                   onClick={() => onToggleExpand(farm.id)}
-                  className="p-1 hover:bg-white dark:hover:bg-gray-700 rounded transition-colors focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="p-1 hover:bg-white rounded transition-colors focus:outline-none focus:ring-2 focus:ring-primary"
                   aria-expanded={isExpanded}
                   aria-label={isExpanded ? `Collapse ${farm.name} fields` : `Expand ${farm.name} fields`}
                 >
-                  <ExpandIcon className="w-6 h-6 text-gray-700 dark:text-gray-300" />
+                  <ExpandIcon className="w-6 h-6 text-gray-700" />
                 </button>
                 <Home className="text-primary flex-shrink-0" size={32} />
                 <div>
@@ -133,29 +133,29 @@ function FarmCard({
 
               {/* Farm Stats Strip */}
               {fields.length > 0 && (
-                <div className="mt-4 ml-10 pt-3 border-t border-gray-200/50 dark:border-gray-600/50">
+                <div className="mt-4 ml-10 pt-3 border-t border-gray-200/50">
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    <div className="bg-white/60 dark:bg-gray-800/60 rounded-lg px-3 py-2">
-                      <p className="text-xs text-gray-500 dark:text-gray-400">Total Acres</p>
-                      <p className="text-lg font-bold text-gray-900 dark:text-white">{stats.totalAcres.toFixed(1)}</p>
+                    <div className="bg-white/60 rounded-lg px-3 py-2">
+                      <p className="text-xs text-gray-500">Total Acres</p>
+                      <p className="text-lg font-bold text-gray-900">{stats.totalAcres.toFixed(1)}</p>
                     </div>
-                    <div className="bg-white/60 dark:bg-gray-800/60 rounded-lg px-3 py-2">
-                      <p className="text-xs text-gray-500 dark:text-gray-400">Mapped Fields</p>
-                      <p className="text-lg font-bold text-gray-900 dark:text-white">
-                        <span className={stats.mappedFields === stats.fieldCount ? 'text-primary dark:text-green-400' : 'text-amber-600 dark:text-amber-400'}>
+                    <div className="bg-white/60 rounded-lg px-3 py-2">
+                      <p className="text-xs text-gray-500">Mapped Fields</p>
+                      <p className="text-lg font-bold text-gray-900">
+                        <span className={stats.mappedFields === stats.fieldCount ? 'text-primary' : 'text-amber-600'}>
                           {stats.mappedFields}
                         </span>
-                        <span className="text-gray-400 dark:text-gray-500 text-sm">/{stats.fieldCount}</span>
+                        <span className="text-gray-400 text-sm">/{stats.fieldCount}</span>
                       </p>
                     </div>
-                    <div className="bg-white/60 dark:bg-gray-800/60 rounded-lg px-3 py-2">
-                      <p className="text-xs text-gray-500 dark:text-gray-400">Applications</p>
-                      <p className="text-lg font-bold text-blue-600 dark:text-blue-400">{stats.totalApplications}</p>
+                    <div className="bg-white/60 rounded-lg px-3 py-2">
+                      <p className="text-xs text-gray-500">Applications</p>
+                      <p className="text-lg font-bold text-blue-600">{stats.totalApplications}</p>
                     </div>
                     {stats.topCrop && (
-                      <div className="bg-white/60 dark:bg-gray-800/60 rounded-lg px-3 py-2">
-                        <p className="text-xs text-gray-500 dark:text-gray-400">Top Crop</p>
-                        <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{stats.topCrop}</p>
+                      <div className="bg-white/60 rounded-lg px-3 py-2">
+                        <p className="text-xs text-gray-500">Top Crop</p>
+                        <p className="text-sm font-medium text-gray-900 truncate">{stats.topCrop}</p>
                       </div>
                     )}
                   </div>
@@ -297,9 +297,9 @@ function FarmCard({
 
       {/* Fields Section (Expandable) */}
       {isExpanded && (
-        <div className="p-6 bg-gray-50 dark:bg-gray-900/50">
+        <div className="p-6 bg-gray-50">
           <div className="flex items-center justify-between mb-4">
-            <h4 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+            <h4 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
               <MapPin className="w-5 h-5 text-blue-600" />
               Fields ({fields.length})
             </h4>
@@ -313,9 +313,9 @@ function FarmCard({
           </div>
 
           {fields.length === 0 ? (
-            <div className="text-center py-8 bg-white dark:bg-gray-800 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600">
-              <MapPin className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
-              <p className="text-gray-600 dark:text-gray-400 mb-3">No fields yet for this farm</p>
+            <div className="text-center py-8 bg-white rounded-lg border-2 border-dashed border-gray-300">
+              <MapPin className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+              <p className="text-gray-600 mb-3">No fields yet for this farm</p>
               <button
                 onClick={() => onAddField(farm.id)}
                 className="text-blue-600 hover:text-blue-700 font-medium text-sm"

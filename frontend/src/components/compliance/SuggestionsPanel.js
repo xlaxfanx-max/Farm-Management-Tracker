@@ -4,22 +4,22 @@ import api from '../../services/api';
 
 const PRIORITY_STYLES = {
   high: {
-    card: 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800',
+    card: 'bg-red-50 border-red-200',
     dot: 'bg-red-500',
-    label: 'text-red-700 dark:text-red-300',
-    button: 'text-red-700 dark:text-red-300 hover:underline',
+    label: 'text-red-700',
+    button: 'text-red-700 hover:underline',
   },
   medium: {
-    card: 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800',
+    card: 'bg-amber-50 border-amber-200',
     dot: 'bg-amber-500',
-    label: 'text-amber-800 dark:text-amber-200',
-    button: 'text-amber-700 dark:text-amber-300 hover:underline',
+    label: 'text-amber-800',
+    button: 'text-amber-700 hover:underline',
   },
   low: {
-    card: 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800',
+    card: 'bg-blue-50 border-blue-200',
     dot: 'bg-blue-400',
-    label: 'text-blue-800 dark:text-blue-200',
-    button: 'text-blue-600 dark:text-blue-400 hover:underline',
+    label: 'text-blue-800',
+    button: 'text-blue-600 hover:underline',
   },
 };
 
@@ -50,17 +50,17 @@ export default function SuggestionsPanel({ onNavigate }) {
   if (loading || visible.length === 0) return null;
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+    <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
       <button
         onClick={() => setCollapsed((v) => !v)}
-        className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+        className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors"
       >
         <div className="flex items-center gap-2">
           <Lightbulb className="w-4 h-4 text-amber-500 flex-shrink-0" />
-          <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+          <span className="text-sm font-semibold text-gray-900">
             Smart Suggestions
           </span>
-          <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 text-xs font-bold">
+          <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-amber-100 text-amber-700 text-xs font-bold">
             {visible.length}
           </span>
         </div>
@@ -94,7 +94,7 @@ export default function SuggestionsPanel({ onNavigate }) {
                 </div>
                 <button
                   onClick={() => setDismissed((prev) => new Set([...prev, s.key]))}
-                  className="flex-shrink-0 p-0.5 rounded text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                  className="flex-shrink-0 p-0.5 rounded text-gray-400 hover:text-gray-600 transition-colors"
                   title="Dismiss"
                 >
                   <X className="w-3.5 h-3.5" />

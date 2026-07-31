@@ -3,26 +3,26 @@ import { AlertTriangle, AlertCircle, Info, ArrowRight } from 'lucide-react';
 
 const PRIORITY_STYLES = {
   high: {
-    bg: 'bg-amber-50 dark:bg-amber-900/20',
-    border: 'border-amber-200 dark:border-amber-800',
+    bg: 'bg-amber-50',
+    border: 'border-amber-200',
     icon: AlertTriangle,
-    iconColor: 'text-amber-600 dark:text-amber-400',
+    iconColor: 'text-amber-600',
     dot: 'bg-amber-500',
     ctaBg: 'bg-amber-600 hover:bg-amber-700 text-white',
   },
   medium: {
-    bg: 'bg-blue-50 dark:bg-blue-900/20',
-    border: 'border-blue-200 dark:border-blue-800',
+    bg: 'bg-blue-50',
+    border: 'border-blue-200',
     icon: AlertCircle,
-    iconColor: 'text-blue-600 dark:text-blue-400',
+    iconColor: 'text-blue-600',
     dot: 'bg-blue-500',
     ctaBg: 'bg-blue-600 hover:bg-blue-700 text-white',
   },
   low: {
-    bg: 'bg-surface-sunken dark:bg-gray-800',
-    border: 'border-border dark:border-gray-700',
+    bg: 'bg-surface-sunken',
+    border: 'border-border',
     icon: Info,
-    iconColor: 'text-text-muted dark:text-gray-400',
+    iconColor: 'text-text-muted',
     dot: 'bg-gray-400',
     ctaBg: 'bg-gray-600 hover:bg-gray-700 text-white',
   },
@@ -43,7 +43,7 @@ function UrgentActionCard({ priority = 'medium', label, cta, onClick }) {
       `}
     >
       <Icon className={`w-4 h-4 flex-shrink-0 ${style.iconColor}`} />
-      <span className="text-sm text-text dark:text-gray-200 flex-1">{label}</span>
+      <span className="text-sm text-text flex-1">{label}</span>
       {cta && (
         <button
           onClick={onClick}

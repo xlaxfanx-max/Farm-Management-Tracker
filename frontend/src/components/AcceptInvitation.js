@@ -5,12 +5,10 @@ import { Leaf, AlertCircle, CheckCircle, Eye, EyeOff, XCircle } from 'lucide-rea
 
 export default function AcceptInvitation({ token, onComplete }) {
   const { login, logout, isAuthenticated, user } = useAuth();
-  
   const [invitation, setInvitation] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
-  
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -69,9 +67,7 @@ export default function AcceptInvitation({ token, onComplete }) {
         formData.firstName,
         formData.lastName
       );
-      
       setSuccess(true);
-      
       // Auto-login after a short delay
       setTimeout(async () => {
         const loginResult = await login(invitation.email, formData.password);
@@ -79,7 +75,6 @@ export default function AcceptInvitation({ token, onComplete }) {
           onComplete?.();
         }
       }, 1500);
-      
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to accept invitation');
     } finally {

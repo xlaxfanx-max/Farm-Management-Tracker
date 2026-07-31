@@ -1,8 +1,8 @@
 /**
  * AuditLogViewer.js - Audit Log Viewer Component
- * 
+ *
  * Place this file at: frontend/src/components/AuditLogViewer.js
- * 
+ *
  * A comprehensive audit log viewer with filtering, sorting, pagination,
  * and export functionality for compliance reporting.
  */
@@ -56,13 +56,11 @@ const AuditLogViewer = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [expandedRow, setExpandedRow] = useState(null);
-  
   // Pagination
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
   const [totalCount, setTotalCount] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
-  
   // Filters
   const [filters, setFilters] = useState({
     startDate: '',
@@ -78,10 +76,8 @@ const AuditLogViewer = () => {
     actions: [],
     modelNames: [],
   });
-  
   // Sorting
   const [ordering, setOrdering] = useState('-timestamp');
-  
   // Export
   const [exporting, setExporting] = useState(false);
 
@@ -111,23 +107,19 @@ const AuditLogViewer = () => {
   const fetchLogs = useCallback(async () => {
     setLoading(true);
     setError(null);
-    
     try {
       const params = {
         page: page,
         page_size: pageSize,
         ordering: ordering,
       };
-      
       if (filters.startDate) params.start_date = filters.startDate;
       if (filters.endDate) params.end_date = filters.endDate;
       if (filters.userId) params.user_id = filters.userId;
       if (filters.action) params.action = filters.action;
       if (filters.modelName) params.model_name = filters.modelName;
       if (filters.search) params.search = filters.search;
-      
       const response = await auditAPI.list(params);
-      
       setLogs(response.data.results || []);
       setTotalCount(response.data.count || 0);
       setTotalPages(response.data.total_pages || 1);
@@ -141,7 +133,6 @@ const AuditLogViewer = () => {
 
   const handleExport = async () => {
     setExporting(true);
-    
     try {
       const params = {};
       if (filters.startDate) params.start_date = filters.startDate;
@@ -150,14 +141,11 @@ const AuditLogViewer = () => {
       if (filters.action) params.action = filters.action;
       if (filters.modelName) params.model_name = filters.modelName;
       if (filters.search) params.search = filters.search;
-      
       const response = await auditAPI.export(params);
-      
       // Create download link
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;
-      
       // Get filename from response headers or generate one
       const contentDisposition = response.headers['content-disposition'];
       let filename = 'audit_log_export.xlsx';
@@ -165,7 +153,6 @@ const AuditLogViewer = () => {
         const filenameMatch = contentDisposition.match(/filename="?(.+)"?/);
         if (filenameMatch) filename = filenameMatch[1];
       }
-      
       link.setAttribute('download', filename);
       document.body.appendChild(link);
       link.click();
@@ -217,14 +204,14 @@ const AuditLogViewer = () => {
   const formatTimestamp = (timestamp) => {
     const date = new Date(timestamp);
     return {
-      date: date.toLocaleDateString('en-US', { 
-        year: 'numeric', 
-        month: 'short', 
-        day: 'numeric' 
+      date: date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
       }),
-      time: date.toLocaleTimeString('en-US', { 
-        hour: '2-digit', 
-        minute: '2-digit' 
+      time: date.toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit'
       }),
     };
   };
@@ -379,7 +366,7 @@ const AuditLogViewer = () => {
                   <option value="">All Users</option>
                   {filterOptions.users.map(user => (
                     <option key={user.id} value={user.id}>
-                      {user.first_name && user.last_name 
+                      {user.first_name && user.last_name
                         ? `${user.first_name} ${user.last_name}`
                         : user.email
                       }
@@ -482,7 +469,7 @@ const AuditLogViewer = () => {
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
                 <th className="w-12 px-4 py-3"></th>
-                <th 
+                <th
                   className="px-4 py-3 text-left text-sm font-medium text-gray-700 cursor-pointer hover:bg-gray-100"
                   onClick={() => handleSort('timestamp')}
                 >
@@ -492,7 +479,7 @@ const AuditLogViewer = () => {
                     {getSortIcon('timestamp')}
                   </div>
                 </th>
-                <th 
+                <th
                   className="px-4 py-3 text-left text-sm font-medium text-gray-700 cursor-pointer hover:bg-gray-100"
                   onClick={() => handleSort('user__email')}
                 >
@@ -502,7 +489,7 @@ const AuditLogViewer = () => {
                     {getSortIcon('user__email')}
                   </div>
                 </th>
-                <th 
+                <th
                   className="px-4 py-3 text-left text-sm font-medium text-gray-700 cursor-pointer hover:bg-gray-100"
                   onClick={() => handleSort('action')}
                 >
@@ -511,7 +498,7 @@ const AuditLogViewer = () => {
                     {getSortIcon('action')}
                   </div>
                 </th>
-                <th 
+                <th
                   className="px-4 py-3 text-left text-sm font-medium text-gray-700 cursor-pointer hover:bg-gray-100"
                   onClick={() => handleSort('model_name')}
                 >
@@ -544,7 +531,7 @@ const AuditLogViewer = () => {
                     <Activity className="w-12 h-12 mx-auto mb-3 text-gray-300" />
                     <p className="text-lg font-medium">No activity found</p>
                     <p className="text-sm">
-                      {hasActiveFilters 
+                      {hasActiveFilters
                         ? 'Try adjusting your filters'
                         : 'Activity will appear here as you use the system'
                       }
@@ -555,10 +542,9 @@ const AuditLogViewer = () => {
                 logs.map((log) => {
                   const { date, time } = formatTimestamp(log.timestamp);
                   const isExpanded = expandedRow === log.id;
-                  
                   return (
                     <React.Fragment key={log.id}>
-                      <tr 
+                      <tr
                         className={`hover:bg-gray-50 cursor-pointer transition-colors ${isExpanded ? 'bg-green-50' : ''}`}
                         onClick={() => setExpandedRow(isExpanded ? null : log.id)}
                       >
@@ -580,7 +566,7 @@ const AuditLogViewer = () => {
                         <td className="px-4 py-3">
                           <div className="text-sm">
                             <div className="font-medium text-gray-900">
-                              {log.user 
+                              {log.user
                                 ? (log.user.first_name && log.user.last_name
                                     ? `${log.user.first_name} ${log.user.last_name}`
                                     : log.user.email
@@ -612,7 +598,6 @@ const AuditLogViewer = () => {
                           </div>
                         </td>
                       </tr>
-                      
                       {/* Expanded details row */}
                       {isExpanded && (
                         <tr className="bg-green-50">
@@ -627,7 +612,6 @@ const AuditLogViewer = () => {
                                   {renderChanges(log.changes)}
                                 </div>
                               </div>
-                              
                               {/* Metadata */}
                               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                                 <div>
@@ -681,7 +665,6 @@ const AuditLogViewer = () => {
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
-              
               {/* Page numbers */}
               <div className="flex items-center gap-1">
                 {[...Array(Math.min(5, totalPages))].map((_, i) => {
@@ -695,7 +678,6 @@ const AuditLogViewer = () => {
                   } else {
                     pageNum = page - 2 + i;
                   }
-                  
                   return (
                     <button
                       key={pageNum}
@@ -711,7 +693,6 @@ const AuditLogViewer = () => {
                   );
                 })}
               </div>
-              
               <button
                 onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                 disabled={page === totalPages}
@@ -738,7 +719,7 @@ const AuditLogViewer = () => {
       <div className="mt-4 text-sm text-gray-500 flex items-start gap-2">
         <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
         <span>
-          This activity log is maintained for regulatory compliance purposes. 
+          This activity log is maintained for regulatory compliance purposes.
           Records are retained according to California agricultural regulations (PUR, SGMA, ILRP).
           Export data for official reporting.
         </span>

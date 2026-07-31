@@ -278,19 +278,19 @@ const WaterManagement = () => {
   // =============================================================================
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-5">
+      <div className="bg-white border-b border-gray-200 px-6 py-5">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Water Management</h1>
-            <p className="text-gray-500 dark:text-gray-400 mt-1">Track water sources, wells, and SGMA compliance</p>
+            <h1 className="text-2xl font-bold text-gray-900">Water Management</h1>
+            <p className="text-gray-500 mt-1">Track water sources, wells, and SGMA compliance</p>
           </div>
           <div className="flex items-center gap-3">
             <button
               onClick={handleRefresh}
               disabled={loading}
-              className="p-2.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              className="p-2.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
             >
               <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
             </button>
@@ -316,15 +316,15 @@ const WaterManagement = () => {
               }}
               className={`flex items-center gap-2 px-4 py-3 rounded-t-lg text-sm font-medium transition-colors whitespace-nowrap ${
                 activeTab === tab.id
-                  ? 'bg-gray-50 dark:bg-gray-900 text-blue-600 dark:text-blue-400 border-t border-l border-r border-gray-200 dark:border-gray-700'
-                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700'
+                  ? 'bg-gray-50 text-blue-600 border-t border-l border-r border-gray-200'
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
               }`}
             >
               <tab.icon className="w-4 h-4" />
               {tab.label}
               {tab.count !== undefined && (
                 <span className={`ml-1 px-2 py-0.5 rounded-full text-xs ${
-                  activeTab === tab.id ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
+                  activeTab === tab.id ? 'bg-blue-100 text-blue-600' : 'bg-gray-200 text-gray-600'
                 }`}>
                   {tab.count}
                 </span>

@@ -106,7 +106,7 @@ const OverviewTab = ({
 
       {/* Quick Actions */}
       <div>
-        <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">Quick Actions</h3>
+        <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">Quick Actions</h3>
         <div className="flex flex-wrap gap-3">
           <QuickActionButton icon={Plus} label="Add Well" onClick={() => openWellSourceModal()} color="cyan" />
           <QuickActionButton icon={Gauge} label="Batch Readings" onClick={() => {
@@ -127,8 +127,8 @@ const OverviewTab = ({
       {/* Bottom Section: Sources & SGMA */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Source Type Breakdown */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
-          <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Water Sources by Type</h3>
+        <div className="bg-white rounded-xl border border-gray-200 p-5">
+          <h3 className="font-semibold text-gray-900 mb-4">Water Sources by Type</h3>
           <div className="space-y-3">
             {Object.entries(SOURCE_TYPE_LABELS).map(([type, label]) => {
               const count = waterSources.filter(s => s.source_type === type).length;
@@ -138,10 +138,10 @@ const OverviewTab = ({
               return (
                 <div key={type}>
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{label}</span>
-                    <span className="text-sm text-gray-500 dark:text-gray-400">{count}</span>
+                    <span className="text-sm font-medium text-gray-700">{label}</span>
+                    <span className="text-sm text-gray-500">{count}</span>
                   </div>
-                  <div className="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-2">
+                  <div className="w-full bg-gray-100 rounded-full h-2">
                     <div
                       className={`h-2 rounded-full ${type === 'well' ? 'bg-cyan-500' : type === 'municipal' ? 'bg-blue-500' : type === 'surface' ? 'bg-emerald-500' : 'bg-gray-400'}`}
                       style={{ width: `${percentage}%` }}
@@ -162,17 +162,17 @@ const OverviewTab = ({
 
         {/* SGMA Compliance */}
         {sgmaDashboard && (
-          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
-            <h3 className="font-semibold text-gray-900 dark:text-white mb-4">SGMA Compliance</h3>
+          <div className="bg-white rounded-xl border border-gray-200 p-5">
+            <h3 className="font-semibold text-gray-900 mb-4">SGMA Compliance</h3>
             <div className="space-y-4">
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm text-gray-600 dark:text-gray-400">Allocation Usage</span>
+                  <span className="text-sm text-gray-600">Allocation Usage</span>
                   <span className={`text-sm font-semibold ${wellStats.allocationUsed > 80 ? 'text-red-600' : 'text-primary'}`}>
                     {formatNumber(wellStats.allocationUsed)}%
                   </span>
                 </div>
-                <div className="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-3">
+                <div className="w-full bg-gray-100 rounded-full h-3">
                   <div
                     className={`h-3 rounded-full transition-all ${wellStats.allocationUsed > 95 ? 'bg-red-500' : wellStats.allocationUsed > 80 ? 'bg-yellow-500' : 'bg-green-500'}`}
                     style={{ width: `${Math.min(wellStats.allocationUsed, 100)}%` }}
@@ -181,18 +181,18 @@ const OverviewTab = ({
               </div>
 
               <div className="grid grid-cols-2 gap-4 pt-2">
-                <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Water Year</p>
-                  <p className="text-lg font-semibold text-gray-900 dark:text-white">{sgmaDashboard.water_year}</p>
+                <div className="bg-gray-50 rounded-lg p-3">
+                  <p className="text-xs text-gray-500">Water Year</p>
+                  <p className="text-lg font-semibold text-gray-900">{sgmaDashboard.water_year}</p>
                 </div>
-                <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Current Period</p>
-                  <p className="text-lg font-semibold text-gray-900 dark:text-white">{sgmaDashboard.current_period}</p>
+                <div className="bg-gray-50 rounded-lg p-3">
+                  <p className="text-xs text-gray-500">Current Period</p>
+                  <p className="text-lg font-semibold text-gray-900">{sgmaDashboard.current_period}</p>
                 </div>
               </div>
 
               <div className="flex items-center gap-4 pt-2 text-sm">
-                <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+                <div className="flex items-center gap-2 text-gray-600">
                   <CheckCircle className="w-4 h-4" />
                   <span>Next report: {sgmaDashboard.next_report_due ? new Date(sgmaDashboard.next_report_due).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : '-'}</span>
                 </div>

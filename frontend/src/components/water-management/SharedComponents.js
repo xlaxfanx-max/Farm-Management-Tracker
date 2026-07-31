@@ -24,15 +24,15 @@ export const MetricCard = ({ title, value, subtitle, icon: Icon, trend, color = 
 
   return (
     <div
-      className={`relative overflow-hidden bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-5 hover:shadow-md transition-all ${onClick ? 'cursor-pointer' : ''}`}
+      className={`relative overflow-hidden bg-white rounded-xl shadow-sm border border-gray-100 p-5 hover:shadow-md transition-all ${onClick ? 'cursor-pointer' : ''}`}
       onClick={onClick}
     >
       <div className="flex items-start justify-between">
         <div className="flex-1">
-          <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{title}</p>
-          <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{value}</p>
+          <p className="text-sm font-medium text-gray-500">{title}</p>
+          <p className="text-2xl font-bold text-gray-900 mt-1">{value}</p>
           {subtitle && (
-            <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{subtitle}</p>
+            <p className="text-xs text-gray-400 mt-1">{subtitle}</p>
           )}
           {trend && (
             <div className={`flex items-center gap-1 mt-2 text-xs ${trend > 0 ? 'text-primary' : 'text-red-600'}`}>
@@ -56,10 +56,10 @@ export const MetricCard = ({ title, value, subtitle, icon: Icon, trend, color = 
 
 export const AlertBanner = ({ type, title, message, action, onAction }) => {
   const config = {
-    error: { bg: 'bg-red-50 dark:bg-red-900/30', border: 'border-red-200 dark:border-red-800', icon: AlertTriangle, iconColor: 'text-red-500 dark:text-red-400', textColor: 'text-red-800 dark:text-red-200' },
-    warning: { bg: 'bg-amber-50 dark:bg-amber-900/30', border: 'border-amber-200 dark:border-amber-800', icon: AlertCircle, iconColor: 'text-amber-500 dark:text-amber-400', textColor: 'text-amber-800 dark:text-amber-200' },
-    info: { bg: 'bg-blue-50 dark:bg-blue-900/30', border: 'border-blue-200 dark:border-blue-800', icon: Activity, iconColor: 'text-blue-500 dark:text-blue-400', textColor: 'text-blue-800 dark:text-blue-200' },
-    success: { bg: 'bg-primary-light dark:bg-green-900/30', border: 'border-green-200 dark:border-green-800', icon: CheckCircle, iconColor: 'text-green-500 dark:text-green-400', textColor: 'text-green-800 dark:text-green-200' },
+    error: { bg: 'bg-red-50', border: 'border-red-200', icon: AlertTriangle, iconColor: 'text-red-500', textColor: 'text-red-800' },
+    warning: { bg: 'bg-amber-50', border: 'border-amber-200', icon: AlertCircle, iconColor: 'text-amber-500', textColor: 'text-amber-800' },
+    info: { bg: 'bg-blue-50', border: 'border-blue-200', icon: Activity, iconColor: 'text-blue-500', textColor: 'text-blue-800' },
+    success: { bg: 'bg-primary-light', border: 'border-green-200', icon: CheckCircle, iconColor: 'text-green-500', textColor: 'text-green-800' },
   };
 
   const { bg, border, icon: Icon, iconColor, textColor } = config[type] || config.info;
