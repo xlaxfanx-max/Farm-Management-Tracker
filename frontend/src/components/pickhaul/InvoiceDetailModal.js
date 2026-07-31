@@ -8,8 +8,8 @@ import { formatCurrency, formatDate, formatNumber } from './pickhaulUtils';
 function Item({ label, children }) {
   return (
     <div>
-      <div className="text-xs text-gray-500 dark:text-gray-400">{label}</div>
-      <div className="text-sm text-gray-900 dark:text-gray-100">{children}</div>
+      <div className="text-xs text-text-secondary">{label}</div>
+      <div className="text-sm text-heading">{children}</div>
     </div>
   );
 }
@@ -50,20 +50,20 @@ export default function InvoiceDetailModal({ isOpen, onClose, invoice }) {
         <DerivedFieldsPanel invoice={invoice} />
 
         <div>
-          <h4 className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5">
+          <h4 className="text-sm text-bark-700 mb-1.5">
             Matched house charge{charges.length === 1 ? '' : 's'}
           </h4>
           {charges.length ? (
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-left text-xs text-gray-500 dark:text-gray-400">
+                <tr className="text-left text-xs text-text-secondary">
                   <th className="py-1 pr-3">AP Reference</th>
                   <th className="py-1 pr-3">Kind</th>
                   <th className="py-1 pr-3">Posted</th>
                   <th className="py-1 text-right">Debit</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+              <tbody className="divide-y divide-border">
                 {charges.map((c) => (
                   <tr key={c.id}>
                     <td className="py-1.5 pr-3">{c.ap_reference || '—'}</td>
@@ -75,28 +75,28 @@ export default function InvoiceDetailModal({ isOpen, onClose, invoice }) {
               </tbody>
             </table>
           ) : (
-            <p className="text-sm text-gray-500 dark:text-gray-400 italic">
+            <p className="text-sm text-text-secondary italic">
               No house charge matched yet — that's why this row is on the chase list.
             </p>
           )}
         </div>
 
         <div>
-          <h4 className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5">
+          <h4 className="text-sm text-bark-700 mb-1.5">
             Linked receipts ({receipts.length})
           </h4>
           {receipts.length ? (
             <div className="max-h-48 overflow-y-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="text-left text-xs text-gray-500 dark:text-gray-400">
+                  <tr className="text-left text-xs text-text-secondary">
                     <th className="py-1 pr-3">Receipt #</th>
                     <th className="py-1 pr-3">Pick date</th>
                     <th className="py-1 pr-3">Block</th>
                     <th className="py-1 text-right">Bins</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+                <tbody className="divide-y divide-border">
                   {receipts.map((r) => (
                     <tr key={r.id}>
                       <td className="py-1.5 pr-3">{r.receipt_no}</td>
@@ -109,7 +109,7 @@ export default function InvoiceDetailModal({ isOpen, onClose, invoice }) {
               </table>
             </div>
           ) : (
-            <p className="text-sm text-gray-500 dark:text-gray-400 italic">
+            <p className="text-sm text-text-secondary italic">
               No receipts linked — set a block and date range, or this may be a no-portal house.
             </p>
           )}
@@ -117,8 +117,8 @@ export default function InvoiceDetailModal({ isOpen, onClose, invoice }) {
 
         {invoice.notes && (
           <div>
-            <h4 className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Notes</h4>
-            <p className="text-sm text-gray-600 dark:text-gray-300 whitespace-pre-wrap">{invoice.notes}</p>
+            <h4 className="text-sm text-bark-700 mb-1">Notes</h4>
+            <p className="text-sm text-bark-600 whitespace-pre-wrap">{invoice.notes}</p>
           </div>
         )}
       </div>

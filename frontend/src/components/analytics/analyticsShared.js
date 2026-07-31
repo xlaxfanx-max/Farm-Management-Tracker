@@ -81,7 +81,7 @@ export const LoadingState = ({ message = 'Loading analytics...' }) => (
   <div className="flex items-center justify-center py-16">
     <div className="text-center">
       <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary mx-auto"></div>
-      <p className="mt-4 text-gray-500">{message}</p>
+      <p className="mt-4 text-text-secondary">{message}</p>
     </div>
   </div>
 );
@@ -91,14 +91,14 @@ export const LoadingState = ({ message = 'Loading analytics...' }) => (
 // =============================================================================
 
 export const ErrorState = ({ message = 'Failed to load analytics data', onRetry }) => (
-  <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
-    <AlertCircle className="w-10 h-10 text-red-400 mx-auto mb-3" />
-    <h3 className="text-lg font-medium text-red-800 mb-2">Error Loading Analytics</h3>
-    <p className="text-red-600">{message}</p>
+  <div className="bg-danger-bg border border-danger/25 rounded-card p-6 text-center">
+    <AlertCircle className="w-10 h-10 text-danger mx-auto mb-3" />
+    <h3 className="text-lg text-danger mb-2">Error Loading Analytics</h3>
+    <p className="text-danger">{message}</p>
     {onRetry && (
       <button
         onClick={onRetry}
-        className="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+        className="mt-4 px-4 py-2 bg-danger text-white rounded-lg hover:bg-danger-hover transition-colors"
       >
         Try Again
       </button>
@@ -112,8 +112,8 @@ export const ErrorState = ({ message = 'Failed to load analytics data', onRetry 
 
 export const EmptyState = ({ message = 'No data available', subtitle }) => (
   <div className="py-12 text-center">
-    <p className="text-gray-500">{message}</p>
-    {subtitle && <p className="text-sm text-gray-400 mt-2">{subtitle}</p>}
+    <p className="text-text-secondary">{message}</p>
+    {subtitle && <p className="text-sm text-text-muted mt-2">{subtitle}</p>}
   </div>
 );
 
@@ -123,11 +123,11 @@ export const EmptyState = ({ message = 'No data available', subtitle }) => (
 
 export const VarianceIndicator = ({ value, format = 'percent' }) => {
   if (value === null || value === undefined) {
-    return <Minus className="w-4 h-4 text-gray-400" />;
+    return <Minus className="w-4 h-4 text-text-muted" />;
   }
   const isPositive = value > 0;
   const isNegative = value < 0;
-  const colorClass = isPositive ? 'text-primary' : isNegative ? 'text-red-600' : 'text-gray-500';
+  const colorClass = isPositive ? 'text-primary' : isNegative ? 'text-danger' : 'text-text-secondary';
   const Icon = isPositive ? ArrowUpRight : isNegative ? ArrowDownRight : Minus;
 
   let displayValue;
@@ -152,15 +152,15 @@ export const VarianceIndicator = ({ value, format = 'percent' }) => {
 // =============================================================================
 
 export const SectionCard = ({ title, subtitle, icon: Icon, children, className = '' }) => (
-  <div className={`bg-white rounded-xl border border-gray-200 ${className}`}>
+  <div className={`bg-surface-raised rounded-card border border-border ${className}`}>
     {(title || subtitle) && (
-      <div className="p-5 border-b border-gray-200">
-        <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+      <div className="p-5 border-b border-border">
+        <h3 className="text-lg text-heading flex items-center gap-2">
           {Icon && <Icon className="w-5 h-5 text-primary" />}
           {title}
         </h3>
         {subtitle && (
-          <p className="text-sm text-gray-500 mt-1">{subtitle}</p>
+          <p className="text-sm text-text-secondary mt-1">{subtitle}</p>
         )}
       </div>
     )}
@@ -176,11 +176,11 @@ export const AnalyticsTabs = ({ tabs, activeTab, onChange, accentColor = 'green'
   const activeColorMap = {
     green: 'border-primary text-primary',
     orange: 'border-orange-600 text-orange-600',
-    blue: 'border-blue-600 text-blue-600',
+    blue: 'border-primary text-link',
   };
 
   return (
-    <div className="flex border-b border-gray-200">
+    <div className="flex border-b border-border">
       {tabs.map((tab) => (
         <button
           key={tab.id}
@@ -188,7 +188,7 @@ export const AnalyticsTabs = ({ tabs, activeTab, onChange, accentColor = 'green'
           className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${
             activeTab === tab.id
               ? activeColorMap[accentColor] || activeColorMap.green
-              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              : 'border-transparent text-text-secondary hover:text-bark-700 hover:border-border-strong'
           }`}
         >
           {tab.icon && (
@@ -211,7 +211,7 @@ export const AnalyticsTabs = ({ tabs, activeTab, onChange, accentColor = 'green'
 /**
  * Consistent table header class
  */
-export const tableHeaderClass = 'px-4 py-3 text-xs font-medium text-gray-500 uppercase';
+export const tableHeaderClass = 'px-4 py-3 text-xs font-medium text-text-secondary uppercase';
 
 /**
  * Consistent table cell class
@@ -222,12 +222,12 @@ export const tableCellClass = 'px-4 py-3 text-sm';
  * Margin badge (colored based on threshold)
  */
 export const MarginBadge = ({ value }) => {
-  if (value === null || value === undefined) return <span className="text-gray-400">-</span>;
+  if (value === null || value === undefined) return <span className="text-text-muted">-</span>;
   const badgeClass =
-    value >= 50 ? 'bg-green-100 text-green-800' :
-    value >= 30 ? 'bg-blue-100 text-blue-800' :
+    value >= 50 ? 'bg-green-100 text-green-700' :
+    value >= 30 ? 'bg-orange-100 text-orange-700' :
     value >= 10 ? 'bg-yellow-100 text-yellow-800' :
-    'bg-red-100 text-red-800';
+    'bg-danger-bg text-danger';
 
   return (
     <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${badgeClass}`}>

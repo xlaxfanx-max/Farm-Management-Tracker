@@ -198,14 +198,14 @@ const QuickHarvestModal = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full">
+      <div className="bg-surface-raised rounded-card shadow-xl max-w-md w-full">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b dark:border-gray-700">
+        <div className="flex items-center justify-between p-4 border-b">
           <div className="flex items-center gap-2">
-            <Zap size={20} className="text-orange-600 dark:text-orange-400" />
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Quick Harvest Entry</h2>
+            <Zap size={20} className="text-orange-600" />
+            <h2 className="text-xl text-heading">Quick Harvest Entry</h2>
           </div>
-          <button onClick={onClose} className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded text-gray-500 dark:text-gray-400">
+          <button aria-label="Close" onClick={onClose} className="p-1 hover:bg-cream-100 rounded text-text-secondary">
             <X size={24} />
           </button>
         </div>
@@ -214,14 +214,14 @@ const QuickHarvestModal = ({
         <form onSubmit={handleSubmit} className="p-4 space-y-4">
           {/* Field Selection */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Field <span className="text-red-500">*</span>
+            <label className="block text-sm font-medium text-bark-700 mb-1">
+              Field <span className="text-danger">*</span>
             </label>
             <select
               name="field"
               value={formData.field}
               onChange={handleChange}
-              className={`w-full border dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${errors.field ? 'border-red-500' : ''}`}
+              className={`w-full border rounded-lg px-3 py-2 bg-surface-raised text-heading ${errors.field ? 'border-danger' : ''}`}
               required
             >
               <option value="">Select a field...</option>
@@ -238,41 +238,41 @@ const QuickHarvestModal = ({
                   </option>
                 ))}
             </select>
-            {errors.field && <p className="text-red-500 text-sm mt-1">{errors.field}</p>}
+            {errors.field && <p className="text-danger text-sm mt-1">{errors.field}</p>}
           </div>
 
           {/* Harvest Date */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Harvest Date <span className="text-red-500">*</span>
+            <label className="block text-sm font-medium text-bark-700 mb-1">
+              Harvest Date <span className="text-danger">*</span>
             </label>
             <input
               type="date"
               name="harvest_date"
               value={formData.harvest_date}
               onChange={handleChange}
-              className={`w-full border dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${errors.harvest_date ? 'border-red-500' : ''}`}
+              className={`w-full border rounded-lg px-3 py-2 bg-surface-raised text-heading ${errors.harvest_date ? 'border-danger' : ''}`}
               required
             />
-            {errors.harvest_date && <p className="text-red-500 text-sm mt-1">{errors.harvest_date}</p>}
+            {errors.harvest_date && <p className="text-danger text-sm mt-1">{errors.harvest_date}</p>}
           </div>
 
           {/* PHI Violation Warning */}
           {phiCheck && phiCheck.is_compliant === false && (
-            <div className="p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg">
+            <div className="p-3 bg-danger-bg border border-danger/25 rounded-card">
               <div className="flex items-start gap-2">
-                <AlertTriangle className="text-red-600 flex-shrink-0 mt-0.5" size={18} />
+                <AlertTriangle className="text-danger flex-shrink-0 mt-0.5" size={18} />
                 <div>
-                  <p className="text-sm font-semibold text-red-800 dark:text-red-300">PHI Violation Warning</p>
+                  <p className="text-sm font-semibold text-danger">PHI Violation Warning</p>
                   {phiCheck.warning_message && (
-                    <p className="text-xs text-red-700 dark:text-red-400 mt-1">{phiCheck.warning_message}</p>
+                    <p className="text-xs text-danger mt-1">{phiCheck.warning_message}</p>
                   )}
-                  <label className="mt-2 flex items-start gap-2 text-xs font-medium text-red-800 dark:text-red-300 cursor-pointer">
+                  <label className="mt-2 flex items-start gap-2 text-xs font-medium text-danger cursor-pointer">
                     <input
                       type="checkbox"
                       checked={phiOverride}
                       onChange={(e) => setPhiOverride(e.target.checked)}
-                      className="mt-0.5 rounded border-red-400 text-red-600 focus:ring-red-500"
+                      className="mt-0.5 rounded border-danger/60 text-danger focus:ring-danger"
                     />
                     <span>I understand this harvest may violate the PHI and want to record it anyway</span>
                   </label>
@@ -283,8 +283,8 @@ const QuickHarvestModal = ({
 
           {/* Total Bins/Lbs */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Total {unitInfo.labelPlural} <span className="text-red-500">*</span>
+            <label className="block text-sm font-medium text-bark-700 mb-1">
+              Total {unitInfo.labelPlural} <span className="text-danger">*</span>
             </label>
             <input
               type="number"
@@ -292,23 +292,23 @@ const QuickHarvestModal = ({
               value={formData.total_bins}
               onChange={handleChange}
               min="1"
-              className={`w-full border dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${errors.total_bins ? 'border-red-500' : ''}`}
+              className={`w-full border rounded-lg px-3 py-2 bg-surface-raised text-heading ${errors.total_bins ? 'border-danger' : ''}`}
               placeholder={`Number of ${unitInfo.labelPlural.toLowerCase()} harvested`}
               required
             />
-            {errors.total_bins && <p className="text-red-500 text-sm mt-1">{errors.total_bins}</p>}
+            {errors.total_bins && <p className="text-danger text-sm mt-1">{errors.total_bins}</p>}
           </div>
 
           {/* Crop Variety */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Crop Variety <span className="text-red-500">*</span>
+            <label className="block text-sm font-medium text-bark-700 mb-1">
+              Crop Variety <span className="text-danger">*</span>
             </label>
             <select
               name="crop_variety"
               value={formData.crop_variety}
               onChange={handleChange}
-              className="w-full border dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
               required
             >
               {HARVEST_CONSTANTS.CROP_VARIETIES.map(crop => (
@@ -322,7 +322,7 @@ const QuickHarvestModal = ({
 
           {/* Notes */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-bark-700 mb-1">
               Notes (Optional)
             </label>
             <textarea
@@ -330,14 +330,14 @@ const QuickHarvestModal = ({
               value={formData.notes}
               onChange={handleChange}
               rows={2}
-              className="w-full border dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
               placeholder="Any additional notes..."
             />
           </div>
 
           {/* Auto-filled Info Notice */}
-          <div className="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
-            <p className="text-xs text-blue-800 dark:text-blue-300">
+          <div className="bg-orange-50 border border-orange-200 rounded-card p-3">
+            <p className="text-xs text-orange-700">
               <strong>Auto-filled:</strong> Acres (from field), bin weight (default for crop), pick number (auto-increment), status (In Progress)
             </p>
           </div>
@@ -354,14 +354,14 @@ const QuickHarvestModal = ({
             <button
               type="button"
               onClick={handleSwitchToAdvanced}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+              className="w-full px-4 py-2 border border-border-strong text-bark-700 rounded-button hover:bg-cream-50"
             >
               Switch to Advanced Mode
             </button>
             <button
               type="button"
               onClick={onClose}
-              className="w-full px-4 py-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+              className="w-full px-4 py-2 text-bark-600 hover:bg-cream-100 rounded-lg"
             >
               Cancel
             </button>

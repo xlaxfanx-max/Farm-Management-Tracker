@@ -62,6 +62,33 @@ export const VIEW_NAMES = {
   profile: 'Profile',
 };
 
+// Eyebrow shown above the page title — derived from the sidebar groups
+export const VIEW_EYEBROWS = {
+  dashboard: 'Overview',
+  farms: 'Operations',
+  rentals: 'Operations',
+  'rentals-rent-roll': 'Operations',
+  applications: 'Operations',
+  'pur-import': 'Operations',
+  water: 'Operations',
+  harvests: 'Production',
+  compliance: 'Compliance & safety',
+  'compliance-deadlines': 'Compliance & safety',
+  'compliance-licenses': 'Compliance & safety',
+  'compliance-wps': 'Compliance & safety',
+  'compliance-reports': 'Compliance & safety',
+  'compliance-settings': 'Compliance & safety',
+  'compliance-pesticide': 'Compliance & safety',
+  'compliance-inspector-checklist': 'Compliance & safety',
+  weather: 'Insights',
+  analytics: 'Insights',
+  reports: 'Insights',
+  activity: 'Administration',
+  team: 'Administration',
+  company: 'Administration',
+  profile: 'Administration',
+};
+
 // Parent view mappings for breadcrumbs
 export const PARENT_VIEWS = {
   'pur-import': 'applications',

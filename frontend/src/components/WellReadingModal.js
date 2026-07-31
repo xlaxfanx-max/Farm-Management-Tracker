@@ -167,15 +167,15 @@ const WellReadingModal = ({ isOpen, onClose, reading, wellId, wellName, onSave }
       <button
         type="button"
         onClick={onClose}
-        className="px-4 py-2 rounded-button border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"
+        className="px-4 py-2 rounded-button border border-border-strong text-bark-700 hover:bg-cream-50"
       >
         Cancel
       </button>
-      <button
+      <button aria-label="Save"
         type="submit"
         form="well-reading-form"
         disabled={loading}
-        className="flex items-center gap-2 px-4 py-2 rounded-button bg-cyan-600 text-white hover:bg-cyan-700 disabled:opacity-50"
+        className="flex items-center gap-2 px-4 py-2 rounded-button bg-green-600 text-white hover:bg-green-700 disabled:opacity-50"
       >
         <Save className="w-4 h-4" />
         {loading ? 'Saving…' : reading ? 'Update Reading' : 'Save Reading'}
@@ -196,7 +196,7 @@ const WellReadingModal = ({ isOpen, onClose, reading, wellId, wellName, onSave }
       <form id="well-reading-form" onSubmit={handleSubmit} className="space-y-4">
         {errors.general && (
           <div
-            className="p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg flex items-center gap-2 text-red-700 dark:text-red-300"
+            className="p-3 bg-danger-bg border border-danger/25 rounded-card flex items-center gap-2 text-danger"
             role="alert"
           >
             <AlertCircle className="w-5 h-5" />
@@ -205,26 +205,26 @@ const WellReadingModal = ({ isOpen, onClose, reading, wellId, wellName, onSave }
         )}
 
         {previousReading && (
-          <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-lg p-3">
-            <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 mb-1">
+          <div className="bg-cream-50 border border-border rounded-card p-3">
+            <div className="flex items-center gap-2 text-sm text-bark-600 mb-1">
               <Info className="w-4 h-4" />
               Previous Reading
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-gray-500 dark:text-gray-400">{previousReading.reading_date}</span>
-              <span className="font-medium text-gray-900 dark:text-gray-100">{previousReading.meter_reading}</span>
+              <span className="text-text-secondary">{previousReading.reading_date}</span>
+              <span className="font-medium text-heading">{previousReading.meter_reading}</span>
             </div>
             {previousReading.extraction_acre_feet && (
               <div className="flex justify-between text-sm mt-1">
-                <span className="text-gray-500 dark:text-gray-400">Extraction:</span>
-                <span className="text-cyan-600 dark:text-cyan-400">
+                <span className="text-text-secondary">Extraction:</span>
+                <span className="text-green-600">
                   {previousReading.extraction_acre_feet.toFixed(4)} AF
                 </span>
               </div>
             )}
             {previousReading.total_fee && (
               <div className="flex justify-between text-sm mt-1">
-                <span className="text-gray-500 dark:text-gray-400">Total Fee:</span>
+                <span className="text-text-secondary">Total Fee:</span>
                 <span className="text-primary">${parseFloat(previousReading.total_fee).toFixed(2)}</span>
               </div>
             )}
@@ -232,46 +232,46 @@ const WellReadingModal = ({ isOpen, onClose, reading, wellId, wellName, onSave }
         )}
 
         {reading?.total_fee && (
-          <div className="bg-primary-light dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3">
-            <div className="flex items-center gap-2 text-sm text-primary dark:text-green-400 mb-2 font-medium">
+          <div className="bg-primary-light border border-green-200 rounded-card p-3">
+            <div className="flex items-center gap-2 text-sm text-primary mb-2 font-medium">
               Calculated Fees
             </div>
             <div className="space-y-1 text-sm">
               {reading.base_fee && (
                 <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">Base Fee:</span>
-                  <span className="font-medium text-gray-900 dark:text-gray-100">
+                  <span className="text-bark-600">Base Fee:</span>
+                  <span className="font-medium text-heading">
                     ${parseFloat(reading.base_fee).toFixed(2)}
                   </span>
                 </div>
               )}
               {reading.gsp_fee && (
                 <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">GSP Fee:</span>
-                  <span className="font-medium text-gray-900 dark:text-gray-100">
+                  <span className="text-bark-600">GSP Fee:</span>
+                  <span className="font-medium text-heading">
                     ${parseFloat(reading.gsp_fee).toFixed(2)}
                   </span>
                 </div>
               )}
               {reading.domestic_fee && (
                 <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">Domestic Fee:</span>
-                  <span className="font-medium text-gray-900 dark:text-gray-100">
+                  <span className="text-bark-600">Domestic Fee:</span>
+                  <span className="font-medium text-heading">
                     ${parseFloat(reading.domestic_fee).toFixed(2)}
                   </span>
                 </div>
               )}
               {reading.fixed_fee && (
                 <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">Fixed Fee:</span>
-                  <span className="font-medium text-gray-900 dark:text-gray-100">
+                  <span className="text-bark-600">Fixed Fee:</span>
+                  <span className="font-medium text-heading">
                     ${parseFloat(reading.fixed_fee).toFixed(2)}
                   </span>
                 </div>
               )}
-              <div className="flex justify-between pt-1 border-t border-green-200 dark:border-green-800">
-                <span className="text-gray-700 dark:text-gray-200 font-medium">Total:</span>
-                <span className="font-bold text-primary dark:text-green-400">
+              <div className="flex justify-between pt-1 border-t border-green-200">
+                <span className="text-bark-700 font-medium">Total:</span>
+                <span className="font-bold text-primary">
                   ${parseFloat(reading.total_fee).toFixed(2)}
                 </span>
               </div>
@@ -315,14 +315,14 @@ const WellReadingModal = ({ isOpen, onClose, reading, wellId, wellName, onSave }
             className={inputClasses}
           />
           {calculatedExtraction && (
-            <div className="mt-2 p-2 bg-cyan-50 dark:bg-cyan-900/20 border border-cyan-200 dark:border-cyan-800 rounded-lg">
+            <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded-card">
               <div className="flex justify-between text-sm">
-                <span className="text-cyan-700 dark:text-cyan-300">Estimated Extraction:</span>
-                <span className="font-medium text-cyan-900 dark:text-cyan-100">
+                <span className="text-green-700">Estimated Extraction:</span>
+                <span className="font-medium text-green-800">
                   {calculatedExtraction} units
                 </span>
               </div>
-              <p className="text-xs text-cyan-600 dark:text-cyan-400 mt-1">
+              <p className="text-xs text-green-600 mt-1">
                 Final calculation will apply multiplier and unit conversion
               </p>
             </div>

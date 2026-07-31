@@ -4,6 +4,7 @@
 // =============================================================================
 
 import React, { useState, useEffect } from 'react';
+import { sequential } from '../../theme/finchChartTheme';
 import {
   TrendingUp,
   BarChart3,
@@ -39,18 +40,7 @@ import {
 } from '../analytics/analyticsShared';
 
 // Fixed color palette for size codes (smaller number = larger fruit)
-const SIZE_COLORS = [
-  '#1e40af', // 048 - deep blue (largest)
-  '#2563eb', // 056
-  '#3b82f6', // 072
-  '#06b6d4', // 075
-  '#10b981', // 088
-  '#22c55e', // 113
-  '#eab308', // 138
-  '#f97316', // 165
-  '#ef4444', // 200+ (smallest)
-  '#a855f7', // overflow
-];
+const SIZE_COLORS = sequential(10);
 
 const getSizeColor = (index) => SIZE_COLORS[index % SIZE_COLORS.length];
 
@@ -179,7 +169,7 @@ const PackinghouseAnalytics = () => {
           <select
             value={groupBy}
             onChange={(e) => setGroupBy(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
+            className="px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
           >
             <option value="farm">Group by Farm</option>
             <option value="field">Group by Field</option>
@@ -189,7 +179,7 @@ const PackinghouseAnalytics = () => {
           <select
             value={roiGroupBy}
             onChange={(e) => setRoiGroupBy(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
+            className="px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
           >
             <option value="commodity">Group by Commodity</option>
             <option value="variety">Group by Variety</option>
@@ -201,20 +191,20 @@ const PackinghouseAnalytics = () => {
             value={selectedGrade}
             onChange={(e) => setSelectedGrade(e.target.value)}
             placeholder="Filter by grade (e.g., SUNKIST)"
-            className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-transparent w-56"
+            className="w-56 px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
           />
         )}
         <SeasonSelector
           value={selectedSeason}
           onChange={setSelectedSeason}
           cropCategory="citrus"
-          className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
+          className="px-3 py-2 border border-border-strong rounded-card text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
           placeholder="Select Season"
         />
         <select
           value={selectedPackinghouse}
           onChange={(e) => setSelectedPackinghouse(e.target.value)}
-          className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
+          className="px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
         >
           <option value="">All Packinghouses</option>
           {packinghouses.map(ph => (
@@ -224,7 +214,7 @@ const PackinghouseAnalytics = () => {
         <select
           value={selectedCommodity}
           onChange={(e) => setSelectedCommodity(e.target.value)}
-          className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
+          className="px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
         >
           <option value="">All Commodities</option>
           {PACKINGHOUSE_CONSTANTS.commodities.map(c => (
@@ -233,7 +223,7 @@ const PackinghouseAnalytics = () => {
         </select>
         <button
           onClick={fetchAnalytics}
-          className="p-2 text-gray-400 hover:text-gray-600"
+          className="p-2 text-text-muted hover:text-bark-600"
           title="Refresh"
         >
           <RefreshCw className="w-4 h-4" />
@@ -256,8 +246,8 @@ const PackinghouseAnalytics = () => {
                 <EmptyState message="No data available for the selected filters." />
               ) : (
                 <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
+                  <table className="min-w-full divide-y divide-border">
+                    <thead className="bg-cream-50 bg-surface-sunken">
                       <tr>
                         <th className={`${tableHeaderClass} text-left`}>Block</th>
                         <th className={`${tableHeaderClass} text-left`}>Pool</th>
@@ -269,16 +259,16 @@ const PackinghouseAnalytics = () => {
                         <th className={`${tableHeaderClass} text-right`}>vs House</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-200">
+                    <tbody className="divide-y divide-border">
                       {blockPerformance.map((row, idx) => (
-                        <tr key={idx} className="hover:bg-gray-50">
-                          <td className={`${tableCellClass} font-medium text-gray-900`}>{row.field_name}</td>
-                          <td className={`${tableCellClass} text-gray-600`}>{row.pool_name}</td>
+                        <tr key={idx} className="hover:bg-cream-50">
+                          <td className={`${tableCellClass} font-medium text-heading`}>{row.field_name}</td>
+                          <td className={`${tableCellClass} text-bark-600`}>{row.pool_name}</td>
                           <td className={`${tableCellClass} text-right`}>{formatNumber(row.total_bins, 2)}</td>
-                          <td className={`${tableCellClass} text-right font-semibold text-blue-600`}>
+                          <td className={`${tableCellClass} text-right font-semibold text-link`}>
                             {row.pack_percent ? `${row.pack_percent}%` : '-'}
                           </td>
-                          <td className={`${tableCellClass} text-right text-gray-500`}>
+                          <td className={`${tableCellClass} text-right text-text-secondary`}>
                             {row.house_avg_pack_percent ? `${row.house_avg_pack_percent}%` : '-'}
                           </td>
                           <td className={`${tableCellClass} text-right`}>
@@ -310,8 +300,8 @@ const PackinghouseAnalytics = () => {
                 <EmptyState message="No data available for the selected filters." />
               ) : (
                 <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
+                  <table className="min-w-full divide-y divide-border">
+                    <thead className="bg-cream-50 bg-surface-sunken">
                       <tr>
                         <th className={`${tableHeaderClass} text-left`}>Date</th>
                         <th className={`${tableHeaderClass} text-left`}>Field</th>
@@ -320,23 +310,23 @@ const PackinghouseAnalytics = () => {
                         <th className={`${tableHeaderClass} text-right`}>Variance</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-200">
+                    <tbody className="divide-y divide-border">
                       {packoutTrends.map((row, idx) => {
                         const variance = row.house_avg_packed_percent
                           ? parseFloat(row.total_packed_percent) - parseFloat(row.house_avg_packed_percent)
                           : null;
                         return (
-                          <tr key={idx} className="hover:bg-gray-50">
+                          <tr key={idx} className="hover:bg-cream-50">
                             <td className={tableCellClass}>
                               {new Date(row.report_date).toLocaleDateString()}
                             </td>
-                            <td className={`${tableCellClass} font-medium text-gray-900`}>
+                            <td className={`${tableCellClass} font-medium text-heading`}>
                               {row.field_name}
                             </td>
-                            <td className={`${tableCellClass} text-right font-semibold text-blue-600`}>
+                            <td className={`${tableCellClass} text-right font-semibold text-link`}>
                               {row.total_packed_percent}%
                             </td>
-                            <td className={`${tableCellClass} text-right text-gray-500`}>
+                            <td className={`${tableCellClass} text-right text-text-secondary`}>
                               {row.house_avg_packed_percent ? `${row.house_avg_packed_percent}%` : '-'}
                             </td>
                             <td className={`${tableCellClass} text-right`}>
@@ -363,8 +353,8 @@ const PackinghouseAnalytics = () => {
                 <EmptyState message="No settlement data available. Select a season to compare packinghouse returns." />
               ) : (
                 <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
+                  <table className="min-w-full divide-y divide-border">
+                    <thead className="bg-cream-50 bg-surface-sunken">
                       <tr>
                         <th className={`${tableHeaderClass} text-left`}>Packinghouse</th>
                         <th className={`${tableHeaderClass} text-left`}>Commodity</th>
@@ -374,17 +364,17 @@ const PackinghouseAnalytics = () => {
                         <th className={`${tableHeaderClass} text-right`}>Fresh %</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-200">
+                    <tbody className="divide-y divide-border">
                       {settlementComparison.map((row, idx) => (
-                        <tr key={idx} className="hover:bg-gray-50">
-                          <td className={`${tableCellClass} font-medium text-gray-900`}>{row.packinghouse_name}</td>
-                          <td className={`${tableCellClass} text-gray-600`}>{row.commodity}</td>
+                        <tr key={idx} className="hover:bg-cream-50">
+                          <td className={`${tableCellClass} font-medium text-heading`}>{row.packinghouse_name}</td>
+                          <td className={`${tableCellClass} text-bark-600`}>{row.commodity}</td>
                           <td className={`${tableCellClass} text-right`}>{formatNumber(row.total_bins, 2)}</td>
                           <td className={`${tableCellClass} text-right`}>{formatCurrency(row.net_return)}</td>
                           <td className={`${tableCellClass} text-right font-semibold text-primary`}>
                             {formatCurrency(row.net_per_bin)}
                           </td>
-                          <td className={`${tableCellClass} text-right text-blue-600`}>
+                          <td className={`${tableCellClass} text-right text-link`}>
                             {row.fresh_fruit_percent ? `${row.fresh_fruit_percent}%` : '-'}
                           </td>
                         </tr>
@@ -416,7 +406,7 @@ const PackinghouseAnalytics = () => {
                             className="w-3 h-3 rounded-sm"
                             style={{ backgroundColor: getSizeColor(idx) }}
                           />
-                          <span className="text-gray-600">Size {size}</span>
+                          <span className="text-bark-600">Size {size}</span>
                         </div>
                       ))}
                     </div>
@@ -429,7 +419,7 @@ const PackinghouseAnalytics = () => {
 
                         return (
                           <div key={group.group_id} className="flex items-center gap-3">
-                            <div className="w-32 text-sm text-gray-700 font-medium truncate text-right" title={group.group_name}>
+                            <div className="w-32 text-sm text-bark-700 font-medium truncate text-right" title={group.group_name}>
                               {group.group_name}
                             </div>
                             <div className="flex-1">
@@ -451,7 +441,7 @@ const PackinghouseAnalytics = () => {
                                 })}
                               </div>
                             </div>
-                            <div className="w-20 text-xs text-gray-500 text-right">
+                            <div className="w-20 text-xs text-text-secondary text-right">
                               {formatNumber(group.total_quantity)} ctns
                             </div>
                           </div>
@@ -460,10 +450,10 @@ const PackinghouseAnalytics = () => {
                     </div>
 
                     {/* Detail Table */}
-                    <div className="border-t border-gray-200">
+                    <div className="border-t border-border">
                       <div className="overflow-x-auto">
-                        <table className="min-w-full divide-y divide-gray-200">
-                          <thead className="bg-gray-50">
+                        <table className="min-w-full divide-y divide-border">
+                          <thead className="bg-cream-50 bg-surface-sunken">
                             <tr>
                               <th className={`${tableHeaderClass} text-left`}>
                                 {groupBy === 'farm' ? 'Farm' : 'Field'}
@@ -475,16 +465,16 @@ const PackinghouseAnalytics = () => {
                               <th className={`${tableHeaderClass} text-right`}>Variance</th>
                             </tr>
                           </thead>
-                          <tbody className="divide-y divide-gray-200">
+                          <tbody className="divide-y divide-border">
                             {sizeDistribution.groups.flatMap((group) =>
                               group.sizes.map((s, sIdx) => {
                                 const variance = s.house_avg_percent !== null
                                   ? parseFloat(s.percent) - parseFloat(s.house_avg_percent)
                                   : null;
                                 return (
-                                  <tr key={`${group.group_id}-${s.size}`} className="hover:bg-gray-50">
+                                  <tr key={`${group.group_id}-${s.size}`} className="hover:bg-cream-50">
                                     {sIdx === 0 ? (
-                                      <td className={`${tableCellClass} font-medium text-gray-900`} rowSpan={group.sizes.length}>
+                                      <td className={`${tableCellClass} font-medium text-heading`} rowSpan={group.sizes.length}>
                                         {group.group_name}
                                       </td>
                                     ) : null}
@@ -498,10 +488,10 @@ const PackinghouseAnalytics = () => {
                                       </span>
                                     </td>
                                     <td className={`${tableCellClass} text-right`}>{formatNumber(s.quantity)}</td>
-                                    <td className={`${tableCellClass} text-right font-semibold text-blue-600`}>
+                                    <td className={`${tableCellClass} text-right font-semibold text-link`}>
                                       {s.percent}%
                                     </td>
-                                    <td className={`${tableCellClass} text-right text-gray-500`}>
+                                    <td className={`${tableCellClass} text-right text-text-secondary`}>
                                       {s.house_avg_percent !== null ? `${s.house_avg_percent}%` : '-'}
                                     </td>
                                     <td className={`${tableCellClass} text-right`}>
@@ -566,7 +556,7 @@ const PackinghouseAnalytics = () => {
 
                         return (
                           <div key={s.size} className="flex items-center gap-3">
-                            <div className="w-16 text-sm text-gray-700 font-medium text-right">
+                            <div className="w-16 text-sm text-bark-700 font-medium text-right">
                               Size {s.size}
                             </div>
                             <div className="flex-1">
@@ -579,10 +569,10 @@ const PackinghouseAnalytics = () => {
                                 title={`${formatCurrency(s.total_revenue)} (${s.percent_of_total_revenue}%)`}
                               />
                             </div>
-                            <div className="w-28 text-xs text-gray-600 text-right">
+                            <div className="w-28 text-xs text-bark-600 text-right">
                               {formatCurrency(s.total_revenue)}
                             </div>
-                            <div className="w-12 text-xs text-gray-400 text-right">
+                            <div className="w-12 text-xs text-text-muted text-right">
                               {s.percent_of_total_revenue}%
                             </div>
                           </div>
@@ -591,9 +581,9 @@ const PackinghouseAnalytics = () => {
                     </div>
 
                     {/* Detail Table */}
-                    <div className="border-t border-gray-200 overflow-x-auto">
-                      <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50">
+                    <div className="border-t border-border overflow-x-auto">
+                      <table className="min-w-full divide-y divide-border">
+                        <thead className="bg-cream-50 bg-surface-sunken">
                           <tr>
                             <th className={`${tableHeaderClass} text-left`}>Size</th>
                             <th className={`${tableHeaderClass} text-right`}>Quantity</th>
@@ -603,10 +593,10 @@ const PackinghouseAnalytics = () => {
                             <th className={`${tableHeaderClass} text-right`}>% of Revenue</th>
                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-200">
+                        <tbody className="divide-y divide-border">
                           {sizePricing.sizes.map((s, idx) => (
-                            <tr key={s.size} className="hover:bg-gray-50">
-                              <td className={`${tableCellClass} font-medium text-gray-900`}>
+                            <tr key={s.size} className="hover:bg-cream-50">
+                              <td className={`${tableCellClass} font-medium text-heading`}>
                                 <span className="inline-flex items-center space-x-1.5">
                                   <span
                                     className="w-2.5 h-2.5 rounded-sm inline-block"
@@ -616,24 +606,24 @@ const PackinghouseAnalytics = () => {
                                 </span>
                               </td>
                               <td className={`${tableCellClass} text-right`}>{formatNumber(s.total_quantity)}</td>
-                              <td className={`${tableCellClass} text-right text-gray-500`}>{s.percent_of_total_quantity}%</td>
-                              <td className={`${tableCellClass} text-right font-semibold text-blue-600`}>
+                              <td className={`${tableCellClass} text-right text-text-secondary`}>{s.percent_of_total_quantity}%</td>
+                              <td className={`${tableCellClass} text-right font-semibold text-link`}>
                                 {formatCurrency(s.weighted_avg_fob)}
                               </td>
                               <td className={`${tableCellClass} text-right font-semibold text-primary`}>
                                 {formatCurrency(s.total_revenue)}
                               </td>
-                              <td className={`${tableCellClass} text-right text-gray-500`}>{s.percent_of_total_revenue}%</td>
+                              <td className={`${tableCellClass} text-right text-text-secondary`}>{s.percent_of_total_revenue}%</td>
                             </tr>
                           ))}
                         </tbody>
                         {sizePricing.totals && (
-                          <tfoot className="bg-gray-50">
+                          <tfoot className="bg-cream-50">
                             <tr className="font-semibold">
-                              <td className={`${tableCellClass} text-gray-900`}>Total</td>
+                              <td className={`${tableCellClass} text-heading`}>Total</td>
                               <td className={`${tableCellClass} text-right`}>{formatNumber(sizePricing.totals.total_quantity)}</td>
                               <td className={`${tableCellClass} text-right`}>100%</td>
-                              <td className={`${tableCellClass} text-right text-blue-600`}>{formatCurrency(sizePricing.totals.overall_avg_fob)}</td>
+                              <td className={`${tableCellClass} text-right text-link`}>{formatCurrency(sizePricing.totals.overall_avg_fob)}</td>
                               <td className={`${tableCellClass} text-right text-primary`}>{formatCurrency(sizePricing.totals.total_revenue)}</td>
                               <td className={`${tableCellClass} text-right`}>100%</td>
                             </tr>
@@ -662,8 +652,8 @@ const PackinghouseAnalytics = () => {
                 <EmptyState message="No settlement data available for the selected filters." />
               ) : (
                 <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
+                  <table className="min-w-full divide-y divide-border">
+                    <thead className="bg-cream-50 bg-surface-sunken">
                       <tr>
                         <th className={`${tableHeaderClass} text-center w-12`}>#</th>
                         <th className={`${tableHeaderClass} text-left`}>{roiGroupBy === 'variety' ? 'Variety' : 'Commodity'}</th>
@@ -676,14 +666,14 @@ const PackinghouseAnalytics = () => {
                         <th className={`${tableHeaderClass} text-left`}>Trend</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-200">
+                    <tbody className="divide-y divide-border">
                       {commodityROI.rankings.map((row, idx) => (
-                        <tr key={row.group_key} className="hover:bg-gray-50">
-                          <td className={`${tableCellClass} text-center font-bold text-gray-400`}>{idx + 1}</td>
-                          <td className={`${tableCellClass} font-medium text-gray-900`}>{row.group_key}</td>
+                        <tr key={row.group_key} className="hover:bg-cream-50">
+                          <td className={`${tableCellClass} text-center font-bold text-text-muted`}>{idx + 1}</td>
+                          <td className={`${tableCellClass} font-medium text-heading`}>{row.group_key}</td>
                           <td className={`${tableCellClass} text-right`}>{formatNumber(row.total_bins, 1)}</td>
-                          <td className={`${tableCellClass} text-right text-gray-600`}>{formatCurrency(row.gross_per_bin)}</td>
-                          <td className={`${tableCellClass} text-right text-red-600`}>{formatCurrency(row.deductions_per_bin)}</td>
+                          <td className={`${tableCellClass} text-right text-bark-600`}>{formatCurrency(row.gross_per_bin)}</td>
+                          <td className={`${tableCellClass} text-right text-danger`}>{formatCurrency(row.deductions_per_bin)}</td>
                           <td className={`${tableCellClass} text-right font-semibold text-primary`}>{formatCurrency(row.net_per_bin)}</td>
                           <td className={`${tableCellClass} text-right`}>
                             <MarginBadge value={row.margin_percent} />
@@ -691,18 +681,18 @@ const PackinghouseAnalytics = () => {
                           <td className={`${tableCellClass} text-right`}>{formatCurrency(row.total_net_return, { compact: true })}</td>
                           <td className={`${tableCellClass}`}>
                             {row.trend && row.trend.length > 1 ? (
-                              <div className="flex items-center gap-1 text-xs text-gray-500">
+                              <div className="flex items-center gap-1 text-xs text-text-secondary">
                                 {row.trend.slice().reverse().map((t, tIdx) => (
                                   <span key={t.season} className="whitespace-nowrap">
-                                    {tIdx > 0 && <span className="text-gray-300 mx-0.5">&rarr;</span>}
-                                    <span className={t.season === commodityROI.season ? 'font-semibold text-gray-900' : ''}>
+                                    {tIdx > 0 && <span className="text-sand-300 mx-0.5">&rarr;</span>}
+                                    <span className={t.season === commodityROI.season ? 'font-semibold text-heading' : ''}>
                                       {formatCurrency(t.net_per_bin)}
                                     </span>
                                   </span>
                                 ))}
                               </div>
                             ) : (
-                              <span className="text-xs text-gray-400">-</span>
+                              <span className="text-xs text-text-muted">-</span>
                             )}
                           </td>
                         </tr>
@@ -725,20 +715,20 @@ const PackinghouseAnalytics = () => {
                 <EmptyState message="No deduction data available across multiple seasons." />
               ) : (
                 <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
+                  <table className="min-w-full divide-y divide-border">
+                    <thead className="bg-cream-50 bg-surface-sunken">
                       <tr>
                         <th className={`${tableHeaderClass} text-left`}>Category</th>
                         {deductionCreep.seasons.map(season => (
                           <th key={season} className={`${tableHeaderClass} text-right`}>
                             <div>{season}</div>
-                            <div className="text-xs font-normal text-gray-400">$/bin</div>
+                            <div className="text-xs font-normal text-text-muted">$/bin</div>
                           </th>
                         ))}
                         <th className={`${tableHeaderClass} text-right`}>Change</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-200">
+                    <tbody className="divide-y divide-border">
                       {deductionCreep.categories.map((cat) => {
                         // Get the most recent season's YoY change
                         const latestSeason = deductionCreep.seasons[0];
@@ -746,8 +736,8 @@ const PackinghouseAnalytics = () => {
                         const yoyChange = latestData ? latestData.yoy_change : null;
 
                         return (
-                          <tr key={cat.category} className="hover:bg-gray-50">
-                            <td className={`${tableCellClass} font-medium text-gray-900`}>{cat.label}</td>
+                          <tr key={cat.category} className="hover:bg-cream-50">
+                            <td className={`${tableCellClass} font-medium text-heading`}>{cat.label}</td>
                             {deductionCreep.seasons.map(season => {
                               const seasonData = cat.by_season[season];
                               return (
@@ -763,9 +753,9 @@ const PackinghouseAnalytics = () => {
                         );
                       })}
                     </tbody>
-                    <tfoot className="bg-gray-50">
+                    <tfoot className="bg-cream-50">
                       <tr className="font-semibold">
-                        <td className={`${tableCellClass} text-gray-900`}>Total Deductions</td>
+                        <td className={`${tableCellClass} text-heading`}>Total Deductions</td>
                         {deductionCreep.seasons.map(season => {
                           const totals = deductionCreep.totals_by_season[season];
                           return (
@@ -800,31 +790,31 @@ const PackinghouseAnalytics = () => {
                 <EmptyState message="No grade line data available across multiple seasons." />
               ) : (
                 <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
+                  <table className="min-w-full divide-y divide-border">
+                    <thead className="bg-cream-50 bg-surface-sunken">
                       <tr>
                         <th className={`${tableHeaderClass} text-left`}>Grade</th>
                         <th className={`${tableHeaderClass} text-left`}>Size</th>
                         {priceTrends.seasons.map(season => (
                           <th key={season} className={`${tableHeaderClass} text-right`}>
                             <div>{season}</div>
-                            <div className="text-xs font-normal text-gray-400">FOB Rate</div>
+                            <div className="text-xs font-normal text-text-muted">FOB Rate</div>
                           </th>
                         ))}
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-200">
+                    <tbody className="divide-y divide-border">
                       {priceTrends.grade_sizes.map((row, idx) => (
-                        <tr key={`${row.grade}-${row.size}`} className="hover:bg-gray-50">
-                          <td className={`${tableCellClass} font-medium text-gray-900`}>{row.grade}</td>
-                          <td className={`${tableCellClass} text-gray-600`}>{row.size}</td>
+                        <tr key={`${row.grade}-${row.size}`} className="hover:bg-cream-50">
+                          <td className={`${tableCellClass} font-medium text-heading`}>{row.grade}</td>
+                          <td className={`${tableCellClass} text-bark-600`}>{row.size}</td>
                           {priceTrends.seasons.map(season => {
                             const seasonData = row.by_season[season];
                             return (
                               <td key={season} className={`${tableCellClass} text-right`}>
                                 {seasonData && seasonData.avg_fob != null ? (
                                   <div>
-                                    <span className="font-semibold text-blue-600">
+                                    <span className="font-semibold text-link">
                                       {formatCurrency(seasonData.avg_fob)}
                                     </span>
                                     {seasonData.change_vs_prev != null && (
@@ -834,7 +824,7 @@ const PackinghouseAnalytics = () => {
                                     )}
                                   </div>
                                 ) : (
-                                  <span className="text-gray-400">-</span>
+                                  <span className="text-text-muted">-</span>
                                 )}
                               </td>
                             );
@@ -867,54 +857,54 @@ const PackinghouseAnalytics = () => {
                       {/* Key Metrics */}
                       <div className="p-5 grid grid-cols-2 gap-4">
                         <div>
-                          <p className="text-xs font-medium text-gray-500 uppercase">Net/Bin</p>
+                          <p className="text-xs font-medium text-text-secondary uppercase">Net/Bin</p>
                           <p className="text-xl font-bold text-primary">{formatCurrency(ph.metrics.avg_net_per_bin)}</p>
                         </div>
                         <div>
-                          <p className="text-xs font-medium text-gray-500 uppercase">vs House Avg</p>
+                          <p className="text-xs font-medium text-text-secondary uppercase">vs House Avg</p>
                           <p className="text-xl font-bold">
                             {ph.metrics.variance_vs_house != null ? (
-                              <span className={ph.metrics.variance_vs_house >= 0 ? 'text-primary' : 'text-red-600'}>
+                              <span className={ph.metrics.variance_vs_house >= 0 ? 'text-primary' : 'text-danger'}>
                                 {ph.metrics.variance_vs_house >= 0 ? '+' : ''}{formatCurrency(ph.metrics.variance_vs_house)}
                               </span>
                             ) : (
-                              <span className="text-gray-400">-</span>
+                              <span className="text-text-muted">-</span>
                             )}
                           </p>
                         </div>
                         <div>
-                          <p className="text-xs font-medium text-gray-500 uppercase">Pack %</p>
-                          <p className="text-xl font-bold text-blue-600">
+                          <p className="text-xs font-medium text-text-secondary uppercase">Pack %</p>
+                          <p className="text-xl font-bold text-link">
                             {ph.metrics.avg_pack_percent != null ? `${ph.metrics.avg_pack_percent}%` : '-'}
                           </p>
                         </div>
                         <div>
-                          <p className="text-xs font-medium text-gray-500 uppercase">Total Bins</p>
-                          <p className="text-xl font-bold text-gray-900">{formatNumber(ph.metrics.total_bins, 1)}</p>
+                          <p className="text-xs font-medium text-text-secondary uppercase">Total Bins</p>
+                          <p className="text-xl font-bold text-heading">{formatNumber(ph.metrics.total_bins, 1)}</p>
                         </div>
                       </div>
 
                       {/* Deduction Breakdown */}
                       {ph.deduction_breakdown.length > 0 && (
                         <div className="px-5 pb-4">
-                          <p className="text-xs font-medium text-gray-500 uppercase mb-2">Deductions/Bin: {formatCurrency(ph.metrics.deductions_per_bin)}</p>
+                          <p className="text-xs font-medium text-text-secondary uppercase mb-2">Deductions/Bin: {formatCurrency(ph.metrics.deductions_per_bin)}</p>
                           <div className="space-y-1.5">
                             {ph.deduction_breakdown.map((ded) => {
                               const maxDed = Math.max(...ph.deduction_breakdown.map(d => d.per_bin));
                               const barWidth = maxDed > 0 ? (ded.per_bin / maxDed) * 100 : 0;
                               return (
                                 <div key={ded.category} className="flex items-center gap-2">
-                                  <div className="w-24 text-xs text-gray-600 truncate text-right" title={ded.label}>
+                                  <div className="w-24 text-xs text-bark-600 truncate text-right" title={ded.label}>
                                     {ded.label}
                                   </div>
                                   <div className="flex-1">
                                     <div
-                                      className="h-4 rounded bg-red-200"
+                                      className="h-4 rounded bg-danger-bg"
                                       style={{ width: `${Math.max(barWidth, 3)}%` }}
                                       title={`${formatCurrency(ded.per_bin)}/bin`}
                                     />
                                   </div>
-                                  <div className="w-16 text-xs text-gray-700 text-right font-medium">
+                                  <div className="w-16 text-xs text-bark-700 text-right font-medium">
                                     {formatCurrency(ded.per_bin)}
                                   </div>
                                 </div>
@@ -926,15 +916,15 @@ const PackinghouseAnalytics = () => {
 
                       {/* Season Trend */}
                       {ph.season_trend.length > 1 && (
-                        <div className="border-t border-gray-200 px-5 py-3">
-                          <p className="text-xs font-medium text-gray-500 uppercase mb-2">Net/Bin Trend</p>
+                        <div className="border-t border-border px-5 py-3">
+                          <p className="text-xs font-medium text-text-secondary uppercase mb-2">Net/Bin Trend</p>
                           <div className="flex items-center gap-3 text-sm">
                             {ph.season_trend.slice().reverse().map((t, tIdx) => (
                               <div key={t.season} className="text-center">
-                                <div className={`font-semibold ${t.season === reportCard.season ? 'text-primary' : 'text-gray-600'}`}>
+                                <div className={`font-semibold ${t.season === reportCard.season ? 'text-primary' : 'text-bark-600'}`}>
                                   {formatCurrency(t.net_per_bin)}
                                 </div>
-                                <div className="text-xs text-gray-400">{t.season}</div>
+                                <div className="text-xs text-text-muted">{t.season}</div>
                               </div>
                             ))}
                           </div>
@@ -990,8 +980,8 @@ const PackinghouseAnalytics = () => {
                   <EmptyState message="No field-level data available with both pack percentage and settlement returns." />
                 ) : (
                   <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200">
-                      <thead className="bg-gray-50">
+                    <table className="min-w-full divide-y divide-border">
+                      <thead className="bg-cream-50 bg-surface-sunken">
                         <tr>
                           <th className={`${tableHeaderClass} text-left`}>Field</th>
                           <th className={`${tableHeaderClass} text-left`}>Season</th>
@@ -1003,18 +993,18 @@ const PackinghouseAnalytics = () => {
                           )}
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-gray-200">
+                      <tbody className="divide-y divide-border">
                         {packImpact.data_points.map((dp, idx) => {
                           const expected = packImpact.regression
                             ? packImpact.regression.intercept + packImpact.regression.slope * dp.pack_percent
                             : null;
                           const aboveExpected = expected != null ? dp.net_per_bin > expected : null;
                           return (
-                            <tr key={idx} className="hover:bg-gray-50">
-                              <td className={`${tableCellClass} font-medium text-gray-900`}>{dp.field_name}</td>
-                              <td className={`${tableCellClass} text-gray-600`}>{dp.season}</td>
-                              <td className={`${tableCellClass} text-gray-600`}>{dp.packinghouse_name}</td>
-                              <td className={`${tableCellClass} text-right font-semibold text-blue-600`}>
+                            <tr key={idx} className="hover:bg-cream-50">
+                              <td className={`${tableCellClass} font-medium text-heading`}>{dp.field_name}</td>
+                              <td className={`${tableCellClass} text-bark-600`}>{dp.season}</td>
+                              <td className={`${tableCellClass} text-bark-600`}>{dp.packinghouse_name}</td>
+                              <td className={`${tableCellClass} text-right font-semibold text-link`}>
                                 {dp.pack_percent.toFixed(1)}%
                               </td>
                               <td className={`${tableCellClass} text-right font-semibold text-primary`}>
@@ -1022,7 +1012,7 @@ const PackinghouseAnalytics = () => {
                               </td>
                               {packImpact.regression && (
                                 <td className={`${tableCellClass} text-right`}>
-                                  <span className={aboveExpected ? 'text-green-500' : 'text-red-500'}>
+                                  <span className={aboveExpected ? 'text-green-600' : 'text-danger'}>
                                     {formatCurrency(expected)}
                                   </span>
                                 </td>

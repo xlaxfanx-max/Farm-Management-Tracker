@@ -342,12 +342,12 @@ function Farms() {
 
       {/* Map Hint */}
       {viewMode === 'cards' && farmsWithCoords === 0 && farms.length > 0 && (
-        <div className="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg p-4 flex items-start gap-3">
-          <MapPin className="w-5 h-5 text-blue-500 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+        <div className="bg-orange-50 border border-orange-200 rounded-card p-4 flex items-start gap-3">
+          <MapPin className="w-5 h-5 text-orange-500 mt-0.5 flex-shrink-0" />
           <div>
-            <p className="text-sm font-medium text-blue-800 dark:text-blue-200">Add GPS coordinates to see farms on the map</p>
-            <p className="text-sm text-blue-600 dark:text-blue-300 mt-1">
-              Click the <Locate className="w-4 h-4 inline" /> button on a farm to get coordinates from its address, 
+            <p className="text-sm font-medium text-orange-700">Add GPS coordinates to see farms on the map</p>
+            <p className="text-sm text-link mt-1">
+              Click the <Locate className="w-4 h-4 inline" /> button on a farm to get coordinates from its address,
               or switch to Map view to see the satellite view.
             </p>
           </div>
@@ -356,7 +356,6 @@ function Farms() {
 
       {/* Main Content */}
       <div className={viewMode === 'split' ? 'grid grid-cols-1 lg:grid-cols-2 gap-6' : ''}>
-        
         {/* Map View */}
         {(viewMode === 'map' || viewMode === 'split') && (
           <div className={`relative ${viewMode === 'split' ? 'order-2' : ''}`}>
@@ -377,7 +376,7 @@ function Farms() {
 
             {/* Tip for fields without boundaries - only show when not drawing */}
             {fieldsWithBoundaries < fields.length && fields.length > 0 && !drawingField && (
-              <div className="mt-3 p-3 bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800 rounded-lg text-sm text-amber-700 dark:text-amber-300">
+              <div className="mt-3 p-3 bg-yellow-100 border border-yellow-200 rounded-card text-sm text-yellow-700">
                 <strong>Tip:</strong> {fields.length - fieldsWithBoundaries} of {fields.length} fields need boundaries drawn.
                 Click on a field marker to draw its boundary.
               </div>
@@ -429,10 +428,10 @@ function Farms() {
 
             {/* No farms at all */}
             {safeFarms.length === 0 && (
-              <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-lg shadow">
-                <Home className="mx-auto text-gray-300 dark:text-gray-600 mb-4" size={48} />
-                <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200 mb-2">No farms yet</h3>
-                <p className="text-gray-600 dark:text-gray-400 mb-4">Get started by adding your first farm</p>
+              <div className="text-center py-12 bg-surface-raised rounded-lg shadow">
+                <Home className="mx-auto text-sand-300 mb-4" size={48} />
+                <h3 className="text-lg text-text mb-2">No farms yet</h3>
+                <p className="text-bark-600 mb-4">Get started by adding your first farm</p>
                 <button
                   onClick={handleNewFarm}
                   className="inline-flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-lg hover:bg-primary-hover"
@@ -445,10 +444,10 @@ function Farms() {
 
             {/* No results from filters */}
             {safeFarms.length > 0 && filteredFarms.length === 0 && (
-              <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-lg shadow">
-                <Search className="mx-auto text-gray-300 dark:text-gray-600 mb-4" size={48} />
-                <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200 mb-2">No farms match your filters</h3>
-                <p className="text-gray-600 dark:text-gray-400 mb-4">Try adjusting your search or filter criteria</p>
+              <div className="text-center py-12 bg-surface-raised rounded-lg shadow">
+                <Search className="mx-auto text-sand-300 mb-4" size={48} />
+                <h3 className="text-lg text-text mb-2">No farms match your filters</h3>
+                <p className="text-bark-600 mb-4">Try adjusting your search or filter criteria</p>
                 <button
                   onClick={() => {
                     setSearchTerm('');

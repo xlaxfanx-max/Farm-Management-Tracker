@@ -1,6 +1,6 @@
 {
-  "short_name": "Finch Farms",
-  "name": "Finch Farms Dashboard - Master your grove. Master your compliance.",
+  "short_name": "Finch",
+  "name": "Finch",
   "icons": [
     {
       "src": "favicon.ico",
@@ -20,6 +20,6 @@
   ],
   "start_url": ".",
   "display": "standalone",
-  "theme_color": "#2D5016",
-  "background_color": "#FFFEF7"
+  "theme_color": "#1C3A21",
+  "background_color": "#FBF7EF"
 }

@@ -141,7 +141,7 @@ export default function ManualPickModal({ isOpen, onClose, onSave, pick = null, 
       <button
         type="button"
         onClick={onClose}
-        className="px-4 py-2 rounded-button border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"
+        className="px-4 py-2 rounded-button border border-border-strong text-bark-700 hover:bg-cream-50"
       >
         Cancel
       </button>
@@ -317,21 +317,21 @@ export default function ManualPickModal({ isOpen, onClose, onSave, pick = null, 
         </div>
 
         <div className="flex gap-6 pt-1">
-          <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200"
+          <label className="flex items-center gap-2 text-sm text-bark-700"
                  title="Uncheck when this row repeats the invoice above — summing would double-count it.">
             <input
               type="checkbox" name="count_cost" checked={formData.count_cost}
               onChange={handleChange}
-              className="rounded border-gray-300 dark:border-gray-600 text-primary focus:ring-primary"
+              className="rounded border-border-strong text-primary focus:ring-primary"
             />
             Count pick cost in totals
           </label>
-          <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200"
+          <label className="flex items-center gap-2 text-sm text-bark-700"
                  title="Uncheck when this row repeats the haul invoice above.">
             <input
               type="checkbox" name="count_haul" checked={formData.count_haul}
               onChange={handleChange}
-              className="rounded border-gray-300 dark:border-gray-600 text-primary focus:ring-primary"
+              className="rounded border-border-strong text-primary focus:ring-primary"
             />
             Count haul cost in totals
           </label>

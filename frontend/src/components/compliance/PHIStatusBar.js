@@ -20,14 +20,14 @@ export default function PHIStatusBar({ phiBlockedFields = [], onNavigate }) {
   if (!phiBlockedFields || phiBlockedFields.length === 0) return null;
 
   return (
-    <div className="w-full bg-amber-50 dark:bg-amber-900/20 border border-amber-300 dark:border-amber-700 rounded-xl shadow-sm overflow-hidden">
+    <div className="w-full bg-yellow-100 border border-yellow-300 rounded-card shadow-sm overflow-hidden">
       <button
         onClick={() => setExpanded((v) => !v)}
-        className="w-full flex items-center justify-between px-4 py-3 hover:bg-amber-100 dark:hover:bg-amber-900/40 transition-colors text-left"
+        className="w-full flex items-center justify-between px-4 py-3 hover:bg-yellow-200 transition-colors text-left"
       >
         <div className="flex items-center gap-2">
-          <Wheat className="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0" />
-          <span className="text-sm font-semibold text-amber-800 dark:text-amber-200">
+          <Wheat className="w-4 h-4 text-yellow-600 flex-shrink-0" />
+          <span className="text-sm font-semibold text-yellow-800">
             {phiBlockedFields.length} field{phiBlockedFields.length !== 1 ? 's' : ''} blocked for harvest
           </span>
         </div>
@@ -37,33 +37,33 @@ export default function PHIStatusBar({ phiBlockedFields = [], onNavigate }) {
               e.stopPropagation();
               onNavigate('harvests');
             }}
-            className="text-xs font-medium text-blue-600 dark:text-blue-400 hover:underline px-2 py-0.5"
+            className="text-xs font-medium text-link hover:underline px-2 py-0.5"
           >
             View Harvests
           </button>
           {expanded ? (
-            <ChevronUp className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+            <ChevronUp className="w-4 h-4 text-yellow-600" />
           ) : (
-            <ChevronDown className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+            <ChevronDown className="w-4 h-4 text-yellow-600" />
           )}
         </div>
       </button>
 
       {expanded && (
-        <div className="border-t border-amber-200 dark:border-amber-700 divide-y divide-amber-100 dark:divide-amber-800/50">
+        <div className="border-t border-yellow-200 divide-y divide-yellow-200">
           {phiBlockedFields.map((field, idx) => (
             <div key={idx} className="flex items-center gap-3 px-4 py-2.5">
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+                <p className="text-sm font-medium text-heading truncate">
                   {field.field_name}
                 </p>
-                <p className="text-xs text-gray-600 dark:text-gray-400">{field.product_name}</p>
+                <p className="text-xs text-bark-600">{field.product_name}</p>
               </div>
               <div className="text-right flex-shrink-0">
-                <p className="text-xs font-medium text-amber-700 dark:text-amber-300">
+                <p className="text-xs font-medium text-yellow-700">
                   Clears {formatDate(field.clear_date)}
                 </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
+                <p className="text-xs text-text-secondary">
                   {field.days_remaining} day{field.days_remaining !== 1 ? 's' : ''} remaining
                 </p>
               </div>

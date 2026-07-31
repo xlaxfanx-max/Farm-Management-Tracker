@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { STATUS_HEX, CHART_GRID } from '../../theme/finchChartTheme';
 import {
   Shield,
   AlertTriangle,
@@ -79,9 +80,9 @@ const MiniScoreCircle = ({ score, size = 48 }) => {
   const circumference = radius * 2 * Math.PI;
   const offset = circumference - (score / 100) * circumference;
 
-  let color = '#22c55e'; // green
-  if (score < 70) color = '#ef4444'; // red
-  else if (score < 85) color = '#f59e0b'; // yellow
+  let color = STATUS_HEX.success;
+  if (score < 70) color = STATUS_HEX.danger;
+  else if (score < 85) color = STATUS_HEX.warning;
 
   return (
     <div className="relative" style={{ width: size, height: size }}>
@@ -91,9 +92,9 @@ const MiniScoreCircle = ({ score, size = 48 }) => {
           cy={size / 2}
           r={radius}
           fill="none"
-          stroke="#e5e7eb"
+          stroke={CHART_GRID}
           strokeWidth={strokeWidth}
-          className="dark:stroke-gray-700"
+          className=""
         />
         <circle
           cx={size / 2}
@@ -129,49 +130,49 @@ const CategoryCard = ({
 }) => {
   const colorClasses = {
     green: {
-      bg: 'bg-primary-light dark:bg-green-900/20',
-      icon: 'bg-green-100 dark:bg-green-900/40 text-primary dark:text-green-400',
-      border: 'border-green-200 dark:border-green-800',
-      hover: 'hover:border-green-400 dark:hover:border-primary',
+      bg: 'bg-primary-light',
+      icon: 'bg-green-100 text-primary',
+      border: 'border-green-200',
+      hover: 'hover:border-green-400',
     },
     blue: {
-      bg: 'bg-blue-50 dark:bg-blue-900/20',
-      icon: 'bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400',
-      border: 'border-blue-200 dark:border-blue-800',
-      hover: 'hover:border-blue-400 dark:hover:border-blue-600',
+      bg: 'bg-orange-50',
+      icon: 'bg-orange-100 text-link',
+      border: 'border-orange-200',
+      hover: 'hover:border-orange-400',
     },
     purple: {
-      bg: 'bg-purple-50 dark:bg-purple-900/20',
-      icon: 'bg-purple-100 dark:bg-purple-900/40 text-purple-600 dark:text-purple-400',
-      border: 'border-purple-200 dark:border-purple-800',
-      hover: 'hover:border-purple-400 dark:hover:border-purple-600',
+      bg: 'bg-cream-100',
+      icon: 'bg-sand-200 text-bark-700',
+      border: 'border-sand-200',
+      hover: 'hover:border-sand-400',
     },
     amber: {
-      bg: 'bg-amber-50 dark:bg-amber-900/20',
-      icon: 'bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400',
-      border: 'border-amber-200 dark:border-amber-800',
-      hover: 'hover:border-amber-400 dark:hover:border-amber-600',
+      bg: 'bg-yellow-100',
+      icon: 'bg-yellow-200 text-yellow-600',
+      border: 'border-yellow-200',
+      hover: 'hover:border-yellow-400',
     },
     teal: {
-      bg: 'bg-teal-50 dark:bg-teal-900/20',
-      icon: 'bg-teal-100 dark:bg-teal-900/40 text-teal-600 dark:text-teal-400',
-      border: 'border-teal-200 dark:border-teal-800',
-      hover: 'hover:border-teal-400 dark:hover:border-teal-600',
+      bg: 'bg-green-50',
+      icon: 'bg-green-100 text-green-600',
+      border: 'border-green-200',
+      hover: 'hover:border-green-400',
     },
   };
 
   const c = colorClasses[color] || colorClasses.green;
 
   const statusColors = {
-    good: 'bg-green-100 dark:bg-green-900/30 text-primary dark:text-green-400',
-    warning: 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400',
-    critical: 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400',
+    good: 'bg-green-100 text-primary',
+    warning: 'bg-yellow-200 text-yellow-700',
+    critical: 'bg-danger-bg text-danger',
   };
 
   return (
     <button
       onClick={onClick}
-      className={`w-full text-left bg-white dark:bg-gray-800 border-2 ${c.border} ${c.hover} rounded-xl p-5 transition-all hover:shadow-lg group`}
+      className={`w-full text-left bg-surface-raised border-2 ${c.border} ${c.hover} rounded-card p-5 transition-all hover:shadow-lg group`}
     >
       <div className="flex items-start justify-between mb-4">
         <div className={`w-12 h-12 ${c.icon} rounded-xl flex items-center justify-center`}>
@@ -184,17 +185,17 @@ const CategoryCard = ({
               {status === 'good' ? 'On Track' : status === 'warning' ? 'Attention' : 'Action Needed'}
             </span>
           )}
-          <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors" />
+          <ChevronRight className="w-5 h-5 text-text-muted group-hover:text-bark-600 transition-colors" />
         </div>
       </div>
 
-      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">{title}</h3>
-      <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">{description}</p>
+      <h3 className="text-lg text-heading mb-1">{title}</h3>
+      <p className="text-sm text-text-secondary mb-2">{description}</p>
 
       {certifications.length > 0 && (
         <div className="flex flex-wrap gap-1 mb-3">
           {certifications.map(cert => (
-            <span key={cert} className="text-xs px-2 py-0.5 rounded-full bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-teal-800">
+            <span key={cert} className="text-xs px-2 py-0.5 rounded-full bg-green-50 text-green-700 border border-green-200">
               {cert}
             </span>
           ))}
@@ -206,13 +207,13 @@ const CategoryCard = ({
           {metrics.map((metric, idx) => (
             <div key={idx} className={`${c.bg} rounded-lg p-2`}>
               <p className={`text-lg font-bold ${
-                metric.status === 'critical' ? 'text-red-600 dark:text-red-400' :
-                metric.status === 'warning' ? 'text-amber-600 dark:text-amber-400' :
-                'text-gray-900 dark:text-white'
+                metric.status === 'critical' ? 'text-danger' :
+                metric.status === 'warning' ? 'text-yellow-600' :
+                'text-heading'
               }`}>
                 {metric.value}
               </p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">{metric.label}</p>
+              <p className="text-xs text-text-secondary">{metric.label}</p>
             </div>
           ))}
         </div>
@@ -228,24 +229,24 @@ const AlertBanner = ({ alerts, onDismiss }) => {
   if (criticalAlerts.length === 0) return null;
 
   return (
-    <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 mb-6">
+    <div className="bg-danger-bg border border-danger/25 rounded-card p-4 mb-6">
       <div className="flex items-start gap-3">
-        <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
+        <AlertTriangle className="w-5 h-5 text-danger flex-shrink-0 mt-0.5" />
         <div className="flex-1">
-          <h3 className="font-medium text-red-800 dark:text-red-200">
+          <h3 className=" text-danger">
             {criticalAlerts.length} urgent compliance {criticalAlerts.length === 1 ? 'alert' : 'alerts'}
           </h3>
           <ul className="mt-2 space-y-1">
             {criticalAlerts.slice(0, 3).map(alert => (
-              <li key={alert.id} className="text-sm text-red-700 dark:text-red-300">
+              <li key={alert.id} className="text-sm text-danger">
                 • {alert.title}
               </li>
             ))}
           </ul>
         </div>
-        <button
+        <button aria-label="Close"
           onClick={() => onDismiss()}
-          className="text-red-400 hover:text-red-600 dark:hover:text-red-300"
+          className="text-danger hover:text-danger"
         >
           <X className="w-4 h-4" />
         </button>
@@ -359,53 +360,52 @@ export default function ComplianceDashboard({ onNavigate }) {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-cream-50 flex items-center justify-center">
         <div className="text-center">
           <RefreshCw className="w-8 h-8 text-primary animate-spin mx-auto" />
-          <p className="text-gray-600 dark:text-gray-400 mt-2">Loading compliance data...</p>
+          <p className="text-bark-600 mt-2">Loading compliance data...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-cream-50">
       {/* Header */}
-      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+      <div className="bg-surface-raised border-b border-border">
         <div className="max-w-7xl mx-auto px-6 py-5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-green-100 dark:bg-green-900/40 rounded-xl flex items-center justify-center">
-                <Shield className="w-6 h-6 text-primary dark:text-green-400" />
+              <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
+                <Shield className="w-6 h-6 text-primary" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Compliance Hub</h1>
-                <p className="text-gray-500 dark:text-gray-400 text-sm">
+                <p className="text-text-secondary text-sm">
                   Manage all regulatory and food safety compliance
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-3">
               {/* Overall Score */}
-              <div className="hidden md:flex items-center gap-3 px-4 py-2 bg-gray-50 dark:bg-gray-700 rounded-lg">
+              <div className="hidden md:flex items-center gap-3 px-4 py-2 bg-cream-50 rounded-lg">
                 <MiniScoreCircle score={overallScore} />
                 <div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Overall Score</p>
-                  <p className="text-sm font-medium text-gray-900 dark:text-white">
+                  <p className="text-xs text-text-secondary">Overall Score</p>
+                  <p className="text-sm font-medium text-heading">
                     {overallScore >= 85 ? 'Excellent' : overallScore >= 70 ? 'Good' : 'Needs Work'}
                   </p>
                 </div>
               </div>
-              <button
+              <button aria-label="Refresh"
                 onClick={handleRefresh}
                 disabled={refreshing}
-                className="p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                className="p-2 text-bark-600 hover:bg-cream-100 rounded-lg transition-colors"
               >
                 <RefreshCw className={`w-5 h-5 ${refreshing ? 'animate-spin' : ''}`} />
               </button>
-              <button
+              <button aria-label="Settings"
                 onClick={() => onNavigate?.('compliance-settings')}
-                className="p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                className="p-2 text-bark-600 hover:bg-cream-100 rounded-lg transition-colors"
               >
                 <Settings className="w-5 h-5" />
               </button>
@@ -452,30 +452,30 @@ export default function ComplianceDashboard({ onNavigate }) {
 
         {/* 7. Quick Actions */}
         <div>
-          <h2 className="text-base font-semibold text-gray-900 dark:text-white mb-3">Quick Actions</h2>
+          <h2 className="text-base text-heading mb-3">Quick Actions</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
             <button
               onClick={() => onNavigate?.('compliance-deadlines')}
-              className="flex flex-col items-center gap-2 p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-green-400 dark:hover:border-primary hover:shadow transition-all"
+              className="flex flex-col items-center gap-2 p-4 bg-surface-raised border border-border rounded-button hover:border-green-400 hover:shadow transition-all"
             >
-              <Calendar className="w-6 h-6 text-primary dark:text-green-400" />
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Deadlines</span>
+              <Calendar className="w-6 h-6 text-primary" />
+              <span className="text-sm font-medium text-bark-700">Deadlines</span>
             </button>
 
             <button
               onClick={() => onNavigate?.('compliance-reports')}
-              className="flex flex-col items-center gap-2 p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-green-400 dark:hover:border-primary hover:shadow transition-all"
+              className="flex flex-col items-center gap-2 p-4 bg-surface-raised border border-border rounded-button hover:border-green-400 hover:shadow transition-all"
             >
-              <FileText className="w-6 h-6 text-purple-600 dark:text-purple-400" />
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Reports</span>
+              <FileText className="w-6 h-6 text-bark-700" />
+              <span className="text-sm font-medium text-bark-700">Reports</span>
             </button>
 
             <button
               onClick={() => onNavigate?.('compliance-inspector-checklist')}
-              className="flex flex-col items-center gap-2 p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-green-400 dark:hover:border-primary hover:shadow transition-all"
+              className="flex flex-col items-center gap-2 p-4 bg-surface-raised border border-border rounded-button hover:border-green-400 hover:shadow transition-all"
             >
-              <ClipboardCheck className="w-6 h-6 text-primary dark:text-green-400" />
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Inspector</span>
+              <ClipboardCheck className="w-6 h-6 text-primary" />
+              <span className="text-sm font-medium text-bark-700">Inspector</span>
             </button>
           </div>
         </div>
@@ -545,7 +545,7 @@ export default function ComplianceDashboard({ onNavigate }) {
               console.error('Error downloading report:', error);
             }
           }}
-          className="w-full flex items-center gap-4 p-4 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-xl hover:from-green-700 hover:to-green-800 transition-all shadow-sm hover:shadow"
+          className="w-full flex items-center gap-4 p-4 bg-gradient-to-r from-green-600 to-green-800 text-white rounded-button hover:from-green-700 hover:to-green-800 transition-all shadow-sm hover:shadow"
         >
           <Download className="w-6 h-6 flex-shrink-0" />
           <div className="text-left">

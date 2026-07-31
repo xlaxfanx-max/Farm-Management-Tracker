@@ -1,98 +1,97 @@
 import React from 'react';
 import { TrendingUp, TrendingDown, ArrowRight } from 'lucide-react';
 
+// Only the icon chip is tinted — the figure itself is always bark ink.
+const chipColors = {
+  orange: 'bg-orange-50 text-orange-600 border-orange-100',
+  green: 'bg-green-50 text-green-600 border-green-100',
+  warning: 'bg-warning-bg text-yellow-600 border-yellow-300',
+  danger: 'bg-danger-bg text-danger border-danger/25',
+  neutral: 'bg-surface-sunken text-bark-500 border-border',
+};
+
+// Legacy `color` values map onto the sanctioned chip tints.
+const legacyChip = {
+  blue: 'orange',
+  purple: 'neutral',
+  gray: 'neutral',
+  amber: 'warning',
+  red: 'danger',
+  green: 'green',
+  orange: 'orange',
+};
+
 /**
- * Reusable metric card for displaying KPIs and statistics
+ * Finch StatCard — uppercase tracked label, serif figure, mono delta.
+ * Exported as both `MetricCard` (legacy name) and `StatCard`.
  */
 function MetricCard({
   title,
+  label,
   value,
+  unit,
   subtitle,
+  caption,
   icon: Icon,
   trend,
   trendDirection = 'up',
-  color = 'blue',
+  color = 'orange',
   onClick,
-  className = ''
+  className = '',
 }) {
-  const colorClasses = {
-    blue: {
-      bg: 'bg-blue-50 dark:bg-blue-900/30',
-      text: 'text-blue-600 dark:text-blue-400',
-      border: 'border-blue-100 dark:border-blue-800'
-    },
-    green: {
-      bg: 'bg-primary-light dark:bg-green-900/30',
-      text: 'text-primary dark:text-green-400',
-      border: 'border-green-100 dark:border-green-800'
-    },
-    orange: {
-      bg: 'bg-orange-50 dark:bg-orange-900/30',
-      text: 'text-orange-600 dark:text-orange-400',
-      border: 'border-orange-100 dark:border-orange-800'
-    },
-    amber: {
-      bg: 'bg-amber-50 dark:bg-amber-900/30',
-      text: 'text-amber-600 dark:text-amber-400',
-      border: 'border-amber-100 dark:border-amber-800'
-    },
-    purple: {
-      bg: 'bg-purple-50 dark:bg-purple-900/30',
-      text: 'text-purple-600 dark:text-purple-400',
-      border: 'border-purple-100 dark:border-purple-800'
-    },
-    red: {
-      bg: 'bg-red-50 dark:bg-red-900/30',
-      text: 'text-red-600 dark:text-red-400',
-      border: 'border-red-100 dark:border-red-800'
-    },
-    gray: {
-      bg: 'bg-gray-50 dark:bg-gray-800',
-      text: 'text-gray-600 dark:text-gray-400',
-      border: 'border-gray-100 dark:border-gray-700'
-    }
-  };
-
-  const colors = colorClasses[color] || colorClasses.blue;
+  const chip = chipColors[color] || chipColors[legacyChip[color]] || chipColors.orange;
   const isClickable = !!onClick;
+  const heading = label ?? title;
+  const foot = caption ?? subtitle;
 
   return (
     <div
       className={`
-        bg-surface-raised dark:bg-gray-800 rounded-card border border-border dark:border-gray-700 p-5
-        ${isClickable ? 'cursor-pointer hover:shadow-md hover:border-border-strong dark:hover:border-gray-600 transition-all' : ''}
+        bg-surface-raised rounded-card border border-border p-5
+        ${isClickable ? 'cursor-pointer hover:shadow-md hover:border-border-strong transition-all' : ''}
         ${className}
       `}
       onClick={onClick}
     >
-      <div className="flex items-start justify-between">
+      <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1 truncate">{title}</p>
-          <p className="text-2xl font-bold text-gray-900 dark:text-white mb-1">{value}</p>
-          {subtitle && (
-            <p className="text-sm text-gray-500 dark:text-gray-400 truncate">{subtitle}</p>
-          )}
+          {/* Tracked caps wrap rather than truncate — six-up KPI strips give
+              each label ~140px and half of them are two words. */}
+          <p className="text-xs font-semibold uppercase tracking-caps text-text-secondary mb-2 leading-tight">
+            {heading}
+          </p>
+          {/* Serif figure steps up only when the tile has room for it. Never
+              break-words here — it would split a currency figure mid-number. */}
+          <p className="font-display text-2xl xl:text-3xl text-heading leading-tight">
+            {value}
+            {unit && <span className="ml-1.5 font-mono text-base text-text-secondary">{unit}</span>}
+          </p>
+          {foot && <p className="mt-2 text-sm text-text-secondary">{foot}</p>}
           {trend && (
-            <div className="flex items-center mt-2 text-sm">
+            <div className="flex items-center mt-2.5 text-sm">
               {trendDirection === 'up' ? (
-                <TrendingUp className="w-4 h-4 text-green-500 mr-1 flex-shrink-0" />
+                <TrendingUp className="w-4 h-4 text-success mr-1 flex-shrink-0" />
               ) : (
-                <TrendingDown className="w-4 h-4 text-red-500 mr-1 flex-shrink-0" />
+                <TrendingDown className="w-4 h-4 text-danger mr-1 flex-shrink-0" />
               )}
-              <span className={`font-medium ${trendDirection === 'up' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+              <span
+                className={`font-mono tabular-nums font-medium ${
+                  trendDirection === 'up' ? 'text-success' : 'text-danger'
+                }`}
+              >
                 {trend}
               </span>
             </div>
           )}
         </div>
         {Icon && (
-          <div className={`rounded-lg p-3 ${colors.bg} ${colors.text} ${colors.border} border flex-shrink-0 ml-3`}>
-            <Icon className="w-5 h-5" />
+          <div className={`rounded-button border w-[30px] h-[30px] flex items-center justify-center flex-shrink-0 ${chip}`}>
+            <Icon className="w-4 h-4" />
           </div>
         )}
       </div>
       {isClickable && (
-        <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700 flex items-center text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200">
+        <div className="mt-3 pt-3 border-t border-border flex items-center text-sm text-text-secondary hover:text-text">
           <span>View details</span>
           <ArrowRight className="w-4 h-4 ml-1" />
         </div>
@@ -104,21 +103,25 @@ function MetricCard({
 /**
  * Compact metric display for use in grids or lists
  */
-export function CompactMetric({ label, value, icon: Icon, color = 'gray' }) {
+export function CompactMetric({ label, value, icon: Icon, color = 'neutral' }) {
   const colorClasses = {
-    blue: 'text-blue-600 dark:text-blue-400',
-    green: 'text-primary dark:text-green-400',
-    orange: 'text-orange-600 dark:text-orange-400',
-    amber: 'text-amber-600 dark:text-amber-400',
-    red: 'text-red-600 dark:text-red-400',
-    gray: 'text-gray-600 dark:text-gray-400'
+    green: 'text-green-600',
+    orange: 'text-orange-600',
+    warning: 'text-yellow-600',
+    danger: 'text-danger',
+    neutral: 'text-text-secondary',
+    // legacy
+    blue: 'text-orange-600',
+    amber: 'text-yellow-600',
+    red: 'text-danger',
+    gray: 'text-text-secondary',
   };
 
   return (
     <div className="flex items-center gap-2">
-      {Icon && <Icon className={`w-4 h-4 ${colorClasses[color]}`} />}
-      <span className="text-sm text-gray-600 dark:text-gray-400">{label}:</span>
-      <span className="text-sm font-semibold text-gray-900 dark:text-white">{value}</span>
+      {Icon && <Icon className={`w-4 h-4 ${colorClasses[color] || colorClasses.neutral}`} />}
+      <span className="text-sm text-text-secondary">{label}:</span>
+      <span className="text-sm font-mono tabular-nums font-semibold text-text">{value}</span>
     </div>
   );
 }
@@ -128,20 +131,25 @@ export function CompactMetric({ label, value, icon: Icon, color = 'gray' }) {
  */
 export function MiniMetric({ label, value, color = 'default' }) {
   const dotColors = {
-    green: 'bg-green-500',
-    amber: 'bg-amber-500',
-    red: 'bg-red-500',
-    blue: 'bg-blue-500',
-    default: 'bg-gray-400 dark:bg-gray-500'
+    green: 'bg-success',
+    amber: 'bg-warning',
+    warning: 'bg-warning',
+    red: 'bg-danger',
+    danger: 'bg-danger',
+    blue: 'bg-orange-500',
+    orange: 'bg-orange-500',
+    default: 'bg-bark-400',
   };
 
   return (
     <div className="flex items-center gap-1.5">
-      <span className={`w-2 h-2 rounded-full ${dotColors[color]}`} />
-      <span className="text-xs text-gray-500 dark:text-gray-400">{label}</span>
-      <span className="text-xs font-semibold text-gray-700 dark:text-gray-200">{value}</span>
+      <span className={`w-2 h-2 rounded-full ${dotColors[color] || dotColors.default}`} />
+      <span className="text-xs text-text-secondary">{label}</span>
+      <span className="text-xs font-mono tabular-nums font-semibold text-bark-700">{value}</span>
     </div>
   );
 }
+
+export const StatCard = MetricCard;
 
 export default MetricCard;

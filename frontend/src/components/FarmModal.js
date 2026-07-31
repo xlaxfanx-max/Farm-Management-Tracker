@@ -16,7 +16,7 @@ const CA_COUNTIES = [
   'Tuolumne', 'Ventura', 'Yolo', 'Yuba'
 ];
 
-const inputClasses = 'w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent';
+const inputClasses = 'w-full p-2 border border-border-strong rounded-card bg-surface-raised text-heading placeholder-text-muted focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent';
 
 function FarmModal({ farm, onClose, onSave }) {
   const isEditing = !!farm?.id;
@@ -110,17 +110,17 @@ function FarmModal({ farm, onClose, onSave }) {
 
       {/* Panel */}
       <div
-        className="relative bg-surface-raised dark:bg-gray-800 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col shadow-xl"
+        className="relative bg-surface-raised rounded-card max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col shadow-xl"
         role="dialog"
         aria-modal="true"
         aria-labelledby="farm-modal-title"
       >
         {/* Header */}
-        <div className="p-6 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center flex-shrink-0">
-          <h2 id="farm-modal-title" className="text-2xl font-bold text-gray-900 dark:text-white">{modalTitle}</h2>
+        <div className="p-6 border-b border-border flex justify-between items-center flex-shrink-0">
+          <h2 id="farm-modal-title" className="text-2xl text-heading">{modalTitle}</h2>
           <button
             onClick={onClose}
-            className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:focus:ring-offset-gray-800"
+            className="p-2 text-text-muted hover:text-bark-600 hover:bg-cream-100 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
             aria-label="Close dialog"
           >
             <X size={20} />
@@ -128,7 +128,7 @@ function FarmModal({ farm, onClose, onSave }) {
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b border-gray-200 dark:border-gray-700 px-6 flex-shrink-0" role="tablist">
+        <div className="flex border-b border-border px-6 flex-shrink-0" role="tablist">
           {tabs.map(tab => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -141,8 +141,8 @@ function FarmModal({ farm, onClose, onSave }) {
                 onClick={() => setActiveTab(tab.id)}
                 className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-inset ${
                   isActive
-                    ? 'border-primary text-primary dark:text-green-400'
-                    : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+                    ? 'border-primary text-primary'
+                    : 'border-transparent text-text-secondary hover:text-bark-700'
                 }`}
               >
                 <Icon size={16} />
@@ -156,7 +156,7 @@ function FarmModal({ farm, onClose, onSave }) {
         <div className="p-6 space-y-4 overflow-y-auto flex-1">
           {/* Error */}
           {error && (
-            <div className="bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 px-4 py-3 rounded-lg text-sm" role="alert">
+            <div className="bg-danger-bg text-danger px-4 py-3 rounded-lg text-sm" role="alert">
               {error}
             </div>
           )}
@@ -166,7 +166,7 @@ function FarmModal({ farm, onClose, onSave }) {
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label htmlFor="farm-name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Farm Name *</label>
+                  <label htmlFor="farm-name" className="block text-sm font-medium text-bark-700 mb-1">Farm Name *</label>
                   <input
                     id="farm-name"
                     type="text"
@@ -179,7 +179,7 @@ function FarmModal({ farm, onClose, onSave }) {
                   />
                 </div>
                 <div>
-                  <label htmlFor="farm-number" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Farm Number</label>
+                  <label htmlFor="farm-number" className="block text-sm font-medium text-bark-700 mb-1">Farm Number</label>
                   <input
                     id="farm-number"
                     type="text"
@@ -193,7 +193,7 @@ function FarmModal({ farm, onClose, onSave }) {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label htmlFor="owner-name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Owner Name</label>
+                  <label htmlFor="owner-name" className="block text-sm font-medium text-bark-700 mb-1">Owner Name</label>
                   <input
                     id="owner-name"
                     type="text"
@@ -203,7 +203,7 @@ function FarmModal({ farm, onClose, onSave }) {
                   />
                 </div>
                 <div>
-                  <label htmlFor="operator-name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Operator Name</label>
+                  <label htmlFor="operator-name" className="block text-sm font-medium text-bark-700 mb-1">Operator Name</label>
                   <input
                     id="operator-name"
                     type="text"
@@ -215,7 +215,7 @@ function FarmModal({ farm, onClose, onSave }) {
               </div>
 
               <div>
-                <label htmlFor="farm-address" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Address</label>
+                <label htmlFor="farm-address" className="block text-sm font-medium text-bark-700 mb-1">Address</label>
                 <textarea
                   id="farm-address"
                   value={formData.address}
@@ -227,7 +227,7 @@ function FarmModal({ farm, onClose, onSave }) {
               </div>
 
               <div>
-                <label htmlFor="farm-county" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">County *</label>
+                <label htmlFor="farm-county" className="block text-sm font-medium text-bark-700 mb-1">County *</label>
                 <select
                   id="farm-county"
                   value={formData.county}
@@ -244,7 +244,7 @@ function FarmModal({ farm, onClose, onSave }) {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label htmlFor="farm-phone" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Phone</label>
+                  <label htmlFor="farm-phone" className="block text-sm font-medium text-bark-700 mb-1">Phone</label>
                   <input
                     id="farm-phone"
                     type="tel"
@@ -255,7 +255,7 @@ function FarmModal({ farm, onClose, onSave }) {
                   />
                 </div>
                 <div>
-                  <label htmlFor="farm-email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
+                  <label htmlFor="farm-email" className="block text-sm font-medium text-bark-700 mb-1">Email</label>
                   <input
                     id="farm-email"
                     type="email"
@@ -272,7 +272,7 @@ function FarmModal({ farm, onClose, onSave }) {
           {/* Parcels Tab */}
           {activeTab === 'parcels' && (
             <div className="space-y-4">
-              <p className="text-sm text-gray-600 dark:text-gray-400">
+              <p className="text-sm text-bark-600">
                 Add all Assessor Parcel Numbers (APNs) associated with this farm.
                 This helps with property tax tracking and regulatory reporting.
               </p>
@@ -288,10 +288,10 @@ function FarmModal({ farm, onClose, onSave }) {
         </div>
 
         {/* Footer */}
-        <div className="p-6 border-t border-gray-200 dark:border-gray-700 flex gap-3 justify-end bg-gray-50 dark:bg-gray-900/50 flex-shrink-0">
+        <div className="p-6 border-t border-border flex gap-3 justify-end bg-cream-50 flex-shrink-0">
           <button
             onClick={onClose}
-            className="px-6 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:focus:ring-offset-gray-800"
+            className="px-6 py-2 border border-border-strong rounded-button text-bark-700 hover:bg-cream-100 transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
             disabled={loading}
           >
             Cancel
@@ -299,7 +299,7 @@ function FarmModal({ farm, onClose, onSave }) {
           <button
             onClick={handleSubmit}
             disabled={loading}
-            className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover disabled:opacity-50 transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:focus:ring-offset-gray-800"
+            className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover disabled:opacity-50 transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
           >
             {loading ? 'Saving...' : 'Save'}
           </button>

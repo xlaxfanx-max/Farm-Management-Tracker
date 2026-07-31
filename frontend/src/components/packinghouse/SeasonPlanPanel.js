@@ -68,7 +68,7 @@ const SeasonPlanPanel = ({ season }) => {
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <p className="text-sm text-gray-500 dark:text-gray-400">
+        <p className="text-sm text-text-secondary">
           Where each commodity goes this season. Receipts showing a different
           house get flagged — unless the commodity is marked flex.
         </p>
@@ -82,11 +82,11 @@ const SeasonPlanPanel = ({ season }) => {
       </div>
 
       {loading ? (
-        <div className="text-center py-6 text-gray-500">Loading…</div>
+        <div className="text-center py-6 text-text-secondary">Loading…</div>
       ) : commitments.length === 0 ? (
-        <div className="text-center py-6 bg-gray-50 dark:bg-gray-800 rounded-lg">
-          <Building2 className="w-10 h-10 mx-auto text-gray-300 mb-2" />
-          <p className="text-gray-500 text-sm">
+        <div className="text-center py-6 bg-cream-50 rounded-lg">
+          <Building2 className="w-10 h-10 mx-auto text-sand-300 mb-2" />
+          <p className="text-text-secondary text-sm">
             No commitments recorded for the {season} season yet.
           </p>
         </div>
@@ -95,38 +95,38 @@ const SeasonPlanPanel = ({ season }) => {
           {Object.entries(byCommodity).map(([commodity, group]) => (
             <div
               key={commodity}
-              className="border border-gray-200 dark:border-gray-700 rounded-lg p-3 bg-white dark:bg-gray-800"
+              className="border border-border rounded-card p-3 bg-surface-raised"
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <span className="font-medium text-gray-900 dark:text-white">{commodity}</span>
+                  <span className="font-medium text-heading">{commodity}</span>
                   {group.default ? (
                     <>
-                      <span className="text-gray-400">→</span>
+                      <span className="text-text-muted">→</span>
                       <span className="text-sm font-medium text-primary">
                         {group.default.packinghouse_short_code || group.default.packinghouse_name}
                       </span>
                       {group.default.flex && (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-purple-100 text-purple-700 rounded-full text-xs">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-sand-200 text-bark-700 rounded-full text-xs">
                           <Shuffle className="w-3 h-3" /> flex
                         </span>
                       )}
                     </>
                   ) : (
-                    <span className="text-xs text-gray-400">(block overrides only)</span>
+                    <span className="text-xs text-text-muted">(block overrides only)</span>
                   )}
                 </div>
                 {group.default && (
                   <span className="flex items-center gap-1">
                     <button
                       onClick={() => { setEditCommitment(group.default); setShowModal(true); }}
-                      className="p-1 text-gray-400 hover:text-gray-600" title="Edit"
+                      className="p-1 text-text-muted hover:text-bark-600" title="Edit"
                     >
                       <Pencil className="w-3.5 h-3.5" />
                     </button>
                     <button
                       onClick={() => handleDelete(group.default)}
-                      className="p-1 text-gray-400 hover:text-red-500" title="Remove"
+                      className="p-1 text-text-muted hover:text-danger" title="Remove"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -137,12 +137,12 @@ const SeasonPlanPanel = ({ season }) => {
                 <div className="mt-2 ml-4 space-y-1">
                   {group.overrides.map((o) => (
                     <div key={o.id} className="flex items-center justify-between text-sm">
-                      <span className="text-gray-600 dark:text-gray-300">
+                      <span className="text-bark-600">
                         {o.farm_name ? `${o.farm_name} · ` : ''}{o.field_name}
-                        <span className="text-gray-400 mx-1">→</span>
+                        <span className="text-text-muted mx-1">→</span>
                         <span className="font-medium">{o.packinghouse_short_code || o.packinghouse_name}</span>
                         {o.flex && (
-                          <span className="ml-1.5 inline-flex items-center gap-1 px-1.5 py-0.5 bg-purple-100 text-purple-700 rounded-full text-xs">
+                          <span className="ml-1.5 inline-flex items-center gap-1 px-1.5 py-0.5 bg-sand-200 text-bark-700 rounded-full text-xs">
                             <Shuffle className="w-3 h-3" /> flex
                           </span>
                         )}
@@ -150,13 +150,13 @@ const SeasonPlanPanel = ({ season }) => {
                       <span className="flex items-center gap-1">
                         <button
                           onClick={() => { setEditCommitment(o); setShowModal(true); }}
-                          className="p-1 text-gray-400 hover:text-gray-600" title="Edit"
+                          className="p-1 text-text-muted hover:text-bark-600" title="Edit"
                         >
                           <Pencil className="w-3.5 h-3.5" />
                         </button>
                         <button
                           onClick={() => handleDelete(o)}
-                          className="p-1 text-gray-400 hover:text-red-500" title="Remove"
+                          className="p-1 text-text-muted hover:text-danger" title="Remove"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>

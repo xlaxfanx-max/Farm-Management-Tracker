@@ -96,7 +96,7 @@ export default function HouseChargesTab({ season }) {
                 <button
                   onClick={(e) => { e.stopPropagation(); handleUnack(row); }}
                   title="Remove acknowledgment"
-                  className="text-gray-400 hover:text-red-500"
+                  className="text-text-muted hover:text-danger"
                 >
                   <X className="w-3 h-3" />
                 </button>
@@ -111,7 +111,7 @@ export default function HouseChargesTab({ season }) {
               <button
                 onClick={(e) => { e.stopPropagation(); handleAck(row); }}
                 title="The contractor bills the house directly — no grower invoice will exist"
-                className="text-xs text-blue-600 dark:text-blue-400 hover:underline whitespace-nowrap"
+                className="text-xs text-link hover:underline whitespace-nowrap"
               >
                 Mark expected
               </button>
@@ -144,7 +144,7 @@ export default function HouseChargesTab({ season }) {
           <option value="acked">Acknowledged</option>
         </select>
         <div className="relative flex-1 min-w-[200px] max-w-xs">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -152,7 +152,7 @@ export default function HouseChargesTab({ season }) {
             className={`${inputClasses} pl-8`}
           />
         </div>
-        <span className="text-sm text-gray-500 dark:text-gray-400 ml-auto">
+        <span className="text-sm text-text-secondary ml-auto">
           {data.length} charge{data.length === 1 ? '' : 's'}
         </span>
       </div>

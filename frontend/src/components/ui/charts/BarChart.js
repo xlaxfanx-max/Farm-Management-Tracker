@@ -10,15 +10,14 @@ import {
   Legend,
   Cell,
 } from 'recharts';
-
-const defaultColors = ['#2D5016', '#3b82f6', '#E8791D', '#8b5cf6', '#22c55e', '#ef4444'];
+import { CHART_SERIES, CHART_GRID, CHART_TICK, CHART_TOOLTIP_STYLE, CHART_TOOLTIP_LABEL_STYLE } from '../../../theme/finchChartTheme';
 
 export default function BarChart({
   data = [],
   dataKeys = [],
   xKey = 'name',
   height = 300,
-  colors = defaultColors,
+  colors = CHART_SERIES,
   showGrid = true,
   showLegend = false,
   valueFormatter,
@@ -35,36 +34,32 @@ export default function BarChart({
       <ResponsiveContainer width="100%" height={height}>
         <RechartsBar data={data} layout={Layout}>
           {showGrid && (
-            <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200 dark:stroke-gray-700" />
+            <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID} />
           )}
           {horizontal ? (
             <>
               <YAxis
                 dataKey={xKey}
                 type="category"
-                tick={{ fontSize: 12 }}
+                tick={CHART_TICK}
                 width={100}
               />
-              <XAxis type="number" tickFormatter={valueFormatter} tick={{ fontSize: 12 }} />
+              <XAxis type="number" tickFormatter={valueFormatter} tick={CHART_TICK} />
             </>
           ) : (
             <>
               <XAxis
                 dataKey={xKey}
                 tickFormatter={xFormatter}
-                tick={{ fontSize: 12 }}
+                tick={CHART_TICK}
               />
-              <YAxis tickFormatter={valueFormatter} tick={{ fontSize: 12 }} />
+              <YAxis tickFormatter={valueFormatter} tick={CHART_TICK} />
             </>
           )}
           <Tooltip
             formatter={valueFormatter ? (val) => [valueFormatter(val)] : undefined}
-            contentStyle={{
-              backgroundColor: 'var(--bg-card, #fff)',
-              border: '1px solid var(--border-primary, #e5e7eb)',
-              borderRadius: '8px',
-              fontSize: '13px',
-            }}
+            contentStyle={CHART_TOOLTIP_STYLE}
+            labelStyle={CHART_TOOLTIP_LABEL_STYLE}
           />
           {showLegend && <Legend />}
           {dataKeys.map((key, i) => (

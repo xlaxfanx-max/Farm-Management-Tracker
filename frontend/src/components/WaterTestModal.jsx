@@ -119,23 +119,23 @@ function WaterTestModal({ test, waterSource, onClose, onSave }) {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
+      <div className="bg-surface-raised rounded-card shadow-xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-slate-200">
+        <div className="flex items-center justify-between p-6 border-b border-border">
           <div className="flex items-center gap-3">
-            <FileText className="text-blue-600" size={24} />
+            <FileText className="text-link" size={24} />
             <div>
-              <h2 className="text-xl font-bold text-slate-800">
+              <h2 className="text-xl text-text">
                 {test ? 'Edit Test Record' : 'New Water Test'}
               </h2>
               {waterSource && (
-                <p className="text-sm text-slate-600">{waterSource.name}</p>
+                <p className="text-sm text-bark-600">{waterSource.name}</p>
               )}
             </div>
           </div>
-          <button
+          <button aria-label="Close"
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-600"
+            className="text-text-muted hover:text-bark-600"
           >
             <X size={24} />
           </button>
@@ -147,46 +147,46 @@ function WaterTestModal({ test, waterSource, onClose, onSave }) {
             {/* Test Date */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
-                  Test Date <span className="text-red-500">*</span>
+                <label className="block text-sm font-medium text-bark-700 mb-2">
+                  Test Date <span className="text-danger">*</span>
                 </label>
                 <input
                   type="date"
                   value={formData.test_date}
                   max={getTodayDate()}
                   onChange={(e) => setFormData({ ...formData, test_date: e.target.value })}
-                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                    errors.test_date ? 'border-red-500' : 'border-slate-300'
+                  className={`w-full px-3 py-2 border rounded-card focus:border-primary focus:ring-[3px] focus:ring-ring ${
+                    errors.test_date ? 'border-danger' : 'border-border-strong'
                   }`}
                 />
-                {errors.test_date && <p className="mt-1 text-sm text-red-600">{errors.test_date}</p>}
+                {errors.test_date && <p className="mt-1 text-sm text-danger">{errors.test_date}</p>}
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
-                  Test Type <span className="text-red-500">*</span>
+                <label className="block text-sm font-medium text-bark-700 mb-2">
+                  Test Type <span className="text-danger">*</span>
                 </label>
                 <select
                   value={formData.test_type}
                   onChange={(e) => setFormData({ ...formData, test_type: e.target.value })}
-                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                    errors.test_type ? 'border-red-500' : 'border-slate-300'
+                  className={`w-full px-3 py-2 border rounded-card focus:border-primary focus:ring-[3px] focus:ring-ring ${
+                    errors.test_type ? 'border-danger' : 'border-border-strong'
                   }`}
                 >
                   <option value="microbial">Microbial (E. coli/Coliform)</option>
                   <option value="chemical">Chemical Analysis</option>
                   <option value="both">Microbial & Chemical</option>
                 </select>
-                {errors.test_type && <p className="mt-1 text-sm text-red-600">{errors.test_type}</p>}
+                {errors.test_type && <p className="mt-1 text-sm text-danger">{errors.test_type}</p>}
               </div>
             </div>
 
             {/* Lab Information */}
-            <div className="border-t border-slate-200 pt-6">
-              <h3 className="text-lg font-semibold text-slate-800 mb-4">Laboratory Information</h3>
+            <div className="border-t border-border pt-6">
+              <h3 className="text-lg text-text mb-4">Laboratory Information</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                  <label className="block text-sm font-medium text-bark-700 mb-2">
                     Lab Name
                   </label>
                   <input
@@ -194,12 +194,12 @@ function WaterTestModal({ test, waterSource, onClose, onSave }) {
                     value={formData.lab_name}
                     onChange={(e) => setFormData({ ...formData, lab_name: e.target.value })}
                     placeholder="Testing laboratory"
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                  <label className="block text-sm font-medium text-bark-700 mb-2">
                     Lab Certification Number
                   </label>
                   <input
@@ -207,7 +207,7 @@ function WaterTestModal({ test, waterSource, onClose, onSave }) {
                     value={formData.lab_certification_number}
                     onChange={(e) => setFormData({ ...formData, lab_certification_number: e.target.value })}
                     placeholder="Optional"
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                   />
                 </div>
               </div>
@@ -215,19 +215,19 @@ function WaterTestModal({ test, waterSource, onClose, onSave }) {
 
             {/* Microbial Results */}
             {(formData.test_type === 'microbial' || formData.test_type === 'both') && (
-              <div className="border-t border-slate-200 pt-6">
-                <h3 className="text-lg font-semibold text-slate-800 mb-2">Microbial Results</h3>
-                <p className="text-sm text-slate-600 mb-4">
+              <div className="border-t border-border pt-6">
+                <h3 className="text-lg text-text mb-2">Microbial Results</h3>
+                <p className="text-sm text-bark-600 mb-4">
                   FSMA threshold: E. coli ≤ 126 CFU/100mL (pass), &gt; 235 CFU/100mL (fail)
                 </p>
                 {errors.microbial && (
-                  <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-                    <p className="text-sm text-red-600">{errors.microbial}</p>
+                  <div className="mb-4 p-3 bg-danger-bg border border-danger/25 rounded-card">
+                    <p className="text-sm text-danger">{errors.microbial}</p>
                   </div>
                 )}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                    <label className="block text-sm font-medium text-bark-700 mb-2">
                       E. coli (CFU/100mL)
                     </label>
                     <input
@@ -236,11 +236,11 @@ function WaterTestModal({ test, waterSource, onClose, onSave }) {
                       value={formData.ecoli_result}
                       onChange={(e) => setFormData({ ...formData, ecoli_result: e.target.value })}
                       placeholder="E. coli count"
-                      className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                     />
                     {autoStatus && formData.ecoli_result && (
                       <p className={`mt-1 text-sm ${
-                        autoStatus === 'pass' ? 'text-primary' : autoStatus === 'fail' ? 'text-red-600' : 'text-yellow-600'
+                        autoStatus === 'pass' ? 'text-primary' : autoStatus === 'fail' ? 'text-danger' : 'text-yellow-600'
                       }`}>
                         Auto-status: {autoStatus.toUpperCase()}
                       </p>
@@ -248,7 +248,7 @@ function WaterTestModal({ test, waterSource, onClose, onSave }) {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                    <label className="block text-sm font-medium text-bark-700 mb-2">
                       Total Coliform (CFU/100mL)
                     </label>
                     <input
@@ -257,7 +257,7 @@ function WaterTestModal({ test, waterSource, onClose, onSave }) {
                       value={formData.total_coliform_result}
                       onChange={(e) => setFormData({ ...formData, total_coliform_result: e.target.value })}
                       placeholder="Coliform count"
-                      className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                     />
                   </div>
                 </div>
@@ -266,16 +266,16 @@ function WaterTestModal({ test, waterSource, onClose, onSave }) {
 
             {/* Chemical Results */}
             {(formData.test_type === 'chemical' || formData.test_type === 'both') && (
-              <div className="border-t border-slate-200 pt-6">
-                <h3 className="text-lg font-semibold text-slate-800 mb-4">Chemical Results</h3>
+              <div className="border-t border-border pt-6">
+                <h3 className="text-lg text-text mb-4">Chemical Results</h3>
                 {errors.chemical && (
-                  <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-                    <p className="text-sm text-red-600">{errors.chemical}</p>
+                  <div className="mb-4 p-3 bg-danger-bg border border-danger/25 rounded-card">
+                    <p className="text-sm text-danger">{errors.chemical}</p>
                   </div>
                 )}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                    <label className="block text-sm font-medium text-bark-700 mb-2">
                       pH Level
                     </label>
                     <input
@@ -286,12 +286,12 @@ function WaterTestModal({ test, waterSource, onClose, onSave }) {
                       value={formData.ph_level}
                       onChange={(e) => setFormData({ ...formData, ph_level: e.target.value })}
                       placeholder="0-14"
-                      className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                    <label className="block text-sm font-medium text-bark-700 mb-2">
                       Nitrate Level (mg/L)
                     </label>
                     <input
@@ -300,7 +300,7 @@ function WaterTestModal({ test, waterSource, onClose, onSave }) {
                       value={formData.nitrate_level}
                       onChange={(e) => setFormData({ ...formData, nitrate_level: e.target.value })}
                       placeholder="mg/L"
-                      className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                     />
                   </div>
                 </div>
@@ -308,21 +308,21 @@ function WaterTestModal({ test, waterSource, onClose, onSave }) {
             )}
 
             {/* Status */}
-            <div className="border-t border-slate-200 pt-6">
-              <label className="block text-sm font-medium text-slate-700 mb-2">
-                Test Status <span className="text-red-500">*</span>
+            <div className="border-t border-border pt-6">
+              <label className="block text-sm font-medium text-bark-700 mb-2">
+                Test Status <span className="text-danger">*</span>
               </label>
               <select
                 value={formData.status}
                 onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
               >
                 <option value="pending">Pending Results</option>
                 <option value="pass">Pass</option>
                 <option value="fail">Fail - Action Required</option>
               </select>
               {autoStatus && (
-                <p className="mt-2 text-sm text-blue-600 flex items-center gap-2">
+                <p className="mt-2 text-sm text-link flex items-center gap-2">
                   <AlertCircle size={16} />
                   Based on E. coli results, suggested status: <strong>{autoStatus.toUpperCase()}</strong>
                 </p>
@@ -331,36 +331,36 @@ function WaterTestModal({ test, waterSource, onClose, onSave }) {
 
             {/* Corrective Actions (shown if failed) */}
             {formData.status === 'fail' && (
-              <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-                <h3 className="text-lg font-semibold text-red-800 mb-2">Corrective Actions Required</h3>
+              <div className="p-4 bg-danger-bg border border-danger/25 rounded-card">
+                <h3 className="text-lg text-danger mb-2">Corrective Actions Required</h3>
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-red-800 mb-2">
-                      Actions Taken <span className="text-red-500">*</span>
+                    <label className="block text-sm font-medium text-danger mb-2">
+                      Actions Taken <span className="text-danger">*</span>
                     </label>
                     <textarea
                       value={formData.corrective_actions}
                       onChange={(e) => setFormData({ ...formData, corrective_actions: e.target.value })}
                       placeholder="e.g., Stopped use of water source, initiated treatment, scheduled retest"
                       rows={3}
-                      className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                        errors.corrective_actions ? 'border-red-500' : 'border-red-300'
+                      className={`w-full px-3 py-2 border rounded-card focus:border-primary focus:ring-[3px] focus:ring-ring ${
+                        errors.corrective_actions ? 'border-danger' : 'border-danger/40'
                       }`}
                     />
                     {errors.corrective_actions && (
-                      <p className="mt-1 text-sm text-red-600">{errors.corrective_actions}</p>
+                      <p className="mt-1 text-sm text-danger">{errors.corrective_actions}</p>
                     )}
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-red-800 mb-2">
+                    <label className="block text-sm font-medium text-danger mb-2">
                       Retest Date
                     </label>
                     <input
                       type="date"
                       value={formData.retest_date}
                       onChange={(e) => setFormData({ ...formData, retest_date: e.target.value })}
-                      className="w-full px-3 py-2 border border-red-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                     />
                   </div>
                 </div>
@@ -369,7 +369,7 @@ function WaterTestModal({ test, waterSource, onClose, onSave }) {
 
             {/* Notes */}
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
+              <label className="block text-sm font-medium text-bark-700 mb-2">
                 Notes
               </label>
               <textarea
@@ -377,13 +377,13 @@ function WaterTestModal({ test, waterSource, onClose, onSave }) {
                 onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                 placeholder="Any additional observations or comments"
                 rows={3}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
               />
             </div>
 
             {/* Recorded By */}
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
+              <label className="block text-sm font-medium text-bark-700 mb-2">
                 Recorded By
               </label>
               <input
@@ -391,24 +391,24 @@ function WaterTestModal({ test, waterSource, onClose, onSave }) {
                 value={formData.recorded_by}
                 onChange={(e) => setFormData({ ...formData, recorded_by: e.target.value })}
                 placeholder="Person recording this test"
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
               />
             </div>
           </div>
         </form>
 
         {/* Footer */}
-        <div className="flex justify-between items-center p-6 border-t border-slate-200 bg-slate-50">
+        <div className="flex justify-between items-center p-6 border-t border-border bg-cream-50">
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 text-slate-700 border border-slate-300 rounded-lg hover:bg-white"
+            className="px-4 py-2 text-bark-700 border border-border-strong rounded-button hover:bg-surface-raised"
           >
             Cancel
           </button>
           <button
             onClick={handleSubmit}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover"
           >
             {test ? 'Update' : 'Create'} Test Record
           </button>

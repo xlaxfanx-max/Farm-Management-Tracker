@@ -15,12 +15,12 @@ import SettlementAuditReport from './SettlementAuditReport';
 
 // Group deductions by category for display
 const DEDUCTION_CATEGORIES = {
-  packing: { label: 'Packing Charges', icon: Package, color: 'text-blue-600' },
-  assessment: { label: 'Assessments', icon: FileText, color: 'text-purple-600' },
+  packing: { label: 'Packing Charges', icon: Package, color: 'text-link' },
+  assessment: { label: 'Assessments', icon: FileText, color: 'text-bark-700' },
   pick_haul: { label: 'Pick & Haul', icon: Truck, color: 'text-orange-600' },
-  capital: { label: 'Capital Funds', icon: Building2, color: 'text-gray-600' },
+  capital: { label: 'Capital Funds', icon: Building2, color: 'text-bark-600' },
   marketing: { label: 'Marketing', icon: TrendingUp, color: 'text-primary' },
-  other: { label: 'Other Charges', icon: Minus, color: 'text-gray-500' },
+  other: { label: 'Other Charges', icon: Minus, color: 'text-text-secondary' },
 };
 
 const SettlementDetail = ({ settlementId, onClose }) => {
@@ -154,9 +154,9 @@ const SettlementDetail = ({ settlementId, onClose }) => {
   if (loading) {
     return (
       <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-        <div className="bg-white rounded-xl p-8">
+        <div className="bg-surface-raised rounded-xl p-8">
           <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto" />
-          <p className="mt-3 text-gray-600">Loading settlement details...</p>
+          <p className="mt-3 text-bark-600">Loading settlement details...</p>
         </div>
       </div>
     );
@@ -165,11 +165,11 @@ const SettlementDetail = ({ settlementId, onClose }) => {
   if (error) {
     return (
       <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-        <div className="bg-white rounded-xl p-8 max-w-md">
-          <p className="text-red-600">{error}</p>
+        <div className="bg-surface-raised rounded-xl p-8 max-w-md">
+          <p className="text-danger">{error}</p>
           <button
             onClick={onClose}
-            className="mt-4 px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200"
+            className="mt-4 px-4 py-2 bg-cream-100 rounded-lg hover:bg-sand-200"
           >
             Close
           </button>
@@ -193,29 +193,29 @@ const SettlementDetail = ({ settlementId, onClose }) => {
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className={`bg-white rounded-xl shadow-2xl max-h-[95vh] overflow-hidden flex flex-col transition-all duration-300 ${
+      <div className={`bg-surface-raised rounded-card shadow-2xl max-h-[95vh] overflow-hidden flex flex-col transition-all duration-300 ${
         showPdfPanel ? 'max-w-[95vw] w-full' : 'max-w-4xl w-full'
       }`}>
         {/* Header */}
-        <div className="p-4 border-b border-gray-200 bg-gradient-to-r from-green-50 to-blue-50">
+        <div className="p-4 border-b border-border bg-cream-100">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <div>
-                <h2 className="text-lg font-bold text-gray-900 flex items-center">
+                <h2 className="text-lg text-heading flex items-center">
                   <DollarSign className="w-5 h-5 mr-2 text-primary" />
                   Settlement Details
                 </h2>
-                <div className="flex items-center space-x-3 text-sm text-gray-600 mt-1">
+                <div className="flex items-center space-x-3 text-sm text-bark-600 mt-1">
                   <span>{settlement.pool_name}</span>
-                  <span className="text-gray-400">|</span>
+                  <span className="text-text-muted">|</span>
                   <span>{settlement.packinghouse_name}</span>
                   {settlement.field_name && (
                     <>
-                      <span className="text-gray-400">|</span>
+                      <span className="text-text-muted">|</span>
                       <span>{settlement.field_name}</span>
                     </>
                   )}
-                  <span className="text-gray-400">|</span>
+                  <span className="text-text-muted">|</span>
                   <span>{new Date(settlement.statement_date).toLocaleDateString()}</span>
                 </div>
               </div>
@@ -227,8 +227,8 @@ const SettlementDetail = ({ settlementId, onClose }) => {
                   onClick={() => setShowPdf(!showPdf)}
                   className={`flex items-center px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
                     showPdf
-                      ? 'bg-blue-100 text-blue-700 hover:bg-blue-200'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      ? 'bg-orange-100 text-orange-700 hover:bg-orange-200'
+                      : 'bg-cream-100 text-bark-600 hover:bg-sand-200'
                   }`}
                   title={showPdf ? 'Hide PDF' : 'Show PDF'}
                 >
@@ -250,17 +250,17 @@ const SettlementDetail = ({ settlementId, onClose }) => {
                   href={settlement.source_pdf_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="p-2 text-gray-500 hover:text-gray-700 hover:bg-white/50 rounded-lg"
+                  className="p-2 text-text-secondary hover:text-bark-700 hover:bg-cream-100/60 rounded-lg"
                   title="Open PDF in new tab"
                 >
                   <ExternalLink className="w-4 h-4" />
                 </a>
               )}
-              <button
+              <button aria-label="Close"
                 onClick={onClose}
-                className="p-2 hover:bg-white/50 rounded-lg transition-colors"
+                className="p-2 hover:bg-cream-100/60 rounded-lg transition-colors"
               >
-                <X className="w-5 h-5 text-gray-500" />
+                <X className="w-5 h-5 text-text-secondary" />
               </button>
             </div>
           </div>
@@ -270,10 +270,10 @@ const SettlementDetail = ({ settlementId, onClose }) => {
         <div className="flex-1 flex overflow-hidden">
           {/* PDF Panel */}
           {showPdfPanel && (
-            <div className="w-1/2 border-r border-gray-200 bg-gray-100 flex flex-col">
-              <div className="p-2 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
-                <div className="flex items-center text-sm text-gray-600">
-                  <FileIcon className="w-4 h-4 mr-2 text-red-500" />
+            <div className="w-1/2 border-r border-border bg-cream-100 flex flex-col">
+              <div className="p-2 bg-cream-50 border-b border-border flex items-center justify-between">
+                <div className="flex items-center text-sm text-bark-600">
+                  <FileIcon className="w-4 h-4 mr-2 text-danger" />
                   <span className="truncate max-w-xs" title={settlement.source_pdf_filename}>
                     {settlement.source_pdf_filename || 'Source PDF'}
                   </span>
@@ -281,17 +281,17 @@ const SettlementDetail = ({ settlementId, onClose }) => {
                 <a
                   href={settlement.source_pdf_url}
                   download
-                  className="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded"
+                  className="p-1.5 text-text-secondary hover:text-bark-700 hover:bg-sand-200 rounded"
                   title="Download PDF"
                 >
                   <Download className="w-4 h-4" />
                 </a>
               </div>
-              <div className="flex-1 bg-gray-200">
+              <div className="flex-1 bg-sand-200">
                 {pdfLoading ? (
                   <div className="flex flex-col items-center justify-center h-full">
-                    <Loader2 className="w-8 h-8 animate-spin text-gray-500 mb-3" />
-                    <p className="text-gray-500">Loading PDF...</p>
+                    <Loader2 className="w-8 h-8 animate-spin text-text-secondary mb-3" />
+                    <p className="text-text-secondary">Loading PDF...</p>
                   </div>
                 ) : pdfBlobUrl ? (
                   <object
@@ -301,15 +301,15 @@ const SettlementDetail = ({ settlementId, onClose }) => {
                   >
                     {/* Fallback if object doesn't work */}
                     <div className="flex flex-col items-center justify-center h-full p-8 text-center">
-                      <FileIcon className="w-16 h-16 text-gray-400 mb-4" />
-                      <p className="text-gray-600 mb-4">
+                      <FileIcon className="w-16 h-16 text-text-muted mb-4" />
+                      <p className="text-bark-600 mb-4">
                         PDF preview not available in browser.
                       </p>
                       <a
                         href={settlement.source_pdf_url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center"
+                        className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover flex items-center"
                       >
                         <ExternalLink className="w-4 h-4 mr-2" />
                         Open PDF in New Tab
@@ -318,15 +318,15 @@ const SettlementDetail = ({ settlementId, onClose }) => {
                   </object>
                 ) : (
                   <div className="flex flex-col items-center justify-center h-full p-8 text-center">
-                    <FileIcon className="w-16 h-16 text-gray-400 mb-4" />
-                    <p className="text-gray-600 mb-4">
+                    <FileIcon className="w-16 h-16 text-text-muted mb-4" />
+                    <p className="text-bark-600 mb-4">
                       Unable to load PDF preview.
                     </p>
                     <a
                       href={settlement.source_pdf_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center"
+                      className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover flex items-center"
                     >
                       <ExternalLink className="w-4 h-4 mr-2" />
                       Open PDF in New Tab
@@ -341,9 +341,9 @@ const SettlementDetail = ({ settlementId, onClose }) => {
           <div className={`flex-1 overflow-y-auto p-6 space-y-6 ${showPdfPanel ? 'w-1/2' : 'w-full'}`}>
           {/* Summary Cards */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-gray-50 rounded-lg p-4">
-              <div className="text-sm text-gray-500">Total Bins</div>
-              <div className="text-2xl font-bold text-gray-900">
+            <div className="bg-cream-50 rounded-lg p-4">
+              <div className="text-sm text-text-secondary">Total Bins</div>
+              <div className="text-2xl font-bold text-heading">
                 {formatNumber(totalBins, 2)}
               </div>
             </div>
@@ -356,24 +356,24 @@ const SettlementDetail = ({ settlementId, onClose }) => {
                 {formatCurrency(perBin(totalCredits))}/bin
               </div>
             </div>
-            <div className="bg-red-50 rounded-lg p-4">
-              <div className="text-sm text-red-700">Total Charges</div>
-              <div className="text-2xl font-bold text-red-700">
+            <div className="bg-danger-bg rounded-lg p-4">
+              <div className="text-sm text-danger">Total Charges</div>
+              <div className="text-2xl font-bold text-danger">
                 {formatCurrency(totalDeductions)}
               </div>
-              <div className="text-sm text-red-600 mt-1">
+              <div className="text-sm text-danger mt-1">
                 {formatCurrency(perBin(totalDeductions))}/bin
               </div>
             </div>
-            <div className="bg-blue-50 rounded-lg p-4">
-              <div className="text-sm text-blue-700">Net Return</div>
-              <div className="text-2xl font-bold text-blue-700">
+            <div className="bg-orange-50 rounded-lg p-4">
+              <div className="text-sm text-orange-700">Net Return</div>
+              <div className="text-2xl font-bold text-orange-700">
                 {formatCurrency(netReturn)}
               </div>
-              <div className="text-sm text-blue-600 mt-1 flex items-center">
+              <div className="text-sm text-link mt-1 flex items-center">
                 {formatCurrency(netPerBin)}/bin
                 {variance !== null && (
-                  <span className={`ml-2 flex items-center ${variance >= 0 ? 'text-primary' : 'text-red-600'}`}>
+                  <span className={`ml-2 flex items-center ${variance >= 0 ? 'text-primary' : 'text-danger'}`}>
                     {variance >= 0 ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
                     {formatCurrency(Math.abs(variance))}
                   </span>
@@ -384,14 +384,14 @@ const SettlementDetail = ({ settlementId, onClose }) => {
 
           {/* House Average Comparison */}
           {houseAvgPerBin && (
-            <div className="bg-gray-100 rounded-lg p-4 flex items-center justify-between">
-              <span className="text-gray-600">House Average</span>
+            <div className="bg-cream-100 rounded-lg p-4 flex items-center justify-between">
+              <span className="text-bark-600">House Average</span>
               <div className="flex items-center space-x-4">
                 <span className="font-medium">{formatCurrency(houseAvgPerBin)}/bin</span>
                 <span className={`px-2 py-1 rounded text-sm font-medium ${
                   variance >= 0
                     ? 'bg-green-100 text-primary'
-                    : 'bg-red-100 text-red-700'
+                    : 'bg-danger-bg text-danger'
                 }`}>
                   {variance >= 0 ? '+' : ''}{formatCurrency(variance)} vs house
                 </span>
@@ -400,9 +400,9 @@ const SettlementDetail = ({ settlementId, onClose }) => {
           )}
 
           {/* Settlement Audit — reconciliation, drift, block variance, house variance, outliers */}
-          <div className="bg-white rounded-lg border border-gray-200 p-4">
-            <h4 className="font-medium text-gray-700 mb-3 flex items-center">
-              <span className="inline-block w-2 h-2 rounded-full bg-indigo-500 mr-2" />
+          <div className="bg-surface-raised rounded-card border border-border p-4">
+            <h4 className=" text-bark-700 mb-3 flex items-center">
+              <span className="inline-block w-2 h-2 rounded-full bg-bark-500 mr-2" />
               Settlement Audit
             </h4>
             <SettlementAuditReport settlementId={settlementId} />
@@ -410,12 +410,12 @@ const SettlementDetail = ({ settlementId, onClose }) => {
 
           {/* Pack Percentages */}
           {(settlement.fresh_fruit_percent || settlement.products_percent) && (
-            <div className="bg-gray-50 rounded-lg p-4">
-              <h4 className="font-medium text-gray-700 mb-3">Pack Distribution</h4>
+            <div className="bg-cream-50 rounded-lg p-4">
+              <h4 className=" text-bark-700 mb-3">Pack Distribution</h4>
               <div className="flex space-x-6">
                 {settlement.fresh_fruit_percent && (
                   <div>
-                    <span className="text-sm text-gray-500">Fresh Fruit:</span>
+                    <span className="text-sm text-text-secondary">Fresh Fruit:</span>
                     <span className="ml-2 font-semibold text-primary">
                       {formatPercent(settlement.fresh_fruit_percent)}
                     </span>
@@ -423,7 +423,7 @@ const SettlementDetail = ({ settlementId, onClose }) => {
                 )}
                 {settlement.products_percent && (
                   <div>
-                    <span className="text-sm text-gray-500">Products/Juice:</span>
+                    <span className="text-sm text-text-secondary">Products/Juice:</span>
                     <span className="ml-2 font-semibold text-orange-600">
                       {formatPercent(settlement.products_percent)}
                     </span>
@@ -435,16 +435,16 @@ const SettlementDetail = ({ settlementId, onClose }) => {
 
           {/* REVENUES - Grade Lines */}
           {settlement.grade_lines?.length > 0 && (
-            <div className="border border-green-200 rounded-lg overflow-hidden">
+            <div className="border border-green-200 rounded-card overflow-hidden">
               <div className="bg-primary-light px-4 py-3 border-b border-green-200">
-                <h3 className="font-semibold text-green-800 flex items-center">
+                <h3 className=" text-green-700 flex items-center">
                   <TrendingUp className="w-5 h-5 mr-2" />
                   Revenues by Grade
                 </h3>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full">
-                  <thead className="bg-green-50/50">
+                  <thead className="bg-green-50/50 bg-surface-sunken">
                     <tr className="text-xs text-primary uppercase">
                       <th className="px-4 py-2 text-left">Grade</th>
                       <th className="px-4 py-2 text-left">Size</th>
@@ -458,22 +458,22 @@ const SettlementDetail = ({ settlementId, onClose }) => {
                   <tbody className="divide-y divide-green-100">
                     {settlement.grade_lines.map((line, idx) => (
                       <tr key={idx} className="hover:bg-primary-light/30">
-                        <td className="px-4 py-2 font-medium text-gray-900">
+                        <td className="px-4 py-2 font-medium text-bark-700">
                           {line.grade}
                         </td>
-                        <td className="px-4 py-2 text-gray-600">
+                        <td className="px-4 py-2 text-bark-600">
                           {line.size || '-'}
                         </td>
-                        <td className="px-4 py-2 text-right text-gray-700">
+                        <td className="px-4 py-2 text-right text-bark-700">
                           {formatNumber(line.quantity, 0)}
-                          <span className="text-xs text-gray-400 ml-1">
+                          <span className="text-xs text-text-muted ml-1">
                             {line.unit_display || line.unit_of_measure}
                           </span>
                         </td>
-                        <td className="px-4 py-2 text-right text-gray-600">
+                        <td className="px-4 py-2 text-right text-bark-600">
                           {formatPercent(line.percent_of_total)}
                         </td>
-                        <td className="px-4 py-2 text-right text-gray-700">
+                        <td className="px-4 py-2 text-right text-bark-700">
                           {line.fob_rate ? formatCurrency(line.fob_rate, 4) : '-'}
                         </td>
                         <td className="px-4 py-2 text-right font-medium text-primary">
@@ -487,13 +487,13 @@ const SettlementDetail = ({ settlementId, onClose }) => {
                   </tbody>
                   <tfoot className="bg-green-100">
                     <tr className="font-semibold">
-                      <td colSpan="5" className="px-4 py-2 text-green-800">
+                      <td colSpan="5" className="px-4 py-2 text-green-700">
                         Total Credits
                       </td>
-                      <td className="px-4 py-2 text-right text-green-800">
+                      <td className="px-4 py-2 text-right text-green-700">
                         {formatCurrency(totalCredits)}
                       </td>
-                      <td className="px-4 py-2 text-right text-green-800">
+                      <td className="px-4 py-2 text-right text-green-700">
                         {formatCurrency(perBin(totalCredits))}
                       </td>
                     </tr>
@@ -505,14 +505,14 @@ const SettlementDetail = ({ settlementId, onClose }) => {
 
           {/* CHARGES - Deductions by Category */}
           {settlement.deductions?.length > 0 && (
-            <div className="border border-red-200 rounded-lg overflow-hidden">
-              <div className="bg-red-50 px-4 py-3 border-b border-red-200">
-                <h3 className="font-semibold text-red-800 flex items-center">
+            <div className="border border-danger/25 rounded-card overflow-hidden">
+              <div className="bg-danger-bg px-4 py-3 border-b border-danger/25">
+                <h3 className=" text-danger flex items-center">
                   <TrendingDown className="w-5 h-5 mr-2" />
                   Charges & Deductions
                 </h3>
               </div>
-              <div className="divide-y divide-red-100">
+              <div className="divide-y divide-danger/20">
                 {Object.entries(groupedDeductions).map(([category, data]) => {
                   const categoryInfo = DEDUCTION_CATEGORIES[category] || DEDUCTION_CATEGORIES.other;
                   const Icon = categoryInfo.icon;
@@ -523,38 +523,38 @@ const SettlementDetail = ({ settlementId, onClose }) => {
                       {/* Category Header */}
                       <button
                         onClick={() => toggleCategory(category)}
-                        className="w-full px-4 py-3 flex items-center justify-between hover:bg-red-50/50 transition-colors"
+                        className="w-full px-4 py-3 flex items-center justify-between hover:bg-danger-bg/50 transition-colors"
                       >
                         <div className="flex items-center">
                           <Icon className={`w-4 h-4 mr-2 ${categoryInfo.color}`} />
-                          <span className="font-medium text-gray-800">
+                          <span className="font-medium text-text">
                             {categoryInfo.label}
                           </span>
-                          <span className="ml-2 text-xs text-gray-400">
+                          <span className="ml-2 text-xs text-text-muted">
                             ({data.items.length} items)
                           </span>
                         </div>
                         <div className="flex items-center space-x-4">
-                          <span className="text-red-700 font-medium">
+                          <span className="text-danger font-medium">
                             {formatCurrency(data.total)}
                           </span>
-                          <span className="text-red-600 text-sm">
+                          <span className="text-danger text-sm">
                             {formatCurrency(perBin(data.total))}/bin
                           </span>
                           {isExpanded ? (
-                            <ChevronUp className="w-4 h-4 text-gray-400" />
+                            <ChevronUp className="w-4 h-4 text-text-muted" />
                           ) : (
-                            <ChevronDown className="w-4 h-4 text-gray-400" />
+                            <ChevronDown className="w-4 h-4 text-text-muted" />
                           )}
                         </div>
                       </button>
 
                       {/* Category Items */}
                       {isExpanded && (
-                        <div className="bg-gray-50/50 px-4 pb-3">
+                        <div className="bg-cream-50/50 px-4 pb-3">
                           <table className="w-full text-sm">
                             <thead>
-                              <tr className="text-xs text-gray-500">
+                              <tr className="text-xs text-text-secondary">
                                 <th className="py-2 text-left">Description</th>
                                 <th className="py-2 text-right">Qty</th>
                                 <th className="py-2 text-right">Rate</th>
@@ -562,29 +562,29 @@ const SettlementDetail = ({ settlementId, onClose }) => {
                                 <th className="py-2 text-right">Per Bin</th>
                               </tr>
                             </thead>
-                            <tbody className="divide-y divide-gray-200">
+                            <tbody className="divide-y divide-border">
                               {data.items.map((item, idx) => (
                                 <tr key={idx}>
-                                  <td className="py-2 text-gray-700">
+                                  <td className="py-2 text-bark-700">
                                     {item.description}
                                   </td>
-                                  <td className="py-2 text-right text-gray-600">
+                                  <td className="py-2 text-right text-bark-600">
                                     {item.quantity ? (
                                       <>
                                         {formatNumber(item.quantity, 0)}
-                                        <span className="text-xs text-gray-400 ml-1">
+                                        <span className="text-xs text-text-muted ml-1">
                                           {item.unit_of_measure}
                                         </span>
                                       </>
                                     ) : '-'}
                                   </td>
-                                  <td className="py-2 text-right text-gray-600">
+                                  <td className="py-2 text-right text-bark-600">
                                     {item.rate ? formatCurrency(item.rate, 4) : '-'}
                                   </td>
-                                  <td className="py-2 text-right text-red-600 font-medium">
+                                  <td className="py-2 text-right text-danger font-medium">
                                     {formatCurrency(item.amount)}
                                   </td>
-                                  <td className="py-2 text-right text-red-500">
+                                  <td className="py-2 text-right text-danger">
                                     {formatCurrency(perBin(item.amount))}
                                   </td>
                                 </tr>
@@ -598,11 +598,11 @@ const SettlementDetail = ({ settlementId, onClose }) => {
                 })}
 
                 {/* Total Charges Footer */}
-                <div className="bg-red-100 px-4 py-3 flex items-center justify-between font-semibold">
-                  <span className="text-red-800">Total Charges</span>
+                <div className="bg-danger-bg px-4 py-3 flex items-center justify-between font-semibold">
+                  <span className="text-danger">Total Charges</span>
                   <div className="flex items-center space-x-4">
-                    <span className="text-red-800">{formatCurrency(totalDeductions)}</span>
-                    <span className="text-red-700">{formatCurrency(perBin(totalDeductions))}/bin</span>
+                    <span className="text-danger">{formatCurrency(totalDeductions)}</span>
+                    <span className="text-danger">{formatCurrency(perBin(totalDeductions))}/bin</span>
                   </div>
                 </div>
               </div>
@@ -610,10 +610,10 @@ const SettlementDetail = ({ settlementId, onClose }) => {
           )}
 
           {/* NET RETURN SUMMARY */}
-          <div className="bg-gradient-to-r from-blue-100 to-green-100 rounded-lg p-6">
+          <div className="bg-cream-100 rounded-lg p-6">
             <div className="grid grid-cols-3 gap-6 text-center">
               <div>
-                <div className="text-sm text-gray-600">Total Credits</div>
+                <div className="text-sm text-bark-600">Total Credits</div>
                 <div className="text-xl font-bold text-primary">
                   {formatCurrency(totalCredits)}
                 </div>
@@ -622,20 +622,20 @@ const SettlementDetail = ({ settlementId, onClose }) => {
                 </div>
               </div>
               <div>
-                <div className="text-sm text-gray-600">Total Charges</div>
-                <div className="text-xl font-bold text-red-700">
+                <div className="text-sm text-bark-600">Total Charges</div>
+                <div className="text-xl font-bold text-danger">
                   - {formatCurrency(totalDeductions)}
                 </div>
-                <div className="text-sm text-red-600">
+                <div className="text-sm text-danger">
                   {formatCurrency(perBin(totalDeductions))}/bin
                 </div>
               </div>
-              <div className="border-l-2 border-blue-300 pl-6">
-                <div className="text-sm text-gray-600">Net Return</div>
-                <div className="text-2xl font-bold text-blue-800">
+              <div className="border-l-2 border-orange-300 pl-6">
+                <div className="text-sm text-bark-600">Net Return</div>
+                <div className="text-2xl font-bold text-orange-700">
                   {formatCurrency(netReturn)}
                 </div>
-                <div className="text-lg font-semibold text-blue-700">
+                <div className="text-lg font-semibold text-orange-700">
                   {formatCurrency(netPerBin)}/bin
                 </div>
               </div>
@@ -644,7 +644,7 @@ const SettlementDetail = ({ settlementId, onClose }) => {
 
           {/* Amount Due */}
           {settlement.amount_due !== null && settlement.amount_due !== undefined && (
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex items-center justify-between">
+            <div className="bg-yellow-50 border border-yellow-200 rounded-card p-4 flex items-center justify-between">
               <div>
                 <div className="text-sm text-yellow-700">Amount Due (after advances)</div>
                 {settlement.prior_advances && (
@@ -664,10 +664,10 @@ const SettlementDetail = ({ settlementId, onClose }) => {
         {/* End Split View Container */}
 
         {/* Footer */}
-        <div className="p-4 border-t border-gray-200 bg-gray-50 flex justify-end">
+        <div className="p-4 border-t border-border bg-cream-50 flex justify-end">
           <button
             onClick={onClose}
-            className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+            className="px-6 py-2 bg-sand-200 text-bark-700 rounded-lg hover:bg-sand-300 transition-colors"
           >
             Close
           </button>

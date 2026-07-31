@@ -14,29 +14,37 @@ export default function FormField({
       {label && (
         <label
           htmlFor={htmlFor}
-          className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+          className="block text-sm font-semibold text-bark-700 mb-1.5"
         >
           {label}
-          {required && <span className="text-red-500 ml-0.5">*</span>}
+          {required && <span className="text-danger ml-0.5">*</span>}
         </label>
       )}
       {children}
-      {error && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{error}</p>}
+      {error && <p className="mt-1.5 text-sm text-danger">{error}</p>}
       {hint && !error && (
-        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{hint}</p>
+        <p className="mt-1.5 text-sm text-text-secondary">{hint}</p>
       )}
     </div>
   );
 }
 
-export const inputClasses =
-  'w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 ' +
-  'bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 ' +
-  'placeholder-gray-400 dark:placeholder-gray-500 ' +
-  'focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary ' +
-  'disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed ' +
-  'text-sm';
+/**
+ * Canonical control class string.
+ *
+ * DEPRECATED — kept only while the sweep converts raw controls to the
+ * Input/Select/Textarea primitives. The end state is zero references and
+ * these exports deleted.
+ */
+export const inputClasses = [
+  'w-full px-3 py-2 text-sm rounded-button border border-border-strong',
+  'bg-surface-raised text-text shadow-inset',
+  'placeholder:text-text-muted',
+  'focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring',
+  'disabled:bg-surface-sunken disabled:cursor-not-allowed',
+  'transition-all duration-fast ease-out',
+].join(' ');
 
 export const selectClasses = inputClasses;
 
-export const textareaClasses = inputClasses + ' resize-y';
+export const textareaClasses = [inputClasses, 'resize-y'].join(' ');

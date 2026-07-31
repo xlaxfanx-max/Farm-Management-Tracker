@@ -17,17 +17,17 @@ const HarvestList = ({
 }) => {
   if (loading) {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
-        <div className="p-8 text-center text-gray-500 dark:text-gray-400">Loading harvests...</div>
+      <div className="bg-surface-raised rounded-lg shadow">
+        <div className="p-8 text-center text-text-secondary">Loading harvests...</div>
       </div>
     );
   }
 
   if (harvests.length === 0) {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
-        <div className="p-8 text-center text-gray-500 dark:text-gray-400">
-          <Wheat size={48} className="mx-auto mb-4 text-gray-300 dark:text-gray-600" />
+      <div className="bg-surface-raised rounded-lg shadow">
+        <div className="p-8 text-center text-text-secondary">
+          <Wheat size={48} className="mx-auto mb-4 text-sand-300" />
           <p>No harvests found</p>
           <button
             onClick={() => openHarvestModal(null,)}
@@ -41,8 +41,8 @@ const HarvestList = ({
   }
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
-      <div className="divide-y dark:divide-gray-700">
+    <div className="bg-surface-raised rounded-lg shadow">
+      <div className="divide-y">
         {harvests.map(harvest => (
           <div key={harvest.id} className="p-4">
             {/* Harvest Header */}
@@ -51,7 +51,7 @@ const HarvestList = ({
               onClick={() => toggleExpand(harvest.id)}
             >
               <div className="flex items-center gap-4">
-                <button className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded">
+                <button className="p-1 hover:bg-cream-100 rounded">
                   {expandedHarvests[harvest.id] ? (
                     <ChevronDown size={20} />
                   ) : (
@@ -60,21 +60,21 @@ const HarvestList = ({
                 </button>
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="font-medium dark:text-gray-200">{harvest.field_name}</span>
-                    <span className="text-gray-400 dark:text-gray-500">&bull;</span>
-                    <span className="text-gray-600 dark:text-gray-300">{harvest.farm_name}</span>
-                    <span className="text-gray-400 dark:text-gray-500">&bull;</span>
-                    <span className="text-sm text-gray-500 dark:text-gray-400">
+                    <span className="font-medium">{harvest.field_name}</span>
+                    <span className="text-text-muted">&bull;</span>
+                    <span className="text-bark-600">{harvest.farm_name}</span>
+                    <span className="text-text-muted">&bull;</span>
+                    <span className="text-sm text-text-secondary">
                       Pick #{harvest.harvest_number}
                     </span>
                   </div>
-                  <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400 mt-1">
+                  <div className="flex items-center gap-4 text-sm text-text-secondary mt-1">
                     <span className="flex items-center gap-1">
                       <Calendar size={14} />
                       {new Date(harvest.harvest_date).toLocaleDateString()}
                     </span>
                     <span>{harvest.crop_variety_display}</span>
-                    <span className="font-mono text-xs bg-gray-100 dark:bg-gray-700 dark:text-gray-300 px-2 py-0.5 rounded">
+                    <span className="font-mono text-xs bg-cream-100 px-2 py-0.5 rounded">
                       {harvest.lot_number}
                     </span>
                   </div>
@@ -84,13 +84,13 @@ const HarvestList = ({
               <div className="flex items-center gap-6">
                 <div className="text-right">
                   <p className="font-medium">{formatNumber(harvest.primary_quantity ?? harvest.total_bins)} {(harvest.primary_unit_label || 'bins').toLowerCase()}</p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">{harvest.acres_harvested} acres</p>
+                  <p className="text-sm text-text-secondary">{harvest.acres_harvested} acres</p>
                 </div>
                 <div className="text-right">
-                  <p className="font-medium text-primary dark:text-green-400">
+                  <p className="font-medium text-primary">
                     {formatCurrency(harvest.total_revenue)}
                   </p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">{harvest.load_count} loads</p>
+                  <p className="text-sm text-text-secondary">{harvest.load_count} loads</p>
                 </div>
                 {getStatusBadge(harvest.status, harvest.phi_compliant)}
               </div>

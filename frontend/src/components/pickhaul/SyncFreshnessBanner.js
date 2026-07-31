@@ -21,10 +21,10 @@ export default function SyncFreshnessBanner({ syncStatus }) {
   const severity = hasErrorSource || hoursSince >= 72 ? 'red' : stale ? 'amber' : 'quiet';
 
   const styles = {
-    quiet: 'text-gray-500 dark:text-gray-400',
+    quiet: 'text-text-secondary',
     amber:
-      'bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300 rounded-lg px-3 py-2',
-    red: 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-300 rounded-lg px-3 py-2',
+      'bg-yellow-100 border border-yellow-200 text-yellow-800 rounded-card px-3 py-2',
+    red: 'bg-danger-bg border border-danger/25 text-danger rounded-card px-3 py-2',
   };
 
   const label = last_push_at
@@ -59,7 +59,7 @@ export default function SyncFreshnessBanner({ syncStatus }) {
         <div className="mt-2 overflow-x-auto">
           <table className="w-full text-xs">
             <thead>
-              <tr className="text-left text-gray-500 dark:text-gray-400">
+              <tr className="text-left text-text-secondary">
                 <th className="py-1 pr-3">Account</th>
                 <th className="py-1 pr-3">File</th>
                 <th className="py-1 pr-3">Pulled</th>
@@ -70,7 +70,7 @@ export default function SyncFreshnessBanner({ syncStatus }) {
             </thead>
             <tbody>
               {sources.map((s) => (
-                <tr key={`${s.house_code}-${s.entity_code}`} className="border-t border-gray-200/50 dark:border-gray-700/50">
+                <tr key={`${s.house_code}-${s.entity_code}`} className="border-t border-border/50">
                   <td className="py-1 pr-3 whitespace-nowrap">{s.house_code}/{s.entity_code}</td>
                   <td className="py-1 pr-3">{s.file_name}</td>
                   <td className="py-1 pr-3 whitespace-nowrap">{formatDateTime(s.pulled_at)}</td>

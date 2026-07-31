@@ -23,11 +23,11 @@ const HarvestExpandedRow = ({
     <div className="mt-4 ml-10 space-y-4">
       {/* PHI Warning Banner */}
       {harvest.phi_compliant === false && (
-        <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg p-3 flex items-start gap-3">
-          <AlertTriangle className="text-red-600 dark:text-red-400 flex-shrink-0" size={20} />
+        <div className="bg-danger-bg border border-danger/25 rounded-card p-3 flex items-start gap-3">
+          <AlertTriangle className="text-danger flex-shrink-0" size={20} />
           <div>
-            <p className="font-medium text-red-800 dark:text-red-200">PHI Compliance Warning</p>
-            <p className="text-sm text-red-600 dark:text-red-300">
+            <p className="font-medium text-danger">PHI Compliance Warning</p>
+            <p className="text-sm text-danger">
               Only {harvest.days_since_last_application} days since last application
               of {harvest.last_application_product}. Required: {harvest.phi_required_days} days.
             </p>
@@ -44,20 +44,20 @@ const HarvestExpandedRow = ({
       <div className="flex gap-2">
         <button
           onClick={(e) => { e.stopPropagation(); openHarvestLoadModal(harvest.id); }}
-          className="flex items-center gap-1 px-3 py-1.5 text-sm border dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-gray-200"
+          className="flex items-center gap-1 px-3 py-1.5 text-sm border rounded-lg hover:bg-cream-50"
         >
           <Truck size={16} /> Add Load
         </button>
         <button
           onClick={(e) => { e.stopPropagation(); openHarvestLaborModal(harvest.id); }}
-          className="flex items-center gap-1 px-3 py-1.5 text-sm border dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-gray-200"
+          className="flex items-center gap-1 px-3 py-1.5 text-sm border rounded-lg hover:bg-cream-50"
         >
           <Users size={16} /> Add Labor
         </button>
         {harvest.status === 'in_progress' && (
           <button
             onClick={(e) => { e.stopPropagation(); handleMarkComplete(harvest.id); }}
-            className="flex items-center gap-1 px-3 py-1.5 text-sm bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100"
+            className="flex items-center gap-1 px-3 py-1.5 text-sm bg-orange-50 text-orange-700 rounded-lg hover:bg-orange-100"
           >
             <CheckCircle size={16} /> Mark Complete
           </button>
@@ -72,27 +72,27 @@ const HarvestExpandedRow = ({
         )}
         <button
           onClick={(e) => { e.stopPropagation(); openHarvestModal(harvest); }}
-          className="flex items-center gap-1 px-3 py-1.5 text-sm border dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-gray-200"
+          className="flex items-center gap-1 px-3 py-1.5 text-sm border rounded-lg hover:bg-cream-50"
         >
           <Edit size={16} /> Edit
         </button>
         <button
           onClick={(e) => { e.stopPropagation(); handleDelete(harvest.id); }}
-          className="flex items-center gap-1 px-3 py-1.5 text-sm text-red-600 border border-red-200 rounded-lg hover:bg-red-50"
+          className="flex items-center gap-1 px-3 py-1.5 text-sm text-danger border border-danger/25 rounded-button hover:bg-danger-bg"
         >
           <Trash2 size={16} /> Delete
         </button>
       </div>
 
       {/* GAP/GHP Checklist */}
-      <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
-        <p className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">GAP/GHP Compliance</p>
+      <div className="bg-cream-50 rounded-lg p-3">
+        <p className="text-sm font-medium text-bark-700 mb-2">GAP/GHP Compliance</p>
         <div className="grid grid-cols-4 gap-4 text-sm">
           <div className="flex items-center gap-2">
             {harvest.phi_verified ? (
               <CheckCircle size={16} className="text-primary" />
             ) : (
-              <Clock size={16} className="text-gray-400" />
+              <Clock size={16} className="text-text-muted" />
             )}
             <span>PHI Verified</span>
           </div>
@@ -100,7 +100,7 @@ const HarvestExpandedRow = ({
             {harvest.equipment_cleaned ? (
               <CheckCircle size={16} className="text-primary" />
             ) : (
-              <Clock size={16} className="text-gray-400" />
+              <Clock size={16} className="text-text-muted" />
             )}
             <span>Equipment Cleaned</span>
           </div>
@@ -108,7 +108,7 @@ const HarvestExpandedRow = ({
             {harvest.no_contamination_observed ? (
               <CheckCircle size={16} className="text-primary" />
             ) : (
-              <Clock size={16} className="text-gray-400" />
+              <Clock size={16} className="text-text-muted" />
             )}
             <span>No Contamination</span>
           </div>
@@ -116,7 +116,7 @@ const HarvestExpandedRow = ({
             {harvest.supervisor_name ? (
               <CheckCircle size={16} className="text-primary" />
             ) : (
-              <Clock size={16} className="text-gray-400" />
+              <Clock size={16} className="text-text-muted" />
             )}
             <span>Supervisor: {harvest.supervisor_name || 'Not set'}</span>
           </div>
@@ -142,50 +142,50 @@ const BinsReconciliation = ({ harvest }) => {
   const unitLabelLocal = harvest.primary_unit_label || 'bins';
 
   const getStatusBadge = (status) => {
-    if (status === 'match') return <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">&#10003; Complete</span>;
+    if (status === 'match') return <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-700">✓ Complete</span>;
     if (status === 'under') return <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">Partial</span>;
-    if (status === 'over') return <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">Over</span>;
+    if (status === 'over') return <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-danger-bg text-danger">Over</span>;
     return null;
   };
 
   const getBarColor = (status) => {
     if (status === 'match') return 'bg-green-500';
-    if (status === 'over') return 'bg-red-500';
+    if (status === 'over') return 'bg-danger';
     return 'bg-yellow-500';
   };
 
   return (
-    <div className="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
-      <p className="font-medium text-blue-800 dark:text-blue-200 mb-2">{harvest.primary_unit_label || 'Bin'} Tracking</p>
+    <div className="bg-orange-50 border border-orange-200 rounded-card p-3">
+      <p className="font-medium text-orange-700 mb-2">{harvest.primary_unit_label || 'Bin'} Tracking</p>
       <div className="grid grid-cols-3 gap-4 text-sm">
         <div>
-          <p className="text-gray-600">Total Harvest</p>
-          <p className="text-lg font-semibold text-gray-900">
+          <p className="text-bark-600">Total Harvest</p>
+          <p className="text-lg font-semibold text-heading">
             {harvest.primary_quantity ?? totalHarvestBins} {unitLabelLocal.toLowerCase()}
           </p>
         </div>
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <p className="text-gray-600">In Loads</p>
+            <p className="text-bark-600">In Loads</p>
             {getStatusBadge(recon.loads_status)}
           </div>
-          <p className="text-lg font-semibold text-gray-900">
+          <p className="text-lg font-semibold text-heading">
             {recon.total_load_bins} {unitLabelLocal.toLowerCase()}
           </p>
           {recon.loads_message && (
-            <p className="text-xs text-gray-500 mt-1">{recon.loads_message}</p>
+            <p className="text-xs text-text-secondary mt-1">{recon.loads_message}</p>
           )}
         </div>
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <p className="text-gray-600">In Labor</p>
+            <p className="text-bark-600">In Labor</p>
             {getStatusBadge(recon.labor_status)}
           </div>
-          <p className="text-lg font-semibold text-gray-900">
+          <p className="text-lg font-semibold text-heading">
             {recon.total_labor_bins} {unitLabelLocal.toLowerCase()}
           </p>
           {recon.labor_message && (
-            <p className="text-xs text-gray-500 mt-1">{recon.labor_message}</p>
+            <p className="text-xs text-text-secondary mt-1">{recon.labor_message}</p>
           )}
         </div>
       </div>
@@ -193,11 +193,11 @@ const BinsReconciliation = ({ harvest }) => {
       {/* Progress Bars */}
       <div className="mt-3 space-y-2">
         <div>
-          <div className="flex justify-between text-xs text-gray-600 mb-1">
+          <div className="flex justify-between text-xs text-bark-600 mb-1">
             <span>Loads Progress</span>
             <span>{Math.round((recon.total_load_bins / totalHarvestBins) * 100)}%</span>
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-2">
+          <div className="w-full bg-sand-200 rounded-full h-2">
             <div
               className={`h-2 rounded-full ${getBarColor(recon.loads_status)}`}
               style={{ width: `${Math.min((recon.total_load_bins / totalHarvestBins) * 100, 100)}%` }}
@@ -205,11 +205,11 @@ const BinsReconciliation = ({ harvest }) => {
           </div>
         </div>
         <div>
-          <div className="flex justify-between text-xs text-gray-600 mb-1">
+          <div className="flex justify-between text-xs text-bark-600 mb-1">
             <span>Labor Progress</span>
             <span>{Math.round((recon.total_labor_bins / totalHarvestBins) * 100)}%</span>
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-2">
+          <div className="w-full bg-sand-200 rounded-full h-2">
             <div
               className={`h-2 rounded-full ${getBarColor(recon.labor_status)}`}
               style={{ width: `${Math.min((recon.total_labor_bins / totalHarvestBins) * 100, 100)}%` }}
@@ -223,24 +223,24 @@ const BinsReconciliation = ({ harvest }) => {
 
 const LoadsTable = ({ harvest, openHarvestLoadModal }) => (
   <div>
-    <p className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Loads ({harvest.loads.length})</p>
-    <div className="border dark:border-gray-600 rounded-lg overflow-hidden">
-      <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-        <thead className="bg-gray-50 dark:bg-gray-700">
+    <p className="text-sm font-medium text-bark-700 mb-2">Loads ({harvest.loads.length})</p>
+    <div className="border rounded-lg overflow-hidden">
+      <table className="min-w-full divide-y divide-border">
+        <thead className="bg-cream-50 bg-surface-sunken">
           <tr>
-            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">#</th>
-            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Buyer</th>
-            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Bins</th>
-            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Grade</th>
-            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Revenue</th>
-            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Payment</th>
-            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Truck</th>
-            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Actions</th>
+            <th className="px-3 py-2 text-left text-xs font-semibold text-text-secondary">#</th>
+            <th className="px-3 py-2 text-left text-xs font-semibold text-text-secondary">Buyer</th>
+            <th className="px-3 py-2 text-left text-xs font-semibold text-text-secondary">Bins</th>
+            <th className="px-3 py-2 text-left text-xs font-semibold text-text-secondary">Grade</th>
+            <th className="px-3 py-2 text-left text-xs font-semibold text-text-secondary">Revenue</th>
+            <th className="px-3 py-2 text-left text-xs font-semibold text-text-secondary">Payment</th>
+            <th className="px-3 py-2 text-left text-xs font-semibold text-text-secondary">Truck</th>
+            <th className="px-3 py-2 text-left text-xs font-semibold text-text-secondary">Actions</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+        <tbody className="divide-y divide-border">
           {harvest.loads.map(load => (
-            <tr key={load.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+            <tr key={load.id} className="hover:bg-cream-50">
               <td className="px-3 py-2 text-sm">{load.load_number}</td>
               <td className="px-3 py-2 text-sm">{load.buyer_name || 'N/A'}</td>
               <td className="px-3 py-2 text-sm">{load.bins}</td>
@@ -248,18 +248,18 @@ const LoadsTable = ({ harvest, openHarvestLoadModal }) => (
               <td className="px-3 py-2 text-sm text-primary">{formatCurrency(load.total_revenue)}</td>
               <td className="px-3 py-2 text-sm">
                 <span className={`px-2 py-0.5 rounded-full text-xs ${
-                  load.payment_status === 'paid' ? 'bg-green-100 text-green-800' :
+                  load.payment_status === 'paid' ? 'bg-green-100 text-green-700' :
                   load.payment_status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                  'bg-gray-100 text-gray-800'
+                  'bg-cream-100 text-text'
                 }`}>
                   {load.payment_status_display}
                 </span>
               </td>
-              <td className="px-3 py-2 text-sm text-gray-500">{load.truck_id || '-'}</td>
+              <td className="px-3 py-2 text-sm text-text-secondary">{load.truck_id || '-'}</td>
               <td className="px-3 py-2 text-sm">
                 <button
                   onClick={() => openHarvestLoadModal(harvest.id, load)}
-                  className="text-blue-600 hover:text-blue-800"
+                  className="text-link hover:text-orange-700"
                   title="Edit load"
                 >
                   <Edit size={16} />
@@ -275,23 +275,23 @@ const LoadsTable = ({ harvest, openHarvestLoadModal }) => (
 
 const LaborTable = ({ harvest, openHarvestLaborModal }) => (
   <div>
-    <p className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Labor Records ({harvest.labor_records.length})</p>
-    <div className="border dark:border-gray-600 rounded-lg overflow-hidden">
-      <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-        <thead className="bg-gray-50 dark:bg-gray-700">
+    <p className="text-sm font-medium text-bark-700 mb-2">Labor Records ({harvest.labor_records.length})</p>
+    <div className="border rounded-lg overflow-hidden">
+      <table className="min-w-full divide-y divide-border">
+        <thead className="bg-cream-50 bg-surface-sunken">
           <tr>
-            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Contractor</th>
-            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Workers</th>
-            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Hours</th>
-            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Bins Picked</th>
-            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Cost</th>
-            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Training</th>
-            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Actions</th>
+            <th className="px-3 py-2 text-left text-xs font-semibold text-text-secondary">Contractor</th>
+            <th className="px-3 py-2 text-left text-xs font-semibold text-text-secondary">Workers</th>
+            <th className="px-3 py-2 text-left text-xs font-semibold text-text-secondary">Hours</th>
+            <th className="px-3 py-2 text-left text-xs font-semibold text-text-secondary">Bins Picked</th>
+            <th className="px-3 py-2 text-left text-xs font-semibold text-text-secondary">Cost</th>
+            <th className="px-3 py-2 text-left text-xs font-semibold text-text-secondary">Training</th>
+            <th className="px-3 py-2 text-left text-xs font-semibold text-text-secondary">Actions</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+        <tbody className="divide-y divide-border">
           {harvest.labor_records.map(labor => (
-            <tr key={labor.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+            <tr key={labor.id} className="hover:bg-cream-50">
               <td className="px-3 py-2 text-sm">{labor.contractor_name || labor.crew_name}</td>
               <td className="px-3 py-2 text-sm">{labor.worker_count}</td>
               <td className="px-3 py-2 text-sm">{labor.total_hours || '-'}</td>
@@ -301,13 +301,13 @@ const LaborTable = ({ harvest, openHarvestLaborModal }) => (
                 {labor.training_verified ? (
                   <CheckCircle size={16} className="text-primary" />
                 ) : (
-                  <Clock size={16} className="text-gray-400" />
+                  <Clock size={16} className="text-text-muted" />
                 )}
               </td>
               <td className="px-3 py-2 text-sm">
                 <button
                   onClick={() => openHarvestLaborModal(harvest.id, labor)}
-                  className="text-blue-600 hover:text-blue-800"
+                  className="text-link hover:text-orange-700"
                   title="Edit labor record"
                 >
                   <Edit size={16} />

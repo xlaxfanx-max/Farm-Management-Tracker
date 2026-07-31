@@ -15,44 +15,44 @@ export default function DerivedFieldsPanel({ invoice }) {
   const methodInfo = PICKHAUL_CONSTANTS.MATCH_METHODS[method];
 
   return (
-    <div className="rounded-lg bg-gray-100 dark:bg-gray-700/40 border border-gray-200 dark:border-gray-600 p-3">
-      <div className="flex items-center gap-1.5 mb-2 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+    <div className="rounded-card bg-cream-100 border border-border p-3">
+      <div className="flex items-center gap-1.5 mb-2 text-xs font-medium text-text-secondary uppercase tracking-wide">
         <Lock className="w-3 h-3" />
         Owned by the matcher — updates when house charges sync
       </div>
       <div className="grid grid-cols-3 gap-3 text-sm">
         <div>
-          <div className="text-xs text-gray-500 dark:text-gray-400">
+          <div className="text-xs text-text-secondary">
             {invoice.billing === 'house_billed'
               ? 'Charge confirmed against sales'
               : 'House charged back'}
           </div>
-          <div className="text-gray-600 dark:text-gray-300 italic">
+          <div className="text-bark-600 italic">
             {formatDate(invoice.charge_posted)}
           </div>
         </div>
         <div>
-          <div className="text-xs text-gray-500 dark:text-gray-400">AP Reference</div>
-          <div className="text-gray-600 dark:text-gray-300 italic">
+          <div className="text-xs text-text-secondary">AP Reference</div>
+          <div className="text-bark-600 italic">
             {invoice.ap_reference || '—'}
           </div>
         </div>
         <div>
-          <div className="text-xs text-gray-500 dark:text-gray-400">Match method</div>
+          <div className="text-xs text-text-secondary">Match method</div>
           {method ? (
             <Badge color={methodInfo?.color || 'gray'} size="xs">
               {methodInfo?.label || method}
             </Badge>
           ) : (
-            <span className="text-gray-600 dark:text-gray-300 italic">not yet run</span>
+            <span className="text-bark-600 italic">not yet run</span>
           )}
         </div>
       </div>
       {methodInfo?.explanation && (
-        <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">{methodInfo.explanation}</p>
+        <p className="mt-2 text-xs text-text-secondary">{methodInfo.explanation}</p>
       )}
       {invoice.billing === 'house_billed' && (
-        <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+        <p className="mt-2 text-xs text-text-secondary">
           House-billed invoice: the charge above confirms the deduction against
           sales — it is not a reimbursement event, and nothing is chased.
         </p>

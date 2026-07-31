@@ -42,22 +42,22 @@ export default function PURReviewCard({ report, index, farms, onChange, onViewPd
   };
 
   const statusColor = report._selected
-    ? (farmStatus === 'unmatched' ? 'border-amber-300' : 'border-green-300')
-    : 'border-gray-200 opacity-60';
+    ? (farmStatus === 'unmatched' ? 'border-yellow-300' : 'border-green-300')
+    : 'border-border opacity-60';
 
   return (
-    <div className={`border-2 rounded-lg transition-colors ${statusColor}`}>
+    <div className={`border-2 rounded-card transition-colors ${statusColor}`}>
       {/* Header */}
       <div
-        className="flex items-center gap-3 p-4 cursor-pointer hover:bg-gray-50"
+        className="flex items-center gap-3 p-4 cursor-pointer hover:bg-cream-50"
         onClick={() => setExpanded(!expanded)}
       >
-        <button
+        <button aria-label="Confirm"
           onClick={(e) => { e.stopPropagation(); handleToggleSelected(); }}
           className={`flex-shrink-0 w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
             report._selected
-              ? 'bg-blue-600 border-blue-600 text-white'
-              : 'border-gray-300 bg-white'
+              ? 'bg-primary border-primary text-white'
+              : 'border-border-strong bg-surface-raised'
           }`}
         >
           {report._selected && <CheckCircle className="w-3.5 h-3.5" />}
@@ -65,17 +65,17 @@ export default function PURReviewCard({ report, index, farms, onChange, onViewPd
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <span className="font-medium text-gray-900">
+            <span className="font-medium text-heading">
               PUR #{report.pur_number || `Report ${index + 1}`}
             </span>
             {report.date_started && (
-              <span className="text-sm text-gray-500 flex items-center gap-1">
+              <span className="text-sm text-text-secondary flex items-center gap-1">
                 <Calendar className="w-3.5 h-3.5" />
                 {report.date_started}
               </span>
             )}
           </div>
-          <div className="flex items-center gap-4 mt-0.5 text-sm text-gray-500">
+          <div className="flex items-center gap-4 mt-0.5 text-sm text-text-secondary">
             <span className="flex items-center gap-1">
               <MapPin className="w-3.5 h-3.5" />
               {report.site_id || 'No site ID'}
@@ -100,7 +100,7 @@ export default function PURReviewCard({ report, index, farms, onChange, onViewPd
           {onViewPdf && report._source_pages && report._source_pages.length > 0 && (
             <button
               onClick={(e) => { e.stopPropagation(); onViewPdf(report._source_pages); }}
-              className="flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-blue-50 text-blue-600 rounded-full hover:bg-blue-100 border border-blue-200"
+              className="flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-orange-50 text-link rounded-full hover:bg-orange-100 border border-orange-200"
             >
               <FileText className="w-3 h-3" />
               PDF p.{report._source_pages[0]}
@@ -112,25 +112,25 @@ export default function PURReviewCard({ report, index, farms, onChange, onViewPd
             </span>
           )}
           {farmStatus === 'mapped' && (
-            <span className="px-2 py-0.5 text-xs font-medium bg-blue-100 text-blue-700 rounded-full">
+            <span className="px-2 py-0.5 text-xs font-medium bg-orange-100 text-orange-700 rounded-full">
               Farm set
             </span>
           )}
           {farmStatus === 'unmatched' && report._selected && (
-            <span className="px-2 py-0.5 text-xs font-medium bg-amber-100 text-amber-700 rounded-full">
+            <span className="px-2 py-0.5 text-xs font-medium bg-yellow-200 text-yellow-700 rounded-full">
               Needs farm
             </span>
           )}
-          {expanded ? <ChevronDown className="w-5 h-5 text-gray-400" /> : <ChevronRight className="w-5 h-5 text-gray-400" />}
+          {expanded ? <ChevronDown className="w-5 h-5 text-text-muted" /> : <ChevronRight className="w-5 h-5 text-text-muted" />}
         </div>
       </div>
 
       {/* Expanded content */}
       {expanded && (
-        <div className="border-t border-gray-100 p-4 space-y-4">
+        <div className="border-t border-border p-4 space-y-4">
           {/* Farm mapping */}
-          <div className="bg-gray-50 rounded-lg p-3">
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">
+          <div className="bg-cream-50 rounded-lg p-3">
+            <label className="block text-sm font-medium text-bark-700 mb-1.5">
               Map to Farm
             </label>
             <select
@@ -138,8 +138,8 @@ export default function PURReviewCard({ report, index, farms, onChange, onViewPd
               onChange={(e) => handleFarmChange(e.target.value)}
               className={`w-full px-3 py-2 border rounded-lg text-sm ${
                 !report._farmId && report._selected
-                  ? 'border-amber-300 bg-amber-50'
-                  : 'border-gray-300 bg-white'
+                  ? 'border-yellow-300 bg-yellow-100'
+                  : 'border-border-strong bg-surface-raised'
               }`}
             >
               <option value="">-- Select a farm --</option>
@@ -153,12 +153,12 @@ export default function PURReviewCard({ report, index, farms, onChange, onViewPd
             {/* Auto-match suggestion */}
             {!report._farmId && farmMatches.length > 0 && (
               <div className="mt-2 flex items-center gap-2">
-                <span className="text-xs text-gray-500">Suggestion:</span>
+                <span className="text-xs text-text-secondary">Suggestion:</span>
                 {farmMatches.slice(0, 3).map(m => (
                   <button
                     key={m.farm_id}
                     onClick={() => handleFarmChange(m.farm_id)}
-                    className="px-2 py-0.5 text-xs bg-blue-50 text-blue-700 rounded hover:bg-blue-100 border border-blue-200"
+                    className="px-2 py-0.5 text-xs bg-orange-50 text-orange-700 rounded hover:bg-orange-100 border border-orange-200"
                   >
                     {m.farm_name}
                   </button>
@@ -168,12 +168,12 @@ export default function PURReviewCard({ report, index, farms, onChange, onViewPd
 
             {/* Remember mapping checkbox */}
             {report._farmId && report.site_id && (
-              <label className="mt-2 flex items-center gap-2 text-xs text-gray-600 cursor-pointer">
+              <label className="mt-2 flex items-center gap-2 text-xs text-bark-600 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={report._rememberMapping || false}
                   onChange={(e) => handleRememberMapping(e.target.checked)}
-                  className="rounded border-gray-300"
+                  className="rounded border-border-strong"
                 />
                 Remember: map &quot;{report.site_id}&quot; to this farm for future imports
               </label>
@@ -194,13 +194,13 @@ export default function PURReviewCard({ report, index, farms, onChange, onViewPd
 
           {/* Products table */}
           <div>
-            <h4 className="text-sm font-medium text-gray-700 mb-2">
+            <h4 className="text-sm text-bark-700 mb-2">
               Products ({(report.products || []).length})
             </h4>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="text-left text-xs text-gray-500 border-b">
+                  <tr className="text-left text-xs text-text-secondary border-b">
                     <th className="pb-2 pr-3">Product</th>
                     <th className="pb-2 pr-3">EPA Reg #</th>
                     <th className="pb-2 pr-3">Amount</th>
@@ -213,20 +213,20 @@ export default function PURReviewCard({ report, index, farms, onChange, onViewPd
                   {(report.products || []).map((prod, pIdx) => {
                     const pm = productMatches[pIdx] || {};
                     return (
-                      <tr key={pIdx} className="border-b border-gray-50">
-                        <td className="py-2 pr-3 font-medium text-gray-900">
+                      <tr key={pIdx} className="border-b border-border">
+                        <td className="py-2 pr-3 font-medium text-bark-700">
                           {prod.product_name}
                         </td>
-                        <td className="py-2 pr-3 text-gray-600 font-mono text-xs">
+                        <td className="py-2 pr-3 text-bark-600 font-mono text-xs">
                           {prod.epa_registration_number || '-'}
                         </td>
-                        <td className="py-2 pr-3 text-gray-600">
+                        <td className="py-2 pr-3 text-bark-600">
                           {prod.total_amount} {prod.amount_unit}
                         </td>
-                        <td className="py-2 pr-3 text-gray-600">
+                        <td className="py-2 pr-3 text-bark-600">
                           {prod.rate} {prod.rate_unit}
                         </td>
-                        <td className="py-2 pr-3 text-gray-600 max-w-[200px] truncate">
+                        <td className="py-2 pr-3 text-bark-600 max-w-[200px] truncate">
                           {prod.active_ingredient || '-'}
                         </td>
                         <td className="py-2">
@@ -237,13 +237,13 @@ export default function PURReviewCard({ report, index, farms, onChange, onViewPd
                             </span>
                           )}
                           {pm.match_type === 'fuzzy_name' && (
-                            <span className="inline-flex items-center gap-1 text-amber-600 text-xs">
+                            <span className="inline-flex items-center gap-1 text-yellow-600 text-xs">
                               <AlertTriangle className="w-3.5 h-3.5" />
                               Name match
                             </span>
                           )}
                           {pm.match_type === 'none' && (
-                            <span className="inline-flex items-center gap-1 text-gray-400 text-xs">
+                            <span className="inline-flex items-center gap-1 text-text-muted text-xs">
                               <XCircle className="w-3.5 h-3.5" />
                               New
                             </span>
@@ -261,10 +261,10 @@ export default function PURReviewCard({ report, index, farms, onChange, onViewPd
           {(report.comments || report.restrictions) && (
             <div className="text-sm">
               {report.comments && (
-                <p className="text-gray-600"><span className="font-medium">Comments:</span> {report.comments}</p>
+                <p className="text-bark-600"><span className="font-medium">Comments:</span> {report.comments}</p>
               )}
               {report.restrictions && (
-                <p className="text-amber-700"><span className="font-medium">Restrictions:</span> {report.restrictions}</p>
+                <p className="text-yellow-700"><span className="font-medium">Restrictions:</span> {report.restrictions}</p>
               )}
             </div>
           )}
@@ -277,14 +277,14 @@ export default function PURReviewCard({ report, index, farms, onChange, onViewPd
 function Detail({ label, value }) {
   if (!value || value === '-') return (
     <div>
-      <span className="text-gray-400 text-xs">{label}</span>
-      <p className="text-gray-300">-</p>
+      <span className="text-text-muted text-xs">{label}</span>
+      <p className="text-sand-300">-</p>
     </div>
   );
   return (
     <div>
-      <span className="text-gray-400 text-xs">{label}</span>
-      <p className="text-gray-700">{value}</p>
+      <span className="text-text-muted text-xs">{label}</span>
+      <p className="text-bark-700">{value}</p>
     </div>
   );
 }

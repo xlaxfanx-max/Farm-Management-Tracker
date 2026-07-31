@@ -164,7 +164,7 @@ export const SeasonSelectorWithInfo = ({
         disabled={disabled}
       />
       {seasonInfo && (
-        <div className="season-date-range text-sm text-gray-500 mt-1">
+        <div className="season-date-range text-sm text-text-secondary mt-1">
           {formatDate(seasonInfo.start_date)} - {formatDate(seasonInfo.end_date)}
         </div>
       )}

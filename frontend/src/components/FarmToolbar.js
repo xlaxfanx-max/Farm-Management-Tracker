@@ -55,8 +55,7 @@ function FarmToolbar({
       {/* Header Row */}
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Farms & Fields</h2>
-          <p className="text-gray-600 mt-1">
+          <p className="text-bark-600 mt-1">
             {filteredCount === totalFarms
               ? `${totalFarms} farms · ${totalFields} fields`
               : `${filteredCount} of ${totalFarms} farms`}
@@ -67,17 +66,17 @@ function FarmToolbar({
         <div className="flex items-center gap-3">
           {/* Expand/Collapse All */}
           {showExpandCollapse && (viewMode === 'cards' || viewMode === 'split') && filteredCount > 0 && (
-            <div className="flex items-center border-r border-gray-300 pr-3">
+            <div className="flex items-center border-r border-border-strong pr-3">
               <button
                 onClick={onExpandAll}
-                className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
+                className="p-2 text-text-secondary hover:text-bark-700 hover:bg-cream-100 rounded-lg transition-colors"
                 title="Expand all farms"
               >
                 <ChevronsDown className="w-4 h-4" />
               </button>
               <button
                 onClick={onCollapseAll}
-                className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
+                className="p-2 text-text-secondary hover:text-bark-700 hover:bg-cream-100 rounded-lg transition-colors"
                 title="Collapse all farms"
               >
                 <ChevronsUp className="w-4 h-4" />
@@ -86,13 +85,13 @@ function FarmToolbar({
           )}
 
           {/* View Mode Toggle */}
-          <div className="flex items-center bg-gray-100 rounded-lg p-1">
+          <div className="flex items-center bg-cream-100 rounded-lg p-1">
             <button
               onClick={() => onViewModeChange('cards')}
-              className={`p-2 rounded-md transition-colors ${
+              className={`p-2 rounded-lg transition-colors ${
                 viewMode === 'cards'
-                  ? 'bg-white shadow text-primary'
-                  : 'text-gray-500 hover:text-gray-700'
+                  ? 'bg-surface-raised shadow text-primary'
+                  : 'text-text-secondary hover:text-bark-700'
               }`}
               title="Card View"
             >
@@ -100,10 +99,10 @@ function FarmToolbar({
             </button>
             <button
               onClick={() => onViewModeChange('map')}
-              className={`p-2 rounded-md transition-colors ${
+              className={`p-2 rounded-lg transition-colors ${
                 viewMode === 'map'
-                  ? 'bg-white shadow text-primary'
-                  : 'text-gray-500 hover:text-gray-700'
+                  ? 'bg-surface-raised shadow text-primary'
+                  : 'text-text-secondary hover:text-bark-700'
               }`}
               title="Map View"
             >
@@ -111,10 +110,10 @@ function FarmToolbar({
             </button>
             <button
               onClick={() => onViewModeChange('split')}
-              className={`p-2 rounded-md transition-colors ${
+              className={`p-2 rounded-lg transition-colors ${
                 viewMode === 'split'
-                  ? 'bg-white shadow text-primary'
-                  : 'text-gray-500 hover:text-gray-700'
+                  ? 'bg-surface-raised shadow text-primary'
+                  : 'text-text-secondary hover:text-bark-700'
               }`}
               title="Split View"
             >
@@ -124,7 +123,7 @@ function FarmToolbar({
 
           <button
             onClick={onAddFarm}
-            className="flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-lg hover:bg-primary-hover shadow-lg transition-colors"
+            className="flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-button hover:bg-primary-hover shadow-lg transition-colors"
           >
             <Plus size={20} />
             Add Farm
@@ -134,22 +133,22 @@ function FarmToolbar({
 
       {/* Search and Filter Bar */}
       {(viewMode === 'cards' || viewMode === 'split') && (
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
+        <div className="bg-surface-raised rounded-card border border-border p-4">
           <div className="flex flex-col md:flex-row gap-4">
             {/* Search Input */}
             <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-text-muted w-5 h-5" />
               <input
                 type="text"
                 placeholder="Search farms by name, owner, county..."
                 value={searchTerm}
                 onChange={(e) => onSearchChange(e.target.value)}
-                className="w-full pl-10 pr-10 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="w-full pl-10 pr-10 py-2.5 border border-border rounded-card focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
               />
               {searchTerm && (
-                <button
+                <button aria-label="Close"
                   onClick={() => onSearchChange('')}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-text-muted hover:text-bark-600"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -160,7 +159,7 @@ function FarmToolbar({
             <select
               value={filterCounty}
               onChange={(e) => onCountyChange(e.target.value)}
-              className="px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white min-w-[160px]"
+              className="min-w-[160px] px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
             >
               <option value="">All Counties</option>
               {counties.map(county => (
@@ -172,7 +171,7 @@ function FarmToolbar({
             <select
               value={filterMapped}
               onChange={(e) => onMappedChange(e.target.value)}
-              className="px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white min-w-[160px]"
+              className="min-w-[160px] px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
             >
               <option value="all">All Status</option>
               <option value="mapped">Mapped Only</option>
@@ -183,7 +182,7 @@ function FarmToolbar({
             {hasFilters && (
               <button
                 onClick={clearFilters}
-                className="px-4 py-2.5 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors flex items-center gap-2"
+                className="px-4 py-2.5 text-bark-600 hover:text-text hover:bg-cream-100 rounded-lg transition-colors flex items-center gap-2"
               >
                 <X className="w-4 h-4" />
                 Clear

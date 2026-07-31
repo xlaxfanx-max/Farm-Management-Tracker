@@ -170,18 +170,18 @@ const PackoutReportModal = ({ poolId, report, onClose, onSave }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+      <div className="bg-surface-raised rounded-card shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-200 sticky top-0 bg-white">
-          <h2 className="text-lg font-semibold text-gray-900 flex items-center">
+        <div className="flex items-center justify-between p-4 border-b border-border sticky top-0 bg-surface-raised">
+          <h2 className="text-lg text-heading flex items-center">
             <FileText className="w-5 h-5 mr-2 text-primary" />
             {report ? 'Edit Packout Report' : 'Add Packout Report'}
           </h2>
-          <button
+          <button aria-label="Close"
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-2 hover:bg-cream-100 rounded-lg transition-colors"
           >
-            <X className="w-5 h-5 text-gray-500" />
+            <X className="w-5 h-5 text-text-secondary" />
           </button>
         </div>
 
@@ -190,7 +190,7 @@ const PackoutReportModal = ({ poolId, report, onClose, onSave }) => {
           {/* Field and Dates */}
           <div className="grid grid-cols-4 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-bark-700 mb-1">
                 Field/Block *
               </label>
               <select
@@ -198,7 +198,7 @@ const PackoutReportModal = ({ poolId, report, onClose, onSave }) => {
                 value={formData.field}
                 onChange={handleChange}
                 className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary ${
-                  errors.field ? 'border-red-500' : 'border-gray-300'
+                  errors.field ? 'border-danger' : 'border-border-strong'
                 }`}
               >
                 <option value="">Select Field</option>
@@ -206,11 +206,11 @@ const PackoutReportModal = ({ poolId, report, onClose, onSave }) => {
                   <option key={f.id} value={f.id}>{f.name}</option>
                 ))}
               </select>
-              {errors.field && <p className="text-red-500 text-xs mt-1">{errors.field}</p>}
+              {errors.field && <p className="text-danger text-xs mt-1">{errors.field}</p>}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-bark-700 mb-1">
                 Report Date *
               </label>
               <input
@@ -219,13 +219,13 @@ const PackoutReportModal = ({ poolId, report, onClose, onSave }) => {
                 value={formData.report_date}
                 onChange={handleChange}
                 className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary ${
-                  errors.report_date ? 'border-red-500' : 'border-gray-300'
+                  errors.report_date ? 'border-danger' : 'border-border-strong'
                 }`}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-bark-700 mb-1">
                 Period Start *
               </label>
               <input
@@ -234,13 +234,13 @@ const PackoutReportModal = ({ poolId, report, onClose, onSave }) => {
                 value={formData.period_start}
                 onChange={handleChange}
                 className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary ${
-                  errors.period_start ? 'border-red-500' : 'border-gray-300'
+                  errors.period_start ? 'border-danger' : 'border-border-strong'
                 }`}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-bark-700 mb-1">
                 Period End *
               </label>
               <input
@@ -249,7 +249,7 @@ const PackoutReportModal = ({ poolId, report, onClose, onSave }) => {
                 value={formData.period_end}
                 onChange={handleChange}
                 className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary ${
-                  errors.period_end ? 'border-red-500' : 'border-gray-300'
+                  errors.period_end ? 'border-danger' : 'border-border-strong'
                 }`}
               />
             </div>
@@ -257,7 +257,7 @@ const PackoutReportModal = ({ poolId, report, onClose, onSave }) => {
 
           {/* Run Numbers */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-bark-700 mb-1">
               Run Numbers
             </label>
             <input
@@ -266,14 +266,14 @@ const PackoutReportModal = ({ poolId, report, onClose, onSave }) => {
               value={formData.run_numbers}
               onChange={handleChange}
               placeholder="e.g., 2535499 or 2535579, 2535591"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
+              className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
             />
           </div>
 
           {/* Bins */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-bark-700 mb-1">
                 Bins This Period *
               </label>
               <input
@@ -283,12 +283,12 @@ const PackoutReportModal = ({ poolId, report, onClose, onSave }) => {
                 onChange={handleChange}
                 step="0.01"
                 className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary ${
-                  errors.bins_this_period ? 'border-red-500' : 'border-gray-300'
+                  errors.bins_this_period ? 'border-danger' : 'border-border-strong'
                 }`}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-bark-700 mb-1">
                 Cumulative Bins *
               </label>
               <input
@@ -298,7 +298,7 @@ const PackoutReportModal = ({ poolId, report, onClose, onSave }) => {
                 onChange={handleChange}
                 step="0.01"
                 className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary ${
-                  errors.bins_cumulative ? 'border-red-500' : 'border-gray-300'
+                  errors.bins_cumulative ? 'border-danger' : 'border-border-strong'
                 }`}
               />
             </div>
@@ -307,7 +307,7 @@ const PackoutReportModal = ({ poolId, report, onClose, onSave }) => {
           {/* Pack Percentages */}
           <div className="grid grid-cols-4 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-bark-700 mb-1">
                 Total Packed %
               </label>
               <input
@@ -317,11 +317,11 @@ const PackoutReportModal = ({ poolId, report, onClose, onSave }) => {
                 onChange={handleChange}
                 step="0.01"
                 max="100"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
+                className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-bark-700 mb-1">
                 House Avg %
               </label>
               <input
@@ -331,11 +331,11 @@ const PackoutReportModal = ({ poolId, report, onClose, onSave }) => {
                 onChange={handleChange}
                 step="0.01"
                 max="100"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
+                className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-bark-700 mb-1">
                 Juice %
               </label>
               <input
@@ -345,11 +345,11 @@ const PackoutReportModal = ({ poolId, report, onClose, onSave }) => {
                 onChange={handleChange}
                 step="0.01"
                 max="100"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
+                className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-bark-700 mb-1">
                 Cull %
               </label>
               <input
@@ -359,14 +359,14 @@ const PackoutReportModal = ({ poolId, report, onClose, onSave }) => {
                 onChange={handleChange}
                 step="0.01"
                 max="100"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
+                className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
               />
             </div>
           </div>
 
           {/* Quality Notes */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-bark-700 mb-1">
               Quality Notes
             </label>
             <input
@@ -375,14 +375,14 @@ const PackoutReportModal = ({ poolId, report, onClose, onSave }) => {
               value={formData.quality_notes}
               onChange={handleChange}
               placeholder="e.g., Wind Scar, Scale"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
+              className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
             />
           </div>
 
           {/* Grade Lines */}
-          <div className="border-t border-gray-200 pt-4">
+          <div className="border-t border-border pt-4">
             <div className="flex justify-between items-center mb-3">
-              <h3 className="text-sm font-medium text-gray-700">Grade Breakdown</h3>
+              <h3 className="text-sm text-bark-700">Grade Breakdown</h3>
               <button
                 type="button"
                 onClick={handleAddGradeLine}
@@ -396,11 +396,11 @@ const PackoutReportModal = ({ poolId, report, onClose, onSave }) => {
             {gradeLines.length > 0 && (
               <div className="space-y-2">
                 {gradeLines.map((line, index) => (
-                  <div key={index} className="grid grid-cols-7 gap-2 items-start bg-gray-50 p-2 rounded-lg">
+                  <div key={index} className="grid grid-cols-7 gap-2 items-start bg-cream-50 p-2 rounded-lg">
                     <select
                       value={line.grade}
                       onChange={(e) => handleGradeLineChange(index, 'grade', e.target.value)}
-                      className="px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-primary"
+                      className="px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                     >
                       <option value="">Grade</option>
                       {PACKINGHOUSE_CONSTANTS.gradeTypes.map(g => (
@@ -412,7 +412,7 @@ const PackoutReportModal = ({ poolId, report, onClose, onSave }) => {
                       value={line.size}
                       onChange={(e) => handleGradeLineChange(index, 'size', e.target.value)}
                       placeholder="Size"
-                      className="px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-primary"
+                      className="px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                     />
                     <input
                       type="number"
@@ -420,7 +420,7 @@ const PackoutReportModal = ({ poolId, report, onClose, onSave }) => {
                       onChange={(e) => handleGradeLineChange(index, 'quantity_this_period', e.target.value)}
                       placeholder="Qty"
                       step="0.01"
-                      className="px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-primary"
+                      className="px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                     />
                     <input
                       type="number"
@@ -428,7 +428,7 @@ const PackoutReportModal = ({ poolId, report, onClose, onSave }) => {
                       onChange={(e) => handleGradeLineChange(index, 'percent_this_period', e.target.value)}
                       placeholder="%"
                       step="0.01"
-                      className="px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-primary"
+                      className="px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                     />
                     <input
                       type="number"
@@ -436,7 +436,7 @@ const PackoutReportModal = ({ poolId, report, onClose, onSave }) => {
                       onChange={(e) => handleGradeLineChange(index, 'quantity_cumulative', e.target.value)}
                       placeholder="Cum Qty"
                       step="0.01"
-                      className="px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-primary"
+                      className="px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                     />
                     <input
                       type="number"
@@ -444,12 +444,12 @@ const PackoutReportModal = ({ poolId, report, onClose, onSave }) => {
                       onChange={(e) => handleGradeLineChange(index, 'house_avg_percent', e.target.value)}
                       placeholder="House %"
                       step="0.01"
-                      className="px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-primary"
+                      className="px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                     />
-                    <button
+                    <button aria-label="Delete"
                       type="button"
                       onClick={() => handleRemoveGradeLine(index)}
-                      className="p-1 text-red-500 hover:bg-red-50 rounded"
+                      className="p-1 text-danger hover:bg-danger-bg rounded"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -460,11 +460,11 @@ const PackoutReportModal = ({ poolId, report, onClose, onSave }) => {
           </div>
 
           {/* Actions */}
-          <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+          <div className="flex justify-end space-x-3 pt-4 border-t border-border">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+              className="px-4 py-2 text-bark-700 hover:bg-cream-100 rounded-lg transition-colors"
             >
               Cancel
             </button>

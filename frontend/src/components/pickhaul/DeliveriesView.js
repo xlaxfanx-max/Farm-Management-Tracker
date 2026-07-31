@@ -79,7 +79,7 @@ export default function DeliveriesView({ season, refresh }) {
   return (
     <div className="space-y-4">
       {/* Money + volume strip */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-3 2xl:grid-cols-6 gap-3">
         <MetricCard
           title="Bins delivered"
           value={formatNumber(stats.bins_delivered)}
@@ -124,7 +124,7 @@ export default function DeliveriesView({ season, refresh }) {
       {/* Chase list, expanded from the Owed tile */}
       {owedOpen && (
         <div className="space-y-2">
-          <h3 className="text-sm font-medium text-gray-700 dark:text-gray-200">
+          <h3 className="text-sm text-bark-700">
             Owed by houses — paid &amp; emailed, not yet charged back
           </h3>
           <ChaseList
@@ -163,14 +163,14 @@ export default function DeliveriesView({ season, refresh }) {
         blocks.map((block) => (
           <div
             key={`${block.house_code}-${block.block}`}
-            className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden"
+            className="bg-surface-raised rounded-card border border-border overflow-hidden"
           >
-            <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-2.5 bg-gray-50 dark:bg-gray-700/50">
+            <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-2.5 bg-cream-50">
               <div className="flex items-center gap-2">
-                <span className="font-medium text-gray-900 dark:text-white">{block.block}</span>
+                <span className="font-medium text-heading">{block.block}</span>
                 <Badge color="gray" size="xs">{block.house_code}/{block.entity_code}</Badge>
               </div>
-              <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-300">
+              <div className="flex items-center gap-4 text-sm text-bark-600">
                 <span>{formatNumber(block.bins)} bins</span>
                 <span>pick {formatCurrency(block.pick_cost)}</span>
                 <span>haul {formatCurrency(block.haul_cost)}</span>
@@ -178,7 +178,7 @@ export default function DeliveriesView({ season, refresh }) {
             </div>
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-left text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <tr className="text-left text-xs text-text-secondary uppercase tracking-wider">
                   <th className="px-4 py-2">Date</th>
                   <th className="px-4 py-2">Ticket</th>
                   <th className="px-4 py-2 text-right">Bins</th>
@@ -188,11 +188,11 @@ export default function DeliveriesView({ season, refresh }) {
                   <th className="px-4 py-2" />
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+              <tbody className="divide-y divide-border">
                 {block.deliveries.map((d) => (
                   <tr
                     key={`${d.kind}-${d.id}`}
-                    className={`${d.kind === 'manual' && canManage ? 'cursor-pointer hover:bg-surface-sunken dark:hover:bg-gray-700/30' : ''} ${!d.is_active ? 'opacity-60' : ''}`}
+                    className={`${d.kind === 'manual' && canManage ? 'cursor-pointer hover:bg-surface-sunken' : ''} ${!d.is_active ? 'opacity-60' : ''}`}
                     onClick={
                       d.kind === 'manual' && canManage
                         ? () => setPickModal({ open: true, pick: { id: d.id } })
@@ -214,19 +214,19 @@ export default function DeliveriesView({ season, refresh }) {
                     </td>
                     <td className="px-4 py-2 text-right">{formatNumber(d.bins)}</td>
                     <td className="px-4 py-2 text-right" title={d.cost_basis === 'allocated' ? 'Allocated from the matched invoice, proportional to bins' : undefined}>
-                      <span className={d.count_cost === false ? 'line-through text-gray-400' : ''}>
+                      <span className={d.count_cost === false ? 'line-through text-text-muted' : ''}>
                         {formatCurrency(d.pick_cost)}
                       </span>
                       {d.cost_basis === 'allocated' && d.pick_cost != null && (
-                        <span className="text-gray-400 text-xs align-super">*</span>
+                        <span className="text-text-muted text-xs align-super">*</span>
                       )}
                     </td>
                     <td className="px-4 py-2 text-right">
-                      <span className={d.count_haul === false ? 'line-through text-gray-400' : ''}>
+                      <span className={d.count_haul === false ? 'line-through text-text-muted' : ''}>
                         {formatCurrency(d.haul_cost)}
                       </span>
                       {d.cost_basis === 'allocated' && d.haul_cost != null && (
-                        <span className="text-gray-400 text-xs align-super">*</span>
+                        <span className="text-text-muted text-xs align-super">*</span>
                       )}
                     </td>
                     <td className="px-4 py-2">
@@ -248,7 +248,7 @@ export default function DeliveriesView({ season, refresh }) {
                           </button>
                         ))}
                         {(d.invoice_refs || []).length > 3 && (
-                          <span className="text-xs text-gray-400">
+                          <span className="text-xs text-text-muted">
                             +{d.invoice_refs.length - 3} more
                           </span>
                         )}
@@ -257,7 +257,7 @@ export default function DeliveriesView({ season, refresh }) {
                         )}
                       </span>
                     </td>
-                    <td className="px-4 py-2 text-right text-xs text-gray-400">
+                    <td className="px-4 py-2 text-right text-xs text-text-muted">
                       {d.kind === 'manual' && canManage ? 'edit' : ''}
                     </td>
                   </tr>
@@ -268,7 +268,7 @@ export default function DeliveriesView({ season, refresh }) {
         ))
       )}
 
-      <p className="text-xs text-gray-400 dark:text-gray-500">
+      <p className="text-xs text-text-muted">
         * cost allocated from the matched contractor invoice, proportional to bins.
         The invoice remains the money record.
       </p>

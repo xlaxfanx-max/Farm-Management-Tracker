@@ -119,14 +119,14 @@ function AgenticHero({
     <div className="space-y-4">
       {/* Greeting */}
       <div>
-        <h1 className="text-2xl font-semibold text-text dark:text-white">
+        <h1 className="text-2xl text-text">
           {getGreeting()}{firstName ? `, ${firstName}` : ''}.
           {totalCount > 0 ? (
-            <span className="text-text-secondary dark:text-gray-400 font-normal">
+            <span className="text-text-secondary font-normal">
               {' '}{totalCount} item{totalCount !== 1 ? 's' : ''} need{totalCount === 1 ? 's' : ''} attention.
             </span>
           ) : (
-            <span className="text-text-secondary dark:text-gray-400 font-normal">
+            <span className="text-text-secondary font-normal">
               {' '}You're all caught up.
             </span>
           )}

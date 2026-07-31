@@ -30,7 +30,6 @@ const Reports = () => {
     status: '',
     format: 'excel'
   });
-  
   // Load PUR statistics when filters change
   useEffect(() => {
     loadStatistics();
@@ -48,7 +47,6 @@ const Reports = () => {
         reportsAPI.getStatistics(params),
         reportsAPI.validatePUR(params)
       ]);
-      
       setStatistics(statsResponse.data);
       setValidation(validationResponse.data);
     } catch (error) {
@@ -68,7 +66,6 @@ const Reports = () => {
 
       const response = await reportsAPI.validatePUR(params);
       setValidation(response.data);
-      
       if (response.data.valid) {
         toast.success(`Validation Passed! ${response.data.applications_count} applications are ready for PUR submission.`);
       } else {
@@ -104,10 +101,8 @@ const Reports = () => {
       params.format = filters.format;
 
       const response = await reportsAPI.exportPUR(params);
-      
       let extension = filters.format === 'excel' ? 'xlsx' : 'csv';
       const filename = `PUR_Report_${new Date().toISOString().split('T')[0]}.${extension}`;
-      
       downloadFile(response.data, filename);
       toast.success('Report exported successfully!');
     } catch (error) {
@@ -136,7 +131,6 @@ const Reports = () => {
   const setQuickDateRange = (range) => {
     const today = new Date();
     let startDate = new Date();
-    
     switch(range) {
       case 'thisMonth':
         startDate = new Date(today.getFullYear(), today.getMonth(), 1);
@@ -159,7 +153,6 @@ const Reports = () => {
       default:
         return;
     }
-    
     handleFilterChange('start_date', startDate.toISOString().split('T')[0]);
     if (range !== 'lastMonth') {
       handleFilterChange('end_date', '');
@@ -173,8 +166,7 @@ const Reports = () => {
     <div className="p-6">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Reports & Compliance</h1>
-        <p className="text-gray-600 dark:text-gray-400">
+        <p className="text-bark-600">
           Generate PUR reports for pesticide compliance
         </p>
       </div>
@@ -182,12 +174,12 @@ const Reports = () => {
       <div className="space-y-6">
           {/* Validation Alert */}
           {validation && !validation.valid && (
-            <div className="bg-red-50 dark:bg-red-900/30 border-l-4 border-red-500 p-4">
+            <div className="bg-danger-bg border-l-4 border-danger p-4">
               <div className="flex items-start">
-                <AlertTriangle className="w-6 h-6 text-red-500 dark:text-red-400 mr-3 flex-shrink-0" />
+                <AlertTriangle className="w-6 h-6 text-danger mr-3 flex-shrink-0" />
                 <div>
-                  <h3 className="text-lg font-semibold text-red-900 dark:text-red-200">Validation Errors Found</h3>
-                  <p className="text-sm text-red-700 dark:text-red-300">
+                  <h3 className="text-lg text-danger">Validation Errors Found</h3>
+                  <p className="text-sm text-danger">
                     {validation.errors.length} error(s) and {validation.warnings.length} warning(s) must be addressed.
                   </p>
                 </div>
@@ -196,20 +188,20 @@ const Reports = () => {
           )}
 
           {/* Filters */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+          <div className="bg-surface-raised rounded-card shadow-md p-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+              <h2 className="text-lg text-heading flex items-center gap-2">
                 <Filter className="w-5 h-5" />
                 Report Filters
               </h2>
-              <button onClick={clearFilters} className="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
+              <button onClick={clearFilters} className="text-sm text-text-secondary hover:text-bark-700">
                 Clear All
               </button>
             </div>
 
             {/* Quick Date Range */}
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Quick Select</label>
+              <label className="block text-sm font-medium text-bark-700 mb-2">Quick Select</label>
               <div className="flex flex-wrap gap-2">
                 {[
                   { id: 'thisMonth', label: 'This Month' },
@@ -221,7 +213,7 @@ const Reports = () => {
                   <button
                     key={range.id}
                     onClick={() => setQuickDateRange(range.id)}
-                    className="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-full hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-gray-300"
+                    className="px-3 py-1 text-sm border border-border-strong rounded-full hover:bg-cream-50"
                   >
                     {range.label}
                   </button>
@@ -232,29 +224,29 @@ const Reports = () => {
             {/* Filter Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Start Date</label>
+                <label className="block text-sm font-medium text-bark-700 mb-1">Start Date</label>
                 <input
                   type="date"
                   value={filters.start_date}
                   onChange={(e) => handleFilterChange('start_date', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-200 focus:ring-2 focus:ring-primary"
+                  className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">End Date</label>
+                <label className="block text-sm font-medium text-bark-700 mb-1">End Date</label>
                 <input
                   type="date"
                   value={filters.end_date}
                   onChange={(e) => handleFilterChange('end_date', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-200 focus:ring-2 focus:ring-primary"
+                  className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Farm</label>
+                <label className="block text-sm font-medium text-bark-700 mb-1">Farm</label>
                 <select
                   value={filters.farm_id}
                   onChange={(e) => handleFilterChange('farm_id', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-200 focus:ring-2 focus:ring-primary"
+                  className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                 >
                   <option value="">All Farms</option>
                   {farms.map(farm => (
@@ -263,11 +255,11 @@ const Reports = () => {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">County</label>
+                <label className="block text-sm font-medium text-bark-700 mb-1">County</label>
                 <select
                   value={filters.county}
                   onChange={(e) => handleFilterChange('county', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-200 focus:ring-2 focus:ring-primary"
+                  className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                 >
                   <option value="">All Counties</option>
                   {counties.map(county => (
@@ -279,12 +271,11 @@ const Reports = () => {
           </div>
 
           {/* Export Section */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+          <div className="bg-surface-raised rounded-card shadow-md p-6">
+            <h2 className="text-lg text-heading mb-4 flex items-center gap-2">
               <Download className="w-5 h-5" />
               Export Options
             </h2>
-            
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
               {[
                 { id: 'excel', label: 'Excel (.xlsx)', desc: 'Full details with formatting' },
@@ -295,8 +286,8 @@ const Reports = () => {
                   key={format.id}
                   className={`flex items-start p-4 border rounded-lg cursor-pointer transition-colors ${
                     filters.format === format.id
-                      ? 'border-primary bg-primary-light dark:bg-green-900/20'
-                      : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
+                      ? 'border-primary bg-primary-light'
+                      : 'border-border hover:border-border-strong'
                   }`}
                 >
                   <input
@@ -308,23 +299,23 @@ const Reports = () => {
                     className="mt-1 text-primary"
                   />
                   <div className="ml-3">
-                    <div className="font-medium text-gray-900 dark:text-white">{format.label}</div>
-                    <div className="text-sm text-gray-500 dark:text-gray-400">{format.desc}</div>
+                    <div className="font-medium text-heading">{format.label}</div>
+                    <div className="text-sm text-text-secondary">{format.desc}</div>
                   </div>
                 </label>
               ))}
             </div>
 
             <div className="flex gap-3">
-              <button
+              <button aria-label="Confirm"
                 onClick={handleValidate}
                 disabled={validating}
-                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-gray-300 flex items-center gap-2"
+                className="px-4 py-2 border border-border-strong rounded-button hover:bg-cream-50 flex items-center gap-2"
               >
                 <CheckCircle className="w-4 h-4" />
                 {validating ? 'Validating...' : 'Validate'}
               </button>
-              <button
+              <button aria-label="Download"
                 onClick={handleExport}
                 disabled={exporting}
                 className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover flex items-center gap-2"
@@ -337,27 +328,27 @@ const Reports = () => {
 
           {/* Statistics */}
           {statistics && (
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+            <div className="bg-surface-raised rounded-card shadow-md p-6">
+              <h2 className="text-lg text-heading mb-4 flex items-center gap-2">
                 <BarChart3 className="w-5 h-5" />
                 Report Statistics
               </h2>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="text-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                  <div className="text-3xl font-bold text-gray-900 dark:text-white">{statistics.total_applications || 0}</div>
-                  <div className="text-sm text-gray-500 dark:text-gray-400">Applications</div>
+                <div className="text-center p-4 bg-cream-50 rounded-lg">
+                  <div className="text-3xl font-bold text-heading">{statistics.total_applications || 0}</div>
+                  <div className="text-sm text-text-secondary">Applications</div>
                 </div>
-                <div className="text-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                  <div className="text-3xl font-bold text-gray-900 dark:text-white">{statistics.total_fields || 0}</div>
-                  <div className="text-sm text-gray-500 dark:text-gray-400">Fields</div>
+                <div className="text-center p-4 bg-cream-50 rounded-lg">
+                  <div className="text-3xl font-bold text-heading">{statistics.total_fields || 0}</div>
+                  <div className="text-sm text-text-secondary">Fields</div>
                 </div>
-                <div className="text-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                  <div className="text-3xl font-bold text-gray-900 dark:text-white">{statistics.total_acres?.toFixed(1) || 0}</div>
-                  <div className="text-sm text-gray-500 dark:text-gray-400">Total Acres</div>
+                <div className="text-center p-4 bg-cream-50 rounded-lg">
+                  <div className="text-3xl font-bold text-heading">{statistics.total_acres?.toFixed(1) || 0}</div>
+                  <div className="text-sm text-text-secondary">Total Acres</div>
                 </div>
-                <div className="text-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                  <div className="text-3xl font-bold text-gray-900 dark:text-white">{statistics.total_products || 0}</div>
-                  <div className="text-sm text-gray-500 dark:text-gray-400">Products Used</div>
+                <div className="text-center p-4 bg-cream-50 rounded-lg">
+                  <div className="text-3xl font-bold text-heading">{statistics.total_products || 0}</div>
+                  <div className="text-sm text-text-secondary">Products Used</div>
                 </div>
               </div>
             </div>
@@ -365,15 +356,15 @@ const Reports = () => {
 
           {/* Validation Details */}
           {validation && validation.errors && validation.errors.length > 0 && (
-            <div id="validation-section" className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Validation Details</h2>
+            <div id="validation-section" className="bg-surface-raised rounded-card shadow-md p-6">
+              <h2 className="text-lg text-heading mb-4">Validation Details</h2>
 
               {validation.errors.length > 0 && (
                 <div className="mb-4">
-                  <h3 className="font-medium text-red-800 dark:text-red-300 mb-2">Errors ({validation.errors.length})</h3>
+                  <h3 className=" text-danger mb-2">Errors ({validation.errors.length})</h3>
                   <ul className="space-y-1">
                     {validation.errors.map((error, idx) => (
-                      <li key={idx} className="text-sm text-red-700 dark:text-red-400 flex items-start gap-2">
+                      <li key={idx} className="text-sm text-danger flex items-start gap-2">
                         <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
                         {error}
                       </li>
@@ -384,10 +375,10 @@ const Reports = () => {
 
               {validation.warnings && validation.warnings.length > 0 && (
                 <div>
-                  <h3 className="font-medium text-yellow-800 dark:text-yellow-300 mb-2">Warnings ({validation.warnings.length})</h3>
+                  <h3 className=" text-yellow-800 mb-2">Warnings ({validation.warnings.length})</h3>
                   <ul className="space-y-1">
                     {validation.warnings.map((warning, idx) => (
-                      <li key={idx} className="text-sm text-yellow-700 dark:text-yellow-400 flex items-start gap-2">
+                      <li key={idx} className="text-sm text-yellow-700 flex items-start gap-2">
                         <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
                         {warning}
                       </li>

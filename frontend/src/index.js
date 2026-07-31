@@ -8,6 +8,13 @@ import { BrowserRouter } from 'react-router-dom';
 import { ConfirmProvider } from './contexts/ConfirmContext';
 import { ToastProvider } from './contexts/ToastContext';
 
+// Dark mode was dropped in the Finch reskin — clear the stale preference and
+// any `dark` class a previously-cached bundle may have left on <html>.
+try {
+  localStorage.removeItem('grove-theme');
+  document.documentElement.classList.remove('dark');
+} catch {}
+
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>

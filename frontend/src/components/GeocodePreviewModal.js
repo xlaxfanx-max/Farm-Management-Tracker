@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-leaflet';
 import L from 'leaflet';
+import { MAP_HEX } from '../theme/finchChartTheme';
 import { Check, MapPin, Navigation, Edit3, AlertCircle, RefreshCw } from 'lucide-react';
 import { useConfirm } from '../contexts/ConfirmContext';
 import { useToast } from '../contexts/ToastContext';
 import Modal from './ui/Modal';
 import FormField, { inputClasses } from './ui/FormField';
 
-const createMarkerIcon = (color = '#16a34a') =>
+const createMarkerIcon = (color = MAP_HEX.marker) =>
   L.divIcon({
     className: 'custom-marker',
     html: `<div style="
@@ -53,7 +54,7 @@ function DraggableMarker({ position, onPositionChange }) {
   return (
     <Marker
       position={position}
-      icon={createMarkerIcon('#16a34a')}
+      icon={createMarkerIcon(MAP_HEX.marker)}
       draggable={true}
       ref={markerRef}
       eventHandlers={{
@@ -74,7 +75,7 @@ function AlternativeMarkers({ alternatives, onSelect }) {
     <Marker
       key={idx}
       position={[alt.lat, alt.lng]}
-      icon={createMarkerIcon('#6b7280')}
+      icon={createMarkerIcon(MAP_HEX.muted)}
       eventHandlers={{ click: () => onSelect(alt) }}
     />
   ));
@@ -159,7 +160,7 @@ function GeocodePreviewModal({
       <button
         type="button"
         onClick={onClose}
-        className="px-4 py-2 rounded-button text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 font-medium"
+        className="px-4 py-2 rounded-button text-bark-700 hover:bg-cream-100 font-medium"
       >
         Cancel
       </button>
@@ -188,20 +189,20 @@ function GeocodePreviewModal({
       {isLoading ? (
         <div className="flex flex-col items-center justify-center py-12">
           <RefreshCw className="w-8 h-8 text-primary animate-spin mb-3" />
-          <p className="text-gray-600 dark:text-gray-400">Finding location…</p>
+          <p className="text-bark-600">Finding location…</p>
         </div>
       ) : error ? (
         <div className="text-center py-8">
-          <AlertCircle className="w-12 h-12 text-amber-500 mx-auto mb-3" />
-          <h4 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
+          <AlertCircle className="w-12 h-12 text-yellow-500 mx-auto mb-3" />
+          <h4 className="text-lg text-heading mb-2">
             Location Not Found
           </h4>
-          <p className="text-gray-600 dark:text-gray-400 mb-4 max-w-md mx-auto">
+          <p className="text-bark-600 mb-4 max-w-md mx-auto">
             {error.suggestion || 'Could not find coordinates for this address.'}
           </p>
 
-          <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4 max-w-sm mx-auto">
-            <p className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-3">
+          <div className="bg-cream-50 rounded-lg p-4 max-w-sm mx-auto">
+            <p className="text-sm font-medium text-bark-700 mb-3">
               Enter coordinates manually:
             </p>
             <div className="grid grid-cols-2 gap-3">
@@ -257,18 +258,18 @@ function GeocodePreviewModal({
           <div className="mb-4">
             <div className="flex items-start justify-between gap-4">
               <div className="flex-1 min-w-0">
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  <span className="font-medium text-gray-800 dark:text-gray-200">Found:</span>{' '}
+                <p className="text-sm text-bark-600">
+                  <span className="font-medium text-text">Found:</span>{' '}
                   {displayName}
                 </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                <p className="text-xs text-text-secondary mt-1">
                   Coordinates: {position[0].toFixed(6)}, {position[1].toFixed(6)}
                 </p>
               </div>
-              <button
+              <button aria-label="Edit"
                 type="button"
                 onClick={() => setManualMode(!manualMode)}
-                className="px-3 py-1.5 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg flex items-center gap-1 flex-shrink-0"
+                className="px-3 py-1.5 text-sm text-bark-600 hover:text-text hover:bg-cream-100 rounded-lg flex items-center gap-1 flex-shrink-0"
               >
                 <Edit3 className="w-4 h-4" />
                 {manualMode ? 'Use Map' : 'Edit'}
@@ -276,7 +277,7 @@ function GeocodePreviewModal({
             </div>
 
             {manualMode && (
-              <div className="mt-3 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+              <div className="mt-3 p-3 bg-cream-50 rounded-lg">
                 <div className="grid grid-cols-2 gap-3">
                   <FormField label="Latitude" htmlFor="geo-lat">
                     <input
@@ -300,7 +301,7 @@ function GeocodePreviewModal({
                 <button
                   type="button"
                   onClick={handleManualSubmit}
-                  className="mt-2 w-full px-3 py-1.5 rounded-button bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 text-sm font-medium"
+                  className="mt-2 w-full px-3 py-1.5 rounded-button bg-sand-200 text-bark-700 hover:bg-sand-300 text-sm font-medium"
                 >
                   Apply Coordinates
                 </button>
@@ -309,7 +310,7 @@ function GeocodePreviewModal({
           </div>
 
           <div
-            className="relative rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700"
+            className="relative rounded-card overflow-hidden border border-border"
             style={{ height: '300px' }}
           >
             <MapContainer
@@ -331,7 +332,7 @@ function GeocodePreviewModal({
               )}
             </MapContainer>
 
-            <div className="absolute bottom-2 left-2 right-2 bg-white/90 dark:bg-gray-900/80 backdrop-blur-sm rounded-lg px-3 py-2 text-xs text-gray-600 dark:text-gray-300">
+            <div className="absolute bottom-2 left-2 right-2 bg-cream-50/90 backdrop-blur-sm rounded-lg px-3 py-2 text-xs text-bark-600">
               <Navigation className="w-3 h-3 inline mr-1" />
               Click or drag the marker to adjust the location
               {alternatives.length > 0 && (
@@ -342,7 +343,7 @@ function GeocodePreviewModal({
 
           {alternatives.length > 0 && (
             <div className="mt-3">
-              <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">
+              <p className="text-xs font-medium text-text-secondary uppercase tracking-wide mb-2">
                 Alternative Locations
               </p>
               <div className="space-y-1">
@@ -351,7 +352,7 @@ function GeocodePreviewModal({
                     key={idx}
                     type="button"
                     onClick={() => handleSelectAlternative(alt)}
-                    className="w-full text-left px-3 py-2 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg truncate"
+                    className="w-full text-left px-3 py-2 text-sm text-bark-600 hover:bg-cream-50 rounded-lg truncate"
                   >
                     {alt.display_name}
                   </button>

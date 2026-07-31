@@ -13,12 +13,12 @@ import { useConfirm } from '../../contexts/ConfirmContext';
 import LedgerEntryModal from './LedgerEntryModal';
 
 const TYPE_COLORS = {
-  advance: 'bg-green-100 text-green-800',
-  pool_close: 'bg-blue-100 text-blue-800',
-  payment: 'bg-teal-100 text-teal-800',
-  adjustment: 'bg-amber-100 text-amber-800',
-  refund: 'bg-purple-100 text-purple-800',
-  capital_equity: 'bg-gray-100 text-gray-800',
+  advance: 'bg-green-100 text-green-700',
+  pool_close: 'bg-orange-100 text-orange-700',
+  payment: 'bg-green-100 text-green-800',
+  adjustment: 'bg-yellow-200 text-yellow-800',
+  refund: 'bg-sand-200 text-bark-800',
+  capital_equity: 'bg-cream-100 text-text',
 };
 
 const PoolLedgerTab = ({ pool }) => {
@@ -86,7 +86,7 @@ const PoolLedgerTab = ({ pool }) => {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <div className="text-sm text-gray-600">
+        <div className="text-sm text-bark-600">
           {entries.length > 0 && (
             <>
               <span className="font-semibold">{formatCurrency(advancesTotal)}</span>
@@ -105,31 +105,31 @@ const PoolLedgerTab = ({ pool }) => {
       </div>
 
       {loading ? (
-        <div className="text-center py-8 text-gray-500">Loading…</div>
+        <div className="text-center py-8 text-text-secondary">Loading…</div>
       ) : entries.length === 0 ? (
-        <div className="text-center py-8 bg-gray-50 rounded-lg">
-          <DollarSign className="w-12 h-12 mx-auto text-gray-300 mb-3" />
-          <p className="text-gray-500">No advances or payments recorded for this pool yet.</p>
-          <p className="text-sm text-gray-400 mt-1">
+        <div className="text-center py-8 bg-cream-50 rounded-lg">
+          <DollarSign className="w-12 h-12 mx-auto text-sand-300 mb-3" />
+          <p className="text-text-secondary">No advances or payments recorded for this pool yet.</p>
+          <p className="text-sm text-text-muted mt-1">
             Record each check as it arrives so the pool-close settlement can be
             reconciled against what was actually received.
           </p>
         </div>
       ) : (
-        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+        <div className="bg-surface-raised rounded-card border border-border overflow-hidden">
+          <table className="min-w-full divide-y divide-border">
+            <thead className="bg-cream-50 bg-surface-sunken">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Reference</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Description</th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Amount</th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Running Total</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-caps">Date</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-caps">Type</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-caps">Reference</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-caps">Description</th>
+                <th className="px-4 py-3 text-right text-xs font-semibold text-text-secondary uppercase tracking-caps">Amount</th>
+                <th className="px-4 py-3 text-right text-xs font-semibold text-text-secondary uppercase tracking-caps">Running Total</th>
                 <th className="px-4 py-3" />
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
+            <tbody className="divide-y divide-border">
               {withRunning.map((entry) => (
                 <tr
                   key={entry.id}
@@ -140,22 +140,22 @@ const PoolLedgerTab = ({ pool }) => {
                     {new Date(`${entry.entry_date}T00:00:00`).toLocaleDateString()}
                   </td>
                   <td className="px-4 py-3">
-                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${TYPE_COLORS[entry.entry_type] || 'bg-gray-100 text-gray-800'}`}>
+                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${TYPE_COLORS[entry.entry_type] || 'bg-cream-100 text-text'}`}>
                       {entry.entry_type_display || entry.entry_type}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-sm text-gray-600">{entry.reference || '—'}</td>
-                  <td className="px-4 py-3 text-sm text-gray-600">{entry.description || '—'}</td>
+                  <td className="px-4 py-3 text-sm text-bark-600">{entry.reference || '—'}</td>
+                  <td className="px-4 py-3 text-sm text-bark-600">{entry.description || '—'}</td>
                   <td className="px-4 py-3 text-sm text-right font-medium">
                     {formatCurrency(entry.credit || entry.debit)}
                   </td>
-                  <td className="px-4 py-3 text-sm text-right text-gray-500">
+                  <td className="px-4 py-3 text-sm text-right text-text-secondary">
                     {formatCurrency(entry.running_total)}
                   </td>
                   <td className="px-4 py-3 text-right">
                     <button
                       onClick={(e) => { e.stopPropagation(); handleDelete(entry); }}
-                      className="p-1 text-gray-400 hover:text-red-500 rounded"
+                      className="p-1 text-text-muted hover:text-danger rounded"
                       title="Delete entry"
                     >
                       <Trash2 className="w-4 h-4" />

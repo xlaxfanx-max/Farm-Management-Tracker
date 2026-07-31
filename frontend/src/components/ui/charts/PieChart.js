@@ -7,15 +7,14 @@ import {
   Tooltip,
   Legend,
 } from 'recharts';
-
-const defaultColors = ['#22c55e', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#6b7280'];
+import { CHART_SERIES, CHART_PIE_STROKE, CHART_TOOLTIP_STYLE, CHART_TOOLTIP_LABEL_STYLE } from '../../../theme/finchChartTheme';
 
 export default function PieChart({
   data = [],
   dataKey = 'value',
   nameKey = 'name',
   height = 300,
-  colors = defaultColors,
+  colors = CHART_SERIES,
   showLegend = true,
   innerRadius = 0,
   valueFormatter,
@@ -37,7 +36,7 @@ export default function PieChart({
             outerRadius="80%"
             paddingAngle={2}
             strokeWidth={2}
-            stroke="var(--bg-card, #fff)"
+            stroke={CHART_PIE_STROKE}
           >
             {data.map((_, i) => (
               <Cell key={i} fill={colors[i % colors.length]} />
@@ -45,12 +44,8 @@ export default function PieChart({
           </Pie>
           <Tooltip
             formatter={valueFormatter ? (val) => [valueFormatter(val)] : undefined}
-            contentStyle={{
-              backgroundColor: 'var(--bg-card, #fff)',
-              border: '1px solid var(--border-primary, #e5e7eb)',
-              borderRadius: '8px',
-              fontSize: '13px',
-            }}
+            contentStyle={CHART_TOOLTIP_STYLE}
+            labelStyle={CHART_TOOLTIP_LABEL_STYLE}
           />
           {showLegend && (
             <Legend

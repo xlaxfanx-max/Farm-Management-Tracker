@@ -9,15 +9,14 @@ import {
   Tooltip,
   Legend,
 } from 'recharts';
-
-const defaultColors = ['#2D5016', '#3b82f6', '#E8791D', '#8b5cf6', '#22c55e', '#ef4444'];
+import { CHART_SERIES, CHART_GRID, CHART_TICK, CHART_TOOLTIP_STYLE, CHART_TOOLTIP_LABEL_STYLE } from '../../../theme/finchChartTheme';
 
 export default function AreaChart({
   data = [],
   dataKeys = [],
   xKey = 'date',
   height = 300,
-  colors = defaultColors,
+  colors = CHART_SERIES,
   showGrid = true,
   showLegend = false,
   valueFormatter,
@@ -30,28 +29,22 @@ export default function AreaChart({
       <ResponsiveContainer width="100%" height={height}>
         <RechartsArea data={data}>
           {showGrid && (
-            <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200 dark:stroke-gray-700" />
+            <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID} />
           )}
           <XAxis
             dataKey={xKey}
             tickFormatter={xFormatter}
-            tick={{ fontSize: 12 }}
-            className="text-gray-500 dark:text-gray-400"
+            tick={CHART_TICK}
           />
           <YAxis
             tickFormatter={valueFormatter}
-            tick={{ fontSize: 12 }}
-            className="text-gray-500 dark:text-gray-400"
+            tick={CHART_TICK}
           />
           <Tooltip
             formatter={valueFormatter ? (val) => [valueFormatter(val)] : undefined}
             labelFormatter={xFormatter}
-            contentStyle={{
-              backgroundColor: 'var(--bg-card, #fff)',
-              border: '1px solid var(--border-primary, #e5e7eb)',
-              borderRadius: '8px',
-              fontSize: '13px',
-            }}
+            contentStyle={CHART_TOOLTIP_STYLE}
+            labelStyle={CHART_TOOLTIP_LABEL_STYLE}
           />
           {showLegend && <Legend />}
           {dataKeys.map((key, i) => (

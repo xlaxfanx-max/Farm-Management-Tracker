@@ -197,20 +197,20 @@ function UnifiedTaskList({
 
   const getPriorityDot = (priority) => {
     switch (priority) {
-      case 'high': return 'bg-red-500';
-      case 'medium': return 'bg-amber-500';
-      case 'low': return 'bg-blue-400';
-      default: return 'bg-gray-400';
+      case 'high': return 'bg-danger';
+      case 'medium': return 'bg-yellow-500';
+      case 'low': return 'bg-orange-400';
+      default: return 'bg-bark-400';
     }
   };
 
   const filterBtn = (value, label) => (
     <button
       onClick={() => setFilter(value)}
-      className={`px-2.5 py-1 text-xs rounded-md transition-colors ${
+      className={`px-2.5 py-1 text-xs rounded-lg transition-colors ${
         filter === value
-          ? 'bg-primary-light text-primary dark:bg-primary/20 dark:text-green-400 font-medium'
-          : 'text-text-secondary dark:text-gray-400 hover:bg-surface-sunken dark:hover:bg-gray-700'
+          ? 'bg-primary-light text-primary font-medium'
+          : 'text-text-secondary hover:bg-surface-sunken'
       }`}
     >
       {label}
@@ -218,11 +218,11 @@ function UnifiedTaskList({
   );
 
   return (
-    <div className="bg-surface-raised dark:bg-gray-800 rounded-lg border border-border dark:border-gray-700">
+    <div className="bg-surface-raised rounded-card border border-border">
       {/* Header */}
-      <div className="px-4 py-3 border-b border-border dark:border-gray-700 flex items-center justify-between">
-        <h3 className="font-semibold text-text dark:text-white text-sm flex items-center gap-2">
-          <Clock className="w-4 h-4 text-text-secondary dark:text-gray-400" />
+      <div className="px-4 py-3 border-b border-border flex items-center justify-between">
+        <h3 className=" text-text text-sm flex items-center gap-2">
+          <Clock className="w-4 h-4 text-text-secondary" />
           Tasks & Actions
         </h3>
         <div className="flex items-center gap-1">
@@ -233,49 +233,49 @@ function UnifiedTaskList({
       </div>
 
       {/* Task List */}
-      <div className="divide-y divide-border/50 dark:divide-gray-700/50">
+      <div className="divide-y divide-border/50">
         {displayTasks.length === 0 ? (
           <div className="p-8 text-center">
             <CheckCircle2 className="w-8 h-8 text-primary mx-auto mb-2" />
-            <p className="text-sm font-medium text-text dark:text-gray-200">All caught up!</p>
-            <p className="text-xs text-text-muted dark:text-gray-500 mt-1">No pending tasks</p>
+            <p className="text-sm font-medium text-text">All caught up!</p>
+            <p className="text-xs text-text-muted mt-1">No pending tasks</p>
           </div>
         ) : (
           displayTasks.map((task) => (
             <div
               key={task.id}
-              className="px-4 py-3 hover:bg-surface-sunken dark:hover:bg-gray-700/50 transition-colors group"
+              className="px-4 py-3 hover:bg-surface-sunken transition-colors group"
             >
               <div className="flex items-center gap-3">
                 {/* Priority dot */}
                 <div className={`w-2 h-2 rounded-full flex-shrink-0 ${getPriorityDot(task.priority)}`} />
 
                 {/* Icon */}
-                <task.icon className="w-4 h-4 text-text-muted dark:text-gray-500 flex-shrink-0" />
+                <task.icon className="w-4 h-4 text-text-muted flex-shrink-0" />
 
                 {/* Content */}
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-text dark:text-gray-200 truncate">{task.title}</p>
-                  <p className="text-xs text-text-muted dark:text-gray-500 truncate">{task.description}</p>
+                  <p className="text-sm font-medium text-text truncate">{task.title}</p>
+                  <p className="text-xs text-text-muted truncate">{task.description}</p>
                 </div>
 
                 {/* Date */}
-                <span className="text-xs text-text-muted dark:text-gray-500 flex-shrink-0 hidden sm:flex items-center gap-1">
+                <span className="text-xs text-text-muted flex-shrink-0 hidden sm:flex items-center gap-1">
                   <Calendar className="w-3 h-3" />
                   {formatDate(task.date)}
                 </span>
 
                 {/* Inline CTA */}
-                <button
+                <button aria-label="Forward"
                   onClick={(e) => {
                     e.stopPropagation();
                     onTaskClick?.(task.module, task);
                   }}
                   className="
-                    inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium
-                    text-primary dark:text-green-400
-                    bg-primary-light dark:bg-primary/10
-                    hover:bg-primary hover:text-white dark:hover:bg-primary dark:hover:text-white
+                    inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium
+                    text-primary
+                    bg-primary-light
+                    hover:bg-primary hover:text-white
                     transition-colors flex-shrink-0
                     opacity-0 group-hover:opacity-100 sm:opacity-100
                   "
@@ -291,8 +291,8 @@ function UnifiedTaskList({
 
       {/* Footer */}
       {filteredTasks.length > maxItems && (
-        <div className="px-4 py-2.5 border-t border-border dark:border-gray-700 text-center">
-          <button className="text-xs text-primary dark:text-green-400 hover:text-primary-hover font-medium">
+        <div className="px-4 py-2.5 border-t border-border text-center">
+          <button className="text-xs text-primary hover:text-primary-hover font-medium">
             View all {filteredTasks.length} tasks
           </button>
         </div>

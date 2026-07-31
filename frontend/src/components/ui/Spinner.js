@@ -12,10 +12,10 @@ export default function Spinner({ size = 'md', label, className = '' }) {
   return (
     <div className={`flex flex-col items-center justify-center gap-3 ${className}`}>
       <Loader2
-        className={`animate-spin text-primary dark:text-primary ${sizeClasses[size] || sizeClasses.md}`}
+        className={`animate-spin text-primary ${sizeClasses[size] || sizeClasses.md}`}
       />
       {label && (
-        <p className="text-sm text-gray-500 dark:text-gray-400">{label}</p>
+        <p className="text-sm text-text-secondary">{label}</p>
       )}
     </div>
   );

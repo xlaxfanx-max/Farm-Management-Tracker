@@ -183,7 +183,7 @@ const PackinghouseDashboard = () => {
 
     if (error) {
       return (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700">
+        <div className="bg-danger-bg border border-danger/25 rounded-card p-4 text-danger">
           <AlertCircle className="inline w-5 h-5 mr-2" />
           {error}
         </div>
@@ -192,7 +192,7 @@ const PackinghouseDashboard = () => {
 
     if (!dashboardData) {
       return (
-        <div className="text-center py-12 text-gray-500">
+        <div className="text-center py-12 text-text-secondary">
           No data available. Add a packinghouse to get started.
         </div>
       );
@@ -203,14 +203,14 @@ const PackinghouseDashboard = () => {
         {/* Season Header with Selector */}
         <div className="flex justify-between items-center">
           <div className="flex items-center space-x-3">
-            <label className="text-lg font-semibold text-gray-800 flex items-center">
+            <label className="text-lg font-semibold text-text flex items-center">
               <Calendar className="w-5 h-5 mr-2 text-primary" />
               Season:
             </label>
             <select
               value={selectedSeason || dashboardData.selected_season}
               onChange={handleSeasonChange}
-              className="px-3 py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-gray-800 font-medium"
+              className="px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
             >
               {dashboardData.available_seasons?.map((season) => (
                 <option key={season} value={season}>
@@ -221,7 +221,7 @@ const PackinghouseDashboard = () => {
           </div>
           <button
             onClick={fetchDashboard}
-            className="flex items-center text-gray-600 hover:text-gray-800"
+            className="flex items-center text-bark-600 hover:text-text"
           >
             <RefreshCw className="w-4 h-4 mr-1" />
             Refresh
@@ -230,11 +230,11 @@ const PackinghouseDashboard = () => {
 
         {/* Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-white rounded-lg border border-gray-200 p-4 cursor-pointer hover:shadow-md hover:border-green-200 transition-all" onClick={() => openDrillDown('total_pools')}>
+          <div className="bg-surface-raised rounded-card border border-border p-4 cursor-pointer hover:shadow-md hover:border-green-200 transition-all" onClick={() => openDrillDown('total_pools')}>
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500">Total Pools</p>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-sm text-text-secondary">Total Pools</p>
+                <p className="text-2xl font-bold text-heading">
                   {dashboardData.total_pools || 0}
                 </p>
               </div>
@@ -242,28 +242,28 @@ const PackinghouseDashboard = () => {
                 <Boxes className="w-6 h-6 text-primary" />
               </div>
             </div>
-            <p className="text-xs text-gray-400 mt-1">{dashboardData.active_pools || 0} active &middot; Click for details</p>
+            <p className="text-xs text-text-muted mt-1">{dashboardData.active_pools || 0} active &middot; Click for details</p>
           </div>
 
-          <div className="bg-white rounded-lg border border-gray-200 p-4 cursor-pointer hover:shadow-md hover:border-green-200 transition-all" onClick={() => openDrillDown('bins_delivered')}>
+          <div className="bg-surface-raised rounded-card border border-border p-4 cursor-pointer hover:shadow-md hover:border-green-200 transition-all" onClick={() => openDrillDown('bins_delivered')}>
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500">Delivered</p>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-sm text-text-secondary">Delivered</p>
+                <p className="text-2xl font-bold text-heading">
                   {formatNumber(dashboardData.total_bins_this_season, 0)}
                 </p>
               </div>
-              <div className="p-3 bg-blue-100 rounded-lg">
-                <Truck className="w-6 h-6 text-blue-600" />
+              <div className="p-3 bg-orange-100 rounded-lg">
+                <Truck className="w-6 h-6 text-link" />
               </div>
             </div>
-            <p className="text-xs text-gray-400 mt-1">Click for details</p>
+            <p className="text-xs text-text-muted mt-1">Click for details</p>
           </div>
 
-          <div className="bg-white rounded-lg border border-gray-200 p-4 cursor-pointer hover:shadow-md hover:border-green-200 transition-all" onClick={() => openDrillDown('pending_settlement')}>
+          <div className="bg-surface-raised rounded-card border border-border p-4 cursor-pointer hover:shadow-md hover:border-green-200 transition-all" onClick={() => openDrillDown('pending_settlement')}>
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500">Pending Settlement</p>
+                <p className="text-sm text-text-secondary">Pending Settlement</p>
                 <p className="text-2xl font-bold text-yellow-600">
                   {dashboardData.pending_settlement}
                 </p>
@@ -272,19 +272,19 @@ const PackinghouseDashboard = () => {
                 <FileText className="w-6 h-6 text-yellow-600" />
               </div>
             </div>
-            <p className="text-xs text-gray-400 mt-1">Closed pools &middot; Click for details</p>
+            <p className="text-xs text-text-muted mt-1">Closed pools &middot; Click for details</p>
           </div>
 
-          <div className="bg-white rounded-lg border border-gray-200 p-4 cursor-pointer hover:shadow-md hover:border-green-200 transition-all" onClick={() => setActiveTab('packinghouses')}>
+          <div className="bg-surface-raised rounded-card border border-border p-4 cursor-pointer hover:shadow-md hover:border-green-200 transition-all" onClick={() => setActiveTab('packinghouses')}>
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500">Packinghouses</p>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-sm text-text-secondary">Packinghouses</p>
+                <p className="text-2xl font-bold text-heading">
                   {dashboardData.packinghouse_summary?.length || 0}
                 </p>
               </div>
-              <div className="p-3 bg-purple-100 rounded-lg">
-                <Building2 className="w-6 h-6 text-purple-600" />
+              <div className="p-3 bg-sand-200 rounded-lg">
+                <Building2 className="w-6 h-6 text-bark-700" />
               </div>
             </div>
           </div>
@@ -292,33 +292,33 @@ const PackinghouseDashboard = () => {
 
         {/* Packinghouse Summary */}
         {dashboardData.packinghouse_summary?.length > 0 && (
-          <div className="bg-white rounded-lg border border-gray-200">
-            <div className="p-4 border-b border-gray-200">
-              <h3 className="font-semibold text-gray-800">Packinghouse Summary</h3>
+          <div className="bg-surface-raised rounded-card border border-border">
+            <div className="p-4 border-b border-border">
+              <h3 className=" text-text">Packinghouse Summary</h3>
             </div>
-            <div className="divide-y divide-gray-100">
+            <div className="divide-y divide-border">
               {dashboardData.packinghouse_summary.map((ph) => (
-                <div key={ph.id} className="p-4 flex justify-between items-center hover:bg-gray-50">
+                <div key={ph.id} className="p-4 flex justify-between items-center hover:bg-cream-50">
                   <div>
-                    <p className="font-medium text-gray-900">{ph.name}</p>
+                    <p className="font-medium text-heading">{ph.name}</p>
                     {ph.short_code && (
-                      <span className="text-xs text-gray-500">{ph.short_code}</span>
+                      <span className="text-xs text-text-secondary">{ph.short_code}</span>
                     )}
                   </div>
                   <div className="flex items-center space-x-8 text-sm">
                     <div className="text-center">
-                      <p className="text-gray-500">Pools</p>
+                      <p className="text-text-secondary">Pools</p>
                       <p className="font-semibold">{ph.total_pools || 0}</p>
                     </div>
                     <div className="text-center">
-                      <p className="text-gray-500">Qty</p>
+                      <p className="text-text-secondary">Qty</p>
                       <p className="font-semibold">{formatNumber(ph.season_bins)}</p>
                     </div>
                     <div className="text-center">
-                      <p className="text-gray-500">Settlements</p>
+                      <p className="text-text-secondary">Settlements</p>
                       <p className="font-semibold text-primary">{formatCurrency(ph.total_settlements)}</p>
                     </div>
-                    <ChevronRight className="w-5 h-5 text-gray-400" />
+                    <ChevronRight className="w-5 h-5 text-text-muted" />
                   </div>
                 </div>
               ))}
@@ -329,21 +329,21 @@ const PackinghouseDashboard = () => {
         {/* Recent Activity */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Recent Deliveries */}
-          <div className="bg-white rounded-lg border border-gray-200">
-            <div className="p-4 border-b border-gray-200 flex justify-between items-center">
-              <h3 className="font-semibold text-gray-800">Recent Deliveries</h3>
-              <Truck className="w-5 h-5 text-gray-400" />
+          <div className="bg-surface-raised rounded-card border border-border">
+            <div className="p-4 border-b border-border flex justify-between items-center">
+              <h3 className=" text-text">Recent Deliveries</h3>
+              <Truck className="w-5 h-5 text-text-muted" />
             </div>
-            <div className="divide-y divide-gray-100 max-h-64 overflow-y-auto">
+            <div className="divide-y divide-border max-h-64 overflow-y-auto">
               {dashboardData.recent_deliveries?.length > 0 ? (
                 dashboardData.recent_deliveries.map((delivery) => (
-                  <div key={delivery.id} className="p-3 hover:bg-gray-50">
+                  <div key={delivery.id} className="p-3 hover:bg-cream-50">
                     <div className="flex justify-between items-start">
                       <div>
-                        <p className="font-medium text-gray-900">
+                        <p className="font-medium text-heading">
                           Ticket #{delivery.ticket_number}
                         </p>
-                        <p className="text-sm text-gray-500">
+                        <p className="text-sm text-text-secondary">
                           {delivery.field_name} → {delivery.pool_name}
                         </p>
                       </div>
@@ -351,7 +351,7 @@ const PackinghouseDashboard = () => {
                         <p className="font-semibold text-primary">
                           {formatNumber(delivery.bins)}
                         </p>
-                        <p className="text-xs text-gray-400">
+                        <p className="text-xs text-text-muted">
                           {new Date(delivery.delivery_date).toLocaleDateString()}
                         </p>
                       </div>
@@ -359,7 +359,7 @@ const PackinghouseDashboard = () => {
                   </div>
                 ))
               ) : (
-                <div className="p-4 text-center text-gray-500">
+                <div className="p-4 text-center text-text-secondary">
                   No recent deliveries
                 </div>
               )}
@@ -367,40 +367,40 @@ const PackinghouseDashboard = () => {
           </div>
 
           {/* Recent Packout Reports */}
-          <div className="bg-white rounded-lg border border-gray-200">
-            <div className="p-4 border-b border-gray-200 flex justify-between items-center">
-              <h3 className="font-semibold text-gray-800">Recent Packout Reports</h3>
-              <FileText className="w-5 h-5 text-gray-400" />
+          <div className="bg-surface-raised rounded-card border border-border">
+            <div className="p-4 border-b border-border flex justify-between items-center">
+              <h3 className=" text-text">Recent Packout Reports</h3>
+              <FileText className="w-5 h-5 text-text-muted" />
             </div>
-            <div className="divide-y divide-gray-100 max-h-64 overflow-y-auto">
+            <div className="divide-y divide-border max-h-64 overflow-y-auto">
               {dashboardData.recent_packouts?.length > 0 ? (
                 dashboardData.recent_packouts.map((report) => (
-                  <div key={report.id} className="p-3 hover:bg-gray-50">
+                  <div key={report.id} className="p-3 hover:bg-cream-50">
                     <div className="flex justify-between items-start">
                       <div>
-                        <p className="font-medium text-gray-900">
+                        <p className="font-medium text-heading">
                           {report.field_name}
                         </p>
-                        <p className="text-sm text-gray-500">
+                        <p className="text-sm text-text-secondary">
                           {report.pool_name}
                         </p>
                       </div>
                       <div className="text-right">
-                        <p className="font-semibold text-blue-600">
+                        <p className="font-semibold text-link">
                           {report.total_packed_percent}% packed
                         </p>
-                        <p className="text-xs text-gray-400">
+                        <p className="text-xs text-text-muted">
                           {new Date(report.report_date).toLocaleDateString()}
                         </p>
                       </div>
                     </div>
                     {report.house_avg_packed_percent && (
                       <div className="mt-1 text-xs">
-                        <span className="text-gray-500">House Avg: </span>
+                        <span className="text-text-secondary">House Avg: </span>
                         <span className={
                           parseFloat(report.total_packed_percent) >= parseFloat(report.house_avg_packed_percent)
                             ? 'text-primary'
-                            : 'text-red-600'
+                            : 'text-danger'
                         }>
                           {report.house_avg_packed_percent}%
                         </span>
@@ -409,7 +409,7 @@ const PackinghouseDashboard = () => {
                   </div>
                 ))
               ) : (
-                <div className="p-4 text-center text-gray-500">
+                <div className="p-4 text-center text-text-secondary">
                   No recent packout reports
                 </div>
               )}
@@ -438,17 +438,17 @@ const PackinghouseDashboard = () => {
 
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-800 flex items-center">
+        <h1 className="text-2xl text-text flex items-center">
           <Building2 className="w-7 h-7 mr-2 text-primary" />
           Packinghouse Pool Tracking
         </h1>
-        <p className="text-gray-500 mt-1">
+        <p className="text-text-secondary mt-1">
           Track deliveries, packout reports, and pool settlements
         </p>
       </div>
 
       {/* Tab Navigation */}
-      <div className="mb-6 border-b border-gray-200">
+      <div className="mb-6 border-b border-border">
         <nav className="flex space-x-8">
           {tabs.map(({ id, label, icon: Icon }) => (
             <button
@@ -457,7 +457,7 @@ const PackinghouseDashboard = () => {
               className={`flex items-center py-3 border-b-2 font-medium text-sm transition-colors ${
                 activeTab === id
                   ? 'border-primary text-primary'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  : 'border-transparent text-text-secondary hover:text-bark-700 hover:border-border-strong'
               }`}
             >
               <Icon className="w-4 h-4 mr-2" />

@@ -82,7 +82,7 @@ export default function OverviewTab({ year, onYearsLoaded }) {
 
   if (error) {
     return (
-      <div className="rounded-lg border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 p-4 text-sm text-red-700 dark:text-red-300">
+      <div className="rounded-card border border-danger/25 bg-danger-bg p-4 text-sm text-danger">
         {error}
       </div>
     );
@@ -91,7 +91,7 @@ export default function OverviewTab({ year, onYearsLoaded }) {
   if (!properties.length) {
     return (
       <div className={`${cardClasses} text-center`}>
-        <p className="text-gray-900 dark:text-white font-medium">
+        <p className="text-heading font-medium">
           No rental property recorded yet
         </p>
         <p className={`${mutedText} mt-1`}>
@@ -107,9 +107,9 @@ export default function OverviewTab({ year, onYearsLoaded }) {
   return (
     <div className="space-y-5">
       {totalFlagged > 0 && (
-        <div className="flex items-start gap-2 rounded-lg border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/20 p-3">
-          <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" />
-          <p className="text-sm text-amber-800 dark:text-amber-200">
+        <div className="flex items-start gap-2 rounded-card border border-yellow-200 bg-yellow-100 p-3">
+          <AlertTriangle className="w-4 h-4 text-yellow-600 mt-0.5 shrink-0" />
+          <p className="text-sm text-yellow-800">
             <strong>{totalFlagged}</strong>{' '}
             {totalFlagged === 1 ? 'row is' : 'rows are'} flagged from import and
             could not be fully trusted. They are included in these totals and
@@ -158,11 +158,11 @@ function BookCard({ icon: Icon, title, subtitle, locationType, stats, properties
     <div className={cardClasses}>
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-2.5">
-          <div className="p-2 rounded-lg bg-gray-100 dark:bg-gray-700">
-            <Icon className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+          <div className="p-2 rounded-lg bg-cream-100">
+            <Icon className="w-5 h-5 text-bark-600" />
           </div>
           <div>
-            <h3 className="font-semibold text-gray-900 dark:text-white">{title}</h3>
+            <h3 className=" text-heading">{title}</h3>
             <p className={mutedText}>{subtitle}</p>
           </div>
         </div>
@@ -174,7 +174,7 @@ function BookCard({ icon: Icon, title, subtitle, locationType, stats, properties
       {hasData ? (
         <>
           <div className="mt-4 flex items-baseline gap-2">
-            <span className="text-2xl font-semibold text-gray-900 dark:text-white">
+            <span className="text-2xl font-semibold text-heading">
               {formatCurrency0(stats.net)}
             </span>
             <span className={mutedText}>net</span>
@@ -209,14 +209,14 @@ function BookCard({ icon: Icon, title, subtitle, locationType, stats, properties
 function Stat({ label, value, emphasis }) {
   return (
     <div>
-      <dt className="text-xs uppercase tracking-wide text-gray-400 dark:text-gray-500">
+      <dt className="text-xs uppercase tracking-wide text-text-muted">
         {label}
       </dt>
       <dd
         className={`font-medium ${
           emphasis
-            ? 'text-amber-700 dark:text-amber-300'
-            : 'text-gray-900 dark:text-white'
+            ? 'text-yellow-700'
+            : 'text-heading'
         }`}
       >
         {value}
@@ -227,23 +227,23 @@ function Stat({ label, value, emphasis }) {
 
 function PropertyTable({ properties }) {
   return (
-    <div className="rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+    <div className="rounded-card border border-border overflow-hidden">
       <div className="overflow-x-auto">
         <table className="min-w-full text-sm">
-          <thead className="bg-gray-50 dark:bg-gray-800/60">
-            <tr className="text-left text-gray-500 dark:text-gray-400">
-              <th className="px-4 py-2.5 font-medium">Property</th>
-              <th className="px-4 py-2.5 font-medium">Location</th>
-              <th className="px-4 py-2.5 font-medium">Ranch</th>
-              <th className="px-4 py-2.5 font-medium">Entity</th>
-              <th className="px-4 py-2.5 font-medium">Type</th>
-              <th className="px-4 py-2.5 font-medium text-right">Units</th>
+          <thead className="bg-cream-50 bg-surface-sunken">
+            <tr className="text-left text-text-secondary">
+              <th className="px-4 py-2.5 font-semibold">Property</th>
+              <th className="px-4 py-2.5 font-semibold">Location</th>
+              <th className="px-4 py-2.5 font-semibold">Ranch</th>
+              <th className="px-4 py-2.5 font-semibold">Entity</th>
+              <th className="px-4 py-2.5 font-semibold">Type</th>
+              <th className="px-4 py-2.5 font-semibold text-right">Units</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+          <tbody className="divide-y divide-border">
             {properties.map((p) => (
-              <tr key={p.id} className="bg-white dark:bg-gray-800">
-                <td className="px-4 py-2.5 font-medium text-gray-900 dark:text-white">
+              <tr key={p.id} className="bg-surface-raised">
+                <td className="px-4 py-2.5 font-medium text-bark-700">
                   {p.name}
                 </td>
                 <td className="px-4 py-2.5">
@@ -253,16 +253,16 @@ function PropertyTable({ properties }) {
                 </td>
                 {/* A dash, not a blank and not a zero: off-ranch property has
                     no ranch by definition. */}
-                <td className="px-4 py-2.5 text-gray-600 dark:text-gray-300">
+                <td className="px-4 py-2.5 text-bark-600">
                   {p.farm_name || '—'}
                 </td>
-                <td className="px-4 py-2.5 text-gray-600 dark:text-gray-300">
+                <td className="px-4 py-2.5 text-bark-600">
                   {p.entity_code || p.entity_name || '—'}
                 </td>
-                <td className="px-4 py-2.5 text-gray-600 dark:text-gray-300">
+                <td className="px-4 py-2.5 text-bark-600">
                   {p.property_type_display || p.property_type}
                 </td>
-                <td className="px-4 py-2.5 text-right text-gray-600 dark:text-gray-300">
+                <td className="px-4 py-2.5 text-right text-bark-600">
                   {formatCount(p.unit_count)}
                 </td>
               </tr>

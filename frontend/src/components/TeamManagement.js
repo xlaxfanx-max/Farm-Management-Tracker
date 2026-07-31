@@ -21,19 +21,20 @@ import {
   Loader2
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { Alert, Button, Card, CardHeader, StatCard } from './ui';
 import { companyAPI, rolesAPI, invitationsAPI, authAPI } from '../services/api';
 import { useConfirm } from '../contexts/ConfirmContext';
 import { useToast } from '../contexts/ToastContext';
 
 // Role badge colors
 const ROLE_COLORS = {
-  owner: 'bg-purple-100 text-purple-800',
-  admin: 'bg-blue-100 text-blue-800',
-  manager: 'bg-green-100 text-green-800',
+  owner: 'bg-sand-200 text-bark-800',
+  admin: 'bg-orange-100 text-orange-700',
+  manager: 'bg-green-100 text-green-700',
   applicator: 'bg-orange-100 text-orange-800',
-  worker: 'bg-gray-100 text-gray-800',
-  viewer: 'bg-gray-100 text-gray-600',
-  pca: 'bg-teal-100 text-teal-800',
+  worker: 'bg-cream-100 text-text',
+  viewer: 'bg-cream-100 text-bark-600',
+  pca: 'bg-green-100 text-green-800',
   accountant: 'bg-yellow-100 text-yellow-800',
 };
 
@@ -52,18 +53,15 @@ export default function TeamManagement() {
   const { currentCompany, user, isOwnerOrAdmin } = useAuth();
   const confirmDialog = useConfirm();
   const toast = useToast();
-  
   // Debug logging
   console.log('TeamManagement - currentCompany:', currentCompany);
   console.log('TeamManagement - isOwnerOrAdmin():', isOwnerOrAdmin());
   console.log('TeamManagement - role_codename:', currentCompany?.role_codename);
-  
   const [members, setMembers] = useState([]);
   const [invitations, setInvitations] = useState([]);
   const [roles, setRoles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  
   // Modal states
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [showEditRoleModal, setShowEditRoleModal] = useState(false);
@@ -90,28 +88,24 @@ export default function TeamManagement() {
       let membersData = [];
       let invitationsData = [];
       let rolesData = [];
-      
       try {
         const membersRes = await companyAPI.members(currentCompany.id);
         membersData = membersRes.data.results || membersRes.data || [];
       } catch (err) {
         console.error('Error loading members:', err);
       }
-      
       try {
         const invitationsRes = await invitationsAPI.list();
         invitationsData = invitationsRes.data.results || invitationsRes.data || [];
       } catch (err) {
         console.error('Error loading invitations:', err);
       }
-      
       try {
         const rolesRes = await rolesAPI.available();
         rolesData = rolesRes.data.results || rolesRes.data || [];
       } catch (err) {
         console.error('Error loading roles:', err);
       }
-      
       setMembers(membersData);
       setInvitations(invitationsData);
       setRoles(rolesData);
@@ -192,83 +186,40 @@ export default function TeamManagement() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Team Management</h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">
+          <p className="text-bark-600 mt-1">
             Manage team members and their access to {currentCompany?.name}
           </p>
         </div>
-        
         {isOwnerOrAdmin() && (
-          <button
-            onClick={() => setShowInviteModal(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors"
-          >
-            <UserPlus className="w-5 h-5" />
-            Invite Member
-          </button>
+          <Button variant="primary" icon={UserPlus} onClick={() => setShowInviteModal(true)}>
+            Invite member
+          </Button>
         )}
       </div>
 
       {error && (
-        <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg flex items-center gap-2 text-red-700 dark:text-red-300">
-          <AlertCircle className="w-5 h-5" />
-          {error}
-        </div>
+        <Alert tone="danger" className="mb-6">{error}</Alert>
       )}
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="bg-white dark:bg-gray-800 rounded-lg border dark:border-gray-700 p-4">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-              <Users className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{members.length}</p>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Team Members</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-gray-800 rounded-lg border dark:border-gray-700 p-4">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg">
-              <Mail className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{pendingInvitations.length}</p>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Pending Invitations</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-gray-800 rounded-lg border dark:border-gray-700 p-4">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
-              <Shield className="w-5 h-5 text-primary dark:text-green-400" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{roles.length}</p>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Available Roles</p>
-            </div>
-          </div>
-        </div>
+        <StatCard label="Team members" value={members.length} icon={Users} color="orange" />
+        <StatCard label="Pending invitations" value={pendingInvitations.length} icon={Mail} color="warning" />
+        <StatCard label="Available roles" value={roles.length} icon={Shield} color="green" />
       </div>
 
       {/* Team Members List */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg border dark:border-gray-700 mb-6">
-        <div className="px-6 py-4 border-b dark:border-gray-700">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Team Members</h2>
-        </div>
+      <Card padding="none" className="mb-6">
+        <CardHeader flush border title="Team members" />
 
-        <div className="divide-y dark:divide-gray-700">
+        <div className="divide-y">
           {members.length === 0 ? (
-            <div className="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
+            <div className="px-6 py-8 text-center text-text-secondary">
               No team members yet. Invite someone to get started!
             </div>
           ) : (
             members.map((member) => (
-              <div key={member.id} className="px-6 py-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700">
+              <div key={member.id} className="px-6 py-4 flex items-center justify-between hover:bg-cream-50">
                 <div className="flex items-center gap-4">
                   {/* Avatar */}
                   <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
@@ -277,32 +228,29 @@ export default function TeamManagement() {
                       {member.user?.last_name?.[0] || ''}
                     </span>
                   </div>
-                  
                   {/* Info */}
                   <div>
                     <div className="flex items-center gap-2">
-                      <p className="font-medium text-gray-900 dark:text-white">
+                      <p className="font-medium text-heading">
                         {member.user?.first_name} {member.user?.last_name}
                         {member.user?.id === user?.id && (
-                          <span className="text-gray-500 dark:text-gray-400 text-sm ml-2">(You)</span>
+                          <span className="text-text-secondary text-sm ml-2">(You)</span>
                         )}
                       </p>
                       {member.role?.codename === 'owner' && (
-                        <Crown className="w-4 h-4 text-yellow-500" />
+                        <Crown className="w-4 h-4 text-yellow-600" />
                       )}
                     </div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">{member.user?.email}</p>
+                    <p className="text-sm text-text-secondary">{member.user?.email}</p>
                   </div>
                 </div>
-                
                 <div className="flex items-center gap-3">
                   {/* Role Badge */}
                   <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                    ROLE_COLORS[member.role?.codename] || 'bg-gray-100 text-gray-800'
+                    ROLE_COLORS[member.role?.codename] || 'bg-cream-100 text-text'
                   }`}>
                     {member.role?.name}
                   </span>
-                  
                   {/* Transfer Ownership Button (only for owner viewing other members) */}
                   {isOwner && member.user?.id !== user?.id && member.role?.codename !== 'owner' && (
                     <button
@@ -310,7 +258,7 @@ export default function TeamManagement() {
                         setSelectedMember(member);
                         setShowTransferModal(true);
                       }}
-                      className="p-2 hover:bg-purple-100 rounded-lg text-gray-500 hover:text-purple-600"
+                      className="p-2 hover:bg-sand-200 rounded-lg text-text-secondary hover:text-bark-700"
                       title="Transfer ownership to this member"
                     >
                       <ArrowRightLeft className="w-4 h-4" />
@@ -320,22 +268,22 @@ export default function TeamManagement() {
                   {/* Actions Dropdown */}
                   {isOwnerOrAdmin() && member.user?.id !== user?.id && member.role?.codename !== 'owner' && (
                     <div className="relative">
-                      <button
+                      <button aria-label="More actions"
                         onClick={() => setActiveDropdown(activeDropdown === member.id ? null : member.id)}
-                        className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+                        className="p-2 hover:bg-cream-100 rounded-lg"
                       >
-                        <MoreVertical className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                        <MoreVertical className="w-5 h-5 text-text-secondary" />
                       </button>
 
                       {activeDropdown === member.id && (
-                        <div className="absolute right-0 mt-1 w-48 bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg shadow-lg z-10 py-1">
+                        <div className="absolute right-0 mt-1 w-48 bg-surface-raised border rounded-card shadow-lg z-10 py-1">
                           <button
                             onClick={() => {
                               setSelectedMember(member);
                               setShowEditRoleModal(true);
                               setActiveDropdown(null);
                             }}
-                            className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                            className="w-full flex items-center gap-2 px-4 py-2 text-sm text-bark-700 hover:bg-cream-50"
                           >
                             <Edit className="w-4 h-4" />
                             Change Role
@@ -347,7 +295,7 @@ export default function TeamManagement() {
                                 setShowTransferModal(true);
                                 setActiveDropdown(null);
                               }}
-                              className="w-full flex items-center gap-2 px-4 py-2 text-sm text-purple-600 hover:bg-purple-50"
+                              className="w-full flex items-center gap-2 px-4 py-2 text-sm text-bark-700 hover:bg-cream-100"
                             >
                               <ArrowRightLeft className="w-4 h-4" />
                               Transfer Ownership
@@ -355,7 +303,7 @@ export default function TeamManagement() {
                           )}
                           <button
                             onClick={() => handleRemoveMember(member.id)}
-                            className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                            className="w-full flex items-center gap-2 px-4 py-2 text-sm text-danger hover:bg-danger-bg"
                           >
                             <Trash2 className="w-4 h-4" />
                             Remove
@@ -369,39 +317,35 @@ export default function TeamManagement() {
             ))
           )}
         </div>
-      </div>
+      </Card>
 
       {/* Pending Invitations */}
       {pendingInvitations.length > 0 && (
-        <div className="bg-white dark:bg-gray-800 rounded-lg border dark:border-gray-700">
-          <div className="px-6 py-4 border-b dark:border-gray-700">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Pending Invitations</h2>
-          </div>
+        <Card padding="none">
+          <CardHeader flush border title="Pending invitations" />
 
-          <div className="divide-y dark:divide-gray-700">
+          <div className="divide-y">
             {pendingInvitations.map((invitation) => (
-              <div key={invitation.id} className="px-6 py-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700">
+              <div key={invitation.id} className="px-6 py-4 flex items-center justify-between hover:bg-cream-50">
                 <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center">
-                    <Mail className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                  <div className="w-10 h-10 bg-sand-200 rounded-full flex items-center justify-center">
+                    <Mail className="w-5 h-5 text-text-secondary" />
                   </div>
 
                   <div>
-                    <p className="font-medium text-gray-900 dark:text-white">{invitation.email}</p>
-                    <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                    <p className="font-medium text-heading">{invitation.email}</p>
+                    <div className="flex items-center gap-2 text-sm text-text-secondary">
                       <Clock className="w-4 h-4" />
                       Expires {new Date(invitation.expires_at).toLocaleDateString()}
                     </div>
                   </div>
                 </div>
-                
                 <div className="flex items-center gap-3">
                   <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                    ROLE_COLORS[invitation.role?.codename] || 'bg-gray-100 text-gray-800'
+                    ROLE_COLORS[invitation.role?.codename] || 'bg-cream-100 text-text'
                   }`}>
                     {invitation.role?.name}
                   </span>
-                  
                   {isOwnerOrAdmin() && (
                     <div className="flex items-center gap-1">
                       <button
@@ -410,21 +354,21 @@ export default function TeamManagement() {
                           navigator.clipboard.writeText(link);
                           toast.success('Invite link copied to clipboard!');
                         }}
-                        className="p-2 hover:bg-blue-100 rounded-lg text-gray-500 hover:text-blue-600"
+                        className="p-2 hover:bg-orange-100 rounded-lg text-text-secondary hover:text-link"
                         title="Copy invite link"
                       >
                         <Link className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => handleResendInvitation(invitation.id)}
-                        className="p-2 hover:bg-gray-100 rounded-lg text-gray-500 hover:text-gray-700"
+                        className="p-2 hover:bg-cream-100 rounded-lg text-text-secondary hover:text-bark-700"
                         title="Resend invitation"
                       >
                         <RefreshCw className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => handleRevokeInvitation(invitation.id)}
-                        className="p-2 hover:bg-red-100 rounded-lg text-gray-500 hover:text-red-600"
+                        className="p-2 hover:bg-danger-bg rounded-lg text-text-secondary hover:text-danger"
                         title="Revoke invitation"
                       >
                         <XCircle className="w-4 h-4" />
@@ -435,7 +379,7 @@ export default function TeamManagement() {
               </div>
             ))}
           </div>
-        </div>
+        </Card>
       )}
 
       {/* Invite Modal */}
@@ -478,8 +422,8 @@ export default function TeamManagement() {
 
       {/* Click outside to close dropdown */}
       {activeDropdown && (
-        <div 
-          className="fixed inset-0 z-0" 
+        <div
+          className="fixed inset-0 z-0"
           onClick={() => setActiveDropdown(null)}
         />
       )}
@@ -524,47 +468,47 @@ function InviteModal({ roles, onClose, onSuccess }) {
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-md">
-        <div className="flex items-center justify-between px-6 py-4 border-b dark:border-gray-700">
+      <div className="bg-surface-raised rounded-card shadow-xl w-full max-w-md">
+        <div className="flex items-center justify-between px-6 py-4 border-b">
           <div className="flex items-center gap-2">
-            <UserPlus className="w-5 h-5 text-primary dark:text-green-400" />
-            <h2 className="text-lg font-semibold dark:text-white">Invite Team Member</h2>
+            <UserPlus className="w-5 h-5 text-primary" />
+            <h2 className="text-lg">Invite Team Member</h2>
           </div>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+          <button aria-label="Close" onClick={onClose} className="text-text-muted hover:text-bark-600">
             <X className="w-5 h-5" />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           {error && (
-            <div className="p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg flex items-start gap-2">
-              <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0" />
-              <span className="text-red-700 dark:text-red-300 text-sm">{error}</span>
+            <div className="p-3 bg-danger-bg border border-danger/25 rounded-card flex items-start gap-2">
+              <AlertCircle className="w-5 h-5 text-danger flex-shrink-0" />
+              <span className="text-danger text-sm">{error}</span>
             </div>
           )}
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-bark-700 mb-1">
               Email Address *
             </label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-200 focus:ring-2 focus:ring-primary focus:border-transparent"
+              className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
               placeholder="colleague@example.com"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-bark-700 mb-1">
               Role *
             </label>
             <select
               value={roleId}
               onChange={(e) => setRoleId(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-200 focus:ring-2 focus:ring-primary focus:border-transparent"
+              className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
               required
             >
               {roles.map((role) => (
@@ -574,20 +518,20 @@ function InviteModal({ roles, onClose, onSuccess }) {
               ))}
             </select>
             {roleId && (
-              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+              <p className="mt-1 text-xs text-text-secondary">
                 {ROLE_DESCRIPTIONS[roles.find(r => r.id === parseInt(roleId))?.codename] || ''}
               </p>
             )}
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-bark-700 mb-1">
               Personal Message (optional)
             </label>
             <textarea
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-200 focus:ring-2 focus:ring-primary focus:border-transparent"
+              className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
               rows={3}
               placeholder="Welcome to the team!"
             />
@@ -597,7 +541,7 @@ function InviteModal({ roles, onClose, onSuccess }) {
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+              className="flex-1 px-4 py-2 border border-border-strong rounded-button text-bark-700 hover:bg-cream-50"
             >
               Cancel
             </button>
@@ -633,29 +577,29 @@ function EditRoleModal({ member, roles, onClose, onSave }) {
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-md">
-        <div className="flex items-center justify-between px-6 py-4 border-b dark:border-gray-700">
-          <h2 className="text-lg font-semibold dark:text-white">Change Role</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+      <div className="bg-surface-raised rounded-card shadow-xl w-full max-w-md">
+        <div className="flex items-center justify-between px-6 py-4 border-b">
+          <h2 className="text-lg">Change Role</h2>
+          <button aria-label="Close" onClick={onClose} className="text-text-muted hover:text-bark-600">
             <X className="w-5 h-5" />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+          <div className="flex items-center gap-3 p-3 bg-cream-50 rounded-lg">
             <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
               <span className="text-white font-medium">
                 {member.user?.first_name?.[0] || member.user?.email?.[0]?.toUpperCase()}
               </span>
             </div>
             <div>
-              <p className="font-medium dark:text-white">{member.user?.first_name} {member.user?.last_name}</p>
-              <p className="text-sm text-gray-500 dark:text-gray-400">{member.user?.email}</p>
+              <p className="font-medium">{member.user?.first_name} {member.user?.last_name}</p>
+              <p className="text-sm text-text-secondary">{member.user?.email}</p>
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-bark-700 mb-2">
               Select New Role
             </label>
             <div className="space-y-2">
@@ -664,8 +608,8 @@ function EditRoleModal({ member, roles, onClose, onSave }) {
                   key={role.id}
                   className={`flex items-start gap-3 p-3 border rounded-lg cursor-pointer transition-colors ${
                     selectedRoleId === role.id
-                      ? 'border-primary bg-primary-light dark:bg-green-900/20'
-                      : 'border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
+                      ? 'border-primary bg-primary-light'
+                      : 'border-border hover:bg-cream-50'
                   }`}
                 >
                   <input
@@ -677,8 +621,8 @@ function EditRoleModal({ member, roles, onClose, onSave }) {
                     className="mt-1 text-primary focus:ring-primary"
                   />
                   <div>
-                    <p className="font-medium text-gray-900 dark:text-white">{role.name}</p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                    <p className="font-medium text-heading">{role.name}</p>
+                    <p className="text-sm text-text-secondary">
                       {ROLE_DESCRIPTIONS[role.codename] || ''}
                     </p>
                   </div>
@@ -691,7 +635,7 @@ function EditRoleModal({ member, roles, onClose, onSave }) {
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+              className="flex-1 px-4 py-2 border border-border-strong rounded-button text-bark-700 hover:bg-cream-50"
             >
               Cancel
             </button>
@@ -740,15 +684,15 @@ function TransferOwnershipModal({ member, companyName, onClose, onConfirm }) {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full">
-        <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+      <div className="bg-surface-raised rounded-card shadow-2xl max-w-md w-full">
+        <div className="p-6 border-b border-border">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-orange-100 dark:bg-orange-900/30 rounded-lg">
-              <AlertTriangle className="w-6 h-6 text-orange-600 dark:text-orange-400" />
+            <div className="p-2 bg-orange-100 rounded-lg">
+              <AlertTriangle className="w-6 h-6 text-orange-600" />
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Transfer Ownership</h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400">This action cannot be undone</p>
+              <h3 className="text-lg text-heading">Transfer Ownership</h3>
+              <p className="text-sm text-text-secondary">This action cannot be undone</p>
             </div>
           </div>
         </div>
@@ -756,19 +700,19 @@ function TransferOwnershipModal({ member, companyName, onClose, onConfirm }) {
         <form onSubmit={handleSubmit}>
           <div className="p-6 space-y-4">
             {error && (
-              <div className="p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg flex items-start gap-2">
-                <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
-                <span className="text-red-700 dark:text-red-300 text-sm">{error}</span>
+              <div className="p-3 bg-danger-bg border border-danger/25 rounded-card flex items-start gap-2">
+                <AlertCircle className="w-5 h-5 text-danger flex-shrink-0 mt-0.5" />
+                <span className="text-danger text-sm">{error}</span>
               </div>
             )}
 
-            <div className="p-4 bg-orange-50 dark:bg-orange-900/30 border border-orange-200 dark:border-orange-800 rounded-lg">
-              <p className="text-sm text-orange-800 dark:text-orange-200">
+            <div className="p-4 bg-orange-50 border border-orange-200 rounded-card">
+              <p className="text-sm text-orange-800">
                 <strong>Warning:</strong> You are about to transfer ownership of{' '}
                 <strong>{companyName}</strong> to{' '}
                 <strong>{member.user.first_name} {member.user.last_name}</strong> ({member.user.email}).
               </p>
-              <ul className="mt-3 text-sm text-orange-700 dark:text-orange-300 space-y-1">
+              <ul className="mt-3 text-sm text-orange-700 space-y-1">
                 <li>• You will become an Admin</li>
                 <li>• {member.user.first_name || 'The new owner'} will have full control</li>
                 <li>• Only the new owner can reverse this</li>
@@ -776,26 +720,26 @@ function TransferOwnershipModal({ member, companyName, onClose, onConfirm }) {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-bark-700 mb-2">
                 Type <strong>TRANSFER</strong> to confirm
               </label>
               <input
                 type="text"
                 value={confirmText}
                 onChange={(e) => setConfirmText(e.target.value.toUpperCase())}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-200 focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                 placeholder="TRANSFER"
                 autoComplete="off"
               />
             </div>
           </div>
 
-          <div className="p-6 border-t border-gray-200 dark:border-gray-700 flex gap-3">
+          <div className="p-6 border-t border-border flex gap-3">
             <button
               type="button"
               onClick={onClose}
               disabled={loading}
-              className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50"
+              className="flex-1 px-4 py-2 border border-border-strong rounded-button text-bark-700 hover:bg-cream-50 disabled:opacity-50"
             >
               Cancel
             </button>

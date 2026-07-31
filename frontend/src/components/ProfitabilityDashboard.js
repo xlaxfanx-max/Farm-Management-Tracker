@@ -236,9 +236,9 @@ const ProfitabilityDashboard = () => {
   const closeDrillDown = () => setDrillDown(prev => ({ ...prev, isOpen: false }));
 
   const ProfitIndicator = ({ value, showArrow = true }) => {
-    if (value === null || value === undefined) return <span className="text-gray-400">-</span>;
+    if (value === null || value === undefined) return <span className="text-text-muted">-</span>;
     const isPositive = value >= 0;
-    const colorClass = isPositive ? 'text-primary' : 'text-red-600';
+    const colorClass = isPositive ? 'text-primary' : 'text-danger';
 
     return (
       <span className={`flex items-center gap-1 ${colorClass}`}>
@@ -258,21 +258,21 @@ const ProfitabilityDashboard = () => {
   const FiltersBar = () => (
     <div className="flex flex-wrap gap-4 mb-6">
       <div className="flex-1 min-w-[200px]">
-        <label className="block text-sm font-medium text-gray-700 mb-1">Season</label>
+        <label className="block text-sm font-medium text-bark-700 mb-1">Season</label>
         <SeasonSelector
           value={selectedSeason}
           onChange={setSelectedSeason}
           cropCategory="citrus"
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
+          className="w-full border border-border-strong rounded-card px-3 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
           placeholder="Select Season"
         />
       </div>
       <div className="flex-1 min-w-[200px]">
-        <label className="block text-sm font-medium text-gray-700 mb-1">Packinghouse</label>
+        <label className="block text-sm font-medium text-bark-700 mb-1">Packinghouse</label>
         <select
           value={selectedPackinghouse}
           onChange={(e) => setSelectedPackinghouse(e.target.value)}
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
+          className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
         >
           <option value="">All Packinghouses</option>
           {packinghouses.map(ph => (
@@ -294,8 +294,8 @@ const ProfitabilityDashboard = () => {
     return (
       <div className="space-y-6">
         {message && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <div className="flex items-center gap-2 text-blue-700">
+          <div className="bg-orange-50 border border-orange-200 rounded-card p-4">
+            <div className="flex items-center gap-2 text-orange-700">
               <BarChart3 size={18} />
               <span>{message}</span>
             </div>
@@ -340,20 +340,20 @@ const ProfitabilityDashboard = () => {
 
         {/* Per-Unit Summary */}
         {summary.total_bins > 0 && (
-          <div className="bg-white rounded-xl border border-gray-200 p-5">
-            <h4 className="text-sm font-medium text-gray-500 mb-3">Per-{unitSingular} Breakdown</h4>
+          <div className="bg-surface-raised rounded-card border border-border p-5">
+            <h4 className="text-sm text-text-secondary mb-3">Per-{unitSingular} Breakdown</h4>
             <div className="flex flex-wrap gap-6">
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 bg-green-500 rounded"></div>
-                <span className="text-sm text-gray-700">Gross: {formatCurrency(summary.gross_revenue / summary.total_bins)}/{unitSingular.toLowerCase()}</span>
+                <span className="text-sm text-bark-700">Gross: {formatCurrency(summary.gross_revenue / summary.total_bins)}/{unitSingular.toLowerCase()}</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 bg-orange-500 rounded"></div>
-                <span className="text-sm text-gray-700">Deductions: {formatCurrency(summary.total_deductions / summary.total_bins)}/{unitSingular.toLowerCase()}</span>
+                <span className="text-sm text-bark-700">Deductions: {formatCurrency(summary.total_deductions / summary.total_bins)}/{unitSingular.toLowerCase()}</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-3 h-3 bg-blue-600 rounded"></div>
-                <span className="text-sm font-medium text-blue-600">
+                <div className="w-3 h-3 bg-primary rounded"></div>
+                <span className="text-sm font-medium text-link">
                   Net: {formatCurrency(summary.avg_net_per_bin || summary.net_settlement / summary.total_bins)}/{unitSingular.toLowerCase()}
                 </span>
               </div>
@@ -366,7 +366,7 @@ const ProfitabilityDashboard = () => {
           <SectionCard title="Returns by Field">
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-gray-50">
+                <thead className="bg-cream-50 bg-surface-sunken">
                   <tr>
                     <th className={`${tableHeaderClass} text-left`}>Field</th>
                     <th className={`${tableHeaderClass} text-right`}>{unitLabel}</th>
@@ -377,23 +377,23 @@ const ProfitabilityDashboard = () => {
                     <th className={`${tableHeaderClass} text-right`}>Margin</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200">
+                <tbody className="divide-y divide-border">
                   {by_field.map((field) => (
                     <React.Fragment key={field.field_id}>
                       <tr
-                        className="hover:bg-gray-50 cursor-pointer"
+                        className="hover:bg-cream-50 cursor-pointer"
                         onClick={() => toggleFieldExpand(field.field_id)}
                       >
                         <td className={tableCellClass}>
                           <div className="flex items-center gap-2">
                             {expandedFields[field.field_id] ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                             <div>
-                              <div className="font-medium text-gray-900">{field.field_name}</div>
-                              <div className="text-xs text-gray-500">{field.farm_name}</div>
+                              <div className="font-medium text-heading">{field.field_name}</div>
+                              <div className="text-xs text-text-secondary">{field.farm_name}</div>
                             </div>
                           </div>
                         </td>
-                        <td className={`${tableCellClass} text-right text-gray-700`}>
+                        <td className={`${tableCellClass} text-right text-bark-700`}>
                           {formatNumber(field.total_bins)}
                         </td>
                         <td className={`${tableCellClass} text-right text-primary`}>
@@ -402,10 +402,10 @@ const ProfitabilityDashboard = () => {
                         <td className={`${tableCellClass} text-right text-orange-600`}>
                           {formatCurrency(field.total_deductions)}
                         </td>
-                        <td className={`${tableCellClass} text-right font-medium text-blue-600`}>
+                        <td className={`${tableCellClass} text-right font-medium text-link`}>
                           {formatCurrency(field.net_settlement)}
                         </td>
-                        <td className={`${tableCellClass} text-right font-medium text-gray-700`}>
+                        <td className={`${tableCellClass} text-right font-medium text-bark-700`}>
                           {formatCurrency(field.net_per_bin)}
                         </td>
                         <td className={`${tableCellClass} text-right`}>
@@ -414,31 +414,31 @@ const ProfitabilityDashboard = () => {
                       </tr>
                       {expandedFields[field.field_id] && (
                         <tr>
-                          <td colSpan={7} className="bg-gray-50 px-4 py-3">
+                          <td colSpan={7} className="bg-cream-50 px-4 py-3">
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                               <div>
-                                <span className="text-gray-500">Packinghouse:</span>
-                                <span className="ml-2 text-gray-900">{field.packinghouse_name}</span>
+                                <span className="text-text-secondary">Packinghouse:</span>
+                                <span className="ml-2 text-heading">{field.packinghouse_name}</span>
                               </div>
                               <div>
-                                <span className="text-gray-500">Pool:</span>
-                                <span className="ml-2 text-gray-900">{field.pool_name}</span>
+                                <span className="text-text-secondary">Pool:</span>
+                                <span className="ml-2 text-heading">{field.pool_name}</span>
                               </div>
                               <div>
-                                <span className="text-gray-500">Gross/{unitSingular}:</span>
+                                <span className="text-text-secondary">Gross/{unitSingular}:</span>
                                 <span className="ml-2 text-primary">{formatCurrency(field.gross_per_bin)}</span>
                               </div>
                               <div>
-                                <span className="text-gray-500">Deductions/{unitSingular}:</span>
+                                <span className="text-text-secondary">Deductions/{unitSingular}:</span>
                                 <span className="ml-2 text-orange-600">{formatCurrency(field.deductions_per_bin)}</span>
                               </div>
                               <div>
-                                <span className="text-gray-500">Net/{unitSingular}:</span>
-                                <span className="ml-2 text-blue-600">{formatCurrency(field.net_per_bin)}</span>
+                                <span className="text-text-secondary">Net/{unitSingular}:</span>
+                                <span className="ml-2 text-link">{formatCurrency(field.net_per_bin)}</span>
                               </div>
                               <div>
-                                <span className="text-gray-500">Deliveries:</span>
-                                <span className="ml-2 text-gray-900">{field.delivery_count}</span>
+                                <span className="text-text-secondary">Deliveries:</span>
+                                <span className="ml-2 text-heading">{field.delivery_count}</span>
                               </div>
                             </div>
                           </td>
@@ -457,7 +457,7 @@ const ProfitabilityDashboard = () => {
           <SectionCard title="Returns by Pool">
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-gray-50">
+                <thead className="bg-cream-50 bg-surface-sunken">
                   <tr>
                     <th className={`${tableHeaderClass} text-left`}>Pool</th>
                     <th className={`${tableHeaderClass} text-right`}>{unitLabel}</th>
@@ -468,16 +468,16 @@ const ProfitabilityDashboard = () => {
                     <th className={`${tableHeaderClass} text-right`}>Margin</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200">
+                <tbody className="divide-y divide-border">
                   {by_pool.map((pool) => (
-                    <tr key={pool.pool_id} className="hover:bg-gray-50">
+                    <tr key={pool.pool_id} className="hover:bg-cream-50">
                       <td className={tableCellClass}>
                         <div>
-                          <div className="font-medium text-gray-900">{pool.pool_name}</div>
-                          <div className="text-xs text-gray-500">{pool.packinghouse_name} - {pool.commodity}</div>
+                          <div className="font-medium text-heading">{pool.pool_name}</div>
+                          <div className="text-xs text-text-secondary">{pool.packinghouse_name} - {pool.commodity}</div>
                         </div>
                       </td>
-                      <td className={`${tableCellClass} text-right text-gray-700`}>
+                      <td className={`${tableCellClass} text-right text-bark-700`}>
                         {formatNumber(pool.total_bins)}
                       </td>
                       <td className={`${tableCellClass} text-right text-primary`}>
@@ -486,10 +486,10 @@ const ProfitabilityDashboard = () => {
                       <td className={`${tableCellClass} text-right text-orange-600`}>
                         {formatCurrency(pool.total_deductions)}
                       </td>
-                      <td className={`${tableCellClass} text-right font-medium text-blue-600`}>
+                      <td className={`${tableCellClass} text-right font-medium text-link`}>
                         {formatCurrency(pool.net_settlement)}
                       </td>
-                      <td className={`${tableCellClass} text-right font-medium text-gray-700`}>
+                      <td className={`${tableCellClass} text-right font-medium text-bark-700`}>
                         {formatCurrency(pool.net_per_bin)}
                       </td>
                       <td className={`${tableCellClass} text-right`}>
@@ -543,45 +543,45 @@ const ProfitabilityDashboard = () => {
 
         {/* Category Breakdown */}
         <SectionCard title="Deductions by Category">
-          <div className="divide-y divide-gray-200">
+          <div className="divide-y divide-border">
             {deductionData.by_category.map((category) => (
               <div key={category.category}>
                 <div
-                  className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-gray-50"
+                  className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-cream-50"
                   onClick={() => toggleCategoryExpand(category.category)}
                 >
                   <div className="flex items-center gap-3">
                     {expandedCategories[category.category] ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                     <div>
-                      <div className="font-medium text-gray-900">{category.label}</div>
-                      <div className="text-xs text-gray-500">{category.items.length} items</div>
+                      <div className="font-medium text-heading">{category.label}</div>
+                      <div className="text-xs text-text-secondary">{category.items.length} items</div>
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="font-medium text-gray-900">{formatCurrency(category.total_amount)}</div>
-                    <div className="flex items-center gap-2 text-xs text-gray-500">
+                    <div className="font-medium text-heading">{formatCurrency(category.total_amount)}</div>
+                    <div className="flex items-center gap-2 text-xs text-text-secondary">
                       <span>{formatCurrency(category.per_bin)}/{unitSingular.toLowerCase()}</span>
-                      <span className="px-1.5 py-0.5 bg-gray-100 rounded">{category.percent_of_total}%</span>
+                      <span className="px-1.5 py-0.5 bg-cream-100 rounded">{category.percent_of_total}%</span>
                     </div>
                   </div>
                 </div>
 
                 {expandedCategories[category.category] && (
-                  <div className="bg-gray-50 px-4 py-2">
+                  <div className="bg-cream-50 px-4 py-2">
                     <table className="w-full text-sm">
                       <thead>
-                        <tr className="text-xs text-gray-500 uppercase">
+                        <tr className="text-xs text-text-secondary uppercase">
                           <th className="text-left py-2">Description</th>
                           <th className="text-right py-2">Amount</th>
                           <th className="text-right py-2">Per {unitSingular}</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-gray-200">
+                      <tbody className="divide-y divide-border">
                         {category.items.map((item, idx) => (
                           <tr key={idx}>
-                            <td className="py-2 text-gray-700">{item.description}</td>
-                            <td className="py-2 text-right text-gray-700">{formatCurrency(item.amount)}</td>
-                            <td className="py-2 text-right text-gray-500">{formatCurrency(item.per_bin)}</td>
+                            <td className="py-2 text-bark-700">{item.description}</td>
+                            <td className="py-2 text-right text-bark-700">{formatCurrency(item.amount)}</td>
+                            <td className="py-2 text-right text-text-secondary">{formatCurrency(item.per_bin)}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -594,11 +594,11 @@ const ProfitabilityDashboard = () => {
         </SectionCard>
 
         {/* Visual breakdown bar */}
-        <div className="bg-white rounded-xl border border-gray-200 p-5">
-          <h4 className="text-sm font-medium text-gray-500 mb-3">Distribution by Category</h4>
+        <div className="bg-surface-raised rounded-card border border-border p-5">
+          <h4 className="text-sm text-text-secondary mb-3">Distribution by Category</h4>
           <div className="flex h-8 rounded-lg overflow-hidden">
             {deductionData.by_category.map((cat, idx) => {
-              const colors = ['bg-blue-500', 'bg-green-500', 'bg-yellow-500', 'bg-purple-500', 'bg-pink-500', 'bg-gray-500'];
+              const colors = ['bg-primary', 'bg-green-500', 'bg-yellow-500', 'bg-bark-500', 'bg-bark-500', 'bg-bark-500'];
               return (
                 <div
                   key={cat.category}
@@ -615,11 +615,11 @@ const ProfitabilityDashboard = () => {
           </div>
           <div className="flex flex-wrap gap-4 mt-3">
             {deductionData.by_category.map((cat, idx) => {
-              const colors = ['bg-blue-500', 'bg-green-500', 'bg-yellow-500', 'bg-purple-500', 'bg-pink-500', 'bg-gray-500'];
+              const colors = ['bg-primary', 'bg-green-500', 'bg-yellow-500', 'bg-bark-500', 'bg-bark-500', 'bg-bark-500'];
               return (
                 <div key={cat.category} className="flex items-center gap-2 text-xs">
                   <div className={`w-3 h-3 rounded ${colors[idx % colors.length]}`}></div>
-                  <span className="text-gray-600">{cat.label} ({cat.percent_of_total}%)</span>
+                  <span className="text-bark-600">{cat.label} ({cat.percent_of_total}%)</span>
                 </div>
               );
             })}
@@ -640,47 +640,47 @@ const ProfitabilityDashboard = () => {
         {/* Season Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {seasonData.seasons.map((season, idx) => (
-            <div key={season.season} className={`bg-white rounded-xl border border-gray-200 p-5 ${idx === 0 ? 'ring-2 ring-blue-500' : ''}`}>
+            <div key={season.season} className={`bg-surface-raised rounded-card border border-border p-5 ${idx === 0 ? 'ring-2 ring-ring' : ''}`}>
               <div className="flex items-center justify-between mb-3">
-                <h4 className="text-lg font-semibold text-gray-900">{season.season}</h4>
-                {idx === 0 && <span className="text-xs px-2 py-0.5 bg-blue-100 text-blue-800 rounded">Current</span>}
+                <h4 className="text-lg text-heading">{season.season}</h4>
+                {idx === 0 && <span className="text-xs px-2 py-0.5 bg-orange-100 text-orange-700 rounded">Current</span>}
               </div>
 
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-gray-500">Total {unitLabel}</span>
+                  <span className="text-text-secondary">Total {unitLabel}</span>
                   <div className="flex items-center gap-2">
-                    <span className="text-gray-900">{formatNumber(season.total_bins)}</span>
+                    <span className="text-heading">{formatNumber(season.total_bins)}</span>
                     {season.volume_change !== null && season.volume_change !== undefined && (
                       <VarianceIndicator value={season.volume_change} />
                     )}
                   </div>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-500">Gross Revenue</span>
+                  <span className="text-text-secondary">Gross Revenue</span>
                   <span className="text-primary">{formatCurrency(season.gross_revenue)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-500">Deductions</span>
+                  <span className="text-text-secondary">Deductions</span>
                   <span className="text-orange-600">{formatCurrency(season.total_deductions)}</span>
                 </div>
                 <div className="border-t pt-2 mt-2">
                   <div className="flex justify-between font-medium">
-                    <span className="text-gray-700">Net Return</span>
-                    <span className="text-blue-600">{formatCurrency(season.net_settlement)}</span>
+                    <span className="text-bark-700">Net Return</span>
+                    <span className="text-link">{formatCurrency(season.net_settlement)}</span>
                   </div>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-500">Net/{unitSingular}</span>
+                  <span className="text-text-secondary">Net/{unitSingular}</span>
                   <div className="flex items-center gap-2">
-                    <span className="font-medium text-gray-900">{formatCurrency(season.net_per_bin)}</span>
+                    <span className="font-medium text-heading">{formatCurrency(season.net_per_bin)}</span>
                     {season.net_per_bin_change !== null && season.net_per_bin_change !== undefined && (
                       <VarianceIndicator value={season.net_per_bin_change} />
                     )}
                   </div>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-500">Return Margin</span>
+                  <span className="text-text-secondary">Return Margin</span>
                   <MarginBadge value={season.return_margin} />
                 </div>
               </div>
@@ -692,7 +692,7 @@ const ProfitabilityDashboard = () => {
         <SectionCard title={`Per-${unitSingular} Metrics Trend`}>
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gray-50">
+              <thead className="bg-cream-50 bg-surface-sunken">
                 <tr>
                   <th className={`${tableHeaderClass} text-left`}>Season</th>
                   <th className={`${tableHeaderClass} text-right`}>{unitLabel}</th>
@@ -702,14 +702,14 @@ const ProfitabilityDashboard = () => {
                   <th className={`${tableHeaderClass} text-right`}>Margin</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200">
+              <tbody className="divide-y divide-border">
                 {seasonData.seasons.map((season) => (
-                  <tr key={season.season} className="hover:bg-gray-50">
-                    <td className={`${tableCellClass} font-medium text-gray-900`}>{season.season}</td>
-                    <td className={`${tableCellClass} text-right text-gray-700`}>{formatNumber(season.total_bins)}</td>
+                  <tr key={season.season} className="hover:bg-cream-50">
+                    <td className={`${tableCellClass} font-medium text-heading`}>{season.season}</td>
+                    <td className={`${tableCellClass} text-right text-bark-700`}>{formatNumber(season.total_bins)}</td>
                     <td className={`${tableCellClass} text-right text-primary`}>{formatCurrency(season.gross_per_bin)}</td>
                     <td className={`${tableCellClass} text-right text-orange-600`}>{formatCurrency(season.deductions_per_bin)}</td>
-                    <td className={`${tableCellClass} text-right font-medium text-blue-600`}>{formatCurrency(season.net_per_bin)}</td>
+                    <td className={`${tableCellClass} text-right font-medium text-link`}>{formatCurrency(season.net_per_bin)}</td>
                     <td className={`${tableCellClass} text-right`}>
                       <MarginBadge value={season.return_margin} />
                     </td>

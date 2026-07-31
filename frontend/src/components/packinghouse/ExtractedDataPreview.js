@@ -146,35 +146,35 @@ const ExtractedDataPreview = ({ data, statementType, onChange }) => {
 
     return (
       <div className="flex items-center justify-between py-1">
-        <span className="text-sm text-gray-600">{label}</span>
+        <span className="text-sm text-bark-600">{label}</span>
         {isEditing ? (
           <div className="flex items-center space-x-1">
             <input
               type={type}
               value={tempValue}
               onChange={(e) => setTempValue(e.target.value)}
-              className="w-32 px-2 py-1 text-sm border border-primary rounded focus:outline-none"
+              className="w-32 px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
               autoFocus
               onKeyDown={(e) => {
                 if (e.key === 'Enter') saveEdit();
                 if (e.key === 'Escape') cancelEdit();
               }}
             />
-            <button onClick={saveEdit} className="p-1 text-primary hover:bg-primary-light rounded">
+            <button aria-label="Confirm" onClick={saveEdit} className="p-1 text-primary hover:bg-primary-light rounded">
               <Check className="w-4 h-4" />
             </button>
-            <button onClick={cancelEdit} className="p-1 text-gray-400 hover:bg-gray-100 rounded">
+            <button aria-label="Close" onClick={cancelEdit} className="p-1 text-text-muted hover:bg-cream-100 rounded">
               <X className="w-4 h-4" />
             </button>
           </div>
         ) : (
           <div className="flex items-center space-x-1">
-            <span className="text-sm font-medium text-gray-900">
+            <span className="text-sm font-medium text-heading">
               {value ?? '-'}
             </span>
-            <button
+            <button aria-label="Edit"
               onClick={() => startEditing(path, value)}
-              className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded"
+              className="p-1 text-text-muted hover:text-bark-600 hover:bg-cream-100 rounded"
             >
               <Edit2 className="w-3 h-3" />
             </button>
@@ -187,23 +187,23 @@ const ExtractedDataPreview = ({ data, statementType, onChange }) => {
   const SectionHeader = ({ title, section, icon: Icon }) => (
     <button
       onClick={() => toggleSection(section)}
-      className="w-full flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+      className="w-full flex items-center justify-between p-3 bg-cream-50 rounded-lg hover:bg-cream-100 transition-colors"
     >
       <div className="flex items-center">
-        {Icon && <Icon className="w-4 h-4 mr-2 text-gray-600" />}
-        <span className="font-medium text-gray-900">{title}</span>
+        {Icon && <Icon className="w-4 h-4 mr-2 text-bark-600" />}
+        <span className="font-medium text-heading">{title}</span>
       </div>
       {expandedSections[section] ? (
-        <ChevronUp className="w-4 h-4 text-gray-400" />
+        <ChevronUp className="w-4 h-4 text-text-muted" />
       ) : (
-        <ChevronDown className="w-4 h-4 text-gray-400" />
+        <ChevronDown className="w-4 h-4 text-text-muted" />
       )}
     </button>
   );
 
   if (!data) {
     return (
-      <div className="p-4 text-center text-gray-500">
+      <div className="p-4 text-center text-text-secondary">
         No extracted data available
       </div>
     );
@@ -212,7 +212,7 @@ const ExtractedDataPreview = ({ data, statementType, onChange }) => {
   return (
     <div className="space-y-4">
       {/* Header Section */}
-      <div className="border border-gray-200 rounded-lg overflow-hidden">
+      <div className="border border-border rounded-card overflow-hidden">
         <SectionHeader title="Statement Header" section="header" />
         {expandedSections.header && (
           <div className="p-4 grid grid-cols-2 gap-x-8 gap-y-1">
@@ -233,26 +233,26 @@ const ExtractedDataPreview = ({ data, statementType, onChange }) => {
 
       {/* Blocks Section (for multi-block statements like Mission Produce) */}
       {data.blocks && data.blocks.length > 0 && (
-        <div className="border border-gray-200 rounded-lg overflow-hidden">
+        <div className="border border-border rounded-card overflow-hidden">
           <SectionHeader title={`Blocks (${data.blocks.length})`} section="blocks" icon={Package} />
           {expandedSections.blocks && (
             <div className="p-4 overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="text-left text-gray-600 border-b">
-                    <th className="pb-2 font-medium">Block ID</th>
-                    <th className="pb-2 font-medium">Name</th>
-                    {data.blocks[0]?.weight_lbs != null && <th className="pb-2 font-medium text-right">Weight (lbs)</th>}
-                    {data.blocks[0]?.bins != null && <th className="pb-2 font-medium text-right">Bins</th>}
-                    {data.blocks[0]?.gross_dollars != null && <th className="pb-2 font-medium text-right">Gross $</th>}
-                    {data.blocks[0]?.net_dollars != null && <th className="pb-2 font-medium text-right">Net $</th>}
+                  <tr className="text-left text-bark-600 border-b">
+                    <th className="pb-2 font-semibold">Block ID</th>
+                    <th className="pb-2 font-semibold">Name</th>
+                    {data.blocks[0]?.weight_lbs != null && <th className="pb-2 font-semibold text-right">Weight (lbs)</th>}
+                    {data.blocks[0]?.bins != null && <th className="pb-2 font-semibold text-right">Bins</th>}
+                    {data.blocks[0]?.gross_dollars != null && <th className="pb-2 font-semibold text-right">Gross $</th>}
+                    {data.blocks[0]?.net_dollars != null && <th className="pb-2 font-semibold text-right">Net $</th>}
                   </tr>
                 </thead>
                 <tbody>
                   {data.blocks.map((block, i) => (
-                    <tr key={i} className="border-b border-gray-100">
+                    <tr key={i} className="border-b border-border">
                       <td className="py-2 font-medium">{block.block_id}</td>
-                      <td className="py-2 text-gray-600">{block.block_name || '-'}</td>
+                      <td className="py-2 text-bark-600">{block.block_name || '-'}</td>
                       {data.blocks[0]?.weight_lbs != null && (
                         <td className="py-2 text-right">{block.weight_lbs?.toLocaleString() ?? '-'}</td>
                       )}
@@ -275,7 +275,7 @@ const ExtractedDataPreview = ({ data, statementType, onChange }) => {
       )}
 
       {/* Summary Section */}
-      <div className="border border-gray-200 rounded-lg overflow-hidden">
+      <div className="border border-border rounded-card overflow-hidden">
         <SectionHeader title="Summary" section="summary" icon={Package} />
         {expandedSections.summary && (
           <div className="p-4 grid grid-cols-2 gap-x-8 gap-y-1">
@@ -292,7 +292,7 @@ const ExtractedDataPreview = ({ data, statementType, onChange }) => {
       </div>
 
       {/* Grade Lines Section */}
-      <div className="border border-gray-200 rounded-lg overflow-hidden">
+      <div className="border border-border rounded-card overflow-hidden">
         <SectionHeader
           title={`Grade Breakdown${data.grade_lines?.length ? ` (${data.grade_lines.length} lines)` : ''}`}
           section="gradeLines"
@@ -318,16 +318,16 @@ const ExtractedDataPreview = ({ data, statementType, onChange }) => {
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="text-left text-gray-600 border-b">
-                        {hasBlocks && <th className="pb-2 font-medium">Block</th>}
-                        <th className="pb-2 font-medium">Grade</th>
-                        <th className="pb-2 font-medium">Size</th>
-                        <th className="pb-2 font-medium text-right">Qty</th>
-                        <th className="pb-2 font-medium text-right">%</th>
+                      <tr className="text-left text-bark-600 border-b">
+                        {hasBlocks && <th className="pb-2 font-semibold">Block</th>}
+                        <th className="pb-2 font-semibold">Grade</th>
+                        <th className="pb-2 font-semibold">Size</th>
+                        <th className="pb-2 font-semibold text-right">Qty</th>
+                        <th className="pb-2 font-semibold text-right">%</th>
                         {(statementType === 'settlement' || statementType === 'grower_statement') && (
                           <>
-                            <th className="pb-2 font-medium text-right">FOB Rate</th>
-                            <th className="pb-2 font-medium text-right">Total</th>
+                            <th className="pb-2 font-semibold text-right">FOB Rate</th>
+                            <th className="pb-2 font-semibold text-right">Total</th>
                           </>
                         )}
                         <th className="pb-2 w-8"></th>
@@ -343,23 +343,23 @@ const ExtractedDataPreview = ({ data, statementType, onChange }) => {
                         return (
                           <React.Fragment key={blockId || 'all'}>
                             {hasBlocks && blockLabel && (
-                              <tr className="bg-gray-50">
-                                <td colSpan={99} className="py-2 px-2 font-medium text-gray-700 text-xs uppercase tracking-wide">
+                              <tr className="bg-cream-50">
+                                <td colSpan={99} className="py-2 px-2 font-medium text-bark-700 text-xs uppercase tracking-wide">
                                   {blockLabel}
                                 </td>
                               </tr>
                             )}
                             {blockLines.map(({ line, idx: index }) => (
-                              <tr key={index} className="border-b border-gray-100">
+                              <tr key={index} className="border-b border-border">
                                 {hasBlocks && (
-                                  <td className="py-2 text-xs text-gray-400">{line.block_id || ''}</td>
+                                  <td className="py-2 text-xs text-text-muted">{line.block_id || ''}</td>
                                 )}
                                 <td className="py-2">
                                   <input
                                     type="text"
                                     value={line.grade || ''}
                                     onChange={(e) => updateGradeLine(index, 'grade', e.target.value)}
-                                    className="w-24 px-2 py-1 border border-gray-200 rounded text-sm focus:border-primary focus:outline-none"
+                                    className="w-24 px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                                   />
                                 </td>
                                 <td className="py-2">
@@ -367,7 +367,7 @@ const ExtractedDataPreview = ({ data, statementType, onChange }) => {
                                     type="text"
                                     value={line.size || ''}
                                     onChange={(e) => updateGradeLine(index, 'size', e.target.value)}
-                                    className="w-16 px-2 py-1 border border-gray-200 rounded text-sm focus:border-primary focus:outline-none"
+                                    className="w-16 px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                                   />
                                 </td>
                                 <td className="py-2 text-right">
@@ -375,7 +375,7 @@ const ExtractedDataPreview = ({ data, statementType, onChange }) => {
                                     type="number"
                                     value={line.quantity || ''}
                                     onChange={(e) => updateGradeLine(index, 'quantity', parseFloat(e.target.value) || 0)}
-                                    className="w-20 px-2 py-1 border border-gray-200 rounded text-sm text-right focus:border-primary focus:outline-none"
+                                    className="w-20 text-right px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                                   />
                                 </td>
                                 <td className="py-2 text-right">
@@ -384,7 +384,7 @@ const ExtractedDataPreview = ({ data, statementType, onChange }) => {
                                     value={line.percent || ''}
                                     onChange={(e) => updateGradeLine(index, 'percent', parseFloat(e.target.value) || 0)}
                                     step="0.01"
-                                    className="w-16 px-2 py-1 border border-gray-200 rounded text-sm text-right focus:border-primary focus:outline-none"
+                                    className="w-16 text-right px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                                   />
                                 </td>
                                 {(statementType === 'settlement' || statementType === 'grower_statement') && (
@@ -395,7 +395,7 @@ const ExtractedDataPreview = ({ data, statementType, onChange }) => {
                                         value={line.fob_rate || ''}
                                         onChange={(e) => updateGradeLine(index, 'fob_rate', parseFloat(e.target.value) || null)}
                                         step="0.000001"
-                                        className="w-24 px-2 py-1 border border-gray-200 rounded text-sm text-right focus:border-primary focus:outline-none"
+                                        className="w-24 text-right px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                                       />
                                     </td>
                                     <td className="py-2 text-right">
@@ -404,15 +404,15 @@ const ExtractedDataPreview = ({ data, statementType, onChange }) => {
                                         value={line.total_amount || ''}
                                         onChange={(e) => updateGradeLine(index, 'total_amount', parseFloat(e.target.value) || null)}
                                         step="0.01"
-                                        className="w-24 px-2 py-1 border border-gray-200 rounded text-sm text-right focus:border-primary focus:outline-none"
+                                        className="w-24 text-right px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                                       />
                                     </td>
                                   </>
                                 )}
                                 <td className="py-2">
-                                  <button
+                                  <button aria-label="Delete"
                                     onClick={() => removeGradeLine(index)}
-                                    className="p-1 text-red-400 hover:text-red-600 hover:bg-red-50 rounded"
+                                    className="p-1 text-danger hover:text-danger hover:bg-danger-bg rounded"
                                   >
                                     <Trash2 className="w-4 h-4" />
                                   </button>
@@ -427,7 +427,7 @@ const ExtractedDataPreview = ({ data, statementType, onChange }) => {
                 </div>
               );
             })() : (
-              <p className="text-sm text-gray-500 text-center py-2">No grade lines</p>
+              <p className="text-sm text-text-secondary text-center py-2">No grade lines</p>
             )}
             <button
               onClick={addGradeLine}
@@ -442,7 +442,7 @@ const ExtractedDataPreview = ({ data, statementType, onChange }) => {
 
       {/* Financials Section (for settlements) */}
       {(statementType === 'settlement' || statementType === 'grower_statement') && (
-        <div className="border border-gray-200 rounded-lg overflow-hidden">
+        <div className="border border-border rounded-card overflow-hidden">
           <SectionHeader title="Financials" section="financials" icon={DollarSign} />
           {expandedSections.financials && (
             <div className="p-4 grid grid-cols-2 gap-x-8 gap-y-1">
@@ -462,7 +462,7 @@ const ExtractedDataPreview = ({ data, statementType, onChange }) => {
 
       {/* Deductions Section (for settlements) */}
       {(statementType === 'settlement' || statementType === 'grower_statement') && (
-        <div className="border border-gray-200 rounded-lg overflow-hidden">
+        <div className="border border-border rounded-card overflow-hidden">
           <SectionHeader title="Deductions" section="deductions" />
           {expandedSections.deductions && (
             <div className="p-4">
@@ -470,24 +470,24 @@ const ExtractedDataPreview = ({ data, statementType, onChange }) => {
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="text-left text-gray-600 border-b">
-                        <th className="pb-2 font-medium">Category</th>
-                        <th className="pb-2 font-medium">Description</th>
-                        <th className="pb-2 font-medium text-right">Qty</th>
-                        <th className="pb-2 font-medium">Unit</th>
-                        <th className="pb-2 font-medium text-right">Rate</th>
-                        <th className="pb-2 font-medium text-right">Amount</th>
+                      <tr className="text-left text-bark-600 border-b">
+                        <th className="pb-2 font-semibold">Category</th>
+                        <th className="pb-2 font-semibold">Description</th>
+                        <th className="pb-2 font-semibold text-right">Qty</th>
+                        <th className="pb-2 font-semibold">Unit</th>
+                        <th className="pb-2 font-semibold text-right">Rate</th>
+                        <th className="pb-2 font-semibold text-right">Amount</th>
                         <th className="pb-2 w-8"></th>
                       </tr>
                     </thead>
                     <tbody>
                       {data.deductions.map((ded, index) => (
-                        <tr key={index} className="border-b border-gray-100">
+                        <tr key={index} className="border-b border-border">
                           <td className="py-2">
                             <select
                               value={ded.category || 'other'}
                               onChange={(e) => updateDeduction(index, 'category', e.target.value)}
-                              className="px-2 py-1 border border-gray-200 rounded text-sm focus:border-primary focus:outline-none"
+                              className="px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                             >
                               <option value="packing">Packing</option>
                               <option value="assessment">Assessment</option>
@@ -502,7 +502,7 @@ const ExtractedDataPreview = ({ data, statementType, onChange }) => {
                               type="text"
                               value={ded.description || ''}
                               onChange={(e) => updateDeduction(index, 'description', e.target.value)}
-                              className="w-32 px-2 py-1 border border-gray-200 rounded text-sm focus:border-primary focus:outline-none"
+                              className="w-32 px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                             />
                           </td>
                           <td className="py-2 text-right">
@@ -510,7 +510,7 @@ const ExtractedDataPreview = ({ data, statementType, onChange }) => {
                               type="number"
                               value={ded.quantity || ''}
                               onChange={(e) => updateDeduction(index, 'quantity', parseFloat(e.target.value) || 0)}
-                              className="w-20 px-2 py-1 border border-gray-200 rounded text-sm text-right focus:border-primary focus:outline-none"
+                              className="w-20 text-right px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                             />
                           </td>
                           <td className="py-2">
@@ -518,7 +518,7 @@ const ExtractedDataPreview = ({ data, statementType, onChange }) => {
                               type="text"
                               value={ded.unit || ''}
                               onChange={(e) => updateDeduction(index, 'unit', e.target.value)}
-                              className="w-16 px-2 py-1 border border-gray-200 rounded text-sm focus:border-primary focus:outline-none"
+                              className="w-16 px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                             />
                           </td>
                           <td className="py-2 text-right">
@@ -527,7 +527,7 @@ const ExtractedDataPreview = ({ data, statementType, onChange }) => {
                               value={ded.rate || ''}
                               onChange={(e) => updateDeduction(index, 'rate', parseFloat(e.target.value) || 0)}
                               step="0.0000001"
-                              className="w-24 px-2 py-1 border border-gray-200 rounded text-sm text-right focus:border-primary focus:outline-none"
+                              className="w-24 text-right px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                             />
                           </td>
                           <td className="py-2 text-right">
@@ -536,13 +536,13 @@ const ExtractedDataPreview = ({ data, statementType, onChange }) => {
                               value={ded.amount || ''}
                               onChange={(e) => updateDeduction(index, 'amount', parseFloat(e.target.value) || 0)}
                               step="0.01"
-                              className="w-24 px-2 py-1 border border-gray-200 rounded text-sm text-right focus:border-primary focus:outline-none"
+                              className="w-24 text-right px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                             />
                           </td>
                           <td className="py-2">
-                            <button
+                            <button aria-label="Delete"
                               onClick={() => removeDeduction(index)}
-                              className="p-1 text-red-400 hover:text-red-600 hover:bg-red-50 rounded"
+                              className="p-1 text-danger hover:text-danger hover:bg-danger-bg rounded"
                             >
                               <Trash2 className="w-4 h-4" />
                             </button>
@@ -553,7 +553,7 @@ const ExtractedDataPreview = ({ data, statementType, onChange }) => {
                   </table>
                 </div>
               ) : (
-                <p className="text-sm text-gray-500 text-center py-2">No deductions</p>
+                <p className="text-sm text-text-secondary text-center py-2">No deductions</p>
               )}
               <button
                 onClick={addDeduction}
@@ -569,7 +569,7 @@ const ExtractedDataPreview = ({ data, statementType, onChange }) => {
 
       {/* Quality Notes */}
       {data.quality_notes && (
-        <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+        <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-card">
           <span className="text-sm font-medium text-yellow-800">Quality Notes: </span>
           <span className="text-sm text-yellow-700">{data.quality_notes}</span>
         </div>

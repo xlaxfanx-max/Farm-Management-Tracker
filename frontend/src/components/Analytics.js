@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { STATUS_HEX } from '../theme/finchChartTheme';
 import {
   BarChart3,
   DollarSign,
@@ -33,7 +34,7 @@ const BarChart = ({ data, title, valueKey = 'count', labelKey = 'month', height 
   if (!data || data.length === 0) {
     return (
       <SectionCard title={title}>
-        <div className="flex items-center justify-center h-40 text-gray-400 p-6">
+        <div className="flex items-center justify-center h-40 text-text-muted p-6">
           <p>No data available</p>
         </div>
       </SectionCard>
@@ -48,7 +49,7 @@ const BarChart = ({ data, title, valueKey = 'count', labelKey = 'month', height 
           dataKeys={[valueKey]}
           xKey={labelKey}
           height={height}
-          colors={['#22c55e']}
+          colors={[STATUS_HEX.success]}
         />
       </div>
     </SectionCard>
@@ -63,7 +64,7 @@ const DonutChart = ({ data, title, valueKey = 'revenue', labelKey = 'crop' }) =>
   if (!data || data.length === 0) {
     return (
       <SectionCard title={title}>
-        <div className="flex items-center justify-center h-40 text-gray-400 p-6">
+        <div className="flex items-center justify-center h-40 text-text-muted p-6">
           <p>No data available</p>
         </div>
       </SectionCard>
@@ -94,7 +95,7 @@ const HorizontalBarChart = ({ data, title }) => {
   if (!data || data.length === 0) {
     return (
       <SectionCard title={title}>
-        <div className="flex items-center justify-center h-40 text-gray-400 p-6">
+        <div className="flex items-center justify-center h-40 text-text-muted p-6">
           <p>No data available</p>
         </div>
       </SectionCard>
@@ -110,8 +111,8 @@ const HorizontalBarChart = ({ data, title }) => {
           xKey="name"
           height={250}
           horizontal
-          colors={['#22c55e']}
-          barColors={data.slice(0, 8).map(d => (d.profit >= 0 ? '#22c55e' : '#f87171'))}
+          colors={[STATUS_HEX.success]}
+          barColors={data.slice(0, 8).map(d => (d.profit >= 0 ? STATUS_HEX.success : STATUS_HEX.danger))}
           valueFormatter={(val) => formatCurrency(val, { compact: true })}
         />
       </div>
@@ -130,29 +131,29 @@ const ContractorTable = ({ contractors }) => {
       icon={Users}
     >
       {!contractors || contractors.length === 0 ? (
-        <div className="text-center py-6 text-gray-400 px-6">
+        <div className="text-center py-6 text-text-muted px-6">
           <p>No contractor data available</p>
         </div>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-left border-b border-gray-200">
-                <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase">Contractor</th>
-                <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase text-right">Bins</th>
-                <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase text-right">Cost</th>
-                <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase text-right">$/Bin</th>
-                <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase text-right">Bins/Hr</th>
+              <tr className="text-left border-b border-border">
+                <th className="px-4 py-3 text-xs font-semibold text-text-secondary uppercase tracking-caps">Contractor</th>
+                <th className="px-4 py-3 text-xs font-semibold text-text-secondary uppercase text-right tracking-caps">Bins</th>
+                <th className="px-4 py-3 text-xs font-semibold text-text-secondary uppercase text-right tracking-caps">Cost</th>
+                <th className="px-4 py-3 text-xs font-semibold text-text-secondary uppercase text-right tracking-caps">$/Bin</th>
+                <th className="px-4 py-3 text-xs font-semibold text-text-secondary uppercase text-right tracking-caps">Bins/Hr</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
+            <tbody className="divide-y divide-border">
               {contractors.map((c, index) => (
-                <tr key={index} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 font-medium text-gray-900">{c.name}</td>
-                  <td className="px-4 py-3 text-right text-gray-600">{formatNumber(c.bins)}</td>
-                  <td className="px-4 py-3 text-right text-gray-600">{formatCurrency(c.cost)}</td>
-                  <td className="px-4 py-3 text-right font-medium text-gray-900">{formatCurrency(c.cost_per_bin)}</td>
-                  <td className="px-4 py-3 text-right text-gray-600">{formatNumber(c.bins_per_hour, 1)}</td>
+                <tr key={index} className="hover:bg-cream-50">
+                  <td className="px-4 py-3 font-medium text-bark-700">{c.name}</td>
+                  <td className="px-4 py-3 text-right text-bark-600">{formatNumber(c.bins)}</td>
+                  <td className="px-4 py-3 text-right text-bark-600">{formatCurrency(c.cost)}</td>
+                  <td className="px-4 py-3 text-right font-medium text-bark-700">{formatCurrency(c.cost_per_bin)}</td>
+                  <td className="px-4 py-3 text-right text-bark-600">{formatNumber(c.bins_per_hour, 1)}</td>
                 </tr>
               ))}
             </tbody>
@@ -174,8 +175,8 @@ const InsightsPanel = ({ topPerformers, needsAttention }) => {
         {/* Top Performers */}
         {topPerformers && topPerformers.length > 0 && (
           <div className="mb-6">
-            <h4 className="text-sm font-medium text-gray-500 mb-3 flex items-center gap-2">
-              <Award className="w-4 h-4 text-green-500" />
+            <h4 className="text-sm text-text-secondary mb-3 flex items-center gap-2">
+              <Award className="w-4 h-4 text-green-600" />
               Top Performing Fields
             </h4>
             <div className="space-y-2">
@@ -192,7 +193,7 @@ const InsightsPanel = ({ topPerformers, needsAttention }) => {
         {/* Needs Attention */}
         {needsAttention && needsAttention.length > 0 && (
           <div>
-            <h4 className="text-sm font-medium text-gray-500 mb-3 flex items-center gap-2">
+            <h4 className="text-sm text-text-secondary mb-3 flex items-center gap-2">
               <AlertTriangle className="w-4 h-4 text-orange-500" />
               Needs Attention
             </h4>
@@ -208,7 +209,7 @@ const InsightsPanel = ({ topPerformers, needsAttention }) => {
         )}
 
         {(!topPerformers || topPerformers.length === 0) && (!needsAttention || needsAttention.length === 0) && (
-          <div className="text-center py-6 text-gray-400">
+          <div className="text-center py-6 text-text-muted">
             <p>Add harvests to see insights</p>
           </div>
         )}
@@ -281,11 +282,10 @@ export default function Analytics() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-            <BarChart3 className="w-7 h-7 text-primary" />
-            Analytics {selectedSeason && <span className="text-lg font-normal text-gray-500">• {selectedSeason} Season</span>}
-          </h1>
-          <p className="text-gray-600">Financial and operational insights for your farm</p>
+          <p className="text-text-secondary">
+            Financial and operational insights for your farm
+            {selectedSeason && <span className="text-text-muted"> · {selectedSeason} season</span>}
+          </p>
         </div>
 
         <div className="flex items-center gap-3">
@@ -293,14 +293,14 @@ export default function Analytics() {
             value={selectedSeason}
             onChange={setSelectedSeason}
             cropCategory="citrus"
-            className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
+            className="border border-border-strong rounded-card px-3 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
             placeholder="Select Season"
           />
 
           <select
             value={selectedFarm}
             onChange={(e) => setSelectedFarm(e.target.value)}
-            className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
+            className="px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
           >
             <option value="all">All Farms</option>
             {farms.map(f => (
@@ -329,7 +329,7 @@ export default function Analytics() {
       {data && !loading && !error && (
         <div className="space-y-6">
           {/* KPI Cards Row */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6 gap-4">
             <AnalyticsCard
               title="Total Revenue"
               value={formatCurrency(data.financial?.total_revenue, { compact: true })}
@@ -410,12 +410,12 @@ export default function Analytics() {
             <SectionCard title="Top Products Used">
               <div className="grid grid-cols-2 md:grid-cols-5 gap-4 p-5 pt-2">
                 {data.applications.top_products.map((product, index) => (
-                  <div key={index} className="bg-gray-50 rounded-lg p-3">
-                    <div className="text-sm font-medium text-gray-900 truncate" title={product.product_name}>
+                  <div key={index} className="bg-cream-50 rounded-lg p-3">
+                    <div className="text-sm font-medium text-heading truncate" title={product.product_name}>
                       {product.product_name}
                     </div>
                     <div className="text-lg font-bold text-primary">{product.count}</div>
-                    <div className="text-xs text-gray-500">applications</div>
+                    <div className="text-xs text-text-secondary">applications</div>
                   </div>
                 ))}
               </div>

@@ -55,10 +55,10 @@ export default function PURConfirmStep({ reports, farms, filename, batchId, onCo
   if (result && result.created_events > 0) {
     return (
       <div className="p-8 text-center space-y-6">
-        <CheckCircle className="w-16 h-16 text-green-500 mx-auto" />
+        <CheckCircle className="w-16 h-16 text-green-600 mx-auto" />
         <div>
-          <h2 className="text-xl font-bold text-gray-900">Import Complete</h2>
-          <p className="text-gray-500 mt-1">
+          <h2 className="text-xl text-heading">Import Complete</h2>
+          <p className="text-text-secondary mt-1">
             Successfully imported {result.created_events} application event{result.created_events !== 1 ? 's' : ''}
           </p>
         </div>
@@ -70,11 +70,11 @@ export default function PURConfirmStep({ reports, farms, filename, batchId, onCo
         </div>
 
         {result.errors?.length > 0 && (
-          <div className="text-left mx-auto max-w-lg p-3 bg-amber-50 border border-amber-200 rounded-lg">
-            <p className="text-sm font-medium text-amber-700 mb-1">
+          <div className="text-left mx-auto max-w-lg p-3 bg-yellow-100 border border-yellow-200 rounded-card">
+            <p className="text-sm font-medium text-yellow-700 mb-1">
               Some reports had issues:
             </p>
-            <ul className="text-sm text-amber-600 space-y-1">
+            <ul className="text-sm text-yellow-600 space-y-1">
               {result.errors.map((e, i) => <li key={i}>- {e}</li>)}
             </ul>
           </div>
@@ -83,7 +83,7 @@ export default function PURConfirmStep({ reports, farms, filename, batchId, onCo
         <div className="flex items-center justify-center gap-3 pt-4">
           <button
             onClick={onReset}
-            className="flex items-center gap-2 px-4 py-2 text-sm text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50"
+            className="flex items-center gap-2 px-4 py-2 text-sm text-bark-600 border border-border-strong rounded-button hover:bg-cream-50"
           >
             <RotateCcw className="w-4 h-4" />
             Import Another
@@ -97,15 +97,15 @@ export default function PURConfirmStep({ reports, farms, filename, batchId, onCo
   if (result && result.created_events === 0) {
     return (
       <div className="p-8 text-center space-y-6">
-        <AlertCircle className="w-16 h-16 text-red-400 mx-auto" />
+        <AlertCircle className="w-16 h-16 text-danger mx-auto" />
         <div>
-          <h2 className="text-xl font-bold text-gray-900">Import Failed</h2>
-          <p className="text-gray-500 mt-1">No events were created.</p>
+          <h2 className="text-xl text-heading">Import Failed</h2>
+          <p className="text-text-secondary mt-1">No events were created.</p>
         </div>
 
         {result.errors?.length > 0 && (
-          <div className="text-left mx-auto max-w-lg p-3 bg-red-50 border border-red-200 rounded-lg">
-            <ul className="text-sm text-red-700 space-y-1">
+          <div className="text-left mx-auto max-w-lg p-3 bg-danger-bg border border-danger/25 rounded-card">
+            <ul className="text-sm text-danger space-y-1">
               {result.errors.map((e, i) => <li key={i}>- {e}</li>)}
             </ul>
           </div>
@@ -113,7 +113,7 @@ export default function PURConfirmStep({ reports, farms, filename, batchId, onCo
 
         <button
           onClick={onReset}
-          className="flex items-center gap-2 px-4 py-2 text-sm text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 mx-auto"
+          className="flex items-center gap-2 px-4 py-2 text-sm text-bark-600 border border-border-strong rounded-button hover:bg-cream-50 mx-auto"
         >
           <RotateCcw className="w-4 h-4" />
           Start Over
@@ -126,16 +126,16 @@ export default function PURConfirmStep({ reports, farms, filename, batchId, onCo
   return (
     <div className="p-6 space-y-6">
       <div>
-        <h2 className="text-lg font-semibold text-gray-900">Confirm Import</h2>
-        <p className="text-sm text-gray-500 mt-0.5">
+        <h2 className="text-lg text-heading">Confirm Import</h2>
+        <p className="text-sm text-text-secondary mt-0.5">
           Review the summary below and click Import to save to your records.
         </p>
       </div>
 
       {/* Summary */}
-      <div className="bg-gray-50 rounded-lg p-4 space-y-3">
-        <div className="flex items-center gap-2 text-sm text-gray-700">
-          <FileText className="w-4 h-4 text-gray-400" />
+      <div className="bg-cream-50 rounded-lg p-4 space-y-3">
+        <div className="flex items-center gap-2 text-sm text-bark-700">
+          <FileText className="w-4 h-4 text-text-muted" />
           <span className="font-medium">{filename}</span>
         </div>
 
@@ -154,16 +154,16 @@ export default function PURConfirmStep({ reports, farms, filename, batchId, onCo
           return (
             <div
               key={r._index ?? idx}
-              className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg text-sm"
+              className="flex items-center justify-between p-3 bg-surface-raised border border-border rounded-card text-sm"
             >
               <div className="flex items-center gap-3">
-                <span className="font-mono text-gray-500 text-xs w-6">#{idx + 1}</span>
-                <span className="font-medium text-gray-900">
+                <span className="font-mono text-text-secondary text-xs w-6">#{idx + 1}</span>
+                <span className="font-medium text-heading">
                   PUR {r.pur_number || '-'}
                 </span>
-                <span className="text-gray-500">{r.date_started}</span>
+                <span className="text-text-secondary">{r.date_started}</span>
               </div>
-              <div className="flex items-center gap-4 text-gray-600">
+              <div className="flex items-center gap-4 text-bark-600">
                 <span className="flex items-center gap-1">
                   <MapPin className="w-3.5 h-3.5" />
                   {farmName}
@@ -180,14 +180,14 @@ export default function PURConfirmStep({ reports, farms, filename, batchId, onCo
 
       {/* Error */}
       {error && (
-        <div className="p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
-          <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
-          <p className="text-sm text-red-700">{error}</p>
+        <div className="p-3 bg-danger-bg border border-danger/25 rounded-card flex items-start gap-2">
+          <AlertCircle className="w-5 h-5 text-danger flex-shrink-0 mt-0.5" />
+          <p className="text-sm text-danger">{error}</p>
         </div>
       )}
 
       {/* Import button */}
-      <div className="flex items-center justify-end pt-4 border-t border-gray-200">
+      <div className="flex items-center justify-end pt-4 border-t border-border">
         <button
           onClick={handleImport}
           disabled={importing}
@@ -213,9 +213,9 @@ export default function PURConfirmStep({ reports, farms, filename, batchId, onCo
 function Stat({ label, value, subtitle }) {
   return (
     <div className="text-center">
-      <p className="text-2xl font-bold text-gray-900">{value}</p>
-      <p className="text-xs text-gray-500">{label}</p>
-      {subtitle && <p className="text-xs text-gray-400">{subtitle}</p>}
+      <p className="text-2xl font-bold text-heading">{value}</p>
+      <p className="text-xs text-text-secondary">{label}</p>
+      {subtitle && <p className="text-xs text-text-muted">{subtitle}</p>}
     </div>
   );
 }

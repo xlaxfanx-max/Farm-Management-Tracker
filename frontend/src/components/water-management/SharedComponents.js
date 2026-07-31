@@ -3,6 +3,7 @@
 // =============================================================================
 
 import React from 'react';
+import Button from '../ui/Button';
 import {
   AlertTriangle, CheckCircle, AlertCircle, Activity,
   TrendingUp, ArrowUpRight
@@ -13,39 +14,39 @@ import {
 // =============================================================================
 
 export const MetricCard = ({ title, value, subtitle, icon: Icon, trend, color = 'blue', onClick }) => {
-  const colorClasses = {
-    blue: 'from-blue-500 to-blue-600',
-    cyan: 'from-cyan-500 to-cyan-600',
-    green: 'from-green-500 to-green-600',
-    yellow: 'from-yellow-500 to-amber-600',
-    red: 'from-red-500 to-red-600',
-    purple: 'from-purple-500 to-purple-600',
+  // Only the icon chip carries the tint; the figure is always bark ink.
+  const chipClasses = {
+    blue: 'bg-orange-50 text-orange-600 border-orange-100',
+    cyan: 'bg-green-50 text-green-600 border-green-100',
+    green: 'bg-green-50 text-green-600 border-green-100',
+    yellow: 'bg-warning-bg text-yellow-600 border-yellow-300',
+    red: 'bg-danger-bg text-danger border-danger/25',
+    purple: 'bg-surface-sunken text-bark-500 border-border',
   };
 
   return (
     <div
-      className={`relative overflow-hidden bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-5 hover:shadow-md transition-all ${onClick ? 'cursor-pointer' : ''}`}
+      className={`bg-surface-raised rounded-card shadow-sm border border-border p-5 transition-all ${onClick ? 'cursor-pointer hover:shadow-md hover:border-border-strong' : ''}`}
       onClick={onClick}
     >
-      <div className="flex items-start justify-between">
-        <div className="flex-1">
-          <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{title}</p>
-          <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{value}</p>
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex-1 min-w-0">
+          <p className="text-xs font-semibold uppercase tracking-caps text-text-secondary mb-2 leading-tight">{title}</p>
+          <p className="font-display text-2xl xl:text-3xl text-heading leading-tight">{value}</p>
           {subtitle && (
-            <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{subtitle}</p>
+            <p className="text-sm text-text-secondary mt-2">{subtitle}</p>
           )}
           {trend && (
-            <div className={`flex items-center gap-1 mt-2 text-xs ${trend > 0 ? 'text-primary' : 'text-red-600'}`}>
+            <div className={`flex items-center gap-1 mt-2.5 text-sm font-mono tabular-nums ${trend > 0 ? 'text-success' : 'text-danger'}`}>
               <TrendingUp className={`w-3 h-3 ${trend < 0 ? 'rotate-180' : ''}`} />
               <span>{Math.abs(trend)}% vs last month</span>
             </div>
           )}
         </div>
-        <div className={`p-3 rounded-xl bg-gradient-to-br ${colorClasses[color]} shadow-lg`}>
-          <Icon className="w-5 h-5 text-white" />
+        <div className={`w-[30px] h-[30px] flex items-center justify-center rounded-button border flex-shrink-0 ${chipClasses[color] || chipClasses.blue}`}>
+          <Icon className="w-4 h-4" />
         </div>
       </div>
-      <div className={`absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r ${colorClasses[color]} opacity-60`} />
     </div>
   );
 };
@@ -56,23 +57,23 @@ export const MetricCard = ({ title, value, subtitle, icon: Icon, trend, color = 
 
 export const AlertBanner = ({ type, title, message, action, onAction }) => {
   const config = {
-    error: { bg: 'bg-red-50 dark:bg-red-900/30', border: 'border-red-200 dark:border-red-800', icon: AlertTriangle, iconColor: 'text-red-500 dark:text-red-400', textColor: 'text-red-800 dark:text-red-200' },
-    warning: { bg: 'bg-amber-50 dark:bg-amber-900/30', border: 'border-amber-200 dark:border-amber-800', icon: AlertCircle, iconColor: 'text-amber-500 dark:text-amber-400', textColor: 'text-amber-800 dark:text-amber-200' },
-    info: { bg: 'bg-blue-50 dark:bg-blue-900/30', border: 'border-blue-200 dark:border-blue-800', icon: Activity, iconColor: 'text-blue-500 dark:text-blue-400', textColor: 'text-blue-800 dark:text-blue-200' },
-    success: { bg: 'bg-primary-light dark:bg-green-900/30', border: 'border-green-200 dark:border-green-800', icon: CheckCircle, iconColor: 'text-green-500 dark:text-green-400', textColor: 'text-green-800 dark:text-green-200' },
+    error: { bg: 'bg-danger-bg', border: 'border-danger/25', icon: AlertTriangle, iconColor: 'text-danger', textColor: 'text-danger' },
+    warning: { bg: 'bg-warning-bg', border: 'border-yellow-300', icon: AlertCircle, iconColor: 'text-yellow-600', textColor: 'text-yellow-700' },
+    info: { bg: 'bg-green-50', border: 'border-green-200', icon: Activity, iconColor: 'text-info', textColor: 'text-green-700' },
+    success: { bg: 'bg-success-bg', border: 'border-green-200', icon: CheckCircle, iconColor: 'text-success', textColor: 'text-green-700' },
   };
 
   const { bg, border, icon: Icon, iconColor, textColor } = config[type] || config.info;
 
   return (
-    <div className={`${bg} ${border} border rounded-xl p-4 flex items-start gap-3`}>
+    <div className={`${bg} ${border} border rounded-card p-4 flex items-start gap-3`}>
       <Icon className={`w-5 h-5 ${iconColor} flex-shrink-0 mt-0.5`} />
       <div className="flex-1 min-w-0">
         <p className={`font-medium ${textColor}`}>{title}</p>
         {message && <p className={`text-sm ${textColor} opacity-80 mt-0.5`}>{message}</p>}
       </div>
       {action && (
-        <button
+        <button aria-label="Open"
           onClick={onAction}
           className={`text-sm font-medium ${textColor} hover:underline flex items-center gap-1`}
         >
@@ -88,21 +89,14 @@ export const AlertBanner = ({ type, title, message, action, onAction }) => {
 // QUICK ACTION BUTTON
 // =============================================================================
 
-export const QuickActionButton = ({ icon: Icon, label, onClick, color = 'blue' }) => {
-  const colorClasses = {
-    blue: 'bg-blue-600 hover:bg-blue-700',
-    cyan: 'bg-cyan-600 hover:bg-cyan-700',
-    green: 'bg-primary hover:bg-primary-hover',
-  };
-
+export const QuickActionButton = ({ icon: Icon, label, onClick, color = 'blue', variant }) => {
+  // Actions in a row read as one set — the lead action is the orange primary,
+  // the rest are neutral outlines. Colour here never encodes meaning.
+  const resolved = variant || (color === 'blue' ? 'primary' : 'secondary');
   return (
-    <button
-      onClick={onClick}
-      className={`flex items-center gap-2 px-4 py-2.5 ${colorClasses[color]} text-white rounded-lg text-sm font-medium transition-colors shadow-sm`}
-    >
-      <Icon className="w-4 h-4" />
+    <Button variant={resolved} size="md" icon={Icon} onClick={onClick}>
       {label}
-    </button>
+    </Button>
   );
 };
 

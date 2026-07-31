@@ -63,7 +63,7 @@ export const SEVERITY_COLORS = { error: 'red', warn: 'amber', info: 'blue' };
 
 // The EFEFEF equivalent: derived, machine-owned table cells.
 export const derivedCellClasses =
-  'inline-block rounded px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700/50 text-gray-500 dark:text-gray-400 italic';
+  'inline-block rounded px-1.5 py-0.5 bg-cream-100 text-text-secondary italic';
 
 // Tolerate both paginated ({results}) and bare-array list responses.
 export const rows = (res) => {

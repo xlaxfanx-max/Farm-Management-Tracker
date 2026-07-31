@@ -49,28 +49,28 @@ function FieldCard({
 
   return (
     <div
-      className={`bg-white dark:bg-gray-800 rounded-lg shadow border-2 p-4 hover:shadow-md transition-all cursor-pointer ${
-        isSelected ? 'border-blue-500' : 'border-gray-200 dark:border-gray-700'
+      className={`bg-surface-raised rounded-card shadow border-2 p-4 hover:shadow-md transition-all cursor-pointer ${
+        isSelected ? 'border-primary' : 'border-border'
       }`}
       onClick={() => onSelect(field.id)}
     >
       <div className="flex items-start justify-between mb-3">
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-1">
-            <Sprout className="w-4 h-4 text-primary dark:text-green-400" />
-            <h5 className="font-bold text-gray-900 dark:text-white">{field.name}</h5>
+            <Sprout className="w-4 h-4 text-primary" />
+            <h5 className="font-bold text-heading">{field.name}</h5>
           </div>
           {field.field_number && (
-            <p className="text-xs text-gray-500 dark:text-gray-400 font-mono">{field.field_number}</p>
+            <p className="text-xs text-text-secondary font-mono">{field.field_number}</p>
           )}
         </div>
         <div className="flex items-center gap-1 flex-wrap">
           {hasBoundary ? (
-            <span className="px-2 py-0.5 bg-green-100 dark:bg-green-900/50 text-primary dark:text-green-400 rounded text-xs">
+            <span className="px-2 py-0.5 bg-green-100 text-primary rounded text-xs">
               Mapped
             </span>
           ) : (
-            <span className="px-2 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 rounded text-xs">
+            <span className="px-2 py-0.5 bg-cream-100 text-text-secondary rounded text-xs">
               No boundary
             </span>
           )}
@@ -79,25 +79,25 @@ function FieldCard({
 
       <div className="space-y-2 mb-4">
         <div className="flex justify-between text-sm">
-          <span className="text-gray-600 dark:text-gray-400">Crop:</span>
-          <span className="font-medium text-gray-900 dark:text-white">
+          <span className="text-bark-600">Crop:</span>
+          <span className="font-medium text-heading">
             {field.crop_name || field.current_crop || 'Not set'}
           </span>
         </div>
         {field.rootstock_name && (
           <div className="flex justify-between text-sm">
-            <span className="text-gray-600 dark:text-gray-400">Rootstock:</span>
-            <span className="font-medium text-gray-900 dark:text-white">{field.rootstock_name}</span>
+            <span className="text-bark-600">Rootstock:</span>
+            <span className="font-medium text-heading">{field.rootstock_name}</span>
           </div>
         )}
         <div className="flex justify-between text-sm">
-          <span className="text-gray-600 dark:text-gray-400">Acres:</span>
-          <span className="font-medium text-gray-900 dark:text-white">{field.total_acres || '0'}</span>
+          <span className="text-bark-600">Acres:</span>
+          <span className="font-medium text-heading">{field.total_acres || '0'}</span>
         </div>
         {(field.row_spacing_ft || field.tree_spacing_ft) && (
           <div className="flex justify-between text-sm">
-            <span className="text-gray-600 dark:text-gray-400">Spacing:</span>
-            <span className="font-medium text-gray-900 dark:text-white">
+            <span className="text-bark-600">Spacing:</span>
+            <span className="font-medium text-heading">
               {field.row_spacing_ft && `${field.row_spacing_ft}ft rows`}
               {field.row_spacing_ft && field.tree_spacing_ft && ' × '}
               {field.tree_spacing_ft && `${field.tree_spacing_ft}ft trees`}
@@ -106,18 +106,18 @@ function FieldCard({
         )}
         {field.trees_per_acre && (
           <div className="flex justify-between text-sm">
-            <span className="text-gray-600 dark:text-gray-400">Density:</span>
-            <span className="font-medium text-gray-900 dark:text-white">{field.trees_per_acre} trees/acre</span>
+            <span className="text-bark-600">Density:</span>
+            <span className="font-medium text-heading">{field.trees_per_acre} trees/acre</span>
           </div>
         )}
         <div className="flex justify-between text-sm">
-          <span className="text-gray-600 dark:text-gray-400">County:</span>
-          <span className="font-medium text-gray-900 dark:text-white">{field.county || 'Not set'}</span>
+          <span className="text-bark-600">County:</span>
+          <span className="font-medium text-heading">{field.county || 'Not set'}</span>
         </div>
         {(field.plss_section || field.plss_township || field.plss_range) && (
           <div className="flex justify-between text-sm">
-            <span className="text-gray-600 dark:text-gray-400">Location:</span>
-            <span className="font-medium text-gray-900 dark:text-white text-xs">
+            <span className="text-bark-600">Location:</span>
+            <span className="font-medium text-heading text-xs">
               {field.plss_section && `S${field.plss_section}`}
               {field.plss_township && ` T${field.plss_township}`}
               {field.plss_range && ` R${field.plss_range}`}
@@ -126,40 +126,40 @@ function FieldCard({
         )}
         {field.organic_status && field.organic_status !== 'conventional' && (
           <div className="flex justify-between text-sm">
-            <span className="text-gray-600 dark:text-gray-400">Organic:</span>
-            <span className={`font-medium ${field.organic_status === 'certified' ? 'text-primary dark:text-green-400' : 'text-yellow-600 dark:text-yellow-400'}`}>
+            <span className="text-bark-600">Organic:</span>
+            <span className={`font-medium ${field.organic_status === 'certified' ? 'text-primary' : 'text-yellow-600'}`}>
               {field.organic_status === 'certified' ? 'Certified' : 'Transitional'}
             </span>
           </div>
         )}
         <div className="flex justify-between text-sm">
-          <span className="text-gray-600 dark:text-gray-400">Applications:</span>
-          <span className="font-medium text-blue-600 dark:text-blue-400">{applicationCount}</span>
+          <span className="text-bark-600">Applications:</span>
+          <span className="font-medium text-link">{applicationCount}</span>
         </div>
         {/* Satellite Tree Detection Data */}
         {field.latest_satellite_tree_count && (
-          <div className="mt-2 pt-2 border-t border-gray-100 dark:border-gray-700">
+          <div className="mt-2 pt-2 border-t border-border">
             <div className="flex justify-between text-sm">
-              <span className="text-gray-600 dark:text-gray-400 flex items-center gap-1">
+              <span className="text-bark-600 flex items-center gap-1">
                 <TreeDeciduous className="w-3 h-3" />
                 Detected Trees:
               </span>
-              <span className="font-medium text-primary dark:text-green-400">
+              <span className="font-medium text-primary">
                 {field.latest_satellite_tree_count.toLocaleString()}
               </span>
             </div>
             {field.latest_satellite_trees_per_acre && (
               <div className="flex justify-between text-sm">
-                <span className="text-gray-600 dark:text-gray-400">Trees/Acre:</span>
-                <span className="font-medium text-gray-900 dark:text-white">
+                <span className="text-bark-600">Trees/Acre:</span>
+                <span className="font-medium text-heading">
                   {field.latest_satellite_trees_per_acre.toFixed(1)}
                 </span>
               </div>
             )}
             {field.satellite_canopy_coverage_percent && (
               <div className="flex justify-between text-sm">
-                <span className="text-gray-600 dark:text-gray-400">Canopy:</span>
-                <span className="font-medium text-gray-900 dark:text-white">
+                <span className="text-bark-600">Canopy:</span>
+                <span className="font-medium text-heading">
                   {field.satellite_canopy_coverage_percent.toFixed(1)}%
                 </span>
               </div>
@@ -169,10 +169,10 @@ function FieldCard({
       </div>
 
       {/* Action Buttons - Desktop */}
-      <div className="hidden sm:flex gap-2 pt-3 border-t border-gray-100 dark:border-gray-700" onClick={e => e.stopPropagation()}>
+      <div className="hidden sm:flex gap-2 pt-3 border-t border-border" onClick={e => e.stopPropagation()}>
         <button
           onClick={() => onDrawBoundary(field, farmId)}
-          className="flex-1 flex items-center justify-center gap-1 px-3 py-1.5 bg-primary-light dark:bg-green-900/30 text-primary dark:text-green-400 rounded hover:bg-green-100 dark:hover:bg-green-900/50 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-primary"
+          className="flex-1 flex items-center justify-center gap-1 px-3 py-1.5 bg-primary-light text-primary rounded hover:bg-green-100 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-primary"
         >
           <MapPin size={14} />
           {hasBoundary ? 'Edit Map' : 'Draw Map'}
@@ -181,7 +181,7 @@ function FieldCard({
           <>
             <button
               onClick={() => onTreeSummary(field.id)}
-              className="flex items-center justify-center gap-1 px-3 py-1.5 bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded hover:bg-purple-100 dark:hover:bg-purple-900/50 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="flex items-center justify-center gap-1 px-3 py-1.5 bg-cream-100 text-bark-700 rounded hover:bg-sand-200 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-bark-500"
               title="View Satellite Tree Detection"
               aria-label={`View tree detection for ${field.name}`}
             >
@@ -189,7 +189,7 @@ function FieldCard({
             </button>
             <button
               onClick={() => onLiDARSummary(field.id)}
-              className="flex items-center justify-center gap-1 px-3 py-1.5 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded hover:bg-emerald-100 dark:hover:bg-emerald-900/50 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="flex items-center justify-center gap-1 px-3 py-1.5 bg-green-50 text-green-600 rounded hover:bg-green-100 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-green-500"
               title="View LiDAR Analysis"
               aria-label={`View LiDAR analysis for ${field.name}`}
             >
@@ -199,14 +199,14 @@ function FieldCard({
         )}
         <button
           onClick={() => onEdit(field)}
-          className="flex-1 flex items-center justify-center gap-1 px-3 py-1.5 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded hover:bg-blue-100 dark:hover:bg-blue-900/50 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="flex-1 flex items-center justify-center gap-1 px-3 py-1.5 bg-orange-50 text-link rounded hover:bg-orange-100 text-sm font-medium transition-colors focus:outline-none focus:ring-[3px] focus:ring-ring"
         >
           <Edit size={14} />
           Edit
         </button>
         <button
           onClick={() => onDelete(field.id)}
-          className="flex-1 flex items-center justify-center gap-1 px-3 py-1.5 bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded hover:bg-red-100 dark:hover:bg-red-900/50 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-red-500"
+          className="flex-1 flex items-center justify-center gap-1 px-3 py-1.5 bg-danger-bg text-danger rounded hover:bg-danger-bg text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-danger"
         >
           <Trash2 size={14} />
           Delete
@@ -214,11 +214,11 @@ function FieldCard({
       </div>
 
       {/* Action Buttons - Mobile */}
-      <div className="flex sm:hidden gap-2 pt-3 border-t border-gray-100 dark:border-gray-700" onClick={e => e.stopPropagation()}>
+      <div className="flex sm:hidden gap-2 pt-3 border-t border-border" onClick={e => e.stopPropagation()}>
         {/* Primary action: Draw/Edit Map */}
         <button
           onClick={() => onDrawBoundary(field, farmId)}
-          className="flex-1 flex items-center justify-center gap-1 px-3 py-2 bg-primary-light dark:bg-green-900/30 text-primary dark:text-green-400 rounded hover:bg-green-100 dark:hover:bg-green-900/50 text-sm font-medium transition-colors"
+          className="flex-1 flex items-center justify-center gap-1 px-3 py-2 bg-primary-light text-primary rounded hover:bg-green-100 text-sm font-medium transition-colors"
         >
           <MapPin size={14} />
           {hasBoundary ? 'Edit Map' : 'Draw Map'}
@@ -228,7 +228,7 @@ function FieldCard({
         <div className="relative" ref={mobileMenuRef}>
           <button
             onClick={() => setShowMobileMenu(!showMobileMenu)}
-            className="p-2 bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-primary"
+            className="p-2 bg-cream-50 text-bark-600 rounded hover:bg-cream-100 transition-colors focus:outline-none focus:ring-2 focus:ring-primary"
             title="More actions"
             aria-label={`More actions for ${field.name}`}
             aria-expanded={showMobileMenu}
@@ -238,7 +238,7 @@ function FieldCard({
 
           {/* Dropdown Menu */}
           {showMobileMenu && (
-            <div className="absolute right-0 bottom-full mb-1 w-44 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-50">
+            <div className="absolute right-0 bottom-full mb-1 w-44 bg-surface-raised rounded-card shadow-lg border border-border py-1 z-50">
               {hasBoundary && (
                 <>
                   <button
@@ -246,9 +246,9 @@ function FieldCard({
                       onTreeSummary(field.id);
                       setShowMobileMenu(false);
                     }}
-                    className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-bark-700 hover:bg-cream-50 transition-colors"
                   >
-                    <TreeDeciduous size={14} className="text-purple-600 dark:text-purple-400" />
+                    <TreeDeciduous size={14} className="text-bark-700" />
                     <span>Tree Detection</span>
                   </button>
                   <button
@@ -256,12 +256,12 @@ function FieldCard({
                       onLiDARSummary(field.id);
                       setShowMobileMenu(false);
                     }}
-                    className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-bark-700 hover:bg-cream-50 transition-colors"
                   >
-                    <Mountain size={14} className="text-emerald-600 dark:text-emerald-400" />
+                    <Mountain size={14} className="text-green-600" />
                     <span>LiDAR Analysis</span>
                   </button>
-                  <div className="border-t border-gray-100 dark:border-gray-700 my-1" />
+                  <div className="border-t border-border my-1" />
                 </>
               )}
               <button
@@ -269,9 +269,9 @@ function FieldCard({
                   onEdit(field);
                   setShowMobileMenu(false);
                 }}
-                className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-bark-700 hover:bg-cream-50 transition-colors"
               >
-                <Edit size={14} className="text-blue-600 dark:text-blue-400" />
+                <Edit size={14} className="text-link" />
                 <span>Edit Field</span>
               </button>
               <button
@@ -279,7 +279,7 @@ function FieldCard({
                   onDelete(field.id);
                   setShowMobileMenu(false);
                 }}
-                className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors"
+                className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-danger hover:bg-danger-bg transition-colors"
               >
                 <Trash2 size={14} />
                 <span>Delete Field</span>

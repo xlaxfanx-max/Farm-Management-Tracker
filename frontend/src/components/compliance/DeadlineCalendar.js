@@ -41,9 +41,9 @@ const getDaysUntil = (dateString) => {
 // Status badge component
 const StatusBadge = ({ status }) => {
   const styles = {
-    overdue: 'bg-red-100 text-red-700',
-    due_soon: 'bg-amber-100 text-amber-700',
-    upcoming: 'bg-blue-100 text-blue-700',
+    overdue: 'bg-danger-bg text-danger',
+    due_soon: 'bg-yellow-200 text-yellow-700',
+    upcoming: 'bg-orange-100 text-orange-700',
     completed: 'bg-green-100 text-primary',
   };
 
@@ -64,12 +64,12 @@ const StatusBadge = ({ status }) => {
 // Category badge
 const CategoryBadge = ({ category }) => {
   const styles = {
-    reporting: 'bg-purple-100 text-purple-700',
-    training: 'bg-blue-100 text-blue-700',
-    testing: 'bg-cyan-100 text-cyan-700',
-    renewal: 'bg-amber-100 text-amber-700',
+    reporting: 'bg-sand-200 text-bark-700',
+    training: 'bg-orange-100 text-orange-700',
+    testing: 'bg-green-100 text-green-700',
+    renewal: 'bg-yellow-200 text-yellow-700',
     inspection: 'bg-green-100 text-primary',
-    other: 'bg-gray-100 text-gray-700',
+    other: 'bg-cream-100 text-bark-700',
   };
 
   return (
@@ -85,7 +85,7 @@ const DeadlineRow = ({ deadline, onComplete, onEdit, onDelete }) => {
   const daysUntil = getDaysUntil(deadline.due_date);
 
   return (
-    <div className="flex items-center justify-between p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors">
+    <div className="flex items-center justify-between p-4 border-b border-border hover:bg-cream-50 transition-colors">
       <div className="flex items-center gap-4 flex-1 min-w-0">
         <button
           onClick={() => deadline.status !== 'completed' && onComplete(deadline.id)}
@@ -93,7 +93,7 @@ const DeadlineRow = ({ deadline, onComplete, onEdit, onDelete }) => {
           className={`flex-shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors
             ${deadline.status === 'completed'
               ? 'bg-green-500 border-primary text-white'
-              : 'border-gray-300 hover:border-primary'
+              : 'border-border-strong hover:border-primary'
             }`}
         >
           {deadline.status === 'completed' && <CheckCircle2 className="w-3 h-3" />}
@@ -101,22 +101,22 @@ const DeadlineRow = ({ deadline, onComplete, onEdit, onDelete }) => {
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
-            <h3 className={`font-medium truncate ${deadline.status === 'completed' ? 'text-gray-400 line-through' : 'text-gray-900'}`}>
+            <h3 className={` truncate ${deadline.status === 'completed' ? 'text-text-muted line-through' : 'text-heading'}`}>
               {deadline.name}
             </h3>
             <CategoryBadge category={deadline.category} />
           </div>
           {deadline.description && (
-            <p className="text-sm text-gray-500 truncate">{deadline.description}</p>
+            <p className="text-sm text-text-secondary truncate">{deadline.description}</p>
           )}
         </div>
       </div>
 
       <div className="flex items-center gap-4 ml-4">
         <div className="text-right">
-          <p className="text-sm font-medium text-gray-900">{formatDate(deadline.due_date)}</p>
+          <p className="text-sm font-medium text-heading">{formatDate(deadline.due_date)}</p>
           {deadline.status !== 'completed' && (
-            <p className={`text-xs ${daysUntil < 0 ? 'text-red-600' : daysUntil <= 7 ? 'text-amber-600' : 'text-gray-500'}`}>
+            <p className={`text-xs ${daysUntil < 0 ? 'text-danger' : daysUntil <= 7 ? 'text-yellow-600' : 'text-text-secondary'}`}>
               {daysUntil < 0 ? `${Math.abs(daysUntil)} days overdue` : daysUntil === 0 ? 'Due today' : `${daysUntil} days left`}
             </p>
           )}
@@ -125,9 +125,9 @@ const DeadlineRow = ({ deadline, onComplete, onEdit, onDelete }) => {
         <StatusBadge status={deadline.status} />
 
         <div className="relative">
-          <button
+          <button aria-label="More actions"
             onClick={() => setShowMenu(!showMenu)}
-            className="p-1 text-gray-400 hover:text-gray-600 rounded"
+            className="p-1 text-text-muted hover:text-bark-600 rounded"
           >
             <MoreVertical className="w-4 h-4" />
           </button>
@@ -135,24 +135,24 @@ const DeadlineRow = ({ deadline, onComplete, onEdit, onDelete }) => {
           {showMenu && (
             <>
               <div className="fixed inset-0 z-10" onClick={() => setShowMenu(false)} />
-              <div className="absolute right-0 top-full mt-1 w-36 bg-white border border-gray-200 rounded-lg shadow-lg z-20 py-1">
+              <div className="absolute right-0 top-full mt-1 w-36 bg-surface-raised border border-border rounded-card shadow-lg z-20 py-1">
                 <button
                   onClick={() => { onEdit(deadline); setShowMenu(false); }}
-                  className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                  className="w-full px-3 py-2 text-left text-sm text-bark-700 hover:bg-cream-50 flex items-center gap-2"
                 >
                   <Edit2 className="w-4 h-4" /> Edit
                 </button>
                 {deadline.status !== 'completed' && (
                   <button
                     onClick={() => { onComplete(deadline.id); setShowMenu(false); }}
-                    className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                    className="w-full px-3 py-2 text-left text-sm text-bark-700 hover:bg-cream-50 flex items-center gap-2"
                   >
                     <CheckCircle2 className="w-4 h-4" /> Complete
                   </button>
                 )}
                 <button
                   onClick={() => { onDelete(deadline.id); setShowMenu(false); }}
-                  className="w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+                  className="w-full px-3 py-2 text-left text-sm text-danger hover:bg-danger-bg flex items-center gap-2"
                 >
                   <Trash2 className="w-4 h-4" /> Delete
                 </button>
@@ -177,11 +177,11 @@ const CalendarDay = ({ date, deadlines, isCurrentMonth, isToday, onClick }) => {
   return (
     <div
       onClick={onClick}
-      className={`min-h-[100px] p-2 border-b border-r border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors
-        ${!isCurrentMonth ? 'bg-gray-50' : 'bg-white'}
+      className={`min-h-[100px] p-2 border-b border-r border-border cursor-pointer hover:bg-cream-50 transition-colors
+        ${!isCurrentMonth ? 'bg-cream-50' : 'bg-surface-raised'}
         ${isToday ? 'ring-2 ring-inset ring-primary' : ''}`}
     >
-      <span className={`text-sm font-medium ${!isCurrentMonth ? 'text-gray-400' : isToday ? 'text-primary' : 'text-gray-900'}`}>
+      <span className={`text-sm font-medium ${!isCurrentMonth ? 'text-text-muted' : isToday ? 'text-primary' : 'text-heading'}`}>
         {date.getDate()}
       </span>
       <div className="mt-1 space-y-1">
@@ -189,15 +189,15 @@ const CalendarDay = ({ date, deadlines, isCurrentMonth, isToday, onClick }) => {
           <div
             key={deadline.id}
             className={`text-xs px-1.5 py-0.5 rounded truncate
-              ${deadline.status === 'overdue' ? 'bg-red-100 text-red-700' :
+              ${deadline.status === 'overdue' ? 'bg-danger-bg text-danger' :
                 deadline.status === 'completed' ? 'bg-green-100 text-primary' :
-                'bg-blue-100 text-blue-700'}`}
+                'bg-orange-100 text-orange-700'}`}
           >
             {deadline.name}
           </div>
         ))}
         {dayDeadlines.length > 3 && (
-          <div className="text-xs text-gray-500 px-1">+{dayDeadlines.length - 3} more</div>
+          <div className="text-xs text-text-secondary px-1">+{dayDeadlines.length - 3} more</div>
         )}
       </div>
     </div>
@@ -232,35 +232,35 @@ const DeadlineModal = ({ deadline, onClose, onSave }) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative bg-white rounded-lg shadow-xl w-full max-w-lg mx-4">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">
+      <div className="relative bg-surface-raised rounded-card shadow-xl w-full max-w-lg mx-4">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-border">
+          <h2 className="text-lg text-heading">
             {deadline ? 'Edit Deadline' : 'Add Deadline'}
           </h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+          <button aria-label="Close" onClick={onClose} className="text-text-muted hover:text-bark-600">
             <X className="w-5 h-5" />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Name *</label>
+            <label className="block text-sm font-medium text-bark-700 mb-1">Name *</label>
             <input
               type="text"
               required
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+              className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
               placeholder="e.g., Monthly PUR Report"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+            <label className="block text-sm font-medium text-bark-700 mb-1">Description</label>
             <textarea
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+              className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
               rows={2}
               placeholder="Optional description..."
             />
@@ -268,12 +268,12 @@ const DeadlineModal = ({ deadline, onClose, onSave }) => {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Category *</label>
+              <label className="block text-sm font-medium text-bark-700 mb-1">Category *</label>
               <select
                 required
                 value={formData.category}
                 onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+                className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
               >
                 {COMPLIANCE_CONSTANTS.DEADLINE_CATEGORIES.map(cat => (
                   <option key={cat.value} value={cat.value}>{cat.label}</option>
@@ -282,24 +282,24 @@ const DeadlineModal = ({ deadline, onClose, onSave }) => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Due Date *</label>
+              <label className="block text-sm font-medium text-bark-700 mb-1">Due Date *</label>
               <input
                 type="date"
                 required
                 value={formData.due_date}
                 onChange={(e) => setFormData({ ...formData, due_date: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+                className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Frequency</label>
+              <label className="block text-sm font-medium text-bark-700 mb-1">Frequency</label>
               <select
                 value={formData.frequency}
                 onChange={(e) => setFormData({ ...formData, frequency: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+                className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
               >
                 {COMPLIANCE_CONSTANTS.DEADLINE_FREQUENCIES.map(freq => (
                   <option key={freq.value} value={freq.value}>{freq.label}</option>
@@ -308,23 +308,23 @@ const DeadlineModal = ({ deadline, onClose, onSave }) => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Warning Days</label>
+              <label className="block text-sm font-medium text-bark-700 mb-1">Warning Days</label>
               <input
                 type="number"
                 min={1}
                 max={90}
                 value={formData.warning_days}
                 onChange={(e) => setFormData({ ...formData, warning_days: parseInt(e.target.value) || 14 })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+                className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
               />
             </div>
           </div>
 
-          <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
+          <div className="flex justify-end gap-3 pt-4 border-t border-border">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+              className="px-4 py-2 text-bark-700 hover:bg-cream-100 rounded-lg transition-colors"
             >
               Cancel
             </button>
@@ -474,20 +474,19 @@ export default function DeadlineCalendar({ onNavigate }) {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <div className="flex items-center gap-2 text-sm text-gray-500 mb-1">
+          <div className="flex items-center gap-2 text-sm text-text-secondary mb-1">
             <button onClick={() => onNavigate?.('compliance')} className="hover:text-primary">
               Compliance
             </button>
             <span>/</span>
             <span>Deadlines</span>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">Compliance Deadlines</h1>
         </div>
 
         <div className="flex items-center gap-3">
           <button
             onClick={fetchDeadlines}
-            className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg"
+            className="p-2 text-bark-600 hover:bg-cream-100 rounded-lg"
             title="Refresh"
           >
             <RefreshCw className="w-5 h-5" />
@@ -504,28 +503,28 @@ export default function DeadlineCalendar({ onNavigate }) {
 
       {/* Stats */}
       <div className="grid grid-cols-4 gap-4 mb-6">
-        <div className="bg-red-50 border border-red-100 rounded-lg p-4">
+        <div className="bg-danger-bg border border-danger/20 rounded-card p-4">
           <div className="flex items-center gap-2">
-            <AlertTriangle className="w-5 h-5 text-red-600" />
-            <span className="text-2xl font-bold text-red-600">{stats.overdue}</span>
+            <AlertTriangle className="w-5 h-5 text-danger" />
+            <span className="text-2xl font-bold text-danger">{stats.overdue}</span>
           </div>
-          <p className="text-sm text-red-700 mt-1">Overdue</p>
+          <p className="text-sm text-danger mt-1">Overdue</p>
         </div>
-        <div className="bg-amber-50 border border-amber-100 rounded-lg p-4">
+        <div className="bg-yellow-100 border border-yellow-200 rounded-card p-4">
           <div className="flex items-center gap-2">
-            <Clock className="w-5 h-5 text-amber-600" />
-            <span className="text-2xl font-bold text-amber-600">{stats.due_soon}</span>
+            <Clock className="w-5 h-5 text-yellow-600" />
+            <span className="text-2xl font-bold text-yellow-600">{stats.due_soon}</span>
           </div>
-          <p className="text-sm text-amber-700 mt-1">Due Soon</p>
+          <p className="text-sm text-yellow-700 mt-1">Due Soon</p>
         </div>
-        <div className="bg-blue-50 border border-blue-100 rounded-lg p-4">
+        <div className="bg-orange-50 border border-orange-200 rounded-card p-4">
           <div className="flex items-center gap-2">
-            <Calendar className="w-5 h-5 text-blue-600" />
-            <span className="text-2xl font-bold text-blue-600">{stats.upcoming}</span>
+            <Calendar className="w-5 h-5 text-link" />
+            <span className="text-2xl font-bold text-link">{stats.upcoming}</span>
           </div>
-          <p className="text-sm text-blue-700 mt-1">Upcoming</p>
+          <p className="text-sm text-orange-700 mt-1">Upcoming</p>
         </div>
-        <div className="bg-primary-light border border-green-100 rounded-lg p-4">
+        <div className="bg-primary-light border border-green-100 rounded-card p-4">
           <div className="flex items-center gap-2">
             <CheckCircle2 className="w-5 h-5 text-primary" />
             <span className="text-2xl font-bold text-primary">{stats.completed}</span>
@@ -535,22 +534,22 @@ export default function DeadlineCalendar({ onNavigate }) {
       </div>
 
       {/* Toolbar */}
-      <div className="bg-white border border-gray-200 rounded-lg mb-6">
+      <div className="bg-surface-raised border border-border rounded-card mb-6">
         <div className="flex items-center justify-between p-4">
           <div className="flex items-center gap-4">
             {/* View Toggle */}
-            <div className="flex items-center bg-gray-100 rounded-lg p-1">
+            <div className="flex items-center bg-cream-100 rounded-lg p-1">
               <button
                 onClick={() => setView('list')}
-                className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-colors
-                  ${view === 'list' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'}`}
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors
+                  ${view === 'list' ? 'bg-surface-raised text-heading shadow-sm' : 'text-bark-600 hover:text-heading'}`}
               >
                 <List className="w-4 h-4" /> List
               </button>
               <button
                 onClick={() => setView('calendar')}
-                className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-colors
-                  ${view === 'calendar' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'}`}
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors
+                  ${view === 'calendar' ? 'bg-surface-raised text-heading shadow-sm' : 'text-bark-600 hover:text-heading'}`}
               >
                 <Calendar className="w-4 h-4" /> Calendar
               </button>
@@ -558,11 +557,11 @@ export default function DeadlineCalendar({ onNavigate }) {
 
             {/* Filter */}
             <div className="flex items-center gap-2">
-              <Filter className="w-4 h-4 text-gray-400" />
+              <Filter className="w-4 h-4 text-text-muted" />
               <select
                 value={filter}
                 onChange={(e) => setFilter(e.target.value)}
-                className="border-0 bg-transparent text-sm font-medium text-gray-700 focus:ring-0 cursor-pointer"
+                className="border-0 bg-transparent text-sm font-medium text-bark-700 focus:ring-0 cursor-pointer"
               >
                 <option value="all">All Deadlines</option>
                 <option value="overdue">Overdue</option>
@@ -575,32 +574,32 @@ export default function DeadlineCalendar({ onNavigate }) {
 
           {/* Search */}
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
             <input
               type="text"
               placeholder="Search deadlines..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-primary w-64"
+              className="pl-9 pr-4 py-2 border border-border-strong rounded-card text-sm focus:ring-2 focus:ring-primary focus:border-primary w-64"
             />
           </div>
         </div>
 
         {/* Calendar Month Navigation */}
         {view === 'calendar' && (
-          <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200">
-            <button
+          <div className="flex items-center justify-between px-4 py-3 border-t border-border">
+            <button aria-label="Previous"
               onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1))}
-              className="p-1 text-gray-600 hover:bg-gray-100 rounded"
+              className="p-1 text-bark-600 hover:bg-cream-100 rounded"
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
-            <h2 className="text-lg font-semibold text-gray-900">
+            <h2 className="text-lg text-heading">
               {currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
             </h2>
-            <button
+            <button aria-label="Next"
               onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1))}
-              className="p-1 text-gray-600 hover:bg-gray-100 rounded"
+              className="p-1 text-bark-600 hover:bg-cream-100 rounded"
             >
               <ChevronRight className="w-5 h-5" />
             </button>
@@ -611,10 +610,10 @@ export default function DeadlineCalendar({ onNavigate }) {
       {/* Content */}
       {loading ? (
         <div className="flex items-center justify-center py-12">
-          <RefreshCw className="w-6 h-6 text-gray-400 animate-spin" />
+          <RefreshCw className="w-6 h-6 text-text-muted animate-spin" />
         </div>
       ) : view === 'list' ? (
-        <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+        <div className="bg-surface-raised border border-border rounded-card overflow-hidden">
           {deadlines.length > 0 ? (
             deadlines.map(deadline => (
               <DeadlineRow
@@ -628,19 +627,19 @@ export default function DeadlineCalendar({ onNavigate }) {
           ) : (
             <div className="py-12 px-6">
               {/* Auto-population hint banner */}
-              <div className="max-w-xl mx-auto mb-6 bg-teal-50 dark:bg-teal-900/20 border border-teal-200 dark:border-teal-800 rounded-xl p-4 flex gap-3">
+              <div className="max-w-xl mx-auto mb-6 bg-green-50 border border-green-200 rounded-card p-4 flex gap-3">
                 <span className="text-2xl flex-shrink-0">🗓️</span>
                 <div>
-                  <p className="text-sm font-semibold text-teal-800 dark:text-teal-200">Deadlines auto-generate on first visit</p>
-                  <p className="text-xs text-teal-600 dark:text-teal-400 mt-0.5">
+                  <p className="text-sm font-semibold text-green-800">Deadlines auto-generate on first visit</p>
+                  <p className="text-xs text-green-600 mt-0.5">
                     Common recurring deadlines (monthly PUR, quarterly water tests, annual licenses) will be
                     pre-populated automatically the first time you visit the Compliance Hub.
                     You can then add, edit, or remove any deadline.
                   </p>
                 </div>
               </div>
-              <div className="text-center text-gray-500 dark:text-gray-400">
-                <Calendar className="w-10 h-10 mx-auto mb-3 text-gray-400" />
+              <div className="text-center text-text-secondary">
+                <Calendar className="w-10 h-10 mx-auto mb-3 text-text-muted" />
                 <p className="font-medium">No deadlines found</p>
                 <p className="text-sm mt-1 mb-4">Try changing your filters, or add your first deadline below</p>
                 <button
@@ -654,11 +653,11 @@ export default function DeadlineCalendar({ onNavigate }) {
           )}
         </div>
       ) : (
-        <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+        <div className="bg-surface-raised border border-border rounded-card overflow-hidden">
           {/* Calendar Header */}
-          <div className="grid grid-cols-7 border-b border-gray-200">
+          <div className="grid grid-cols-7 border-b border-border">
             {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-              <div key={day} className="px-2 py-3 text-center text-sm font-medium text-gray-700 bg-gray-50">
+              <div key={day} className="px-2 py-3 text-center text-sm font-medium text-bark-700 bg-cream-50">
                 {day}
               </div>
             ))}

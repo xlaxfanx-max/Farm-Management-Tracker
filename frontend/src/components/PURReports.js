@@ -5,7 +5,7 @@ import { useToast } from '../contexts/ToastContext';
 
 /**
  * PUR Report Generator Component
- * 
+ *
  * Allows users to:
  * - Select date range and farm for PUR reports
  * - Validate applications for PUR compliance
@@ -27,7 +27,6 @@ function PURReports({ farms }) {
     const now = new Date();
     const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
     const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-    
     setStartDate(firstDay.toISOString().split('T')[0]);
     setEndDate(lastDay.toISOString().split('T')[0]);
   }, []);
@@ -47,7 +46,6 @@ function PURReports({ farms }) {
         start_date: startDate,
         end_date: endDate,
       };
-      
       if (selectedFarm) {
         payload.farm_id = selectedFarm;
       }
@@ -58,7 +56,6 @@ function PURReports({ farms }) {
       // Also get summary
       const summaryResponse = await applicationEventsAPI.purSummary(payload);
       setSummary(summaryResponse.data.summary);
-      
       setShowResults(true);
     } catch (error) {
       console.error('Validation error:', error);
@@ -82,7 +79,6 @@ function PURReports({ farms }) {
         start_date: startDate,
         end_date: endDate,
       };
-      
       if (selectedFarm) {
         payload.farm_id = selectedFarm;
       }
@@ -144,8 +140,7 @@ function PURReports({ farms }) {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">PUR Report Generator</h1>
-          <p className="text-gray-600 mt-1">
+          <p className="text-bark-600 mt-1">
             Generate California Pesticide Use Report (PUR) compliant exports
           </p>
         </div>
@@ -153,12 +148,12 @@ function PURReports({ farms }) {
       </div>
 
       {/* Instructions Card */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <h3 className="font-semibold text-blue-900 flex items-center gap-2">
+      <div className="bg-orange-50 border border-orange-200 rounded-card p-4">
+        <h3 className=" text-orange-700 flex items-center gap-2">
           <FileSpreadsheet className="w-5 h-5" />
           How to Use This Tool
         </h3>
-        <ol className="mt-2 text-sm text-blue-800 space-y-1 ml-5 list-decimal">
+        <ol className="mt-2 text-sm text-orange-700 space-y-1 ml-5 list-decimal">
           <li>Select the date range for your report</li>
           <li>Optionally filter by a specific farm</li>
           <li>Click "Validate for PUR" to check compliance</li>
@@ -169,36 +164,35 @@ function PURReports({ farms }) {
       </div>
 
       {/* Filter Panel */}
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Report Parameters</h2>
-        
+      <div className="bg-surface-raised rounded-card shadow-md p-6">
+        <h2 className="text-lg text-heading mb-4">Report Parameters</h2>
         {/* Quick Range Buttons */}
         <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-bark-700 mb-2">
             Quick Select:
           </label>
           <div className="flex gap-2 flex-wrap">
             <button
               onClick={() => setQuickRange('thisMonth')}
-              className="px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded text-sm"
+              className="px-3 py-1 bg-cream-100 hover:bg-sand-200 rounded text-sm"
             >
               This Month
             </button>
             <button
               onClick={() => setQuickRange('lastMonth')}
-              className="px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded text-sm"
+              className="px-3 py-1 bg-cream-100 hover:bg-sand-200 rounded text-sm"
             >
               Last Month
             </button>
             <button
               onClick={() => setQuickRange('thisQuarter')}
-              className="px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded text-sm"
+              className="px-3 py-1 bg-cream-100 hover:bg-sand-200 rounded text-sm"
             >
               This Quarter
             </button>
             <button
               onClick={() => setQuickRange('thisYear')}
-              className="px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded text-sm"
+              className="px-3 py-1 bg-cream-100 hover:bg-sand-200 rounded text-sm"
             >
               This Year
             </button>
@@ -208,41 +202,41 @@ function PURReports({ farms }) {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Start Date */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-bark-700 mb-2">
               Start Date *
             </label>
             <input
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
               required
             />
           </div>
 
           {/* End Date */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-bark-700 mb-2">
               End Date *
             </label>
             <input
               type="date"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
               required
             />
           </div>
 
           {/* Farm Filter */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-bark-700 mb-2">
               Farm (Optional)
             </label>
             <select
               value={selectedFarm}
               onChange={(e) => setSelectedFarm(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
             >
               <option value="">All Farms</option>
               {farms && farms.map((farm) => (
@@ -256,10 +250,10 @@ function PURReports({ farms }) {
 
         {/* Action Buttons */}
         <div className="flex gap-3 mt-6">
-          <button
+          <button aria-label="Confirm"
             onClick={handleValidate}
             disabled={loading}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400"
+            className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover disabled:bg-bark-400"
           >
             <CheckCircle className="w-4 h-4" />
             {loading ? 'Validating...' : 'Validate for PUR'}
@@ -268,7 +262,7 @@ function PURReports({ farms }) {
           <button
             onClick={handleExport}
             disabled={loading || !validation || !validation.valid}
-            className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-hover disabled:bg-gray-400"
+            className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover disabled:bg-bark-400"
           >
             <Download className="w-4 h-4" />
             Export CSV
@@ -278,21 +272,20 @@ function PURReports({ farms }) {
 
       {/* Validation Results */}
       {showResults && validation && (
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Validation Results</h2>
-          
+        <div className="bg-surface-raised rounded-card shadow-md p-6">
+          <h2 className="text-lg text-heading mb-4">Validation Results</h2>
           {/* Status Summary */}
           <div className={`p-4 rounded-lg mb-4 ${
-            validation.valid 
-              ? 'bg-primary-light border border-green-200' 
-              : 'bg-red-50 border border-red-200'
+            validation.valid
+              ? 'bg-primary-light border border-green-200'
+              : 'bg-danger-bg border border-danger/25'
           }`}>
             <div className="flex items-center gap-2">
               {validation.valid ? (
                 <>
                   <CheckCircle className="w-6 h-6 text-primary" />
                   <div>
-                    <h3 className="font-semibold text-green-900">Ready for Export</h3>
+                    <h3 className=" text-green-800">Ready for Export</h3>
                     <p className="text-sm text-primary">
                       {validation.applications_count} application(s) validated successfully
                     </p>
@@ -300,10 +293,10 @@ function PURReports({ farms }) {
                 </>
               ) : (
                 <>
-                  <AlertTriangle className="w-6 h-6 text-red-600" />
+                  <AlertTriangle className="w-6 h-6 text-danger" />
                   <div>
-                    <h3 className="font-semibold text-red-900">Validation Failed</h3>
-                    <p className="text-sm text-red-700">
+                    <h3 className=" text-danger">Validation Failed</h3>
+                    <p className="text-sm text-danger">
                       Please fix errors before exporting
                     </p>
                   </div>
@@ -315,14 +308,14 @@ function PURReports({ farms }) {
           {/* Errors */}
           {validation.errors && validation.errors.length > 0 && (
             <div className="mb-4">
-              <h3 className="font-semibold text-red-900 mb-2 flex items-center gap-2">
+              <h3 className=" text-danger mb-2 flex items-center gap-2">
                 <AlertTriangle className="w-5 h-5" />
                 Errors ({validation.errors.length})
               </h3>
-              <ul className="space-y-1 text-sm text-red-700 bg-red-50 p-3 rounded">
+              <ul className="space-y-1 text-sm text-danger bg-danger-bg p-3 rounded">
                 {validation.errors.map((error, index) => (
                   <li key={index} className="flex items-start gap-2">
-                    <span className="text-red-500 mt-0.5">•</span>
+                    <span className="text-danger mt-0.5">•</span>
                     <span>{error}</span>
                   </li>
                 ))}
@@ -333,14 +326,14 @@ function PURReports({ farms }) {
           {/* Warnings */}
           {validation.warnings && validation.warnings.length > 0 && (
             <div>
-              <h3 className="font-semibold text-yellow-900 mb-2 flex items-center gap-2">
+              <h3 className=" text-yellow-800 mb-2 flex items-center gap-2">
                 <AlertTriangle className="w-5 h-5" />
                 Warnings ({validation.warnings.length})
               </h3>
               <ul className="space-y-1 text-sm text-yellow-700 bg-yellow-50 p-3 rounded">
                 {validation.warnings.map((warning, index) => (
                   <li key={index} className="flex items-start gap-2">
-                    <span className="text-yellow-500 mt-0.5">•</span>
+                    <span className="text-yellow-600 mt-0.5">•</span>
                     <span>{warning}</span>
                   </li>
                 ))}
@@ -355,32 +348,28 @@ function PURReports({ farms }) {
 
       {/* Summary Statistics */}
       {showResults && summary && (
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Report Summary</h2>
-          
+        <div className="bg-surface-raised rounded-card shadow-md p-6">
+          <h2 className="text-lg text-heading mb-4">Report Summary</h2>
           {/* Overview Stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-            <div className="bg-blue-50 p-4 rounded-lg">
-              <div className="text-2xl font-bold text-blue-900">
+            <div className="bg-orange-50 p-4 rounded-lg">
+              <div className="text-2xl font-bold text-orange-700">
                 {summary.total_applications}
               </div>
-              <div className="text-sm text-blue-700">Total Applications</div>
+              <div className="text-sm text-orange-700">Total Applications</div>
             </div>
-            
             <div className="bg-primary-light p-4 rounded-lg">
-              <div className="text-2xl font-bold text-green-900">
+              <div className="text-2xl font-bold text-green-800">
                 {summary.total_acres_treated.toFixed(1)}
               </div>
               <div className="text-sm text-primary">Acres Treated</div>
             </div>
-            
-            <div className="bg-purple-50 p-4 rounded-lg">
-              <div className="text-2xl font-bold text-purple-900">
+            <div className="bg-cream-100 p-4 rounded-lg">
+              <div className="text-2xl font-bold text-bark-900">
                 {summary.unique_products}
               </div>
-              <div className="text-sm text-purple-700">Unique Products</div>
+              <div className="text-sm text-bark-700">Unique Products</div>
             </div>
-            
             <div className="bg-orange-50 p-4 rounded-lg">
               <div className="text-2xl font-bold text-orange-900">
                 {summary.restricted_use_applications}
@@ -392,22 +381,22 @@ function PURReports({ farms }) {
           {/* By County */}
           {summary.by_county && summary.by_county.length > 0 && (
             <div className="mb-6">
-              <h3 className="font-semibold text-gray-900 mb-3">Applications by County</h3>
+              <h3 className=" text-heading mb-3">Applications by County</h3>
               <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
+                <table className="min-w-full divide-y divide-border">
+                  <thead className="bg-cream-50 bg-surface-sunken">
                     <tr>
-                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">County</th>
-                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Applications</th>
-                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Acres</th>
+                      <th className="px-4 py-2 text-left text-xs font-semibold text-text-secondary uppercase tracking-caps">County</th>
+                      <th className="px-4 py-2 text-left text-xs font-semibold text-text-secondary uppercase tracking-caps">Applications</th>
+                      <th className="px-4 py-2 text-left text-xs font-semibold text-text-secondary uppercase tracking-caps">Acres</th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
+                  <tbody className="bg-surface-raised divide-y divide-border">
                     {summary.by_county.map((county, index) => (
                       <tr key={index}>
-                        <td className="px-4 py-2 text-sm text-gray-900">{county.county}</td>
-                        <td className="px-4 py-2 text-sm text-gray-600">{county.applications}</td>
-                        <td className="px-4 py-2 text-sm text-gray-600">{county.acres.toFixed(1)}</td>
+                        <td className="px-4 py-2 text-sm text-bark-700">{county.county}</td>
+                        <td className="px-4 py-2 text-sm text-bark-600">{county.applications}</td>
+                        <td className="px-4 py-2 text-sm text-bark-600">{county.acres.toFixed(1)}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -419,24 +408,24 @@ function PURReports({ farms }) {
           {/* Top Products */}
           {summary.by_product && summary.by_product.length > 0 && (
             <div>
-              <h3 className="font-semibold text-gray-900 mb-3">Top Products Used</h3>
+              <h3 className=" text-heading mb-3">Top Products Used</h3>
               <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
+                <table className="min-w-full divide-y divide-border">
+                  <thead className="bg-cream-50 bg-surface-sunken">
                     <tr>
-                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Product</th>
-                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">EPA Reg No</th>
-                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Applications</th>
-                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Total Amount</th>
+                      <th className="px-4 py-2 text-left text-xs font-semibold text-text-secondary uppercase tracking-caps">Product</th>
+                      <th className="px-4 py-2 text-left text-xs font-semibold text-text-secondary uppercase tracking-caps">EPA Reg No</th>
+                      <th className="px-4 py-2 text-left text-xs font-semibold text-text-secondary uppercase tracking-caps">Applications</th>
+                      <th className="px-4 py-2 text-left text-xs font-semibold text-text-secondary uppercase tracking-caps">Total Amount</th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
+                  <tbody className="bg-surface-raised divide-y divide-border">
                     {summary.by_product.map((product, index) => (
                       <tr key={index}>
-                        <td className="px-4 py-2 text-sm text-gray-900">{product.product_name}</td>
-                        <td className="px-4 py-2 text-sm text-gray-600">{product.epa_reg_no}</td>
-                        <td className="px-4 py-2 text-sm text-gray-600">{product.applications}</td>
-                        <td className="px-4 py-2 text-sm text-gray-600">{product.total_amount.toFixed(2)}</td>
+                        <td className="px-4 py-2 text-sm text-bark-700">{product.product_name}</td>
+                        <td className="px-4 py-2 text-sm text-bark-600">{product.epa_reg_no}</td>
+                        <td className="px-4 py-2 text-sm text-bark-600">{product.applications}</td>
+                        <td className="px-4 py-2 text-sm text-bark-600">{product.total_amount.toFixed(2)}</td>
                       </tr>
                     ))}
                   </tbody>

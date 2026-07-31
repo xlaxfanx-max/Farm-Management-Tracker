@@ -306,12 +306,12 @@ const PDFUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, existi
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className={`bg-white rounded-lg shadow-xl max-h-[95vh] overflow-hidden flex flex-col transition-all duration-300 ${
+      <div className={`bg-surface-raised rounded-card shadow-xl max-h-[95vh] overflow-hidden flex flex-col transition-all duration-300 ${
         showPdfPanel ? 'w-full max-w-[95vw]' : 'w-full max-w-5xl'
       }`}>
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900 flex items-center">
+        <div className="flex items-center justify-between p-4 border-b border-border">
+          <h2 className="text-lg text-heading flex items-center">
             {showPreview ? (
               <>
                 <Eye className="w-5 h-5 mr-2 text-primary" />
@@ -332,8 +332,8 @@ const PDFUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, existi
                   onClick={() => setShowPdf(!showPdf)}
                   className={`flex items-center px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
                     showPdf
-                      ? 'bg-blue-100 text-blue-700 hover:bg-blue-200'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      ? 'bg-orange-100 text-orange-700 hover:bg-orange-200'
+                      : 'bg-cream-100 text-bark-600 hover:bg-sand-200'
                   }`}
                   title={showPdf ? 'Hide PDF' : 'Show PDF'}
                 >
@@ -353,18 +353,18 @@ const PDFUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, existi
                   href={getApiUrl(statement.pdf_url)}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg"
+                  className="p-2 text-text-secondary hover:text-bark-700 hover:bg-cream-100 rounded-lg"
                   title="Open PDF in new tab"
                 >
                   <ExternalLink className="w-4 h-4" />
                 </a>
               </>
             )}
-            <button
+            <button aria-label="Close"
               onClick={onClose}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              className="p-2 hover:bg-cream-100 rounded-lg transition-colors"
             >
-              <X className="w-5 h-5 text-gray-500" />
+              <X className="w-5 h-5 text-text-secondary" />
             </button>
           </div>
         </div>
@@ -373,10 +373,10 @@ const PDFUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, existi
         <div className="flex-1 flex overflow-hidden">
           {/* PDF Panel - only in preview mode */}
           {showPdfPanel && (
-            <div className="w-1/2 border-r border-gray-200 bg-gray-100 flex flex-col">
-              <div className="p-2 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
-                <div className="flex items-center text-sm text-gray-600">
-                  <FileIcon className="w-4 h-4 mr-2 text-red-500" />
+            <div className="w-1/2 border-r border-border bg-cream-100 flex flex-col">
+              <div className="p-2 bg-cream-50 border-b border-border flex items-center justify-between">
+                <div className="flex items-center text-sm text-bark-600">
+                  <FileIcon className="w-4 h-4 mr-2 text-danger" />
                   <span className="truncate max-w-xs" title={statement?.original_filename}>
                     {statement?.original_filename || 'Source PDF'}
                   </span>
@@ -384,17 +384,17 @@ const PDFUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, existi
                 <a
                   href={getApiUrl(statement?.pdf_url)}
                   download
-                  className="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded"
+                  className="p-1.5 text-text-secondary hover:text-bark-700 hover:bg-sand-200 rounded"
                   title="Download PDF"
                 >
                   <Download className="w-4 h-4" />
                 </a>
               </div>
-              <div className="flex-1 bg-gray-200">
+              <div className="flex-1 bg-sand-200">
                 {pdfLoading ? (
                   <div className="flex flex-col items-center justify-center h-full">
-                    <Loader2 className="w-8 h-8 animate-spin text-gray-500 mb-3" />
-                    <p className="text-gray-500">Loading PDF...</p>
+                    <Loader2 className="w-8 h-8 animate-spin text-text-secondary mb-3" />
+                    <p className="text-text-secondary">Loading PDF...</p>
                   </div>
                 ) : pdfBlobUrl ? (
                   <object
@@ -403,13 +403,13 @@ const PDFUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, existi
                     className="w-full h-full"
                   >
                     <div className="flex flex-col items-center justify-center h-full p-8 text-center">
-                      <FileIcon className="w-16 h-16 text-gray-400 mb-4" />
-                      <p className="text-gray-600 mb-4">PDF preview not available.</p>
+                      <FileIcon className="w-16 h-16 text-text-muted mb-4" />
+                      <p className="text-bark-600 mb-4">PDF preview not available.</p>
                       <a
                         href={getApiUrl(statement?.pdf_url)}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center"
+                        className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover flex items-center"
                       >
                         <ExternalLink className="w-4 h-4 mr-2" />
                         Open in New Tab
@@ -418,13 +418,13 @@ const PDFUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, existi
                   </object>
                 ) : (
                   <div className="flex flex-col items-center justify-center h-full p-8 text-center">
-                    <FileIcon className="w-16 h-16 text-gray-400 mb-4" />
-                    <p className="text-gray-600 mb-4">Unable to load PDF.</p>
+                    <FileIcon className="w-16 h-16 text-text-muted mb-4" />
+                    <p className="text-bark-600 mb-4">Unable to load PDF.</p>
                     <a
                       href={getApiUrl(statement?.pdf_url)}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center"
+                      className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover flex items-center"
                     >
                       <ExternalLink className="w-4 h-4 mr-2" />
                       Open in New Tab
@@ -443,13 +443,13 @@ const PDFUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, existi
               {/* Packinghouse Selection */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-bark-700 mb-1">
                     Packinghouse *
                   </label>
                   <select
                     value={selectedPackinghouse}
                     onChange={(e) => setSelectedPackinghouse(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
+                    className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                     disabled={uploading}
                   >
                     <option value="">Select Packinghouse</option>
@@ -462,13 +462,13 @@ const PDFUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, existi
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-bark-700 mb-1">
                     Format Hint (Optional)
                   </label>
                   <select
                     value={formatHint}
                     onChange={(e) => setFormatHint(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
+                    className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                     disabled={uploading}
                   >
                     <option value="">Auto-detect</option>
@@ -486,32 +486,32 @@ const PDFUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, existi
                 onDragLeave={handleDrag}
                 onDragOver={handleDrag}
                 onDrop={handleDrop}
-                className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
+                className={`border-2 border-dashed rounded-card p-8 text-center transition-colors ${
                   dragActive
                     ? 'border-primary bg-green-50'
                     : file
                     ? 'border-green-300 bg-green-50'
-                    : 'border-gray-300 hover:border-gray-400'
+                    : 'border-border-strong hover:border-bark-400'
                 }`}
               >
                 {file ? (
                   <div className="flex items-center justify-center space-x-3">
                     <FileText className="w-10 h-10 text-primary" />
                     <div className="text-left">
-                      <p className="font-medium text-gray-900">{file.name}</p>
-                      <p className="text-sm text-gray-500">{formatFileSize(file.size)}</p>
+                      <p className="font-medium text-heading">{file.name}</p>
+                      <p className="text-sm text-text-secondary">{formatFileSize(file.size)}</p>
                     </div>
-                    <button
+                    <button aria-label="Close"
                       onClick={() => setFile(null)}
-                      className="p-1 text-gray-400 hover:text-red-500"
+                      className="p-1 text-text-muted hover:text-danger"
                     >
                       <X className="w-5 h-5" />
                     </button>
                   </div>
                 ) : (
                   <>
-                    <Upload className="w-12 h-12 mx-auto text-gray-400 mb-3" />
-                    <p className="text-gray-600 mb-2">
+                    <Upload className="w-12 h-12 mx-auto text-text-muted mb-3" />
+                    <p className="text-bark-600 mb-2">
                       Drag and drop your PDF here, or
                     </p>
                     <label className="inline-block">
@@ -525,7 +525,7 @@ const PDFUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, existi
                         className="hidden"
                       />
                     </label>
-                    <p className="text-sm text-gray-500 mt-2">
+                    <p className="text-sm text-text-secondary mt-2">
                       PDF files only, max 50MB
                     </p>
                   </>
@@ -534,7 +534,7 @@ const PDFUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, existi
 
               {/* Error Message */}
               {error && (
-                <div className="flex items-center p-3 bg-red-50 border border-red-200 rounded-lg text-red-700">
+                <div className="flex items-center p-3 bg-danger-bg border border-danger/25 rounded-card text-danger">
                   <AlertCircle className="w-5 h-5 mr-2 flex-shrink-0" />
                   <span className="text-sm">{error}</span>
                 </div>
@@ -542,7 +542,7 @@ const PDFUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, existi
 
               {/* Extraction Status */}
               {statement && statement.status === 'failed' && (
-                <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-card">
                   <div className="flex items-start">
                     <AlertCircle className="w-5 h-5 text-yellow-600 mr-2 mt-0.5" />
                     <div className="flex-1">
@@ -553,7 +553,7 @@ const PDFUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, existi
                       <button
                         onClick={handleReprocess}
                         disabled={extracting}
-                        className="mt-2 flex items-center text-sm text-yellow-800 hover:text-yellow-900"
+                        className="mt-2 flex items-center text-sm text-yellow-800 hover:text-yellow-800"
                       >
                         <RefreshCw className={`w-4 h-4 mr-1 ${extracting ? 'animate-spin' : ''}`} />
                         Try Again
@@ -567,15 +567,15 @@ const PDFUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, existi
             // Preview View
             <div className="space-y-4">
               {/* Pool and Field Selection */}
-              <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg">
+              <div className="grid grid-cols-2 gap-4 p-4 bg-cream-50 rounded-lg">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-bark-700 mb-1">
                     Pool
                   </label>
                   <select
                     value={selectedPool}
                     onChange={(e) => setSelectedPool(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
+                    className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                   >
                     <option value="">Auto-create from PDF</option>
                     {pools.map(p => (
@@ -585,20 +585,20 @@ const PDFUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, existi
                     ))}
                   </select>
                   {!selectedPool && (
-                    <p className="text-xs text-gray-500 mt-1">
+                    <p className="text-xs text-text-secondary mt-1">
                       A new pool will be created using info extracted from the PDF
                     </p>
                   )}
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-bark-700 mb-1">
                     Field/Block {(statement?.statement_type === 'packout' || statement?.statement_type === 'wash_report') && '*'}
                   </label>
                   <select
                     value={selectedField}
                     onChange={(e) => setSelectedField(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
+                    className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                   >
                     <option value="">
                       {statement?.statement_type === 'settlement' || statement?.statement_type === 'grower_statement'
@@ -613,10 +613,10 @@ const PDFUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, existi
               </div>
 
               {/* Statement Info */}
-              <div className="flex items-center justify-between p-3 bg-primary-light border border-green-200 rounded-lg">
+              <div className="flex items-center justify-between p-3 bg-primary-light border border-green-200 rounded-card">
                 <div className="flex items-center">
                   <CheckCircle className="w-5 h-5 text-primary mr-2" />
-                  <span className="text-green-800">
+                  <span className="text-green-700">
                     Detected: <strong>{statement?.statement_type_display || statement?.statement_type}</strong>
                     {' from '}
                     <strong>{statement?.format_display || statement?.packinghouse_format?.toUpperCase()}</strong>
@@ -638,7 +638,7 @@ const PDFUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, existi
 
               {/* Error Message */}
               {error && (
-                <div className="flex items-center p-3 bg-red-50 border border-red-200 rounded-lg text-red-700">
+                <div className="flex items-center p-3 bg-danger-bg border border-danger/25 rounded-card text-danger">
                   <AlertCircle className="w-5 h-5 mr-2 flex-shrink-0" />
                   <span className="text-sm">{error}</span>
                 </div>
@@ -651,14 +651,14 @@ const PDFUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, existi
         {/* End Content Flex Container */}
 
         {/* Footer */}
-        <div className="flex justify-between items-center p-4 border-t border-gray-200 bg-gray-50">
+        <div className="flex justify-between items-center p-4 border-t border-border bg-cream-50">
           {showPreview ? (
             <>
               {/* Only show Back button if we came from upload flow, not direct review */}
               {!existingStatement ? (
                 <button
                   onClick={() => setShowPreview(false)}
-                  className="px-4 py-2 text-gray-700 hover:bg-gray-200 rounded-lg transition-colors"
+                  className="px-4 py-2 text-bark-700 hover:bg-sand-200 rounded-lg transition-colors"
                 >
                   Back
                 </button>
@@ -668,7 +668,7 @@ const PDFUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, existi
               <div className="flex space-x-3">
                 <button
                   onClick={onClose}
-                  className="px-4 py-2 text-gray-700 hover:bg-gray-200 rounded-lg transition-colors"
+                  className="px-4 py-2 text-bark-700 hover:bg-sand-200 rounded-lg transition-colors"
                 >
                   Cancel
                 </button>
@@ -693,13 +693,13 @@ const PDFUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, existi
             </>
           ) : (
             <>
-              <div className="text-sm text-gray-500">
+              <div className="text-sm text-text-secondary">
                 Supported: VPOA, SLA statement formats
               </div>
               <div className="flex space-x-3">
                 <button
                   onClick={onClose}
-                  className="px-4 py-2 text-gray-700 hover:bg-gray-200 rounded-lg transition-colors"
+                  className="px-4 py-2 text-bark-700 hover:bg-sand-200 rounded-lg transition-colors"
                 >
                   Cancel
                 </button>

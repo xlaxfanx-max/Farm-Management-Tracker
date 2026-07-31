@@ -361,8 +361,7 @@ const Harvests = () => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Harvest & Packing</h1>
-          <p className="text-gray-600 dark:text-gray-400">Track harvests from field to packinghouse</p>
+          <p className="text-bark-600">Track harvests from field to packinghouse</p>
         </div>
         {activeTab === 'harvests' && harvestsView === 'hand-entered' && (
           <div className="flex gap-2">
@@ -370,8 +369,8 @@ const Harvests = () => {
               onClick={() => setShowAnalytics(!showAnalytics)}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg ${
                 showAnalytics
-                  ? 'bg-blue-600 text-white hover:bg-blue-700'
-                  : 'border dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
+                  ? 'bg-primary text-white hover:bg-primary-hover'
+                  : 'border hover:bg-cream-50'
               }`}
             >
               <BarChart3 size={18} />
@@ -379,14 +378,14 @@ const Harvests = () => {
             </button>
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center gap-2 px-4 py-2 border dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+              className="flex items-center gap-2 px-4 py-2 border rounded-lg hover:bg-cream-50"
             >
               <Filter size={18} />
               Filters
             </button>
-            <button
+            <button aria-label="Refresh"
               onClick={() => { fetchHarvests(); fetchStatistics(); }}
-              className="flex items-center gap-2 px-4 py-2 border dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+              className="flex items-center gap-2 px-4 py-2 border rounded-lg hover:bg-cream-50"
             >
               <RefreshCw size={18} />
             </button>
@@ -409,7 +408,7 @@ const Harvests = () => {
       </div>
 
       {/* Tab Navigation */}
-      <div className="border-b border-gray-200 dark:border-gray-700">
+      <div className="border-b border-border">
         <nav className="flex space-x-4">
           {tabs.map((tab) => (
             <button
@@ -420,8 +419,8 @@ const Harvests = () => {
               }}
               className={`flex items-center gap-2 px-4 py-3 border-b-2 font-medium text-sm transition-colors ${
                 activeTab === tab.id
-                  ? 'border-orange-500 text-orange-600 dark:text-orange-400'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
+                  ? 'border-orange-500 text-orange-600'
+                  : 'border-transparent text-text-secondary hover:text-bark-700 hover:border-border-strong'
               }`}
             >
               <tab.icon size={18} />
@@ -465,7 +464,7 @@ const Harvests = () => {
           <StatementList />
           {hasPickHaul && (
             <div className="space-y-2">
-              <h3 className="text-sm font-medium text-gray-700 dark:text-gray-200">
+              <h3 className="text-sm text-bark-700">
                 House charge-backs (pick &amp; haul)
               </h3>
               <HouseChargesTab season={currentPickhaulSeason()} />
@@ -485,7 +484,7 @@ const Harvests = () => {
           {/* Sub-view: the real deliveries vs. the invoice register vs. the
               legacy hand-entered records. Receipts are the harvest record. */}
           {hasPickHaul && (
-            <div className="flex gap-1 bg-gray-100 dark:bg-gray-800 rounded-lg p-1 w-fit">
+            <div className="flex gap-1 bg-cream-100 rounded-lg p-1 w-fit">
               {[
                 { id: 'deliveries', label: 'Deliveries' },
                 { id: 'invoices', label: 'Contractor Invoices' },
@@ -494,10 +493,10 @@ const Harvests = () => {
                 <button
                   key={view.id}
                   onClick={() => setHarvestsView(view.id)}
-                  className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
                     harvestsView === view.id
-                      ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
-                      : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                      ? 'bg-surface-raised text-heading shadow-sm'
+                      : 'text-text-secondary hover:text-bark-700'
                   }`}
                 >
                   {view.label}
@@ -555,7 +554,7 @@ const Harvests = () => {
 
           {/* Analytics Panel */}
           {showAnalytics && (
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <div className="bg-surface-raised rounded-lg shadow p-6">
               <HarvestAnalytics />
             </div>
           )}

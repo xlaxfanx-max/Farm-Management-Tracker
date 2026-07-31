@@ -18,323 +18,173 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Finch Farms Dashboard Design Tokens - Light Mode (Default) */
-:root {
-  /* Primary — muted sage green */
-  --gm-primary: #3D7A4A;
-  --gm-primary-hover: #336840;
-  --gm-primary-light: #EDF5EF;
-
-  /* Accent — warm clay (use sparingly) */
-  --gm-accent: #C4754B;
-  --gm-accent-light: #FEF3ED;
-
-  /* Surfaces */
-  --gm-surface: #FAF8F5;
-  --gm-surface-raised: #FFFFFF;
-  --gm-surface-sunken: #F3F0EB;
-
-  /* Sidebar — dark forest */
-  --gm-sidebar: #2C3E2D;
-  --gm-sidebar-hover: #3A5040;
-  --gm-sidebar-active: #4A6350;
-
-  /* Text */
-  --gm-text: #2D2A26;
-  --gm-text-secondary: #78716C;
-  --gm-text-muted: #A8A29E;
-
-  /* Borders */
-  --gm-border: #E7E2DD;
-  --gm-border-strong: #D4CEC8;
-  --gm-border-focus: #3D7A4A;
-
-  /* Status colors */
-  --status-healthy: #3D7A4A;
-  --status-attention: #D97706;
-  --status-critical: #DC2626;
-  --status-neutral: #78716C;
-  --status-info: #2563EB;
-
-  /* Shadows */
-  --shadow-color: rgba(0, 0, 0, 0.06);
-  --shadow-color-strong: rgba(0, 0, 0, 0.1);
-
-  /* Legacy aliases — map old names to new tokens */
-  --grove-green: var(--gm-primary);
-  --grove-green-light: var(--gm-primary-hover);
-  --citrus-orange: var(--gm-accent);
-  --citrus-gold: var(--gm-accent);
-  --cream: var(--gm-surface);
-  --warm-white: var(--gm-surface);
-  --bark-brown: var(--gm-text);
-  --text-primary: var(--gm-text);
-  --text-secondary: var(--gm-text-secondary);
-  --bg-primary: var(--gm-surface);
-  --bg-secondary: var(--gm-surface-sunken);
-  --bg-tertiary: var(--gm-surface-sunken);
-  --bg-card: var(--gm-surface-raised);
-  --bg-sidebar: var(--gm-sidebar);
-  --bg-input: var(--gm-surface-raised);
-  --border-primary: var(--gm-border);
-  --border-secondary: var(--gm-border-strong);
-  --border-focus: var(--gm-border-focus);
-}
-
-/* Finch Farms Dashboard Design Tokens - Dark Mode */
-.dark {
-  --gm-primary: #5BA66A;
-  --gm-primary-hover: #4D9159;
-  --gm-primary-light: #1E2E20;
-
-  --gm-accent: #D4885E;
-  --gm-accent-light: #2E2018;
-
-  --gm-surface: #1A1917;
-  --gm-surface-raised: #262523;
-  --gm-surface-sunken: #141312;
-
-  --gm-sidebar: #141312;
-  --gm-sidebar-hover: #262523;
-  --gm-sidebar-active: #33312E;
-
-  --gm-text: #F5F2EF;
-  --gm-text-secondary: #A8A29E;
-  --gm-text-muted: #78716C;
-
-  --gm-border: #33312E;
-  --gm-border-strong: #44413D;
-  --gm-border-focus: #5BA66A;
-
-  /* Status colors — brighter for dark backgrounds */
-  --status-healthy: #5BA66A;
-  --status-attention: #FBBF24;
-  --status-critical: #F87171;
-  --status-neutral: #A8A29E;
-  --status-info: #60A5FA;
-
-  --shadow-color: rgba(0, 0, 0, 0.3);
-  --shadow-color-strong: rgba(0, 0, 0, 0.5);
-
-  /* Legacy aliases */
-  --grove-green: var(--gm-primary);
-  --grove-green-light: var(--gm-primary-hover);
-  --citrus-orange: var(--gm-accent);
-  --citrus-gold: var(--gm-accent);
-  --cream: var(--gm-surface);
-  --warm-white: var(--gm-surface);
-  --bark-brown: var(--gm-text);
-  --text-primary: var(--gm-text);
-  --text-secondary: var(--gm-text-secondary);
-  --bg-primary: var(--gm-surface);
-  --bg-secondary: var(--gm-surface-sunken);
-  --bg-tertiary: var(--gm-surface-sunken);
-  --bg-card: var(--gm-surface-raised);
-  --bg-sidebar: var(--gm-sidebar);
-  --bg-input: var(--gm-surface-raised);
-  --border-primary: var(--gm-border);
-  --border-secondary: var(--gm-border-strong);
-  --border-focus: var(--gm-border-focus);
-}
-
-/* Finch Farms Dashboard Typography — DM Sans throughout, weight hierarchy */
-body {
-  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  background-color: var(--gm-surface);
-  color: var(--gm-text);
-  transition: background-color 0.2s ease-out, color 0.2s ease-out;
-  line-height: 1.5;
-}
-
-/* Dark mode body */
-.dark body,
-body.dark,
-html.dark body {
-  background-color: var(--gm-surface);
-  color: var(--gm-text);
-}
-
-h1, h2, h3, h4, h5, h6 {
-  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  font-weight: 600;
-  color: var(--gm-text);
-  line-height: 1.3;
-}
-
-/* Legacy class — maps to same font now */
-.font-heading {
-  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  font-weight: 600;
-}
-
-.dark h1, .dark h2, .dark h3, .dark h4, .dark h5, .dark h6,
-.dark .font-heading {
-  color: var(--gm-text);
-}
-
 /* =============================================================================
-   DARK MODE UTILITY CLASSES - Comprehensive Overrides
+   Finch Investments design tokens
+   Palette drawn from a working citrus grove: Valencia orange, grove & avocado
+   greens, Meyer-lemon yellow, warm paper and bark neutrals.
    ============================================================================= */
+:root {
+  /* ---- Valencia orange (primary / citrus) ---- */
+  --orange-700: #A8480F;
+  --orange-600: #C85A17;
+  --orange-500: #E2721B;
+  --orange-400: #F08A2E;
+  --orange-300: #F6A94E;
+  --orange-200: #FBD0A0;
+  --orange-100: #FDE9D4;
+  --orange-50:  #FEF5EB;
 
-/* Background overrides */
-.dark .bg-white { background-color: var(--bg-card) !important; }
-.dark .bg-gray-50 { background-color: var(--bg-secondary) !important; }
-.dark .bg-gray-100 { background-color: var(--bg-tertiary) !important; }
-.dark .bg-gray-200 { background-color: #374151 !important; }
+  /* ---- Grove & avocado green ---- */
+  --green-800: #1C3A21;
+  --green-700: #274A2B;
+  --green-600: #35633A;
+  --green-500: #4A7C43;
+  --green-400: #6B9A54;
+  --green-300: #9BBE7E;
+  --green-200: #C7DBB2;
+  --green-100: #E4EED8;
+  --green-50:  #F2F7EB;
 
-/* White with opacity - common in cards */
-.dark .bg-white\/50,
-.dark .bg-white\/60,
-.dark .bg-white\/70,
-.dark .bg-white\/80,
-.dark .bg-white\/90 {
-  background-color: rgba(31, 41, 55, 0.8) !important;
+  /* ---- Meyer-lemon yellow ---- */
+  --yellow-800: #7C5A02;
+  --yellow-700: #A17403;
+  --yellow-600: #C99304;
+  --yellow-500: #F2B705;
+  --yellow-400: #F6C947;
+  --yellow-300: #FADF8A;
+  --yellow-200: #FCEDBE;
+  --yellow-100: #FEF7DF;
+
+  /* ---- Warm neutrals: paper & bark ---- */
+  --cream-50:  #FBF7EF;
+  --cream-100: #F4ECDD;
+  --sand-200:  #E7DBC6;
+  --sand-300:  #D6C6A8;
+  --sand-400:  #BEA981;
+  --bark-400:  #8A7A63;
+  --bark-500:  #6E5E48;
+  --bark-600:  #5A4B39;
+  --bark-700:  #3E3324;
+  --bark-800:  #2E2519;
+  --bark-900:  #1F1810;
+  --white:     #FFFFFF;
+
+  /* ---- Status ---- */
+  --success: #4A7C43;
+  --success-bg: #E4EED8;
+  --warning: #F2B705;
+  --warning-bg: #FCEDBE;
+  --danger:  #C23A22;
+  --danger-bg: #FBE2DB;
+  --danger-hover: #A93120;
+  --info:    #35633A;
+  --info-bg: #E4EED8;
+
+  /* ---- Semantic aliases ---- */
+  --primary:        var(--orange-500);
+  --primary-hover:  var(--orange-600);
+  --primary-active: var(--orange-700);
+  --primary-contrast: #FFFFFF;
+
+  --accent-green:   var(--green-600);
+  --accent-yellow:  var(--yellow-500);
+
+  --surface-page:    var(--cream-50);
+  --surface-card:    var(--white);
+  --surface-sunken:  var(--cream-100);
+  --surface-inverse: var(--green-800);
+
+  --text-heading:    var(--bark-900);
+  --text-body:       var(--bark-800);
+  --text-muted:      var(--bark-500);
+  --text-subtle:     var(--bark-400);
+  --text-on-dark:    var(--cream-50);
+  --text-on-primary: #FFFFFF;
+  --text-link:       var(--orange-600);
+  --text-link-hover: var(--orange-700);
+
+  --border:        var(--sand-200);
+  --border-strong: var(--sand-300);
+  --border-focus:  var(--orange-500);
+
+  --ring: rgba(226, 114, 27, 0.30);
+
+  /* ---- Shadows — warm, low, soft (sun on paper, not neon) ---- */
+  --shadow-xs: 0 1px 2px rgba(46, 37, 25, 0.06);
+  --shadow-sm: 0 1px 3px rgba(46, 37, 25, 0.08), 0 1px 2px rgba(46, 37, 25, 0.04);
+  --shadow-md: 0 4px 12px rgba(46, 37, 25, 0.08), 0 2px 4px rgba(46, 37, 25, 0.05);
+  --shadow-lg: 0 12px 28px rgba(46, 37, 25, 0.12), 0 4px 8px rgba(46, 37, 25, 0.06);
+  --shadow-xl: 0 24px 56px rgba(46, 37, 25, 0.16);
+  --shadow-inset: inset 0 1px 2px rgba(46, 37, 25, 0.06);
+
+  /* ---- Motion ---- */
+  --ease-out: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.45, 0.05, 0.35, 1);
+  --dur-fast: 120ms;
+  --dur-base: 200ms;
+  --dur-slow: 360ms;
 }
 
-/* Text color overrides */
-.dark .text-gray-900 { color: var(--text-primary) !important; }
-.dark .text-gray-800 { color: var(--text-primary) !important; }
-.dark .text-gray-700 { color: #d1d5db !important; }
-.dark .text-gray-600 { color: #9ca3af !important; }
-.dark .text-gray-500 { color: #9ca3af !important; }
-.dark .text-gray-400 { color: #6b7280 !important; }
+@layer base {
+  body {
+    @apply bg-surface text-text font-sans antialiased;
+    line-height: 1.5;
+  }
 
-/* Border color overrides */
-.dark .border-gray-100 { border-color: #374151 !important; }
-.dark .border-gray-200 { border-color: #374151 !important; }
-.dark .border-gray-300 { border-color: #4b5563 !important; }
+  /* Display serif for the top four levels — editorial, never bold. */
+  h1, h2, h3, h4 {
+    @apply font-display text-heading font-normal tracking-tight;
+    line-height: 1.15;
+  }
 
-/* Hover state overrides - CRITICAL for interactive elements */
-.dark .hover\:bg-gray-50:hover { background-color: #374151 !important; }
-.dark .hover\:bg-gray-100:hover { background-color: #374151 !important; }
-.dark .hover\:bg-gray-200:hover { background-color: #4b5563 !important; }
-.dark .hover\:bg-white:hover { background-color: #374151 !important; }
+  h5, h6 {
+    @apply font-sans text-heading font-semibold;
+    line-height: 1.3;
+  }
 
-/* Colored hover states in dark mode */
-.dark .hover\:bg-green-50:hover { background-color: rgba(22, 163, 74, 0.2) !important; }
-.dark .hover\:bg-blue-50:hover { background-color: rgba(59, 130, 246, 0.2) !important; }
-.dark .hover\:bg-red-50:hover { background-color: rgba(239, 68, 68, 0.2) !important; }
-.dark .hover\:bg-yellow-50:hover { background-color: rgba(234, 179, 8, 0.2) !important; }
-.dark .hover\:bg-amber-50:hover { background-color: rgba(245, 158, 11, 0.2) !important; }
-.dark .hover\:bg-orange-50:hover { background-color: rgba(249, 115, 22, 0.2) !important; }
-.dark .hover\:bg-purple-50:hover { background-color: rgba(168, 85, 247, 0.2) !important; }
+  ::selection {
+    background-color: var(--orange-200);
+    color: var(--bark-900);
+  }
 
-/* Light colored backgrounds in dark mode */
-.dark .bg-green-50 { background-color: rgba(22, 163, 74, 0.15) !important; }
-.dark .bg-green-100 { background-color: rgba(22, 163, 74, 0.25) !important; }
-.dark .bg-blue-50 { background-color: rgba(59, 130, 246, 0.15) !important; }
-.dark .bg-blue-100 { background-color: rgba(59, 130, 246, 0.25) !important; }
-.dark .bg-red-50 { background-color: rgba(239, 68, 68, 0.15) !important; }
-.dark .bg-red-100 { background-color: rgba(239, 68, 68, 0.25) !important; }
-.dark .bg-yellow-50 { background-color: rgba(234, 179, 8, 0.15) !important; }
-.dark .bg-yellow-100 { background-color: rgba(234, 179, 8, 0.25) !important; }
-.dark .bg-amber-50 { background-color: rgba(245, 158, 11, 0.15) !important; }
-.dark .bg-amber-100 { background-color: rgba(245, 158, 11, 0.25) !important; }
-.dark .bg-orange-50 { background-color: rgba(249, 115, 22, 0.15) !important; }
-.dark .bg-orange-100 { background-color: rgba(249, 115, 22, 0.25) !important; }
-.dark .bg-purple-50 { background-color: rgba(168, 85, 247, 0.15) !important; }
-.dark .bg-purple-100 { background-color: rgba(168, 85, 247, 0.25) !important; }
-.dark .bg-cyan-50 { background-color: rgba(6, 182, 212, 0.15) !important; }
-.dark .bg-cyan-100 { background-color: rgba(6, 182, 212, 0.25) !important; }
+  /* Lucide at the Finch stroke weight, everywhere, in one rule. */
+  svg.lucide {
+    stroke-width: 1.75;
+  }
 
-/* Light colored borders in dark mode */
-.dark .border-green-100 { border-color: rgba(22, 163, 74, 0.3) !important; }
-.dark .border-green-200 { border-color: rgba(22, 163, 74, 0.4) !important; }
-.dark .border-blue-100 { border-color: rgba(59, 130, 246, 0.3) !important; }
-.dark .border-blue-200 { border-color: rgba(59, 130, 246, 0.4) !important; }
-.dark .border-red-100 { border-color: rgba(239, 68, 68, 0.3) !important; }
-.dark .border-red-200 { border-color: rgba(239, 68, 68, 0.4) !important; }
-.dark .border-yellow-100 { border-color: rgba(234, 179, 8, 0.3) !important; }
-.dark .border-yellow-200 { border-color: rgba(234, 179, 8, 0.4) !important; }
-.dark .border-amber-100 { border-color: rgba(245, 158, 11, 0.3) !important; }
-.dark .border-amber-200 { border-color: rgba(245, 158, 11, 0.4) !important; }
-
-/* Divide colors */
-.dark .divide-gray-100 > * + * { border-color: #374151 !important; }
-.dark .divide-gray-200 > * + * { border-color: #374151 !important; }
-
-/* Gradient overrides for dark mode - convert light gradients to dark */
-.dark .bg-gradient-to-r.from-green-50.to-blue-50,
-.dark .bg-gradient-to-br.from-green-50.to-blue-50 {
-  background: linear-gradient(to right, rgba(22, 163, 74, 0.15), rgba(59, 130, 246, 0.15)) !important;
+  button:focus-visible,
+  a:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible,
+  [role="button"]:focus-visible {
+    outline: 3px solid var(--ring);
+    outline-offset: 1px;
+    border-radius: 4px;
+  }
 }
 
-.dark .bg-gradient-to-r.from-green-50.to-emerald-50,
-.dark .bg-gradient-to-br.from-green-50.to-emerald-50 {
-  background: linear-gradient(to right, rgba(22, 163, 74, 0.15), rgba(16, 185, 129, 0.15)) !important;
+@layer components {
+  /* Section eyebrow — 12px semibold uppercase, wide tracking. */
+  .finch-eyebrow {
+    @apply font-sans text-xs font-semibold uppercase tracking-caps text-green-600;
+  }
+
+  /* Eyebrow on dark (green-800) surfaces. */
+  .finch-eyebrow-dark {
+    @apply font-sans text-xs font-semibold uppercase tracking-caps text-yellow-400;
+  }
+
+  /* Figures, tables, tickers. */
+  .finch-data {
+    @apply font-mono tabular-nums;
+  }
+
+  .modal-backdrop {
+    background-color: rgba(31, 24, 16, 0.55);
+    backdrop-filter: blur(4px);
+  }
 }
-
-.dark .bg-gradient-to-r.from-blue-50.to-indigo-50,
-.dark .bg-gradient-to-br.from-blue-50.to-indigo-50 {
-  background: linear-gradient(to right, rgba(59, 130, 246, 0.15), rgba(99, 102, 241, 0.15)) !important;
-}
-
-.dark .bg-gradient-to-r.from-cyan-50.to-blue-50,
-.dark .bg-gradient-to-br.from-cyan-50.to-blue-50 {
-  background: linear-gradient(to right, rgba(6, 182, 212, 0.15), rgba(59, 130, 246, 0.15)) !important;
-}
-
-.dark .bg-gradient-to-r.from-blue-100.to-green-100,
-.dark .bg-gradient-to-br.from-blue-100.to-green-100 {
-  background: linear-gradient(to right, rgba(59, 130, 246, 0.25), rgba(22, 163, 74, 0.25)) !important;
-}
-
-.dark .bg-gradient-to-br.from-green-50.via-emerald-50.to-teal-50 {
-  background: linear-gradient(to bottom right, rgba(22, 163, 74, 0.15), rgba(16, 185, 129, 0.15), rgba(20, 184, 166, 0.15)) !important;
-}
-
-/* Shadow overrides */
-.dark .shadow,
-.dark .shadow-sm,
-.dark .shadow-md,
-.dark .shadow-lg,
-.dark .shadow-xl {
-  --tw-shadow-color: rgba(0, 0, 0, 0.5);
-}
-
-/* Form elements */
-.dark input,
-.dark select,
-.dark textarea {
-  background-color: var(--bg-input);
-  border-color: var(--border-primary);
-  color: var(--text-primary);
-}
-
-.dark input::placeholder,
-.dark textarea::placeholder {
-  color: var(--text-secondary);
-}
-
-.dark input:focus,
-.dark select:focus,
-.dark textarea:focus {
-  border-color: var(--border-focus);
-}
-
-/* Ring/Focus colors in dark mode */
-.dark .ring-gray-200 { --tw-ring-color: #374151 !important; }
-.dark .focus\:ring-gray-200:focus { --tw-ring-color: #374151 !important; }
-
-/* Finch Farms Dashboard Color Utility Classes — legacy (kept for backwards compat) */
-.bg-grove-green { background-color: var(--gm-primary); }
-.bg-grove-green-light { background-color: var(--gm-primary-hover); }
-.bg-citrus-orange { background-color: var(--gm-accent); }
-.bg-citrus-gold { background-color: var(--gm-accent); }
-.bg-cream { background-color: var(--gm-surface); }
-.bg-warm-white { background-color: var(--gm-surface); }
-.bg-bark-brown { background-color: var(--gm-text); }
-
-.text-grove-green { color: var(--gm-primary); }
-.text-grove-green-light { color: var(--gm-primary-hover); }
-.text-citrus-orange { color: var(--gm-accent); }
-.text-citrus-gold { color: var(--gm-accent); }
-.text-bark-brown { color: var(--gm-text); }
-
-.border-grove-green { border-color: var(--gm-primary); }
-.border-grove-green-light { border-color: var(--gm-primary-hover); }
-.border-citrus-orange { border-color: var(--gm-accent); }
-.border-citrus-gold { border-color: var(--gm-accent); }
 
 /* Custom scrollbar styles — warm tones */
 ::-webkit-scrollbar {
@@ -343,45 +193,34 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--gm-surface-sunken);
+  background: var(--cream-100);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--gm-border-strong);
+  background: var(--sand-300);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--gm-text-muted);
+  background: var(--bark-400);
 }
 
-/* Dark mode scrollbar */
-.dark ::-webkit-scrollbar-track {
-  background: var(--gm-surface-sunken);
+/* Horizontal scrollbar for farm strip */
+.overflow-x-auto::-webkit-scrollbar {
+  height: 6px;
 }
 
-.dark ::-webkit-scrollbar-thumb {
-  background: var(--gm-border-strong);
+.overflow-x-auto::-webkit-scrollbar-track {
+  background: transparent;
 }
 
-.dark ::-webkit-scrollbar-thumb:hover {
-  background: var(--gm-text-muted);
+.overflow-x-auto::-webkit-scrollbar-thumb {
+  background: var(--sand-300);
+  border-radius: 3px;
 }
 
-/* Smooth transitions — 200ms ease-out feels responsive but perceptible */
-* {
-  transition-property: background-color, border-color, color, fill, stroke, opacity, box-shadow;
-  transition-timing-function: ease-out;
-  transition-duration: 200ms;
-}
-
-/* Focus styles — sage green ring */
-button:focus-visible,
-input:focus-visible,
-select:focus-visible,
-textarea:focus-visible {
-  outline: 2px solid var(--gm-primary);
-  outline-offset: 2px;
+.overflow-x-auto::-webkit-scrollbar-thumb:hover {
+  background: var(--bark-400);
 }
 
 /* Loading animation */
@@ -408,36 +247,21 @@ textarea:focus-visible {
 }
 
 .animate-fade-in {
-  animation: fadeIn 0.3s ease-out;
+  animation: fadeIn 0.3s var(--ease-out);
 }
 
-/* Custom utilities */
 .text-balance {
   text-wrap: balance;
 }
 
-.shadow-soft {
-  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
-}
-
-.shadow-strong {
-  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-}
-
-/* Card hover effects */
+/* Card hover lift */
 .card-hover {
-  transition: all 0.2s ease;
+  transition: transform var(--dur-base) var(--ease-out), box-shadow var(--dur-base) var(--ease-out);
 }
 
 .card-hover:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-}
-
-/* Modal backdrop */
-.modal-backdrop {
-  background-color: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(4px);
+  box-shadow: var(--shadow-lg);
 }
 
 /* Print styles */
@@ -445,7 +269,7 @@ textarea:focus-visible {
   .no-print {
     display: none !important;
   }
-  
+
   .print-full-width {
     width: 100% !important;
     max-width: none !important;
@@ -491,110 +315,14 @@ textarea:focus-visible {
   }
 }
 
-/* Status color utility classes */
-.status-healthy { color: var(--status-healthy); }
-.status-attention { color: var(--status-attention); }
-.status-critical { color: var(--status-critical); }
-.status-neutral { color: var(--status-neutral); }
-.status-info { color: var(--status-info); }
-
-.bg-status-healthy { background-color: var(--status-healthy); }
-.bg-status-attention { background-color: var(--status-attention); }
-.bg-status-critical { background-color: var(--status-critical); }
-.bg-status-neutral { background-color: var(--status-neutral); }
-.bg-status-info { background-color: var(--status-info); }
-
 /* High contrast mode for outdoor readability */
 @media (prefers-contrast: more) {
   :root {
-    --gm-text: #000000;
-    --gm-text-secondary: #1a1a1a;
-    --gm-text-muted: #333333;
-    --gm-border: #999999;
+    --text-body: #14100A;
+    --text-heading: #000000;
+    --text-muted: #2E2519;
+    --text-subtle: #3E3324;
+    --border: #8A7A63;
+    --border-strong: #6E5E48;
   }
-
-  .border-gray-200 {
-    border-color: #666 !important;
-  }
-
-  .text-gray-500,
-  .text-gray-600 {
-    color: #1a1a1a !important;
-  }
-}
-
-/* Horizontal scrollbar for farm strip */
-.overflow-x-auto::-webkit-scrollbar {
-  height: 6px;
-}
-
-.overflow-x-auto::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.overflow-x-auto::-webkit-scrollbar-thumb {
-  background: var(--gm-border-strong);
-  border-radius: 3px;
-}
-
-.overflow-x-auto::-webkit-scrollbar-thumb:hover {
-  background: var(--gm-text-muted);
-}
-
-/* Dark mode horizontal scrollbar */
-.dark .overflow-x-auto::-webkit-scrollbar-thumb {
-  background: var(--gm-border-strong);
-}
-
-.dark .overflow-x-auto::-webkit-scrollbar-thumb:hover {
-  background: var(--gm-text-muted);
-}
-
-/* Dark mode modal backdrop */
-.dark .modal-backdrop {
-  background-color: rgba(0, 0, 0, 0.7);
-}
-
-/* Dark mode card styles */
-.dark .card-hover:hover {
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -4px rgba(0, 0, 0, 0.4);
-}
-
-.dark .shadow-soft {
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 1px 2px -1px rgba(0, 0, 0, 0.3);
-}
-
-.dark .shadow-strong {
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -4px rgba(0, 0, 0, 0.4);
-}
-
-/* Dark mode table styles */
-.dark table {
-  background-color: var(--bg-card);
-}
-
-.dark thead {
-  background-color: var(--bg-tertiary);
-}
-
-.dark th {
-  color: var(--text-primary);
-  border-color: var(--border-primary);
-}
-
-.dark td {
-  border-color: var(--border-primary);
-}
-
-.dark tbody tr:hover {
-  background-color: var(--bg-tertiary);
-}
-
-/* Dark mode for specific component backgrounds */
-.dark .bg-cream {
-  background-color: var(--gm-surface) !important;
-}
-
-.dark .bg-warm-white {
-  background-color: var(--gm-surface-sunken) !important;
 }

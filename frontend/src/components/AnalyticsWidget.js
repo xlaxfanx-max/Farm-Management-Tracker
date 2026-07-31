@@ -16,9 +16,9 @@ import { analyticsAPI } from '../services/api';
 // Mini KPI Card component
 const MiniKPI = ({ label, value, subValue, icon: Icon, trend, color = 'blue' }) => {
   const colorClasses = {
-    blue: 'text-blue-600 bg-blue-50',
+    blue: 'text-link bg-orange-50',
     green: 'text-primary bg-green-50',
-    purple: 'text-purple-600 bg-purple-50',
+    purple: 'text-bark-700 bg-cream-100',
     orange: 'text-orange-600 bg-orange-50',
   };
 
@@ -28,12 +28,12 @@ const MiniKPI = ({ label, value, subValue, icon: Icon, trend, color = 'blue' }) 
         <Icon className="w-4 h-4" />
       </div>
       <div className="flex-1 min-w-0">
-        <div className="text-xs text-gray-500 truncate">{label}</div>
-        <div className="text-lg font-bold text-gray-900">{value}</div>
+        <div className="text-xs text-text-secondary truncate">{label}</div>
+        <div className="text-lg font-bold text-heading">{value}</div>
         {subValue && (
-          <div className="text-xs text-gray-500 flex items-center gap-1">
-            {trend === 'up' && <TrendingUp className="w-3 h-3 text-green-500" />}
-            {trend === 'down' && <TrendingDown className="w-3 h-3 text-red-500" />}
+          <div className="text-xs text-text-secondary flex items-center gap-1">
+            {trend === 'up' && <TrendingUp className="w-3 h-3 text-green-600" />}
+            {trend === 'down' && <TrendingDown className="w-3 h-3 text-danger" />}
             {subValue}
           </div>
         )}
@@ -63,7 +63,7 @@ const MiniSparkline = ({ data }) => {
             width={barWidth}
             height={barHeight}
             rx={1}
-            className="fill-green-400"
+            className="fill-green-500"
           />
         );
       })}
@@ -114,10 +114,10 @@ export default function AnalyticsWidget({ onViewAnalytics }) {
   // Loading state
   if (loading) {
     return (
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+      <div className="bg-surface-raised rounded-card shadow-sm border border-border p-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-            <BarChart3 className="w-5 h-5 text-gray-400" />
+          <h3 className="text-lg text-heading flex items-center gap-2">
+            <BarChart3 className="w-5 h-5 text-text-muted" />
             Analytics
           </h3>
         </div>
@@ -131,21 +131,21 @@ export default function AnalyticsWidget({ onViewAnalytics }) {
   // Error state
   if (error) {
     return (
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+      <div className="bg-surface-raised rounded-card shadow-sm border border-border p-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-            <BarChart3 className="w-5 h-5 text-gray-400" />
+          <h3 className="text-lg text-heading flex items-center gap-2">
+            <BarChart3 className="w-5 h-5 text-text-muted" />
             Analytics
           </h3>
-          <button
+          <button aria-label="Refresh"
             onClick={loadData}
-            className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg"
+            className="p-1.5 text-text-muted hover:text-bark-600 hover:bg-cream-100 rounded-lg"
           >
             <RefreshCw className="w-4 h-4" />
           </button>
         </div>
-        <div className="text-center py-6 text-gray-500">
-          <AlertCircle className="w-10 h-10 mx-auto mb-2 text-gray-300" />
+        <div className="text-center py-6 text-text-secondary">
+          <AlertCircle className="w-10 h-10 mx-auto mb-2 text-sand-300" />
           <p className="text-sm">{error}</p>
         </div>
       </div>
@@ -155,15 +155,15 @@ export default function AnalyticsWidget({ onViewAnalytics }) {
   // No data state
   if (!data) {
     return (
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+      <div className="bg-surface-raised rounded-card shadow-sm border border-border p-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-            <BarChart3 className="w-5 h-5 text-gray-400" />
+          <h3 className="text-lg text-heading flex items-center gap-2">
+            <BarChart3 className="w-5 h-5 text-text-muted" />
             Analytics
           </h3>
         </div>
-        <div className="text-center py-6 text-gray-500">
-          <BarChart3 className="w-10 h-10 mx-auto mb-2 text-gray-300" />
+        <div className="text-center py-6 text-text-secondary">
+          <BarChart3 className="w-10 h-10 mx-auto mb-2 text-sand-300" />
           <p className="text-sm">No data available</p>
         </div>
       </div>
@@ -173,14 +173,14 @@ export default function AnalyticsWidget({ onViewAnalytics }) {
   const { financial, applications, harvests, water } = data;
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+    <div className="bg-surface-raised rounded-card shadow-sm border border-border p-6">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+        <h3 className="text-lg text-heading flex items-center gap-2">
           <BarChart3 className="w-5 h-5 text-primary" />
           Analytics
         </h3>
-        <span className="text-xs text-gray-500">{data.period?.year}</span>
+        <span className="text-xs text-text-secondary">{data.period?.year}</span>
       </div>
 
       {/* KPI Grid */}
@@ -217,30 +217,30 @@ export default function AnalyticsWidget({ onViewAnalytics }) {
       {/* Applications Trend */}
       {applications?.by_month && applications.by_month.length > 0 && (
         <div className="mb-4">
-          <div className="text-xs text-gray-500 mb-1">Applications Trend</div>
+          <div className="text-xs text-text-secondary mb-1">Applications Trend</div>
           <MiniSparkline data={applications.by_month} />
         </div>
       )}
 
       {/* Compliance Indicators */}
-      <div className="flex items-center gap-4 pt-3 border-t border-gray-100">
+      <div className="flex items-center gap-4 pt-3 border-t border-border">
         <div className="flex items-center gap-1.5">
           {applications?.pur_compliance_rate >= 90 ? (
-            <CheckCircle className="w-4 h-4 text-green-500" />
+            <CheckCircle className="w-4 h-4 text-green-600" />
           ) : (
             <AlertCircle className="w-4 h-4 text-orange-500" />
           )}
-          <span className="text-xs text-gray-600">
+          <span className="text-xs text-bark-600">
             PUR {applications?.pur_compliance_rate || 0}%
           </span>
         </div>
         <div className="flex items-center gap-1.5">
           {water?.pass_rate >= 90 ? (
-            <Droplet className="w-4 h-4 text-blue-500" />
+            <Droplet className="w-4 h-4 text-orange-500" />
           ) : (
             <AlertCircle className="w-4 h-4 text-orange-500" />
           )}
-          <span className="text-xs text-gray-600">
+          <span className="text-xs text-bark-600">
             Water {water?.pass_rate || 100}%
           </span>
         </div>
@@ -250,7 +250,7 @@ export default function AnalyticsWidget({ onViewAnalytics }) {
       {onViewAnalytics && (
         <button
           onClick={onViewAnalytics}
-          className="w-full text-center text-sm text-primary hover:text-primary-hover font-medium mt-3 pt-3 border-t border-gray-100"
+          className="w-full text-center text-sm text-primary hover:text-primary-hover font-medium mt-3 pt-3 border-t border-border"
         >
           View Full Analytics →
         </button>

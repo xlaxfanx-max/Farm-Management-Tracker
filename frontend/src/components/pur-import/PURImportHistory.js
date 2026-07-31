@@ -104,17 +104,17 @@ export default function PURImportHistory() {
 
   if (loading) {
     return (
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-500 mx-auto mb-3" />
-        <p className="text-sm text-gray-500">Loading import history...</p>
+      <div className="bg-surface-raised rounded-card shadow-sm border border-border p-12 text-center">
+        <Loader2 className="w-8 h-8 animate-spin text-orange-500 mx-auto mb-3" />
+        <p className="text-sm text-text-secondary">Loading import history...</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
-        <div className="flex items-center gap-2 text-red-600">
+      <div className="bg-surface-raised rounded-card shadow-sm border border-border p-8">
+        <div className="flex items-center gap-2 text-danger">
           <AlertCircle className="w-5 h-5" />
           <p className="text-sm">{error}</p>
         </div>
@@ -124,10 +124,10 @@ export default function PURImportHistory() {
 
   if (batches.length === 0) {
     return (
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
-        <FileText className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-        <p className="text-gray-500">No import history yet.</p>
-        <p className="text-sm text-gray-400 mt-1">
+      <div className="bg-surface-raised rounded-card shadow-sm border border-border p-12 text-center">
+        <FileText className="w-12 h-12 text-sand-300 mx-auto mb-3" />
+        <p className="text-text-secondary">No import history yet.</p>
+        <p className="text-sm text-text-muted mt-1">
           Import a PUR PDF to see it here.
         </p>
       </div>
@@ -135,15 +135,15 @@ export default function PURImportHistory() {
   }
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-      <div className="p-4 border-b border-gray-200">
-        <h2 className="text-lg font-semibold text-gray-900">Import History</h2>
-        <p className="text-sm text-gray-500 mt-0.5">
+    <div className="bg-surface-raised rounded-card shadow-sm border border-border">
+      <div className="p-4 border-b border-border">
+        <h2 className="text-lg text-heading">Import History</h2>
+        <p className="text-sm text-text-secondary mt-0.5">
           {batches.length} import{batches.length !== 1 ? 's' : ''}
         </p>
       </div>
 
-      <div className="divide-y divide-gray-100">
+      <div className="divide-y divide-border">
         {batches.map(batch => {
           const isExpanded = expandedBatch === batch.batch_id;
           const events = batchEvents[batch.batch_id] || [];
@@ -153,22 +153,22 @@ export default function PURImportHistory() {
             <div key={batch.batch_id}>
               {/* Batch row */}
               <div
-                className="flex items-center gap-4 p-4 cursor-pointer hover:bg-gray-50 transition-colors"
+                className="flex items-center gap-4 p-4 cursor-pointer hover:bg-cream-50 transition-colors"
                 onClick={() => handleToggleBatch(batch.batch_id)}
               >
                 {isExpanded
-                  ? <ChevronDown className="w-5 h-5 text-gray-400 flex-shrink-0" />
-                  : <ChevronRight className="w-5 h-5 text-gray-400 flex-shrink-0" />
+                  ? <ChevronDown className="w-5 h-5 text-text-muted flex-shrink-0" />
+                  : <ChevronRight className="w-5 h-5 text-text-muted flex-shrink-0" />
                 }
 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <FileText className="w-4 h-4 text-gray-400" />
-                    <span className="font-medium text-gray-900 truncate">
+                    <FileText className="w-4 h-4 text-text-muted" />
+                    <span className="font-medium text-heading truncate">
                       {batch.filename}
                     </span>
                   </div>
-                  <div className="flex items-center gap-4 mt-0.5 text-sm text-gray-500">
+                  <div className="flex items-center gap-4 mt-0.5 text-sm text-text-secondary">
                     <span className="flex items-center gap-1">
                       <Calendar className="w-3.5 h-3.5" />
                       {new Date(batch.created_at).toLocaleDateString()} {new Date(batch.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -180,12 +180,12 @@ export default function PURImportHistory() {
                 </div>
 
                 <div className="flex items-center gap-3">
-                  <span className="px-2.5 py-1 text-xs font-medium bg-blue-50 text-blue-700 rounded-full">
+                  <span className="px-2.5 py-1 text-xs font-medium bg-orange-50 text-orange-700 rounded-full">
                     {batch.event_count} report{batch.event_count !== 1 ? 's' : ''}
                   </span>
                   <button
                     onClick={(e) => { e.stopPropagation(); handleViewPdf(batch.batch_id, batch.filename); }}
-                    className="flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-gray-600 bg-gray-100 rounded-full hover:bg-gray-200"
+                    className="flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-bark-600 bg-cream-100 rounded-full hover:bg-sand-200"
                   >
                     <Eye className="w-3.5 h-3.5" />
                     View PDF
@@ -197,34 +197,34 @@ export default function PURImportHistory() {
               {isExpanded && (
                 <div className="px-4 pb-4 pl-12">
                   {isLoading ? (
-                    <div className="flex items-center gap-2 text-sm text-gray-500 py-3">
+                    <div className="flex items-center gap-2 text-sm text-text-secondary py-3">
                       <Loader2 className="w-4 h-4 animate-spin" />
                       Loading reports...
                     </div>
                   ) : events.length === 0 ? (
-                    <p className="text-sm text-gray-400 py-3">No reports found for this batch.</p>
+                    <p className="text-sm text-text-muted py-3">No reports found for this batch.</p>
                   ) : (
                     <div className="space-y-2">
                       {events.map(evt => (
                         <div
                           key={evt.id}
-                          className="flex items-center justify-between p-3 bg-gray-50 rounded-lg text-sm"
+                          className="flex items-center justify-between p-3 bg-cream-50 rounded-lg text-sm"
                         >
                           <div className="flex items-center gap-3">
-                            <span className="font-mono text-xs text-gray-400">
+                            <span className="font-mono text-xs text-text-muted">
                               PUR {evt.pur_number || '-'}
                             </span>
-                            <span className="text-gray-700">
+                            <span className="text-bark-700">
                               {evt.date_started
                                 ? new Date(evt.date_started).toLocaleDateString()
                                 : '-'}
                             </span>
-                            <span className="flex items-center gap-1 text-gray-600">
+                            <span className="flex items-center gap-1 text-bark-600">
                               <MapPin className="w-3.5 h-3.5" />
                               {evt.farm_name}
                             </span>
                           </div>
-                          <div className="flex items-center gap-3 text-gray-500">
+                          <div className="flex items-center gap-3 text-text-secondary">
                             <span className="flex items-center gap-1">
                               <Package className="w-3.5 h-3.5" />
                               {evt.products.length} product{evt.products.length !== 1 ? 's' : ''}
@@ -237,7 +237,7 @@ export default function PURImportHistory() {
                             </span>
                             <button
                               onClick={() => handleEditReport(evt, batch.batch_id)}
-                              className="flex items-center gap-1 px-2 py-0.5 text-xs font-medium text-amber-700 bg-amber-50 rounded hover:bg-amber-100 transition-colors"
+                              className="flex items-center gap-1 px-2 py-0.5 text-xs font-medium text-yellow-700 bg-yellow-100 rounded hover:bg-yellow-200 transition-colors"
                               title="Edit report"
                             >
                               <Pencil className="w-3 h-3" />

@@ -238,28 +238,28 @@ const PipelineOverview = ({ initialCommodity = null, onBack = null }) => {
 
   const getActivityIcon = (type) => {
     switch (type) {
-      case 'packout': return <Package className="w-4 h-4 text-purple-600" />;
+      case 'packout': return <Package className="w-4 h-4 text-bark-700" />;
       case 'settlement': return <DollarSign className="w-4 h-4 text-primary" />;
-      default: return <Clock className="w-4 h-4 text-gray-400" />;
+      default: return <Clock className="w-4 h-4 text-text-muted" />;
     }
   };
 
   const getActivityBgColor = (type) => {
     switch (type) {
-      case 'packout': return 'bg-purple-50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-800';
-      case 'settlement': return 'bg-primary-light dark:bg-green-900/20 border-green-200 dark:border-green-800';
-      default: return 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700';
+      case 'packout': return 'bg-cream-100 border-sand-200';
+      case 'settlement': return 'bg-primary-light border-green-200';
+      default: return 'bg-cream-50 border-border';
     }
   };
 
   // Get a color accent for commodity cards based on crop category
   const getCommodityColor = (cropCategory) => {
     switch (cropCategory) {
-      case 'citrus': return { bg: 'bg-orange-50 dark:bg-orange-900/20', border: 'border-orange-200 dark:border-orange-800', text: 'text-orange-700 dark:text-orange-300', accent: 'text-orange-600', badge: 'bg-orange-100 dark:bg-orange-900/40 text-orange-800 dark:text-orange-200' };
-      case 'subtropical': return { bg: 'bg-emerald-50 dark:bg-emerald-900/20', border: 'border-emerald-200 dark:border-emerald-800', text: 'text-emerald-700 dark:text-emerald-300', accent: 'text-emerald-600', badge: 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-200' };
-      case 'nut': return { bg: 'bg-amber-50 dark:bg-amber-900/20', border: 'border-amber-200 dark:border-amber-800', text: 'text-amber-700 dark:text-amber-300', accent: 'text-amber-600', badge: 'bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-200' };
-      case 'vine': return { bg: 'bg-violet-50 dark:bg-violet-900/20', border: 'border-violet-200 dark:border-violet-800', text: 'text-violet-700 dark:text-violet-300', accent: 'text-violet-600', badge: 'bg-violet-100 dark:bg-violet-900/40 text-violet-800 dark:text-violet-200' };
-      default: return { bg: 'bg-blue-50 dark:bg-blue-900/20', border: 'border-blue-200 dark:border-blue-800', text: 'text-blue-700 dark:text-blue-300', accent: 'text-blue-600', badge: 'bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-200' };
+      case 'citrus': return { bg: 'bg-orange-50', border: 'border-orange-200', text: 'text-orange-700', accent: 'text-orange-600', badge: 'bg-orange-100 text-orange-800' };
+      case 'subtropical': return { bg: 'bg-green-50', border: 'border-green-200', text: 'text-green-700', accent: 'text-green-600', badge: 'bg-green-100 text-green-800' };
+      case 'nut': return { bg: 'bg-yellow-100', border: 'border-yellow-200', text: 'text-yellow-700', accent: 'text-yellow-600', badge: 'bg-yellow-200 text-yellow-800' };
+      case 'vine': return { bg: 'bg-cream-100', border: 'border-sand-200', text: 'text-bark-700', accent: 'text-bark-700', badge: 'bg-sand-200 text-bark-800' };
+      default: return { bg: 'bg-orange-50', border: 'border-orange-200', text: 'text-orange-700', accent: 'text-link', badge: 'bg-orange-100 text-orange-700' };
     }
   };
 
@@ -273,12 +273,12 @@ const PipelineOverview = ({ initialCommodity = null, onBack = null }) => {
 
   if (error) {
     return (
-      <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700">
+      <div className="bg-danger-bg border border-danger/25 rounded-card p-4 text-danger">
         <AlertCircle className="inline w-5 h-5 mr-2" />
         {error}
         <button
           onClick={fetchPipelineData}
-          className="ml-4 text-red-800 underline hover:no-underline"
+          className="ml-4 text-danger underline hover:no-underline"
         >
           Retry
         </button>
@@ -316,16 +316,16 @@ const PipelineOverview = ({ initialCommodity = null, onBack = null }) => {
         {/* Header */}
         <div className="flex justify-between items-center">
           <div>
-            <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">
+            <h2 className="text-xl text-heading">
               Harvest Pipeline
             </h2>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            <p className="text-sm text-text-secondary mt-1">
               All commodities — select a commodity to view season details
             </p>
           </div>
           <button
             onClick={fetchPipelineData}
-            className="flex items-center gap-2 px-3 py-2 border dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
+            className="flex items-center gap-2 px-3 py-2 border rounded-lg hover:bg-cream-50 text-bark-700"
           >
             <RefreshCw size={16} />
             Refresh
@@ -334,42 +334,42 @@ const PipelineOverview = ({ initialCommodity = null, onBack = null }) => {
 
         {/* Summary Tiles */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 cursor-pointer hover:shadow-md hover:border-green-200 border border-transparent transition-all" onClick={() => openDrillDown('total_revenue')}>
-            <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-1">
+          <div className="bg-surface-raised rounded-card shadow p-4 cursor-pointer hover:shadow-md hover:border-green-200 border border-transparent transition-all" onClick={() => openDrillDown('total_revenue')}>
+            <div className="flex items-center gap-2 text-sm text-text-secondary mb-1">
               <DollarSign className="w-4 h-4" />
               Total Revenue
             </div>
             <p className="text-2xl font-bold text-primary">
               {formatCurrency(summary.total_revenue)}
             </p>
-            <p className="text-xs text-gray-400 mt-1">Click for details</p>
+            <p className="text-xs text-text-muted mt-1">Click for details</p>
           </div>
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 cursor-pointer hover:shadow-md hover:border-green-200 border border-transparent transition-all" onClick={() => openDrillDown('bins_packed_all')}>
-            <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-1">
+          <div className="bg-surface-raised rounded-card shadow p-4 cursor-pointer hover:shadow-md hover:border-green-200 border border-transparent transition-all" onClick={() => openDrillDown('bins_packed_all')}>
+            <div className="flex items-center gap-2 text-sm text-text-secondary mb-1">
               <Package className="w-4 h-4" />
               Qty Packed
             </div>
-            <p className="text-2xl font-bold text-purple-600">
+            <p className="text-2xl font-bold text-bark-700">
               {formatNumber(summary.total_bins_packed)}
             </p>
-            <p className="text-xs text-gray-400 mt-1">Click for details</p>
+            <p className="text-xs text-text-muted mt-1">Click for details</p>
           </div>
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 cursor-pointer hover:shadow-md hover:border-green-200 border border-transparent transition-all" onClick={() => openDrillDown('bins_settled_all')}>
-            <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-1">
+          <div className="bg-surface-raised rounded-card shadow p-4 cursor-pointer hover:shadow-md hover:border-green-200 border border-transparent transition-all" onClick={() => openDrillDown('bins_settled_all')}>
+            <div className="flex items-center gap-2 text-sm text-text-secondary mb-1">
               <TrendingUp className="w-4 h-4" />
               Qty Settled
             </div>
-            <p className="text-2xl font-bold text-blue-600">
+            <p className="text-2xl font-bold text-link">
               {formatNumber(summary.total_bins_settled)}
             </p>
-            <p className="text-xs text-gray-400 mt-1">Click for details</p>
+            <p className="text-xs text-text-muted mt-1">Click for details</p>
           </div>
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-            <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-1">
+          <div className="bg-surface-raised rounded-lg shadow p-4">
+            <div className="flex items-center gap-2 text-sm text-text-secondary mb-1">
               <BarChart3 className="w-4 h-4" />
               Settlement
             </div>
-            <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+            <p className="text-2xl font-bold text-heading">
               {summary.settlement_percent}%
             </p>
           </div>
@@ -385,12 +385,12 @@ const PipelineOverview = ({ initialCommodity = null, onBack = null }) => {
                 <div
                   key={card.commodity}
                   onClick={() => handleCommoditySelect(card.commodity)}
-                  className={`${colors.bg} border ${colors.border} rounded-lg p-5 cursor-pointer hover:shadow-md transition-all group`}
+                  className={`${colors.bg} border ${colors.border} rounded-card p-5 cursor-pointer hover:shadow-md transition-all group`}
                 >
                   {/* Card Header */}
                   <div className="flex justify-between items-start mb-4">
                     <div>
-                      <h3 className={`font-bold text-lg ${colors.text}`}>
+                      <h3 className={` text-lg ${colors.text}`}>
                         {card.commodity}
                       </h3>
                       <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${colors.badge}`}>
@@ -403,35 +403,35 @@ const PipelineOverview = ({ initialCommodity = null, onBack = null }) => {
                   {/* Stats */}
                   <div className="space-y-3">
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600 dark:text-gray-400">{card.primary_unit_label || 'Bins'} Packed</span>
-                      <span className="font-semibold text-purple-600 dark:text-purple-400">
+                      <span className="text-sm text-bark-600">{card.primary_unit_label || 'Bins'} Packed</span>
+                      <span className="font-semibold text-bark-700">
                         {formatNumber(card.quantity_packed != null ? card.quantity_packed : card.bins_packed)}
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600 dark:text-gray-400">Settlement</span>
+                      <span className="text-sm text-bark-600">Settlement</span>
                       <div className="flex items-center gap-2">
-                        <div className="w-16 bg-gray-200 dark:bg-gray-600 rounded-full h-2">
+                        <div className="w-16 bg-sand-200 rounded-full h-2">
                           <div
                             className="bg-green-500 h-2 rounded-full transition-all"
                             style={{ width: `${Math.min(card.settlement_percent, 100)}%` }}
                           />
                         </div>
-                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300 w-12 text-right">
+                        <span className="text-sm font-medium text-bark-700 w-12 text-right">
                           {card.settlement_percent}%
                         </span>
                       </div>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600 dark:text-gray-400">Revenue</span>
-                      <span className="font-semibold text-primary dark:text-green-400">
+                      <span className="text-sm text-bark-600">Revenue</span>
+                      <span className="font-semibold text-primary">
                         {formatCurrency(card.revenue)}
                       </span>
                     </div>
                     {(card.avg_per_unit || card.avg_per_bin) > 0 && (
                       <div className="flex justify-between items-center">
-                        <span className="text-sm text-gray-600 dark:text-gray-400">$/{card.primary_unit === 'LBS' ? 'Lb' : 'Bin'}</span>
-                        <span className="font-medium text-gray-700 dark:text-gray-300">
+                        <span className="text-sm text-bark-600">$/{card.primary_unit === 'LBS' ? 'Lb' : 'Bin'}</span>
+                        <span className="font-medium text-bark-700">
                           ${formatNumber(card.avg_per_unit || card.avg_per_bin, 2)}
                         </span>
                       </div>
@@ -440,22 +440,22 @@ const PipelineOverview = ({ initialCommodity = null, onBack = null }) => {
 
                   {/* Pool Status Footer */}
                   {totalPools > 0 && (
-                    <div className="mt-4 pt-3 border-t border-gray-200 dark:border-gray-700 flex gap-3 text-xs">
+                    <div className="mt-4 pt-3 border-t border-border flex gap-3 text-xs">
                       {card.pools.active > 0 && (
-                        <span className="flex items-center gap-1 text-gray-500 dark:text-gray-400">
+                        <span className="flex items-center gap-1 text-text-secondary">
                           <span className="w-2 h-2 rounded-full bg-green-500"></span>
                           {card.pools.active} active
                         </span>
                       )}
                       {card.pools.closed > 0 && (
-                        <span className="flex items-center gap-1 text-gray-500 dark:text-gray-400">
+                        <span className="flex items-center gap-1 text-text-secondary">
                           <span className="w-2 h-2 rounded-full bg-yellow-500"></span>
                           {card.pools.closed} closed
                         </span>
                       )}
                       {card.pools.settled > 0 && (
-                        <span className="flex items-center gap-1 text-gray-500 dark:text-gray-400">
-                          <span className="w-2 h-2 rounded-full bg-blue-500"></span>
+                        <span className="flex items-center gap-1 text-text-secondary">
+                          <span className="w-2 h-2 rounded-full bg-primary"></span>
                           {card.pools.settled} settled
                         </span>
                       )}
@@ -466,9 +466,9 @@ const PipelineOverview = ({ initialCommodity = null, onBack = null }) => {
             })}
           </div>
         ) : (
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-8 text-center">
-            <Package className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
-            <p className="text-gray-500 dark:text-gray-400">
+          <div className="bg-surface-raised rounded-lg shadow p-8 text-center">
+            <Package className="w-12 h-12 text-sand-300 mx-auto mb-3" />
+            <p className="text-text-secondary">
               No commodity data available. Upload packinghouse statements to get started.
             </p>
           </div>
@@ -518,25 +518,25 @@ const PipelineOverview = ({ initialCommodity = null, onBack = null }) => {
             <div className="flex items-center gap-3">
               <button
                 onClick={handleBackToAll}
-                className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+                className="flex items-center gap-1 text-sm text-text-secondary hover:text-bark-700 transition-colors"
               >
                 <ArrowLeft className="w-4 h-4" />
                 All Commodities
               </button>
             </div>
-            <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mt-1">
+            <h2 className="text-xl text-heading mt-1">
               {data.selected_commodity} Pipeline
             </h2>
             {/* Season Selector */}
             <div className="flex items-center gap-3 mt-1">
-              <span className="text-gray-600 dark:text-gray-400 flex items-center">
+              <span className="text-bark-600 flex items-center">
                 <Calendar className="w-4 h-4 mr-1" />
                 Season:
               </span>
               <select
                 value={selectedSeason || data?.selected_season || ''}
                 onChange={handleSeasonChange}
-                className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-gray-800 dark:text-gray-200 dark:bg-gray-700 text-sm font-medium"
+                className="px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
               >
                 {data?.available_seasons?.map((season) => (
                   <option key={season} value={season}>
@@ -548,7 +548,7 @@ const PipelineOverview = ({ initialCommodity = null, onBack = null }) => {
           </div>
           <button
             onClick={fetchPipelineData}
-            className="flex items-center gap-2 px-3 py-2 border dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
+            className="flex items-center gap-2 px-3 py-2 border rounded-lg hover:bg-cream-50 text-bark-700"
           >
             <RefreshCw size={16} />
             Refresh
@@ -566,7 +566,7 @@ const PipelineOverview = ({ initialCommodity = null, onBack = null }) => {
               className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                 breakdownView === view.id
                   ? 'bg-primary text-white shadow-sm'
-                  : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'
+                  : 'bg-surface-raised text-bark-600 border border-border hover:bg-cream-50'
               }`}
             >
               {view.icon}
@@ -579,20 +579,20 @@ const PipelineOverview = ({ initialCommodity = null, onBack = null }) => {
       {/* Main Content Area */}
       {!breakdownView ? (
         /* Aggregate Pipeline Flow Visualization */
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div className="bg-surface-raised rounded-lg shadow p-6">
           <div className="flex items-center justify-center gap-8">
             {/* Stage 1: Packout (or Harvested for weight-based) */}
             <div className="flex-1 max-w-xs text-center cursor-pointer group" onClick={() => openDrillDown('packed_bins')}>
-              <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-purple-100 dark:bg-purple-900/30 mb-3 group-hover:ring-2 group-hover:ring-purple-300 transition-all">
-                <Package className="w-10 h-10 text-purple-600" />
+              <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-sand-200 mb-3 group-hover:ring-2 group-hover:ring-sand-300 transition-all">
+                <Package className="w-10 h-10 text-bark-700" />
               </div>
-              <h3 className="font-semibold text-gray-900 dark:text-gray-100 text-lg">
+              <h3 className=" text-heading text-lg">
                 {pipeline_stages.packout.label}
               </h3>
-              <p className="text-3xl font-bold text-purple-600 mt-2 group-hover:underline decoration-purple-300">
+              <p className="text-3xl font-bold text-bark-700 mt-2 group-hover:underline decoration-sand-300">
                 {formatNumber(packedQuantity)}
               </p>
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-text-secondary">
                 {isLbsCommodity
                   ? `lbs in ${pipeline_stages.packout.total_count} reports`
                   : `bins in ${pipeline_stages.packout.total_count} reports`
@@ -602,15 +602,15 @@ const PipelineOverview = ({ initialCommodity = null, onBack = null }) => {
                 /* For weight-based: show pack percent */
                 <div className="mt-3 flex justify-center gap-2 text-xs">
                   {pipeline_stages.packout.avg_pack_percent > 0 && (
-                    <span className="px-2 py-1 bg-purple-100 text-purple-800 rounded">
+                    <span className="px-2 py-1 bg-sand-200 text-bark-800 rounded">
                       {pipeline_stages.packout.avg_pack_percent}% packed
                     </span>
                   )}
                   {pipeline_stages.packout.avg_house_percent > 0 && (
                     <span className={`px-2 py-1 rounded ${
                       pipeline_stages.packout.avg_pack_percent >= pipeline_stages.packout.avg_house_percent
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-red-100 text-red-800'
+                        ? 'bg-green-100 text-green-700'
+                        : 'bg-danger-bg text-danger'
                     }`}>
                       vs {pipeline_stages.packout.avg_house_percent}% house
                     </span>
@@ -619,14 +619,14 @@ const PipelineOverview = ({ initialCommodity = null, onBack = null }) => {
               ) : (
                 /* For bin-based: show packout stats */
                 <div className="mt-3 flex justify-center gap-2 text-xs">
-                  <span className="px-2 py-1 bg-purple-100 text-purple-800 rounded">
+                  <span className="px-2 py-1 bg-sand-200 text-bark-800 rounded">
                     {pipeline_stages.packout.avg_pack_percent}% packed
                   </span>
                   {pipeline_stages.packout.avg_house_percent > 0 && (
                     <span className={`px-2 py-1 rounded ${
                       pipeline_stages.packout.avg_pack_percent >= pipeline_stages.packout.avg_house_percent
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-red-100 text-red-800'
+                        ? 'bg-green-100 text-green-700'
+                        : 'bg-danger-bg text-danger'
                     }`}>
                       vs {pipeline_stages.packout.avg_house_percent}% house
                     </span>
@@ -637,28 +637,28 @@ const PipelineOverview = ({ initialCommodity = null, onBack = null }) => {
 
             {/* Arrow */}
             <div className="flex flex-col items-center px-6">
-              <ArrowRight className="w-10 h-10 text-gray-400" />
-              <span className="text-sm text-gray-500 mt-2 font-medium">
+              <ArrowRight className="w-10 h-10 text-text-muted" />
+              <span className="text-sm text-text-secondary mt-2 font-medium">
                 {settlementPercent}%
               </span>
-              <span className="text-xs text-gray-400">settled</span>
+              <span className="text-xs text-text-muted">settled</span>
             </div>
 
             {/* Stage 2: Settlement */}
             <div className="flex-1 max-w-xs text-center cursor-pointer group" onClick={() => openDrillDown('settled')}>
-              <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-green-100 dark:bg-green-900/30 mb-3 group-hover:ring-2 group-hover:ring-green-300 transition-all">
+              <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-green-100 mb-3 group-hover:ring-2 group-hover:ring-green-300 transition-all">
                 <DollarSign className="w-10 h-10 text-primary" />
               </div>
-              <h3 className="font-semibold text-gray-900 dark:text-gray-100 text-lg">
+              <h3 className=" text-heading text-lg">
                 {pipeline_stages.settlement.label}
               </h3>
               <p className="text-3xl font-bold text-primary mt-2 group-hover:underline decoration-green-300">
                 {formatCurrency(pipeline_stages.settlement.total_revenue)}
               </p>
-              <p className="text-sm text-gray-500">{formatNumber(settledQuantity)} {commodityUnitLabel.toLowerCase()} settled</p>
+              <p className="text-sm text-text-secondary">{formatNumber(settledQuantity)} {commodityUnitLabel.toLowerCase()} settled</p>
               <div className="mt-3 flex justify-center gap-2 text-xs">
                 {(pipeline_stages.settlement.avg_per_unit || pipeline_stages.settlement.avg_per_bin) > 0 && (
-                  <span className="px-2 py-1 bg-green-100 text-green-800 rounded">
+                  <span className="px-2 py-1 bg-green-100 text-green-700 rounded">
                     ${formatNumber(pipeline_stages.settlement.avg_per_unit || pipeline_stages.settlement.avg_per_bin, 2)}/{commodityUnitSingular.toLowerCase()}
                   </span>
                 )}
@@ -667,12 +667,12 @@ const PipelineOverview = ({ initialCommodity = null, onBack = null }) => {
           </div>
 
           {/* Progress Bar */}
-          <div className="mt-8 pt-6 border-t dark:border-gray-700">
+          <div className="mt-8 pt-6 border-t">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              <span className="text-sm font-medium text-bark-700">
                 Settlement Progress
               </span>
-              <span className={`text-sm font-bold ${hasMissingPackouts ? 'text-orange-600' : 'text-gray-900 dark:text-gray-100'}`}>
+              <span className={`text-sm font-bold ${hasMissingPackouts ? 'text-orange-600' : 'text-heading'}`}>
                 {hasMissingPackouts ? (
                   <span className="flex items-center gap-1">
                     <AlertCircle className="w-4 h-4" />
@@ -683,17 +683,17 @@ const PipelineOverview = ({ initialCommodity = null, onBack = null }) => {
                 )}
               </span>
             </div>
-            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
+            <div className="w-full bg-sand-200 rounded-full h-3">
               <div
                 className={`h-3 rounded-full transition-all duration-500 ${
                   hasMissingPackouts
-                    ? 'bg-gradient-to-r from-orange-400 to-orange-500'
-                    : 'bg-gradient-to-r from-purple-500 to-green-500'
+                    ? 'bg-primary'
+                    : 'bg-bark-400'
                 }`}
                 style={{ width: `${Math.min(settlementPercent, 100)}%` }}
               />
             </div>
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-text-secondary mt-1">
               {hasMissingPackouts
                 ? `Settlements exceed packouts by ${formatNumber(missingPackoutQuantity)} ${commodityUnitLabel.toLowerCase()} - packout reports may be missing`
                 : `Percentage of packed ${commodityUnitLabel.toLowerCase()} that have been settled`
@@ -703,8 +703,8 @@ const PipelineOverview = ({ initialCommodity = null, onBack = null }) => {
         </div>
       ) : (
         /* Farm Breakdown View */
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
+        <div className="bg-surface-raised rounded-lg shadow p-6">
+          <h3 className="text-lg text-heading mb-4">
             Pipeline by Farm / Ranch
           </h3>
 
@@ -712,7 +712,7 @@ const PipelineOverview = ({ initialCommodity = null, onBack = null }) => {
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="text-left text-sm text-gray-500 dark:text-gray-400 border-b dark:border-gray-700">
+                  <tr className="text-left text-sm text-text-secondary border-b">
                     <th className="py-3 px-3">Farm / Ranch</th>
                     <th className="py-3 px-3 text-right">{commodityUnitLabel} Packed</th>
                     <th className="py-3 px-3 text-right">Pack %</th>
@@ -726,66 +726,66 @@ const PipelineOverview = ({ initialCommodity = null, onBack = null }) => {
                   {data.breakdowns.map((row, idx) => (
                     <tr
                       key={row.label || idx}
-                      className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50"
+                      className="border-b hover:bg-cream-50"
                     >
-                      <td className="py-3 px-3 font-medium text-gray-900 dark:text-gray-100">
+                      <td className="py-3 px-3 font-medium text-bark-700">
                         {row.label}
                       </td>
-                      <td className="py-3 px-3 text-right text-purple-600 dark:text-purple-400 font-semibold">
+                      <td className="py-3 px-3 text-right text-bark-700 font-semibold">
                         {formatNumber(row.bins_packed)}
                       </td>
                       <td className="py-3 px-3 text-right">
-                        <span className="px-2 py-0.5 bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 rounded text-xs font-medium">
+                        <span className="px-2 py-0.5 bg-sand-200 text-bark-800 rounded text-xs font-medium">
                           {row.avg_pack_percent}%
                         </span>
                       </td>
-                      <td className="py-3 px-3 text-right text-primary dark:text-green-400 font-semibold">
+                      <td className="py-3 px-3 text-right text-primary font-semibold">
                         {formatNumber(row.bins_settled)}
                       </td>
                       <td className="py-3 px-3 text-right">
                         <div className="inline-flex items-center gap-2">
-                          <div className="w-16 bg-gray-200 dark:bg-gray-600 rounded-full h-2">
+                          <div className="w-16 bg-sand-200 rounded-full h-2">
                             <div
                               className="bg-green-500 h-2 rounded-full transition-all"
                               style={{ width: `${Math.min(row.settlement_percent, 100)}%` }}
                             />
                           </div>
-                          <span className="text-xs text-gray-600 dark:text-gray-400 w-10 text-right">
+                          <span className="text-xs text-bark-600 w-10 text-right">
                             {row.settlement_percent}%
                           </span>
                         </div>
                       </td>
-                      <td className="py-3 px-3 text-right text-primary dark:text-green-400 font-semibold">
+                      <td className="py-3 px-3 text-right text-primary font-semibold">
                         {formatCurrency(row.revenue)}
                       </td>
-                      <td className="py-3 px-3 text-right text-gray-700 dark:text-gray-300">
+                      <td className="py-3 px-3 text-right text-bark-700">
                         {row.avg_per_bin > 0 ? `$${formatNumber(row.avg_per_bin, 2)}` : '-'}
                       </td>
                     </tr>
                   ))}
                   {/* Totals row */}
-                  <tr className="bg-gray-50 dark:bg-gray-700/50 font-semibold">
-                    <td className="py-3 px-3 text-gray-900 dark:text-gray-100">Total</td>
-                    <td className="py-3 px-3 text-right text-purple-600 dark:text-purple-400">
+                  <tr className="bg-cream-50 font-semibold">
+                    <td className="py-3 px-3 text-bark-700">Total</td>
+                    <td className="py-3 px-3 text-right text-bark-700">
                       {formatNumber(data.breakdowns.reduce((sum, r) => sum + (r.bins_packed || 0), 0))}
                     </td>
                     <td className="py-3 px-3 text-right">
-                      <span className="px-2 py-0.5 bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 rounded text-xs font-medium">
+                      <span className="px-2 py-0.5 bg-sand-200 text-bark-800 rounded text-xs font-medium">
                         {pipeline_stages.packout.avg_pack_percent}%
                       </span>
                     </td>
-                    <td className="py-3 px-3 text-right text-primary dark:text-green-400">
+                    <td className="py-3 px-3 text-right text-primary">
                       {formatNumber(data.breakdowns.reduce((sum, r) => sum + (r.bins_settled || 0), 0))}
                     </td>
                     <td className="py-3 px-3 text-right">
-                      <span className="text-xs text-gray-600 dark:text-gray-400">
+                      <span className="text-xs text-bark-600">
                         {settlementPercent}%
                       </span>
                     </td>
-                    <td className="py-3 px-3 text-right text-primary dark:text-green-400">
+                    <td className="py-3 px-3 text-right text-primary">
                       {formatCurrency(data.breakdowns.reduce((sum, r) => sum + (r.revenue || 0), 0))}
                     </td>
-                    <td className="py-3 px-3 text-right text-gray-700 dark:text-gray-300">
+                    <td className="py-3 px-3 text-right text-bark-700">
                       {pipeline_stages.settlement.avg_per_bin > 0
                         ? `$${formatNumber(pipeline_stages.settlement.avg_per_bin, 2)}`
                         : '-'}
@@ -795,12 +795,12 @@ const PipelineOverview = ({ initialCommodity = null, onBack = null }) => {
               </table>
             </div>
           ) : data.breakdowns && data.breakdowns.length === 0 ? (
-            <p className="text-gray-500 dark:text-gray-400 text-center py-8">
+            <p className="text-text-secondary text-center py-8">
               No data available for this breakdown view
             </p>
           ) : (
             <div className="flex justify-center py-8">
-              <RefreshCw className="w-5 h-5 animate-spin text-gray-400" />
+              <RefreshCw className="w-5 h-5 animate-spin text-text-muted" />
             </div>
           )}
         </div>
@@ -809,29 +809,29 @@ const PipelineOverview = ({ initialCommodity = null, onBack = null }) => {
       {/* Pool Status & Recent Activity */}
       <div className="grid grid-cols-3 gap-6">
         {/* Pool Status */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
-            <Layers className="w-5 h-5 text-blue-600" />
+        <div className="bg-surface-raised rounded-lg shadow p-6">
+          <h3 className="text-lg text-heading mb-4 flex items-center gap-2">
+            <Layers className="w-5 h-5 text-link" />
             Pool Status
           </h3>
           <div className="space-y-3">
             <div className="flex justify-between items-center">
-              <span className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+              <span className="flex items-center gap-2 text-bark-600">
                 <span className="w-3 h-3 rounded-full bg-green-500"></span>
                 Active
               </span>
               <span className="font-semibold">{pool_status.active}</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+              <span className="flex items-center gap-2 text-bark-600">
                 <span className="w-3 h-3 rounded-full bg-yellow-500"></span>
                 Closed (Pending Settlement)
               </span>
               <span className="font-semibold">{pool_status.closed}</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
-                <span className="w-3 h-3 rounded-full bg-blue-500"></span>
+              <span className="flex items-center gap-2 text-bark-600">
+                <span className="w-3 h-3 rounded-full bg-primary"></span>
                 Settled
               </span>
               <span className="font-semibold">{pool_status.settled}</span>
@@ -840,14 +840,14 @@ const PipelineOverview = ({ initialCommodity = null, onBack = null }) => {
         </div>
 
         {/* Recent Activity */}
-        <div className="col-span-2 bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
-            <Clock className="w-5 h-5 text-purple-600" />
+        <div className="col-span-2 bg-surface-raised rounded-lg shadow p-6">
+          <h3 className="text-lg text-heading mb-4 flex items-center gap-2">
+            <Clock className="w-5 h-5 text-bark-700" />
             Recent Activity
           </h3>
           <div className="space-y-3 max-h-64 overflow-y-auto">
             {filteredActivity.length === 0 ? (
-              <p className="text-gray-500 text-center py-4">No recent activity</p>
+              <p className="text-text-secondary text-center py-4">No recent activity</p>
             ) : (
               filteredActivity.map((item, index) => (
                 <div
@@ -858,17 +858,17 @@ const PipelineOverview = ({ initialCommodity = null, onBack = null }) => {
                     {getActivityIcon(item.type)}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+                    <p className="text-sm font-medium text-heading truncate">
                       {item.description}
                     </p>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-text-secondary">
                       {item.field && `${item.field} • `}
                       {item.packinghouse && `${item.packinghouse} • `}
                       {formatDate(item.date)}
                     </p>
                   </div>
                   {item.bins && (
-                    <span className="text-sm font-medium text-gray-700">
+                    <span className="text-sm font-medium text-bark-700">
                       {formatNumber(item.bins)} bins
                     </span>
                   )}
@@ -876,7 +876,7 @@ const PipelineOverview = ({ initialCommodity = null, onBack = null }) => {
                     <span className={`text-sm font-medium ${
                       item.pack_percent >= (item.house_avg || 0)
                         ? 'text-primary'
-                        : 'text-red-600'
+                        : 'text-danger'
                     }`}>
                       {item.pack_percent}%
                     </span>
@@ -897,21 +897,21 @@ const PipelineOverview = ({ initialCommodity = null, onBack = null }) => {
       {(pool_status.closed > 0 || hasMissingPackouts) && (
         <div className={`border rounded-lg p-4 ${
           hasMissingPackouts
-            ? 'bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800'
-            : 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800'
+            ? 'bg-orange-50 border-orange-200'
+            : 'bg-yellow-50 border-yellow-200'
         }`}>
-          <h3 className={`text-sm font-semibold mb-2 flex items-center gap-2 ${
+          <h3 className={`text-sm mb-2 flex items-center gap-2 ${
             hasMissingPackouts
-              ? 'text-orange-800 dark:text-orange-200'
-              : 'text-yellow-800 dark:text-yellow-200'
+              ? 'text-orange-800'
+              : 'text-yellow-800'
           }`}>
             <AlertCircle className="w-4 h-4" />
             Action Items
           </h3>
           <ul className={`text-sm space-y-1 ${
             hasMissingPackouts
-              ? 'text-orange-700 dark:text-orange-300'
-              : 'text-yellow-700 dark:text-yellow-300'
+              ? 'text-orange-700'
+              : 'text-yellow-700'
           }`}>
             {hasMissingPackouts && (
               <li>

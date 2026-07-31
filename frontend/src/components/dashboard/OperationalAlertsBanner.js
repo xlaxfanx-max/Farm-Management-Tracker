@@ -120,12 +120,12 @@ function OperationalAlertsBanner({
   // If no alerts, show success state
   if (alerts.length === 0) {
     return (
-      <div className="bg-primary-light border border-green-200 rounded-lg p-3 flex items-center gap-3">
+      <div className="bg-primary-light border border-green-200 rounded-card p-3 flex items-center gap-3">
         <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
           <span className="text-primary text-lg">✓</span>
         </div>
         <div>
-          <p className="text-sm font-medium text-green-800">All systems operational</p>
+          <p className="text-sm font-medium text-green-700">All systems operational</p>
           <p className="text-xs text-primary">No pending tasks or alerts</p>
         </div>
       </div>
@@ -137,7 +137,7 @@ function OperationalAlertsBanner({
   return (
     <div className={`
       rounded-lg border overflow-hidden
-      ${highPriorityCount > 0 ? 'bg-amber-50 border-amber-200' : 'bg-blue-50 border-blue-200'}
+      ${highPriorityCount > 0 ? 'bg-yellow-100 border-yellow-200' : 'bg-orange-50 border-orange-200'}
     `}>
       {/* Header */}
       <button
@@ -147,16 +147,16 @@ function OperationalAlertsBanner({
         <div className="flex items-center gap-3">
           <div className={`
             w-8 h-8 rounded-full flex items-center justify-center
-            ${highPriorityCount > 0 ? 'bg-amber-100' : 'bg-blue-100'}
+            ${highPriorityCount > 0 ? 'bg-yellow-200' : 'bg-orange-100'}
           `}>
-            <AlertTriangle className={`w-4 h-4 ${highPriorityCount > 0 ? 'text-amber-600' : 'text-blue-600'}`} />
+            <AlertTriangle className={`w-4 h-4 ${highPriorityCount > 0 ? 'text-yellow-600' : 'text-link'}`} />
           </div>
           <div className="text-left">
-            <p className={`text-sm font-medium ${highPriorityCount > 0 ? 'text-amber-800' : 'text-blue-800'}`}>
+            <p className={`text-sm font-medium ${highPriorityCount > 0 ? 'text-yellow-800' : 'text-orange-700'}`}>
               {alerts.length} item{alerts.length > 1 ? 's' : ''} need{alerts.length === 1 ? 's' : ''} attention
             </p>
             {!isExpanded && (
-              <p className={`text-xs ${highPriorityCount > 0 ? 'text-amber-600' : 'text-blue-600'}`}>
+              <p className={`text-xs ${highPriorityCount > 0 ? 'text-yellow-600' : 'text-link'}`}>
                 {alerts.slice(0, 2).map(a => a.title).join(' • ')}
               </p>
             )}
@@ -165,14 +165,14 @@ function OperationalAlertsBanner({
         <div className="flex items-center gap-2">
           <span className={`
             px-2 py-0.5 rounded-full text-xs font-medium
-            ${highPriorityCount > 0 ? 'bg-amber-200 text-amber-700' : 'bg-blue-200 text-blue-700'}
+            ${highPriorityCount > 0 ? 'bg-yellow-200 text-yellow-700' : 'bg-orange-200 text-orange-700'}
           `}>
             {alerts.length}
           </span>
           {isExpanded ? (
-            <ChevronUp className="w-5 h-5 text-gray-400" />
+            <ChevronUp className="w-5 h-5 text-text-muted" />
           ) : (
-            <ChevronDown className="w-5 h-5 text-gray-400" />
+            <ChevronDown className="w-5 h-5 text-text-muted" />
           )}
         </div>
       </button>
@@ -187,23 +187,23 @@ function OperationalAlertsBanner({
               className={`
                 flex items-center gap-3 p-2 rounded-lg cursor-pointer
                 transition-colors
-                ${alert.priority === 'high' ? 'bg-amber-100/50 hover:bg-amber-100' : ''}
-                ${alert.priority === 'medium' ? 'bg-blue-100/50 hover:bg-blue-100' : ''}
-                ${alert.priority === 'low' ? 'bg-gray-100/50 hover:bg-gray-100' : ''}
+                ${alert.priority === 'high' ? 'bg-yellow-200/50 hover:bg-yellow-200' : ''}
+                ${alert.priority === 'medium' ? 'bg-orange-100/50 hover:bg-orange-100' : ''}
+                ${alert.priority === 'low' ? 'bg-cream-100/50 hover:bg-cream-100' : ''}
               `}
             >
               <alert.icon className={`
                 w-4 h-4 flex-shrink-0
-                ${alert.priority === 'high' ? 'text-amber-600' : ''}
-                ${alert.priority === 'medium' ? 'text-blue-600' : ''}
-                ${alert.priority === 'low' ? 'text-gray-500' : ''}
+                ${alert.priority === 'high' ? 'text-yellow-600' : ''}
+                ${alert.priority === 'medium' ? 'text-link' : ''}
+                ${alert.priority === 'low' ? 'text-text-secondary' : ''}
               `} />
-              <span className="text-sm text-gray-700 flex-1">{alert.title}</span>
+              <span className="text-sm text-bark-700 flex-1">{alert.title}</span>
               <span className={`
                 text-xs font-medium px-2 py-0.5 rounded
-                ${alert.priority === 'high' ? 'bg-amber-200 text-amber-700' : ''}
-                ${alert.priority === 'medium' ? 'bg-blue-200 text-blue-700' : ''}
-                ${alert.priority === 'low' ? 'bg-gray-200 text-gray-600' : ''}
+                ${alert.priority === 'high' ? 'bg-yellow-200 text-yellow-700' : ''}
+                ${alert.priority === 'medium' ? 'bg-orange-200 text-orange-700' : ''}
+                ${alert.priority === 'low' ? 'bg-sand-200 text-bark-600' : ''}
               `}>
                 {alert.count}
               </span>

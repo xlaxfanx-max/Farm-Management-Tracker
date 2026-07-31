@@ -7,7 +7,6 @@ import { PermissionGate } from './contexts/AuthComponents';
 import EmptyState from './components/ui/EmptyState';
 import { DataProvider } from './contexts/DataContext';
 import { ModalProvider } from './contexts/ModalContext';
-import { ThemeProvider, useTheme } from './contexts/ThemeContext';
 import { SeasonProvider } from './contexts/SeasonContext';
 
 // Route config
@@ -19,7 +18,7 @@ import Dashboard from './components/Dashboard';
 import GlobalModals from './components/GlobalModals';
 import CommandPalette from './components/CommandPalette';
 import ErrorBoundary from './components/ui/ErrorBoundary';
-import Breadcrumbs from './components/navigation/Breadcrumbs';
+import PageShell from './components/layout/PageShell';
 
 // Lazy-loaded components (code-split per route)
 const CompanySettings = lazy(() => import('./components/CompanySettings'));
@@ -51,7 +50,7 @@ function RouteLoadingFallback() {
     <div className="flex items-center justify-center min-h-[400px]">
       <div className="text-center">
         <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-        <p className="text-sm text-gray-500 dark:text-gray-400">Loading...</p>
+        <p className="text-sm text-text-secondary">Loading...</p>
       </div>
     </div>
   );
@@ -71,8 +70,6 @@ function AppContent() {
     logout,
     switchCompany
   } = useAuth();
-
-  const { isDarkMode, toggleTheme } = useTheme();
 
   const location = useLocation();
   const navigate = useNavigate();
@@ -101,10 +98,10 @@ function AppContent() {
   // ============================================================================
   if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-surface dark:bg-gray-900">
+      <div className="min-h-screen flex items-center justify-center bg-surface">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-gray-600 dark:text-gray-400">Loading...</p>
+          <p className="mt-4 text-text-secondary">Loading...</p>
         </div>
       </div>
     );
@@ -144,8 +141,6 @@ function AppContent() {
 
   return (
     <AppLayout
-      isDarkMode={isDarkMode}
-      onToggleTheme={toggleTheme}
       user={user}
       currentCompany={currentCompany}
       companies={companies}
@@ -160,95 +155,83 @@ function AppContent() {
               element={
                 isAccountant
                   ? <Navigate to="/dashboard/harvests" replace />
-                  : <Dashboard onNavigate={handleNavigate} />
+                  : <PageShell view="dashboard"><Dashboard onNavigate={handleNavigate} /></PageShell>
               }
             />
             <Route path="farms" element={
-              <div className="p-6">
-                <Breadcrumbs currentView="farms" onNavigate={handleNavigate} />
+              <PageShell view="farms">
                 <Farms />
-              </div>
+              </PageShell>
             } />
             <Route path="applications" element={
-              <div className="p-6">
-                <Breadcrumbs currentView="applications" onNavigate={handleNavigate} />
+              <PageShell view="applications">
                 <PURImportPage onNavigate={handleNavigate} />
-              </div>
+              </PageShell>
             } />
             <Route path="pur-import" element={
-              <div className="p-6">
-                <Breadcrumbs currentView="pur-import" onNavigate={handleNavigate} />
+              <PageShell view="pur-import">
                 <PURImportPage onNavigate={handleNavigate} initialStep="upload" />
-              </div>
+              </PageShell>
             } />
             <Route path="reports" element={
-              <div className="p-6">
-                <Breadcrumbs currentView="reports" onNavigate={handleNavigate} />
+              <PageShell view="reports">
                 <Reports />
-              </div>
+              </PageShell>
             } />
             <Route path="harvests" element={
-              <div className="p-6">
-                <Breadcrumbs currentView="harvests" onNavigate={handleNavigate} />
+              <PageShell view="harvests">
                 <Harvests />
-              </div>
+              </PageShell>
             } />
             <Route path="team" element={
-              <div className="p-6">
-                <Breadcrumbs currentView="team" onNavigate={handleNavigate} />
+              <PageShell view="team">
                 <TeamManagement />
-              </div>
+              </PageShell>
             } />
             <Route path="company" element={
-              <div className="p-6">
-                <Breadcrumbs currentView="company" onNavigate={handleNavigate} />
+              <PageShell view="company">
                 <CompanySettings onBack={() => handleNavigate('dashboard')} />
-              </div>
+              </PageShell>
             } />
             <Route path="profile" element={
-              <div className="p-6">
-                <Breadcrumbs currentView="profile" onNavigate={handleNavigate} />
+              <PageShell view="profile">
                 <Profile onBack={() => handleNavigate('dashboard')} />
-              </div>
+              </PageShell>
             } />
             <Route path="water" element={
-              <div className="p-6">
-                <Breadcrumbs currentView="water" onNavigate={handleNavigate} />
+              <PageShell view="water">
                 <WaterManagement />
-              </div>
+              </PageShell>
             } />
             <Route path="weather" element={
-              <div className="p-6">
-                <Breadcrumbs currentView="weather" onNavigate={handleNavigate} />
+              <PageShell view="weather">
                 <WeatherForecast />
-              </div>
+              </PageShell>
             } />
             <Route path="analytics" element={
-              <div className="p-6">
-                <Breadcrumbs currentView="analytics" onNavigate={handleNavigate} />
+              <PageShell view="analytics">
                 <Analytics />
-              </div>
+              </PageShell>
             } />
             <Route path="activity" element={
-              <div className="p-6">
-                <Breadcrumbs currentView="activity" onNavigate={handleNavigate} />
+              <PageShell view="activity">
                 <AuditLogViewer />
-              </div>
+              </PageShell>
             } />
-            <Route path="compliance" element={<ComplianceDashboard onNavigate={handleNavigate} />} />
-            <Route path="compliance/deadlines" element={<DeadlineCalendar onNavigate={handleNavigate} />} />
-            <Route path="compliance/licenses" element={<LicenseManagement onNavigate={handleNavigate} />} />
-            <Route path="compliance/wps" element={<WPSCompliance onNavigate={handleNavigate} />} />
-            <Route path="compliance/reports" element={<ComplianceReports onNavigate={handleNavigate} />} />
-            <Route path="compliance/settings" element={<ComplianceSettings onNavigate={handleNavigate} />} />
-            <Route path="compliance/pesticide" element={<DeadlineCalendar onNavigate={handleNavigate} />} />
-            <Route path="compliance/inspector-checklist" element={<InspectorChecklist onNavigate={handleNavigate} />} />
+            <Route path="compliance" element={<PageShell view="compliance"><ComplianceDashboard onNavigate={handleNavigate} /></PageShell>} />
+            <Route path="compliance/deadlines" element={<PageShell view="compliance-deadlines"><DeadlineCalendar onNavigate={handleNavigate} /></PageShell>} />
+            <Route path="compliance/licenses" element={<PageShell view="compliance-licenses"><LicenseManagement onNavigate={handleNavigate} /></PageShell>} />
+            <Route path="compliance/wps" element={<PageShell view="compliance-wps"><WPSCompliance onNavigate={handleNavigate} /></PageShell>} />
+            <Route path="compliance/reports" element={<PageShell view="compliance-reports"><ComplianceReports onNavigate={handleNavigate} /></PageShell>} />
+            <Route path="compliance/settings" element={<PageShell view="compliance-settings"><ComplianceSettings onNavigate={handleNavigate} /></PageShell>} />
+            <Route path="compliance/pesticide" element={<PageShell view="compliance-pesticide"><DeadlineCalendar onNavigate={handleNavigate} /></PageShell>} />
+            <Route path="compliance/inspector-checklist" element={<PageShell view="compliance-inspector-checklist"><InspectorChecklist onNavigate={handleNavigate} /></PageShell>} />
             {/* Pick & haul rolled into Harvest & Packing; old links land there. */}
             <Route path="pick-haul/*" element={<Navigate to="/dashboard/harvests" replace />} />
-            <Route path="rentals" element={rentalsRoute('overview')} />
-            <Route path="rentals/rent-roll" element={rentalsRoute('rent-roll')} />
+            <Route path="rentals" element={<PageShell view="rentals">{rentalsRoute('overview')}</PageShell>} />
+            <Route path="rentals/rent-roll" element={<PageShell view="rentals-rent-roll">{rentalsRoute('rent-roll')}</PageShell>} />
             {/* Catch-all redirect to dashboard */}
-            <Route path="*" element={<Dashboard onNavigate={handleNavigate} />} />
+            <Route path="*" element={<PageShell view="dashboard"><Dashboard onNavigate={handleNavigate} /></PageShell>} />
         </Routes>
         </Suspense>
       </ErrorBoundary>
@@ -268,16 +251,14 @@ function AppContent() {
 
 function App() {
   return (
-    <ErrorBoundary level="app" name="Finch Farms Dashboard">
-      <ThemeProvider>
-        <SeasonProvider>
-          <DataProvider>
-            <ModalProvider>
-              <AppContent />
-            </ModalProvider>
-          </DataProvider>
-        </SeasonProvider>
-      </ThemeProvider>
+    <ErrorBoundary level="app" name="Finch">
+      <SeasonProvider>
+        <DataProvider>
+          <ModalProvider>
+            <AppContent />
+          </ModalProvider>
+        </DataProvider>
+      </SeasonProvider>
     </ErrorBoundary>
   );
 }

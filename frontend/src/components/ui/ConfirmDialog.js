@@ -6,14 +6,14 @@ import Button from './Button';
 const variantConfig = {
   danger: {
     icon: Trash2,
-    iconBg: 'bg-red-100 dark:bg-red-900/30',
-    iconColor: 'text-red-600 dark:text-red-400',
+    iconBg: 'bg-danger-bg',
+    iconColor: 'text-danger',
     confirmVariant: 'danger',
   },
   warning: {
     icon: AlertTriangle,
-    iconBg: 'bg-amber-100 dark:bg-amber-900/30',
-    iconColor: 'text-amber-600 dark:text-amber-400',
+    iconBg: 'bg-warning-bg',
+    iconColor: 'text-yellow-600',
     confirmVariant: 'primary',
   },
 };
@@ -36,18 +36,18 @@ export default function ConfirmDialog({
 
   return ReactDOM.createPortal(
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/50" onClick={loading ? undefined : onCancel} aria-hidden="true" />
-      <div className="relative bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-sm w-full p-6" role="alertdialog" aria-modal="true" aria-labelledby="confirm-dialog-title">
+      <div className="absolute inset-0 modal-backdrop" onClick={loading ? undefined : onCancel} aria-hidden="true" />
+      <div className="relative bg-surface-raised rounded-modal shadow-xl max-w-sm w-full p-6" role="alertdialog" aria-modal="true" aria-labelledby="confirm-dialog-title">
         <div className="flex items-start gap-4">
-          <div className={`p-2 rounded-lg flex-shrink-0 ${config.iconBg}`}>
+          <div className={`p-2 rounded-button flex-shrink-0 ${config.iconBg}`}>
             <IconComponent className={`w-5 h-5 ${config.iconColor}`} />
           </div>
           <div className="flex-1 min-w-0">
-            <h3 id="confirm-dialog-title" className="text-lg font-semibold text-gray-900 dark:text-white">
+            <h3 id="confirm-dialog-title" className="font-display text-card-title text-heading">
               {title}
             </h3>
             {message && (
-              <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
+              <p className="mt-2 text-sm text-text-secondary">
                 {message}
               </p>
             )}

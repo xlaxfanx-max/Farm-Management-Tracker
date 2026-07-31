@@ -23,21 +23,18 @@ import {
 
 const Profile = ({ onBack }) => {
   const { user, refreshUser, currentCompany } = useAuth();
-  
   // Profile state
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [editingProfile, setEditingProfile] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
-  
   // Profile form data
   const [profileData, setProfileData] = useState({
     first_name: '',
     last_name: '',
     phone: '',
   });
-  
   // Password change state
   const [changingPassword, setChangingPassword] = useState(false);
   const [passwordData, setPasswordData] = useState({
@@ -50,7 +47,6 @@ const Profile = ({ onBack }) => {
   const [passwordError, setPasswordError] = useState(null);
   const [passwordSuccess, setPasswordSuccess] = useState(null);
   const [savingPassword, setSavingPassword] = useState(false);
-  
   // Notification preferences state
   const [editingNotifications, setEditingNotifications] = useState(false);
   const [notifications, setNotifications] = useState({
@@ -70,7 +66,6 @@ const Profile = ({ onBack }) => {
         last_name: user.last_name || '',
         phone: user.phone || '',
       });
-      
       // Load notification preferences if available
       if (user.notification_preferences) {
         setNotifications(user.notification_preferences);
@@ -106,7 +101,6 @@ const Profile = ({ onBack }) => {
   const handleSaveProfile = async () => {
     setSaving(true);
     setError(null);
-    
     try {
       await authAPI.updateProfile(profileData);
       await refreshUser();
@@ -161,10 +155,8 @@ const Profile = ({ onBack }) => {
   // Save new password
   const handleSavePassword = async () => {
     if (!validatePassword()) return;
-    
     setSavingPassword(true);
     setPasswordError(null);
-    
     try {
       await authAPI.changePassword(passwordData.current_password, passwordData.new_password);
       setPasswordSuccess('Password changed successfully');
@@ -204,7 +196,6 @@ const Profile = ({ onBack }) => {
   // Save notification preferences
   const handleSaveNotifications = async () => {
     setSavingNotifications(true);
-    
     try {
       await authAPI.updateProfile({ notification_preferences: notifications });
       await refreshUser();
@@ -240,7 +231,7 @@ const Profile = ({ onBack }) => {
     return (
       <div className="flex items-center justify-center h-64">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
-        <span className="ml-2 text-gray-600">Loading profile...</span>
+        <span className="ml-2 text-bark-600">Loading profile...</span>
       </div>
     );
   }
@@ -251,55 +242,51 @@ const Profile = ({ onBack }) => {
       <div className="mb-6">
         <button
           onClick={onBack}
-          className="flex items-center text-gray-600 hover:text-gray-900 mb-4 transition-colors"
+          className="flex items-center text-bark-600 hover:text-heading mb-4 transition-colors"
         >
           <ChevronLeft className="w-5 h-5 mr-1" />
           Back to Dashboard
         </button>
-        
         <div className="flex items-center">
           <User className="w-8 h-8 text-primary mr-3" />
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Profile</h1>
-            <p className="text-gray-500">Manage your personal information and preferences</p>
+            <p className="text-text-secondary">Manage your personal information and preferences</p>
           </div>
         </div>
       </div>
 
       {/* Alerts */}
       {error && (
-        <div className="mb-4 bg-red-50 border border-red-200 rounded-lg p-4">
+        <div className="mb-4 bg-danger-bg border border-danger/25 rounded-card p-4">
           <div className="flex items-center">
-            <AlertCircle className="w-5 h-5 text-red-500 mr-2" />
-            <span className="text-red-700">{error}</span>
-            <button onClick={() => setError(null)} className="ml-auto text-red-500 hover:text-red-700">
+            <AlertCircle className="w-5 h-5 text-danger mr-2" />
+            <span className="text-danger">{error}</span>
+            <button aria-label="Close" onClick={() => setError(null)} className="ml-auto text-danger hover:text-danger">
               <X className="w-4 h-4" />
             </button>
           </div>
         </div>
       )}
-      
       {success && (
-        <div className="mb-4 bg-primary-light border border-green-200 rounded-lg p-4">
+        <div className="mb-4 bg-primary-light border border-green-200 rounded-card p-4">
           <div className="flex items-center">
-            <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
+            <CheckCircle className="w-5 h-5 text-green-600 mr-2" />
             <span className="text-primary">{success}</span>
           </div>
         </div>
       )}
 
       <div className="space-y-6">
-        
         {/* Profile Overview Card */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-          <div className="bg-gradient-to-r from-green-600 to-green-700 px-6 py-8">
+        <div className="bg-surface-raised rounded-card shadow-sm border border-border overflow-hidden">
+          <div className="bg-gradient-to-r from-green-600 to-green-800 px-6 py-8">
             <div className="flex items-center">
-              <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-lg">
+              <div className="w-20 h-20 bg-surface-raised rounded-full flex items-center justify-center shadow-lg">
                 <span className="text-2xl font-bold text-primary">{getUserInitials()}</span>
               </div>
               <div className="ml-6 text-white">
-                <h2 className="text-2xl font-bold">
-                  {user?.first_name && user?.last_name 
+                <h2 className="text-2xl">
+                  {user?.first_name && user?.last_name
                     ? `${user.first_name} ${user.last_name}`
                     : user?.email}
                 </h2>
@@ -319,9 +306,9 @@ const Profile = ({ onBack }) => {
         </div>
 
         {/* Personal Information */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-          <div className="bg-gray-50 px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-gray-900 flex items-center">
+        <div className="bg-surface-raised rounded-card shadow-sm border border-border overflow-hidden">
+          <div className="bg-cream-50 px-6 py-4 border-b border-border flex items-center justify-between">
+            <h2 className="text-lg text-heading flex items-center">
               <User className="w-5 h-5 mr-2 text-primary" />
               Personal Information
             </h2>
@@ -335,13 +322,12 @@ const Profile = ({ onBack }) => {
               </button>
             )}
           </div>
-          
           <div className="p-6">
             {editingProfile ? (
               <div className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-bark-700 mb-1">
                       First Name
                     </label>
                     <input
@@ -349,12 +335,12 @@ const Profile = ({ onBack }) => {
                       name="first_name"
                       value={profileData.first_name}
                       onChange={handleProfileChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+                      className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                       placeholder="Enter first name"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-bark-700 mb-1">
                       Last Name
                     </label>
                     <input
@@ -362,27 +348,25 @@ const Profile = ({ onBack }) => {
                       name="last_name"
                       value={profileData.last_name}
                       onChange={handleProfileChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+                      className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                       placeholder="Enter last name"
                     />
                   </div>
                 </div>
-                
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-bark-700 mb-1">
                     Email Address
                   </label>
                   <input
                     type="email"
                     value={user?.email || ''}
                     disabled
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed"
+                    className="w-full cursor-not-allowed px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                   />
-                  <p className="text-xs text-gray-500 mt-1">Contact support to change your email address</p>
+                  <p className="text-xs text-text-secondary mt-1">Contact support to change your email address</p>
                 </div>
-                
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-bark-700 mb-1">
                     Phone Number
                   </label>
                   <input
@@ -390,15 +374,14 @@ const Profile = ({ onBack }) => {
                     name="phone"
                     value={profileData.phone}
                     onChange={handleProfileChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+                    className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                     placeholder="(555) 555-5555"
                   />
                 </div>
-                
                 <div className="flex gap-2 pt-2">
                   <button
                     onClick={handleCancelProfile}
-                    className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                    className="px-4 py-2 border border-border-strong text-bark-700 rounded-button hover:bg-cream-50 transition-colors"
                   >
                     Cancel
                   </button>
@@ -419,26 +402,26 @@ const Profile = ({ onBack }) => {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-500 mb-1">First Name</label>
-                  <p className="text-gray-900">{user?.first_name || '—'}</p>
+                  <label className="block text-sm font-medium text-text-secondary mb-1">First Name</label>
+                  <p className="text-heading">{user?.first_name || '—'}</p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-500 mb-1">Last Name</label>
-                  <p className="text-gray-900">{user?.last_name || '—'}</p>
+                  <label className="block text-sm font-medium text-text-secondary mb-1">Last Name</label>
+                  <p className="text-heading">{user?.last_name || '—'}</p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-500 mb-1">Email Address</label>
-                  <p className="text-gray-900 flex items-center">
-                    <Mail className="w-4 h-4 mr-2 text-gray-400" />
+                  <label className="block text-sm font-medium text-text-secondary mb-1">Email Address</label>
+                  <p className="text-heading flex items-center">
+                    <Mail className="w-4 h-4 mr-2 text-text-muted" />
                     {user?.email}
                   </p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-500 mb-1">Phone Number</label>
-                  <p className="text-gray-900 flex items-center">
+                  <label className="block text-sm font-medium text-text-secondary mb-1">Phone Number</label>
+                  <p className="text-heading flex items-center">
                     {user?.phone ? (
                       <>
-                        <Phone className="w-4 h-4 mr-2 text-gray-400" />
+                        <Phone className="w-4 h-4 mr-2 text-text-muted" />
                         {user.phone}
                       </>
                     ) : '—'}
@@ -450,37 +433,34 @@ const Profile = ({ onBack }) => {
         </div>
 
         {/* Password & Security */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-          <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900 flex items-center">
+        <div className="bg-surface-raised rounded-card shadow-sm border border-border overflow-hidden">
+          <div className="bg-cream-50 px-6 py-4 border-b border-border">
+            <h2 className="text-lg text-heading flex items-center">
               <Lock className="w-5 h-5 mr-2 text-primary" />
               Password & Security
             </h2>
           </div>
-          
           <div className="p-6">
             {passwordSuccess && (
-              <div className="mb-4 bg-primary-light border border-green-200 rounded-lg p-3">
+              <div className="mb-4 bg-primary-light border border-green-200 rounded-card p-3">
                 <div className="flex items-center">
-                  <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
+                  <CheckCircle className="w-5 h-5 text-green-600 mr-2" />
                   <span className="text-primary">{passwordSuccess}</span>
                 </div>
               </div>
             )}
-            
             {changingPassword ? (
               <div className="space-y-4 max-w-md">
                 {passwordError && (
-                  <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                  <div className="bg-danger-bg border border-danger/25 rounded-card p-3">
                     <div className="flex items-center">
-                      <AlertCircle className="w-5 h-5 text-red-500 mr-2" />
-                      <span className="text-red-700 text-sm">{passwordError}</span>
+                      <AlertCircle className="w-5 h-5 text-danger mr-2" />
+                      <span className="text-danger text-sm">{passwordError}</span>
                     </div>
                   </div>
                 )}
-                
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-bark-700 mb-1">
                     Current Password
                   </label>
                   <div className="relative">
@@ -489,21 +469,20 @@ const Profile = ({ onBack }) => {
                       name="current_password"
                       value={passwordData.current_password}
                       onChange={handlePasswordChange}
-                      className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+                      className="w-full pr-10 px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                       placeholder="Enter current password"
                     />
-                    <button
+                    <button aria-label="Show or hide the value"
                       type="button"
                       onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-bark-600"
                     >
                       {showCurrentPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
                   </div>
                 </div>
-                
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-bark-700 mb-1">
                     New Password
                   </label>
                   <div className="relative">
@@ -512,22 +491,21 @@ const Profile = ({ onBack }) => {
                       name="new_password"
                       value={passwordData.new_password}
                       onChange={handlePasswordChange}
-                      className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+                      className="w-full pr-10 px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                       placeholder="Enter new password"
                     />
-                    <button
+                    <button aria-label="Show or hide the value"
                       type="button"
                       onClick={() => setShowNewPassword(!showNewPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-bark-600"
                     >
                       {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">Must be at least 8 characters</p>
+                  <p className="text-xs text-text-secondary mt-1">Must be at least 8 characters</p>
                 </div>
-                
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-bark-700 mb-1">
                     Confirm New Password
                   </label>
                   <input
@@ -535,15 +513,14 @@ const Profile = ({ onBack }) => {
                     name="confirm_password"
                     value={passwordData.confirm_password}
                     onChange={handlePasswordChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+                    className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                     placeholder="Confirm new password"
                   />
                 </div>
-                
                 <div className="flex gap-2 pt-2">
                   <button
                     onClick={handleCancelPassword}
-                    className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                    className="px-4 py-2 border border-border-strong text-bark-700 rounded-button hover:bg-cream-50 transition-colors"
                   >
                     Cancel
                   </button>
@@ -564,30 +541,29 @@ const Profile = ({ onBack }) => {
             ) : (
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-gray-900 font-medium">Password</p>
-                  <p className="text-sm text-gray-500">Last changed: {formatDate(user?.password_changed_at) || 'Never'}</p>
+                  <p className="text-heading font-medium">Password</p>
+                  <p className="text-sm text-text-secondary">Last changed: {formatDate(user?.password_changed_at) || 'Never'}</p>
                 </div>
                 <button
                   onClick={() => setChangingPassword(true)}
-                  className="flex items-center px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                  className="flex items-center px-4 py-2 border border-border-strong text-bark-700 rounded-button hover:bg-cream-50 transition-colors"
                 >
                   <Lock className="w-4 h-4 mr-2" />
                   Change Password
                 </button>
               </div>
             )}
-            
             {/* Two-Factor Authentication - Future Feature */}
-            <div className="mt-6 pt-6 border-t border-gray-200">
+            <div className="mt-6 pt-6 border-t border-border">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-gray-900 font-medium flex items-center">
-                    <Shield className="w-4 h-4 mr-2 text-gray-400" />
+                  <p className="text-heading font-medium flex items-center">
+                    <Shield className="w-4 h-4 mr-2 text-text-muted" />
                     Two-Factor Authentication
                   </p>
-                  <p className="text-sm text-gray-500">Add an extra layer of security to your account</p>
+                  <p className="text-sm text-text-secondary">Add an extra layer of security to your account</p>
                 </div>
-                <span className="px-3 py-1 bg-gray-100 text-gray-500 text-sm rounded-full">
+                <span className="px-3 py-1 bg-cream-100 text-text-secondary text-sm rounded-full">
                   Coming Soon
                 </span>
               </div>
@@ -596,9 +572,9 @@ const Profile = ({ onBack }) => {
         </div>
 
         {/* Notification Preferences */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-          <div className="bg-gray-50 px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-gray-900 flex items-center">
+        <div className="bg-surface-raised rounded-card shadow-sm border border-border overflow-hidden">
+          <div className="bg-cream-50 px-6 py-4 border-b border-border flex items-center justify-between">
+            <h2 className="text-lg text-heading flex items-center">
               <Bell className="w-5 h-5 mr-2 text-primary" />
               Notification Preferences
             </h2>
@@ -614,7 +590,7 @@ const Profile = ({ onBack }) => {
               <div className="flex gap-2">
                 <button
                   onClick={() => setEditingNotifications(false)}
-                  className="px-3 py-1.5 text-sm border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+                  className="px-3 py-1.5 text-sm border border-border-strong text-bark-700 rounded-button hover:bg-cream-50"
                 >
                   Cancel
                 </button>
@@ -633,112 +609,106 @@ const Profile = ({ onBack }) => {
               </div>
             )}
           </div>
-          
           <div className="p-6">
-            <p className="text-sm text-gray-500 mb-4">
+            <p className="text-sm text-text-secondary mb-4">
               Choose which notifications you'd like to receive via email.
             </p>
-            
             <div className="space-y-4">
               {/* PUR Reminders */}
               <div className="flex items-center justify-between py-2">
                 <div>
-                  <p className="text-gray-900 font-medium">PUR Submission Reminders</p>
-                  <p className="text-sm text-gray-500">Get reminded before monthly PUR deadlines</p>
+                  <p className="text-heading font-medium">PUR Submission Reminders</p>
+                  <p className="text-sm text-text-secondary">Get reminded before monthly PUR deadlines</p>
                 </div>
                 <button
                   onClick={() => editingNotifications && handleNotificationToggle('email_pur_reminders')}
                   disabled={!editingNotifications}
                   className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                    notifications.email_pur_reminders ? 'bg-primary' : 'bg-gray-200'
+                    notifications.email_pur_reminders ? 'bg-primary' : 'bg-sand-200'
                   } ${!editingNotifications ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}`}
                 >
                   <span
-                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    className={`inline-block h-4 w-4 transform rounded-full bg-surface-raised transition-transform ${
                       notifications.email_pur_reminders ? 'translate-x-6' : 'translate-x-1'
                     }`}
                   />
                 </button>
               </div>
-              
               {/* Water Test Due */}
-              <div className="flex items-center justify-between py-2 border-t border-gray-100">
+              <div className="flex items-center justify-between py-2 border-t border-border">
                 <div>
-                  <p className="text-gray-900 font-medium">Water Test Due Alerts</p>
-                  <p className="text-sm text-gray-500">Get notified when water tests are due</p>
+                  <p className="text-heading font-medium">Water Test Due Alerts</p>
+                  <p className="text-sm text-text-secondary">Get notified when water tests are due</p>
                 </div>
                 <button
                   onClick={() => editingNotifications && handleNotificationToggle('email_water_test_due')}
                   disabled={!editingNotifications}
                   className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                    notifications.email_water_test_due ? 'bg-primary' : 'bg-gray-200'
+                    notifications.email_water_test_due ? 'bg-primary' : 'bg-sand-200'
                   } ${!editingNotifications ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}`}
                 >
                   <span
-                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    className={`inline-block h-4 w-4 transform rounded-full bg-surface-raised transition-transform ${
                       notifications.email_water_test_due ? 'translate-x-6' : 'translate-x-1'
                     }`}
                   />
                 </button>
               </div>
-              
               {/* PHI Warnings */}
-              <div className="flex items-center justify-between py-2 border-t border-gray-100">
+              <div className="flex items-center justify-between py-2 border-t border-border">
                 <div>
-                  <p className="text-gray-900 font-medium">PHI Compliance Warnings</p>
-                  <p className="text-sm text-gray-500">Get alerted about pre-harvest interval concerns</p>
+                  <p className="text-heading font-medium">PHI Compliance Warnings</p>
+                  <p className="text-sm text-text-secondary">Get alerted about pre-harvest interval concerns</p>
                 </div>
                 <button
                   onClick={() => editingNotifications && handleNotificationToggle('email_phi_warnings')}
                   disabled={!editingNotifications}
                   className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                    notifications.email_phi_warnings ? 'bg-primary' : 'bg-gray-200'
+                    notifications.email_phi_warnings ? 'bg-primary' : 'bg-sand-200'
                   } ${!editingNotifications ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}`}
                 >
                   <span
-                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    className={`inline-block h-4 w-4 transform rounded-full bg-surface-raised transition-transform ${
                       notifications.email_phi_warnings ? 'translate-x-6' : 'translate-x-1'
                     }`}
                   />
                 </button>
               </div>
-              
               {/* Weekly Summary */}
-              <div className="flex items-center justify-between py-2 border-t border-gray-100">
+              <div className="flex items-center justify-between py-2 border-t border-border">
                 <div>
-                  <p className="text-gray-900 font-medium">Weekly Summary Email</p>
-                  <p className="text-sm text-gray-500">Receive a weekly digest of farm activity</p>
+                  <p className="text-heading font-medium">Weekly Summary Email</p>
+                  <p className="text-sm text-text-secondary">Receive a weekly digest of farm activity</p>
                 </div>
                 <button
                   onClick={() => editingNotifications && handleNotificationToggle('email_weekly_summary')}
                   disabled={!editingNotifications}
                   className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                    notifications.email_weekly_summary ? 'bg-primary' : 'bg-gray-200'
+                    notifications.email_weekly_summary ? 'bg-primary' : 'bg-sand-200'
                   } ${!editingNotifications ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}`}
                 >
                   <span
-                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    className={`inline-block h-4 w-4 transform rounded-full bg-surface-raised transition-transform ${
                       notifications.email_weekly_summary ? 'translate-x-6' : 'translate-x-1'
                     }`}
                   />
                 </button>
               </div>
-              
               {/* Team Updates */}
-              <div className="flex items-center justify-between py-2 border-t border-gray-100">
+              <div className="flex items-center justify-between py-2 border-t border-border">
                 <div>
-                  <p className="text-gray-900 font-medium">Team Updates</p>
-                  <p className="text-sm text-gray-500">Get notified when team members are added or removed</p>
+                  <p className="text-heading font-medium">Team Updates</p>
+                  <p className="text-sm text-text-secondary">Get notified when team members are added or removed</p>
                 </div>
                 <button
                   onClick={() => editingNotifications && handleNotificationToggle('email_team_updates')}
                   disabled={!editingNotifications}
                   className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                    notifications.email_team_updates ? 'bg-primary' : 'bg-gray-200'
+                    notifications.email_team_updates ? 'bg-primary' : 'bg-sand-200'
                   } ${!editingNotifications ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}`}
                 >
                   <span
-                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    className={`inline-block h-4 w-4 transform rounded-full bg-surface-raised transition-transform ${
                       notifications.email_team_updates ? 'translate-x-6' : 'translate-x-1'
                     }`}
                   />
@@ -749,35 +719,34 @@ const Profile = ({ onBack }) => {
         </div>
 
         {/* Account Information */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-          <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900 flex items-center">
+        <div className="bg-surface-raised rounded-card shadow-sm border border-border overflow-hidden">
+          <div className="bg-cream-50 px-6 py-4 border-b border-border">
+            <h2 className="text-lg text-heading flex items-center">
               <Calendar className="w-5 h-5 mr-2 text-primary" />
               Account Information
             </h2>
           </div>
-          
           <div className="p-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-500 mb-1">Account Created</label>
-                <p className="text-gray-900">{formatDate(user?.date_joined)}</p>
+                <label className="block text-sm font-medium text-text-secondary mb-1">Account Created</label>
+                <p className="text-heading">{formatDate(user?.date_joined)}</p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-500 mb-1">Last Login</label>
-                <p className="text-gray-900">{formatDate(user?.last_login)}</p>
+                <label className="block text-sm font-medium text-text-secondary mb-1">Last Login</label>
+                <p className="text-heading">{formatDate(user?.last_login)}</p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-500 mb-1">Account Status</label>
+                <label className="block text-sm font-medium text-text-secondary mb-1">Account Status</label>
                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-medium ${
-                  user?.is_active ? 'bg-green-100 text-primary' : 'bg-red-100 text-red-700'
+                  user?.is_active ? 'bg-green-100 text-primary' : 'bg-danger-bg text-danger'
                 }`}>
                   {user?.is_active ? 'Active' : 'Inactive'}
                 </span>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-500 mb-1">User ID</label>
-                <p className="text-gray-900 font-mono text-sm">{user?.id}</p>
+                <label className="block text-sm font-medium text-text-secondary mb-1">User ID</label>
+                <p className="text-heading font-mono text-sm">{user?.id}</p>
               </div>
             </div>
           </div>
