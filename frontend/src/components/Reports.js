@@ -1,4 +1,4 @@
-// frontend/src/components/Reports.js - PUR + Nitrogen/ILRP Reports
+// frontend/src/components/Reports.js - PUR Reports
 
 import React, { useState, useEffect } from 'react';
 import {
@@ -7,7 +7,7 @@ import {
   BarChart3, FileSpreadsheet, AlertTriangle, Shield,
   Leaf
 } from 'lucide-react';
-import { reportsAPI, nitrogenReportsAPI, downloadFile } from '../services/api';
+import { reportsAPI, downloadFile } from '../services/api';
 import { useData } from '../contexts/DataContext';
 import { useConfirm } from '../contexts/ConfirmContext';
 import { useToast } from '../contexts/ToastContext';
@@ -16,9 +16,6 @@ const Reports = () => {
   const { farms, fields, applications } = useData();
   const confirm = useConfirm();
   const toast = useToast();
-  // Tab state
-  const [activeTab, setActiveTab] = useState('pur'); // 'pur' or 'nitrogen'
-  
   // PUR report state
   const [statistics, setStatistics] = useState(null);
   const [validation, setValidation] = useState(null);
@@ -34,25 +31,10 @@ const Reports = () => {
     format: 'excel'
   });
   
-  // Nitrogen report state
-  const [nitrogenSummary, setNitrogenSummary] = useState([]);
-  const [nitrogenYear, setNitrogenYear] = useState(new Date().getFullYear());
-  const [nitrogenFarm, setNitrogenFarm] = useState('');
-  const [nitrogenLoading, setNitrogenLoading] = useState(false);
-
   // Load PUR statistics when filters change
   useEffect(() => {
-    if (activeTab === 'pur') {
-      loadStatistics();
-    }
-  }, [filters.start_date, filters.end_date, filters.farm_id, activeTab]);
-
-  // Load nitrogen data when tab or filters change
-  useEffect(() => {
-    if (activeTab === 'nitrogen') {
-      loadNitrogenSummary();
-    }
-  }, [activeTab, nitrogenYear, nitrogenFarm]);
+    loadStatistics();
+  }, [filters.start_date, filters.end_date, filters.farm_id]);
 
   const loadStatistics = async () => {
     setLoading(true);
@@ -73,20 +55,6 @@ const Reports = () => {
       console.error('Error loading statistics:', error);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const loadNitrogenSummary = async () => {
-    setNitrogenLoading(true);
-    try {
-      const params = { year: nitrogenYear };
-      if (nitrogenFarm) params.farm = nitrogenFarm;
-      const response = await nitrogenReportsAPI.summary(params);
-      setNitrogenSummary(response.data || []);
-    } catch (error) {
-      console.error('Error loading nitrogen summary:', error);
-    } finally {
-      setNitrogenLoading(false);
     }
   };
 
@@ -150,18 +118,6 @@ const Reports = () => {
     }
   };
 
-  const handleNitrogenExport = async () => {
-    try {
-      const params = { year: nitrogenYear };
-      if (nitrogenFarm) params.farm = nitrogenFarm;
-      const response = await nitrogenReportsAPI.export(params);
-      downloadFile(response.data, `nitrogen_report_${nitrogenYear}.xlsx`);
-    } catch (error) {
-      console.error('Error exporting nitrogen report:', error);
-      toast.error('Failed to export nitrogen report');
-    }
-  };
-
   const handleFilterChange = (field, value) => {
     setFilters(prev => ({ ...prev, [field]: value }));
   };
@@ -213,244 +169,17 @@ const Reports = () => {
   // Get unique counties
   const counties = [...new Set(fields.map(f => f.county).filter(Boolean))];
 
-  // Year options for nitrogen filter
-  const yearOptions = [];
-  const currentYear = new Date().getFullYear();
-  for (let y = currentYear; y >= currentYear - 5; y--) {
-    yearOptions.push(y);
-  }
-
-  // Calculate nitrogen totals
-  const nitrogenTotals = nitrogenSummary.reduce((acc, row) => ({
-    applications: acc.applications + (row.total_applications || 0),
-    nitrogen: acc.nitrogen + (row.total_lbs_nitrogen || 0),
-    acres: acc.acres + (row.acres || 0),
-  }), { applications: 0, nitrogen: 0, acres: 0 });
-
   return (
     <div className="p-6">
       {/* Header */}
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Reports & Compliance</h1>
         <p className="text-gray-600 dark:text-gray-400">
-          Generate PUR reports for pesticide compliance and nitrogen reports for ILRP
+          Generate PUR reports for pesticide compliance
         </p>
       </div>
 
-      {/* Tabs */}
-      <div className="border-b border-gray-200 dark:border-gray-700 mb-6">
-        <nav className="flex space-x-8">
-          <button
-            onClick={() => setActiveTab('pur')}
-            className={`flex items-center gap-2 py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
-              activeTab === 'pur'
-                ? 'border-primary text-primary dark:text-green-400'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
-            }`}
-          >
-            <Shield className="w-4 h-4" />
-            PUR (Pesticide Use Reports)
-          </button>
-          <button
-            onClick={() => setActiveTab('nitrogen')}
-            className={`flex items-center gap-2 py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
-              activeTab === 'nitrogen'
-                ? 'border-primary text-primary dark:text-green-400'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
-            }`}
-          >
-            <Leaf className="w-4 h-4" />
-            Nitrogen / ILRP
-          </button>
-        </nav>
-      </div>
-
-      {/* ============================================================ */}
-      {/* NITROGEN TAB */}
-      {/* ============================================================ */}
-      {activeTab === 'nitrogen' && (
-        <div className="space-y-6">
-          {/* Filters & Export */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-            <div className="flex flex-wrap gap-4 items-center justify-between">
-              <div className="flex gap-4 items-center">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Year</label>
-                  <select
-                    value={nitrogenYear}
-                    onChange={(e) => setNitrogenYear(parseInt(e.target.value))}
-                    className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-200 focus:ring-2 focus:ring-primary"
-                  >
-                    {yearOptions.map(y => (
-                      <option key={y} value={y}>{y}</option>
-                    ))}
-                  </select>
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Farm</label>
-                  <select
-                    value={nitrogenFarm}
-                    onChange={(e) => setNitrogenFarm(e.target.value)}
-                    className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-200 focus:ring-2 focus:ring-primary"
-                  >
-                    <option value="">All Farms</option>
-                    {farms.map(farm => (
-                      <option key={farm.id} value={farm.id}>{farm.name}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-              
-              <button
-                onClick={handleNitrogenExport}
-                className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover"
-              >
-                <Download className="w-4 h-4" />
-                Export Excel
-              </button>
-            </div>
-          </div>
-
-          {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
-                  <Leaf className="w-6 h-6 text-primary dark:text-green-400" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Applications</p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">{nitrogenTotals.applications}</p>
-                </div>
-              </div>
-            </div>
-            
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-                  <TrendingUp className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Total N Applied</p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                    {nitrogenTotals.nitrogen.toLocaleString(undefined, {maximumFractionDigits: 0})} lbs
-                  </p>
-                </div>
-              </div>
-            </div>
-            
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
-                  <BarChart3 className="w-6 h-6 text-purple-600 dark:text-purple-400" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Avg N/Acre</p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                    {nitrogenTotals.acres > 0 
-                      ? (nitrogenTotals.nitrogen / nitrogenTotals.acres).toFixed(1) 
-                      : '0'} lbs
-                  </p>
-                </div>
-              </div>
-            </div>
-            
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg">
-                  <MapPin className="w-6 h-6 text-yellow-600 dark:text-yellow-400" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Total Acres</p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">{nitrogenTotals.acres.toFixed(1)}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Summary Table */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
-            <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700">
-              <h3 className="font-medium text-gray-900 dark:text-white">Nitrogen Summary by Field - {nitrogenYear}</h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Annual nitrogen totals for ILRP reporting</p>
-            </div>
-            
-            {nitrogenLoading ? (
-              <div className="p-8 text-center text-gray-500">Loading...</div>
-            ) : nitrogenSummary.length === 0 ? (
-              <div className="p-8 text-center text-gray-500">
-                <Leaf className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-                <p>No nitrogen applications for {nitrogenYear}</p>
-                <p className="text-sm mt-1">Add applications in the Nutrients section</p>
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                  <thead className="bg-gray-50 dark:bg-gray-700">
-                    <tr>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Field</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Farm</th>
-                      <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Acres</th>
-                      <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Apps</th>
-                      <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Total N (lbs)</th>
-                      <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">N/Acre</th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                    {nitrogenSummary.map((row, idx) => (
-                      <tr key={row.field_id || idx} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                        <td className="px-4 py-3 whitespace-nowrap font-medium text-gray-900 dark:text-white">{row.field_name}</td>
-                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{row.farm_name}</td>
-                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200 text-right">{row.acres?.toFixed(1)}</td>
-                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200 text-right">{row.total_applications}</td>
-                        <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white text-right">
-                          {row.total_lbs_nitrogen?.toLocaleString(undefined, {maximumFractionDigits: 0})}
-                        </td>
-                        <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-primary dark:text-green-400 text-right">
-                          {row.lbs_nitrogen_per_acre?.toFixed(1)}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                  <tfoot className="bg-gray-50 dark:bg-gray-700">
-                    <tr>
-                      <td colSpan="3" className="px-4 py-3 text-sm font-medium text-gray-900 dark:text-white">Totals</td>
-                      <td className="px-4 py-3 text-sm font-medium text-gray-900 dark:text-gray-200 text-right">{nitrogenTotals.applications}</td>
-                      <td className="px-4 py-3 text-sm font-bold text-gray-900 dark:text-white text-right">
-                        {nitrogenTotals.nitrogen.toLocaleString(undefined, {maximumFractionDigits: 0})}
-                      </td>
-                      <td className="px-4 py-3 text-sm font-medium text-primary dark:text-green-400 text-right">
-                        {nitrogenTotals.acres > 0 ? (nitrogenTotals.nitrogen / nitrogenTotals.acres).toFixed(1) : '-'}
-                      </td>
-                    </tr>
-                  </tfoot>
-                </table>
-              </div>
-            )}
-          </div>
-
-          {/* ILRP Info */}
-          <div className="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-            <div className="flex gap-3">
-              <AlertCircle className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
-              <div>
-                <h4 className="font-medium text-blue-900 dark:text-blue-200">ILRP Compliance</h4>
-                <p className="text-sm text-blue-800 dark:text-blue-300 mt-1">
-                  California's Irrigated Lands Regulatory Program requires reporting nitrogen applied to agricultural land. 
-                  Use this summary for your coalition's annual nitrogen management reporting.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ============================================================ */}
-      {/* PUR TAB */}
-      {/* ============================================================ */}
-      {activeTab === 'pur' && (
-        <div className="space-y-6">
+      <div className="space-y-6">
           {/* Validation Alert */}
           {validation && !validation.valid && (
             <div className="bg-red-50 dark:bg-red-900/30 border-l-4 border-red-500 p-4">
@@ -668,8 +397,7 @@ const Reports = () => {
               )}
             </div>
           )}
-        </div>
-      )}
+      </div>
     </div>
   );
 };

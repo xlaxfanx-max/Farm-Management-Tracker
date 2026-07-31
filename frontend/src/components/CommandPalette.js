@@ -27,7 +27,6 @@ const NAV_ITEMS = [
   { id: 'farms', label: 'Farms & Fields', icon: HomeIcon, keywords: ['field', 'ranch', 'grove'] },
   { id: 'applications', label: 'Applications', icon: FlaskConical, keywords: ['spray', 'pesticide', 'pur', 'tank mix'] },
   { id: 'water', label: 'Water Management', icon: Droplets, keywords: ['well', 'irrigation', 'test', 'source'] },
-  { id: 'nutrients', label: 'Nutrients', icon: Leaf, keywords: ['fertilizer', 'nitrogen', 'phosphorus'] },
   { id: 'harvests', label: 'Harvest & Packing', icon: Wheat, keywords: ['pick', 'bins', 'crop', 'packing'] },
   { id: 'compliance', label: 'Compliance Hub', icon: Shield, keywords: ['license', 'deadline', 'wps', 'rei'] },
   { id: 'weather', label: 'Weather', icon: Cloud, keywords: ['forecast', 'rain', 'temperature'] },

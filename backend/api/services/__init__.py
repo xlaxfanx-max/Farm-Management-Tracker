@@ -1,5 +1,4 @@
 # API Services
-from .irrigation_scheduler import IrrigationScheduler
 from .pdf_extraction_service import PDFExtractionService, ExtractionResult
 from .statement_matcher import StatementMatcher, MatchResult
 from .packinghouse_lookup import PackinghouseLookupService, PackinghouseLookupResult
@@ -26,7 +25,6 @@ from .operations import (
 
 __all__ = [
     # Existing services
-    'IrrigationScheduler',
     'PDFExtractionService',
     'ExtractionResult',
     'StatementMatcher',

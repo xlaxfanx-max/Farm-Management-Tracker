@@ -22,7 +22,6 @@ const TOGGLEABLE_MODULES = [
   { id: 'rentals', label: 'Rental Income', icon: KeyRound, group: 'Operations' },
   { id: 'applications', label: 'Applications', icon: FlaskConical, group: 'Operations' },
   { id: 'water', label: 'Water Management', icon: Droplets, group: 'Operations' },
-  { id: 'nutrients', label: 'Nutrients', icon: Leaf, group: 'Operations' },
   { id: 'harvests', label: 'Harvest & Packing', icon: Wheat, group: 'Production' },
   { id: 'compliance', label: 'Compliance Hub', icon: Shield, group: 'Compliance' },
   { id: 'weather', label: 'Weather', icon: Cloud, group: 'Insights' },

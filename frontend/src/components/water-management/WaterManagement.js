@@ -7,12 +7,11 @@ import {
   Droplets, Plus, Activity, Droplet, Gauge, ClipboardList,
   BarChart3, Sprout, RefreshCw
 } from 'lucide-react';
-import api, { irrigationDashboardAPI } from '../../services/api';
+import api from '../../services/api';
 import { useData } from '../../contexts/DataContext';
 import { useModal } from '../../contexts/ModalContext';
 import { useConfirm } from '../../contexts/ConfirmContext';
 import { useToast } from '../../contexts/ToastContext';
-import IrrigationDashboard from '../IrrigationDashboard';
 import { AlertBanner } from './SharedComponents';
 import OverviewTab from './OverviewTab';
 import WaterSourcesTab from './WaterSourcesTab';
@@ -45,7 +44,6 @@ const WaterManagement = () => {
   const [wells, setWells] = useState([]);
   const [waterTests, setWaterTests] = useState([]);
   const [sgmaDashboard, setSgmaDashboard] = useState(null);
-  const [irrigationData, setIrrigationData] = useState(null);
 
   // UI state
   const [loading, setLoading] = useState(false);
@@ -104,14 +102,6 @@ const WaterManagement = () => {
     }
   }, []);
 
-  const fetchIrrigationData = useCallback(async () => {
-    try {
-      const response = await irrigationDashboardAPI.get();
-      setIrrigationData(response.data);
-    } catch (err) {
-      console.error('Error fetching irrigation data:', err);
-    }
-  }, []);
 
   const fetchWellReadings = useCallback(async (wellId) => {
     setLoadingReadings(prev => ({ ...prev, [wellId]: true }));
@@ -147,7 +137,7 @@ const WaterManagement = () => {
     const fetchData = async () => {
       try {
         if (activeTab === 'overview') {
-          await Promise.all([fetchWaterSources(), fetchWells(), fetchSGMADashboard(), fetchIrrigationData()]);
+          await Promise.all([fetchWaterSources(), fetchWells(), fetchSGMADashboard()]);
         } else if (activeTab === 'sources') {
           await fetchWaterSources();
         } else if (activeTab === 'wells') {
@@ -165,7 +155,7 @@ const WaterManagement = () => {
     };
 
     fetchData();
-  }, [activeTab, fetchWaterSources, fetchWells, fetchWaterTests, fetchSGMADashboard, fetchIrrigationData]);
+  }, [activeTab, fetchWaterSources, fetchWells, fetchWaterTests, fetchSGMADashboard]);
 
   const refreshExpandedReadings = useCallback(() => {
     Object.keys(expandedItems).forEach(wellId => {
@@ -190,12 +180,11 @@ const WaterManagement = () => {
   const handleRefresh = async () => {
     setLoading(true);
     try {
-      if (activeTab === 'overview') await Promise.all([fetchWaterSources(), fetchWells(), fetchSGMADashboard(), fetchIrrigationData()]);
+      if (activeTab === 'overview') await Promise.all([fetchWaterSources(), fetchWells(), fetchSGMADashboard()]);
       else if (activeTab === 'sources') await fetchWaterSources();
       else if (activeTab === 'wells') await Promise.all([fetchWells(), fetchSGMADashboard()]);
       else if (activeTab === 'tests') await fetchWaterTests();
       else if (activeTab === 'reports') await fetchSGMADashboard();
-      else if (activeTab === 'irrigation') await fetchIrrigationData();
       refreshExpandedReadings();
       loadData();
     } finally {
@@ -280,7 +269,6 @@ const WaterManagement = () => {
     { id: 'overview', label: 'Overview', icon: Activity },
     { id: 'sources', label: 'Water Sources', icon: Droplet, count: sourceStats.total },
     { id: 'wells', label: 'Wells & SGMA', icon: Gauge, count: wellStats.total },
-    { id: 'irrigation', label: 'Irrigation', icon: Sprout },
     { id: 'tests', label: 'Quality Tests', icon: ClipboardList },
     { id: 'reports', label: 'Reports', icon: BarChart3 },
   ];
@@ -296,7 +284,7 @@ const WaterManagement = () => {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Water Management</h1>
-            <p className="text-gray-500 dark:text-gray-400 mt-1">Track water sources, wells, irrigation, and SGMA compliance</p>
+            <p className="text-gray-500 dark:text-gray-400 mt-1">Track water sources, wells, and SGMA compliance</p>
           </div>
           <div className="flex items-center gap-3">
             <button
@@ -374,7 +362,6 @@ const WaterManagement = () => {
                 waterSources={waterSources}
                 wells={wells}
                 sgmaDashboard={sgmaDashboard}
-                irrigationData={irrigationData}
                 sourceStats={sourceStats}
                 wellStats={wellStats}
                 setActiveTab={setActiveTab}
@@ -427,7 +414,6 @@ const WaterManagement = () => {
                 toast={toast}
               />
             )}
-            {activeTab === 'irrigation' && <IrrigationDashboard />}
             {activeTab === 'tests' && (
               <WaterTestsTab
                 waterSources={waterSources}

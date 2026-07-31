@@ -15,7 +15,6 @@ const OverviewTab = ({
   waterSources,
   wells,
   sgmaDashboard,
-  irrigationData,
   sourceStats,
   wellStats,
   setActiveTab,
@@ -26,30 +25,6 @@ const OverviewTab = ({
   toast
 }) => {
   const alerts = [];
-
-  // Irrigation alerts (priority)
-  const zonesNeedingIrrigation = irrigationData?.zones_needing_irrigation || 0;
-  const zonesIrrigationSoon = irrigationData?.zones_irrigation_soon || 0;
-
-  if (zonesNeedingIrrigation > 0) {
-    alerts.push({
-      type: 'error',
-      title: `${zonesNeedingIrrigation} zone${zonesNeedingIrrigation > 1 ? 's' : ''} need irrigation today`,
-      message: 'Soil moisture has reached the management allowable depletion threshold',
-      action: 'View Irrigation',
-      onAction: () => setActiveTab('irrigation')
-    });
-  }
-
-  if (zonesIrrigationSoon > 0) {
-    alerts.push({
-      type: 'warning',
-      title: `${zonesIrrigationSoon} zone${zonesIrrigationSoon > 1 ? 's' : ''} need irrigation soon`,
-      message: 'Plan irrigation within the next 2 days',
-      action: 'View Zones',
-      onAction: () => setActiveTab('irrigation')
-    });
-  }
 
   // Check for calibration alerts
   if (wellStats.calibrationDue > 0) {
@@ -84,20 +59,6 @@ const OverviewTab = ({
     });
   }
 
-  // Irrigation stats
-  const irrigationStats = {
-    totalZones: irrigationData?.active_zones || 0,
-    totalAcres: irrigationData?.total_acres || 0,
-    avgDepletion: irrigationData?.avg_depletion_pct || 0,
-    recentEto: irrigationData?.recent_eto_total,
-    recentRain: irrigationData?.recent_rainfall_total,
-    pendingRecs: irrigationData?.pending_recommendations?.length || 0
-  };
-
-  // Zones needing attention
-  const urgentZones = irrigationData?.zones_by_status?.needs_irrigation || [];
-  const soonZones = irrigationData?.zones_by_status?.irrigation_soon || [];
-
   return (
     <div className="space-y-6">
       {/* Alerts Section */}
@@ -108,167 +69,6 @@ const OverviewTab = ({
           ))}
         </div>
       )}
-
-      {/* IRRIGATION PRIORITY SECTION */}
-      <div className="bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 dark:from-green-900/20 dark:via-emerald-900/20 dark:to-teal-900/20 border border-green-200 dark:border-green-800 rounded-2xl p-6">
-        <div className="flex items-center justify-between mb-5">
-          <div className="flex items-center gap-3">
-            <div className="p-3 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl shadow-lg">
-              <Sprout className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white">Irrigation Status</h2>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Real-time crop water needs based on ET data</p>
-            </div>
-          </div>
-          <button
-            onClick={() => setActiveTab('irrigation')}
-            className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover shadow-sm transition-colors"
-          >
-            <span>Full Dashboard</span>
-            <ChevronRight className="w-4 h-4" />
-          </button>
-        </div>
-
-        {/* Irrigation Metrics Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-6">
-          <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur rounded-xl p-4 border border-green-100 dark:border-green-800">
-            <div className="flex items-center gap-2 mb-1">
-              <MapPin className="w-4 h-4 text-primary" />
-              <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Active Zones</span>
-            </div>
-            <p className="text-2xl font-bold text-gray-900 dark:text-white">{irrigationStats.totalZones}</p>
-            <p className="text-xs text-gray-500 dark:text-gray-400">{formatNumber(irrigationStats.totalAcres)} acres</p>
-          </div>
-
-          <div className={`bg-white/80 backdrop-blur rounded-xl p-4 border ${zonesNeedingIrrigation > 0 ? 'border-red-200 bg-red-50/50' : 'border-green-100'}`}>
-            <div className="flex items-center gap-2 mb-1">
-              <AlertTriangle className={`w-4 h-4 ${zonesNeedingIrrigation > 0 ? 'text-red-600' : 'text-gray-400'}`} />
-              <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Need Water</span>
-            </div>
-            <p className={`text-2xl font-bold ${zonesNeedingIrrigation > 0 ? 'text-red-600' : 'text-gray-900 dark:text-white'}`}>{zonesNeedingIrrigation}</p>
-            <p className="text-xs text-gray-500 dark:text-gray-400">Irrigate today</p>
-          </div>
-
-          <div className={`bg-white/80 backdrop-blur rounded-xl p-4 border ${zonesIrrigationSoon > 0 ? 'border-amber-200 bg-amber-50/50' : 'border-green-100'}`}>
-            <div className="flex items-center gap-2 mb-1">
-              <Clock className={`w-4 h-4 ${zonesIrrigationSoon > 0 ? 'text-amber-600' : 'text-gray-400'}`} />
-              <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Soon</span>
-            </div>
-            <p className={`text-2xl font-bold ${zonesIrrigationSoon > 0 ? 'text-amber-600' : 'text-gray-900 dark:text-white'}`}>{zonesIrrigationSoon}</p>
-            <p className="text-xs text-gray-500 dark:text-gray-400">Within 2 days</p>
-          </div>
-
-          <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur rounded-xl p-4 border border-green-100 dark:border-green-800">
-            <div className="flex items-center gap-2 mb-1">
-              <Gauge className="w-4 h-4 text-purple-600" />
-              <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Avg Depletion</span>
-            </div>
-            <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatNumber(irrigationStats.avgDepletion, 0)}%</p>
-            <p className="text-xs text-gray-500 dark:text-gray-400">Soil moisture used</p>
-          </div>
-
-          {irrigationStats.recentEto !== null && irrigationStats.recentEto !== undefined && (
-            <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur rounded-xl p-4 border border-green-100 dark:border-green-800">
-              <div className="flex items-center gap-2 mb-1">
-                <ThermometerSun className="w-4 h-4 text-orange-500" />
-                <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">7-Day ETo</span>
-              </div>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatNumber(irrigationStats.recentEto, 2)}"</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">Evapotranspiration</p>
-            </div>
-          )}
-
-          {irrigationStats.recentRain !== null && irrigationStats.recentRain !== undefined && (
-            <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur rounded-xl p-4 border border-green-100 dark:border-green-800">
-              <div className="flex items-center gap-2 mb-1">
-                <CloudRain className="w-4 h-4 text-blue-500" />
-                <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">7-Day Rain</span>
-              </div>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatNumber(irrigationStats.recentRain, 2)}"</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">Precipitation</p>
-            </div>
-          )}
-        </div>
-
-        {/* Zones Needing Attention */}
-        {(urgentZones.length > 0 || soonZones.length > 0) && (
-          <div className="space-y-3">
-            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Zones Needing Attention</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-              {urgentZones.slice(0, 3).map(zone => (
-                <div key={zone.zone_id} className="bg-white dark:bg-gray-800 border border-red-200 dark:border-red-800 rounded-xl p-4 shadow-sm">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="px-2 py-0.5 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 text-xs font-medium rounded-full">Irrigate Now</span>
-                      </div>
-                      <h4 className="font-semibold text-gray-900 dark:text-white">{zone.zone_name}</h4>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">{zone.field_name} • {zone.crop_type}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-lg font-bold text-red-600 dark:text-red-400">{formatNumber(zone.depletion_pct, 0)}%</p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">depleted</p>
-                    </div>
-                  </div>
-                  {zone.recommended_depth_inches && (
-                    <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between text-sm">
-                      <span className="text-gray-600 dark:text-gray-400">Recommended:</span>
-                      <span className="font-medium text-gray-900 dark:text-gray-200">{formatNumber(zone.recommended_depth_inches, 2)}" ({formatNumber(zone.recommended_duration_hours, 1)} hrs)</span>
-                    </div>
-                  )}
-                </div>
-              ))}
-              {soonZones.slice(0, 3 - urgentZones.slice(0, 3).length).map(zone => (
-                <div key={zone.zone_id} className="bg-white dark:bg-gray-800 border border-amber-200 dark:border-amber-800 rounded-xl p-4 shadow-sm">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="px-2 py-0.5 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 text-xs font-medium rounded-full">Soon</span>
-                      </div>
-                      <h4 className="font-semibold text-gray-900 dark:text-white">{zone.zone_name}</h4>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">{zone.field_name} • {zone.crop_type}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-lg font-bold text-amber-600 dark:text-amber-400">{formatNumber(zone.depletion_pct, 0)}%</p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">depleted</p>
-                    </div>
-                  </div>
-                  {zone.days_until_irrigation !== null && (
-                    <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between text-sm">
-                      <span className="text-gray-600 dark:text-gray-400">Irrigate in:</span>
-                      <span className="font-medium text-amber-700">{zone.days_until_irrigation} day{zone.days_until_irrigation !== 1 ? 's' : ''}</span>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-            {(urgentZones.length + soonZones.length) > 3 && (
-              <button
-                onClick={() => setActiveTab('irrigation')}
-                className="text-sm text-primary hover:text-primary-hover font-medium flex items-center gap-1"
-              >
-                View all {urgentZones.length + soonZones.length} zones needing attention
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            )}
-          </div>
-        )}
-
-        {/* No zones state */}
-        {irrigationStats.totalZones === 0 && (
-          <div className="text-center py-6">
-            <Sprout className="w-10 h-10 text-green-300 mx-auto mb-3" />
-            <p className="text-gray-600 dark:text-gray-400 mb-3">No irrigation zones configured yet</p>
-            <button
-              onClick={() => setActiveTab('irrigation')}
-              className="text-primary hover:text-primary-hover font-medium text-sm"
-            >
-              Set up your first irrigation zone →
-            </button>
-          </div>
-        )}
-      </div>
 
       {/* Secondary Metrics Row */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -308,8 +108,6 @@ const OverviewTab = ({
       <div>
         <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">Quick Actions</h3>
         <div className="flex flex-wrap gap-3">
-          <QuickActionButton icon={Sprout} label="Record Irrigation" onClick={() => setActiveTab('irrigation')} color="green" />
-          <QuickActionButton icon={Plus} label="Add Zone" onClick={() => setActiveTab('irrigation')} color="green" />
           <QuickActionButton icon={Plus} label="Add Well" onClick={() => openWellSourceModal()} color="cyan" />
           <QuickActionButton icon={Gauge} label="Batch Readings" onClick={() => {
             if (wells.length > 0) openBatchReadingModal(wells);

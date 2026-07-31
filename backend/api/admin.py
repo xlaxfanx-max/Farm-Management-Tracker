@@ -2,7 +2,6 @@ from django.contrib import admin
 from django.contrib import messages
 from .models import (
     Farm, Field, PesticideProduct, PesticideApplication, WaterSource, WaterTest,
-    FertilizerProduct, NutrientApplication, NutrientPlan,
     Crop, Rootstock,
     SeasonTemplate, GrowingCycle,
 )
@@ -129,31 +128,6 @@ class WaterTestAdmin(admin.ModelAdmin):
     search_fields = ['water_source__name', 'lab_name']
     date_hierarchy = 'test_date'
     ordering = ['-test_date']
-
-@admin.register(FertilizerProduct)
-class FertilizerProductAdmin(admin.ModelAdmin):
-    list_display = ['name', 'npk_display', 'form', 'is_organic', 'active']
-    list_filter = ['active', 'form', 'is_organic']
-    search_fields = ['name', 'manufacturer']
-    ordering = ['name']
-
-
-@admin.register(NutrientApplication)
-class NutrientApplicationAdmin(admin.ModelAdmin):
-    list_display = ['application_date', 'field', 'product', 'lbs_nitrogen_per_acre', 'application_method']
-    list_filter = ['application_method', 'application_date']
-    search_fields = ['field__name', 'product__name']
-    date_hierarchy = 'application_date'
-    ordering = ['-application_date']
-
-
-@admin.register(NutrientPlan)
-class NutrientPlanAdmin(admin.ModelAdmin):
-    list_display = ['field', 'year', 'crop', 'planned_nitrogen_lbs_acre', 'status']
-    list_filter = ['status', 'year']
-    search_fields = ['field__name', 'crop']
-    ordering = ['-year', 'field__name']
-
 
 # =============================================================================
 # SEASON MANAGEMENT ADMIN

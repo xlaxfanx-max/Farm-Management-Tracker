@@ -20,8 +20,6 @@ from django.test.utils import CaptureQueriesContext
 
 from api.models import (
     ComplianceDeadline,
-    FertilizerProduct,
-    NutrientApplication,
     PackinghouseDelivery,
     PesticideApplication,
     WaterSource,
@@ -449,60 +447,6 @@ class WaterSourcesQueryPerformanceTests(TestCase):
             len(ctx.captured_queries), 10,
             f"Too many queries for water sources list.\n"
             f"{_query_report(ctx.captured_queries, 'water sources list')}"
-        )
-
-
-class NutrientApplicationsQueryPerformanceTests(TestCase):
-    """N+1 detection for the /api/nutrient-applications/ endpoint.
-
-    NutrientApplications have four FK joins:
-    field, field__farm, product, water_source.
-    """
-
-    def setUp(self):
-        self.factory = TestDataFactory()
-        self.company, self.user = self.factory.create_company_with_user()
-        self.client = self.factory.create_authenticated_client(self.user)
-
-    def test_nutrient_applications_list_bounded(self):
-        """10 nutrient apps with deep joins should stay bounded."""
-        farms = [self.factory.create_farm(self.company) for _ in range(2)]
-        fields = [self.factory.create_field(farms[i % 2]) for i in range(4)]
-        water_sources = [
-            self.factory.create_water_source(company=self.company, farm=farms[i % 2])
-            for i in range(2)
-        ]
-        products = [
-            FertilizerProduct.objects.create(
-                company=self.company,
-                name=f'Fert Product {i}',
-                nitrogen_pct=Decimal('21.00'),
-                phosphorus_pct=Decimal('0.00'),
-                potassium_pct=Decimal('0.00'),
-            )
-            for i in range(3)
-        ]
-
-        for i in range(10):
-            NutrientApplication.objects.create(
-                field=fields[i % 4],
-                product=products[i % 3],
-                water_source=water_sources[i % 2],
-                application_date=date.today() - timedelta(days=i),
-                rate=Decimal('200.000'),
-                rate_unit='lbs_acre',
-                acres_treated=fields[i % 4].total_acres,
-            )
-
-        with CaptureQueriesContext(connection) as ctx:
-            response = self.client.get('/api/nutrient-applications/')
-            self.assertEqual(response.status_code, 200)
-
-        # select_related covers field, field__farm, product, water_source
-        self.assertLessEqual(
-            len(ctx.captured_queries), 10,
-            f"Too many queries for nutrient applications list.\n"
-            f"{_query_report(ctx.captured_queries, 'nutrient apps list')}"
         )
 
 

@@ -31,7 +31,6 @@ const Farms = lazy(() => import('./components/Farms'));
 const WaterManagement = lazy(() => import('./components/water-management'));
 const Reports = lazy(() => import('./components/Reports'));
 const Harvests = lazy(() => import('./components/harvests'));
-const NutrientManagement = lazy(() => import('./components/nutrients'));
 const AuditLogViewer = lazy(() => import('./components/AuditLogViewer'));
 const TeamManagement = lazy(() => import('./components/TeamManagement'));
 const WeatherForecast = lazy(() => import('./components/WeatherForecast'));
@@ -299,12 +298,6 @@ function AppContent() {
               <div className="p-6">
                 <Breadcrumbs currentView="analytics" onNavigate={handleNavigate} />
                 <Analytics />
-              </div>
-            } />
-            <Route path="nutrients" element={
-              <div className="p-6">
-                <Breadcrumbs currentView="nutrients" onNavigate={handleNavigate} />
-                <NutrientManagement />
               </div>
             } />
             <Route path="activity" element={

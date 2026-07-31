@@ -176,7 +176,6 @@ export * from './farms';
 export * from './applications';
 export * from './harvest';
 export * from './water';
-export * from './nutrients';
 export * from './compliance';
 export * from './packinghouse';
 export * from './pickhaul';

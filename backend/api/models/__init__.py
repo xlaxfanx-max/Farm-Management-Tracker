@@ -135,23 +135,11 @@ from .water import (
     WaterAllocation,
     ExtractionReport,
     IrrigationEvent,
-    IrrigationZone,
-    CropCoefficientProfile,
-    CIMISDataCache,
-    IrrigationRecommendation,
-    SoilMoistureReading,
 )
 
-# -- nutrients / fertilizer --------------------------------------------------
-from .nutrients import (
-    FERTILIZER_FORM_CHOICES,
-    NUTRIENT_RATE_UNIT_CHOICES,
-    NUTRIENT_APPLICATION_METHOD_CHOICES,
-    FertilizerProduct,
-    NutrientApplication,
-    NutrientPlan,
+# -- weather ------------------------------------------------------------------
+from .weather import (
     WeatherCache,
-    get_common_fertilizers,
 )
 
 # -- compliance / notifications / PHI ----------------------------------------
@@ -245,13 +233,8 @@ __all__ = [
     'IRRIGATION_METHOD_CHOICES', 'MEASUREMENT_METHOD_CHOICES',
     'WaterSource', 'WaterTest', 'WellReading', 'MeterCalibration',
     'WaterAllocation', 'ExtractionReport', 'IrrigationEvent',
-    'IrrigationZone', 'CropCoefficientProfile', 'CIMISDataCache',
-    'IrrigationRecommendation', 'SoilMoistureReading',
-    # nutrients
-    'FERTILIZER_FORM_CHOICES', 'NUTRIENT_RATE_UNIT_CHOICES',
-    'NUTRIENT_APPLICATION_METHOD_CHOICES', 'FertilizerProduct',
-    'NutrientApplication', 'NutrientPlan', 'WeatherCache',
-    'get_common_fertilizers',
+    # weather
+    'WeatherCache',
     # compliance
     'ComplianceProfile', 'ComplianceDeadline', 'ComplianceAlert',
     'License', 'WPSTrainingRecord', 'CentralPostingLocation',

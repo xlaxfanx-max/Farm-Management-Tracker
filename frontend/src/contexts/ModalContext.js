@@ -62,14 +62,6 @@ const MODAL_DEFS = {
     defaults: { isOpen: false },
     opener: () => ({}),
   },
-  nutrientApp: {
-    defaults: { isOpen: false, data: null },
-    opener: (application = null) => ({ data: application }),
-  },
-  fertilizerProduct: {
-    defaults: { isOpen: false, data: null },
-    opener: (product = null) => ({ data: product }),
-  },
   quickHarvest: {
     defaults: { isOpen: false },
     opener: () => ({}),
@@ -119,7 +111,6 @@ export function ModalProvider({ children }) {
   // ============================================================================
   const refreshCallbacks = useRef({
     harvests: null,
-    nutrients: null,
     buyers: null,
     contractors: null,
   });

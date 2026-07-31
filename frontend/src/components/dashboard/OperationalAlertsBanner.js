@@ -21,7 +21,6 @@ function OperationalAlertsBanner({
   waterSources = [],
   waterTests = [],
   harvests = [],
-  nutrients = [],
   onAlertClick,
   onDismiss
 }) {

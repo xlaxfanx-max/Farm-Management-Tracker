@@ -18,8 +18,6 @@ import HarvestLoadModal from './HarvestLoadModal';
 import HarvestLaborModal from './HarvestLaborModal';
 import BuyerModal from './BuyerModal';
 import LaborContractorModal from './LaborContractorModal';
-import NutrientApplicationModal from './NutrientApplicationModal';
-import FertilizerProductModal from './FertilizerProductModal';
 import QuickHarvestModal from './QuickHarvestModal';
 import BatchReadingModal from './BatchReadingModal';
 
@@ -59,8 +57,6 @@ export function GlobalModals() {
     harvestLaborModal,
     buyerModal,
     laborContractorModal,
-    nutrientAppModal,
-    fertilizerProductModal,
     quickHarvestModal,
     batchReadingModal,
     closeFarmModal,
@@ -78,8 +74,6 @@ export function GlobalModals() {
     openBuyerModal,
     closeLaborContractorModal,
     openLaborContractorModal,
-    closeNutrientAppModal,
-    closeFertilizerProductModal,
     closeQuickHarvestModal,
     closeBatchReadingModal,
     openHarvestModal,
@@ -331,35 +325,6 @@ export function GlobalModals() {
             triggerRefresh('harvests');
             handleContractorRefresh();
           }}
-        />
-      )}
-
-      {/* Nutrient Application Modal */}
-      {nutrientAppModal.isOpen && (
-        <NutrientApplicationModal
-          isOpen={nutrientAppModal.isOpen}
-          application={nutrientAppModal.data}
-          farms={farms}
-          fields={fields}
-          waterSources={waterSources}
-          onSave={() => {
-            triggerRefresh('nutrients');
-            closeNutrientAppModal();
-          }}
-          onClose={closeNutrientAppModal}
-        />
-      )}
-
-      {/* Fertilizer Product Modal */}
-      {fertilizerProductModal.isOpen && (
-        <FertilizerProductModal
-          isOpen={fertilizerProductModal.isOpen}
-          product={fertilizerProductModal.data}
-          onSave={() => {
-            triggerRefresh('nutrients');
-            closeFertilizerProductModal();
-          }}
-          onClose={closeFertilizerProductModal}
         />
       )}
 

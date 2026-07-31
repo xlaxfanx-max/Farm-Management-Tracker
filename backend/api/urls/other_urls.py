@@ -1,11 +1,6 @@
 from django.urls import path
 from rest_framework.routers import DefaultRouter
 
-from ..views import (
-    FertilizerProductViewSet, NutrientApplicationViewSet, NutrientPlanViewSet,
-    nitrogen_summary, nitrogen_export,
-)
-
 from ..season_views import (
     get_season_info,
     get_season_date_range,
@@ -43,11 +38,6 @@ from ..weather_views import (
 
 router = DefaultRouter()
 
-# Nutrient Management
-router.register(r'fertilizer-products', FertilizerProductViewSet, basename='fertilizer-product')
-router.register(r'nutrient-applications', NutrientApplicationViewSet, basename='nutrient-application')
-router.register(r'nutrient-plans', NutrientPlanViewSet, basename='nutrient-plan')
-
 # Season Management
 router.register(r'season-templates', SeasonTemplateViewSet, basename='season-template')
 router.register(r'growing-cycles', GrowingCycleViewSet, basename='growing-cycle')
@@ -58,10 +48,6 @@ router.register(r'applicators', ApplicatorViewSet, basename='applicator')
 router.register(r'application-events', ApplicationEventViewSet, basename='application-event')
 
 urlpatterns = router.urls + [
-    # Nutrient reports
-    path('reports/nitrogen-summary/', nitrogen_summary, name='nitrogen-summary'),
-    path('reports/nitrogen-export/', nitrogen_export, name='nitrogen-export'),
-
     # Season management routes
     path('seasons/info/', get_season_info, name='season-info'),
     path('seasons/date-range/', get_season_date_range, name='season-date-range'),

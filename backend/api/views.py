@@ -13,11 +13,6 @@
 #   sgma_views.py        - WellViewSet, WellReadingViewSet, MeterCalibrationViewSet, WaterAllocationViewSet,
 #                          ExtractionReportViewSet, IrrigationEventViewSet, sgma_dashboard,
 #                          get_plss_from_coordinates, geocode_address, update_field_boundary, get_plss
-#   nutrient_views.py    - FertilizerProductViewSet, NutrientApplicationViewSet, NutrientPlanViewSet,
-#                          nitrogen_summary, nitrogen_export
-#   irrigation_views.py  - IrrigationZoneViewSet, IrrigationRecommendationViewSet,
-#                          CropCoefficientProfileViewSet, SoilMoistureReadingViewSet,
-#                          irrigation_dashboard, cimis_stations
 #   water_data_views.py  - load_water_data_api
 # =============================================================================
 
@@ -27,6 +22,4 @@ from .water_views import *
 from .report_views import *
 from .harvest_views import *
 from .sgma_views import *
-from .nutrient_views import *
-from .irrigation_views import *
 from .water_data_views import *

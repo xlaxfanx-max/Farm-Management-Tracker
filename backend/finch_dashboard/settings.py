@@ -398,13 +398,6 @@ PASSWORD_RESET_TIMEOUT = 86400
 ANTHROPIC_API_KEY = os.environ.get('ANTHROPIC_API_KEY', '')
 
 # =============================================================================
-# CIMIS (California Irrigation Management Information System) Configuration
-# =============================================================================
-# Register for API key at: https://et.water.ca.gov/Home/Register
-CIMIS_APP_KEY = os.environ.get('CIMIS_APP_KEY', '')
-CIMIS_API_BASE_URL = 'https://et.water.ca.gov/api/data'
-
-# =============================================================================
 # CELERY CONFIGURATION
 # =============================================================================
 # Redis as message broker for async task processing

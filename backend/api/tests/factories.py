@@ -27,7 +27,6 @@ from api.models import (
     Buyer, LaborContractor, Harvest, HarvestLoad, HarvestLabor,
     PesticideProduct, PesticideApplication,
     WaterSource, WaterTest,
-    FertilizerProduct, NutrientApplication,
     Packinghouse, Pool, PackinghouseDelivery,
     ComplianceProfile, ComplianceDeadline,
 )

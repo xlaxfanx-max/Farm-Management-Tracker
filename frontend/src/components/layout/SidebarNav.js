@@ -37,7 +37,6 @@ const NAV_GROUPS = [
       { id: 'rentals', label: 'Rental Income', icon: KeyRound, permission: 'view_rentals' },
       { id: 'applications', label: 'Applications', icon: FlaskConical },
       { id: 'water', label: 'Water Management', icon: Droplets },
-      { id: 'nutrients', label: 'Nutrients', icon: Leaf },
     ],
   },
   {
