@@ -24,7 +24,8 @@ from .models import (
     PackoutReport, PackoutGradeLine,
     PoolSettlement, SettlementGradeLine, SettlementDeduction,
     GrowerLedgerEntry, Field, PackinghouseStatement,
-    Harvest, StatementBatchUpload, PackinghouseGrowerMapping, Farm
+    Harvest, StatementBatchUpload, PackinghouseGrowerMapping, Farm,
+    PackerCommitment,
 )
 from .services.settlement_service import finalize_settlement as _finalize_settlement
 from .services.season_service import (
@@ -82,6 +83,7 @@ from .serializers import (
     PoolSettlementListSerializer, PoolSettlementSerializer, PoolSettlementCreateSerializer,
     SettlementGradeLineSerializer, SettlementDeductionSerializer,
     GrowerLedgerEntryListSerializer, GrowerLedgerEntrySerializer,
+    PackerCommitmentSerializer,
     BlockPerformanceSerializer, PackoutTrendSerializer, SettlementComparisonSerializer,
     SizeDistributionGroupSerializer, SizePricingEntrySerializer,
     PackinghouseStatementListSerializer, PackinghouseStatementSerializer,
@@ -684,6 +686,38 @@ class GrowerLedgerEntryViewSet(CompanyFilteredViewSet):
         return GrowerLedgerEntrySerializer
 
 
+class PackerCommitmentViewSet(CompanyFilteredViewSet):
+    """
+    The season plan: which packer each commodity (and any overridden block)
+    is committed to for a season.
+
+    list: GET /api/packer-commitments/?season=2026
+    create/update/destroy: standard CRUD.
+    """
+    model = PackerCommitment
+    serializer_class = PackerCommitmentSerializer
+    company_field = 'company'
+    select_related_fields = ('packinghouse', 'field', 'field__farm')
+    default_ordering = ('commodity', 'field_id')
+
+    def filter_queryset_by_params(self, queryset):
+        p = self.request.query_params
+        if p.get('season'):
+            queryset = queryset.filter(season=p['season'])
+        if p.get('commodity'):
+            queryset = queryset.filter(commodity=p['commodity'].upper())
+        if p.get('packinghouse'):
+            queryset = queryset.filter(packinghouse_id=p['packinghouse'])
+        return queryset
+
+    def perform_create(self, serializer):
+        from .view_helpers import get_user_company
+        serializer.save(
+            company=get_user_company(self.request.user),
+            created_by=self.request.user,
+        )
+
+
 # =============================================================================
 # ANALYTICS VIEWS
 # =============================================================================
@@ -870,6 +904,40 @@ def harvest_packing_pipeline(request):
         season_id=request.query_params.get('season'),
         breakdown_param=request.query_params.get('breakdown'),
     )
+    return Response(result)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def season_overview(request):
+    """GET /api/harvest-packing/season-overview/?season=2026
+
+    The deliveries-first season picture: delivery stats (always live),
+    cash received, and per-commodity delivered -> settled cards with
+    net-to-grower and packer-commitment annotations. Delivery and cash
+    sections require the pick & haul permission.
+    """
+    from .services.season_overview import build_season_overview
+    from .view_helpers import get_user_company
+
+    company = get_user_company(request.user)
+    if not company:
+        return Response({'error': 'No company selected'}, status=400)
+
+    raw_season = request.query_params.get('season')
+    if raw_season:
+        try:
+            season = int(raw_season)
+        except ValueError:
+            return Response({'error': f'Invalid season: {raw_season}'}, status=400)
+    else:
+        from datetime import date as _date
+        today = _date.today()
+        season = today.year + 1 if today.month >= 10 else today.year
+
+    include_pickhaul = request.user.has_permission('view_pick_haul')
+
+    result = build_season_overview(company, season, include_pickhaul=include_pickhaul)
     return Response(result)
 
 

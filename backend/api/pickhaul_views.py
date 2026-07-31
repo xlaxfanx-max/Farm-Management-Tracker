@@ -21,9 +21,9 @@ from rest_framework.views import APIView
 from .machine_auth import HasMachineScope, MachineTokenAuthentication
 from .models import (
     LegalEntity,
-    PickHaulCheckResult, PickHaulDirectCharge, PickHaulInvoice,
-    PickHaulInvoiceReceipt, PickHaulManualPick, PickHaulPull, PickHaulReceipt,
-    PickHaulSyncBatch,
+    PickHaulChargeAck, PickHaulCheckResult, PickHaulDirectCharge,
+    PickHaulInvoice, PickHaulInvoiceReceipt, PickHaulManualPick, PickHaulPull,
+    PickHaulReceipt, PickHaulSyncBatch,
 )
 from .permissions import HasPermission, HasCompanyAccess, IsAuthenticated
 from .pickhaul_serializers import (
@@ -127,7 +127,10 @@ class PickHaulInvoiceViewSet(_PickHaulCrudViewSet):
         if p.get('kind'):
             qs = qs.filter(kind=p['kind'])
         if p.get('outstanding') in ('1', 'true'):
-            qs = qs.filter(date_emailed__isnull=False, charge_posted__isnull=True)
+            qs = qs.filter(
+                billing='direct',
+                date_emailed__isnull=False, charge_posted__isnull=True,
+            )
         if p.get('matched') in ('1', 'true'):
             qs = qs.exclude(match_method__in=('', 'unmatched'))
         elif p.get('matched') in ('0', 'false'):
@@ -277,7 +280,7 @@ class PickHaulReceiptViewSet(_PickHaulReadOnlyViewSet):
 class PickHaulDirectChargeViewSet(_PickHaulReadOnlyViewSet):
     model = PickHaulDirectCharge
     serializer_class = PickHaulDirectChargeSerializer
-    select_related_fields = ('packinghouse', 'entity', 'match')
+    select_related_fields = ('packinghouse', 'entity', 'match', 'ack')
     default_ordering = ('-charge_date', '-id')
 
     def filter_queryset_by_params(self, qs):
@@ -292,6 +295,10 @@ class PickHaulDirectChargeViewSet(_PickHaulReadOnlyViewSet):
             qs = qs.filter(match__isnull=False)
         elif p.get('matched') in ('0', 'false'):
             qs = qs.filter(match__isnull=True)
+        if p.get('acked') in ('1', 'true'):
+            qs = qs.filter(ack__isnull=False)
+        elif p.get('acked') in ('0', 'false'):
+            qs = qs.filter(ack__isnull=True)
         if p.get('search'):
             qs = qs.filter(
                 Q(ap_reference__icontains=p['search']) | Q(block_raw__icontains=p['search'])
@@ -390,7 +397,7 @@ class PickHaulSummaryView(APIView):
         today = date.today()
 
         outstanding = PickHaulInvoice.objects.filter(
-            company=company, season=season,
+            company=company, season=season, billing='direct',
             date_emailed__isnull=False, charge_posted__isnull=True,
         ).select_related('packinghouse', 'entity').order_by('date_emailed')
 
@@ -426,7 +433,7 @@ class PickHaulSummaryView(APIView):
 
         unmatched = PickHaulDirectCharge.objects.filter(
             company=company, season=season, kind__in=('PICK', 'HAUL'),
-            debit__gt=0, match__isnull=True,
+            debit__gt=0, match__isnull=True, ack__isnull=True,
         ).aggregate(rows=Count('id'), total=Sum('debit'))
 
         return Response({
@@ -441,6 +448,69 @@ class PickHaulSummaryView(APIView):
                 'total': unmatched['total'] or Decimal('0'),
             },
         })
+
+
+class PickHaulChargeAckView(APIView):
+    """POST/DELETE /api/pickhaul/house-charges/{id}/ack/ — acknowledge a
+    house-posted charge as expected (e.g. contractor bills the house
+    directly, so no grower invoice will ever exist).
+
+    A standalone APIView because the charge viewset is deliberately
+    read-only — charges are sync-owned, and the ack lives in its own
+    platform-owned satellite table.
+    """
+
+    permission_classes = [IsAuthenticated, HasCompanyAccess, HasPermission]
+    required_permission = 'manage_pick_haul'
+
+    def _get_charge(self, request, charge_id):
+        company = get_user_company(request.user)
+        try:
+            return company, PickHaulDirectCharge.objects.get(
+                pk=charge_id, company=company
+            )
+        except PickHaulDirectCharge.DoesNotExist:
+            return company, None
+
+    def post(self, request, charge_id):
+        company, charge = self._get_charge(request, charge_id)
+        if charge is None:
+            return Response({'detail': 'Charge not found.'},
+                            status=status.HTTP_404_NOT_FOUND)
+
+        reason = request.data.get('reason', 'house_billed')
+        valid_reasons = {r for r, _ in PickHaulChargeAck.REASON_CHOICES}
+        if reason not in valid_reasons:
+            return Response({'detail': f'Invalid reason: {reason}'},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        ack, created = PickHaulChargeAck.objects.update_or_create(
+            charge=charge,
+            defaults={
+                'company': company,
+                'reason': reason,
+                'note': request.data.get('note', ''),
+                'created_by': request.user,
+            },
+        )
+        run_post_change(company, charge.season)
+        return Response(
+            {'status': 'acked', 'reason': ack.reason},
+            status=status.HTTP_201_CREATED if created else status.HTTP_200_OK,
+        )
+
+    def delete(self, request, charge_id):
+        company, charge = self._get_charge(request, charge_id)
+        if charge is None:
+            return Response({'detail': 'Charge not found.'},
+                            status=status.HTTP_404_NOT_FOUND)
+
+        deleted, _ = PickHaulChargeAck.objects.filter(charge=charge).delete()
+        if not deleted:
+            return Response({'detail': 'No ack to remove.'},
+                            status=status.HTTP_404_NOT_FOUND)
+        run_post_change(company, charge.season)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class PickHaulSyncStatusView(APIView):

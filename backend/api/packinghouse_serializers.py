@@ -4,6 +4,7 @@ from .models import (
     PackoutReport, PackoutGradeLine,
     PoolSettlement, SettlementGradeLine, SettlementDeduction,
     GrowerLedgerEntry, PackinghouseStatement, Farm,
+    PackerCommitment,
 )
 from .serializer_mixins import DynamicFieldsMixin
 
@@ -436,6 +437,44 @@ class GrowerLedgerEntrySerializer(DynamicFieldsMixin, serializers.ModelSerialize
             return obj.pool.commodity
         return None
 
+    def validate(self, data):
+        """Tenancy + consistency.
+
+        The model has no company FK — company rides on the packinghouse — so
+        the posted packinghouse must belong to the requester's company, and a
+        pool (when given) must belong to that packinghouse. Cash the house
+        pays the grower (advance / pool close / payment) is entered as a
+        CREDIT; every rollup and the pool-close reconciliation sum credits.
+        """
+        from .view_helpers import get_user_company
+
+        request = self.context.get('request')
+        packinghouse = data.get('packinghouse') or getattr(self.instance, 'packinghouse', None)
+        pool = data.get('pool') if 'pool' in data else getattr(self.instance, 'pool', None)
+
+        if request is not None and packinghouse is not None:
+            company = get_user_company(request.user)
+            if company is None or packinghouse.company_id != company.id:
+                raise serializers.ValidationError(
+                    {'packinghouse': 'Packinghouse not found.'}
+                )
+        if pool is not None and packinghouse is not None \
+                and pool.packinghouse_id != packinghouse.id:
+            raise serializers.ValidationError(
+                {'pool': 'Pool does not belong to the selected packinghouse.'}
+            )
+
+        entry_type = data.get('entry_type') or getattr(self.instance, 'entry_type', None)
+        debit = data.get('debit') if 'debit' in data else getattr(self.instance, 'debit', None)
+        credit = data.get('credit') if 'credit' in data else getattr(self.instance, 'credit', None)
+        if entry_type in ('advance', 'pool_close', 'payment'):
+            if (credit or 0) <= 0 or (debit or 0) != 0:
+                raise serializers.ValidationError(
+                    {'credit': 'Cash received from the house is entered as a '
+                               'credit (debit must be 0).'}
+                )
+        return data
+
 
 # Backward-compatible alias
 GrowerLedgerEntryListSerializer = GrowerLedgerEntrySerializer
@@ -783,3 +822,73 @@ class GrowerMappingSerializer(serializers.Serializer):
     field_name = serializers.CharField(source='field.name', read_only=True, allow_null=True)
     use_count = serializers.IntegerField(read_only=True)
     created_at = serializers.DateTimeField(read_only=True)
+
+
+# =============================================================================
+# PACKER COMMITMENT SERIALIZER — the season plan
+# =============================================================================
+
+class PackerCommitmentSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+    """Commodity default + block override rows for a season's packer plan."""
+
+    packinghouse_name = serializers.CharField(source='packinghouse.name', read_only=True)
+    packinghouse_short_code = serializers.CharField(source='packinghouse.short_code', read_only=True)
+    field_name = serializers.CharField(source='field.name', read_only=True, allow_null=True)
+    farm_name = serializers.CharField(source='field.farm.name', read_only=True, allow_null=True)
+    season_label = serializers.SerializerMethodField()
+
+    class Meta:
+        model = PackerCommitment
+        fields = [
+            'id', 'season', 'season_label', 'commodity',
+            'packinghouse', 'packinghouse_name', 'packinghouse_short_code',
+            'field', 'field_name', 'farm_name',
+            'flex', 'notes', 'created_at', 'updated_at',
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+    def get_season_label(self, obj):
+        from .services.season_service import (
+            get_crop_category_for_commodity, season_int_to_label,
+        )
+        category = get_crop_category_for_commodity(obj.commodity)
+        return season_int_to_label(obj.season, category)
+
+    def validate_commodity(self, value):
+        from .services.season_service import normalize_commodity
+        return normalize_commodity(value)
+
+    def validate(self, data):
+        from .view_helpers import get_user_company
+
+        request = self.context.get('request')
+        company = get_user_company(request.user) if request else None
+
+        packinghouse = data.get('packinghouse') or getattr(self.instance, 'packinghouse', None)
+        field = data.get('field') if 'field' in data else getattr(self.instance, 'field', None)
+
+        if company is not None and packinghouse is not None \
+                and packinghouse.company_id != company.id:
+            raise serializers.ValidationError({'packinghouse': 'Packinghouse not found.'})
+        if company is not None and field is not None \
+                and field.farm.company_id != company.id:
+            raise serializers.ValidationError({'field': 'Field not found.'})
+
+        # The conditional unique constraints (one default per commodity, one
+        # override per block) aren't auto-validated by DRF — check explicitly
+        # so duplicates come back as a readable 400, not a 500.
+        season = data.get('season') or getattr(self.instance, 'season', None)
+        commodity = data.get('commodity') or getattr(self.instance, 'commodity', None)
+        if company is not None and season and commodity:
+            dupes = PackerCommitment.objects.filter(
+                company=company, season=season, commodity=commodity, field=field,
+            )
+            if self.instance is not None:
+                dupes = dupes.exclude(pk=self.instance.pk)
+            if dupes.exists():
+                scope = f'block "{field.name}"' if field else 'the commodity default'
+                raise serializers.ValidationError({
+                    'commodity': f'A {season} {commodity} commitment already '
+                                 f'exists for {scope}.'
+                })
+        return data

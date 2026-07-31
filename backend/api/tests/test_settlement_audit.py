@@ -321,3 +321,90 @@ class EndToEndAuditTests(SettlementAuditBase):
         self.assertEqual(report.findings[0].category, 'reconciliation')
         # Overall status should be at least 'review'
         self.assertIn(report.summary['overall_status'], ('review', 'critical'))
+
+
+class AdvanceLedgerTests(SettlementAuditBase):
+    """Pool-close reconciliation of recorded advances vs prior_advances."""
+
+    def _entry(self, amount, entry_date=None, entry_type='advance', pool=None):
+        from api.models import GrowerLedgerEntry
+        return GrowerLedgerEntry.objects.create(
+            packinghouse=self.packinghouse,
+            pool=pool or self.pool,
+            entry_date=entry_date or date(2026, 1, 15),
+            entry_type=entry_type,
+            credit=Decimal(str(amount)),
+            debit=Decimal('0'),
+        )
+
+    def _codes(self, settlement):
+        from api.services.settlement_audit import _check_advance_ledger
+        return [f.code for f in _check_advance_ledger(settlement)]
+
+    def test_clean_when_ledger_matches_prior_advances(self):
+        self._entry('2000.00')
+        self._entry('1000.00', entry_date=date(2026, 2, 10))
+        s = make_settlement(
+            self.pool, self.field, date(2026, 3, 1),
+            prior_advances=Decimal('3000.00'),
+        )
+        self.assertEqual(self._codes(s), [])
+
+    def test_short_ledger_flags_difference(self):
+        self._entry('2000.00')
+        s = make_settlement(
+            self.pool, self.field, date(2026, 3, 1),
+            prior_advances=Decimal('3000.00'),
+        )
+        from api.services.settlement_audit import _check_advance_ledger
+        findings = _check_advance_ledger(s)
+        self.assertEqual(len(findings), 1)
+        f = findings[0]
+        self.assertEqual(f.code, 'advance_ledger_vs_prior_advances')
+        self.assertEqual(f.dollar_impact, -1000.0)
+        self.assertNotEqual(f.severity, 'info')
+
+    def test_empty_ledger_with_prior_advances_is_info(self):
+        s = make_settlement(
+            self.pool, self.field, date(2026, 3, 1),
+            prior_advances=Decimal('3000.00'),
+        )
+        from api.services.settlement_audit import _check_advance_ledger
+        findings = _check_advance_ledger(s)
+        self.assertEqual(len(findings), 1)
+        self.assertEqual(findings[0].severity, 'info')
+
+    def test_empty_ledger_no_advances_is_clean(self):
+        s = make_settlement(self.pool, self.field, date(2026, 3, 1))
+        self.assertEqual(self._codes(s), [])
+
+    def test_entries_after_statement_date_excluded(self):
+        self._entry('3000.00', entry_date=date(2026, 4, 1))  # after close
+        s = make_settlement(
+            self.pool, self.field, date(2026, 3, 1),
+            prior_advances=Decimal('3000.00'),
+        )
+        from api.services.settlement_audit import _check_advance_ledger
+        findings = _check_advance_ledger(s)
+        # Ledger sum within the window is empty -> info nudge, not a mismatch.
+        self.assertEqual(len(findings), 1)
+        self.assertEqual(findings[0].severity, 'info')
+
+    def test_non_advance_entries_excluded(self):
+        self._entry('3000.00')
+        self._entry('5000.00', entry_type='pool_close')
+        s = make_settlement(
+            self.pool, self.field, date(2026, 3, 1),
+            prior_advances=Decimal('3000.00'),
+        )
+        self.assertEqual(self._codes(s), [])
+
+    def test_appears_in_full_audit(self):
+        self._entry('500.00')
+        s = make_settlement(
+            self.pool, self.field, date(2026, 3, 1),
+            prior_advances=Decimal('3000.00'),
+        )
+        report = audit_settlement(s)
+        codes = [f.code for f in report.findings]
+        self.assertIn('advance_ledger_vs_prior_advances', codes)

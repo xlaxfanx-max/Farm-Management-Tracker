@@ -22,7 +22,11 @@ export default function DerivedFieldsPanel({ invoice }) {
       </div>
       <div className="grid grid-cols-3 gap-3 text-sm">
         <div>
-          <div className="text-xs text-gray-500 dark:text-gray-400">House charged back</div>
+          <div className="text-xs text-gray-500 dark:text-gray-400">
+            {invoice.billing === 'house_billed'
+              ? 'Charge confirmed against sales'
+              : 'House charged back'}
+          </div>
           <div className="text-gray-600 dark:text-gray-300 italic">
             {formatDate(invoice.charge_posted)}
           </div>
@@ -46,6 +50,12 @@ export default function DerivedFieldsPanel({ invoice }) {
       </div>
       {methodInfo?.explanation && (
         <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">{methodInfo.explanation}</p>
+      )}
+      {invoice.billing === 'house_billed' && (
+        <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+          House-billed invoice: the charge above confirms the deduction against
+          sales — it is not a reimbursement event, and nothing is chased.
+        </p>
       )}
     </div>
   );

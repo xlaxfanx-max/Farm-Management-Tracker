@@ -8,6 +8,7 @@ from ..packinghouse_views import (
     PackoutReportViewSet,
     PoolSettlementViewSet,
     GrowerLedgerEntryViewSet,
+    PackerCommitmentViewSet,
     PackinghouseStatementViewSet,
     block_performance,
     packout_trends,
@@ -16,6 +17,7 @@ from ..packinghouse_views import (
     size_pricing,
     packinghouse_dashboard,
     harvest_packing_pipeline,
+    season_overview,
     profitability_analysis,
     deduction_breakdown,
     season_comparison,
@@ -34,6 +36,7 @@ router.register(r'packinghouse-deliveries', PackinghouseDeliveryViewSet, basenam
 router.register(r'packout-reports', PackoutReportViewSet, basename='packout-report')
 router.register(r'pool-settlements', PoolSettlementViewSet, basename='pool-settlement')
 router.register(r'grower-ledger', GrowerLedgerEntryViewSet, basename='grower-ledger')
+router.register(r'packer-commitments', PackerCommitmentViewSet, basename='packer-commitment')
 router.register(r'packinghouse-statements', PackinghouseStatementViewSet, basename='packinghouse-statement')
 
 urlpatterns = router.urls + [
@@ -45,6 +48,7 @@ urlpatterns = router.urls + [
     path('packinghouse-analytics/size-pricing/', size_pricing, name='packinghouse-size-pricing'),
     path('packinghouse-analytics/dashboard/', packinghouse_dashboard, name='packinghouse-dashboard'),
     path('harvest-packing/pipeline/', harvest_packing_pipeline, name='harvest-packing-pipeline'),
+    path('harvest-packing/season-overview/', season_overview, name='harvest-packing-season-overview'),
 
     # Settlement Intelligence analytics routes
     path('packinghouse-analytics/commodity-roi/', commodity_roi_ranking, name='packinghouse-commodity-roi'),

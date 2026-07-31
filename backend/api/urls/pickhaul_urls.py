@@ -2,6 +2,7 @@ from django.urls import path
 from rest_framework.routers import DefaultRouter
 
 from ..pickhaul_views import (
+    PickHaulChargeAckView,
     PickHaulCheckResultViewSet,
     PickHaulDirectChargeViewSet,
     PickHaulEntitiesView,
@@ -25,6 +26,11 @@ router.register(r'pickhaul/sync-batches', PickHaulSyncBatchViewSet, basename='pi
 
 urlpatterns = router.urls + [
     path('pickhaul/sync/', PickHaulSyncView.as_view(), name='pickhaul-sync'),
+    path(
+        'pickhaul/house-charges/<int:charge_id>/ack/',
+        PickHaulChargeAckView.as_view(),
+        name='pickhaul-charge-ack',
+    ),
     path('pickhaul/entities/', PickHaulEntitiesView.as_view(), name='pickhaul-entities'),
     path('pickhaul/harvest-activity/', PickHaulHarvestActivityView.as_view(), name='pickhaul-harvest-activity'),
     path('pickhaul/summary/aging/', PickHaulSummaryView.as_view(), name='pickhaul-summary-aging'),

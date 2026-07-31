@@ -36,7 +36,7 @@ import {
   PackinghouseList,
   PoolList,
   StatementList,
-  PipelineOverview
+  SeasonOverview
 } from '../packinghouse';
 import { formatCurrency, formatNumber } from './harvestUtils';
 import HarvestFilters from './HarvestFilters';
@@ -50,6 +50,7 @@ import InvoicesTab from '../pickhaul/InvoicesTab';
 import ChecksTab from '../pickhaul/ChecksTab';
 import HouseChargesTab from '../pickhaul/HouseChargesTab';
 import SyncFreshnessBanner from '../pickhaul/SyncFreshnessBanner';
+import { currentPickhaulSeason } from '../pickhaul/pickhaulUtils';
 
 const Harvests = () => {
   const { fields, farms } = useData();
@@ -430,14 +431,14 @@ const Harvests = () => {
         </nav>
       </div>
 
-      {/* Overview Tab - Pipeline Visualization */}
+      {/* Overview Tab - deliveries-first season pipeline */}
       {activeTab === 'overview' && (
         <div className="space-y-4">
           {hasPickHaul && <SyncFreshnessBanner syncStatus={syncStatus} />}
-          <PipelineOverview />
+          <SeasonOverview />
           {hasPickHaul && (
             <CollapsibleSection title="Reconciliation checks & data sources">
-              <ChecksTab season={new Date().getFullYear()} syncStatus={syncStatus} />
+              <ChecksTab season={currentPickhaulSeason()} syncStatus={syncStatus} />
             </CollapsibleSection>
           )}
         </div>
@@ -467,7 +468,7 @@ const Harvests = () => {
               <h3 className="text-sm font-medium text-gray-700 dark:text-gray-200">
                 House charge-backs (pick &amp; haul)
               </h3>
-              <HouseChargesTab season={Number(filters.season) || new Date().getFullYear()} />
+              <HouseChargesTab season={currentPickhaulSeason()} />
             </div>
           )}
         </div>
@@ -507,14 +508,14 @@ const Harvests = () => {
 
           {harvestsView === 'deliveries' && hasPickHaul && (
             <DeliveriesView
-              season={Number(filters.season) || new Date().getFullYear()}
+              season={currentPickhaulSeason()}
               refresh={fetchSyncStatus}
             />
           )}
 
           {harvestsView === 'invoices' && hasPickHaul && (
             <InvoicesTab
-              season={Number(filters.season) || new Date().getFullYear()}
+              season={currentPickhaulSeason()}
               refresh={fetchSyncStatus}
             />
           )}

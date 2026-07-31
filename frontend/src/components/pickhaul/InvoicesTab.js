@@ -97,6 +97,14 @@ export default function InvoicesTab({ season, refresh }) {
     },
     { key: 'contractor', label: 'Contractor' },
     { key: 'invoice_no', label: 'Invoice #' },
+    {
+      key: 'billing', label: 'Billing',
+      render: (v) => (
+        <Badge color={v === 'house_billed' ? 'purple' : 'gray'} size="xs">
+          {v === 'house_billed' ? 'House-billed' : 'Grower-paid'}
+        </Badge>
+      ),
+    },
     { key: 'amount', label: 'Amount', align: 'right', render: (v) => formatCurrency(v) },
     { key: 'block_raw', label: 'Block' },
     { key: 'date_from', label: 'From', render: (v) => formatDate(v) },

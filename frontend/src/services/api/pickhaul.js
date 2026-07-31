@@ -29,6 +29,11 @@ export const pickHaulReceiptsAPI = {
 
 export const pickHaulChargesAPI = {
   getAll: (params = {}) => api.get('/pickhaul/house-charges/', { params }),
+  // Acknowledge a house-posted charge as expected (e.g. the contractor bills
+  // the house directly, so no grower invoice will ever exist).
+  ack: (chargeId, data = {}) =>
+    api.post(`/pickhaul/house-charges/${chargeId}/ack/`, data),
+  unack: (chargeId) => api.delete(`/pickhaul/house-charges/${chargeId}/ack/`),
 };
 
 export const pickHaulEntitiesAPI = {
@@ -48,6 +53,19 @@ export const PICKHAUL_CONSTANTS = {
   KINDS: [
     { value: 'PICK', label: 'Pick' },
     { value: 'HAUL', label: 'Haul' },
+  ],
+  BILLING: [
+    {
+      value: 'direct',
+      label: 'Grower-paid',
+      explanation: 'You paid the contractor; chase the house for reimbursement.',
+    },
+    {
+      value: 'house_billed',
+      label: 'House-billed',
+      explanation:
+        'Contractor bills the house; charged against your sales — nothing to chase.',
+    },
   ],
   // Plain-English explanations for the matcher's methods, shown in detail views.
   MATCH_METHODS: {

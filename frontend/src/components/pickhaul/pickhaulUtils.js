@@ -70,3 +70,11 @@ export const rows = (res) => {
   const data = res.data;
   return Array.isArray(data) ? data : data?.results || [];
 };
+
+// Pick & haul integer season = END YEAR of the citrus Oct–Sep season
+// ("2025-2026" -> 2026). From October onward the current season is next
+// calendar year; Jan–Sep it is the current calendar year.
+export const currentPickhaulSeason = (today = new Date()) => {
+  const year = today.getFullYear();
+  return today.getMonth() >= 9 ? year + 1 : year;
+};

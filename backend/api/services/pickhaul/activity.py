@@ -55,6 +55,44 @@ def _allocate_invoice_costs(company, season):
     return costs, refs
 
 
+def season_money_stats(company, season):
+    """Season-wide money summary shared by the Deliveries view and the
+    season overview: invoice + manual costs, the chase list total (grower-
+    paid invoices only), and gate-11 unmatched house charges."""
+    invoice_totals = {
+        row['kind']: row['total']
+        for row in PickHaulInvoice.objects.filter(
+            company=company, season=season, amount__isnull=False,
+        ).values('kind').annotate(total=Sum('amount'))
+    }
+    manual_cost = PickHaulManualPick.objects.filter(
+        company=company, season=season, count_cost=True,
+    ).aggregate(t=Sum('cost'))['t'] or Decimal('0')
+    manual_haul = PickHaulManualPick.objects.filter(
+        company=company, season=season, count_haul=True,
+    ).aggregate(t=Sum('haul_cost'))['t'] or Decimal('0')
+
+    owed = PickHaulInvoice.objects.filter(
+        company=company, season=season, billing='direct',
+        date_emailed__isnull=False, charge_posted__isnull=True,
+    ).aggregate(total=Sum('amount'), n=Count('id'))
+    unmatched = PickHaulDirectCharge.objects.filter(
+        company=company, season=season, kind__in=('PICK', 'HAUL'),
+        debit__gt=0, match__isnull=True, ack__isnull=True,
+    ).aggregate(total=Sum('debit'), n=Count('id'))
+
+    return {
+        'pick_cost': (invoice_totals.get('PICK') or Decimal('0')) + manual_cost,
+        'haul_cost': (invoice_totals.get('HAUL') or Decimal('0')) + manual_haul,
+        'owed_total': owed['total'] or Decimal('0'),
+        'owed_count': owed['n'] or 0,
+        'unmatched_charges': {
+            'rows': unmatched['n'] or 0,
+            'total': unmatched['total'] or Decimal('0'),
+        },
+    }
+
+
 def harvest_activity(company, season):
     """The season's deliveries grouped by block, plus the money summary."""
     costs, refs = _allocate_invoice_costs(company, season)
@@ -122,33 +160,12 @@ def harvest_activity(company, season):
         })
 
     # ---- season money summary -------------------------------------------
-    invoice_totals = {
-        row['kind']: row['total']
-        for row in PickHaulInvoice.objects.filter(
-            company=company, season=season, amount__isnull=False,
-        ).values('kind').annotate(total=Sum('amount'))
-    }
-    manual_cost = PickHaulManualPick.objects.filter(
-        company=company, season=season, count_cost=True,
-    ).aggregate(t=Sum('cost'))['t'] or Decimal('0')
-    manual_haul = PickHaulManualPick.objects.filter(
-        company=company, season=season, count_haul=True,
-    ).aggregate(t=Sum('haul_cost'))['t'] or Decimal('0')
-
-    pick_cost = (invoice_totals.get('PICK') or Decimal('0')) + manual_cost
-    haul_cost = (invoice_totals.get('HAUL') or Decimal('0')) + manual_haul
+    money = season_money_stats(company, season)
+    pick_cost = money['pick_cost']
+    haul_cost = money['haul_cost']
 
     bins_delivered = sum(b['bins'] for b in blocks.values())
     deliveries_count = sum(len(b['deliveries']) for b in blocks.values())
-
-    owed = PickHaulInvoice.objects.filter(
-        company=company, season=season,
-        date_emailed__isnull=False, charge_posted__isnull=True,
-    ).aggregate(total=Sum('amount'), n=Count('id'))
-    unmatched = PickHaulDirectCharge.objects.filter(
-        company=company, season=season, kind__in=('PICK', 'HAUL'),
-        debit__gt=0, match__isnull=True,
-    ).aggregate(total=Sum('debit'), n=Count('id'))
 
     total_cost = pick_cost + haul_cost
     ordered = sorted(blocks.values(), key=lambda b: -b['bins'])
@@ -161,12 +178,9 @@ def harvest_activity(company, season):
             'pick_cost': pick_cost,
             'haul_cost': haul_cost,
             'cost_per_bin': (total_cost / bins_delivered) if bins_delivered else None,
-            'owed_total': owed['total'] or Decimal('0'),
-            'owed_count': owed['n'] or 0,
-            'unmatched_charges': {
-                'rows': unmatched['n'] or 0,
-                'total': unmatched['total'] or Decimal('0'),
-            },
+            'owed_total': money['owed_total'],
+            'owed_count': money['owed_count'],
+            'unmatched_charges': money['unmatched_charges'],
         },
         'blocks': ordered,
     }

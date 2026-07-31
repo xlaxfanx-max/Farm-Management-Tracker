@@ -934,6 +934,7 @@ class PackinghouseAnalyticsService:
             total_revenue = Decimal('0')
             total_bins_packed = Decimal('0')
             total_bins_settled = Decimal('0')
+            total_lbs_settled = Decimal('0')
 
             for commodity_val in commodities:
                 if not commodity_val:
@@ -942,8 +943,18 @@ class PackinghouseAnalyticsService:
                 crop_category = get_crop_category_for_commodity(commodity_val)
                 unit_info = get_primary_unit_for_commodity(commodity_val)
                 season_service = SeasonService(company_id=company.id)
-                current = season_service.get_current_season(crop_category=crop_category, target_date=today)
-                current_season_label = current.label
+                # Honor an explicit season request; each commodity gets the
+                # label for ITS category ("2025-2026" citrus vs "2026" nut).
+                if season_id:
+                    from .season_service import season_int_to_label, season_label_to_int
+                    requested = season_label_to_int(season_id)
+                    if requested is not None:
+                        current_season_label = season_int_to_label(requested, crop_category)
+                    else:
+                        current_season_label = str(season_id)
+                else:
+                    current = season_service.get_current_season(crop_category=crop_category, target_date=today)
+                    current_season_label = current.label
 
                 bins_packed = Decimal('0')
                 avg_pack = 0
@@ -1021,8 +1032,14 @@ class PackinghouseAnalyticsService:
                 })
 
                 total_revenue += revenue
-                total_bins_packed += bins_packed
-                total_bins_settled += bins_settled
+                # BIN and LBS commodities must not share the bins tallies —
+                # an LBS settlement's total_bins is typically null, which
+                # used to understate the summary settlement %.
+                if unit_info['unit'] == 'BIN':
+                    total_bins_packed += bins_packed
+                    total_bins_settled += bins_settled
+                else:
+                    total_lbs_settled += lbs_settled
 
             commodity_cards.sort(key=lambda x: x['revenue'], reverse=True)
 
@@ -1036,6 +1053,7 @@ class PackinghouseAnalyticsService:
                     'total_revenue': float(total_revenue),
                     'total_bins_packed': total_packed_f,
                     'total_bins_settled': total_settled_f,
+                    'total_lbs_settled': float(total_lbs_settled),
                     'settlement_percent': round((total_settled_f / total_packed_f * 100), 1) if total_packed_f > 0 else 0,
                     'total_pools': Pool.objects.filter(packinghouse__company=company).count(),
                 },

@@ -54,6 +54,7 @@ from .pickhaul import (
     PickHaulInvoice,
     PickHaulInvoiceReceipt,
     PickHaulChargeMatch,
+    PickHaulChargeAck,
     PickHaulManualPick,
     PickHaulCheckResult,
     PICKHAUL_KIND_CHOICES,
@@ -174,6 +175,7 @@ from .packinghouse import (
     PackinghouseStatement,
     PackinghouseGrowerMapping,
     StatementBatchUpload,
+    PackerCommitment,
 )
 
 # -- PUR / tank mix / unified product ----------------------------------------
@@ -205,8 +207,8 @@ __all__ = [
     # pick & haul
     'MachineApiToken', 'PickHaulSyncBatch', 'PickHaulPull', 'PickHaulReceipt',
     'PickHaulDirectCharge', 'PickHaulInvoice', 'PickHaulInvoiceReceipt',
-    'PickHaulChargeMatch', 'PickHaulManualPick', 'PickHaulCheckResult',
-    'PICKHAUL_KIND_CHOICES',
+    'PickHaulChargeMatch', 'PickHaulChargeAck', 'PickHaulManualPick',
+    'PickHaulCheckResult', 'PICKHAUL_KIND_CHOICES',
     # rentals
     'LOCATION_TYPE_CHOICES', 'PNL_TREATMENT_CHOICES', 'PROPERTY_TYPE_CHOICES',
     'LEDGER_GRAIN_CHOICES', 'CATEGORY_KIND_CHOICES', 'LEDGER_SOURCE_CHOICES',
@@ -245,7 +247,7 @@ __all__ = [
     'Packinghouse', 'Pool', 'PackinghouseDelivery', 'PackoutReport',
     'PackoutGradeLine', 'PoolSettlement', 'SettlementGradeLine',
     'SettlementDeduction', 'GrowerLedgerEntry', 'PackinghouseStatement',
-    'PackinghouseGrowerMapping', 'StatementBatchUpload',
+    'PackinghouseGrowerMapping', 'StatementBatchUpload', 'PackerCommitment',
     # pur / tank mix
     'PRODUCT_TYPE_CHOICES', 'SIGNAL_WORD_CHOICES', 'APPLICATOR_TYPE_CHOICES',
     'PUR_STATUS_CHOICES', 'APPLICATION_METHOD_CHOICES',

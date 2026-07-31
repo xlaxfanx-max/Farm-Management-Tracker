@@ -107,7 +107,7 @@ export default function DeliveriesView({ season, refresh }) {
         <MetricCard
           title="Owed by houses"
           value={formatCurrency(stats.owed_total)}
-          subtitle={`${stats.owed_count ?? 0} invoices — ${owedOpen ? 'hide' : 'show'} chase list`}
+          subtitle={`${stats.owed_count ?? 0} grower-paid invoices — ${owedOpen ? 'hide' : 'show'} chase list`}
           icon={DollarSign}
           color={(stats.owed_count ?? 0) > 0 ? 'amber' : 'gray'}
           onClick={() => setOwedOpen((v) => !v)}

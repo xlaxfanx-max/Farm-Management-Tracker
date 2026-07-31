@@ -145,7 +145,7 @@ def gate8_reimbursement_aging(company, season, today=None):
     out = []
     today = today or date.today()
     qs = PickHaulInvoice.objects.filter(
-        company=company, season=season,
+        company=company, season=season, billing='direct',
         charge_posted__isnull=True, date_emailed__isnull=False,
     ).order_by('date_emailed')
     for inv in qs:
@@ -215,7 +215,7 @@ def gate11_unmatched_charges(company, season):
     groups = (
         PickHaulDirectCharge.objects.filter(
             company=company, season=season, kind__in=('PICK', 'HAUL'),
-            debit__gt=0, match__isnull=True,
+            debit__gt=0, match__isnull=True, ack__isnull=True,
         )
         .values('packinghouse_id', 'entity_id')
         .annotate(rows=Count('id'), total=Sum('debit'))

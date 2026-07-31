@@ -361,6 +361,11 @@ class PickHaulInvoice(models.Model):
         ('entry', 'Entry workbook'), ('migrated', 'Migrated'), ('platform', 'Platform'),
     ]
 
+    BILLING_CHOICES = [
+        ('direct', 'Grower-paid'),
+        ('house_billed', 'House-billed'),
+    ]
+
     company = models.ForeignKey(
         'Company', on_delete=models.CASCADE, related_name='pickhaul_invoices'
     )
@@ -406,6 +411,12 @@ class PickHaulInvoice(models.Model):
     )
     notes = models.TextField(blank=True)
     source = models.CharField(max_length=12, choices=SOURCE_CHOICES, default='platform')
+    billing = models.CharField(
+        max_length=12, choices=BILLING_CHOICES, default='direct',
+        help_text='direct = grower pays the contractor and chases reimbursement; '
+                  'house_billed = the contractor bills the packinghouse and it is '
+                  'charged against sales (nothing to chase).',
+    )
 
     created_by = models.ForeignKey(
         'User', on_delete=models.SET_NULL, null=True, blank=True,
@@ -438,8 +449,12 @@ class PickHaulInvoice(models.Model):
 
     @property
     def is_outstanding(self):
-        """Emailed to the house, not yet charged back — the chase-list predicate."""
-        return self.date_emailed is not None and self.charge_posted is None
+        """Grower-paid, emailed to the house, not yet charged back — the chase-list predicate."""
+        return (
+            self.billing == 'direct'
+            and self.date_emailed is not None
+            and self.charge_posted is None
+        )
 
 
 class PickHaulInvoiceReceipt(models.Model):
@@ -487,6 +502,46 @@ class PickHaulChargeMatch(models.Model):
 
     def __str__(self):
         return f'charge {self.charge_id} → invoice {self.invoice_id} ({self.method})'
+
+
+class PickHaulChargeAck(models.Model):
+    """A platform-owned acknowledgment of a house-posted charge.
+
+    When a contractor bills the packinghouse directly, the grower may never
+    hold an invoice — the house charge is the only record. Without an ack,
+    that charge sits in gate 11 (unmatched-charges) forever. The ack lives in
+    a satellite table (same pattern as PickHaulChargeMatch) because
+    PickHaulDirectCharge is sync-owned append-only: the web must never write
+    a column on a sync-owned row.
+    """
+
+    REASON_CHOICES = [
+        ('house_billed', 'Expected house-billed'),
+        ('disputed', 'Disputed'),
+        ('other', 'Other'),
+    ]
+
+    company = models.ForeignKey(
+        'Company', on_delete=models.CASCADE, related_name='pickhaul_charge_acks'
+    )
+    charge = models.OneToOneField(
+        PickHaulDirectCharge, on_delete=models.CASCADE, related_name='ack'
+    )
+    reason = models.CharField(
+        max_length=15, choices=REASON_CHOICES, default='house_billed'
+    )
+    note = models.TextField(blank=True)
+    created_by = models.ForeignKey(
+        'User', on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='pickhaul_charge_acks_created',
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name_plural = 'pick haul charge acks'
+
+    def __str__(self):
+        return f'ack charge {self.charge_id} ({self.reason})'
 
 
 class PickHaulManualPick(models.Model):

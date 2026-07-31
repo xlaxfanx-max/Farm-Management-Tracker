@@ -42,6 +42,10 @@ export const growerLedgerAPI = {
   ...createCRUDAPI('grower-ledger'),
 };
 
+export const packerCommitmentsAPI = {
+  ...createCRUDAPI('packer-commitments'),
+};
+
 export const packinghouseAnalyticsAPI = {
   getBlockPerformance: (params = {}) =>
     api.get('/packinghouse-analytics/block-performance/', { params }),
@@ -64,6 +68,10 @@ export const packinghouseAnalyticsAPI = {
   // Unified harvest-to-packing pipeline overview
   getPipeline: (params = {}) =>
     api.get('/harvest-packing/pipeline/', { params }),
+
+  // Deliveries-first season overview (delivery + cash + commodity cards)
+  getSeasonOverview: (params = {}) =>
+    api.get('/harvest-packing/season-overview/', { params }),
 
   // Settlement Intelligence endpoints
   getCommodityROI: (params = {}) =>

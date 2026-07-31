@@ -1268,3 +1268,67 @@ class StatementBatchUpload(models.Model):
     def is_complete(self):
         """Check if batch processing is complete."""
         return self.status in ['completed', 'partial', 'failed']
+
+
+class PackerCommitment(models.Model):
+    """Where a commodity's fruit is committed to go for a season.
+
+    The season plan: a commodity-level default ("lemons -> SLA") with
+    optional block-level overrides, and a flex flag for commodities whose
+    destination is decided pick by pick (avocados). Season is the pick &
+    haul integer convention — the END year of the cross-year label
+    ("2025-2026" -> 2026) — so commitments join directly against receipts.
+    """
+
+    company = models.ForeignKey(
+        'Company', on_delete=models.CASCADE, related_name='packer_commitments'
+    )
+    season = models.PositiveSmallIntegerField(
+        help_text='End year of the season (2026 = the 2025-2026 season)'
+    )
+    commodity = models.CharField(
+        max_length=50,
+        help_text='Canonical commodity (normalized, e.g. LEMONS, AVOCADOS)',
+    )
+    packinghouse = models.ForeignKey(
+        Packinghouse, on_delete=models.PROTECT, related_name='commitments'
+    )
+    field = models.ForeignKey(
+        'Field', on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='packer_commitments',
+        help_text='Block-level override; null = commodity default',
+    )
+    flex = models.BooleanField(
+        default=False,
+        help_text='Destination decided per pick — mismatches are expected',
+    )
+    notes = models.TextField(blank=True)
+
+    created_by = models.ForeignKey(
+        'User', on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='packer_commitments_created',
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-season', 'commodity', 'field_id']
+        constraints = [
+            models.UniqueConstraint(
+                fields=['company', 'season', 'commodity'],
+                condition=models.Q(field__isnull=True),
+                name='uniq_commitment_default',
+            ),
+            models.UniqueConstraint(
+                fields=['company', 'season', 'commodity', 'field'],
+                condition=models.Q(field__isnull=False),
+                name='uniq_commitment_block',
+            ),
+        ]
+        indexes = [
+            models.Index(fields=['company', 'season']),
+        ]
+
+    def __str__(self):
+        scope = self.field.name if self.field_id else 'default'
+        return f'{self.season} {self.commodity} -> {self.packinghouse} ({scope})'

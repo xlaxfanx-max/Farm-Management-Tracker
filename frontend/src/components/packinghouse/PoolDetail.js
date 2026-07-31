@@ -24,6 +24,7 @@ import { poolsAPI } from '../../services/api';
 import DeliveryModal from './DeliveryModal';
 import PackoutReportModal from './PackoutReportModal';
 import SettlementDetail from './SettlementDetail';
+import PoolLedgerTab from './PoolLedgerTab';
 
 const PoolDetail = ({ pool, onBack, onEdit, onRefresh }) => {
   const [activeTab, setActiveTab] = useState('deliveries');
@@ -90,6 +91,7 @@ const PoolDetail = ({ pool, onBack, onEdit, onRefresh }) => {
     { id: 'deliveries', label: 'Deliveries', icon: Truck, count: deliveries.length },
     { id: 'packouts', label: 'Packout Reports', icon: FileText, count: packoutReports.length },
     { id: 'settlements', label: 'Settlements', icon: DollarSign, count: settlements.length },
+    { id: 'ledger', label: 'Advances & Payments', icon: DollarSign },
   ];
 
   return (
@@ -217,9 +219,11 @@ const PoolDetail = ({ pool, onBack, onEdit, onRefresh }) => {
             >
               <Icon className="w-4 h-4 mr-2" />
               {label}
-              <span className="ml-2 px-2 py-0.5 bg-gray-100 text-gray-600 rounded-full text-xs">
-                {count}
-              </span>
+              {count !== undefined && (
+                <span className="ml-2 px-2 py-0.5 bg-gray-100 text-gray-600 rounded-full text-xs">
+                  {count}
+                </span>
+              )}
             </button>
           ))}
         </nav>
@@ -431,6 +435,9 @@ const PoolDetail = ({ pool, onBack, onEdit, onRefresh }) => {
               )}
             </div>
           )}
+
+          {/* Advances & Payments Tab */}
+          {activeTab === 'ledger' && <PoolLedgerTab pool={pool} />}
         </>
       )}
 

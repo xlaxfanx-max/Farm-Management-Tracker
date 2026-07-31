@@ -51,6 +51,9 @@ class PickHaulDirectChargeSerializer(serializers.ModelSerializer):
     entity_name = serializers.CharField(source='entity.name', read_only=True)
     entity_code = serializers.CharField(source='entity.short_code', read_only=True)
     matched_invoice_id = serializers.SerializerMethodField()
+    acked = serializers.SerializerMethodField()
+    ack_reason = serializers.SerializerMethodField()
+    ack_note = serializers.SerializerMethodField()
 
     class Meta:
         model = PickHaulDirectCharge
@@ -60,13 +63,24 @@ class PickHaulDirectChargeSerializer(serializers.ModelSerializer):
             'season', 'pool', 'block_raw', 'charge_date', 'charge_date_raw',
             'charge_desc', 'kind', 'txn_desc', 'ap_reference',
             'debit', 'credit', 'qty', 'uom', 'per_unit',
-            'matched_invoice_id',
+            'matched_invoice_id', 'acked', 'ack_reason', 'ack_note',
         ]
         read_only_fields = fields
 
     def get_matched_invoice_id(self, obj):
         match = getattr(obj, 'match', None)
         return match.invoice_id if match else None
+
+    def get_acked(self, obj):
+        return getattr(obj, 'ack', None) is not None
+
+    def get_ack_reason(self, obj):
+        ack = getattr(obj, 'ack', None)
+        return ack.reason if ack else None
+
+    def get_ack_note(self, obj):
+        ack = getattr(obj, 'ack', None)
+        return ack.note if ack else None
 
 
 class _LinkedReceiptSerializer(serializers.ModelSerializer):
@@ -93,7 +107,7 @@ class PickHaulInvoiceSerializer(serializers.ModelSerializer):
             'id', 'packinghouse', 'house_name', 'house_code',
             'entity', 'entity_name', 'entity_code',
             'season', 'kind', 'contractor', 'invoice_no', 'amount', 'block_raw',
-            'date_from', 'date_to', 'date_paid', 'date_emailed',
+            'billing', 'date_from', 'date_to', 'date_paid', 'date_emailed',
             'date_rec_from_ph',
             # -- derived / provenance: read-only --
             'charge_posted', 'ap_reference', 'match_method',

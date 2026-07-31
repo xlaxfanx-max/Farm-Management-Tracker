@@ -573,19 +573,24 @@ def parse_legacy_season(season_string: str) -> Tuple[date, date]:
 # COMMODITY NORMALIZATION
 # =============================================================================
 
-# Canonical commodity names and their known aliases/variants
+# Canonical commodity names and their known aliases/variants.
+# The short codes (LEM, CAR, VA, ...) are the packinghouse portal's
+# commodity_code values as they appear on pick & haul receipts.
 COMMODITY_ALIASES = {
     'AVOCADOS': [
         'AVOCADO', 'CA AVOCADO', 'CA AVOCADOS', 'CALIFORNIA AVOCADO',
         'HASS', 'HASS AVOCADO', 'HASS AVOCADOS', 'FUERTE', 'FUERTE AVOCADO',
         'LAMB HASS', 'GEM', 'REED', 'ZUTANO', 'BACON',
     ],
-    'LEMONS': ['LEMON'],
-    'NAVELS': ['NAVEL', 'NAVEL ORANGE', 'NAVEL ORANGES'],
-    'VALENCIAS': ['VALENCIA', 'VALENCIA ORANGE', 'VALENCIA ORANGES'],
+    'LEMONS': ['LEMON', 'LEM'],
+    'NAVELS': [
+        'NAVEL', 'NAVEL ORANGE', 'NAVEL ORANGES',
+        'CAR', 'CARA CARA', 'LNV', 'NA',
+    ],
+    'VALENCIAS': ['VALENCIA', 'VALENCIA ORANGE', 'VALENCIA ORANGES', 'VA'],
     'TANGERINES': [
         'TANGERINE', 'MANDARIN', 'MANDARINS',
-        'CLEMENTINE', 'CLEMENTINES', 'PIXIE', 'PIXIES',
+        'CLEMENTINE', 'CLEMENTINES', 'CLEM', 'PIXIE', 'PIXIES', 'PIX', 'MAN',
         'TANGO', 'MURCOTT', 'W. MURCOTT',
     ],
     'GRAPEFRUIT': ['GRAPEFRUITS'],
@@ -778,3 +783,52 @@ def parse_season_for_category(season_string: str, crop_category: str) -> Tuple[d
     start = date(start_year, start_month, start_day)
     end = start + relativedelta(months=duration_months) - timedelta(days=1)
     return start, end
+
+
+# =============================================================================
+# SEASON LABEL <-> INTEGER CONVERSION
+# =============================================================================
+# The pick & haul module stores season as a single integer. Convention:
+# the integer is the END YEAR of the cross-year label ("2025-2026" -> 2026).
+# Calendar-year categories use the same year in both representations.
+
+def season_int_to_label(season_int: int, crop_category: str = 'citrus') -> str:
+    """
+    Return the season label for the season ENDING in ``season_int``.
+
+    Examples:
+        season_int_to_label(2026, 'citrus') -> '2025-2026'   (Oct 2025 - Sep 2026)
+        season_int_to_label(2026, 'subtropical') -> '2025-2026'
+        season_int_to_label(2026, 'nut') -> '2026'
+    """
+    config = SeasonService.DEFAULT_SEASON_CONFIGS.get(
+        crop_category,
+        SeasonService.DEFAULT_SEASON_CONFIGS.get('other', {}),
+    )
+    if config.get('crosses_calendar_year', False):
+        return f"{season_int - 1}-{season_int}"
+    return str(season_int)
+
+
+def season_label_to_int(label) -> Optional[int]:
+    """
+    Return the pick & haul integer season (end year) for a season label.
+
+    Tolerates free-text drift: '2025-2026' -> 2026, '2025-26' -> 2026,
+    '2026' -> 2026. Returns None for unparseable input (Pool.season is
+    free text from statement confirmation, so callers must not assume
+    it parses).
+    """
+    text = str(label or '').strip()
+    if not text:
+        return None
+    try:
+        if '-' in text:
+            parts = [p.strip() for p in text.split('-')]
+            start, end = parts[0], parts[-1]
+            if len(end) == 2:  # "2025-26" shorthand
+                return (int(start) // 100) * 100 + int(end)
+            return int(end)
+        return int(text)
+    except (ValueError, IndexError):
+        return None

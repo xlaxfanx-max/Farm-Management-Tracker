@@ -1,6 +1,8 @@
-import React, { useEffect, useState } from 'react';
-import { Search } from 'lucide-react';
+import React, { useCallback, useEffect, useState } from 'react';
+import { Search, X } from 'lucide-react';
 import { pickHaulChargesAPI } from '../../services/api';
+import { PermissionGate } from '../../contexts/AuthComponents';
+import { useToast } from '../../contexts/ToastContext';
 import DataTable from '../ui/DataTable';
 import Badge from '../ui/Badge';
 import { inputClasses, selectClasses } from '../ui/FormField';
@@ -8,26 +10,31 @@ import { formatCurrency, formatDate, formatNumber, rows } from './pickhaulUtils'
 import { useHouses } from './hooks';
 
 /**
- * The house's own posted picking/hauling charges — read-only. Every invoice
- * should eventually match one of these; an unmatched charge is money the house
- * says it billed with nothing in the register accounting for it (gate 11).
+ * The house's own posted picking/hauling charges — read-only rows. Every
+ * charge should be accounted for one of two ways: matched to a contractor
+ * invoice in the register, or acknowledged as expected house-billed work
+ * (the contractor bills the house directly, so no grower invoice exists).
+ * Anything else is gate-11 money.
  */
 export default function HouseChargesTab({ season }) {
   const houses = useHouses();
+  const toast = useToast();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [house, setHouse] = useState('');
   const [kind, setKind] = useState('');
-  const [matched, setMatched] = useState('');
+  const [status, setStatus] = useState('');
   const [search, setSearch] = useState('');
 
-  useEffect(() => {
+  const fetchCharges = useCallback(() => {
     let cancelled = false;
     setLoading(true);
     const params = { season };
     if (house) params.house = house;
     if (kind) params.kind = kind;
-    if (matched) params.matched = matched;
+    if (status === 'matched') params.matched = 'true';
+    else if (status === 'needs_action') { params.matched = 'false'; params.acked = 'false'; }
+    else if (status === 'acked') params.acked = 'true';
     if (search) params.search = search;
     pickHaulChargesAPI
       .getAll(params)
@@ -39,7 +46,31 @@ export default function HouseChargesTab({ season }) {
     return () => {
       cancelled = true;
     };
-  }, [season, house, kind, matched, search]);
+  }, [season, house, kind, status, search]);
+
+  useEffect(() => fetchCharges(), [fetchCharges]);
+
+  const handleAck = async (row) => {
+    try {
+      await pickHaulChargesAPI.ack(row.id, { reason: 'house_billed' });
+      toast.success('Marked as expected house-billed');
+      fetchCharges();
+    } catch (err) {
+      console.error('Error acking charge:', err);
+      toast.error('Failed to mark charge');
+    }
+  };
+
+  const handleUnack = async (row) => {
+    try {
+      await pickHaulChargesAPI.unack(row.id);
+      toast.success('Acknowledgment removed');
+      fetchCharges();
+    } catch (err) {
+      console.error('Error removing ack:', err);
+      toast.error('Failed to remove acknowledgment');
+    }
+  };
 
   const columns = [
     { key: 'house_code', label: 'House' },
@@ -52,10 +83,42 @@ export default function HouseChargesTab({ season }) {
     { key: 'debit', label: 'Debit', align: 'right', render: (v) => formatCurrency(v) },
     { key: 'qty', label: 'Qty', align: 'right', render: (v) => formatNumber(v) },
     {
-      key: 'matched_invoice_id', label: 'Matched',
-      render: (v) =>
-        v ? <Badge color="green" size="xs">invoice #{v}</Badge>
-          : <Badge color="amber" size="xs">no invoice</Badge>,
+      key: 'matched_invoice_id', label: 'Matched', sortable: false,
+      render: (v, row) => {
+        if (v) return <Badge color="green" size="xs">invoice #{v}</Badge>;
+        if (row.acked) {
+          return (
+            <span className="inline-flex items-center gap-1">
+              <Badge color="gray" size="xs" title={row.ack_note || undefined}>
+                {row.ack_reason === 'disputed' ? 'disputed' : 'expected house-billed'}
+              </Badge>
+              <PermissionGate permission="manage_pick_haul">
+                <button
+                  onClick={(e) => { e.stopPropagation(); handleUnack(row); }}
+                  title="Remove acknowledgment"
+                  className="text-gray-400 hover:text-red-500"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </PermissionGate>
+            </span>
+          );
+        }
+        return (
+          <span className="inline-flex items-center gap-2">
+            <Badge color="amber" size="xs">no invoice</Badge>
+            <PermissionGate permission="manage_pick_haul">
+              <button
+                onClick={(e) => { e.stopPropagation(); handleAck(row); }}
+                title="The contractor bills the house directly — no grower invoice will exist"
+                className="text-xs text-blue-600 dark:text-blue-400 hover:underline whitespace-nowrap"
+              >
+                Mark expected
+              </button>
+            </PermissionGate>
+          </span>
+        );
+      },
     },
   ];
 
@@ -74,10 +137,11 @@ export default function HouseChargesTab({ season }) {
           <option value="HAUL">Haul</option>
           <option value="OTHER">Other</option>
         </select>
-        <select value={matched} onChange={(e) => setMatched(e.target.value)} className={`${selectClasses} !w-auto`}>
+        <select value={status} onChange={(e) => setStatus(e.target.value)} className={`${selectClasses} !w-auto`}>
           <option value="">All charges</option>
-          <option value="true">Matched</option>
-          <option value="false">Unmatched (needs an invoice)</option>
+          <option value="matched">Matched</option>
+          <option value="needs_action">Unmatched (needs action)</option>
+          <option value="acked">Acknowledged</option>
         </select>
         <div className="relative flex-1 min-w-[200px] max-w-xs">
           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />

@@ -11,6 +11,7 @@ const EMPTY_INVOICE = {
   packinghouse: '',
   entity: '',
   kind: 'PICK',
+  billing: 'direct',
   contractor: '',
   invoice_no: '',
   amount: '',
@@ -205,7 +206,7 @@ export default function InvoiceModal({ isOpen, onClose, onSave, invoice = null, 
         }}
         className="space-y-4"
       >
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-4 gap-4">
           <FormField label="House" htmlFor="ph-inv-house" required error={errors.packinghouse}>
             <select
               id="ph-inv-house" name="packinghouse" value={formData.packinghouse}
@@ -235,6 +236,20 @@ export default function InvoiceModal({ isOpen, onClose, onSave, invoice = null, 
             >
               {PICKHAUL_CONSTANTS.KINDS.map((k) => (
                 <option key={k.value} value={k.value}>{k.label}</option>
+              ))}
+            </select>
+          </FormField>
+          <FormField
+            label="Billing"
+            htmlFor="ph-inv-billing"
+            hint={PICKHAUL_CONSTANTS.BILLING.find((b) => b.value === (formData.billing || 'direct'))?.explanation}
+          >
+            <select
+              id="ph-inv-billing" name="billing" value={formData.billing || 'direct'}
+              onChange={handleChange} className={selectClasses}
+            >
+              {PICKHAUL_CONSTANTS.BILLING.map((b) => (
+                <option key={b.value} value={b.value}>{b.label}</option>
               ))}
             </select>
           </FormField>
@@ -301,20 +316,30 @@ export default function InvoiceModal({ isOpen, onClose, onSave, invoice = null, 
               value={formData.date_paid || ''} onChange={handleChange} className={inputClasses}
             />
           </FormField>
-          <FormField label="Date emailed to house" htmlFor="ph-inv-emailed">
+          <FormField
+            label="Date emailed to house"
+            htmlFor="ph-inv-emailed"
+            hint={formData.billing === 'house_billed'
+              ? 'Not applicable — the house pays the contractor directly.'
+              : undefined}
+          >
             <input
               id="ph-inv-emailed" name="date_emailed" type="date"
-              value={formData.date_emailed || ''} onChange={handleChange} className={inputClasses}
+              value={formData.date_emailed || ''} onChange={handleChange}
+              className={inputClasses} disabled={formData.billing === 'house_billed'}
             />
           </FormField>
           <FormField
             label="Date rec'd from PH"
             htmlFor="ph-inv-rec"
-            hint="When the money actually arrived — your record, never derived."
+            hint={formData.billing === 'house_billed'
+              ? 'Not applicable — nothing is reimbursed on a house-billed invoice.'
+              : "When the money actually arrived — your record, never derived."}
           >
             <input
               id="ph-inv-rec" name="date_rec_from_ph" type="date"
-              value={formData.date_rec_from_ph || ''} onChange={handleChange} className={inputClasses}
+              value={formData.date_rec_from_ph || ''} onChange={handleChange}
+              className={inputClasses} disabled={formData.billing === 'house_billed'}
             />
           </FormField>
         </div>

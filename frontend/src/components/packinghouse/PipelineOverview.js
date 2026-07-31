@@ -26,11 +26,11 @@ import {
 import { packinghouseAnalyticsAPI, packoutReportsAPI, poolSettlementsAPI } from '../../services/api';
 import DrillDownModal from '../ui/DrillDownModal';
 
-const PipelineOverview = () => {
+const PipelineOverview = ({ initialCommodity = null, onBack = null }) => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [selectedCommodity, setSelectedCommodity] = useState(null); // null = All Commodities
+  const [selectedCommodity, setSelectedCommodity] = useState(initialCommodity); // null = All Commodities
   const [selectedSeason, setSelectedSeason] = useState('');
   const [breakdownView, setBreakdownView] = useState(null); // null or 'farm'
 
@@ -198,6 +198,10 @@ const PipelineOverview = () => {
   };
 
   const handleBackToAll = () => {
+    if (onBack) {
+      onBack();
+      return;
+    }
     setSelectedCommodity(null);
     setSelectedSeason('');
     setBreakdownView(null);

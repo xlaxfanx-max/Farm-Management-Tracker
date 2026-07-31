@@ -537,10 +537,84 @@ def _check_historical_outliers(settlement) -> List[Finding]:
 # Public API
 # =============================================================================
 
+def _check_advance_ledger(settlement) -> List[Finding]:
+    """Compare recorded advance ledger entries against the statement's
+    prior_advances figure — the pool-close reconciliation of the advances
+    the accountant keyed during the season.
+    """
+    from api.models import GrowerLedgerEntry
+    from django.db.models import Sum
+
+    findings: List[Finding] = []
+    if not settlement.pool_id:
+        return findings
+
+    prior_advances = _dec(settlement.prior_advances) or Decimal(0)
+
+    entries = GrowerLedgerEntry.objects.filter(
+        pool=settlement.pool, entry_type='advance',
+    )
+    if settlement.statement_date:
+        entries = entries.filter(entry_date__lte=settlement.statement_date)
+    ledger_total = entries.aggregate(t=Sum('credit'))['t'] or Decimal(0)
+    entry_count = entries.count()
+
+    if entry_count == 0:
+        if prior_advances > 0:
+            findings.append(Finding(
+                code='advance_ledger_vs_prior_advances',
+                severity='info',
+                category='reconciliation',
+                title='No advances recorded in the ledger',
+                message=(
+                    f"The statement shows ${prior_advances:,.2f} in prior "
+                    f"advances, but no advance entries are recorded for this "
+                    f"pool. Backfill them under Advances & Payments to keep "
+                    f"the season cash picture honest."
+                ),
+                dollar_impact=None,
+                source_ref='ledger',
+                details={'prior_advances': float(prior_advances)},
+            ))
+        return findings
+
+    diff = ledger_total - prior_advances
+    if abs(diff) > RECONCILIATION_TOLERANCE:
+        pool_total = max(
+            _dec(settlement.total_credits) or Decimal(0),
+            abs(_dec(settlement.net_return) or Decimal(0)),
+            Decimal('1'),
+        )
+        findings.append(Finding(
+            code='advance_ledger_vs_prior_advances',
+            severity=_severity_from_impact(diff, pool_total),
+            category='reconciliation',
+            title='Recorded advances ≠ statement prior advances',
+            message=(
+                f"{entry_count} recorded advance(s) total "
+                f"${ledger_total:,.2f}, but the settlement statement shows "
+                f"${prior_advances:,.2f} in prior advances — off by "
+                f"${diff:,.2f}. Either an advance is missing from the ledger "
+                f"or the house's figure is wrong."
+            ),
+            dollar_impact=float(diff),
+            source_ref='ledger',
+            details={
+                'ledger_total': float(ledger_total),
+                'entry_count': entry_count,
+                'prior_advances': float(prior_advances),
+                'difference': float(diff),
+            },
+        ))
+
+    return findings
+
+
 def audit_settlement(pool_settlement) -> AuditReport:
-    """Run all five checks and return a consolidated report."""
+    """Run all six checks and return a consolidated report."""
     all_findings: List[Finding] = []
     all_findings.extend(_check_reconciliation(pool_settlement))
+    all_findings.extend(_check_advance_ledger(pool_settlement))
     all_findings.extend(_check_deduction_drift(pool_settlement))
     all_findings.extend(_check_block_variance(pool_settlement))
     all_findings.extend(_check_house_variance(pool_settlement))
