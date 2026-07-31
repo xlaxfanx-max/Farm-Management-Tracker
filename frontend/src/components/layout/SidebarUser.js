@@ -29,10 +29,10 @@ export default function SidebarUser({
 
   if (collapsed) {
     return (
-      <div className="p-3 border-t border-white/10">
+      <div className="p-3 border-t border-cream-50/[0.14]">
         <button
           onClick={handleLogout}
-          className="w-full flex justify-center p-2 hover:bg-sidebar-hover rounded-md text-gray-300 hover:text-red-400 transition-colors focus:outline-none focus:ring-2 focus:ring-white/50"
+          className="w-full flex justify-center p-2 hover:bg-sidebar-hover rounded-button text-cream-50/[0.78] hover:text-orange-300 transition-colors focus:outline-none focus-visible:ring-[3px] focus-visible:ring-cream-50/30"
           title="Sign Out"
           aria-label="Sign out"
         >
@@ -43,7 +43,7 @@ export default function SidebarUser({
   }
 
   return (
-    <div className="border-t border-white/10">
+    <div className="border-t border-cream-50/[0.14]">
       {/* Company selector */}
       {currentCompany && (
         <div className="px-3 pt-3 pb-2">
@@ -56,17 +56,17 @@ export default function SidebarUser({
                   navigate(VIEW_TO_PATH['company']);
                 }
               }}
-              className="w-full flex items-center gap-2 px-3 py-2 bg-white/5 rounded-md hover:bg-white/10 transition-colors focus:outline-none focus:ring-2 focus:ring-white/50"
+              className="w-full flex items-center gap-2 px-3 py-2 bg-cream-50/[0.06] rounded-button hover:bg-cream-50/[0.12] transition-colors focus:outline-none focus-visible:ring-[3px] focus-visible:ring-cream-50/30"
               aria-label={companies.length > 1 ? 'Switch company' : 'Company settings'}
               aria-expanded={companies.length > 1 ? showCompanyMenu : undefined}
             >
-              <Building2 className="w-4 h-4 text-gray-400" />
-              <span className="text-sm font-medium text-gray-200 truncate flex-1 text-left">
+              <Building2 className="w-4 h-4 text-cream-50/60" />
+              <span className="text-sm font-medium text-cream-50/90 truncate flex-1 text-left">
                 {currentCompany.name}
               </span>
               {companies.length > 1 && (
                 <ChevronDown
-                  className={`w-3.5 h-3.5 text-gray-400 transition-transform ${
+                  className={`w-3.5 h-3.5 text-cream-50/60 transition-transform ${
                     showCompanyMenu ? 'rotate-180' : ''
                   }`}
                 />
@@ -74,7 +74,7 @@ export default function SidebarUser({
             </button>
 
             {showCompanyMenu && companies.length > 1 && (
-              <div className="absolute bottom-full left-0 right-0 mb-1 bg-surface-raised dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg shadow-lg z-50 py-1">
+              <div className="absolute bottom-full left-0 right-0 mb-1 bg-surface-raised border border-border rounded-card shadow-lg z-50 py-1 overflow-hidden">
                 {companies.map((company) => (
                   <button
                     key={company.id}
@@ -82,22 +82,22 @@ export default function SidebarUser({
                       onSwitchCompany(company.id);
                       setShowCompanyMenu(false);
                     }}
-                    className={`w-full flex items-center gap-2 px-3 py-2 hover:bg-surface-sunken dark:hover:bg-gray-600 text-left ${
-                      company.id === currentCompany.id ? 'bg-primary-light dark:bg-green-900/30' : ''
+                    className={`w-full flex items-center gap-2 px-3 py-2 hover:bg-cream-100 text-left ${
+                      company.id === currentCompany.id ? 'bg-orange-50' : ''
                     }`}
                   >
-                    <span className="text-sm text-gray-700 dark:text-gray-200 truncate">
+                    <span className="text-sm text-bark-700 truncate">
                       {company.name}
                     </span>
                     {company.id === currentCompany.id && (
-                      <span className="ml-auto text-primary dark:text-green-400">&#10003;</span>
+                      <span className="ml-auto text-primary">&#10003;</span>
                     )}
                   </button>
                 ))}
               </div>
             )}
           </div>
-          <p className="text-[11px] text-gray-500 mt-1 px-1">{currentCompany.role}</p>
+          <p className="text-[11px] text-cream-50/50 mt-1 px-1">{currentCompany.role}</p>
         </div>
       )}
 
@@ -106,40 +106,40 @@ export default function SidebarUser({
         <div className="relative">
           <button
             onClick={() => setShowUserMenu(!showUserMenu)}
-            className="w-full flex items-center gap-3 px-3 py-2 rounded-md hover:bg-sidebar-hover transition-colors focus:outline-none focus:ring-2 focus:ring-white/50"
+            className="w-full flex items-center gap-3 px-3 py-2 rounded-button hover:bg-sidebar-hover transition-colors focus:outline-none focus-visible:ring-[3px] focus-visible:ring-cream-50/30"
             aria-label="User menu"
             aria-expanded={showUserMenu}
           >
-            <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center flex-shrink-0">
-              <span className="text-xs font-medium text-white">{getUserInitials()}</span>
+            <div className="w-[34px] h-[34px] bg-primary rounded-full flex items-center justify-center flex-shrink-0">
+              <span className="font-display text-base text-white leading-none">{getUserInitials()}</span>
             </div>
             <div className="flex-1 text-left min-w-0">
-              <p className="text-sm font-medium text-gray-200 truncate">
+              <p className="text-sm font-medium text-cream-50/90 truncate">
                 {user?.first_name || user?.email}
               </p>
-              <p className="text-[11px] text-gray-500 truncate">{user?.email}</p>
+              <p className="text-[11px] text-cream-50/50 truncate">{user?.email}</p>
             </div>
           </button>
 
           {showUserMenu && (
-            <div className="absolute bottom-full left-0 right-0 mb-1 bg-surface-raised dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg shadow-lg z-50 py-1">
+            <div className="absolute bottom-full left-0 right-0 mb-1 bg-surface-raised border border-border rounded-card shadow-lg z-50 py-1 overflow-hidden">
               <button
                 onClick={() => {
                   setShowUserMenu(false);
                   navigate(VIEW_TO_PATH['profile']);
                 }}
-                className="w-full flex items-center gap-2 px-3 py-2 hover:bg-surface-sunken dark:hover:bg-gray-600 text-left text-sm text-gray-700 dark:text-gray-200"
+                className="w-full flex items-center gap-2 px-3 py-2 hover:bg-cream-100 text-left text-sm text-bark-700"
               >
                 <User className="w-4 h-4" />
                 Profile
               </button>
-              <hr className="my-1 border-gray-200 dark:border-gray-600" />
+              <hr className="my-1 border-border" />
               <button
                 onClick={handleLogout}
-                className="w-full flex items-center gap-2 px-3 py-2 hover:bg-red-50 dark:hover:bg-red-900/30 text-left text-sm text-red-600 dark:text-red-400"
+                className="w-full flex items-center gap-2 px-3 py-2 hover:bg-danger-bg text-left text-sm text-danger"
               >
                 <LogOut className="w-4 h-4" />
-                Sign Out
+                Sign out
               </button>
             </div>
           )}

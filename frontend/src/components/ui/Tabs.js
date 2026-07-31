@@ -2,7 +2,7 @@ import React from 'react';
 
 export default function Tabs({ tabs, activeTab, onChange, className = '' }) {
   return (
-    <div className={`border-b border-gray-200 dark:border-gray-700 ${className}`}>
+    <div className={`border-b border-border ${className}`}>
       <nav className="flex gap-0 -mb-px overflow-x-auto" role="tablist">
         {tabs.map((tab) => {
           const isActive = activeTab === tab.id;
@@ -14,12 +14,12 @@ export default function Tabs({ tabs, activeTab, onChange, className = '' }) {
               aria-selected={isActive}
               onClick={() => onChange(tab.id)}
               className={`
-                flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2
+                flex items-center gap-2 px-4 py-3 text-sm border-b-2
                 whitespace-nowrap transition-colors
                 ${
                   isActive
-                    ? 'border-primary text-primary dark:border-primary dark:text-primary'
-                    : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:border-gray-300 dark:hover:border-gray-500'
+                    ? 'border-primary text-orange-700 font-semibold'
+                    : 'border-transparent font-medium text-text-secondary hover:text-text hover:border-border-strong'
                 }
               `}
             >
@@ -28,11 +28,11 @@ export default function Tabs({ tabs, activeTab, onChange, className = '' }) {
               {tab.count !== undefined && (
                 <span
                   className={`
-                    ml-1 px-1.5 py-0.5 text-xs rounded-full
+                    ml-1 px-1.5 py-0.5 text-xs font-mono tabular-nums rounded-pill
                     ${
                       isActive
-                        ? 'bg-primary-light text-primary dark:bg-primary-light dark:text-primary'
-                        : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300'
+                        ? 'bg-orange-100 text-orange-700'
+                        : 'bg-cream-100 text-bark-600'
                     }
                   `}
                 >

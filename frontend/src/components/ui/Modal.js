@@ -1,5 +1,6 @@
 import React, { useEffect, useCallback } from 'react';
 import ReactDOM from 'react-dom';
+import IconButton from './IconButton';
 import { X } from 'lucide-react';
 
 const sizeClasses = {
@@ -45,7 +46,7 @@ export default function Modal({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/50 transition-opacity"
+        className="absolute inset-0 modal-backdrop transition-opacity"
         onClick={onClose}
         aria-hidden="true"
       />
@@ -56,7 +57,7 @@ export default function Modal({
         aria-modal="true"
         aria-labelledby={title ? 'modal-title' : undefined}
         className={`
-          relative bg-surface-raised dark:bg-gray-800 rounded-modal shadow-xl
+          relative bg-surface-raised rounded-modal shadow-xl
           w-full ${sizeClasses[size] || sizeClasses.md}
           max-h-[90vh] flex flex-col
           ${className}
@@ -64,38 +65,32 @@ export default function Modal({
       >
         {/* Header */}
         {title && (
-          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+          <div className="flex items-center justify-between gap-3 px-6 py-4 border-b border-border">
             <div className="flex items-center gap-3 min-w-0">
               {Icon && (
-                <div className="p-2 bg-primary-light dark:bg-primary-light rounded-lg flex-shrink-0">
-                  <Icon className="w-5 h-5 text-primary dark:text-primary" />
+                <div className="p-2 bg-orange-50 rounded-button flex-shrink-0">
+                  <Icon className="w-5 h-5 text-primary" />
                 </div>
               )}
               <div className="min-w-0">
-                <h2 id="modal-title" className="text-lg font-semibold text-gray-900 dark:text-white truncate">
+                <h2 id="modal-title" className="font-display text-card-title text-heading truncate">
                   {title}
                 </h2>
                 {subtitle && (
-                  <p className="text-sm text-gray-500 dark:text-gray-400">{subtitle}</p>
+                  <p className="text-sm text-text-secondary">{subtitle}</p>
                 )}
               </div>
             </div>
-            <button
-              onClick={onClose}
-              className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors flex-shrink-0 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:focus:ring-offset-gray-800"
-              aria-label="Close dialog"
-            >
-              <X className="w-5 h-5" />
-            </button>
+            <IconButton icon={X} label="Close dialog" variant="ghost" size="sm" onClick={onClose} />
           </div>
         )}
 
         {/* Body */}
-        <div className="flex-1 overflow-auto px-6 py-4">{children}</div>
+        <div className="flex-1 overflow-auto px-6 py-5">{children}</div>
 
         {/* Footer */}
         {footer && (
-          <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex items-center justify-end gap-3">
+          <div className="px-6 py-4 border-t border-border flex items-center justify-end gap-3">
             {footer}
           </div>
         )}

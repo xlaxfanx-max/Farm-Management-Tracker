@@ -3,6 +3,10 @@ import { ChevronUp, ChevronDown, ChevronsUpDown } from 'lucide-react';
 import Spinner from './Spinner';
 import EmptyState from './EmptyState';
 
+/**
+ * Column shape: { key, label, align, sortable, render, mono }
+ * `mono` renders the cell as right-aligned tabular figures.
+ */
 export default function DataTable({
   columns,
   data = [],
@@ -54,26 +58,28 @@ export default function DataTable({
   }
 
   const SortIcon = ({ colKey }) => {
-    if (sort.key !== colKey) return <ChevronsUpDown className="w-3.5 h-3.5 text-gray-400" />;
+    if (sort.key !== colKey) return <ChevronsUpDown className="w-3.5 h-3.5 text-text-muted" />;
     return sort.dir === 'asc' ? (
-      <ChevronUp className="w-3.5 h-3.5 text-primary dark:text-primary" />
+      <ChevronUp className="w-3.5 h-3.5 text-primary" />
     ) : (
-      <ChevronDown className="w-3.5 h-3.5 text-primary dark:text-primary" />
+      <ChevronDown className="w-3.5 h-3.5 text-primary" />
     );
   };
+
+  const cellAlign = (col) => (col.align === 'right' || col.mono ? 'text-right' : 'text-left');
 
   return (
     <div className={`overflow-x-auto ${className}`}>
       {/* Desktop table */}
       <table className="w-full hidden md:table">
         <thead>
-          <tr className="bg-gray-50 dark:bg-gray-700/50">
+          <tr className="bg-surface-sunken">
             {columns.map((col) => (
               <th
                 key={col.key}
-                className={`px-4 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider ${
-                  col.align === 'right' ? 'text-right' : 'text-left'
-                } ${col.sortable !== false ? 'cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200' : ''}`}
+                className={`px-4 py-3 text-xs font-semibold uppercase tracking-caps text-text-secondary ${cellAlign(col)} ${
+                  col.sortable !== false ? 'cursor-pointer select-none hover:text-text' : ''
+                }`}
                 onClick={col.sortable !== false ? () => handleSort(col.key) : undefined}
               >
                 <span className="inline-flex items-center gap-1">
@@ -84,22 +90,21 @@ export default function DataTable({
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+        <tbody className="divide-y divide-border">
           {sortedData.map((row, idx) => (
             <tr
               key={row[keyField] || idx}
               className={`
-                bg-white dark:bg-gray-800
-                ${onRowClick ? 'cursor-pointer hover:bg-primary-light dark:hover:bg-primary-light' : 'hover:bg-surface-sunken dark:hover:bg-gray-700/30'}
-                transition-colors
+                bg-surface-raised transition-colors
+                ${onRowClick ? 'cursor-pointer hover:bg-orange-50' : 'hover:bg-cream-50'}
               `}
               onClick={onRowClick ? () => onRowClick(row) : undefined}
             >
               {columns.map((col) => (
                 <td
                   key={col.key}
-                  className={`px-4 py-3 text-sm text-gray-900 dark:text-gray-100 ${
-                    col.align === 'right' ? 'text-right' : 'text-left'
+                  className={`px-4 py-3 text-sm text-bark-700 ${cellAlign(col)} ${
+                    col.mono ? 'font-mono tabular-nums' : ''
                   }`}
                 >
                   {col.render ? col.render(row[col.key], row) : (row[col.key] ?? '-')}
@@ -116,18 +121,17 @@ export default function DataTable({
           <div
             key={row[keyField] || idx}
             className={`
-              bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4
-              ${onRowClick ? 'cursor-pointer hover:shadow-md active:bg-gray-50 dark:active:bg-gray-700' : ''}
-              transition-all
+              bg-surface-raised rounded-card border border-border p-4 transition-all
+              ${onRowClick ? 'cursor-pointer hover:shadow-md active:bg-cream-50' : ''}
             `}
             onClick={onRowClick ? () => onRowClick(row) : undefined}
           >
             {columns.map((col) => (
-              <div key={col.key} className="flex justify-between items-center py-1">
-                <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+              <div key={col.key} className="flex justify-between items-center gap-3 py-1">
+                <span className="text-xs font-semibold uppercase tracking-caps text-text-secondary">
                   {col.label}
                 </span>
-                <span className="text-sm text-gray-900 dark:text-gray-100 text-right">
+                <span className={`text-sm text-bark-700 text-right ${col.mono ? 'font-mono tabular-nums' : ''}`}>
                   {col.render ? col.render(row[col.key], row) : (row[col.key] ?? '-')}
                 </span>
               </div>

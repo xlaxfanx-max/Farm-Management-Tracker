@@ -8,8 +8,6 @@ export default function Sidebar({
   onToggleCollapse,
   mobileOpen,
   onMobileClose,
-  isDarkMode,
-  onToggleTheme,
   user,
   currentCompany,
   companies,
@@ -21,7 +19,7 @@ export default function Sidebar({
       {/* Mobile overlay */}
       {mobileOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          className="fixed inset-0 bg-bark-900/60 z-40 lg:hidden"
           onClick={onMobileClose}
           aria-hidden="true"
         />
@@ -29,8 +27,8 @@ export default function Sidebar({
 
       <aside
         className={`
-          ${collapsed ? 'w-16' : 'w-[260px]'}
-          bg-sidebar dark:bg-gray-900 transition-all duration-300
+          ${collapsed ? 'w-16' : 'w-[232px]'}
+          bg-sidebar transition-all duration-300
           fixed lg:sticky top-0 h-screen z-50
           ${mobileOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0
         `}
@@ -41,8 +39,6 @@ export default function Sidebar({
           <SidebarHeader
             collapsed={collapsed}
             onToggleCollapse={onToggleCollapse}
-            isDarkMode={isDarkMode}
-            onToggleTheme={onToggleTheme}
           />
 
           <SidebarNav

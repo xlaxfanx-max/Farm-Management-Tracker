@@ -113,7 +113,7 @@ function NavItem({ item, collapsed, onMobileClose, expandedItems, toggleItem, is
   const isExpanded = expandedItems[item.id] ?? isAutoExpanded;
 
   const rowBase =
-    'flex items-center gap-3 px-3 h-10 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-white/50';
+    'flex items-center gap-3 px-3 h-10 rounded-button text-[14.5px] transition-colors focus:outline-none focus-visible:ring-[3px] focus-visible:ring-cream-50/30';
 
   if (!hasChildren) {
     return (
@@ -124,14 +124,14 @@ function NavItem({ item, collapsed, onMobileClose, expandedItems, toggleItem, is
         className={({ isActive }) =>
           `${rowBase} ${
             isActive
-              ? 'bg-sidebar-active text-white border-l-[3px] border-white/60'
-              : 'text-gray-300 hover:bg-sidebar-hover hover:text-white'
+              ? 'bg-sidebar-active text-yellow-400 font-semibold'
+              : 'text-cream-50/[0.78] hover:bg-sidebar-hover hover:text-cream-50'
           } ${collapsed ? 'justify-center px-0' : ''}`
         }
         title={collapsed ? item.label : undefined}
       >
         <item.icon className="w-[18px] h-[18px] flex-shrink-0" />
-        {!collapsed && <span className="text-sm font-medium truncate">{item.label}</span>}
+        {!collapsed && <span className="truncate">{item.label}</span>}
       </NavLink>
     );
   }
@@ -146,20 +146,20 @@ function NavItem({ item, collapsed, onMobileClose, expandedItems, toggleItem, is
           className={({ isActive }) =>
             `${rowBase} flex-1 ${
               isActive
-                ? 'bg-sidebar-active text-white border-l-[3px] border-white/60'
-                : 'text-gray-300 hover:bg-sidebar-hover hover:text-white'
+                ? 'bg-sidebar-active text-yellow-400 font-semibold'
+                : 'text-cream-50/[0.78] hover:bg-sidebar-hover hover:text-cream-50'
             } ${collapsed ? 'justify-center px-0' : ''}`
           }
           title={collapsed ? item.label : undefined}
         >
           <item.icon className="w-[18px] h-[18px] flex-shrink-0" />
-          {!collapsed && <span className="text-sm font-medium truncate">{item.label}</span>}
+          {!collapsed && <span className="truncate">{item.label}</span>}
         </NavLink>
         {!collapsed && (
           <button
             type="button"
             onClick={() => toggleItem(item.id)}
-            className="px-2 text-gray-400 hover:text-white hover:bg-sidebar-hover rounded-md focus:outline-none focus:ring-2 focus:ring-white/50"
+            className="px-2 text-cream-50/60 hover:text-cream-50 hover:bg-sidebar-hover rounded-button focus:outline-none focus-visible:ring-[3px] focus-visible:ring-cream-50/30"
             aria-expanded={isExpanded}
             aria-label={`${isExpanded ? 'Collapse' : 'Expand'} ${item.label}`}
           >
@@ -171,17 +171,17 @@ function NavItem({ item, collapsed, onMobileClose, expandedItems, toggleItem, is
       </div>
 
       {!collapsed && isExpanded && (
-        <div className="mt-1 ml-6 pl-3 border-l border-white/10 space-y-0.5">
+        <div className="mt-1 ml-6 pl-3 border-l border-cream-50/[0.14] space-y-0.5">
           {item.children.map((child) => (
             <NavLink
               key={child.id}
               to={VIEW_TO_PATH[child.id]}
               onClick={onMobileClose}
               className={({ isActive }) =>
-                `block px-3 h-8 leading-8 rounded-md text-xs transition-colors focus:outline-none focus:ring-2 focus:ring-white/50 truncate ${
+                `block px-3 h-8 leading-8 rounded-button text-xs transition-colors focus:outline-none focus-visible:ring-[3px] focus-visible:ring-cream-50/30 truncate ${
                   isActive
-                    ? 'bg-sidebar-active text-white'
-                    : 'text-gray-400 hover:bg-sidebar-hover hover:text-white'
+                    ? 'bg-sidebar-active text-yellow-400 font-semibold'
+                    : 'text-cream-50/60 hover:bg-sidebar-hover hover:text-cream-50'
                 }`
               }
             >
@@ -255,15 +255,15 @@ export default function SidebarNav({ collapsed, onMobileClose }) {
             {group.label && !collapsed && (
               <button
                 onClick={() => toggleGroup(group.id)}
-                className="w-full flex items-center justify-between px-3 mb-1 group rounded focus:outline-none focus:ring-2 focus:ring-white/50"
+                className="w-full flex items-center justify-between px-3 mb-1 group rounded focus:outline-none focus-visible:ring-[3px] focus-visible:ring-cream-50/30"
                 aria-expanded={!isCollapsed}
                 aria-label={`${group.label} section`}
               >
-                <span className="text-[11px] font-semibold uppercase tracking-[0.05em] text-gray-400">
+                <span className="text-[11px] font-semibold uppercase tracking-caps text-cream-50/50">
                   {group.label}
                 </span>
                 <ChevronDown
-                  className={`w-3 h-3 text-gray-500 transition-transform ${
+                  className={`w-3 h-3 text-cream-50/50 transition-transform ${
                     isCollapsed ? '-rotate-90' : ''
                   }`}
                 />
