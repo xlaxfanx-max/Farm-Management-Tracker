@@ -25,7 +25,6 @@ function AgenticHero({
   applications = [],
   applicationEvents = [],
   waterSources = [],
-  diseaseAlerts = [],
   onNavigate,
   onOpenWaterTestModal,
 }) {
@@ -93,21 +92,7 @@ function AgenticHero({
       });
     }
 
-    // 5. Critical disease alerts
-    const criticalDisease = diseaseAlerts.filter(
-      a => a.is_active && (a.priority === 'critical' || a.priority === 'high')
-    );
-    if (criticalDisease.length > 0) {
-      items.push({
-        id: 'disease-critical',
-        priority: 'high',
-        label: `${criticalDisease.length} disease alert${criticalDisease.length > 1 ? 's' : ''} nearby`,
-        cta: 'View',
-        onClick: () => onNavigate?.('disease'),
-      });
-    }
-
-    // 6. Water tests due soon (within 7 days)
+    // 5. Water tests due soon (within 7 days)
     const dueSoon = waterSources.filter(ws => {
       if (!ws.active || !ws.test_frequency || !ws.last_test_date) return false;
       const daysSince = Math.floor((now - new Date(ws.last_test_date)) / 86400000);
@@ -125,7 +110,7 @@ function AgenticHero({
     }
 
     return items;
-  }, [applications, applicationEvents, waterSources, diseaseAlerts, onNavigate, onOpenWaterTestModal]);
+  }, [applications, applicationEvents, waterSources, onNavigate, onOpenWaterTestModal]);
 
   const highCount = urgentItems.filter(i => i.priority === 'high').length;
   const totalCount = urgentItems.length;

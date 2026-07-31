@@ -10,16 +10,12 @@ from .water_serializers import *
 from .harvest_serializers import *
 from .well_serializers import *
 from .nutrient_serializers import *
-from .quarantine_serializers import *
 from .irrigation_serializers import *
-from .tree_detection_serializers import *
 from .compliance_serializers import *
-from .disease_serializers import *
 from .packinghouse_serializers import *
 from .fsma_serializers import *
 from .fsma_water_serializers import *
 from .season_serializers import *
-from .yield_serializers import *
 from .primusgfs_serializers import *
 from .pur_serializers import *
 from .traceability_serializers import *

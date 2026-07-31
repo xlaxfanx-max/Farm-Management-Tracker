@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Sprout, Edit, Trash2, MapPin, TreeDeciduous, Mountain, MoreVertical } from 'lucide-react';
-import QuarantineStatusBadge from './QuarantineStatusBadge';
 
 /**
  * FieldCard component - Displays a single field within a farm
@@ -74,14 +73,6 @@ function FieldCard({
             <span className="px-2 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 rounded text-xs">
               No boundary
             </span>
-          )}
-          {/* HLB Quarantine Status for Field */}
-          {(field.gps_latitude || hasBoundary) && (
-            <QuarantineStatusBadge
-              fieldId={field.id}
-              compact={true}
-              showRefresh={false}
-            />
           )}
         </div>
       </div>

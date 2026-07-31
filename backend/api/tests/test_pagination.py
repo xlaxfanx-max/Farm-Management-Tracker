@@ -1,7 +1,7 @@
 """
-Tests for pagination configuration and model constraints.
+Tests for pagination configuration.
 
-Covers StandardPagination behavior and YieldForecast unique constraint.
+Covers StandardPagination behavior.
 """
 
 from datetime import date
@@ -94,69 +94,3 @@ class PaginatedListEndpointTests(TestCase):
         data = response.json()
         # Should still work, but page_size is capped to max_page_size
         self.assertIn('results', data)
-
-
-class YieldForecastConstraintTests(TestCase):
-    """Tests for the YieldForecast unique constraint."""
-
-    @classmethod
-    def setUpTestData(cls):
-        cls.company = Company.objects.create(name='Yield Test Co')
-        cls.farm = Farm.objects.create(
-            company=cls.company,
-            name='Test Farm',
-            county='Ventura',
-        )
-        cls.crop = Crop.objects.create(name='Avocado')
-        cls.field = Field.objects.create(
-            farm=cls.farm,
-            name='Block A',
-            crop=cls.crop,
-            total_acres=Decimal('10.00'),
-        )
-
-    def _create_forecast(self, status='published', forecast_date=None):
-        from api.models import YieldForecast
-        return YieldForecast.objects.create(
-            field=self.field,
-            season_label='2025-2026',
-            forecast_date=forecast_date or date(2025, 10, 1),
-            predicted_yield_per_acre=Decimal('50.00'),
-            predicted_total_yield=Decimal('500.00'),
-            yield_unit='bins',
-            harvestable_acres=Decimal('10.00'),
-            confidence_level=Decimal('0.80'),
-            lower_bound_per_acre=Decimal('40.00'),
-            upper_bound_per_acre=Decimal('60.00'),
-            status=status,
-        )
-
-    def test_duplicate_published_forecast_rejected(self):
-        """Two published forecasts for same field/season/date should fail."""
-        self._create_forecast(status='published')
-
-        with self.assertRaises(IntegrityError):
-            self._create_forecast(status='published')
-
-    def test_draft_duplicates_allowed(self):
-        """Multiple draft forecasts for same field/season/date are OK."""
-        self._create_forecast(status='draft')
-        # Should not raise
-        self._create_forecast(status='draft')
-
-    def test_published_and_draft_same_day_allowed(self):
-        """One published + one draft for same field/season/date is OK."""
-        self._create_forecast(status='published')
-        # Should not raise
-        self._create_forecast(status='draft')
-
-    def test_published_different_dates_allowed(self):
-        """Published forecasts for different dates are OK."""
-        self._create_forecast(status='published', forecast_date=date(2025, 10, 1))
-        # Should not raise
-        self._create_forecast(status='published', forecast_date=date(2025, 11, 1))
-
-    def test_superseded_duplicates_allowed(self):
-        """Multiple superseded forecasts are OK."""
-        self._create_forecast(status='superseded')
-        self._create_forecast(status='superseded')

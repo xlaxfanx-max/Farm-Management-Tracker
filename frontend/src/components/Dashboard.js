@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useData } from '../contexts/DataContext';
 import { useModal } from '../contexts/ModalContext';
-import { diseaseAlertsAPI } from '../services/api';
 
 // Dashboard Components
 import AgenticHero from './dashboard/AgenticHero';
@@ -14,30 +13,9 @@ import SeasonProgressCard from './dashboard/SeasonProgressCard';
 import WeatherWidget from './WeatherWidget';
 import ActiveREITicker from './compliance/ActiveREITicker';
 
-// Disease Prevention Components
-import { ProximityRiskCard } from './disease';
-
 function Dashboard({ onNavigate }) {
   const { applications, applicationEvents, fields, farms, waterSources, waterTests } = useData();
   const { openWaterTestModal } = useModal();
-
-  // Disease alerts state
-  const [diseaseAlerts, setDiseaseAlerts] = useState([]);
-
-  // Fetch disease alerts
-  useEffect(() => {
-    const fetchDiseaseAlerts = async () => {
-      try {
-        const response = await diseaseAlertsAPI.active();
-        const alerts = response.data.results || response.data || [];
-        setDiseaseAlerts(alerts);
-      } catch (err) {
-        console.error('Error fetching disease alerts:', err);
-      }
-    };
-
-    fetchDiseaseAlerts();
-  }, []);
 
   // Handle navigation
   const handleNavigate = (view) => {
@@ -64,7 +42,6 @@ function Dashboard({ onNavigate }) {
           applications={applications}
           applicationEvents={applicationEvents}
           waterSources={waterSources}
-          diseaseAlerts={diseaseAlerts}
           onNavigate={handleNavigate}
           onOpenWaterTestModal={openWaterTestModal}
         />
@@ -75,7 +52,7 @@ function Dashboard({ onNavigate }) {
         {/* 2. Quick Actions (4 buttons) */}
         <QuickActionsGrid onNavigate={handleNavigate} />
 
-        {/* 3. Tasks + Weather / Alerts grid */}
+        {/* 3. Tasks + Weather grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Tasks column (2/3) */}
           <div className="lg:col-span-2">
@@ -89,13 +66,9 @@ function Dashboard({ onNavigate }) {
             />
           </div>
 
-          {/* Weather + Disease column (1/3) */}
+          {/* Weather column (1/3) */}
           <div className="space-y-6">
             <WeatherWidget />
-            <ProximityRiskCard
-              compact={true}
-              onViewDetails={() => handleNavigate('disease')}
-            />
           </div>
         </div>
 

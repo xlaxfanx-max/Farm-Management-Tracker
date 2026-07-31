@@ -86,10 +86,6 @@ class FieldBreakdown:
     # Data availability flags for the UI
     has_harvest: bool = False
     has_applications: bool = False
-    has_tree_survey: bool = False
-    # Optional rollups
-    hlb_risk_score: Optional[float] = None
-    avg_ndvi: Optional[float] = None
 
 
 @dataclass
@@ -110,11 +106,9 @@ class CropReportCard:
     field_count: int
     fields: List[FieldBreakdown] = dc_field(default_factory=list)
     has_block_level_data: bool = False
-    # Compliance / health rollups — Optional means "not enough data"
+    # Compliance rollups — Optional means "not enough data"
     phi_compliant: Optional[bool] = None
     moa_rotation_warnings: int = 0
-    avg_health_score: Optional[float] = None
-    hlb_risk_max: Optional[float] = None
     # Trend
     prior_season_net_per_acre: Optional[float] = None
     # Quality
@@ -322,7 +316,7 @@ def _revenue_for_combo(
 def _build_field_breakdowns(
     fields, crop_variety: str, start_date: date, end_date: date,
 ) -> List[FieldBreakdown]:
-    from ..models import Harvest, TreeSurvey, PesticideApplication, ApplicationEvent
+    from ..models import Harvest, PesticideApplication, ApplicationEvent
 
     breakdowns: List[FieldBreakdown] = []
     for f in fields:
@@ -344,22 +338,6 @@ def _build_field_breakdowns(
             ).exists()
         )
 
-        survey = (
-            TreeSurvey.objects
-            .filter(field=f, status='completed')
-            .order_by('-capture_date')
-            .first()
-        )
-
-        hlb_score = None
-        # Only compute HLB when the field has enough signal to be worth showing
-        if f.gps_latitude and f.gps_longitude:
-            try:
-                from .hlb_risk_service import score_field_hlb_risk
-                hlb_score = score_field_hlb_risk(f).risk_score
-            except Exception:
-                hlb_score = None
-
         breakdowns.append(FieldBreakdown(
             field_id=f.id,
             field_name=f.name,
@@ -368,9 +346,6 @@ def _build_field_breakdowns(
             spray_cost=float(spray),
             has_harvest=has_harvest,
             has_applications=has_apps,
-            has_tree_survey=survey is not None,
-            hlb_risk_score=hlb_score,
-            avg_ndvi=float(survey.avg_ndvi) if survey and survey.avg_ndvi is not None else None,
         ))
     return breakdowns
 
@@ -493,8 +468,6 @@ def build_crop_report_card(
 
     # Per-field breakdown (feeds the drill-down)
     breakdowns = _build_field_breakdowns(fields, crop_variety, season_start, season_end)
-    hlb_scores = [b.hlb_risk_score for b in breakdowns if b.hlb_risk_score is not None]
-    ndvi_values = [b.avg_ndvi for b in breakdowns if b.avg_ndvi is not None]
 
     # Block-level data is meaningful when either multiple fields or a
     # settlement carries per-block lines.
@@ -515,8 +488,6 @@ def build_crop_report_card(
         gaps.append("No pool settlements linked to this ranch + crop")
     if spray == 0 and not ranch_event_count:
         gaps.append("No spray records in this window — spray cost will show $0")
-    if not hlb_scores:
-        gaps.append("HLB risk requires field GPS coordinates")
 
     return CropReportCard(
         farm_id=farm_id,
@@ -535,11 +506,6 @@ def build_crop_report_card(
         has_block_level_data=has_block_level,
         phi_compliant=comp['phi_compliant'],
         moa_rotation_warnings=comp['moa_rotation_warnings'],
-        avg_health_score=(
-            round(sum(ndvi_values) / len(ndvi_values) * 100, 1)
-            if ndvi_values else None
-        ),
-        hlb_risk_max=max(hlb_scores) if hlb_scores else None,
         prior_season_net_per_acre=prior_net_per_acre,
         data_gaps=gaps,
         applicable_settlements=settlement_count,

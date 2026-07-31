@@ -178,7 +178,6 @@ export * from './harvest';
 export * from './water';
 export * from './nutrients';
 export * from './compliance';
-export * from './disease';
 export * from './packinghouse';
 export * from './pickhaul';
 export * from './rentals';

@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Home, Plus, Edit, Trash2, MapPin, ChevronDown, ChevronRight, Locate, Satellite, MoreVertical } from 'lucide-react';
 import StatusBadge from './ui/StatusBadge';
-import QuarantineStatusBadge from './QuarantineStatusBadge';
 import FieldCard from './FieldCard';
 
 /**
@@ -107,14 +106,6 @@ function FarmCard({
                   className="ml-2"
                 />
 
-                {/* HLB Quarantine Status Badge */}
-                {hasCoords && (
-                  <QuarantineStatusBadge
-                    farmId={farm.id}
-                    compact={false}
-                    showRefresh={true}
-                  />
-                )}
               </div>
 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 ml-10">

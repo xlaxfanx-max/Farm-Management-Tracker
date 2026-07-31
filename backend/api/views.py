@@ -15,7 +15,6 @@
 #                          get_plss_from_coordinates, geocode_address, update_field_boundary, get_plss
 #   nutrient_views.py    - FertilizerProductViewSet, NutrientApplicationViewSet, NutrientPlanViewSet,
 #                          nitrogen_summary, nitrogen_export
-#   quarantine_views.py  - check_quarantine_status, get_quarantine_boundaries
 #   irrigation_views.py  - IrrigationZoneViewSet, IrrigationRecommendationViewSet,
 #                          CropCoefficientProfileViewSet, SoilMoistureReadingViewSet,
 #                          irrigation_dashboard, cimis_stations
@@ -29,6 +28,5 @@ from .report_views import *
 from .harvest_views import *
 from .sgma_views import *
 from .nutrient_views import *
-from .quarantine_views import *
 from .irrigation_views import *
 from .water_data_views import *

@@ -1,5 +1,4 @@
 # API Services
-from .quarantine_service import CDFAQuarantineService
 from .irrigation_scheduler import IrrigationScheduler
 from .pdf_extraction_service import PDFExtractionService, ExtractionResult
 from .statement_matcher import StatementMatcher, MatchResult
@@ -25,16 +24,8 @@ from .operations import (
     HarvestReadiness,
 )
 
-# Yield forecast services
-from .climate_features import ClimateFeatureService, ClimateFeatures
-from .alternate_bearing import AlternateBearingService, AlternateBearingResult
-from .soil_survey_service import SoilSurveyService, SoilProperties
-from .yield_feature_engine import YieldFeatureEngine, AssembledFeatures
-from .yield_forecast_service import YieldForecastService, ForecastResult
-
 __all__ = [
     # Existing services
-    'CDFAQuarantineService',
     'IrrigationScheduler',
     'PDFExtractionService',
     'ExtractionResult',
@@ -58,16 +49,4 @@ __all__ = [
     'SprayRecommendation',
     'HarvestPlanningService',
     'HarvestReadiness',
-
-    # Yield forecast services
-    'ClimateFeatureService',
-    'ClimateFeatures',
-    'AlternateBearingService',
-    'AlternateBearingResult',
-    'SoilSurveyService',
-    'SoilProperties',
-    'YieldFeatureEngine',
-    'AssembledFeatures',
-    'YieldForecastService',
-    'ForecastResult',
 ]

@@ -154,17 +154,6 @@ from .nutrients import (
     get_common_fertilizers,
 )
 
-# -- imagery / quarantine ----------------------------------------------------
-from .imagery import (
-    QuarantineStatus,
-)
-
-# -- tree detection (YOLO/DeepForest) ----------------------------------------
-from .tree_detection import (
-    TreeSurvey,
-    DetectedTree,
-)
-
 # -- compliance / notifications ----------------------------------------------
 from .compliance import (
     ComplianceProfile,
@@ -179,18 +168,6 @@ from .compliance import (
     NOISubmission,
     NotificationPreference,
     NotificationLog,
-)
-
-# -- disease / scouting ------------------------------------------------------
-from .disease import (
-    ExternalDetection,
-    QuarantineZone,
-    DiseaseAlertRule,
-    DiseaseAnalysisRun,
-    DiseaseAlert,
-    ScoutingReport,
-    ScoutingPhoto,
-    TreeHealthRecord,
 )
 
 # -- packinghouse / pools / settlements --------------------------------------
@@ -335,14 +312,6 @@ from .traceability import (
     IncidentCorrectiveAction,
 )
 
-# -- yield forecast / soil survey --------------------------------------------
-from .yield_forecast import (
-    ExternalDataSource,
-    SoilSurveyData,
-    YieldFeatureSnapshot,
-    YieldForecast,
-)
-
 __all__ = [
     # base
     'TimestampedModel', 'OwnedModel', 'LocationMixin',
@@ -391,19 +360,11 @@ __all__ = [
     'NUTRIENT_APPLICATION_METHOD_CHOICES', 'FertilizerProduct',
     'NutrientApplication', 'NutrientPlan', 'WeatherCache',
     'get_common_fertilizers',
-    # imagery / quarantine
-    'QuarantineStatus',
-    # tree detection
-    'TreeSurvey', 'DetectedTree',
     # compliance
     'ComplianceProfile', 'ComplianceDeadline', 'ComplianceAlert',
     'License', 'WPSTrainingRecord', 'CentralPostingLocation',
     'REIPostingRecord', 'ComplianceReport', 'IncidentReport',
     'NOISubmission', 'NotificationPreference', 'NotificationLog',
-    # disease
-    'ExternalDetection', 'QuarantineZone', 'DiseaseAlertRule',
-    'DiseaseAnalysisRun', 'DiseaseAlert', 'ScoutingReport',
-    'ScoutingPhoto', 'TreeHealthRecord',
     # packinghouse
     'Packinghouse', 'Pool', 'PackinghouseDelivery', 'PackoutReport',
     'PackoutGradeLine', 'PoolSettlement', 'SettlementGradeLine',
@@ -421,9 +382,6 @@ __all__ = [
     'PHIComplianceCheck', 'AuditBinder', 'FSMAWaterAssessment',
     'FSMASourceAssessment', 'FSMAFieldAssessment',
     'FSMAEnvironmentalAssessment', 'FSMAMitigationAction',
-    # yield forecast
-    'ExternalDataSource', 'SoilSurveyData', 'YieldFeatureSnapshot',
-    'YieldForecast',
     # primus gfs
     'DOCUMENT_TYPE_CHOICES', 'DOCUMENT_STATUS_CHOICES', 'PRIMUS_MODULE_CHOICES',
     'AUDIT_TYPE_CHOICES', 'AUDIT_STATUS_CHOICES', 'FINDING_SEVERITY_CHOICES',

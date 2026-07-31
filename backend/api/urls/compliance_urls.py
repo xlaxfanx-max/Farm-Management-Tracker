@@ -18,15 +18,6 @@ from ..compliance_views import (
     SGMAReportExportViewSet,
 )
 
-from ..disease_views import (
-    ExternalDetectionViewSet,
-    DiseaseAlertViewSet,
-    DiseaseAlertRuleViewSet,
-    DiseaseAnalysisRunViewSet,
-    ScoutingReportViewSet,
-    DiseaseDashboardViewSet,
-)
-
 router = DefaultRouter()
 
 # Compliance Management
@@ -45,13 +36,5 @@ router.register(r'compliance/noi-submissions', NOISubmissionViewSet, basename='n
 router.register(r'compliance/water-gm-stv', WaterGMSTVViewSet, basename='water-gm-stv')
 router.register(r'compliance/sgma-export', SGMAReportExportViewSet, basename='sgma-export')
 router.register(r'compliance/dashboard', ComplianceDashboardViewSet, basename='compliance-dashboard')
-
-# Disease Prevention
-router.register(r'disease/external-detections', ExternalDetectionViewSet, basename='external-detection')
-router.register(r'disease/alerts', DiseaseAlertViewSet, basename='disease-alert')
-router.register(r'disease/alert-rules', DiseaseAlertRuleViewSet, basename='disease-alert-rule')
-router.register(r'disease/analyses', DiseaseAnalysisRunViewSet, basename='disease-analysis')
-router.register(r'disease/scouting', ScoutingReportViewSet, basename='scouting-report')
-router.register(r'disease/dashboard', DiseaseDashboardViewSet, basename='disease-dashboard')
 
 urlpatterns = router.urls

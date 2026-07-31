@@ -79,12 +79,7 @@ class IrrigationScheduler:
         """
         self.zone = zone
         self._cimis_service = None
-        self._satellite_adjuster = None
-        # Check zone-level override, then use parameter
-        if hasattr(zone, 'use_satellite_kc_adjustment'):
-            self.use_satellite_adjustment = zone.use_satellite_kc_adjustment
-        else:
-            self.use_satellite_adjustment = use_satellite_adjustment
+        self.use_satellite_adjustment = False
 
     @property
     def cimis_service(self):
@@ -93,14 +88,6 @@ class IrrigationScheduler:
             from .cimis_service import CIMISService
             self._cimis_service = CIMISService()
         return self._cimis_service
-
-    @property
-    def satellite_adjuster(self):
-        """Lazy-load satellite Kc adjuster."""
-        if self._satellite_adjuster is None:
-            from .satellite_kc_adjuster import SatelliteKcAdjuster
-            self._satellite_adjuster = SatelliteKcAdjuster(self.zone)
-        return self._satellite_adjuster
 
     def calculate_recommendation(self, as_of_date: Optional[date] = None) -> dict:
         """

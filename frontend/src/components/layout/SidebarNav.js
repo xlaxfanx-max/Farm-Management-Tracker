@@ -10,9 +10,6 @@ import {
   Cloud,
   BarChart3,
   Shield,
-  Bug,
-  TrendingUp,
-  TreePine,
   FlaskConical,
   Activity,
   Users,
@@ -48,8 +45,6 @@ const NAV_GROUPS = [
     label: 'Production',
     items: [
       { id: 'harvests', label: 'Harvest & Packing', icon: Wheat },
-      { id: 'yield-forecast', label: 'Yield Forecast', icon: TrendingUp },
-      { id: 'tree-detection', label: 'Tree Detection', icon: TreePine },
     ],
   },
   {
@@ -72,7 +67,6 @@ const NAV_GROUPS = [
           { id: 'compliance-settings', label: 'Settings' },
         ],
       },
-      { id: 'disease', label: 'Disease Prevention', icon: Bug },
     ],
   },
   {

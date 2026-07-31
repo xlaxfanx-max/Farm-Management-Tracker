@@ -3,7 +3,6 @@ import { MapContainer, TileLayer, Marker, Popup, Polygon, FeatureGroup, LayersCo
 import { EditControl } from 'react-leaflet-draw';
 import L from 'leaflet';
 import { MapPin, Maximize2, Minimize2, Layers, Pencil, Save, X, Locate, AlertTriangle } from 'lucide-react';
-import QuarantineLayer from './QuarantineLayer';
 
 // Fix for default marker icons in React-Leaflet
 delete L.Icon.Default.prototype._getIconUrl;
@@ -117,7 +116,6 @@ const FarmMap = ({
   const [drawingTargetName, setDrawingTargetName] = useState('');
   const [showLayerMenu, setShowLayerMenu] = useState(false);
   const [pendingBoundary, setPendingBoundary] = useState(null);
-  const [showQuarantineLayer, setShowQuarantineLayer] = useState(true);
   const featureGroupRef = useRef(null);
   const mapRef = useRef(null);
 
@@ -357,21 +355,6 @@ const FarmMap = ({
                   {mapType === type && <span className="text-green-500">✓</span>}
                 </button>
               ))}
-              <div className="border-t border-gray-100 mt-2 pt-2">
-                <div className="px-3 py-1 text-xs font-semibold text-gray-400 uppercase">Overlays</div>
-                <button
-                  onClick={() => setShowQuarantineLayer(!showQuarantineLayer)}
-                  className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-50 flex items-center justify-between ${
-                    showQuarantineLayer ? 'text-red-600 font-medium' : 'text-gray-700'
-                  }`}
-                >
-                  <span className="flex items-center gap-2">
-                    <AlertTriangle className="w-4 h-4" />
-                    HLB Quarantine
-                  </span>
-                  {showQuarantineLayer && <span className="text-red-500">✓</span>}
-                </button>
-              </div>
             </div>
           )}
         </div>
@@ -463,12 +446,6 @@ const FarmMap = ({
               <div className="w-3 h-3 rounded bg-yellow-400"></div>
               <span>Lemons</span>
             </div>
-            {showQuarantineLayer && (
-              <div className="flex items-center gap-2 text-xs pt-1 border-t border-gray-200 mt-1">
-                <div className="w-3 h-3 rounded bg-red-600 opacity-40 border border-red-600"></div>
-                <span className="text-red-700">HLB Quarantine Zone</span>
-              </div>
-            )}
           </div>
         </div>
       )}
@@ -494,9 +471,6 @@ const FarmMap = ({
           attribution={tileLayers[mapType].attribution}
           maxZoom={19}
         />
-
-        {/* Quarantine Zone Overlay - rendered below farms/fields */}
-        <QuarantineLayer visible={showQuarantineLayer} />
 
         {/* Farm Markers */}
         {farms.map((farm) => {

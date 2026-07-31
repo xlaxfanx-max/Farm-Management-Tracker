@@ -407,7 +407,7 @@ CIMIS_API_BASE_URL = 'https://et.water.ca.gov/api/data'
 # =============================================================================
 # CELERY CONFIGURATION
 # =============================================================================
-# Redis as message broker for async task processing (tree detection, etc.)
+# Redis as message broker for async task processing
 # Install Redis: https://redis.io/download or use Docker: docker run -d -p 6379:6379 redis
 
 # Broker URL - where Celery sends/receives messages
@@ -499,29 +499,6 @@ CELERY_BEAT_SCHEDULE = {
     'cleanup-old-alerts': {
         'task': 'api.tasks.compliance_tasks.cleanup_old_alerts',
         'schedule': crontab(day_of_month=15, hour=2, minute=0),
-    },
-
-    # ==========================================================================
-    # DISEASE PREVENTION TASKS
-    # ==========================================================================
-
-    # Sync CDFA data daily at 5 AM (before proximity check)
-    'sync-cdfa-detections': {
-        'task': 'api.tasks.disease_tasks.sync_external_detections',
-        'schedule': crontab(hour=5, minute=0),
-    },
-
-    # Check proximity alerts daily at 6 AM (after CDFA sync)
-    # Note: Also triggered after sync_external_detections completes
-    'check-proximity-alerts': {
-        'task': 'api.tasks.disease_tasks.check_proximity_alerts',
-        'schedule': crontab(hour=6, minute=0),
-    },
-
-    # Send disease alert digest daily at 7 AM
-    'send-disease-alert-digest': {
-        'task': 'api.tasks.disease_tasks.send_disease_alert_digest',
-        'schedule': crontab(hour=7, minute=0),
     },
 
     # ==========================================================================

@@ -37,11 +37,8 @@ class CeleryTaskRegistrationTests(SimpleTestCase):
         registered = set(celery_app.tasks.keys())
         expected = {
             'api.tasks.compliance_tasks.check_compliance_deadlines',
-            'api.tasks.disease_tasks.analyze_field_health',
-            'api.tasks.disease_tasks.sync_external_detections',
             'api.tasks.fsma_tasks.check_cleaning_compliance',
             'api.tasks.fsma_tasks.generate_audit_binder',
-            'api.tasks.tree_detection_tasks.run_tree_detection_task',
         }
         missing = expected - registered
         self.assertFalse(

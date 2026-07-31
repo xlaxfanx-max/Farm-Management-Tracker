@@ -232,16 +232,7 @@ class PesticideComplianceService:
             company_id: Optional company ID for RLS filtering
         """
         self.company_id = company_id
-        self._quarantine_service = None
         self._weather_service = None
-
-    @property
-    def quarantine_service(self):
-        """Lazy-load quarantine service."""
-        if self._quarantine_service is None:
-            from api.services.quarantine_service import CDFAQuarantineService
-            self._quarantine_service = CDFAQuarantineService()
-        return self._quarantine_service
 
     @property
     def weather_service(self):
@@ -1086,33 +1077,6 @@ class PesticideComplianceService:
                 ))
         except Exception as e:
             logger.warning(f"Failed to check weather conditions: {e}")
-
-        return issues
-
-    def _check_quarantine_restrictions(
-        self,
-        product: 'PesticideProduct',
-        field: 'Field'
-    ) -> List[ComplianceIssue]:
-        """Check quarantine zone restrictions."""
-        issues = []
-
-        try:
-            lat = float(field.gps_latitude)
-            lon = float(field.gps_longitude)
-            quarantine_status = self.quarantine_service.check_hlb_quarantine(lat, lon)
-
-            if quarantine_status.get('in_quarantine_zone'):
-                issues.append(ComplianceIssue(
-                    severity='info',
-                    category='permit',
-                    message=f"Field is in HLB quarantine zone: {quarantine_status.get('zone_name', 'Unknown')}. "
-                           f"Verify product is approved for quarantine area use.",
-                    blocking=False,
-                    details=quarantine_status
-                ))
-        except Exception as e:
-            logger.warning(f"Failed to check quarantine status: {e}")
 
         return issues
 

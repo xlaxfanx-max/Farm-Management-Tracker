@@ -22,7 +22,6 @@ function OperationalAlertsBanner({
   waterTests = [],
   harvests = [],
   nutrients = [],
-  diseaseAlerts = [],
   onAlertClick,
   onDismiss
 }) {
@@ -112,50 +111,6 @@ function OperationalAlertsBanner({
       module: 'water',
       count: dueSoonWaterSources.length,
       priority: 'low'
-    });
-  }
-
-  // Disease alerts - Critical proximity alerts (HLB/ACP nearby)
-  const criticalDiseaseAlerts = diseaseAlerts.filter(
-    a => a.is_active && (a.priority === 'critical' || a.priority === 'high')
-  );
-  if (criticalDiseaseAlerts.length > 0) {
-    const hlbCount = criticalDiseaseAlerts.filter(a => a.alert_type === 'proximity_hlb').length;
-    const acpCount = criticalDiseaseAlerts.filter(a => a.alert_type === 'proximity_acp').length;
-    const otherCount = criticalDiseaseAlerts.length - hlbCount - acpCount;
-
-    let title = '';
-    if (hlbCount > 0) title += `${hlbCount} HLB`;
-    if (acpCount > 0) title += title ? `, ${acpCount} ACP` : `${acpCount} ACP`;
-    if (otherCount > 0) title += title ? `, ${otherCount} other` : `${otherCount}`;
-    title += ` disease alert${criticalDiseaseAlerts.length > 1 ? 's' : ''} nearby`;
-
-    alerts.push({
-      id: 'disease-alerts-critical',
-      type: 'warning',
-      icon: Bug,
-      title: title,
-      module: 'disease',
-      count: criticalDiseaseAlerts.length,
-      priority: 'high',
-      data: criticalDiseaseAlerts
-    });
-  }
-
-  // Health anomaly alerts (NDVI issues)
-  const healthAlerts = diseaseAlerts.filter(
-    a => a.is_active && (a.alert_type === 'ndvi_anomaly' || a.alert_type === 'tree_decline')
-  );
-  if (healthAlerts.length > 0) {
-    alerts.push({
-      id: 'disease-health-alerts',
-      type: 'info',
-      icon: Leaf,
-      title: `${healthAlerts.length} field health alert${healthAlerts.length > 1 ? 's' : ''} detected`,
-      module: 'disease',
-      count: healthAlerts.length,
-      priority: 'medium',
-      data: healthAlerts
     });
   }
 

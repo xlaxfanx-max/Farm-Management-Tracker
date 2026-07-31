@@ -95,30 +95,6 @@ export const rootstocksAPI = {
   forCrop: (cropId) => api.get('/rootstocks/for_crop/', { params: { crop_id: cropId } }),
 };
 
-// =============================================================================
-// QUARANTINE API
-// =============================================================================
-
-export const quarantineAPI = {
-  // Check quarantine status for a farm
-  checkFarm: (farmId, refresh = false) =>
-    api.get('/quarantine/check/', {
-      params: { farm_id: farmId, refresh: refresh ? 'true' : 'false' }
-    }),
-
-  // Check quarantine status for a field
-  checkField: (fieldId, refresh = false) =>
-    api.get('/quarantine/check/', {
-      params: { field_id: fieldId, refresh: refresh ? 'true' : 'false' }
-    }),
-
-  // Get quarantine boundary GeoJSON for map overlay
-  getBoundaries: (refresh = false) =>
-    api.get('/quarantine/boundaries/', {
-      params: { refresh: refresh ? 'true' : 'false' }
-    }),
-};
-
 // Constants for Field agricultural data
 export const FIELD_CONSTANTS = {
   ROW_ORIENTATIONS: [

@@ -1,6 +1,3 @@
-# Tree detection tasks
-from .tree_detection_tasks import run_tree_detection_task
-
 # Compliance management tasks
 from .compliance_tasks import (
     check_compliance_deadlines,
@@ -13,14 +10,6 @@ from .compliance_tasks import (
     check_active_reis,
     send_daily_compliance_digest,
     cleanup_old_alerts,
-)
-
-# Disease prevention tasks
-from .disease_tasks import (
-    analyze_field_health,
-    check_proximity_alerts,
-    sync_external_detections,
-    send_disease_alert_digest,
 )
 
 # FSMA compliance tasks

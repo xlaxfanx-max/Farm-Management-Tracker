@@ -42,11 +42,8 @@ const LicenseManagement = lazy(() => import('./components/compliance/LicenseMana
 const WPSCompliance = lazy(() => import('./components/compliance/WPSCompliance'));
 const ComplianceReports = lazy(() => import('./components/compliance/ComplianceReports'));
 const ComplianceSettings = lazy(() => import('./components/compliance/ComplianceSettings'));
-const DiseaseDashboard = lazy(() => import('./components/disease').then(m => ({ default: m.DiseaseDashboard })));
 const FSMADashboard = lazy(() => import('./components/fsma').then(m => ({ default: m.FSMADashboard })));
 const PrimusGFSDashboard = lazy(() => import('./components/primusgfs').then(m => ({ default: m.PrimusGFSDashboard })));
-const YieldForecastDashboard = lazy(() => import('./components/yield-forecast/YieldForecastDashboard'));
-const TreeDetectionPage = lazy(() => import('./components/tree-detection').then(m => ({ default: m.TreeDetectionPage })));
 const InspectorChecklist = lazy(() => import('./components/compliance/InspectorChecklist'));
 const PURImportPage = lazy(() => import('./components/pur-import/PURImportPage'));
 const RentalsDashboard = lazy(() => import('./components/rentals'));
@@ -324,8 +321,6 @@ function AppContent() {
             <Route path="compliance/wps" element={<WPSCompliance onNavigate={handleNavigate} />} />
             <Route path="compliance/reports" element={<ComplianceReports onNavigate={handleNavigate} />} />
             <Route path="compliance/settings" element={<ComplianceSettings onNavigate={handleNavigate} />} />
-            <Route path="tree-detection" element={<TreeDetectionPage />} />
-            <Route path="disease" element={<DiseaseDashboard onNavigate={handleNavigate} />} />
             <Route path="compliance/fsma" element={<FSMADashboard onNavigate={handleNavigate} />} />
             <Route path="compliance/fsma/visitors" element={<FSMADashboard onNavigate={handleNavigate} initialTab="visitors" />} />
             <Route path="compliance/fsma/cleaning" element={<FSMADashboard onNavigate={handleNavigate} initialTab="cleaning" />} />
@@ -366,7 +361,6 @@ function AppContent() {
             <Route path="compliance/primusgfs/audit-binder" element={<PrimusGFSDashboard onNavigate={handleNavigate} initialTab="audit-binder" />} />
             <Route path="compliance/pesticide" element={<DeadlineCalendar onNavigate={handleNavigate} />} />
             <Route path="compliance/inspector-checklist" element={<InspectorChecklist onNavigate={handleNavigate} />} />
-            <Route path="yield-forecast" element={<YieldForecastDashboard />} />
             {/* Pick & haul rolled into Harvest & Packing; old links land there. */}
             <Route path="pick-haul/*" element={<Navigate to="/dashboard/harvests" replace />} />
             <Route path="rentals" element={rentalsRoute('overview')} />
