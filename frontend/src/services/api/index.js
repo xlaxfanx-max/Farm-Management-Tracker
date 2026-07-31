@@ -181,9 +181,6 @@ export * from './compliance';
 export * from './packinghouse';
 export * from './pickhaul';
 export * from './rentals';
-export * from './fsma';
-export * from './traceability';
-export * from './primusgfs';
 export * from './other';
 
 // =============================================================================

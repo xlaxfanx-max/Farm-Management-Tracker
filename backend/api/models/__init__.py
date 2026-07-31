@@ -154,7 +154,7 @@ from .nutrients import (
     get_common_fertilizers,
 )
 
-# -- compliance / notifications ----------------------------------------------
+# -- compliance / notifications / PHI ----------------------------------------
 from .compliance import (
     ComplianceProfile,
     ComplianceDeadline,
@@ -168,6 +168,8 @@ from .compliance import (
     NOISubmission,
     NotificationPreference,
     NotificationLog,
+    PHI_STATUS_CHOICES,
+    PHIComplianceCheck,
 )
 
 # -- packinghouse / pools / settlements --------------------------------------
@@ -186,100 +188,6 @@ from .packinghouse import (
     StatementBatchUpload,
 )
 
-# -- facility / safety / inventory -------------------------------------------
-from .facility import (
-    FACILITY_TYPE_CHOICES,
-    CLEANING_FREQUENCY_CHOICES,
-    VISITOR_TYPE_CHOICES,
-    SAFETY_MEETING_TYPE_CHOICES,
-    INVENTORY_TRANSACTION_TYPE_CHOICES,
-    UserSignature,
-    FacilityLocation,
-    FacilityCleaningLog,
-    VisitorLog,
-    SafetyMeeting,
-    SafetyMeetingAttendee,
-    FertilizerInventory,
-    FertilizerInventoryTransaction,
-    MonthlyInventorySnapshot,
-)
-
-# -- FSMA / PHI / audit binder -----------------------------------------------
-from .fsma import (
-    PHI_STATUS_CHOICES,
-    AUDIT_BINDER_STATUS_CHOICES,
-    PHIComplianceCheck,
-    AuditBinder,
-    FSMAWaterAssessment,
-    FSMASourceAssessment,
-    FSMAFieldAssessment,
-    FSMAEnvironmentalAssessment,
-    FSMAMitigationAction,
-)
-
-# -- CAC Audit Binder (PrimusGFS) --------------------------------------------
-from .audit_binder import (
-    BINDER_STATUS_CHOICES,
-    SECTION_STATUS_CHOICES,
-    SECTION_DOC_TYPE_CHOICES,
-    SECTION_GROUP_CHOICES,
-    CAC_V5_SECTION_DEFINITIONS,
-    CACBinderTemplate,
-    AuditBinderInstance,
-    BinderSection,
-    BinderSupportingDocument,
-)
-
-# -- Primus GFS / GAP compliance (core) ----------------------------------------
-from .primusgfs_core import (
-    DOCUMENT_TYPE_CHOICES, DOCUMENT_STATUS_CHOICES, PRIMUS_MODULE_CHOICES,
-    AUDIT_TYPE_CHOICES, AUDIT_STATUS_CHOICES, FINDING_SEVERITY_CHOICES,
-    CORRECTIVE_ACTION_STATUS_CHOICES,
-    ControlledDocument, DocumentRevisionHistory,
-    InternalAudit, AuditFinding, CorrectiveAction,
-)
-
-# -- Primus GFS / land history -------------------------------------------------
-from .primusgfs_land import (
-    LAND_USE_CHOICES, CONTAMINATION_RISK_CHOICES,
-    LandHistoryAssessment,
-)
-
-# -- Primus GFS / supply & food defense ----------------------------------------
-from .primusgfs_supply import (
-    SUPPLIER_STATUS_CHOICES, MATERIAL_TYPE_CHOICES,
-    RECALL_STATUS_CHOICES, THREAT_LEVEL_CHOICES,
-    ApprovedSupplier, IncomingMaterialVerification,
-    MockRecall, FoodDefensePlan,
-)
-
-# -- Primus GFS / field operations ---------------------------------------------
-from .primusgfs_operations import (
-    CALIBRATION_STATUS_CHOICES, CALIBRATION_METHOD_CHOICES,
-    EQUIPMENT_TYPE_CHOICES, PEST_TYPE_CHOICES,
-    PEST_ACTIVITY_CHOICES, INSPECTION_STATUS_CHOICES,
-    FieldSanitationLog, EquipmentCalibration,
-    PestControlProgram, PestMonitoringLog, PreHarvestInspection,
-)
-
-# -- Primus GFS / CAC Food Safety Manual V5.0 ----------------------------------
-from .primusgfs_cac import (
-    QUARTER_CHOICES, TRAINING_CATEGORY_CHOICES, LANGUAGE_CHOICES,
-    RISK_LEVEL_CHOICES, VERIFICATION_TYPE_CHOICES, VIOLATION_TYPE_CHOICES,
-    HOLD_STATUS_CHOICES, HOLD_REASON_CHOICES, NUOCA_CATEGORY_CHOICES,
-    CHEMICAL_TYPE_CHOICES, EMERGENCY_CONTACT_TYPE_CHOICES,
-    ROLE_CATEGORY_CHOICES, FRAUD_VULNERABILITY_CHOICES,
-    SIGNER_ROLE_CHOICES,
-    FoodSafetyProfile, FoodSafetyRoleAssignment,
-    FoodSafetyCommitteeMeeting, ManagementVerificationReview,
-    TrainingRecord, WorkerTrainingSession,
-    PerimeterMonitoringLog, PreSeasonChecklist, FieldRiskAssessment,
-    EmployeeNonConformance, ProductHoldRelease,
-    SupplierVerificationLog, FoodFraudAssessment,
-    EmergencyContact, ChemicalInventoryLog, SanitationMaintenanceLog,
-    CACDocumentSignature,
-)
-
 # -- PUR / tank mix / unified product ----------------------------------------
 from .pur import (
     PRODUCT_TYPE_CHOICES,
@@ -294,22 +202,6 @@ from .pur import (
     ApplicationEvent,
     TankMixItem,
     PURImportBatch,
-)
-
-# -- FSMA Rule 204 traceability -----------------------------------------------
-from .traceability import (
-    LOT_STATUS_CHOICES,
-    CTE_TYPE_CHOICES,
-    DISPOSITION_TYPE_CHOICES,
-    CONTAMINATION_TYPE_CHOICES,
-    CONTAMINATION_LOCATION_CHOICES,
-    INCIDENT_STATUS_CHOICES,
-    CORRECTIVE_ACTION_STATUS_CHOICES as INCIDENT_CA_STATUS_CHOICES,
-    TraceabilityLot,
-    TraceabilityEvent,
-    LotDisposition,
-    ContaminationIncident,
-    IncidentCorrectiveAction,
 )
 
 __all__ = [
@@ -365,69 +257,16 @@ __all__ = [
     'License', 'WPSTrainingRecord', 'CentralPostingLocation',
     'REIPostingRecord', 'ComplianceReport', 'IncidentReport',
     'NOISubmission', 'NotificationPreference', 'NotificationLog',
+    'PHI_STATUS_CHOICES', 'PHIComplianceCheck',
     # packinghouse
     'Packinghouse', 'Pool', 'PackinghouseDelivery', 'PackoutReport',
     'PackoutGradeLine', 'PoolSettlement', 'SettlementGradeLine',
     'SettlementDeduction', 'GrowerLedgerEntry', 'PackinghouseStatement',
     'PackinghouseGrowerMapping', 'StatementBatchUpload',
-    # facility
-    'FACILITY_TYPE_CHOICES', 'CLEANING_FREQUENCY_CHOICES',
-    'VISITOR_TYPE_CHOICES', 'SAFETY_MEETING_TYPE_CHOICES',
-    'INVENTORY_TRANSACTION_TYPE_CHOICES', 'UserSignature',
-    'FacilityLocation', 'FacilityCleaningLog', 'VisitorLog',
-    'SafetyMeeting', 'SafetyMeetingAttendee', 'FertilizerInventory',
-    'FertilizerInventoryTransaction', 'MonthlyInventorySnapshot',
-    # fsma
-    'PHI_STATUS_CHOICES', 'AUDIT_BINDER_STATUS_CHOICES',
-    'PHIComplianceCheck', 'AuditBinder', 'FSMAWaterAssessment',
-    'FSMASourceAssessment', 'FSMAFieldAssessment',
-    'FSMAEnvironmentalAssessment', 'FSMAMitigationAction',
-    # primus gfs
-    'DOCUMENT_TYPE_CHOICES', 'DOCUMENT_STATUS_CHOICES', 'PRIMUS_MODULE_CHOICES',
-    'AUDIT_TYPE_CHOICES', 'AUDIT_STATUS_CHOICES', 'FINDING_SEVERITY_CHOICES',
-    'CORRECTIVE_ACTION_STATUS_CHOICES', 'LAND_USE_CHOICES', 'CONTAMINATION_RISK_CHOICES',
-    'ControlledDocument', 'DocumentRevisionHistory',
-    'InternalAudit', 'AuditFinding', 'CorrectiveAction',
-    'LandHistoryAssessment',
-    'SUPPLIER_STATUS_CHOICES', 'MATERIAL_TYPE_CHOICES',
-    'RECALL_STATUS_CHOICES', 'THREAT_LEVEL_CHOICES',
-    'ApprovedSupplier', 'IncomingMaterialVerification',
-    'MockRecall', 'FoodDefensePlan', 'FieldSanitationLog',
-    'CALIBRATION_STATUS_CHOICES', 'CALIBRATION_METHOD_CHOICES',
-    'EQUIPMENT_TYPE_CHOICES', 'PEST_TYPE_CHOICES',
-    'PEST_ACTIVITY_CHOICES', 'INSPECTION_STATUS_CHOICES',
-    'EquipmentCalibration', 'PestControlProgram', 'PestMonitoringLog',
-    'PreHarvestInspection',
-    # CAC Food Safety Manual V5.0 additions
-    'QUARTER_CHOICES', 'TRAINING_CATEGORY_CHOICES', 'LANGUAGE_CHOICES',
-    'RISK_LEVEL_CHOICES', 'VERIFICATION_TYPE_CHOICES', 'VIOLATION_TYPE_CHOICES',
-    'HOLD_STATUS_CHOICES', 'HOLD_REASON_CHOICES', 'NUOCA_CATEGORY_CHOICES',
-    'CHEMICAL_TYPE_CHOICES', 'EMERGENCY_CONTACT_TYPE_CHOICES',
-    'ROLE_CATEGORY_CHOICES', 'FRAUD_VULNERABILITY_CHOICES',
-    'FoodSafetyProfile', 'FoodSafetyRoleAssignment',
-    'FoodSafetyCommitteeMeeting', 'ManagementVerificationReview',
-    'TrainingRecord', 'WorkerTrainingSession',
-    'PerimeterMonitoringLog', 'PreSeasonChecklist', 'FieldRiskAssessment',
-    'EmployeeNonConformance', 'ProductHoldRelease',
-    'SupplierVerificationLog', 'FoodFraudAssessment',
-    'EmergencyContact', 'ChemicalInventoryLog', 'SanitationMaintenanceLog',
-    'SIGNER_ROLE_CHOICES', 'CACDocumentSignature',
-    # cac audit binder
-    'BINDER_STATUS_CHOICES', 'SECTION_STATUS_CHOICES',
-    'SECTION_DOC_TYPE_CHOICES', 'SECTION_GROUP_CHOICES',
-    'CAC_V5_SECTION_DEFINITIONS',
-    'CACBinderTemplate', 'AuditBinderInstance',
-    'BinderSection', 'BinderSupportingDocument',
     # pur / tank mix
     'PRODUCT_TYPE_CHOICES', 'SIGNAL_WORD_CHOICES', 'APPLICATOR_TYPE_CHOICES',
     'PUR_STATUS_CHOICES', 'APPLICATION_METHOD_CHOICES',
     'AMOUNT_UNIT_CHOICES', 'RATE_UNIT_CHOICES',
     'Product', 'Applicator', 'ApplicationEvent', 'TankMixItem',
     'PURImportBatch',
-    # traceability (FSMA Rule 204)
-    'LOT_STATUS_CHOICES', 'CTE_TYPE_CHOICES', 'DISPOSITION_TYPE_CHOICES',
-    'CONTAMINATION_TYPE_CHOICES', 'CONTAMINATION_LOCATION_CHOICES',
-    'INCIDENT_STATUS_CHOICES', 'INCIDENT_CA_STATUS_CHOICES',
-    'TraceabilityLot', 'TraceabilityEvent', 'LotDisposition',
-    'ContaminationIncident', 'IncidentCorrectiveAction',
 ]

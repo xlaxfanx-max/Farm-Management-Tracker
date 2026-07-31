@@ -48,7 +48,6 @@ class InspectorReportGenerator:
                 'pesticide_compliance': self._get_pesticide_section(),
                 'phi_clearance': self._get_phi_section(),
                 'water_testing': self._get_water_section(),
-                'fsma_status': self._get_fsma_section(),
                 'deadlines': self._get_deadline_section(),
                 'alerts': self._get_alert_section(),
             },
@@ -322,51 +321,6 @@ class InspectorReportGenerator:
             },
             'compliant': not any_failed and not any_overdue,
             'sources': source_data,
-        }
-
-    def _get_fsma_section(self) -> Dict:
-        from api.models import (
-            FSMAWaterAssessment, PHIComplianceCheck, FacilityLocation,
-            FacilityCleaningLog
-        )
-
-        today = date.today()
-        current_year = today.year
-
-        # Water assessments
-        assessments = FSMAWaterAssessment.objects.filter(company=self.company)
-        current_assessments = assessments.filter(assessment_year=current_year)
-        approved = current_assessments.filter(status='approved').count()
-        total_assessments = current_assessments.count()
-
-        # PHI checks
-        phi_checks = PHIComplianceCheck.objects.filter(
-            harvest__field__farm__company=self.company,
-            created_at__year=current_year,
-        )
-        phi_issues = phi_checks.filter(
-            status__in=['non_compliant', 'warning']
-        ).count()
-
-        # Cleaning compliance (today)
-        facilities = FacilityLocation.objects.filter(
-            company=self.company, is_active=True
-        )
-        daily_facilities = facilities.filter(cleaning_frequency='daily')
-        cleaned_today = FacilityCleaningLog.objects.filter(
-            facility__company=self.company,
-            cleaning_date=today,
-        ).values('facility').distinct().count()
-
-        return {
-            'summary': {
-                'water_assessments_approved': approved,
-                'water_assessments_total': total_assessments,
-                'phi_issues': phi_issues,
-                'facilities_total': daily_facilities.count(),
-                'facilities_cleaned_today': cleaned_today,
-            },
-            'compliant': phi_issues == 0 and approved >= total_assessments,
         }
 
     def _get_deadline_section(self) -> Dict:

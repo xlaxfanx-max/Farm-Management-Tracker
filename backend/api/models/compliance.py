@@ -1801,3 +1801,76 @@ class NotificationLog(models.Model):
         if not self.read_at:
             self.read_at = timezone.now()
             self.save()
+
+
+# -----------------------------------------------------------------------------
+# PHI COMPLIANCE - Pre-harvest interval verification per harvest
+# (moved here from the removed FSMA module; PHI is pesticide compliance)
+# -----------------------------------------------------------------------------
+
+PHI_STATUS_CHOICES = [
+    ('pending', 'Pending Check'),
+    ('compliant', 'Compliant'),
+    ('warning', 'Warning - Near PHI'),
+    ('non_compliant', 'Non-Compliant'),
+    ('override', 'Override Applied'),
+]
+
+
+class PHIComplianceCheck(models.Model):
+    """
+    Pre-Harvest Interval compliance verification for each harvest.
+    Auto-created when a harvest is recorded to verify PHI requirements.
+    """
+    harvest = models.OneToOneField(
+        'Harvest',
+        on_delete=models.CASCADE,
+        related_name='phi_compliance_check'
+    )
+    status = models.CharField(
+        max_length=20,
+        choices=PHI_STATUS_CHOICES,
+        default='pending'
+    )
+
+    # Details of PHI analysis
+    applications_checked = models.JSONField(
+        default=list,
+        help_text="List of pesticide applications checked with PHI details"
+    )
+    warnings = models.JSONField(
+        default=list,
+        help_text="List of warning messages"
+    )
+    earliest_safe_harvest = models.DateField(
+        null=True,
+        blank=True,
+        help_text="Earliest date harvest would be compliant"
+    )
+
+    # Override if user accepts warning
+    override_reason = models.TextField(
+        blank=True,
+        help_text="Reason if status was overridden"
+    )
+    override_by = models.ForeignKey(
+        'User',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='phi_overrides'
+    )
+    override_at = models.DateTimeField(null=True, blank=True)
+
+    checked_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "PHI Compliance Check"
+        verbose_name_plural = "PHI Compliance Checks"
+        indexes = [
+            models.Index(fields=['status'], name='idx_phi_status'),
+        ]
+
+    def __str__(self):
+        return f"PHI Check for Harvest #{self.harvest.id} - {self.get_status_display()}"

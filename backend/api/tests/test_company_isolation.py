@@ -19,7 +19,7 @@ from rest_framework import status
 from api.tests.factories import TestDataFactory
 from api.models import (
     Farm, Field, Harvest, Packinghouse, Pool,
-    TraceabilityLot, ComplianceDeadline, WaterSource,
+    ComplianceDeadline, WaterSource,
 )
 
 
@@ -202,44 +202,6 @@ class CompanyIsolationTests(TestCase):
         self.assertNotIn('Alpha Packing', names_b)
 
     # =====================================================================
-    #  5. TRACEABILITY LOT ISOLATION
-    # =====================================================================
-
-    def test_company_b_cannot_list_company_a_lots(self):
-        """Traceability lots from Company A are invisible to Company B."""
-        self.factory.create_traceability_lot(
-            self.company_a, lot_number='LOT-ALPHA-001'
-        )
-
-        response = self.client_b.get('/api/fsma/traceability-lots/')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        results = self._get_results(response)
-        lot_numbers = [lot['lot_number'] for lot in results]
-        self.assertNotIn('LOT-ALPHA-001', lot_numbers)
-        self.assertEqual(len(results), 0)
-
-    def test_each_company_sees_only_own_lots(self):
-        """Both companies see only their own traceability lots."""
-        self.factory.create_traceability_lot(
-            self.company_a, lot_number='LOT-ALPHA-001'
-        )
-        self.factory.create_traceability_lot(
-            self.company_b, lot_number='LOT-BETA-001'
-        )
-
-        resp_a = self.client_a.get('/api/fsma/traceability-lots/')
-        results_a = self._get_results(resp_a)
-        lots_a = [lot['lot_number'] for lot in results_a]
-        self.assertIn('LOT-ALPHA-001', lots_a)
-        self.assertNotIn('LOT-BETA-001', lots_a)
-
-        resp_b = self.client_b.get('/api/fsma/traceability-lots/')
-        results_b = self._get_results(resp_b)
-        lots_b = [lot['lot_number'] for lot in results_b]
-        self.assertIn('LOT-BETA-001', lots_b)
-        self.assertNotIn('LOT-ALPHA-001', lots_b)
-
-    # =====================================================================
     #  6. CROSS-COMPANY DETAIL ACCESS  (should return 404)
     # =====================================================================
 
@@ -272,13 +234,6 @@ class CompanyIsolationTests(TestCase):
         ph_a = self.factory.create_packinghouse(self.company_a, name='Alpha Packing')
 
         response = self.client_b.get(f'/api/packinghouses/{ph_a.pk}/')
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-
-    def test_cross_company_lot_detail_returns_404(self):
-        """GET /api/fsma/traceability-lots/{id}/ for another company's lot yields 404."""
-        lot_a = self.factory.create_traceability_lot(self.company_a)
-
-        response = self.client_b.get(f'/api/fsma/traceability-lots/{lot_a.pk}/')
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     # =====================================================================

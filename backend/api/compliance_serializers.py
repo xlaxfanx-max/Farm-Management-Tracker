@@ -458,3 +458,55 @@ class ComplianceCalendarSerializer(serializers.Serializer):
     date = serializers.DateField()
     deadlines = ComplianceDeadlineSerializer(many=True)
     reports_due = ComplianceReportSerializer(many=True)
+
+
+# -----------------------------------------------------------------------------
+# PHI COMPLIANCE SERIALIZERS (moved from the removed FSMA module)
+# -----------------------------------------------------------------------------
+
+from .models import PHIComplianceCheck
+
+
+class PHIComplianceCheckSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+    """Serializer for PHI compliance checks (list fields restricted automatically)."""
+    list_fields = [
+        'id', 'harvest', 'harvest_date', 'field_name',
+        'status', 'status_display',
+        'earliest_safe_harvest', 'warning_count', 'checked_at',
+    ]
+
+    status_display = serializers.CharField(source='get_status_display', read_only=True)
+    harvest_date = serializers.DateField(source='harvest.harvest_date', read_only=True)
+    field_name = serializers.CharField(source='harvest.field.name', read_only=True)
+    warning_count = serializers.SerializerMethodField()
+    override_by_display = serializers.SerializerMethodField()
+
+    class Meta:
+        model = PHIComplianceCheck
+        fields = [
+            'id', 'harvest', 'harvest_date', 'field_name',
+            'status', 'status_display',
+            'applications_checked', 'warnings', 'earliest_safe_harvest',
+            'warning_count',
+            'override_reason', 'override_by', 'override_by_display', 'override_at',
+            'checked_at', 'updated_at'
+        ]
+        read_only_fields = ['id', 'harvest', 'checked_at', 'updated_at']
+
+    def get_warning_count(self, obj):
+        return len(obj.warnings) if obj.warnings else 0
+
+    def get_override_by_display(self, obj):
+        if obj.override_by:
+            return f"{obj.override_by.first_name} {obj.override_by.last_name}".strip() or obj.override_by.email
+        return None
+
+
+# Backward-compatible alias
+PHIComplianceCheckListSerializer = PHIComplianceCheckSerializer
+
+
+class PHIPreCheckSerializer(serializers.Serializer):
+    """Serializer for pre-harvest PHI check request."""
+    field_id = serializers.IntegerField()
+    proposed_harvest_date = serializers.DateField()

@@ -29,9 +29,7 @@ from api.models import (
     WaterSource, WaterTest,
     FertilizerProduct, NutrientApplication,
     Packinghouse, Pool, PackinghouseDelivery,
-    TraceabilityLot, TraceabilityEvent,
     ComplianceProfile, ComplianceDeadline,
-    FacilityLocation, FacilityCleaningLog, VisitorLog,
 )
 
 User = get_user_model()
@@ -216,47 +214,13 @@ class TestDataFactory:
         )
 
     # =========================================================================
-    # COMPLIANCE / FSMA
-    # =========================================================================
-
-    def create_facility(self, company, farm=None, **kwargs):
-        n = self._next_id()
-        return FacilityLocation.objects.create(
-            company=company,
-            farm=farm,
-            name=kwargs.pop('name', f'Facility {n}'),
-            facility_type=kwargs.pop('facility_type', 'packing_shed'),
-            **kwargs,
-        )
-
-    # =========================================================================
-    # TRACEABILITY
-    # =========================================================================
-
-    def create_traceability_lot(self, company, harvest=None, field=None, farm=None, **kwargs):
-        n = self._next_id()
-        return TraceabilityLot.objects.create(
-            company=company,
-            harvest=harvest,
-            lot_number=kwargs.pop('lot_number', f'LOT-{n:04d}'),
-            product_description=kwargs.pop('product_description', 'Fresh Navel Oranges'),
-            commodity=kwargs.pop('commodity', 'navel_orange'),
-            field=field,
-            farm=farm,
-            harvest_date=kwargs.pop('harvest_date', date.today()),
-            quantity_bins=kwargs.pop('quantity_bins', 100),
-            status=kwargs.pop('status', 'harvested'),
-            **kwargs,
-        )
-
-    # =========================================================================
     # FULL PIPELINE HELPER
     # =========================================================================
 
     def create_full_pipeline(self):
         """
         Create a complete data pipeline for integration testing:
-        company + user + farm + field + harvest + packinghouse + pool + delivery + lot
+        company + user + farm + field + harvest + packinghouse + pool + delivery
 
         Returns a dict with all created objects.
         """
@@ -267,10 +231,6 @@ class TestDataFactory:
         harvest = self.create_harvest(field)
         packinghouse = self.create_packinghouse(company)
         pool = self.create_pool(packinghouse)
-        lot = self.create_traceability_lot(
-            company, harvest=harvest, field=field, farm=farm,
-            lot_number=harvest.lot_number,
-        )
 
         return {
             'company': company,
@@ -281,5 +241,4 @@ class TestDataFactory:
             'harvest': harvest,
             'packinghouse': packinghouse,
             'pool': pool,
-            'lot': lot,
         }

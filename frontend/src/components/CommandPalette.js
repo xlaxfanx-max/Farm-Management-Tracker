@@ -29,7 +29,7 @@ const NAV_ITEMS = [
   { id: 'water', label: 'Water Management', icon: Droplets, keywords: ['well', 'irrigation', 'test', 'source'] },
   { id: 'nutrients', label: 'Nutrients', icon: Leaf, keywords: ['fertilizer', 'nitrogen', 'phosphorus'] },
   { id: 'harvests', label: 'Harvest & Packing', icon: Wheat, keywords: ['pick', 'bins', 'crop', 'packing'] },
-  { id: 'compliance', label: 'Compliance Hub', icon: Shield, keywords: ['fsma', 'primusgfs', 'gap', 'license', 'deadline'] },
+  { id: 'compliance', label: 'Compliance Hub', icon: Shield, keywords: ['license', 'deadline', 'wps', 'rei'] },
   { id: 'weather', label: 'Weather', icon: Cloud, keywords: ['forecast', 'rain', 'temperature'] },
   { id: 'analytics', label: 'Analytics', icon: BarChart3, keywords: ['chart', 'report', 'data'] },
   { id: 'reports', label: 'Reports', icon: FileText, keywords: ['pur', 'export', 'pdf'] },

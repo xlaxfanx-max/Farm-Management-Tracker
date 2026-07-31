@@ -58,8 +58,6 @@ const NAV_GROUPS = [
         children: [
           { id: 'compliance-pesticide', label: 'Pesticide' },
           { id: 'compliance-wps', label: 'WPS' },
-          { id: 'compliance-fsma', label: 'FSMA' },
-          { id: 'compliance-primusgfs', label: 'PrimusGFS' },
           { id: 'compliance-deadlines', label: 'Deadlines' },
           { id: 'compliance-licenses', label: 'Licenses' },
           { id: 'compliance-inspector-checklist', label: 'Inspector Checklist' },

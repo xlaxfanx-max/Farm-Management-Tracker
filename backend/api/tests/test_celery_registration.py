@@ -2,8 +2,8 @@
 Guards against silent Celery task failures.
 
 If tasks/__init__.py omits a submodule, @shared_task never runs for that
-submodule and workers reject the task as unregistered. That used to happen
-silently for fsma_tasks and disease_tasks — this test blocks the regression.
+submodule and workers reject the task as unregistered — this test blocks
+the regression.
 """
 
 from django.conf import settings
@@ -37,8 +37,7 @@ class CeleryTaskRegistrationTests(SimpleTestCase):
         registered = set(celery_app.tasks.keys())
         expected = {
             'api.tasks.compliance_tasks.check_compliance_deadlines',
-            'api.tasks.fsma_tasks.check_cleaning_compliance',
-            'api.tasks.fsma_tasks.generate_audit_binder',
+            'api.tasks.compliance_tasks.check_phi_compliance_for_upcoming_harvests',
         }
         missing = expected - registered
         self.assertFalse(

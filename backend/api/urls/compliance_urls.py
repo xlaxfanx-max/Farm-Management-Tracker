@@ -16,6 +16,7 @@ from ..compliance_views import (
     NOISubmissionViewSet,
     WaterGMSTVViewSet,
     SGMAReportExportViewSet,
+    PHIComplianceCheckViewSet,
 )
 
 router = DefaultRouter()
@@ -35,6 +36,7 @@ router.register(r'compliance/inspector-report', InspectorReportViewSet, basename
 router.register(r'compliance/noi-submissions', NOISubmissionViewSet, basename='noi-submission')
 router.register(r'compliance/water-gm-stv', WaterGMSTVViewSet, basename='water-gm-stv')
 router.register(r'compliance/sgma-export', SGMAReportExportViewSet, basename='sgma-export')
+router.register(r'compliance/phi-checks', PHIComplianceCheckViewSet, basename='phi-check')
 router.register(r'compliance/dashboard', ComplianceDashboardViewSet, basename='compliance-dashboard')
 
 urlpatterns = router.urls

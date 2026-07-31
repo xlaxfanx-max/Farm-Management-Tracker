@@ -35,11 +35,11 @@ export default function PHIStatusBar({ phiBlockedFields = [], onNavigate }) {
           <button
             onClick={(e) => {
               e.stopPropagation();
-              onNavigate('compliance-fsma-phi');
+              onNavigate('harvests');
             }}
             className="text-xs font-medium text-blue-600 dark:text-blue-400 hover:underline px-2 py-0.5"
           >
-            PHI Checks
+            View Harvests
           </button>
           {expanded ? (
             <ChevronUp className="w-4 h-4 text-amber-600 dark:text-amber-400" />

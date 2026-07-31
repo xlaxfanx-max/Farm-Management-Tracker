@@ -42,8 +42,6 @@ const LicenseManagement = lazy(() => import('./components/compliance/LicenseMana
 const WPSCompliance = lazy(() => import('./components/compliance/WPSCompliance'));
 const ComplianceReports = lazy(() => import('./components/compliance/ComplianceReports'));
 const ComplianceSettings = lazy(() => import('./components/compliance/ComplianceSettings'));
-const FSMADashboard = lazy(() => import('./components/fsma').then(m => ({ default: m.FSMADashboard })));
-const PrimusGFSDashboard = lazy(() => import('./components/primusgfs').then(m => ({ default: m.PrimusGFSDashboard })));
 const InspectorChecklist = lazy(() => import('./components/compliance/InspectorChecklist'));
 const PURImportPage = lazy(() => import('./components/pur-import/PURImportPage'));
 const RentalsDashboard = lazy(() => import('./components/rentals'));
@@ -321,44 +319,6 @@ function AppContent() {
             <Route path="compliance/wps" element={<WPSCompliance onNavigate={handleNavigate} />} />
             <Route path="compliance/reports" element={<ComplianceReports onNavigate={handleNavigate} />} />
             <Route path="compliance/settings" element={<ComplianceSettings onNavigate={handleNavigate} />} />
-            <Route path="compliance/fsma" element={<FSMADashboard onNavigate={handleNavigate} />} />
-            <Route path="compliance/fsma/visitors" element={<FSMADashboard onNavigate={handleNavigate} initialTab="visitors" />} />
-            <Route path="compliance/fsma/cleaning" element={<FSMADashboard onNavigate={handleNavigate} initialTab="cleaning" />} />
-            <Route path="compliance/fsma/meetings" element={<FSMADashboard onNavigate={handleNavigate} initialTab="meetings" />} />
-            <Route path="compliance/fsma/inventory" element={<FSMADashboard onNavigate={handleNavigate} initialTab="inventory" />} />
-            <Route path="compliance/fsma/phi" element={<FSMADashboard onNavigate={handleNavigate} initialTab="phi" />} />
-            <Route path="compliance/fsma/audit" element={<FSMADashboard onNavigate={handleNavigate} initialTab="audit" />} />
-            <Route path="compliance/primusgfs" element={<PrimusGFSDashboard onNavigate={handleNavigate} />} />
-            <Route path="compliance/primusgfs/documents" element={<PrimusGFSDashboard onNavigate={handleNavigate} initialTab="documents" />} />
-            <Route path="compliance/primusgfs/audits" element={<PrimusGFSDashboard onNavigate={handleNavigate} initialTab="audits" />} />
-            <Route path="compliance/primusgfs/corrective-actions" element={<PrimusGFSDashboard onNavigate={handleNavigate} initialTab="corrective-actions" />} />
-            <Route path="compliance/primusgfs/land" element={<PrimusGFSDashboard onNavigate={handleNavigate} initialTab="land" />} />
-            <Route path="compliance/primusgfs/suppliers" element={<PrimusGFSDashboard onNavigate={handleNavigate} initialTab="suppliers" />} />
-            <Route path="compliance/primusgfs/recalls" element={<PrimusGFSDashboard onNavigate={handleNavigate} initialTab="recalls" />} />
-            <Route path="compliance/primusgfs/food-defense" element={<PrimusGFSDashboard onNavigate={handleNavigate} initialTab="food-defense" />} />
-            <Route path="compliance/primusgfs/sanitation" element={<PrimusGFSDashboard onNavigate={handleNavigate} initialTab="sanitation" />} />
-            <Route path="compliance/primusgfs/calibration" element={<PrimusGFSDashboard onNavigate={handleNavigate} initialTab="calibration" />} />
-            <Route path="compliance/primusgfs/pest-control" element={<PrimusGFSDashboard onNavigate={handleNavigate} initialTab="pest-control" />} />
-            <Route path="compliance/primusgfs/pre-harvest" element={<PrimusGFSDashboard onNavigate={handleNavigate} initialTab="pre-harvest" />} />
-            {/* CAC Food Safety Manual V5.0 tab routes */}
-            <Route path="compliance/primusgfs/profile" element={<PrimusGFSDashboard onNavigate={handleNavigate} initialTab="profile" />} />
-            <Route path="compliance/primusgfs/org-roles" element={<PrimusGFSDashboard onNavigate={handleNavigate} initialTab="org-roles" />} />
-            <Route path="compliance/primusgfs/committee" element={<PrimusGFSDashboard onNavigate={handleNavigate} initialTab="committee" />} />
-            <Route path="compliance/primusgfs/mgmt-review" element={<PrimusGFSDashboard onNavigate={handleNavigate} initialTab="mgmt-review" />} />
-            <Route path="compliance/primusgfs/training-matrix" element={<PrimusGFSDashboard onNavigate={handleNavigate} initialTab="training-matrix" />} />
-            <Route path="compliance/primusgfs/training-sessions" element={<PrimusGFSDashboard onNavigate={handleNavigate} initialTab="training-sessions" />} />
-            <Route path="compliance/primusgfs/perimeter" element={<PrimusGFSDashboard onNavigate={handleNavigate} initialTab="perimeter" />} />
-            <Route path="compliance/primusgfs/pre-season" element={<PrimusGFSDashboard onNavigate={handleNavigate} initialTab="pre-season" />} />
-            <Route path="compliance/primusgfs/field-risk" element={<PrimusGFSDashboard onNavigate={handleNavigate} initialTab="field-risk" />} />
-            <Route path="compliance/primusgfs/non-conformance" element={<PrimusGFSDashboard onNavigate={handleNavigate} initialTab="non-conformance" />} />
-            <Route path="compliance/primusgfs/product-holds" element={<PrimusGFSDashboard onNavigate={handleNavigate} initialTab="product-holds" />} />
-            <Route path="compliance/primusgfs/supplier-verify" element={<PrimusGFSDashboard onNavigate={handleNavigate} initialTab="supplier-verify" />} />
-            <Route path="compliance/primusgfs/food-fraud" element={<PrimusGFSDashboard onNavigate={handleNavigate} initialTab="food-fraud" />} />
-            <Route path="compliance/primusgfs/emergency" element={<PrimusGFSDashboard onNavigate={handleNavigate} initialTab="emergency" />} />
-            <Route path="compliance/primusgfs/chemical-inv" element={<PrimusGFSDashboard onNavigate={handleNavigate} initialTab="chemical-inv" />} />
-            <Route path="compliance/primusgfs/sanitation-maint" element={<PrimusGFSDashboard onNavigate={handleNavigate} initialTab="sanitation-maint" />} />
-            <Route path="compliance/primusgfs/cac-manual" element={<PrimusGFSDashboard onNavigate={handleNavigate} initialTab="cac-manual" />} />
-            <Route path="compliance/primusgfs/audit-binder" element={<PrimusGFSDashboard onNavigate={handleNavigate} initialTab="audit-binder" />} />
             <Route path="compliance/pesticide" element={<DeadlineCalendar onNavigate={handleNavigate} />} />
             <Route path="compliance/inspector-checklist" element={<InspectorChecklist onNavigate={handleNavigate} />} />
             {/* Pick & haul rolled into Harvest & Packing; old links land there. */}

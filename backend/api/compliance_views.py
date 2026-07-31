@@ -2099,3 +2099,175 @@ class SGMAReportExportViewSet(viewsets.ViewSet):
         service = WaterComplianceService(company_id=company_id)
         report = service.generate_sgma_report_data(farm_id, period)
         return asdict(report)
+
+
+# =============================================================================
+# PHI COMPLIANCE CHECK VIEWSET (moved from the removed FSMA module)
+# =============================================================================
+
+from .audit_utils import AuditLogMixin
+from .models import Field, PHIComplianceCheck
+from .serializers import (
+    PHIComplianceCheckSerializer,
+    PHIComplianceCheckListSerializer,
+    PHIPreCheckSerializer,
+)
+
+
+class PHIComplianceCheckViewSet(AuditLogMixin, viewsets.ModelViewSet):
+    """
+    API endpoint for PHI compliance checks.
+    """
+    permission_classes = [IsAuthenticated, HasCompanyAccess]
+    http_method_names = ['get', 'post']
+
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return PHIComplianceCheckListSerializer
+        return PHIComplianceCheckSerializer
+
+    def get_queryset(self):
+        company = get_user_company(self.request.user)
+        if not company:
+            return PHIComplianceCheck.objects.none()
+
+        queryset = PHIComplianceCheck.objects.filter(
+            harvest__field__farm__company=company
+        )
+
+        # Filter by status
+        status_filter = self.request.query_params.get('status')
+        if status_filter:
+            queryset = queryset.filter(status=status_filter)
+
+        # Filter by date range
+        start_date = self.request.query_params.get('start_date')
+        end_date = self.request.query_params.get('end_date')
+        if start_date:
+            queryset = queryset.filter(harvest__harvest_date__gte=start_date)
+        if end_date:
+            queryset = queryset.filter(harvest__harvest_date__lte=end_date)
+
+        return queryset.select_related('harvest', 'harvest__field', 'override_by')
+
+    @action(detail=False, methods=['post'])
+    def pre_check(self, request):
+        """Run a pre-harvest PHI check without saving."""
+        company = require_company(request.user)
+        serializer = PHIPreCheckSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        field_id = serializer.validated_data['field_id']
+        proposed_date = serializer.validated_data['proposed_harvest_date']
+
+        # Verify field belongs to company
+        try:
+            field = Field.objects.get(id=field_id, farm__company=company)
+        except Field.DoesNotExist:
+            return Response(
+                {'error': 'Field not found'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        # Check recent applications
+        result = self._check_phi_compliance(field, proposed_date)
+
+        return Response(result)
+
+    def _check_phi_compliance(self, field, harvest_date):
+        """Check PHI compliance for a field and harvest date."""
+        # Look back 365 days for applications
+        lookback_date = harvest_date - timedelta(days=365)
+
+        applications = PesticideApplication.objects.filter(
+            field=field,
+            application_date__gte=lookback_date,
+            application_date__lte=harvest_date
+        ).select_related('product')
+
+        applications_checked = []
+        warnings = []
+        status_val = 'compliant'
+        earliest_safe = None
+
+        for app in applications:
+            phi_days = app.product.phi_days if app.product.phi_days else 0
+            days_since_app = (harvest_date - app.application_date).days
+            safe_date = app.application_date + timedelta(days=phi_days)
+
+            app_check = {
+                'application_id': app.id,
+                'product_name': app.product.name,
+                'application_date': str(app.application_date),
+                'phi_days': phi_days,
+                'days_since_application': days_since_app,
+                'earliest_safe_harvest': str(safe_date),
+                'compliant': days_since_app >= phi_days,
+            }
+            applications_checked.append(app_check)
+
+            if days_since_app < phi_days:
+                if phi_days - days_since_app <= 3:
+                    warnings.append(
+                        f"WARNING: {app.product.name} applied on {app.application_date} - "
+                        f"only {days_since_app} days ago (PHI is {phi_days} days). "
+                        f"Safe to harvest after {safe_date}."
+                    )
+                    if status_val == 'compliant':
+                        status_val = 'warning'
+                else:
+                    warnings.append(
+                        f"NON-COMPLIANT: {app.product.name} applied on {app.application_date} - "
+                        f"only {days_since_app} days ago (PHI is {phi_days} days). "
+                        f"Cannot harvest until {safe_date}."
+                    )
+                    status_val = 'non_compliant'
+
+                if earliest_safe is None or safe_date > earliest_safe:
+                    earliest_safe = safe_date
+
+        return {
+            'status': status_val,
+            'applications_checked': applications_checked,
+            'warnings': warnings,
+            'earliest_safe_harvest': str(earliest_safe) if earliest_safe else None,
+        }
+
+    @action(detail=True, methods=['post'])
+    def verify(self, request, pk=None):
+        """Re-verify PHI compliance for an existing check."""
+        phi_check = self.get_object()
+        harvest = phi_check.harvest
+
+        result = self._check_phi_compliance(harvest.field, harvest.harvest_date)
+
+        phi_check.status = result['status']
+        phi_check.applications_checked = result['applications_checked']
+        phi_check.warnings = result['warnings']
+        if result['earliest_safe_harvest']:
+            phi_check.earliest_safe_harvest = datetime.strptime(
+                result['earliest_safe_harvest'], '%Y-%m-%d'
+            ).date()
+        phi_check.save()
+
+        return Response(PHIComplianceCheckSerializer(phi_check).data)
+
+    @action(detail=True, methods=['post'])
+    def override(self, request, pk=None):
+        """Override a non-compliant or warning status."""
+        phi_check = self.get_object()
+        reason = request.data.get('reason')
+
+        if not reason:
+            return Response(
+                {'error': 'Override reason is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        phi_check.status = 'override'
+        phi_check.override_reason = reason
+        phi_check.override_by = request.user
+        phi_check.override_at = timezone.now()
+        phi_check.save()
+
+        return Response(PHIComplianceCheckSerializer(phi_check).data)

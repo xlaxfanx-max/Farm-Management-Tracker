@@ -10,17 +10,5 @@ from .compliance_tasks import (
     check_active_reis,
     send_daily_compliance_digest,
     cleanup_old_alerts,
-)
-
-# FSMA compliance tasks
-from .fsma_tasks import (
-    check_cleaning_compliance,
-    check_quarterly_meeting_compliance,
-    generate_monthly_inventory_snapshot,
-    generate_audit_binder,
-    check_low_inventory_alerts,
     check_phi_compliance_for_upcoming_harvests,
-    send_fsma_daily_reminder,
-    generate_water_assessment_pdf,
-    cleanup_old_fsma_data,
 )

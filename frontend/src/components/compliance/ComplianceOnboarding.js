@@ -46,7 +46,6 @@ const REGULATIONS = [
   { key: 'ilrp_compliance', label: 'ILRP', description: 'Irrigated Lands Regulatory Program' },
   { key: 'organic_certification', label: 'Organic', description: 'USDA Organic Certification' },
   { key: 'globalgap_certification', label: 'GlobalGAP', description: 'GlobalGAP Certification' },
-  { key: 'primusgfs_certification', label: 'PrimusGFS', description: 'PrimusGFS GAP/GMP Certification' },
 ];
 
 export default function ComplianceOnboarding({ onComplete, onSkip }) {

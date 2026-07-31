@@ -3,7 +3,7 @@ Comprehensive ViewSet endpoint tests for Finch Farms Dashboard.
 
 Tests CRUD operations, authentication, company scoping, and response shapes
 for all critical ViewSets: Farm, Field, Harvest, Packinghouse, Pool,
-TraceabilityLot, WaterSource, and ComplianceProfile.
+WaterSource and ComplianceProfile.
 """
 
 from datetime import date, timedelta
@@ -604,177 +604,6 @@ class PoolViewSetTests(TestCase):
 
 
 # =============================================================================
-# TRACEABILITY LOT VIEWSET TESTS
-# =============================================================================
-
-class TraceabilityLotViewSetTests(TestCase):
-    """Tests for /api/fsma/traceability-lots/ endpoints."""
-
-    def setUp(self):
-        self.factory = TestDataFactory()
-        self.company, self.user = self.factory.create_company_with_user()
-        self.client = self.factory.create_authenticated_client(self.user)
-        self.farm = self.factory.create_farm(self.company)
-        self.field = self.factory.create_field(self.farm)
-        self.harvest = self.factory.create_harvest(self.field)
-        self.lot = self.factory.create_traceability_lot(
-            self.company,
-            harvest=self.harvest,
-            field=self.field,
-            farm=self.farm,
-        )
-
-    # --- LIST ---
-
-    def test_list_lots(self):
-        response = self.client.get('/api/fsma/traceability-lots/')
-        self.assertEqual(response.status_code, 200)
-        data = response.json()
-        results = data.get('results', data) if isinstance(data, dict) else data
-        self.assertGreaterEqual(len(results), 1)
-
-    def test_list_lots_unauthenticated(self):
-        client = APIClient()
-        response = client.get('/api/fsma/traceability-lots/')
-        self.assertEqual(response.status_code, 401)
-
-    def test_list_lots_contains_expected_fields(self):
-        response = self.client.get('/api/fsma/traceability-lots/')
-        data = response.json()
-        results = data.get('results', data) if isinstance(data, dict) else data
-        lot_data = results[0]
-        for key in ('id', 'lot_number', 'product_description', 'commodity',
-                     'status', 'harvest_date'):
-            self.assertIn(key, lot_data, f"Missing field: {key}")
-
-    # --- DETAIL ---
-
-    def test_retrieve_lot(self):
-        response = self.client.get(f'/api/fsma/traceability-lots/{self.lot.id}/')
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json()['id'], self.lot.id)
-        self.assertEqual(response.json()['lot_number'], self.lot.lot_number)
-
-    def test_retrieve_lot_unauthenticated(self):
-        client = APIClient()
-        response = client.get(f'/api/fsma/traceability-lots/{self.lot.id}/')
-        self.assertEqual(response.status_code, 401)
-
-    # --- CREATE (direct) ---
-
-    def test_create_lot_direct(self):
-        response = self.client.post('/api/fsma/traceability-lots/', {
-            'lot_number': 'LOT-DIRECT-001',
-            'product_description': 'Fresh Lemons',
-            'commodity': 'eureka_lemon',
-            'harvest_date': str(date.today()),
-            'quantity_bins': 75,
-            'status': 'harvested',
-            'field': self.field.id,
-            'farm': self.farm.id,
-        }, format='json')
-        self.assertEqual(response.status_code, 201)
-        self.assertEqual(response.json()['lot_number'], 'LOT-DIRECT-001')
-
-    # --- CREATE FROM HARVEST ---
-
-    def test_create_lot_from_harvest(self):
-        """POST /api/fsma/traceability-lots/create-from-harvest/"""
-        new_harvest = self.factory.create_harvest(self.field)
-        response = self.client.post(
-            '/api/fsma/traceability-lots/create-from-harvest/',
-            {
-                'harvest_id': new_harvest.id,
-                'product_description': 'Fresh Navel Oranges',
-            },
-            format='json',
-        )
-        self.assertEqual(response.status_code, 201)
-        self.assertIn('lot_number', response.json())
-        self.assertEqual(response.json()['status'], 'harvested')
-
-    def test_create_lot_from_harvest_unauthenticated(self):
-        client = APIClient()
-        response = client.post(
-            '/api/fsma/traceability-lots/create-from-harvest/',
-            {'harvest_id': self.harvest.id, 'product_description': 'Test'},
-            format='json',
-        )
-        self.assertEqual(response.status_code, 401)
-
-    # --- FULL TRACE ---
-
-    def test_full_trace(self):
-        """GET /api/fsma/traceability-lots/{id}/full-trace/ returns trace report."""
-        response = self.client.get(
-            f'/api/fsma/traceability-lots/{self.lot.id}/full-trace/'
-        )
-        self.assertEqual(response.status_code, 200)
-        data = response.json()
-        self.assertIn('one_step_back', data)
-        self.assertIn('one_step_forward', data)
-        self.assertIn('compliance', data)
-
-    def test_full_trace_unauthenticated(self):
-        client = APIClient()
-        response = client.get(
-            f'/api/fsma/traceability-lots/{self.lot.id}/full-trace/'
-        )
-        self.assertEqual(response.status_code, 401)
-
-    # --- DASHBOARD ---
-
-    def test_dashboard(self):
-        """GET /api/fsma/traceability-lots/dashboard/ returns summary stats."""
-        response = self.client.get('/api/fsma/traceability-lots/dashboard/')
-        self.assertEqual(response.status_code, 200)
-        data = response.json()
-        self.assertIn('total_lots', data)
-        self.assertIn('fda_ready_count', data)
-        self.assertIn('lots_by_status', data)
-
-    def test_dashboard_unauthenticated(self):
-        client = APIClient()
-        response = client.get('/api/fsma/traceability-lots/dashboard/')
-        self.assertEqual(response.status_code, 401)
-
-    # --- COMPANY SCOPING ---
-
-    def test_lot_company_scoping(self):
-        """User from another company cannot see this company's lots."""
-        other_company, other_user = self.factory.create_company_with_user()
-        other_client = self.factory.create_authenticated_client(other_user)
-
-        response = other_client.get('/api/fsma/traceability-lots/')
-        data = response.json()
-        results = data.get('results', data) if isinstance(data, dict) else data
-        lot_ids = [l['id'] for l in results]
-        self.assertNotIn(self.lot.id, lot_ids)
-
-    def test_lot_detail_company_scoping(self):
-        other_company, other_user = self.factory.create_company_with_user()
-        other_client = self.factory.create_authenticated_client(other_user)
-
-        response = other_client.get(f'/api/fsma/traceability-lots/{self.lot.id}/')
-        self.assertEqual(response.status_code, 404)
-
-    # --- QUERY FILTERS ---
-
-    def test_list_lots_filter_by_status(self):
-        response = self.client.get('/api/fsma/traceability-lots/?status=harvested')
-        self.assertEqual(response.status_code, 200)
-
-    def test_list_lots_search(self):
-        response = self.client.get(
-            f'/api/fsma/traceability-lots/?search={self.lot.lot_number}'
-        )
-        self.assertEqual(response.status_code, 200)
-        data = response.json()
-        results = data.get('results', data) if isinstance(data, dict) else data
-        self.assertGreaterEqual(len(results), 1)
-
-
-# =============================================================================
 # WATER SOURCE VIEWSET TESTS
 # =============================================================================
 
@@ -1026,7 +855,6 @@ class FullPipelineIntegrationTests(TestCase):
             '/api/harvests/',
             '/api/packinghouses/',
             '/api/pools/',
-            '/api/fsma/traceability-lots/',
         ]
         for url in endpoints:
             response = self.client.get(url)
@@ -1051,7 +879,6 @@ class FullPipelineIntegrationTests(TestCase):
             '/api/harvests/',
             '/api/packinghouses/',
             '/api/pools/',
-            '/api/fsma/traceability-lots/',
         ]
         for url in endpoints:
             response = other_client.get(url)
@@ -1070,14 +897,6 @@ class FullPipelineIntegrationTests(TestCase):
         data = response.json()
         self.assertEqual(data['field'], self.pipeline['field'].id)
         self.assertEqual(data['farm_name'], self.pipeline['farm'].name)
-
-    def test_lot_references_correct_harvest(self):
-        """Traceability lot references the correct harvest."""
-        lot = self.pipeline['lot']
-        response = self.client.get(f'/api/fsma/traceability-lots/{lot.id}/')
-        self.assertEqual(response.status_code, 200)
-        data = response.json()
-        self.assertEqual(data['harvest'], self.pipeline['harvest'].id)
 
     def test_pool_belongs_to_correct_packinghouse(self):
         """Pool detail references the correct packinghouse."""
