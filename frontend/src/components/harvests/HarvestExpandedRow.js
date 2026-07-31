@@ -142,7 +142,7 @@ const BinsReconciliation = ({ harvest }) => {
   const unitLabelLocal = harvest.primary_unit_label || 'bins';
 
   const getStatusBadge = (status) => {
-    if (status === 'match') return <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-700">&#10003; Complete</span>;
+    if (status === 'match') return <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-700">✓ Complete</span>;
     if (status === 'under') return <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">Partial</span>;
     if (status === 'over') return <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-danger-bg text-danger">Over</span>;
     return null;

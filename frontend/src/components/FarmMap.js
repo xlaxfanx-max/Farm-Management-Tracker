@@ -3,6 +3,7 @@ import { MapContainer, TileLayer, Marker, Popup, Polygon, FeatureGroup, LayersCo
 import { EditControl } from 'react-leaflet-draw';
 import L from 'leaflet';
 import { MapPin, Maximize2, Minimize2, Layers, Pencil, Save, X, Locate, AlertTriangle } from 'lucide-react';
+import { MAP_HEX, cropColor } from '../theme/finchChartTheme';
 
 // Fix for default marker icons in React-Leaflet
 delete L.Icon.Default.prototype._getIconUrl;
@@ -17,7 +18,7 @@ const createFarmIcon = (isSelected = false) => new L.DivIcon({
   className: 'custom-farm-marker',
   html: `
     <div style="
-      background: ${isSelected ? '#2563eb' : '#16a34a'};
+      background: ${isSelected ? MAP_HEX.selected : MAP_HEX.marker};
       width: 32px;
       height: 32px;
       border-radius: 50% 50% 50% 0;
@@ -40,7 +41,7 @@ const createFarmIcon = (isSelected = false) => new L.DivIcon({
 });
 
 // Custom field marker icon
-const createFieldIcon = (color = '#f59e0b') => new L.DivIcon({
+const createFieldIcon = (color = MAP_HEX.fieldStroke) => new L.DivIcon({
   className: 'custom-field-marker',
   html: `
     <div style="
@@ -57,17 +58,8 @@ const createFieldIcon = (color = '#f59e0b') => new L.DivIcon({
   popupAnchor: [0, -12],
 });
 
-// Field colors by crop type
-const getFieldColor = (crop) => {
-  const cropLower = (crop || '').toLowerCase();
-  if (cropLower.includes('navel')) return { fill: '#f97316', stroke: '#ea580c' };
-  if (cropLower.includes('valencia')) return { fill: '#fb923c', stroke: '#f97316' };
-  if (cropLower.includes('lemon')) return { fill: '#fbbf24', stroke: '#f59e0b' };
-  if (cropLower.includes('grapefruit')) return { fill: '#f472b6', stroke: '#ec4899' };
-  if (cropLower.includes('lime')) return { fill: '#22c55e', stroke: '#16a34a' };
-  if (cropLower.includes('mandarin') || cropLower.includes('tangerine')) return { fill: '#ff6b35', stroke: '#e85d2d' };
-  return { fill: '#16a34a', stroke: '#15803d' };
-};
+// Field colours by crop type — resolved from the Finch crop palette.
+const getFieldColor = (crop) => cropColor(crop);
 
 // Calculate polygon area in acres
 const calculateAcres = (latlngs) => {
@@ -602,8 +594,8 @@ const FarmMap = ({
                 key={`farm-boundary-${farm.id}`}
                 positions={coords}
                 pathOptions={{
-                  color: '#1d4ed8',
-                  fillColor: '#93c5fd',
+                  color: MAP_HEX.parcelStroke,
+                  fillColor: MAP_HEX.parcelFill,
                   fillOpacity: 0.15,
                   weight: selectedFarmId === farm.id ? 3 : 2,
                   dashArray: '8 6',
@@ -679,8 +671,8 @@ const FarmMap = ({
                 polygon: {
                   allowIntersection: false,
                   shapeOptions: {
-                    color: '#3b82f6',
-                    fillColor: '#3b82f6',
+                    color: MAP_HEX.draw,
+                    fillColor: MAP_HEX.drawFill,
                     fillOpacity: 0.3,
                   }
                 },

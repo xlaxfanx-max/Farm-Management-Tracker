@@ -4,6 +4,7 @@
 // =============================================================================
 
 import React, { useState, useEffect } from 'react';
+import { sequential } from '../../theme/finchChartTheme';
 import {
   TrendingUp,
   BarChart3,
@@ -39,18 +40,7 @@ import {
 } from '../analytics/analyticsShared';
 
 // Fixed color palette for size codes (smaller number = larger fruit)
-const SIZE_COLORS = [
-  '#1e40af', // 048 - deep blue (largest)
-  '#2563eb', // 056
-  '#3b82f6', // 072
-  '#06b6d4', // 075
-  '#10b981', // 088
-  '#22c55e', // 113
-  '#eab308', // 138
-  '#f97316', // 165
-  '#ef4444', // 200+ (smallest)
-  '#a855f7', // overflow
-];
+const SIZE_COLORS = sequential(10);
 
 const getSizeColor = (index) => SIZE_COLORS[index % SIZE_COLORS.length];
 

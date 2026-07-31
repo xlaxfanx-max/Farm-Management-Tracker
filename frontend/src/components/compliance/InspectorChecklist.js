@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { STATUS_HEX } from '../../theme/finchChartTheme';
 import {
   CheckCircle2,
   XCircle,
@@ -142,7 +143,7 @@ export default function InspectorChecklist({ onNavigate }) {
   const passedItems = sections.reduce((s, sec) => s + sec.items.filter((i) => i.is_passed).length, 0);
   const gapCount = totalItems - passedItems;
 
-  const ringColor = readinessPct >= 80 ? '#22c55e' : readinessPct >= 60 ? '#f59e0b' : '#ef4444';
+  const ringColor = readinessPct >= 80 ? STATUS_HEX.success : readinessPct >= 60 ? STATUS_HEX.warning : STATUS_HEX.danger;
   const radius = 40;
   const circumference = 2 * Math.PI * radius;
   const dashOffset = circumference - (readinessPct / 100) * circumference;

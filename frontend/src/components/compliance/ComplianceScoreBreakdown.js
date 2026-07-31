@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { STATUS_HEX } from '../../theme/finchChartTheme';
 import { CheckCircle2, XCircle, ChevronDown, ChevronUp, RefreshCw } from 'lucide-react';
 import api from '../../services/api';
 
@@ -9,9 +10,9 @@ function ScoreRing({ score }) {
   const dashOffset = circumference - (progress / 100) * circumference;
 
   let ringColor;
-  if (score >= 75) ringColor = '#22c55e';
-  else if (score >= 50) ringColor = '#f59e0b';
-  else ringColor = '#ef4444';
+  if (score >= 75) ringColor = STATUS_HEX.success;
+  else if (score >= 50) ringColor = STATUS_HEX.warning;
+  else ringColor = STATUS_HEX.danger;
 
   let textColor;
   if (score >= 75) textColor = 'text-primary';

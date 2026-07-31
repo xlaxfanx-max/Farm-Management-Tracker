@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { STATUS_HEX } from '../theme/finchChartTheme';
 import {
   BarChart3,
   DollarSign,
@@ -48,7 +49,7 @@ const BarChart = ({ data, title, valueKey = 'count', labelKey = 'month', height 
           dataKeys={[valueKey]}
           xKey={labelKey}
           height={height}
-          colors={['#22c55e']}
+          colors={[STATUS_HEX.success]}
         />
       </div>
     </SectionCard>
@@ -110,8 +111,8 @@ const HorizontalBarChart = ({ data, title }) => {
           xKey="name"
           height={250}
           horizontal
-          colors={['#22c55e']}
-          barColors={data.slice(0, 8).map(d => (d.profit >= 0 ? '#22c55e' : '#f87171'))}
+          colors={[STATUS_HEX.success]}
+          barColors={data.slice(0, 8).map(d => (d.profit >= 0 ? STATUS_HEX.success : STATUS_HEX.danger))}
           valueFormatter={(val) => formatCurrency(val, { compact: true })}
         />
       </div>

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { STATUS_HEX, CHART_GRID } from '../../theme/finchChartTheme';
 import {
   Shield,
   AlertTriangle,
@@ -79,9 +80,9 @@ const MiniScoreCircle = ({ score, size = 48 }) => {
   const circumference = radius * 2 * Math.PI;
   const offset = circumference - (score / 100) * circumference;
 
-  let color = '#22c55e'; // green
-  if (score < 70) color = '#ef4444'; // red
-  else if (score < 85) color = '#f59e0b'; // yellow
+  let color = STATUS_HEX.success;
+  if (score < 70) color = STATUS_HEX.danger;
+  else if (score < 85) color = STATUS_HEX.warning;
 
   return (
     <div className="relative" style={{ width: size, height: size }}>
@@ -91,7 +92,7 @@ const MiniScoreCircle = ({ score, size = 48 }) => {
           cy={size / 2}
           r={radius}
           fill="none"
-          stroke="#e5e7eb"
+          stroke={CHART_GRID}
           strokeWidth={strokeWidth}
           className=""
         />

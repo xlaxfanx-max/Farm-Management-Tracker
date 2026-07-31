@@ -3,6 +3,7 @@
 // =============================================================================
 
 import React, { useState } from 'react';
+import { CHART_GRID, CHART_TICK, MAP_HEX } from '../../theme/finchChartTheme';
 import { BarChart3 } from 'lucide-react';
 
 // =============================================================================
@@ -70,34 +71,34 @@ const ExtractionLineChart = ({ readings }) => {
         return (
           <g key={i}>
             <line x1={pad.left} y1={y} x2={chartWidth - pad.right} y2={y}
-              stroke="#e5e7eb" strokeWidth="1" strokeDasharray="4,4" />
-            <text x={pad.left - 6} y={y + 3} textAnchor="end" fontSize="9" fill="#9ca3af">
+              stroke={CHART_GRID} strokeWidth="1" strokeDasharray="4,4" />
+            <text x={pad.left - 6} y={y + 3} textAnchor="end" fontSize="9" fill={CHART_TICK.fill}>
               {formatAF(val)} AF
             </text>
           </g>
         );
       })}
       <line x1={pad.left} y1={pad.top} x2={pad.left} y2={pad.top + plotH}
-        stroke="#e5e7eb" strokeWidth="1" />
+        stroke={CHART_GRID} strokeWidth="1" />
       {points.length > 1 && (
         <polygon
           points={`${points[0].x},${pad.top + plotH} ${polyline} ${points[points.length - 1].x},${pad.top + plotH}`}
-          fill="#0891b2" fillOpacity="0.06"
+          fill={MAP_HEX.water} fillOpacity="0.06"
         />
       )}
       {points.length > 1 && (
         <polyline points={polyline} fill="none"
-          stroke="#0891b2" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
+          stroke={MAP_HEX.water} strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
       )}
       {points.map((p, i) => (
         <circle key={i} cx={p.x} cy={p.y} r="3.5"
-          fill="#0891b2" stroke="white" strokeWidth="2" className="cursor-pointer">
+          fill={MAP_HEX.water} stroke="white" strokeWidth="2" className="cursor-pointer">
           <title>{`${new Date(p.reading.reading_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}: ${formatAF(p.val)} AF`}</title>
         </circle>
       ))}
       {xLabels.map(i => (
         <text key={i} x={points[i].x} y={chartHeight - 4}
-          textAnchor="middle" fontSize="9" fill="#9ca3af">
+          textAnchor="middle" fontSize="9" fill={CHART_TICK.fill}>
           {shortDate(readings[i].reading_date)}
         </text>
       ))}

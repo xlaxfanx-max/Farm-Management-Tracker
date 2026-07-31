@@ -44,6 +44,9 @@ export const CHART_TOOLTIP_LABEL_STYLE = {
 
 export const CHART_AXIS_LINE = '#D6C6A8'; // sand-300
 
+/** Pie/doughnut slice separator. */
+export const CHART_PIE_STROKE = '#FFFFFF';
+
 export const STATUS_HEX = {
   success: '#4A7C43',
   warning: '#F2B705',

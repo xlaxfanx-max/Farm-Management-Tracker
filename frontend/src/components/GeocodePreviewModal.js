@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-leaflet';
 import L from 'leaflet';
+import { MAP_HEX } from '../theme/finchChartTheme';
 import { Check, MapPin, Navigation, Edit3, AlertCircle, RefreshCw } from 'lucide-react';
 import { useConfirm } from '../contexts/ConfirmContext';
 import { useToast } from '../contexts/ToastContext';
 import Modal from './ui/Modal';
 import FormField, { inputClasses } from './ui/FormField';
 
-const createMarkerIcon = (color = '#16a34a') =>
+const createMarkerIcon = (color = MAP_HEX.marker) =>
   L.divIcon({
     className: 'custom-marker',
     html: `<div style="
@@ -53,7 +54,7 @@ function DraggableMarker({ position, onPositionChange }) {
   return (
     <Marker
       position={position}
-      icon={createMarkerIcon('#16a34a')}
+      icon={createMarkerIcon(MAP_HEX.marker)}
       draggable={true}
       ref={markerRef}
       eventHandlers={{
@@ -74,7 +75,7 @@ function AlternativeMarkers({ alternatives, onSelect }) {
     <Marker
       key={idx}
       position={[alt.lat, alt.lng]}
-      icon={createMarkerIcon('#6b7280')}
+      icon={createMarkerIcon(MAP_HEX.muted)}
       eventHandlers={{ click: () => onSelect(alt) }}
     />
   ));

@@ -90,7 +90,7 @@ export default function SidebarUser({
                       {company.name}
                     </span>
                     {company.id === currentCompany.id && (
-                      <span className="ml-auto text-primary">&#10003;</span>
+                      <span className="ml-auto text-primary">✓</span>
                     )}
                   </button>
                 ))}

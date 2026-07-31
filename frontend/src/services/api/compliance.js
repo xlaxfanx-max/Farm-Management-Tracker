@@ -3,6 +3,7 @@
 // =============================================================================
 
 import api, { createCRUDAPI } from './index';
+import { STATUS_HEX } from '../../theme/finchChartTheme';
 
 /**
  * Compliance Profile - Company-level compliance configuration
@@ -218,18 +219,18 @@ export const COMPLIANCE_CONSTANTS = {
   ],
 
   DEADLINE_STATUSES: [
-    { value: 'upcoming', label: 'Upcoming', color: '#6b7280' },
-    { value: 'due_soon', label: 'Due Soon', color: '#f59e0b' },
-    { value: 'overdue', label: 'Overdue', color: '#ef4444' },
-    { value: 'completed', label: 'Completed', color: '#22c55e' },
-    { value: 'skipped', label: 'Skipped', color: '#9ca3af' },
+    { value: 'upcoming', label: 'Upcoming', color: STATUS_HEX.neutral },
+    { value: 'due_soon', label: 'Due Soon', color: STATUS_HEX.warning },
+    { value: 'overdue', label: 'Overdue', color: STATUS_HEX.danger },
+    { value: 'completed', label: 'Completed', color: STATUS_HEX.success },
+    { value: 'skipped', label: 'Skipped', color: STATUS_HEX.neutral },
   ],
 
   ALERT_PRIORITIES: [
-    { value: 'critical', label: 'Critical', color: '#dc2626' },
-    { value: 'high', label: 'High', color: '#f59e0b' },
-    { value: 'medium', label: 'Medium', color: '#3b82f6' },
-    { value: 'low', label: 'Low', color: '#6b7280' },
+    { value: 'critical', label: 'Critical', color: STATUS_HEX.danger },
+    { value: 'high', label: 'High', color: STATUS_HEX.warning },
+    { value: 'medium', label: 'Medium', color: STATUS_HEX.info },
+    { value: 'low', label: 'Low', color: STATUS_HEX.neutral },
   ],
 
   LICENSE_TYPES: [
@@ -244,11 +245,11 @@ export const COMPLIANCE_CONSTANTS = {
   ],
 
   LICENSE_STATUSES: [
-    { value: 'active', label: 'Active', color: '#22c55e' },
-    { value: 'expiring_soon', label: 'Expiring Soon', color: '#f59e0b' },
-    { value: 'expired', label: 'Expired', color: '#ef4444' },
-    { value: 'suspended', label: 'Suspended', color: '#dc2626' },
-    { value: 'pending_renewal', label: 'Pending Renewal', color: '#3b82f6' },
+    { value: 'active', label: 'Active', color: STATUS_HEX.success },
+    { value: 'expiring_soon', label: 'Expiring Soon', color: STATUS_HEX.warning },
+    { value: 'expired', label: 'Expired', color: STATUS_HEX.danger },
+    { value: 'suspended', label: 'Suspended', color: STATUS_HEX.danger },
+    { value: 'pending_renewal', label: 'Pending Renewal', color: STATUS_HEX.info },
   ],
 
   WPS_TRAINING_TYPES: [
@@ -269,12 +270,12 @@ export const COMPLIANCE_CONSTANTS = {
   ],
 
   REPORT_STATUSES: [
-    { value: 'draft', label: 'Draft', color: '#6b7280' },
-    { value: 'pending_review', label: 'Pending Review', color: '#f59e0b' },
-    { value: 'ready', label: 'Ready to Submit', color: '#3b82f6' },
-    { value: 'submitted', label: 'Submitted', color: '#22c55e' },
-    { value: 'accepted', label: 'Accepted', color: '#059669' },
-    { value: 'rejected', label: 'Rejected', color: '#ef4444' },
+    { value: 'draft', label: 'Draft', color: STATUS_HEX.neutral },
+    { value: 'pending_review', label: 'Pending Review', color: STATUS_HEX.warning },
+    { value: 'ready', label: 'Ready to Submit', color: STATUS_HEX.info },
+    { value: 'submitted', label: 'Submitted', color: STATUS_HEX.success },
+    { value: 'accepted', label: 'Accepted', color: STATUS_HEX.success },
+    { value: 'rejected', label: 'Rejected', color: STATUS_HEX.danger },
   ],
 
   INCIDENT_TYPES: [
@@ -287,10 +288,10 @@ export const COMPLIANCE_CONSTANTS = {
   ],
 
   INCIDENT_SEVERITIES: [
-    { value: 'minor', label: 'Minor', color: '#6b7280' },
-    { value: 'moderate', label: 'Moderate', color: '#f59e0b' },
-    { value: 'serious', label: 'Serious', color: '#ef4444' },
-    { value: 'critical', label: 'Critical', color: '#dc2626' },
+    { value: 'minor', label: 'Minor', color: STATUS_HEX.neutral },
+    { value: 'moderate', label: 'Moderate', color: STATUS_HEX.warning },
+    { value: 'serious', label: 'Serious', color: STATUS_HEX.danger },
+    { value: 'critical', label: 'Critical', color: STATUS_HEX.danger },
   ],
 
   US_STATES: [

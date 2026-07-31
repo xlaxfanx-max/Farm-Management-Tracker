@@ -7,7 +7,7 @@ import {
   Tooltip,
   Legend,
 } from 'recharts';
-import { CHART_SERIES, CHART_TOOLTIP_STYLE, CHART_TOOLTIP_LABEL_STYLE } from '../../../theme/finchChartTheme';
+import { CHART_SERIES, CHART_PIE_STROKE, CHART_TOOLTIP_STYLE, CHART_TOOLTIP_LABEL_STYLE } from '../../../theme/finchChartTheme';
 
 export default function PieChart({
   data = [],
@@ -36,7 +36,7 @@ export default function PieChart({
             outerRadius="80%"
             paddingAngle={2}
             strokeWidth={2}
-            stroke="#FFFFFF"
+            stroke={CHART_PIE_STROKE}
           >
             {data.map((_, i) => (
               <Cell key={i} fill={colors[i % colors.length]} />
