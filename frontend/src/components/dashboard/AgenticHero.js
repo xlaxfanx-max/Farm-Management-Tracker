@@ -119,7 +119,7 @@ function AgenticHero({
     <div className="space-y-4">
       {/* Greeting */}
       <div>
-        <h1 className="text-2xl font-semibold text-text">
+        <h1 className="text-2xl text-text">
           {getGreeting()}{firstName ? `, ${firstName}` : ''}.
           {totalCount > 0 ? (
             <span className="text-text-secondary font-normal">

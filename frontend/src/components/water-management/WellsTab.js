@@ -84,7 +84,7 @@ const WellsTab = ({
     )}
 
     {/* Quick Actions Bar */}
-    <div className="bg-white rounded-xl border border-border p-4">
+    <div className="bg-surface-raised rounded-card border border-border p-4">
       <div className="flex flex-wrap items-center gap-4">
         {/* Search */}
         <div className="flex-1 min-w-[200px] relative">
@@ -94,7 +94,7 @@ const WellsTab = ({
             placeholder="Search wells..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 border border-border rounded-lg bg-white focus:ring-2 focus:ring-green-500"
+            className="w-full pl-10 pr-4 py-2.5 border border-border rounded-card bg-surface-raised focus:ring-2 focus:ring-green-500"
           />
         </div>
 
@@ -102,7 +102,7 @@ const WellsTab = ({
         <select
           value={filterGSA}
           onChange={(e) => setFilterGSA(e.target.value)}
-          className="px-4 py-2.5 border border-border rounded-lg focus:ring-2 focus:ring-green-500 bg-white"
+          className="px-4 py-2.5 border border-border rounded-card focus:ring-2 focus:ring-green-500 bg-surface-raised"
         >
           <option value="">All GSAs</option>
           {Object.entries(GSA_NAMES).map(([value, label]) => (
@@ -123,7 +123,7 @@ const WellsTab = ({
         </button>
 
         {/* Refresh */}
-        <button onClick={handleRefresh} className="p-2.5 border border-border rounded-lg hover:bg-cream-50">
+        <button onClick={handleRefresh} className="p-2.5 border border-border rounded-card hover:bg-cream-50">
           <RefreshCw className={`w-5 h-5 text-bark-600 ${loading ? 'animate-spin' : ''}`} />
         </button>
       </div>
@@ -182,9 +182,9 @@ const WellsTab = ({
 
     {/* Wells List */}
     {filteredWells.length === 0 ? (
-      <div className="bg-white rounded-xl border border-border p-12 text-center">
+      <div className="bg-surface-raised rounded-card border border-border p-12 text-center">
         <Droplets className="w-12 h-12 text-sand-300 mx-auto mb-4" />
-        <h3 className="text-lg font-medium text-heading mb-2">No wells found</h3>
+        <h3 className="text-lg text-heading mb-2">No wells found</h3>
         <p className="text-text-secondary mb-6">Add a well to track groundwater extraction and SGMA compliance.</p>
         <button
           onClick={() => openWellSourceModal()}
@@ -197,7 +197,7 @@ const WellsTab = ({
     ) : (
       <div className="space-y-4">
         {filteredWells.map(well => (
-          <div key={well.id} className="bg-white rounded-xl border border-border overflow-hidden hover:border-border-strong hover:shadow-sm transition-all">
+          <div key={well.id} className="bg-surface-raised rounded-card border border-border overflow-hidden hover:border-border-strong hover:shadow-sm transition-all">
             {/* Well Header */}
             <div
               className="p-4 cursor-pointer"
@@ -209,7 +209,7 @@ const WellsTab = ({
                     <Droplets className={`w-6 h-6 ${well.calibration_due_soon || !well.meter_calibration_current ? 'text-yellow-600' : 'text-green-600'}`} />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-heading">{well.well_name || well.water_source_name}</h3>
+                    <h3 className=" text-heading">{well.well_name || well.water_source_name}</h3>
                     <p className="text-sm text-text-secondary">{well.farm_name} • {GSA_NAMES[well.gsa] || well.gsa}</p>
                   </div>
                 </div>
@@ -294,7 +294,7 @@ const WellsTab = ({
               <div className="border-t border-border bg-cream-50 p-5">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                   <div>
-                    <h4 className="text-sm font-semibold text-bark-700 mb-3 uppercase tracking-wider">Well Info</h4>
+                    <h4 className="text-sm text-bark-700 mb-3 uppercase tracking-wider">Well Info</h4>
                     <dl className="space-y-2 text-sm">
                       <div className="flex justify-between">
                         <dt className="text-text-secondary">State Well #:</dt>
@@ -311,7 +311,7 @@ const WellsTab = ({
                     </dl>
                   </div>
                   <div>
-                    <h4 className="text-sm font-semibold text-bark-700 mb-3 uppercase tracking-wider">Fee Rates</h4>
+                    <h4 className="text-sm text-bark-700 mb-3 uppercase tracking-wider">Fee Rates</h4>
                     <dl className="space-y-2 text-sm">
                       {well.base_extraction_rate && (
                         <div className="flex justify-between">
@@ -343,7 +343,7 @@ const WellsTab = ({
                     </dl>
                   </div>
                   <div>
-                    <h4 className="text-sm font-semibold text-bark-700 mb-3 uppercase tracking-wider">YTD Costs</h4>
+                    <h4 className="text-sm text-bark-700 mb-3 uppercase tracking-wider">YTD Costs</h4>
                     {well.ytd_extraction_af > 0 && (well.base_extraction_rate || well.gsp_rate) ? (
                       <dl className="space-y-2 text-sm">
                         {well.base_extraction_rate && (
@@ -377,7 +377,7 @@ const WellsTab = ({
                     )}
                   </div>
                   <div>
-                    <h4 className="text-sm font-semibold text-bark-700 mb-3 uppercase tracking-wider">Latest Reading</h4>
+                    <h4 className="text-sm text-bark-700 mb-3 uppercase tracking-wider">Latest Reading</h4>
                     {well.latest_reading ? (
                       <dl className="space-y-2 text-sm">
                         <div className="flex justify-between">
@@ -403,7 +403,7 @@ const WellsTab = ({
                 {/* Reading History */}
                 <div className="mt-6">
                   <div className="flex items-center justify-between mb-3">
-                    <h4 className="text-sm font-semibold text-bark-700 uppercase tracking-wider">Reading History</h4>
+                    <h4 className="text-sm text-bark-700 uppercase tracking-wider">Reading History</h4>
                     <button
                       onClick={() => openWellReadingModal(well.id, well.well_name)}
                       className="flex items-center gap-1.5 text-sm text-green-600 hover:text-green-700 font-medium"
@@ -419,7 +419,7 @@ const WellsTab = ({
                       Loading readings...
                     </div>
                   ) : wellReadings[well.id]?.length > 0 ? (
-                    <div className="bg-white rounded-lg border border-border overflow-hidden">
+                    <div className="bg-surface-raised rounded-card border border-border overflow-hidden">
                       <table className="w-full text-sm">
                         <thead>
                           <tr className="bg-cream-100 text-bark-600 text-xs uppercase tracking-wider">

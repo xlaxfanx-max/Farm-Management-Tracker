@@ -39,15 +39,15 @@ const categoryIcons = {
 
 // Category colors
 const categoryColors = {
-  citrus: { bg: 'from-orange-400 to-yellow-500', light: 'bg-orange-50', text: 'text-orange-600' },
-  subtropical: { bg: 'from-green-500 to-green-600', light: 'bg-green-50', text: 'text-primary' },
-  deciduous_fruit: { bg: 'from-sand-400 to-bark-500', light: 'bg-cream-100', text: 'text-bark-700' },
-  vine: { bg: 'from-sand-400 to-bark-500', light: 'bg-cream-100', text: 'text-bark-700' },
-  nut: { bg: 'from-yellow-500 to-yellow-600', light: 'bg-yellow-100', text: 'text-yellow-600' },
-  berry: { bg: 'from-danger to-bark-500', light: 'bg-danger-bg', text: 'text-danger' },
-  row_crop: { bg: 'from-green-500 to-green-600', light: 'bg-green-50', text: 'text-green-600' },
-  vegetable: { bg: 'from-green-400 to-green-500', light: 'bg-green-50', text: 'text-green-600' },
-  other: { bg: 'from-bark-400 to-bark-500', light: 'bg-cream-50', text: 'text-bark-600' },
+  citrus: { bg: 'from-orange-400 to-yellow-500', fill: 'bg-orange-500', light: 'bg-orange-50', text: 'text-orange-600' },
+  subtropical: { bg: 'from-green-500 to-green-600', fill: 'bg-green-600', light: 'bg-green-50', text: 'text-primary' },
+  deciduous_fruit: { bg: 'from-sand-400 to-bark-500', fill: 'bg-bark-500', light: 'bg-cream-100', text: 'text-bark-700' },
+  vine: { bg: 'from-sand-400 to-bark-500', fill: 'bg-bark-500', light: 'bg-cream-100', text: 'text-bark-700' },
+  nut: { bg: 'from-yellow-500 to-yellow-600', fill: 'bg-yellow-600', light: 'bg-yellow-100', text: 'text-yellow-600' },
+  berry: { bg: 'from-danger to-bark-500', fill: 'bg-danger', light: 'bg-danger-bg', text: 'text-danger' },
+  row_crop: { bg: 'from-green-500 to-green-600', fill: 'bg-green-600', light: 'bg-green-50', text: 'text-green-600' },
+  vegetable: { bg: 'from-green-400 to-green-500', fill: 'bg-green-500', light: 'bg-green-50', text: 'text-green-600' },
+  other: { bg: 'from-bark-400 to-bark-500', fill: 'bg-bark-400', light: 'bg-cream-50', text: 'text-bark-600' },
 };
 
 // Single crop category mini-card
@@ -91,15 +91,15 @@ const CropSeasonMiniCard = ({ data, onNavigate }) => {
   };
 
   return (
-    <div className="bg-white rounded-xl border border-border overflow-hidden hover:shadow-md transition-shadow">
+    <div className="bg-surface-raised rounded-card border border-border overflow-hidden hover:shadow-md transition-shadow">
       {/* Header */}
       <div className={`px-4 py-3 ${colors.light}`}>
         <div className="flex items-center gap-2">
-          <div className={`w-8 h-8 bg-gradient-to-br ${colors.bg} rounded-full flex items-center justify-center`}>
+          <div className={`w-8 h-8 ${colors.fill} rounded-full flex items-center justify-center`}>
             <Icon className="w-4 h-4 text-white" />
           </div>
           <div className="flex-1 min-w-0">
-            <h4 className="font-semibold text-heading text-sm truncate">
+            <h4 className=" text-heading text-sm truncate">
               {data.category_display}
             </h4>
             <p className="text-xs text-text-secondary">
@@ -117,7 +117,7 @@ const CropSeasonMiniCard = ({ data, onNavigate }) => {
         </div>
         <div className="h-2 bg-sand-200 rounded-full overflow-hidden">
           <div
-            className={`h-full bg-gradient-to-r ${colors.bg} rounded-full transition-all duration-500`}
+            className={`h-full ${colors.fill} rounded-full transition-all duration-500`}
             style={{ width: `${season.progress_percent}%` }}
           />
         </div>
@@ -209,11 +209,11 @@ const SeasonProgressCard = ({ onNavigate }) => {
     return (
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-bark-700">Season Progress</h2>
+          <h2 className="text-sm text-bark-700">Season Progress</h2>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {[1, 2].map((i) => (
-            <div key={i} className="bg-white rounded-xl border border-border p-4">
+            <div key={i} className="bg-surface-raised rounded-card border border-border p-4">
               <div className="animate-pulse space-y-3">
                 <div className="flex items-center gap-2">
                   <div className="w-8 h-8 bg-sand-200 rounded-full"></div>
@@ -238,7 +238,7 @@ const SeasonProgressCard = ({ onNavigate }) => {
 
   if (error) {
     return (
-      <div className="bg-white rounded-xl border border-border p-6">
+      <div className="bg-surface-raised rounded-card border border-border p-6">
         <div className="text-center text-danger">
           <AlertTriangle className="w-8 h-8 mx-auto mb-2" />
           <p className="text-sm mb-3">{error}</p>
@@ -268,7 +268,7 @@ const SeasonProgressCard = ({ onNavigate }) => {
 
   if (categories.length === 0) {
     return (
-      <div className="bg-white rounded-xl border border-border p-6">
+      <div className="bg-surface-raised rounded-card border border-border p-6">
         <div className="text-center text-text-secondary">
           <Calendar className="w-8 h-8 mx-auto mb-2" />
           <p>No crop data available. Add crops to your fields to see season progress.</p>
@@ -282,7 +282,7 @@ const SeasonProgressCard = ({ onNavigate }) => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <h2 className="text-sm font-semibold text-bark-700">Season Progress</h2>
+          <h2 className="text-sm text-bark-700">Season Progress</h2>
           {(tasks.overdue > 0 || tasks.due_this_week > 0) && (
             <div className="flex items-center gap-3 text-xs">
               {tasks.overdue > 0 && (

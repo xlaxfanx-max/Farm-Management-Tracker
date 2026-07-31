@@ -263,7 +263,7 @@ const ProfitabilityDashboard = () => {
           value={selectedSeason}
           onChange={setSelectedSeason}
           cropCategory="citrus"
-          className="w-full border border-border-strong rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
+          className="w-full border border-border-strong rounded-card px-3 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
           placeholder="Select Season"
         />
       </div>
@@ -272,7 +272,7 @@ const ProfitabilityDashboard = () => {
         <select
           value={selectedPackinghouse}
           onChange={(e) => setSelectedPackinghouse(e.target.value)}
-          className="w-full border border-border-strong rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
+          className="w-full border border-border-strong rounded-card px-3 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
         >
           <option value="">All Packinghouses</option>
           {packinghouses.map(ph => (
@@ -294,7 +294,7 @@ const ProfitabilityDashboard = () => {
     return (
       <div className="space-y-6">
         {message && (
-          <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+          <div className="bg-orange-50 border border-orange-200 rounded-card p-4">
             <div className="flex items-center gap-2 text-orange-700">
               <BarChart3 size={18} />
               <span>{message}</span>
@@ -340,8 +340,8 @@ const ProfitabilityDashboard = () => {
 
         {/* Per-Unit Summary */}
         {summary.total_bins > 0 && (
-          <div className="bg-white rounded-xl border border-border p-5">
-            <h4 className="text-sm font-medium text-text-secondary mb-3">Per-{unitSingular} Breakdown</h4>
+          <div className="bg-surface-raised rounded-card border border-border p-5">
+            <h4 className="text-sm text-text-secondary mb-3">Per-{unitSingular} Breakdown</h4>
             <div className="flex flex-wrap gap-6">
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 bg-green-500 rounded"></div>
@@ -594,8 +594,8 @@ const ProfitabilityDashboard = () => {
         </SectionCard>
 
         {/* Visual breakdown bar */}
-        <div className="bg-white rounded-xl border border-border p-5">
-          <h4 className="text-sm font-medium text-text-secondary mb-3">Distribution by Category</h4>
+        <div className="bg-surface-raised rounded-card border border-border p-5">
+          <h4 className="text-sm text-text-secondary mb-3">Distribution by Category</h4>
           <div className="flex h-8 rounded-lg overflow-hidden">
             {deductionData.by_category.map((cat, idx) => {
               const colors = ['bg-primary', 'bg-green-500', 'bg-yellow-500', 'bg-bark-500', 'bg-bark-500', 'bg-bark-500'];
@@ -640,9 +640,9 @@ const ProfitabilityDashboard = () => {
         {/* Season Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {seasonData.seasons.map((season, idx) => (
-            <div key={season.season} className={`bg-white rounded-xl border border-border p-5 ${idx === 0 ? 'ring-2 ring-ring' : ''}`}>
+            <div key={season.season} className={`bg-surface-raised rounded-card border border-border p-5 ${idx === 0 ? 'ring-2 ring-ring' : ''}`}>
               <div className="flex items-center justify-between mb-3">
-                <h4 className="text-lg font-semibold text-heading">{season.season}</h4>
+                <h4 className="text-lg text-heading">{season.season}</h4>
                 {idx === 0 && <span className="text-xs px-2 py-0.5 bg-orange-100 text-orange-700 rounded">Current</span>}
               </div>
 

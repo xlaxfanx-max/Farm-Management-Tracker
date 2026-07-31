@@ -179,10 +179,10 @@ const DeliveryModal = ({ poolId, delivery, onClose, onSave }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-lg">
+      <div className="bg-surface-raised rounded-card shadow-xl w-full max-w-lg">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-border">
-          <h2 className="text-lg font-semibold text-heading flex items-center">
+          <h2 className="text-lg text-heading flex items-center">
             <Truck className="w-5 h-5 mr-2 text-primary" />
             {delivery ? 'Edit Delivery' : 'Record Delivery'}
           </h2>
@@ -223,7 +223,7 @@ const DeliveryModal = ({ poolId, delivery, onClose, onSave }) => {
 
           {/* Harvest Linking */}
           {formData.field && (
-            <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
+            <div className="bg-orange-50 border border-orange-200 rounded-card p-3">
               <label className="block text-sm font-medium text-bark-700 mb-1 flex items-center gap-2">
                 <Link2 className="w-4 h-4 text-orange-600" />
                 Link to Harvest Record
@@ -243,7 +243,7 @@ const DeliveryModal = ({ poolId, delivery, onClose, onSave }) => {
                     name="harvest"
                     value={formData.harvest}
                     onChange={handleHarvestChange}
-                    className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-orange-500"
+                    className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-orange-500"
                   >
                     <option value="">-- No harvest link (optional) --</option>
                     {harvests.map(h => (
@@ -335,7 +335,7 @@ const DeliveryModal = ({ poolId, delivery, onClose, onSave }) => {
                 step="0.01"
                 min="0"
                 placeholder="Optional"
-                className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary"
+                className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary"
               />
             </div>
 
@@ -351,7 +351,7 @@ const DeliveryModal = ({ poolId, delivery, onClose, onSave }) => {
                 step="0.01"
                 min="0"
                 placeholder="Optional"
-                className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary"
+                className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary"
               />
             </div>
           </div>
@@ -367,7 +367,7 @@ const DeliveryModal = ({ poolId, delivery, onClose, onSave }) => {
               onChange={handleChange}
               rows={2}
               placeholder="Optional notes..."
-              className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary"
+              className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary"
             />
           </div>
 

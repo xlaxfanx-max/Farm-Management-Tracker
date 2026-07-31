@@ -14,17 +14,17 @@ import {
 
 export const MetricCard = ({ title, value, subtitle, icon: Icon, trend, color = 'blue', onClick }) => {
   const colorClasses = {
-    blue: 'from-orange-500 to-orange-600',
-    cyan: 'from-green-500 to-green-600',
-    green: 'from-green-500 to-green-600',
-    yellow: 'from-yellow-500 to-yellow-600',
-    red: 'from-danger to-danger',
-    purple: 'from-bark-500 to-bark-600',
+    blue: 'bg-orange-500',
+    cyan: 'bg-green-600',
+    green: 'bg-green-600',
+    yellow: 'bg-yellow-500',
+    red: 'bg-danger',
+    purple: 'bg-bark-500',
   };
 
   return (
     <div
-      className={`relative overflow-hidden bg-white rounded-xl shadow-sm border border-border p-5 hover:shadow-md transition-all ${onClick ? 'cursor-pointer' : ''}`}
+      className={`relative overflow-hidden bg-surface-raised rounded-card shadow-sm border border-border p-5 hover:shadow-md transition-all ${onClick ? 'cursor-pointer' : ''}`}
       onClick={onClick}
     >
       <div className="flex items-start justify-between">
@@ -41,11 +41,11 @@ export const MetricCard = ({ title, value, subtitle, icon: Icon, trend, color = 
             </div>
           )}
         </div>
-        <div className={`p-3 rounded-xl bg-gradient-to-br ${colorClasses[color]} shadow-lg`}>
+        <div className={`p-3 rounded-card ${colorClasses[color]} shadow-sm`}>
           <Icon className="w-5 h-5 text-white" />
         </div>
       </div>
-      <div className={`absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r ${colorClasses[color]} opacity-60`} />
+      <div className={`absolute bottom-0 left-0 right-0 h-1 ${colorClasses[color]}`} />
     </div>
   );
 };
@@ -98,7 +98,7 @@ export const QuickActionButton = ({ icon: Icon, label, onClick, color = 'blue' }
   return (
     <button
       onClick={onClick}
-      className={`flex items-center gap-2 px-4 py-2.5 ${colorClasses[color]} text-white rounded-lg text-sm font-medium transition-colors shadow-sm`}
+      className={`flex items-center gap-2 px-4 py-2.5 ${colorClasses[color]} text-white rounded-card text-sm font-medium transition-colors shadow-sm`}
     >
       <Icon className="w-4 h-4" />
       {label}

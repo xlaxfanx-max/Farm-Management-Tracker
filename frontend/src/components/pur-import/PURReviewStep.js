@@ -78,7 +78,7 @@ export default function PURReviewStep({ reports, farms, filename, pdfFile, onRep
         {/* Summary bar */}
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-lg font-semibold text-heading">
+            <h2 className="text-lg text-heading">
               Review Parsed Reports
             </h2>
             <p className="text-sm text-text-secondary mt-0.5">
@@ -164,7 +164,7 @@ export default function PURReviewStep({ reports, farms, filename, pdfFile, onRep
       {/* PDF side panel */}
       {showPdf && pdfBlobUrl && (
         <div className="w-1/2 flex flex-col bg-cream-50 max-h-[80vh]">
-          <div className="flex items-center justify-between px-4 py-2 border-b border-border bg-white">
+          <div className="flex items-center justify-between px-4 py-2 border-b border-border bg-surface-raised">
             <span className="text-sm font-medium text-bark-700">
               Original PDF — Page {activePdfPage}
             </span>

@@ -95,7 +95,7 @@ const SeasonPlanPanel = ({ season }) => {
           {Object.entries(byCommodity).map(([commodity, group]) => (
             <div
               key={commodity}
-              className="border border-border rounded-lg p-3 bg-white"
+              className="border border-border rounded-card p-3 bg-surface-raised"
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">

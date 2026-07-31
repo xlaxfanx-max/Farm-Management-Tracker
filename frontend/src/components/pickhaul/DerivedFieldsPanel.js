@@ -15,7 +15,7 @@ export default function DerivedFieldsPanel({ invoice }) {
   const methodInfo = PICKHAUL_CONSTANTS.MATCH_METHODS[method];
 
   return (
-    <div className="rounded-lg bg-cream-100 border border-border p-3">
+    <div className="rounded-card bg-cream-100 border border-border p-3">
       <div className="flex items-center gap-1.5 mb-2 text-xs font-medium text-text-secondary uppercase tracking-wide">
         <Lock className="w-3 h-3" />
         Owned by the matcher — updates when house charges sync

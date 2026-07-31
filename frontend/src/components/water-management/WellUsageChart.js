@@ -163,16 +163,16 @@ const WellUsageChart = ({ readings }) => {
   return (
     <div className="mt-6 mb-2">
       <div className="flex items-center justify-between mb-3">
-        <h4 className="text-sm font-semibold text-bark-700 uppercase tracking-wider flex items-center gap-2">
+        <h4 className="text-sm text-bark-700 uppercase tracking-wider flex items-center gap-2">
           <BarChart3 className="w-4 h-4 text-green-600" />
           Extraction History
         </h4>
         <div className="flex bg-sand-200 rounded-lg p-0.5">
           <button
             onClick={() => setChartMode('line')}
-            className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+            className={`px-3 py-1 text-xs font-medium rounded-lg transition-colors ${
               chartMode === 'line'
-                ? 'bg-white text-green-700 shadow-sm'
+                ? 'bg-surface-raised text-green-700 shadow-sm'
                 : 'text-text-secondary hover:text-bark-700'
             }`}
           >
@@ -180,9 +180,9 @@ const WellUsageChart = ({ readings }) => {
           </button>
           <button
             onClick={() => setChartMode('bar')}
-            className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+            className={`px-3 py-1 text-xs font-medium rounded-lg transition-colors ${
               chartMode === 'bar'
-                ? 'bg-white text-green-700 shadow-sm'
+                ? 'bg-surface-raised text-green-700 shadow-sm'
                 : 'text-text-secondary hover:text-bark-700'
             }`}
           >
@@ -190,7 +190,7 @@ const WellUsageChart = ({ readings }) => {
           </button>
         </div>
       </div>
-      <div className="bg-white rounded-lg border border-border p-4">
+      <div className="bg-surface-raised rounded-card border border-border p-4">
         {chartMode === 'line' ? (
           <ExtractionLineChart readings={validReadings} />
         ) : (

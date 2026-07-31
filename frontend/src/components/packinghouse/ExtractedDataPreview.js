@@ -212,7 +212,7 @@ const ExtractedDataPreview = ({ data, statementType, onChange }) => {
   return (
     <div className="space-y-4">
       {/* Header Section */}
-      <div className="border border-border rounded-lg overflow-hidden">
+      <div className="border border-border rounded-card overflow-hidden">
         <SectionHeader title="Statement Header" section="header" />
         {expandedSections.header && (
           <div className="p-4 grid grid-cols-2 gap-x-8 gap-y-1">
@@ -233,7 +233,7 @@ const ExtractedDataPreview = ({ data, statementType, onChange }) => {
 
       {/* Blocks Section (for multi-block statements like Mission Produce) */}
       {data.blocks && data.blocks.length > 0 && (
-        <div className="border border-border rounded-lg overflow-hidden">
+        <div className="border border-border rounded-card overflow-hidden">
           <SectionHeader title={`Blocks (${data.blocks.length})`} section="blocks" icon={Package} />
           {expandedSections.blocks && (
             <div className="p-4 overflow-x-auto">
@@ -275,7 +275,7 @@ const ExtractedDataPreview = ({ data, statementType, onChange }) => {
       )}
 
       {/* Summary Section */}
-      <div className="border border-border rounded-lg overflow-hidden">
+      <div className="border border-border rounded-card overflow-hidden">
         <SectionHeader title="Summary" section="summary" icon={Package} />
         {expandedSections.summary && (
           <div className="p-4 grid grid-cols-2 gap-x-8 gap-y-1">
@@ -292,7 +292,7 @@ const ExtractedDataPreview = ({ data, statementType, onChange }) => {
       </div>
 
       {/* Grade Lines Section */}
-      <div className="border border-border rounded-lg overflow-hidden">
+      <div className="border border-border rounded-card overflow-hidden">
         <SectionHeader
           title={`Grade Breakdown${data.grade_lines?.length ? ` (${data.grade_lines.length} lines)` : ''}`}
           section="gradeLines"
@@ -442,7 +442,7 @@ const ExtractedDataPreview = ({ data, statementType, onChange }) => {
 
       {/* Financials Section (for settlements) */}
       {(statementType === 'settlement' || statementType === 'grower_statement') && (
-        <div className="border border-border rounded-lg overflow-hidden">
+        <div className="border border-border rounded-card overflow-hidden">
           <SectionHeader title="Financials" section="financials" icon={DollarSign} />
           {expandedSections.financials && (
             <div className="p-4 grid grid-cols-2 gap-x-8 gap-y-1">
@@ -462,7 +462,7 @@ const ExtractedDataPreview = ({ data, statementType, onChange }) => {
 
       {/* Deductions Section (for settlements) */}
       {(statementType === 'settlement' || statementType === 'grower_statement') && (
-        <div className="border border-border rounded-lg overflow-hidden">
+        <div className="border border-border rounded-card overflow-hidden">
           <SectionHeader title="Deductions" section="deductions" />
           {expandedSections.deductions && (
             <div className="p-4">
@@ -569,7 +569,7 @@ const ExtractedDataPreview = ({ data, statementType, onChange }) => {
 
       {/* Quality Notes */}
       {data.quality_notes && (
-        <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+        <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-card">
           <span className="text-sm font-medium text-yellow-800">Quality Notes: </span>
           <span className="text-sm text-yellow-700">{data.quality_notes}</span>
         </div>

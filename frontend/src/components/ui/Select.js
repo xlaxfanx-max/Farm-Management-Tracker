@@ -40,7 +40,7 @@ export default function Select({
           aria-invalid={error ? true : undefined}
           className={`
             ${inputClasses}
-            appearance-none pr-9 bg-white
+            appearance-none pr-9 bg-surface-raised
             ${error ? 'border-danger focus:border-danger focus:ring-danger-bg' : ''}
             ${className}
           `}

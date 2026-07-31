@@ -96,10 +96,10 @@ const PackinghouseModal = ({ packinghouse, onClose, onSave }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+      <div className="bg-surface-raised rounded-card shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-border">
-          <h2 className="text-lg font-semibold text-heading flex items-center">
+          <h2 className="text-lg text-heading flex items-center">
             <Building2 className="w-5 h-5 mr-2 text-primary" />
             {packinghouse ? 'Edit Packinghouse' : 'Add Packinghouse'}
           </h2>
@@ -125,7 +125,7 @@ const PackinghouseModal = ({ packinghouse, onClose, onSave }) => {
                 value={formData.name}
                 onChange={handleChange}
                 placeholder="e.g., Saticoy Lemon Association"
-                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent ${
+                className={`w-full px-3 py-2 border rounded-card focus:ring-2 focus:ring-primary focus:border-transparent ${
                   errors.name ? 'border-danger' : 'border-border-strong'
                 }`}
               />
@@ -145,7 +145,7 @@ const PackinghouseModal = ({ packinghouse, onClose, onSave }) => {
                 onChange={handleChange}
                 placeholder="e.g., SLA"
                 maxLength={20}
-                className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-transparent"
               />
             </div>
           </div>
@@ -160,7 +160,7 @@ const PackinghouseModal = ({ packinghouse, onClose, onSave }) => {
               value={formData.grower_id}
               onChange={handleChange}
               placeholder="e.g., THACR641"
-              className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+              className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-transparent"
             />
             <p className="text-xs text-text-secondary mt-1">
               Your grower identification number with this packinghouse
@@ -169,7 +169,7 @@ const PackinghouseModal = ({ packinghouse, onClose, onSave }) => {
 
           {/* Address */}
           <div className="border-t border-border pt-4">
-            <h3 className="text-sm font-medium text-bark-700 mb-3">Address</h3>
+            <h3 className="text-sm text-bark-700 mb-3">Address</h3>
             <div className="space-y-3">
               <input
                 type="text"
@@ -177,7 +177,7 @@ const PackinghouseModal = ({ packinghouse, onClose, onSave }) => {
                 value={formData.address}
                 onChange={handleChange}
                 placeholder="Street Address"
-                className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-transparent"
               />
               <div className="grid grid-cols-3 gap-3">
                 <input
@@ -186,7 +186,7 @@ const PackinghouseModal = ({ packinghouse, onClose, onSave }) => {
                   value={formData.city}
                   onChange={handleChange}
                   placeholder="City"
-                  className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                  className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-transparent"
                 />
                 <input
                   type="text"
@@ -195,7 +195,7 @@ const PackinghouseModal = ({ packinghouse, onClose, onSave }) => {
                   onChange={handleChange}
                   placeholder="State"
                   maxLength={2}
-                  className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                  className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-transparent"
                 />
                 <input
                   type="text"
@@ -203,7 +203,7 @@ const PackinghouseModal = ({ packinghouse, onClose, onSave }) => {
                   value={formData.zip_code}
                   onChange={handleChange}
                   placeholder="ZIP"
-                  className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                  className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-transparent"
                 />
               </div>
             </div>
@@ -211,7 +211,7 @@ const PackinghouseModal = ({ packinghouse, onClose, onSave }) => {
 
           {/* Contact Info */}
           <div className="border-t border-border pt-4">
-            <h3 className="text-sm font-medium text-bark-700 mb-3">Contact Information</h3>
+            <h3 className="text-sm text-bark-700 mb-3">Contact Information</h3>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <input
                 type="text"
@@ -219,7 +219,7 @@ const PackinghouseModal = ({ packinghouse, onClose, onSave }) => {
                 value={formData.contact_name}
                 onChange={handleChange}
                 placeholder="Contact Name"
-                className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-transparent"
               />
               <input
                 type="tel"
@@ -227,7 +227,7 @@ const PackinghouseModal = ({ packinghouse, onClose, onSave }) => {
                 value={formData.contact_phone}
                 onChange={handleChange}
                 placeholder="Phone"
-                className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-transparent"
               />
               <div>
                 <input
@@ -236,7 +236,7 @@ const PackinghouseModal = ({ packinghouse, onClose, onSave }) => {
                   value={formData.contact_email}
                   onChange={handleChange}
                   placeholder="Email"
-                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent ${
+                  className={`w-full px-3 py-2 border rounded-card focus:ring-2 focus:ring-primary focus:border-transparent ${
                     errors.contact_email ? 'border-danger' : 'border-border-strong'
                   }`}
                 />
@@ -258,7 +258,7 @@ const PackinghouseModal = ({ packinghouse, onClose, onSave }) => {
               onChange={handleChange}
               rows={3}
               placeholder="Additional notes..."
-              className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+              className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-transparent"
             />
           </div>
 

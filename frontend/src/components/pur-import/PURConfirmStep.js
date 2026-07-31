@@ -57,7 +57,7 @@ export default function PURConfirmStep({ reports, farms, filename, batchId, onCo
       <div className="p-8 text-center space-y-6">
         <CheckCircle className="w-16 h-16 text-green-600 mx-auto" />
         <div>
-          <h2 className="text-xl font-bold text-heading">Import Complete</h2>
+          <h2 className="text-xl text-heading">Import Complete</h2>
           <p className="text-text-secondary mt-1">
             Successfully imported {result.created_events} application event{result.created_events !== 1 ? 's' : ''}
           </p>
@@ -70,7 +70,7 @@ export default function PURConfirmStep({ reports, farms, filename, batchId, onCo
         </div>
 
         {result.errors?.length > 0 && (
-          <div className="text-left mx-auto max-w-lg p-3 bg-yellow-100 border border-yellow-200 rounded-lg">
+          <div className="text-left mx-auto max-w-lg p-3 bg-yellow-100 border border-yellow-200 rounded-card">
             <p className="text-sm font-medium text-yellow-700 mb-1">
               Some reports had issues:
             </p>
@@ -83,7 +83,7 @@ export default function PURConfirmStep({ reports, farms, filename, batchId, onCo
         <div className="flex items-center justify-center gap-3 pt-4">
           <button
             onClick={onReset}
-            className="flex items-center gap-2 px-4 py-2 text-sm text-bark-600 border border-border-strong rounded-lg hover:bg-cream-50"
+            className="flex items-center gap-2 px-4 py-2 text-sm text-bark-600 border border-border-strong rounded-card hover:bg-cream-50"
           >
             <RotateCcw className="w-4 h-4" />
             Import Another
@@ -99,12 +99,12 @@ export default function PURConfirmStep({ reports, farms, filename, batchId, onCo
       <div className="p-8 text-center space-y-6">
         <AlertCircle className="w-16 h-16 text-danger mx-auto" />
         <div>
-          <h2 className="text-xl font-bold text-heading">Import Failed</h2>
+          <h2 className="text-xl text-heading">Import Failed</h2>
           <p className="text-text-secondary mt-1">No events were created.</p>
         </div>
 
         {result.errors?.length > 0 && (
-          <div className="text-left mx-auto max-w-lg p-3 bg-danger-bg border border-danger/25 rounded-lg">
+          <div className="text-left mx-auto max-w-lg p-3 bg-danger-bg border border-danger/25 rounded-card">
             <ul className="text-sm text-danger space-y-1">
               {result.errors.map((e, i) => <li key={i}>- {e}</li>)}
             </ul>
@@ -113,7 +113,7 @@ export default function PURConfirmStep({ reports, farms, filename, batchId, onCo
 
         <button
           onClick={onReset}
-          className="flex items-center gap-2 px-4 py-2 text-sm text-bark-600 border border-border-strong rounded-lg hover:bg-cream-50 mx-auto"
+          className="flex items-center gap-2 px-4 py-2 text-sm text-bark-600 border border-border-strong rounded-card hover:bg-cream-50 mx-auto"
         >
           <RotateCcw className="w-4 h-4" />
           Start Over
@@ -126,7 +126,7 @@ export default function PURConfirmStep({ reports, farms, filename, batchId, onCo
   return (
     <div className="p-6 space-y-6">
       <div>
-        <h2 className="text-lg font-semibold text-heading">Confirm Import</h2>
+        <h2 className="text-lg text-heading">Confirm Import</h2>
         <p className="text-sm text-text-secondary mt-0.5">
           Review the summary below and click Import to save to your records.
         </p>
@@ -154,7 +154,7 @@ export default function PURConfirmStep({ reports, farms, filename, batchId, onCo
           return (
             <div
               key={r._index ?? idx}
-              className="flex items-center justify-between p-3 bg-white border border-border rounded-lg text-sm"
+              className="flex items-center justify-between p-3 bg-surface-raised border border-border rounded-card text-sm"
             >
               <div className="flex items-center gap-3">
                 <span className="font-mono text-text-secondary text-xs w-6">#{idx + 1}</span>
@@ -180,7 +180,7 @@ export default function PURConfirmStep({ reports, farms, filename, batchId, onCo
 
       {/* Error */}
       {error && (
-        <div className="p-3 bg-danger-bg border border-danger/25 rounded-lg flex items-start gap-2">
+        <div className="p-3 bg-danger-bg border border-danger/25 rounded-card flex items-start gap-2">
           <AlertCircle className="w-5 h-5 text-danger flex-shrink-0 mt-0.5" />
           <p className="text-sm text-danger">{error}</p>
         </div>

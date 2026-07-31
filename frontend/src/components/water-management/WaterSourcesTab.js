@@ -27,7 +27,7 @@ const WaterSourcesTab = ({
 }) => (
   <div className="space-y-6">
     {/* Search and Filters */}
-    <div className="bg-white rounded-xl border border-border p-4">
+    <div className="bg-surface-raised rounded-card border border-border p-4">
       <div className="flex flex-col md:flex-row gap-4">
         <div className="flex-1 relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-text-muted w-5 h-5" />
@@ -36,13 +36,13 @@ const WaterSourcesTab = ({
             placeholder="Search water sources..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 border border-border rounded-lg bg-white focus:ring-[3px] focus:ring-ring focus:border-primary"
+            className="w-full pl-10 pr-4 py-2.5 border border-border rounded-card bg-surface-raised focus:ring-[3px] focus:ring-ring focus:border-primary"
           />
         </div>
         <select
           value={filterFarm}
           onChange={(e) => setFilterFarm(e.target.value)}
-          className="px-4 py-2.5 border border-border rounded-lg focus:ring-[3px] focus:ring-ring bg-white"
+          className="px-4 py-2.5 border border-border rounded-card focus:ring-[3px] focus:ring-ring bg-surface-raised"
         >
           <option value="">All Farms</option>
           {farms.map(farm => (
@@ -52,7 +52,7 @@ const WaterSourcesTab = ({
         <select
           value={filterSourceType}
           onChange={(e) => setFilterSourceType(e.target.value)}
-          className="px-4 py-2.5 border border-border rounded-lg focus:ring-[3px] focus:ring-ring bg-white"
+          className="px-4 py-2.5 border border-border rounded-card focus:ring-[3px] focus:ring-ring bg-surface-raised"
         >
           <option value="">All Types</option>
           {Object.entries(SOURCE_TYPE_LABELS).map(([value, label]) => (
@@ -61,7 +61,7 @@ const WaterSourcesTab = ({
         </select>
         <button
           onClick={handleRefresh}
-          className="p-2.5 border border-border rounded-lg hover:bg-cream-50 text-bark-600"
+          className="p-2.5 border border-border rounded-card hover:bg-cream-50 text-bark-600"
         >
           <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
         </button>
@@ -70,9 +70,9 @@ const WaterSourcesTab = ({
 
     {/* Sources Grid */}
     {filteredSources.length === 0 ? (
-      <div className="bg-white rounded-xl border border-border p-12 text-center">
+      <div className="bg-surface-raised rounded-card border border-border p-12 text-center">
         <Droplet className="w-12 h-12 text-sand-300 mx-auto mb-4" />
-        <h3 className="text-lg font-medium text-heading mb-2">No water sources found</h3>
+        <h3 className="text-lg text-heading mb-2">No water sources found</h3>
         <p className="text-text-secondary mb-6">Get started by adding your first well or water source.</p>
         <div className="flex justify-center gap-3">
           <button
@@ -100,10 +100,10 @@ const WaterSourcesTab = ({
           return (
             <div
               key={source.id}
-              className="bg-white rounded-xl border border-border hover:border-border-strong hover:shadow-md transition-all overflow-hidden"
+              className="bg-surface-raised rounded-card border border-border hover:border-border-strong hover:shadow-md transition-all overflow-hidden"
             >
               {/* Card Header */}
-              <div className={`px-4 py-3 ${isWell ? 'bg-gradient-to-r from-green-50 to-orange-50 border-b border-green-100' : 'bg-gradient-to-r from-orange-50 to-cream-100 border-b border-orange-200'}`}>
+              <div className={`px-4 py-3 ${isWell ? 'bg-cream-100 border-b border-green-100' : 'bg-cream-100 border-b border-orange-200'}`}>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <span className={`px-2.5 py-1 rounded-full text-xs font-medium border ${SOURCE_TYPE_COLORS[source.source_type]}`}>
@@ -126,7 +126,7 @@ const WaterSourcesTab = ({
 
               {/* Card Body */}
               <div className="p-4">
-                <h3 className="font-semibold text-heading mb-1">{source.name}</h3>
+                <h3 className=" text-heading mb-1">{source.name}</h3>
                 <p className="text-sm text-text-secondary mb-4">{farm?.name}</p>
 
                 {/* Usage Tags */}

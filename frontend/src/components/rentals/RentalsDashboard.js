@@ -51,7 +51,7 @@ export default function RentalsDashboard({ initialTab = 'overview', onNavigate }
             <KeyRound className="w-6 h-6 text-primary" />
           </div>
           <div>
-            <h1 className="text-xl font-semibold text-heading">
+            <h1 className="text-xl text-heading">
               Rental Income
             </h1>
             <p className={mutedText}>
@@ -66,7 +66,7 @@ export default function RentalsDashboard({ initialTab = 'overview', onNavigate }
             <select
               value={year ?? ''}
               onChange={(e) => setYear(Number(e.target.value))}
-              className="rounded-md border border-border-strong bg-white px-2 py-1.5 text-sm text-heading"
+              className="rounded-lg border border-border-strong bg-surface-raised px-2 py-1.5 text-sm text-heading"
             >
               {yearOptions.map((y) => (
                 <option key={y} value={y}>{y}</option>

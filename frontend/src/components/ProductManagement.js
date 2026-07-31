@@ -178,7 +178,7 @@ function ProductManagement() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-heading">Pesticide Product Catalog</h1>
+          <h1 className="text-2xl text-heading">Pesticide Product Catalog</h1>
           <p className="text-bark-600 mt-1">
             Manage your pesticide product database for PUR compliance
           </p>
@@ -187,14 +187,14 @@ function ProductManagement() {
       </div>
 
       {/* Action Buttons */}
-      <div className="bg-white rounded-lg shadow-md p-4">
+      <div className="bg-surface-raised rounded-card shadow-md p-4">
         <div className="flex gap-3 flex-wrap">
           <button
             onClick={() => {
               setEditingProduct(null);
               setShowProductModal(true);
             }}
-            className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-hover"
+            className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover"
           >
             <Plus className="w-4 h-4" />
             Add Product
@@ -202,7 +202,7 @@ function ProductManagement() {
 
           <button
             onClick={() => setShowImportModal(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-hover"
+            className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover"
           >
             <Upload className="w-4 h-4" />
             Import CSV
@@ -210,7 +210,7 @@ function ProductManagement() {
 
           <button
             onClick={handleDownloadTemplate}
-            className="flex items-center gap-2 px-4 py-2 bg-bark-600 text-white rounded-md hover:bg-bark-700"
+            className="flex items-center gap-2 px-4 py-2 bg-bark-600 text-white rounded-lg hover:bg-bark-700"
           >
             <FileText className="w-4 h-4" />
             Download Template
@@ -218,7 +218,7 @@ function ProductManagement() {
 
           <button
             onClick={handleExportProducts}
-            className="flex items-center gap-2 px-4 py-2 bg-bark-600 text-white rounded-md hover:bg-bark-700"
+            className="flex items-center gap-2 px-4 py-2 bg-bark-600 text-white rounded-lg hover:bg-bark-700"
           >
             <Download className="w-4 h-4" />
             Export All
@@ -227,7 +227,7 @@ function ProductManagement() {
       </div>
 
       {/* Search and Filters */}
-      <div className="bg-white rounded-lg shadow-md p-4">
+      <div className="bg-surface-raised rounded-card shadow-md p-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Search */}
           <div>
@@ -240,7 +240,7 @@ function ProductManagement() {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Product name, EPA number, manufacturer..."
-              className="w-full px-3 py-2 border border-border-strong rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full px-3 py-2 border border-border-strong rounded-lg bg-surface-raised focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
 
@@ -252,7 +252,7 @@ function ProductManagement() {
             <select
               value={filterType}
               onChange={(e) => setFilterType(e.target.value)}
-              className="w-full px-3 py-2 border border-border-strong rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full px-3 py-2 border border-border-strong rounded-lg bg-surface-raised focus:outline-none focus:ring-2 focus:ring-primary"
             >
               <option value="all">All Types</option>
               <option value="insecticide">Insecticide</option>
@@ -273,7 +273,7 @@ function ProductManagement() {
             <select
               value={filterRestrictedUse}
               onChange={(e) => setFilterRestrictedUse(e.target.value)}
-              className="w-full px-3 py-2 border border-border-strong rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full px-3 py-2 border border-border-strong rounded-lg bg-surface-raised focus:outline-none focus:ring-2 focus:ring-primary"
             >
               <option value="all">All Products</option>
               <option value="restricted">Restricted Use Only</option>
@@ -288,7 +288,7 @@ function ProductManagement() {
       </div>
 
       {/* Products Table */}
-      <div className="bg-white rounded-lg shadow-md overflow-hidden">
+      <div className="bg-surface-raised rounded-card shadow-md overflow-hidden">
         {loading ? (
           <div className="p-8 text-center text-text-secondary">Loading products...</div>
         ) : filteredProducts.length === 0 ? (
@@ -320,7 +320,7 @@ function ProductManagement() {
                   <th className="px-4 py-3 text-left text-xs font-medium text-text-secondary uppercase">Actions</th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-border">
+              <tbody className="bg-surface-raised divide-y divide-border">
                 {filteredProducts.map((product) => (
                   <tr key={product.id} className="hover:bg-cream-50">
                     <td className="px-4 py-3 text-sm font-mono text-heading">
@@ -442,10 +442,10 @@ function ProductManagement() {
 function ImportModal({ onClose, importFile, setImportFile, handleImport, importResult, loading }) {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+      <div className="bg-surface-raised rounded-card shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         <div className="p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-heading">Import Products from CSV</h2>
+            <h2 className="text-xl text-heading">Import Products from CSV</h2>
             <button onClick={onClose} className="text-text-secondary hover:text-bark-700">
               <X className="w-6 h-6" />
             </button>
@@ -458,7 +458,7 @@ function ImportModal({ onClose, importFile, setImportFile, handleImport, importR
                   Upload a CSV file with pesticide product information. The file should include
                   EPA registration numbers, product names, and other details.
                 </p>
-                <div className="border-2 border-dashed border-border-strong rounded-lg p-6 text-center">
+                <div className="border-2 border-dashed border-border-strong rounded-card p-6 text-center">
                   <Upload className="w-12 h-12 mx-auto mb-4 text-text-muted" />
                   <input
                     type="file"
@@ -485,13 +485,13 @@ function ImportModal({ onClose, importFile, setImportFile, handleImport, importR
                 <button
                   onClick={handleImport}
                   disabled={!importFile || loading}
-                  className="flex-1 px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-hover disabled:bg-bark-400"
+                  className="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover disabled:bg-bark-400"
                 >
                   {loading ? 'Importing...' : 'Import'}
                 </button>
                 <button
                   onClick={onClose}
-                  className="px-4 py-2 border border-border-strong rounded-md hover:bg-cream-50"
+                  className="px-4 py-2 border border-border-strong rounded-lg hover:bg-cream-50"
                 >
                   Cancel
                 </button>
@@ -508,7 +508,7 @@ function ImportModal({ onClose, importFile, setImportFile, handleImport, importR
                   ) : (
                     <AlertTriangle className="w-6 h-6 text-danger" />
                   )}
-                  <h3 className={`font-semibold ${
+                  <h3 className={` ${
                     importResult.success ? 'text-green-800' : 'text-danger'
                   }`}>
                     {importResult.message}
@@ -536,7 +536,7 @@ function ImportModal({ onClose, importFile, setImportFile, handleImport, importR
 
               {importResult.statistics?.error_details?.length > 0 && (
                 <div className="mb-4">
-                  <h4 className="font-semibold text-danger mb-2">Errors:</h4>
+                  <h4 className=" text-danger mb-2">Errors:</h4>
                   <ul className="text-sm text-danger bg-danger-bg p-3 rounded max-h-40 overflow-y-auto">
                     {importResult.statistics.error_details.map((error, index) => (
                       <li key={index} className="mb-1">• {error}</li>
@@ -547,7 +547,7 @@ function ImportModal({ onClose, importFile, setImportFile, handleImport, importR
 
               <button
                 onClick={onClose}
-                className="w-full px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-hover"
+                className="w-full px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover"
               >
                 Close
               </button>
@@ -593,10 +593,10 @@ function ProductModal({ product, onClose, onSave }) {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+      <div className="bg-surface-raised rounded-card shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         <form onSubmit={handleSubmit} className="p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-heading">
+            <h2 className="text-xl text-heading">
               {product ? 'Edit Product' : 'Add Product'}
             </h2>
             <button type="button" onClick={onClose} className="text-text-secondary hover:text-bark-700">
@@ -615,7 +615,7 @@ function ProductModal({ product, onClose, onSave }) {
                 required
                 value={formData.epa_registration_number}
                 onChange={(e) => setFormData({...formData, epa_registration_number: e.target.value})}
-                className="w-full px-3 py-2 border border-border-strong rounded-md bg-white"
+                className="w-full px-3 py-2 border border-border-strong rounded-lg bg-surface-raised"
                 placeholder="e.g., 12345-678"
               />
             </div>
@@ -630,7 +630,7 @@ function ProductModal({ product, onClose, onSave }) {
                 required
                 value={formData.product_name}
                 onChange={(e) => setFormData({...formData, product_name: e.target.value})}
-                className="w-full px-3 py-2 border border-border-strong rounded-md bg-white"
+                className="w-full px-3 py-2 border border-border-strong rounded-lg bg-surface-raised"
               />
             </div>
 
@@ -638,14 +638,14 @@ function ProductModal({ product, onClose, onSave }) {
             <div className="flex gap-3 pt-4">
               <button
                 type="submit"
-                className="flex-1 px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-hover"
+                className="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover"
               >
                 Save Product
               </button>
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 border border-border-strong rounded-md hover:bg-cream-50"
+                className="px-4 py-2 border border-border-strong rounded-lg hover:bg-cream-50"
               >
                 Cancel
               </button>

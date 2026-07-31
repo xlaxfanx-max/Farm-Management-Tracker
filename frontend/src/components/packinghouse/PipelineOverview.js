@@ -273,7 +273,7 @@ const PipelineOverview = ({ initialCommodity = null, onBack = null }) => {
 
   if (error) {
     return (
-      <div className="bg-danger-bg border border-danger/25 rounded-lg p-4 text-danger">
+      <div className="bg-danger-bg border border-danger/25 rounded-card p-4 text-danger">
         <AlertCircle className="inline w-5 h-5 mr-2" />
         {error}
         <button
@@ -316,7 +316,7 @@ const PipelineOverview = ({ initialCommodity = null, onBack = null }) => {
         {/* Header */}
         <div className="flex justify-between items-center">
           <div>
-            <h2 className="text-xl font-bold text-heading">
+            <h2 className="text-xl text-heading">
               Harvest Pipeline
             </h2>
             <p className="text-sm text-text-secondary mt-1">
@@ -334,7 +334,7 @@ const PipelineOverview = ({ initialCommodity = null, onBack = null }) => {
 
         {/* Summary Tiles */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="bg-white rounded-lg shadow p-4 cursor-pointer hover:shadow-md hover:border-green-200 border border-transparent transition-all" onClick={() => openDrillDown('total_revenue')}>
+          <div className="bg-surface-raised rounded-card shadow p-4 cursor-pointer hover:shadow-md hover:border-green-200 border border-transparent transition-all" onClick={() => openDrillDown('total_revenue')}>
             <div className="flex items-center gap-2 text-sm text-text-secondary mb-1">
               <DollarSign className="w-4 h-4" />
               Total Revenue
@@ -344,7 +344,7 @@ const PipelineOverview = ({ initialCommodity = null, onBack = null }) => {
             </p>
             <p className="text-xs text-text-muted mt-1">Click for details</p>
           </div>
-          <div className="bg-white rounded-lg shadow p-4 cursor-pointer hover:shadow-md hover:border-green-200 border border-transparent transition-all" onClick={() => openDrillDown('bins_packed_all')}>
+          <div className="bg-surface-raised rounded-card shadow p-4 cursor-pointer hover:shadow-md hover:border-green-200 border border-transparent transition-all" onClick={() => openDrillDown('bins_packed_all')}>
             <div className="flex items-center gap-2 text-sm text-text-secondary mb-1">
               <Package className="w-4 h-4" />
               Qty Packed
@@ -354,7 +354,7 @@ const PipelineOverview = ({ initialCommodity = null, onBack = null }) => {
             </p>
             <p className="text-xs text-text-muted mt-1">Click for details</p>
           </div>
-          <div className="bg-white rounded-lg shadow p-4 cursor-pointer hover:shadow-md hover:border-green-200 border border-transparent transition-all" onClick={() => openDrillDown('bins_settled_all')}>
+          <div className="bg-surface-raised rounded-card shadow p-4 cursor-pointer hover:shadow-md hover:border-green-200 border border-transparent transition-all" onClick={() => openDrillDown('bins_settled_all')}>
             <div className="flex items-center gap-2 text-sm text-text-secondary mb-1">
               <TrendingUp className="w-4 h-4" />
               Qty Settled
@@ -364,7 +364,7 @@ const PipelineOverview = ({ initialCommodity = null, onBack = null }) => {
             </p>
             <p className="text-xs text-text-muted mt-1">Click for details</p>
           </div>
-          <div className="bg-white rounded-lg shadow p-4">
+          <div className="bg-surface-raised rounded-lg shadow p-4">
             <div className="flex items-center gap-2 text-sm text-text-secondary mb-1">
               <BarChart3 className="w-4 h-4" />
               Settlement
@@ -385,12 +385,12 @@ const PipelineOverview = ({ initialCommodity = null, onBack = null }) => {
                 <div
                   key={card.commodity}
                   onClick={() => handleCommoditySelect(card.commodity)}
-                  className={`${colors.bg} border ${colors.border} rounded-lg p-5 cursor-pointer hover:shadow-md transition-all group`}
+                  className={`${colors.bg} border ${colors.border} rounded-card p-5 cursor-pointer hover:shadow-md transition-all group`}
                 >
                   {/* Card Header */}
                   <div className="flex justify-between items-start mb-4">
                     <div>
-                      <h3 className={`font-bold text-lg ${colors.text}`}>
+                      <h3 className={` text-lg ${colors.text}`}>
                         {card.commodity}
                       </h3>
                       <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${colors.badge}`}>
@@ -466,7 +466,7 @@ const PipelineOverview = ({ initialCommodity = null, onBack = null }) => {
             })}
           </div>
         ) : (
-          <div className="bg-white rounded-lg shadow p-8 text-center">
+          <div className="bg-surface-raised rounded-lg shadow p-8 text-center">
             <Package className="w-12 h-12 text-sand-300 mx-auto mb-3" />
             <p className="text-text-secondary">
               No commodity data available. Upload packinghouse statements to get started.
@@ -524,7 +524,7 @@ const PipelineOverview = ({ initialCommodity = null, onBack = null }) => {
                 All Commodities
               </button>
             </div>
-            <h2 className="text-xl font-bold text-heading mt-1">
+            <h2 className="text-xl text-heading mt-1">
               {data.selected_commodity} Pipeline
             </h2>
             {/* Season Selector */}
@@ -536,7 +536,7 @@ const PipelineOverview = ({ initialCommodity = null, onBack = null }) => {
               <select
                 value={selectedSeason || data?.selected_season || ''}
                 onChange={handleSeasonChange}
-                className="px-3 py-1 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-text text-sm font-medium"
+                className="px-3 py-1 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-primary text-text text-sm font-medium"
               >
                 {data?.available_seasons?.map((season) => (
                   <option key={season} value={season}>
@@ -566,7 +566,7 @@ const PipelineOverview = ({ initialCommodity = null, onBack = null }) => {
               className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                 breakdownView === view.id
                   ? 'bg-primary text-white shadow-sm'
-                  : 'bg-white text-bark-600 border border-border hover:bg-cream-50'
+                  : 'bg-surface-raised text-bark-600 border border-border hover:bg-cream-50'
               }`}
             >
               {view.icon}
@@ -579,14 +579,14 @@ const PipelineOverview = ({ initialCommodity = null, onBack = null }) => {
       {/* Main Content Area */}
       {!breakdownView ? (
         /* Aggregate Pipeline Flow Visualization */
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-surface-raised rounded-lg shadow p-6">
           <div className="flex items-center justify-center gap-8">
             {/* Stage 1: Packout (or Harvested for weight-based) */}
             <div className="flex-1 max-w-xs text-center cursor-pointer group" onClick={() => openDrillDown('packed_bins')}>
               <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-sand-200 mb-3 group-hover:ring-2 group-hover:ring-sand-300 transition-all">
                 <Package className="w-10 h-10 text-bark-700" />
               </div>
-              <h3 className="font-semibold text-heading text-lg">
+              <h3 className=" text-heading text-lg">
                 {pipeline_stages.packout.label}
               </h3>
               <p className="text-3xl font-bold text-bark-700 mt-2 group-hover:underline decoration-sand-300">
@@ -649,7 +649,7 @@ const PipelineOverview = ({ initialCommodity = null, onBack = null }) => {
               <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-green-100 mb-3 group-hover:ring-2 group-hover:ring-green-300 transition-all">
                 <DollarSign className="w-10 h-10 text-primary" />
               </div>
-              <h3 className="font-semibold text-heading text-lg">
+              <h3 className=" text-heading text-lg">
                 {pipeline_stages.settlement.label}
               </h3>
               <p className="text-3xl font-bold text-primary mt-2 group-hover:underline decoration-green-300">
@@ -687,8 +687,8 @@ const PipelineOverview = ({ initialCommodity = null, onBack = null }) => {
               <div
                 className={`h-3 rounded-full transition-all duration-500 ${
                   hasMissingPackouts
-                    ? 'bg-gradient-to-r from-orange-400 to-orange-500'
-                    : 'bg-gradient-to-r from-bark-500 to-green-500'
+                    ? 'bg-primary'
+                    : 'bg-bark-400'
                 }`}
                 style={{ width: `${Math.min(settlementPercent, 100)}%` }}
               />
@@ -703,8 +703,8 @@ const PipelineOverview = ({ initialCommodity = null, onBack = null }) => {
         </div>
       ) : (
         /* Farm Breakdown View */
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-heading mb-4">
+        <div className="bg-surface-raised rounded-lg shadow p-6">
+          <h3 className="text-lg text-heading mb-4">
             Pipeline by Farm / Ranch
           </h3>
 
@@ -809,8 +809,8 @@ const PipelineOverview = ({ initialCommodity = null, onBack = null }) => {
       {/* Pool Status & Recent Activity */}
       <div className="grid grid-cols-3 gap-6">
         {/* Pool Status */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-heading mb-4 flex items-center gap-2">
+        <div className="bg-surface-raised rounded-lg shadow p-6">
+          <h3 className="text-lg text-heading mb-4 flex items-center gap-2">
             <Layers className="w-5 h-5 text-link" />
             Pool Status
           </h3>
@@ -840,8 +840,8 @@ const PipelineOverview = ({ initialCommodity = null, onBack = null }) => {
         </div>
 
         {/* Recent Activity */}
-        <div className="col-span-2 bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-heading mb-4 flex items-center gap-2">
+        <div className="col-span-2 bg-surface-raised rounded-lg shadow p-6">
+          <h3 className="text-lg text-heading mb-4 flex items-center gap-2">
             <Clock className="w-5 h-5 text-bark-700" />
             Recent Activity
           </h3>
@@ -900,7 +900,7 @@ const PipelineOverview = ({ initialCommodity = null, onBack = null }) => {
             ? 'bg-orange-50 border-orange-200'
             : 'bg-yellow-50 border-yellow-200'
         }`}>
-          <h3 className={`text-sm font-semibold mb-2 flex items-center gap-2 ${
+          <h3 className={`text-sm mb-2 flex items-center gap-2 ${
             hasMissingPackouts
               ? 'text-orange-800'
               : 'text-yellow-800'

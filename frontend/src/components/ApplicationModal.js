@@ -409,14 +409,14 @@ function EnhancedApplicationModal({
                   required
                   value={formData.date_started}
                   onChange={(e) => setFormData(prev => ({ ...prev, date_started: e.target.value }))}
-                  className="flex-1 min-w-0 px-3 py-2 border border-border-strong rounded-md text-sm"
+                  className="flex-1 min-w-0 px-3 py-2 border border-border-strong rounded-lg text-sm"
                 />
                 <input
                   type="time"
                   required
                   value={formData.start_time}
                   onChange={(e) => setFormData(prev => ({ ...prev, start_time: e.target.value }))}
-                  className="w-28 px-2 py-2 border border-border-strong rounded-md text-sm"
+                  className="w-28 px-2 py-2 border border-border-strong rounded-lg text-sm"
                   title="When the application started — the REI clock runs from this time"
                 />
               </div>
@@ -428,7 +428,7 @@ function EnhancedApplicationModal({
                 required
                 value={formData.farm}
                 onChange={(e) => setFormData(prev => ({ ...prev, farm: e.target.value, field: '' }))}
-                className="w-full px-3 py-2 border border-border-strong rounded-md text-sm"
+                className="w-full px-3 py-2 border border-border-strong rounded-lg text-sm"
               >
                 <option value="">Select farm...</option>
                 {(farms || []).map(f => (
@@ -445,7 +445,7 @@ function EnhancedApplicationModal({
                 value={formData.field}
                 onChange={handleFieldChange}
                 disabled={!formData.farm}
-                className="w-full px-3 py-2 border border-border-strong rounded-md text-sm disabled:bg-cream-100 disabled:text-text-secondary"
+                className="w-full px-3 py-2 border border-border-strong rounded-lg text-sm disabled:bg-cream-100 disabled:text-text-secondary"
               >
                 <option value="">
                   {formData.farm ? 'Whole farm (no block)' : 'Select farm first'}
@@ -468,7 +468,7 @@ function EnhancedApplicationModal({
                 step="0.01"
                 value={formData.treated_area_acres}
                 onChange={(e) => setFormData(prev => ({ ...prev, treated_area_acres: e.target.value }))}
-                className="w-full px-3 py-2 border border-border-strong rounded-md text-sm"
+                className="w-full px-3 py-2 border border-border-strong rounded-lg text-sm"
                 placeholder="Acres"
               />
             </div>
@@ -478,7 +478,7 @@ function EnhancedApplicationModal({
               <select
                 value={formData.application_method}
                 onChange={(e) => setFormData(prev => ({ ...prev, application_method: e.target.value }))}
-                className="w-full px-3 py-2 border border-border-strong rounded-md text-sm"
+                className="w-full px-3 py-2 border border-border-strong rounded-lg text-sm"
               >
                 {APPLICATION_METHODS.map(m => (
                   <option key={m.value} value={m.value}>{m.label}</option>
@@ -490,7 +490,7 @@ function EnhancedApplicationModal({
 
           {/* Copy-last-spray shortcut — spray programs repeat; save the retyping */}
           {!isEdit && lastEvent && (
-            <div className="mb-6 p-3 bg-green-50 border border-green-200 rounded-lg flex flex-wrap items-center justify-between gap-2">
+            <div className="mb-6 p-3 bg-green-50 border border-green-200 rounded-card flex flex-wrap items-center justify-between gap-2">
               <div className="flex items-center gap-2 text-sm text-green-800 min-w-0">
                 <History className="w-4 h-4 flex-shrink-0" />
                 <span className="truncate">
@@ -505,7 +505,7 @@ function EnhancedApplicationModal({
                 type="button"
                 onClick={handleCopyLastSpray}
                 disabled={copyingLast}
-                className="text-sm font-medium px-3 py-1.5 bg-green-600 hover:bg-green-700 disabled:opacity-60 text-white rounded-md transition-colors flex-shrink-0"
+                className="text-sm font-medium px-3 py-1.5 bg-green-600 hover:bg-green-700 disabled:opacity-60 text-white rounded-lg transition-colors flex-shrink-0"
               >
                 {copyingLast ? 'Copying…' : 'Copy mix & details'}
               </button>
@@ -520,7 +520,7 @@ function EnhancedApplicationModal({
                   type="text"
                   value={formData.applied_by}
                   onChange={(e) => setFormData(prev => ({ ...prev, applied_by: e.target.value }))}
-                  className="w-full px-3 py-2 border border-border-strong rounded-md text-sm"
+                  className="w-full px-3 py-2 border border-border-strong rounded-lg text-sm"
                   placeholder="Applicator name"
                 />
               </div>
@@ -531,7 +531,7 @@ function EnhancedApplicationModal({
                   type="number"
                   value={formData.temperature_start_f}
                   onChange={(e) => setFormData(prev => ({ ...prev, temperature_start_f: e.target.value }))}
-                  className="w-full px-3 py-2 border border-border-strong rounded-md text-sm"
+                  className="w-full px-3 py-2 border border-border-strong rounded-lg text-sm"
                 />
               </div>
 
@@ -542,7 +542,7 @@ function EnhancedApplicationModal({
                   step="0.1"
                   value={formData.wind_velocity_mph}
                   onChange={(e) => setFormData(prev => ({ ...prev, wind_velocity_mph: e.target.value }))}
-                  className="w-full px-3 py-2 border border-border-strong rounded-md text-sm"
+                  className="w-full px-3 py-2 border border-border-strong rounded-lg text-sm"
                 />
               </div>
 
@@ -552,7 +552,7 @@ function EnhancedApplicationModal({
                   type="text"
                   value={formData.comments}
                   onChange={(e) => setFormData(prev => ({ ...prev, comments: e.target.value }))}
-                  className="w-full px-3 py-2 border border-border-strong rounded-md text-sm"
+                  className="w-full px-3 py-2 border border-border-strong rounded-lg text-sm"
                   placeholder="Optional notes"
                 />
               </div>
@@ -562,13 +562,13 @@ function EnhancedApplicationModal({
           {/* Tank Mix Items */}
           <div className="mb-6">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-semibold text-heading uppercase tracking-wider">
+              <h3 className="text-sm text-heading uppercase tracking-wider">
                 Tank Mix Products
               </h3>
               <button
                 type="button"
                 onClick={addItem}
-                className="flex items-center gap-1 px-3 py-1.5 text-sm text-link hover:text-orange-700 hover:bg-orange-50 rounded-md"
+                className="flex items-center gap-1 px-3 py-1.5 text-sm text-link hover:text-orange-700 hover:bg-orange-50 rounded-lg"
               >
                 <Plus className="w-4 h-4" />
                 Add Product
@@ -579,7 +579,7 @@ function EnhancedApplicationModal({
               {tankMixItems.map((item, idx) => {
                 const productInfo = item.product ? getProductInfo(item.product) : null;
                 return (
-                  <div key={idx} className="border border-border rounded-lg p-3">
+                  <div key={idx} className="border border-border rounded-card p-3">
                     <div className="flex items-start gap-3">
                       <span className="text-xs text-text-muted font-mono mt-2.5 w-4">
                         {idx + 1}
@@ -599,12 +599,12 @@ function EnhancedApplicationModal({
                               setSearchResults(allProducts.slice(0, 20));
                             }}
                             placeholder="Search product name or EPA #..."
-                            className="w-full pl-9 pr-3 py-2 border border-border-strong rounded-md text-sm"
+                            className="w-full pl-9 pr-3 py-2 border border-border-strong rounded-lg text-sm"
                           />
 
                           {/* Search dropdown */}
                           {activeSearchIdx === idx && searchResults.length > 0 && (
-                            <div className="absolute z-20 w-full mt-1 bg-white border border-border-strong rounded-md shadow-lg max-h-48 overflow-y-auto">
+                            <div className="absolute z-20 w-full mt-1 bg-surface-raised border border-border-strong rounded-lg shadow-lg max-h-48 overflow-y-auto">
                               {searchResults.map(p => (
                                 <button
                                   key={p.id}
@@ -671,14 +671,14 @@ function EnhancedApplicationModal({
                           value={item.total_amount}
                           onChange={(e) => handleItemChange(idx, 'total_amount', e.target.value)}
                           placeholder="Amount"
-                          className="w-full px-2 py-2 border border-border-strong rounded-md text-sm"
+                          className="w-full px-2 py-2 border border-border-strong rounded-lg text-sm"
                         />
                       </div>
                       <div className="w-28">
                         <select
                           value={item.amount_unit}
                           onChange={(e) => handleItemChange(idx, 'amount_unit', e.target.value)}
-                          className="w-full px-2 py-2 border border-border-strong rounded-md text-sm"
+                          className="w-full px-2 py-2 border border-border-strong rounded-lg text-sm"
                         >
                           {AMOUNT_UNITS.map(u => (
                             <option key={u.value} value={u.value}>{u.label}</option>
@@ -694,14 +694,14 @@ function EnhancedApplicationModal({
                           value={item.rate}
                           onChange={(e) => handleItemChange(idx, 'rate', e.target.value)}
                           placeholder="Rate"
-                          className="w-full px-2 py-2 border border-border-strong rounded-md text-sm"
+                          className="w-full px-2 py-2 border border-border-strong rounded-lg text-sm"
                         />
                       </div>
                       <div className="w-28">
                         <select
                           value={item.rate_unit}
                           onChange={(e) => handleItemChange(idx, 'rate_unit', e.target.value)}
-                          className="w-full px-2 py-2 border border-border-strong rounded-md text-sm"
+                          className="w-full px-2 py-2 border border-border-strong rounded-lg text-sm"
                         >
                           {RATE_UNITS.map(u => (
                             <option key={u.value} value={u.value}>{u.label}</option>
@@ -733,7 +733,7 @@ function EnhancedApplicationModal({
                 return (
                   <div
                     key={`${w.product_id || idx}-${w.code}`}
-                    className={`flex items-start gap-2 rounded-md p-3 text-sm ${
+                    className={`flex items-start gap-2 rounded-lg p-3 text-sm ${
                       isCritical
                         ? 'bg-danger-bg border border-danger/25 text-danger'
                         : 'bg-yellow-100 border border-yellow-200 text-yellow-800'
@@ -756,7 +756,7 @@ function EnhancedApplicationModal({
           {/* Cost preview */}
           {totalCost != null && (
             <div
-              className="mt-4 flex items-center justify-between rounded-md bg-green-50 border border-green-200 px-3 py-2 text-sm"
+              className="mt-4 flex items-center justify-between rounded-lg bg-green-50 border border-green-200 px-3 py-2 text-sm"
               data-testid="cost-preview"
             >
               <span className="text-green-800 font-medium">Estimated cost</span>
@@ -776,14 +776,14 @@ function EnhancedApplicationModal({
           <button
             type="submit"
             disabled={saving}
-            className="flex-1 px-4 py-2.5 bg-primary text-white rounded-md hover:bg-primary-hover disabled:opacity-50 font-medium"
+            className="flex-1 px-4 py-2.5 bg-primary text-white rounded-lg hover:bg-primary-hover disabled:opacity-50 font-medium"
           >
             {saving ? 'Saving…' : isEdit ? 'Update Application' : 'Save Application'}
           </button>
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2.5 border border-border-strong rounded-md hover:bg-cream-50 text-bark-700"
+            className="px-4 py-2.5 border border-border-strong rounded-lg hover:bg-cream-50 text-bark-700"
           >
             Cancel
           </button>

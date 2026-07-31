@@ -274,12 +274,12 @@ const HarvestLaborModal = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+      <div className="bg-surface-raised rounded-card shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b sticky top-0 bg-white">
+        <div className="flex items-center justify-between p-4 border-b sticky top-0 bg-surface-raised">
           <div className="flex items-center gap-2">
             <Users className="text-bark-700" size={24} />
-            <h2 className="text-xl font-semibold text-heading">
+            <h2 className="text-xl text-heading">
               {labor ? 'Edit Labor Record' : 'Add Labor to Harvest'}
             </h2>
           </div>
@@ -290,7 +290,7 @@ const HarvestLaborModal = ({
 
         {/* Contractor Warnings */}
         {contractorWarnings.length > 0 && (
-          <div className="mx-4 mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+          <div className="mx-4 mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-card">
             <div className="flex items-start gap-2">
               <AlertTriangle className="text-yellow-600 flex-shrink-0" size={20} />
               <div>
@@ -309,7 +309,7 @@ const HarvestLaborModal = ({
         <form onSubmit={handleSubmit} className="p-4 space-y-6">
           {/* Crew Information */}
           <div>
-            <h3 className="text-sm font-semibold text-bark-700 uppercase tracking-wide mb-3">
+            <h3 className="text-sm text-bark-700 uppercase tracking-wide mb-3">
               Crew Information
             </h3>
             <div className="grid grid-cols-2 gap-4">
@@ -354,7 +354,7 @@ const HarvestLaborModal = ({
                   name="crew_name"
                   value={formData.crew_name}
                   onChange={handleChange}
-                  className="w-full border rounded-lg px-3 py-2 bg-white text-heading"
+                  className="w-full border rounded-lg px-3 py-2 bg-surface-raised text-heading"
                   placeholder="e.g., Morning Crew A"
                 />
               </div>
@@ -370,7 +370,7 @@ const HarvestLaborModal = ({
                   name="foreman_name"
                   value={formData.foreman_name}
                   onChange={handleChange}
-                  className="w-full border rounded-lg px-3 py-2 bg-white text-heading"
+                  className="w-full border rounded-lg px-3 py-2 bg-surface-raised text-heading"
                 />
               </div>
 
@@ -384,7 +384,7 @@ const HarvestLaborModal = ({
                   value={formData.worker_count}
                   onChange={handleChange}
                   min="1"
-                  className={`w-full border rounded-lg px-3 py-2 bg-white text-heading ${errors.worker_count ? 'border-danger' : ''}`}
+                  className={`w-full border rounded-lg px-3 py-2 bg-surface-raised text-heading ${errors.worker_count ? 'border-danger' : ''}`}
                   required
                 />
                 {errors.worker_count && <p className="text-danger text-sm mt-1">{errors.worker_count}</p>}
@@ -394,7 +394,7 @@ const HarvestLaborModal = ({
 
           {/* Time Tracking */}
           <div>
-            <h3 className="text-sm font-semibold text-bark-700 uppercase tracking-wide mb-3">
+            <h3 className="text-sm text-bark-700 uppercase tracking-wide mb-3">
               Time Tracking
             </h3>
             <div className="grid grid-cols-3 gap-4">
@@ -407,7 +407,7 @@ const HarvestLaborModal = ({
                   name="start_time"
                   value={formData.start_time}
                   onChange={handleChange}
-                  className="w-full border rounded-lg px-3 py-2 bg-white text-heading"
+                  className="w-full border rounded-lg px-3 py-2 bg-surface-raised text-heading"
                 />
               </div>
 
@@ -420,7 +420,7 @@ const HarvestLaborModal = ({
                   name="end_time"
                   value={formData.end_time}
                   onChange={handleChange}
-                  className="w-full border rounded-lg px-3 py-2 bg-white text-heading"
+                  className="w-full border rounded-lg px-3 py-2 bg-surface-raised text-heading"
                 />
               </div>
 
@@ -435,7 +435,7 @@ const HarvestLaborModal = ({
                   onChange={handleChange}
                   step="0.25"
                   min="0"
-                  className="w-full border rounded-lg px-3 py-2 bg-white text-heading"
+                  className="w-full border rounded-lg px-3 py-2 bg-surface-raised text-heading"
                   placeholder={calculatedHours ? calculatedHours.toString() : ''}
                 />
                 {calculatedHours > 0 && !formData.total_hours && (
@@ -449,7 +449,7 @@ const HarvestLaborModal = ({
 
           {/* Cost Tracking */}
           <div className="border rounded-lg p-4 bg-cream-100">
-            <h3 className="text-sm font-semibold text-bark-700 uppercase tracking-wide mb-3">
+            <h3 className="text-sm text-bark-700 uppercase tracking-wide mb-3">
               Cost Tracking
             </h3>
             <div className="grid grid-cols-4 gap-4">
@@ -461,7 +461,7 @@ const HarvestLaborModal = ({
                   name="pay_type"
                   value={formData.pay_type}
                   onChange={handleChange}
-                  className="w-full border rounded-lg px-3 py-2 bg-white text-heading"
+                  className="w-full border rounded-lg px-3 py-2 bg-surface-raised text-heading"
                 >
                   {HARVEST_CONSTANTS.PAY_TYPES.map(p => (
                     <option key={p.value} value={p.value}>{p.label}</option>
@@ -480,7 +480,7 @@ const HarvestLaborModal = ({
                   onChange={handleChange}
                   step="0.01"
                   min="0"
-                  className="w-full border rounded-lg px-3 py-2 bg-white text-heading"
+                  className="w-full border rounded-lg px-3 py-2 bg-surface-raised text-heading"
                   placeholder={formData.pay_type === 'hourly' ? '$/hour' : '$/bin'}
                 />
                 {lastLaborForContractor && formData.rate && !labor && (
@@ -500,7 +500,7 @@ const HarvestLaborModal = ({
                   value={formData.bins_picked}
                   onChange={handleChange}
                   min="0"
-                  className="w-full border rounded-lg px-3 py-2 bg-white text-heading"
+                  className="w-full border rounded-lg px-3 py-2 bg-surface-raised text-heading"
                   placeholder="For piece rate"
                 />
               </div>
@@ -516,7 +516,7 @@ const HarvestLaborModal = ({
                   onChange={handleChange}
                   step="0.01"
                   min="0"
-                  className="w-full border rounded-lg px-3 py-2 bg-white text-heading"
+                  className="w-full border rounded-lg px-3 py-2 bg-surface-raised text-heading"
                   placeholder={formatCurrency(calculatedCost)}
                 />
                 <p className="text-xs text-text-secondary mt-1">
@@ -528,11 +528,11 @@ const HarvestLaborModal = ({
 
           {/* GAP/GHP Compliance */}
           <div className="border rounded-lg p-4 bg-orange-50">
-            <h3 className="text-sm font-semibold text-bark-700 uppercase tracking-wide mb-3">
+            <h3 className="text-sm text-bark-700 uppercase tracking-wide mb-3">
               GAP/GHP Worker Compliance
             </h3>
             <div className="grid grid-cols-3 gap-4">
-              <label className="flex items-center gap-2 p-3 bg-white rounded-lg border cursor-pointer hover:bg-cream-50">
+              <label className="flex items-center gap-2 p-3 bg-surface-raised rounded-lg border cursor-pointer hover:bg-cream-50">
                 <input
                   type="checkbox"
                   name="training_verified"
@@ -546,7 +546,7 @@ const HarvestLaborModal = ({
                 </div>
               </label>
 
-              <label className="flex items-center gap-2 p-3 bg-white rounded-lg border cursor-pointer hover:bg-cream-50">
+              <label className="flex items-center gap-2 p-3 bg-surface-raised rounded-lg border cursor-pointer hover:bg-cream-50">
                 <input
                   type="checkbox"
                   name="hygiene_facilities_available"
@@ -560,7 +560,7 @@ const HarvestLaborModal = ({
                 </div>
               </label>
 
-              <label className="flex items-center gap-2 p-3 bg-white rounded-lg border cursor-pointer hover:bg-cream-50">
+              <label className="flex items-center gap-2 p-3 bg-surface-raised rounded-lg border cursor-pointer hover:bg-cream-50">
                 <input
                   type="checkbox"
                   name="illness_check_performed"
@@ -586,7 +586,7 @@ const HarvestLaborModal = ({
               value={formData.notes}
               onChange={handleChange}
               rows={2}
-              className="w-full border rounded-lg px-3 py-2 bg-white text-heading"
+              className="w-full border rounded-lg px-3 py-2 bg-surface-raised text-heading"
               placeholder="Any additional notes..."
             />
           </div>

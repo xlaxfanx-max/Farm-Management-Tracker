@@ -47,7 +47,7 @@ export default function RadioGroup({
                     w-[18px] h-[18px] rounded-full border transition duration-fast ease-out
                     flex items-center justify-center
                     peer-focus-visible:ring-[3px] peer-focus-visible:ring-ring
-                    ${isChecked ? 'border-primary bg-white' : 'border-border-strong bg-white'}
+                    ${isChecked ? 'border-primary bg-surface-raised' : 'border-border-strong bg-surface-raised'}
                   `}
                 >
                   {isChecked && <span className="w-2 h-2 rounded-full bg-primary" />}

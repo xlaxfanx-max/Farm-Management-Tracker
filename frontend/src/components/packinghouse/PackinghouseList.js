@@ -115,7 +115,7 @@ const PackinghouseList = () => {
               placeholder="Search packinghouses..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 pr-4 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+              className="pl-10 pr-4 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-transparent"
             />
           </div>
           <label className="flex items-center text-sm text-bark-600">
@@ -139,9 +139,9 @@ const PackinghouseList = () => {
 
       {/* List */}
       {filteredPackinghouses.length === 0 ? (
-        <div className="text-center py-12 bg-white rounded-lg border border-border">
+        <div className="text-center py-12 bg-surface-raised rounded-card border border-border">
           <Building2 className="w-12 h-12 mx-auto text-sand-300 mb-4" />
-          <h3 className="text-lg font-medium text-heading mb-1">No Packinghouses</h3>
+          <h3 className="text-lg text-heading mb-1">No Packinghouses</h3>
           <p className="text-text-secondary mb-4">
             {searchTerm ? 'No packinghouses match your search.' : 'Get started by adding your first packinghouse.'}
           </p>
@@ -160,14 +160,14 @@ const PackinghouseList = () => {
           {filteredPackinghouses.map((packinghouse) => (
             <div
               key={packinghouse.id}
-              className={`bg-white rounded-lg border ${
+              className={`bg-surface-raised rounded-lg border ${
                 packinghouse.is_active ? 'border-border' : 'border-border-strong bg-cream-50'
               } p-4 hover:shadow-md transition-shadow`}
             >
               <div className="flex justify-between items-start">
                 <div className="flex-1">
                   <div className="flex items-center space-x-2">
-                    <h3 className="text-lg font-semibold text-heading">
+                    <h3 className="text-lg text-heading">
                       {packinghouse.name}
                     </h3>
                     {packinghouse.short_code && (

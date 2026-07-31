@@ -49,7 +49,7 @@ function FieldCard({
 
   return (
     <div
-      className={`bg-white rounded-lg shadow border-2 p-4 hover:shadow-md transition-all cursor-pointer ${
+      className={`bg-surface-raised rounded-card shadow border-2 p-4 hover:shadow-md transition-all cursor-pointer ${
         isSelected ? 'border-primary' : 'border-border'
       }`}
       onClick={() => onSelect(field.id)}
@@ -238,7 +238,7 @@ function FieldCard({
 
           {/* Dropdown Menu */}
           {showMobileMenu && (
-            <div className="absolute right-0 bottom-full mb-1 w-44 bg-white rounded-lg shadow-lg border border-border py-1 z-50">
+            <div className="absolute right-0 bottom-full mb-1 w-44 bg-surface-raised rounded-card shadow-lg border border-border py-1 z-50">
               {hasBoundary && (
                 <>
                   <button

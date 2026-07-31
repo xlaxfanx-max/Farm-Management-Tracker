@@ -101,7 +101,7 @@ const DeadlineRow = ({ deadline, onComplete, onEdit, onDelete }) => {
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
-            <h3 className={`font-medium truncate ${deadline.status === 'completed' ? 'text-text-muted line-through' : 'text-heading'}`}>
+            <h3 className={` truncate ${deadline.status === 'completed' ? 'text-text-muted line-through' : 'text-heading'}`}>
               {deadline.name}
             </h3>
             <CategoryBadge category={deadline.category} />
@@ -135,7 +135,7 @@ const DeadlineRow = ({ deadline, onComplete, onEdit, onDelete }) => {
           {showMenu && (
             <>
               <div className="fixed inset-0 z-10" onClick={() => setShowMenu(false)} />
-              <div className="absolute right-0 top-full mt-1 w-36 bg-white border border-border rounded-lg shadow-lg z-20 py-1">
+              <div className="absolute right-0 top-full mt-1 w-36 bg-surface-raised border border-border rounded-card shadow-lg z-20 py-1">
                 <button
                   onClick={() => { onEdit(deadline); setShowMenu(false); }}
                   className="w-full px-3 py-2 text-left text-sm text-bark-700 hover:bg-cream-50 flex items-center gap-2"
@@ -178,7 +178,7 @@ const CalendarDay = ({ date, deadlines, isCurrentMonth, isToday, onClick }) => {
     <div
       onClick={onClick}
       className={`min-h-[100px] p-2 border-b border-r border-border cursor-pointer hover:bg-cream-50 transition-colors
-        ${!isCurrentMonth ? 'bg-cream-50' : 'bg-white'}
+        ${!isCurrentMonth ? 'bg-cream-50' : 'bg-surface-raised'}
         ${isToday ? 'ring-2 ring-inset ring-primary' : ''}`}
     >
       <span className={`text-sm font-medium ${!isCurrentMonth ? 'text-text-muted' : isToday ? 'text-primary' : 'text-heading'}`}>
@@ -232,9 +232,9 @@ const DeadlineModal = ({ deadline, onClose, onSave }) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative bg-white rounded-lg shadow-xl w-full max-w-lg mx-4">
+      <div className="relative bg-surface-raised rounded-card shadow-xl w-full max-w-lg mx-4">
         <div className="flex items-center justify-between px-6 py-4 border-b border-border">
-          <h2 className="text-lg font-semibold text-heading">
+          <h2 className="text-lg text-heading">
             {deadline ? 'Edit Deadline' : 'Add Deadline'}
           </h2>
           <button onClick={onClose} className="text-text-muted hover:text-bark-600">
@@ -250,7 +250,7 @@ const DeadlineModal = ({ deadline, onClose, onSave }) => {
               required
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+              className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-primary"
               placeholder="e.g., Monthly PUR Report"
             />
           </div>
@@ -260,7 +260,7 @@ const DeadlineModal = ({ deadline, onClose, onSave }) => {
             <textarea
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+              className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-primary"
               rows={2}
               placeholder="Optional description..."
             />
@@ -273,7 +273,7 @@ const DeadlineModal = ({ deadline, onClose, onSave }) => {
                 required
                 value={formData.category}
                 onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+                className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-primary"
               >
                 {COMPLIANCE_CONSTANTS.DEADLINE_CATEGORIES.map(cat => (
                   <option key={cat.value} value={cat.value}>{cat.label}</option>
@@ -288,7 +288,7 @@ const DeadlineModal = ({ deadline, onClose, onSave }) => {
                 required
                 value={formData.due_date}
                 onChange={(e) => setFormData({ ...formData, due_date: e.target.value })}
-                className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+                className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-primary"
               />
             </div>
           </div>
@@ -299,7 +299,7 @@ const DeadlineModal = ({ deadline, onClose, onSave }) => {
               <select
                 value={formData.frequency}
                 onChange={(e) => setFormData({ ...formData, frequency: e.target.value })}
-                className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+                className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-primary"
               >
                 {COMPLIANCE_CONSTANTS.DEADLINE_FREQUENCIES.map(freq => (
                   <option key={freq.value} value={freq.value}>{freq.label}</option>
@@ -315,7 +315,7 @@ const DeadlineModal = ({ deadline, onClose, onSave }) => {
                 max={90}
                 value={formData.warning_days}
                 onChange={(e) => setFormData({ ...formData, warning_days: parseInt(e.target.value) || 14 })}
-                className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+                className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-primary"
               />
             </div>
           </div>
@@ -481,7 +481,7 @@ export default function DeadlineCalendar({ onNavigate }) {
             <span>/</span>
             <span>Deadlines</span>
           </div>
-          <h1 className="text-2xl font-bold text-heading">Compliance Deadlines</h1>
+          <h1 className="text-2xl text-heading">Compliance Deadlines</h1>
         </div>
 
         <div className="flex items-center gap-3">
@@ -504,28 +504,28 @@ export default function DeadlineCalendar({ onNavigate }) {
 
       {/* Stats */}
       <div className="grid grid-cols-4 gap-4 mb-6">
-        <div className="bg-danger-bg border border-danger/20 rounded-lg p-4">
+        <div className="bg-danger-bg border border-danger/20 rounded-card p-4">
           <div className="flex items-center gap-2">
             <AlertTriangle className="w-5 h-5 text-danger" />
             <span className="text-2xl font-bold text-danger">{stats.overdue}</span>
           </div>
           <p className="text-sm text-danger mt-1">Overdue</p>
         </div>
-        <div className="bg-yellow-100 border border-yellow-200 rounded-lg p-4">
+        <div className="bg-yellow-100 border border-yellow-200 rounded-card p-4">
           <div className="flex items-center gap-2">
             <Clock className="w-5 h-5 text-yellow-600" />
             <span className="text-2xl font-bold text-yellow-600">{stats.due_soon}</span>
           </div>
           <p className="text-sm text-yellow-700 mt-1">Due Soon</p>
         </div>
-        <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+        <div className="bg-orange-50 border border-orange-200 rounded-card p-4">
           <div className="flex items-center gap-2">
             <Calendar className="w-5 h-5 text-link" />
             <span className="text-2xl font-bold text-link">{stats.upcoming}</span>
           </div>
           <p className="text-sm text-orange-700 mt-1">Upcoming</p>
         </div>
-        <div className="bg-primary-light border border-green-100 rounded-lg p-4">
+        <div className="bg-primary-light border border-green-100 rounded-card p-4">
           <div className="flex items-center gap-2">
             <CheckCircle2 className="w-5 h-5 text-primary" />
             <span className="text-2xl font-bold text-primary">{stats.completed}</span>
@@ -535,22 +535,22 @@ export default function DeadlineCalendar({ onNavigate }) {
       </div>
 
       {/* Toolbar */}
-      <div className="bg-white border border-border rounded-lg mb-6">
+      <div className="bg-surface-raised border border-border rounded-card mb-6">
         <div className="flex items-center justify-between p-4">
           <div className="flex items-center gap-4">
             {/* View Toggle */}
             <div className="flex items-center bg-cream-100 rounded-lg p-1">
               <button
                 onClick={() => setView('list')}
-                className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-colors
-                  ${view === 'list' ? 'bg-white text-heading shadow-sm' : 'text-bark-600 hover:text-heading'}`}
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors
+                  ${view === 'list' ? 'bg-surface-raised text-heading shadow-sm' : 'text-bark-600 hover:text-heading'}`}
               >
                 <List className="w-4 h-4" /> List
               </button>
               <button
                 onClick={() => setView('calendar')}
-                className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-colors
-                  ${view === 'calendar' ? 'bg-white text-heading shadow-sm' : 'text-bark-600 hover:text-heading'}`}
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors
+                  ${view === 'calendar' ? 'bg-surface-raised text-heading shadow-sm' : 'text-bark-600 hover:text-heading'}`}
               >
                 <Calendar className="w-4 h-4" /> Calendar
               </button>
@@ -581,7 +581,7 @@ export default function DeadlineCalendar({ onNavigate }) {
               placeholder="Search deadlines..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 pr-4 py-2 border border-border-strong rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-primary w-64"
+              className="pl-9 pr-4 py-2 border border-border-strong rounded-card text-sm focus:ring-2 focus:ring-primary focus:border-primary w-64"
             />
           </div>
         </div>
@@ -595,7 +595,7 @@ export default function DeadlineCalendar({ onNavigate }) {
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
-            <h2 className="text-lg font-semibold text-heading">
+            <h2 className="text-lg text-heading">
               {currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
             </h2>
             <button
@@ -614,7 +614,7 @@ export default function DeadlineCalendar({ onNavigate }) {
           <RefreshCw className="w-6 h-6 text-text-muted animate-spin" />
         </div>
       ) : view === 'list' ? (
-        <div className="bg-white border border-border rounded-lg overflow-hidden">
+        <div className="bg-surface-raised border border-border rounded-card overflow-hidden">
           {deadlines.length > 0 ? (
             deadlines.map(deadline => (
               <DeadlineRow
@@ -628,7 +628,7 @@ export default function DeadlineCalendar({ onNavigate }) {
           ) : (
             <div className="py-12 px-6">
               {/* Auto-population hint banner */}
-              <div className="max-w-xl mx-auto mb-6 bg-green-50 border border-green-200 rounded-xl p-4 flex gap-3">
+              <div className="max-w-xl mx-auto mb-6 bg-green-50 border border-green-200 rounded-card p-4 flex gap-3">
                 <span className="text-2xl flex-shrink-0">🗓️</span>
                 <div>
                   <p className="text-sm font-semibold text-green-800">Deadlines auto-generate on first visit</p>
@@ -654,7 +654,7 @@ export default function DeadlineCalendar({ onNavigate }) {
           )}
         </div>
       ) : (
-        <div className="bg-white border border-border rounded-lg overflow-hidden">
+        <div className="bg-surface-raised border border-border rounded-card overflow-hidden">
           {/* Calendar Header */}
           <div className="grid grid-cols-7 border-b border-border">
             {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (

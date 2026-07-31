@@ -107,7 +107,7 @@ const ReportCard = ({ report, onView, onDownload, onSubmit, onDelete }) => {
   };
 
   return (
-    <div className="bg-white border border-border rounded-lg p-4 hover:shadow-md transition-shadow">
+    <div className="bg-surface-raised border border-border rounded-card p-4 hover:shadow-md transition-shadow">
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-3">
           <div className={`w-10 h-10 rounded-lg flex items-center justify-center
@@ -122,7 +122,7 @@ const ReportCard = ({ report, onView, onDownload, onSubmit, onDelete }) => {
               <ReportTypeBadge type={report.report_type} />
               <StatusBadge status={report.status} />
             </div>
-            <h3 className="font-medium text-heading">
+            <h3 className=" text-heading">
               {report.report_type_display || report.report_type}
             </h3>
           </div>
@@ -139,7 +139,7 @@ const ReportCard = ({ report, onView, onDownload, onSubmit, onDelete }) => {
           {showMenu && (
             <>
               <div className="fixed inset-0 z-10" onClick={() => setShowMenu(false)} />
-              <div className="absolute right-0 top-full mt-1 w-40 bg-white border border-border rounded-lg shadow-lg z-20 py-1">
+              <div className="absolute right-0 top-full mt-1 w-40 bg-surface-raised border border-border rounded-card shadow-lg z-20 py-1">
                 <button
                   onClick={() => { onView(report); setShowMenu(false); }}
                   className="w-full px-3 py-2 text-left text-sm text-bark-700 hover:bg-cream-50 flex items-center gap-2"
@@ -221,7 +221,7 @@ const ReportCard = ({ report, onView, onDownload, onSubmit, onDelete }) => {
       <div className="mt-4 pt-3 border-t border-border flex gap-2">
         <button
           onClick={() => onView(report)}
-          className="flex-1 px-3 py-1.5 text-sm border border-border-strong text-bark-700 rounded-lg hover:bg-cream-50"
+          className="flex-1 px-3 py-1.5 text-sm border border-border-strong text-bark-700 rounded-card hover:bg-cream-50"
         >
           View
         </button>
@@ -262,14 +262,14 @@ const ReportDetailModal = ({ report, onClose, onValidate, onSubmit }) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative bg-white rounded-lg shadow-xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
-        <div className="sticky top-0 bg-white flex items-center justify-between px-6 py-4 border-b border-border">
+      <div className="relative bg-surface-raised rounded-card shadow-xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+        <div className="sticky top-0 bg-surface-raised flex items-center justify-between px-6 py-4 border-b border-border">
           <div>
             <div className="flex items-center gap-2 mb-1">
               <ReportTypeBadge type={report.report_type} />
               <StatusBadge status={report.status} />
             </div>
-            <h2 className="text-lg font-semibold text-heading">
+            <h2 className="text-lg text-heading">
               {report.report_type_display || report.report_type}
             </h2>
           </div>
@@ -281,7 +281,7 @@ const ReportDetailModal = ({ report, onClose, onValidate, onSubmit }) => {
         <div className="p-6 space-y-6">
           {/* Period */}
           <div>
-            <h3 className="text-sm font-medium text-bark-700 mb-2">Reporting Period</h3>
+            <h3 className="text-sm text-bark-700 mb-2">Reporting Period</h3>
             <p className="text-heading">
               {formatDate(report.reporting_period_start)} - {formatDate(report.reporting_period_end)}
             </p>
@@ -290,7 +290,7 @@ const ReportDetailModal = ({ report, onClose, onValidate, onSubmit }) => {
           {/* Submission Info */}
           {report.submitted_at && (
             <div>
-              <h3 className="text-sm font-medium text-bark-700 mb-2">Submission</h3>
+              <h3 className="text-sm text-bark-700 mb-2">Submission</h3>
               <div className="bg-cream-50 rounded-lg p-4 space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-bark-600">Submitted:</span>
@@ -315,7 +315,7 @@ const ReportDetailModal = ({ report, onClose, onValidate, onSubmit }) => {
           {/* Validation Results */}
           {(report.validation_errors?.length > 0 || report.validation_warnings?.length > 0) && (
             <div>
-              <h3 className="text-sm font-medium text-bark-700 mb-2">Validation Results</h3>
+              <h3 className="text-sm text-bark-700 mb-2">Validation Results</h3>
               <div className="space-y-2">
                 {report.validation_errors?.map((error, idx) => (
                   <div key={idx} className="flex items-start gap-2 text-danger text-sm bg-danger-bg rounded-lg p-3">
@@ -336,7 +336,7 @@ const ReportDetailModal = ({ report, onClose, onValidate, onSubmit }) => {
           {/* Report Data Summary */}
           {report.report_data && (
             <div>
-              <h3 className="text-sm font-medium text-bark-700 mb-2">Report Summary</h3>
+              <h3 className="text-sm text-bark-700 mb-2">Report Summary</h3>
               <div className="bg-cream-50 rounded-lg p-4">
                 <pre className="text-xs text-bark-700 overflow-auto">
                   {JSON.stringify(report.report_data, null, 2)}
@@ -362,7 +362,7 @@ const ReportDetailModal = ({ report, onClose, onValidate, onSubmit }) => {
               <button
                 onClick={handleValidate}
                 disabled={validating}
-                className="px-4 py-2 border border-border-strong text-bark-700 rounded-lg hover:bg-cream-50 transition-colors flex items-center gap-2"
+                className="px-4 py-2 border border-border-strong text-bark-700 rounded-card hover:bg-cream-50 transition-colors flex items-center gap-2"
               >
                 <FileCheck className="w-4 h-4" />
                 {validating ? 'Validating...' : 'Validate'}
@@ -459,9 +459,9 @@ const GenerateReportModal = ({ onClose, onGenerate }) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className={`relative bg-white rounded-xl shadow-xl w-full ${maxWidth} overflow-y-auto max-h-[90vh]`}>
+      <div className={`relative bg-surface-raised rounded-card shadow-xl w-full ${maxWidth} overflow-y-auto max-h-[90vh]`}>
         <div className="flex items-center justify-between px-6 py-4 border-b border-border">
-          <h2 className="text-lg font-semibold text-heading">Generate Report</h2>
+          <h2 className="text-lg text-heading">Generate Report</h2>
           <button onClick={onClose} className="text-text-muted hover:text-bark-600">
             <X className="w-5 h-5" />
           </button>
@@ -474,7 +474,7 @@ const GenerateReportModal = ({ onClose, onGenerate }) => {
               required
               value={formData.report_type}
               onChange={(e) => setFormData({ ...formData, report_type: e.target.value })}
-              className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary bg-white text-heading"
+              className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary bg-surface-raised text-heading"
             >
               {COMPLIANCE_CONSTANTS.REPORT_TYPES.map(type => (
                 <option key={type.value} value={type.value}>{type.label}</option>
@@ -490,7 +490,7 @@ const GenerateReportModal = ({ onClose, onGenerate }) => {
                 required
                 value={formData.reporting_period_start}
                 onChange={(e) => setFormData({ ...formData, reporting_period_start: e.target.value })}
-                className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary bg-white text-heading"
+                className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary bg-surface-raised text-heading"
               />
             </div>
             <div>
@@ -500,14 +500,14 @@ const GenerateReportModal = ({ onClose, onGenerate }) => {
                 required
                 value={formData.reporting_period_end}
                 onChange={(e) => setFormData({ ...formData, reporting_period_end: e.target.value })}
-                className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary bg-white text-heading"
+                className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary bg-surface-raised text-heading"
               />
             </div>
           </div>
 
           {/* PUR auto-fill */}
           {isPUR && (
-            <div className="bg-cream-100 border border-sand-200 rounded-lg p-3 space-y-2">
+            <div className="bg-cream-100 border border-sand-200 rounded-card p-3 space-y-2">
               <div className="flex items-center justify-between">
                 <p className="text-sm text-bark-800 font-medium">
                   Auto-fill from Application Records
@@ -516,7 +516,7 @@ const GenerateReportModal = ({ onClose, onGenerate }) => {
                   type="button"
                   onClick={handleAutoFillPUR}
                   disabled={purLoading || !formData.reporting_period_start}
-                  className="text-xs px-3 py-1 bg-bark-600 hover:bg-bark-700 text-white rounded-md disabled:opacity-50 transition-colors"
+                  className="text-xs px-3 py-1 bg-bark-600 hover:bg-bark-700 text-white rounded-lg disabled:opacity-50 transition-colors"
                 >
                   {purLoading ? 'Loading...' : 'Preview Applications'}
                 </button>
@@ -657,7 +657,7 @@ export default function ComplianceReports({ onNavigate }) {
             <span>/</span>
             <span>Reports</span>
           </div>
-          <h1 className="text-2xl font-bold text-heading">Compliance Reports</h1>
+          <h1 className="text-2xl text-heading">Compliance Reports</h1>
         </div>
 
         <div className="flex items-center gap-3">
@@ -680,28 +680,28 @@ export default function ComplianceReports({ onNavigate }) {
 
       {/* Stats */}
       <div className="grid grid-cols-4 gap-4 mb-6">
-        <div className="bg-white border border-border rounded-lg p-4">
+        <div className="bg-surface-raised border border-border rounded-card p-4">
           <div className="flex items-center gap-2">
             <FileText className="w-5 h-5 text-bark-600" />
             <span className="text-2xl font-bold text-heading">{stats.total}</span>
           </div>
           <p className="text-sm text-bark-600 mt-1">Total Reports</p>
         </div>
-        <div className="bg-cream-50 border border-border rounded-lg p-4">
+        <div className="bg-cream-50 border border-border rounded-card p-4">
           <div className="flex items-center gap-2">
             <Edit2 className="w-5 h-5 text-bark-600" />
             <span className="text-2xl font-bold text-bark-600">{stats.draft}</span>
           </div>
           <p className="text-sm text-bark-600 mt-1">Drafts</p>
         </div>
-        <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+        <div className="bg-orange-50 border border-orange-200 rounded-card p-4">
           <div className="flex items-center gap-2">
             <FileCheck className="w-5 h-5 text-link" />
             <span className="text-2xl font-bold text-link">{stats.ready}</span>
           </div>
           <p className="text-sm text-orange-700 mt-1">Ready to Submit</p>
         </div>
-        <div className="bg-primary-light border border-green-100 rounded-lg p-4">
+        <div className="bg-primary-light border border-green-100 rounded-card p-4">
           <div className="flex items-center gap-2">
             <CheckCircle2 className="w-5 h-5 text-primary" />
             <span className="text-2xl font-bold text-primary">{stats.submitted}</span>
@@ -711,7 +711,7 @@ export default function ComplianceReports({ onNavigate }) {
       </div>
 
       {/* Toolbar */}
-      <div className="bg-white border border-border rounded-lg p-4 mb-6">
+      <div className="bg-surface-raised border border-border rounded-card p-4 mb-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             {/* Status Filter */}
@@ -735,7 +735,7 @@ export default function ComplianceReports({ onNavigate }) {
             <select
               value={typeFilter}
               onChange={(e) => setTypeFilter(e.target.value)}
-              className="border border-border-strong rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-primary focus:border-primary"
+              className="border border-border-strong rounded-card px-3 py-1.5 text-sm focus:ring-2 focus:ring-primary focus:border-primary"
             >
               <option value="all">All Types</option>
               {COMPLIANCE_CONSTANTS.REPORT_TYPES.map(type => (
@@ -752,7 +752,7 @@ export default function ComplianceReports({ onNavigate }) {
               placeholder="Search reports..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 pr-4 py-2 border border-border-strong rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-primary w-64"
+              className="pl-9 pr-4 py-2 border border-border-strong rounded-card text-sm focus:ring-2 focus:ring-primary focus:border-primary w-64"
             />
           </div>
         </div>
@@ -777,7 +777,7 @@ export default function ComplianceReports({ onNavigate }) {
           ))}
         </div>
       ) : (
-        <div className="bg-white border border-border rounded-lg p-12 text-center">
+        <div className="bg-surface-raised border border-border rounded-card p-12 text-center">
           <FileText className="w-12 h-12 mx-auto mb-3 text-text-muted" />
           <p className="font-medium text-heading">No reports found</p>
           <p className="text-sm text-text-secondary mt-1">Generate your first compliance report</p>

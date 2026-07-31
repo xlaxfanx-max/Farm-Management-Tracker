@@ -115,7 +115,7 @@ export default function ComplianceScoreBreakdown({ onNavigate }) {
 
   if (loading) {
     return (
-      <div className="bg-white rounded-xl border border-border p-4 shadow-sm animate-pulse">
+      <div className="bg-surface-raised rounded-card border border-border p-4 shadow-sm animate-pulse">
         <div className="flex items-center gap-4">
           <div className="w-24 h-24 rounded-full bg-sand-200" />
           <div className="flex-1 space-y-2">
@@ -129,7 +129,7 @@ export default function ComplianceScoreBreakdown({ onNavigate }) {
 
   if (error) {
     return (
-      <div className="bg-white rounded-xl border border-danger/25 p-4 shadow-sm">
+      <div className="bg-surface-raised rounded-card border border-danger/25 p-4 shadow-sm">
         <p className="text-sm text-danger">{error}</p>
       </div>
     );
@@ -140,11 +140,11 @@ export default function ComplianceScoreBreakdown({ onNavigate }) {
   const { score, score_breakdown = [], gap_items = [] } = data;
 
   return (
-    <div className="bg-white rounded-xl border border-border p-4 shadow-sm space-y-4">
+    <div className="bg-surface-raised rounded-card border border-border p-4 shadow-sm space-y-4">
       <div className="flex items-center gap-5">
         <ScoreRing score={score} />
         <div className="flex-1 min-w-0">
-          <h2 className="text-base font-semibold text-heading mb-1">
+          <h2 className="text-base text-heading mb-1">
             Compliance Score
           </h2>
           {gap_items.length > 0 ? (
@@ -166,7 +166,7 @@ export default function ComplianceScoreBreakdown({ onNavigate }) {
         </div>
         <button
           onClick={fetchData}
-          className="p-1.5 rounded-md text-text-muted hover:text-bark-600 hover:bg-cream-100 transition-colors flex-shrink-0"
+          className="p-1.5 rounded-lg text-text-muted hover:text-bark-600 hover:bg-cream-100 transition-colors flex-shrink-0"
           title="Refresh score"
         >
           <RefreshCw className="w-4 h-4" />

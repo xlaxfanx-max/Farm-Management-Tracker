@@ -65,7 +65,7 @@ const HarvestAnalytics = () => {
       {/* Header with Filters */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-heading">Harvest Analytics</h2>
+          <h2 className="text-2xl text-heading">Harvest Analytics</h2>
           <p className="text-bark-600 mt-1">
             {analyticsData.total_harvests} harvests analyzed
           </p>
@@ -76,7 +76,7 @@ const HarvestAnalytics = () => {
             value={selectedSeason}
             onChange={setSelectedSeason}
             cropCategory="citrus"
-            className="border border-border-strong rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
+            className="border border-border-strong rounded-card px-3 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
             placeholder="Select Season"
           />
         </div>

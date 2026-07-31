@@ -47,7 +47,7 @@ const DayForecastCard = ({ day, isToday }) => {
   const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 
   return (
-    <div className={`bg-white rounded-lg border ${isToday ? 'border-green-200 ring-2 ring-green-100' : 'border-border'} p-4 text-center`}>
+    <div className={`bg-surface-raised rounded-lg border ${isToday ? 'border-green-200 ring-2 ring-green-100' : 'border-border'} p-4 text-center`}>
       <div className="font-medium text-heading">{dayName}</div>
       <div className="text-xs text-text-secondary mb-2">{dateStr}</div>
 
@@ -183,7 +183,7 @@ export default function WeatherForecast() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-heading">Weather & Spray Forecast</h1>
+          <h1 className="text-2xl text-heading">Weather & Spray Forecast</h1>
           <p className="text-bark-600">Real-time weather and spray condition assessment</p>
         </div>
 
@@ -196,7 +196,7 @@ export default function WeatherForecast() {
                 const farm = farms.find(f => f.id === parseInt(e.target.value));
                 setSelectedFarm(farm);
               }}
-              className="border border-border-strong rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary focus:border-transparent"
+              className="border border-border-strong rounded-card px-4 py-2 focus:ring-2 focus:ring-primary focus:border-transparent"
             >
               {farms.map(farm => (
                 <option key={farm.id} value={farm.id}>
@@ -230,18 +230,18 @@ export default function WeatherForecast() {
 
       {/* Error state */}
       {error && !loading && (
-        <div className="bg-danger-bg border border-danger/25 rounded-xl p-6 text-center">
+        <div className="bg-danger-bg border border-danger/25 rounded-card p-6 text-center">
           <AlertCircle className="w-12 h-12 text-danger mx-auto mb-3" />
-          <h3 className="text-lg font-medium text-danger mb-2">Unable to Load Weather</h3>
+          <h3 className="text-lg text-danger mb-2">Unable to Load Weather</h3>
           <p className="text-danger">{error}</p>
         </div>
       )}
 
       {/* No farms state */}
       {farms.length === 0 && !loading && !error && (
-        <div className="bg-cream-50 border border-border rounded-xl p-8 text-center">
+        <div className="bg-cream-50 border border-border rounded-card p-8 text-center">
           <MapPin className="w-16 h-16 text-sand-300 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-heading mb-2">No Farms Found</h3>
+          <h3 className="text-lg text-heading mb-2">No Farms Found</h3>
           <p className="text-bark-600">Add a farm with GPS coordinates to view weather data.</p>
         </div>
       )}
@@ -252,8 +252,8 @@ export default function WeatherForecast() {
           {/* Current conditions and spray assessment */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Current Weather Card */}
-            <div className="bg-white rounded-xl shadow-sm border border-border p-6">
-              <h2 className="text-lg font-semibold text-heading mb-4 flex items-center gap-2">
+            <div className="bg-surface-raised rounded-card shadow-sm border border-border p-6">
+              <h2 className="text-lg text-heading mb-4 flex items-center gap-2">
                 <Sun className="w-5 h-5 text-yellow-600" />
                 Current Conditions
               </h2>
@@ -305,8 +305,8 @@ export default function WeatherForecast() {
 
             {/* Spray Conditions Card */}
             {weather.spray_conditions && (
-              <div className="bg-white rounded-xl shadow-sm border border-border p-6">
-                <h2 className="text-lg font-semibold text-heading mb-4 flex items-center gap-2">
+              <div className="bg-surface-raised rounded-card shadow-sm border border-border p-6">
+                <h2 className="text-lg text-heading mb-4 flex items-center gap-2">
                   <AlertCircle className="w-5 h-5 text-text-muted" />
                   Spray Conditions Assessment
                 </h2>
@@ -336,8 +336,8 @@ export default function WeatherForecast() {
           </div>
 
           {/* 7-Day Forecast */}
-          <div className="bg-white rounded-xl shadow-sm border border-border p-6">
-            <h2 className="text-lg font-semibold text-heading mb-4 flex items-center gap-2">
+          <div className="bg-surface-raised rounded-card shadow-sm border border-border p-6">
+            <h2 className="text-lg text-heading mb-4 flex items-center gap-2">
               <Calendar className="w-5 h-5 text-text-muted" />
               7-Day Forecast
             </h2>
@@ -357,7 +357,7 @@ export default function WeatherForecast() {
 
           {/* Threshold Reference */}
           {thresholds && (
-            <div className="bg-white rounded-xl shadow-sm border border-border">
+            <div className="bg-surface-raised rounded-card shadow-sm border border-border">
               <button
                 onClick={() => setShowThresholds(!showThresholds)}
                 className="w-full flex items-center justify-between p-4 text-left"
@@ -378,7 +378,7 @@ export default function WeatherForecast() {
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
                     {thresholds.descriptions && Object.entries(thresholds.descriptions).map(([key, desc]) => (
                       <div key={key} className="bg-cream-50 rounded-lg p-4">
-                        <h4 className="font-medium text-heading capitalize mb-2">{key}</h4>
+                        <h4 className=" text-heading capitalize mb-2">{key}</h4>
                         <div className="space-y-1 text-sm">
                           {Object.entries(desc).map(([level, text]) => (
                             <div key={level} className="text-bark-600">

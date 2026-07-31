@@ -196,7 +196,7 @@ const PoolList = () => {
             <select
               value={filters.packinghouse}
               onChange={(e) => setFilters(prev => ({ ...prev, packinghouse: e.target.value }))}
-              className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary"
+              className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary"
             >
               <option value="">All Packinghouses</option>
               {packinghouses.map(ph => (
@@ -214,7 +214,7 @@ const PoolList = () => {
               value={filters.season}
               onChange={(e) => setFilters(prev => ({ ...prev, season: e.target.value }))}
               placeholder="e.g., 2024-2025"
-              className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary"
+              className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary"
             />
           </div>
 
@@ -225,7 +225,7 @@ const PoolList = () => {
             <select
               value={filters.status}
               onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value }))}
-              className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary"
+              className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary"
             >
               <option value="">All Statuses</option>
               {PACKINGHOUSE_CONSTANTS.poolStatuses.map(s => (
@@ -241,7 +241,7 @@ const PoolList = () => {
             <select
               value={filters.commodity}
               onChange={(e) => setFilters(prev => ({ ...prev, commodity: e.target.value }))}
-              className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary"
+              className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary"
             >
               <option value="">All Commodities</option>
               {PACKINGHOUSE_CONSTANTS.commodities.map(c => (
@@ -254,9 +254,9 @@ const PoolList = () => {
 
       {/* List */}
       {pools.length === 0 ? (
-        <div className="text-center py-12 bg-white rounded-lg border border-border">
+        <div className="text-center py-12 bg-surface-raised rounded-card border border-border">
           <Boxes className="w-12 h-12 mx-auto text-sand-300 mb-4" />
-          <h3 className="text-lg font-medium text-heading mb-1">No Pools Found</h3>
+          <h3 className="text-lg text-heading mb-1">No Pools Found</h3>
           <p className="text-text-secondary mb-4">
             No pools match your current filters.
           </p>
@@ -269,7 +269,7 @@ const PoolList = () => {
           </button>
         </div>
       ) : (
-        <div className="bg-white rounded-lg border border-border overflow-hidden">
+        <div className="bg-surface-raised rounded-card border border-border overflow-hidden">
           <table className="min-w-full divide-y divide-border">
             <thead className="bg-cream-50">
               <tr>
@@ -296,7 +296,7 @@ const PoolList = () => {
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-border">
+            <tbody className="bg-surface-raised divide-y divide-border">
               {pools.map((pool) => (
                 <tr
                   key={pool.id}

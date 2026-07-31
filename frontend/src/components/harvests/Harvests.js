@@ -361,7 +361,7 @@ const Harvests = () => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-heading">Harvest & Packing</h1>
+          <h1 className="text-2xl text-heading">Harvest & Packing</h1>
           <p className="text-bark-600">Track harvests from field to packinghouse</p>
         </div>
         {activeTab === 'harvests' && harvestsView === 'hand-entered' && (
@@ -465,7 +465,7 @@ const Harvests = () => {
           <StatementList />
           {hasPickHaul && (
             <div className="space-y-2">
-              <h3 className="text-sm font-medium text-bark-700">
+              <h3 className="text-sm text-bark-700">
                 House charge-backs (pick &amp; haul)
               </h3>
               <HouseChargesTab season={currentPickhaulSeason()} />
@@ -494,9 +494,9 @@ const Harvests = () => {
                 <button
                   key={view.id}
                   onClick={() => setHarvestsView(view.id)}
-                  className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
                     harvestsView === view.id
-                      ? 'bg-white text-heading shadow-sm'
+                      ? 'bg-surface-raised text-heading shadow-sm'
                       : 'text-text-secondary hover:text-bark-700'
                   }`}
                 >
@@ -555,7 +555,7 @@ const Harvests = () => {
 
           {/* Analytics Panel */}
           {showAnalytics && (
-            <div className="bg-white rounded-lg shadow p-6">
+            <div className="bg-surface-raised rounded-lg shadow p-6">
               <HarvestAnalytics />
             </div>
           )}

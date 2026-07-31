@@ -55,7 +55,7 @@ export default function PURReportPreview({ data, reportId, onMarkSubmitted }) {
   return (
     <div className="space-y-4 mt-4">
       {/* Summary bar */}
-      <div className="flex flex-wrap items-center gap-4 px-4 py-3 bg-cream-100 border border-sand-200 rounded-lg text-sm">
+      <div className="flex flex-wrap items-center gap-4 px-4 py-3 bg-cream-100 border border-sand-200 rounded-card text-sm">
         <span className="font-semibold text-bark-800">
           {rows.length} application{rows.length !== 1 ? 's' : ''} found
         </span>
@@ -76,7 +76,7 @@ export default function PURReportPreview({ data, reportId, onMarkSubmitted }) {
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto rounded-lg border border-border">
+      <div className="overflow-x-auto rounded-card border border-border">
         <table className="w-full text-sm">
           <thead className="bg-cream-50 text-xs text-text-secondary uppercase tracking-wide">
             <tr>
@@ -99,7 +99,7 @@ export default function PURReportPreview({ data, reportId, onMarkSubmitted }) {
                   className={
                     hasRowWarning
                       ? 'bg-yellow-100'
-                      : 'bg-white hover:bg-cream-50'
+                      : 'bg-surface-raised hover:bg-cream-50'
                   }
                 >
                   <td className="px-3 py-2 text-heading whitespace-nowrap">{row.date}</td>
@@ -161,7 +161,7 @@ export default function PURReportPreview({ data, reportId, onMarkSubmitted }) {
         <div className="flex gap-2">
           <button
             onClick={handleExportCSV}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm bg-white border border-border-strong rounded-lg hover:bg-cream-50 transition-colors text-bark-700"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm bg-surface-raised border border-border-strong rounded-card hover:bg-cream-50 transition-colors text-bark-700"
           >
             <Download className="w-4 h-4" />
             Export CSV

@@ -75,15 +75,15 @@ function FarmInsightsPanel({ farms = [], fields = [], applications = [], waterSo
   }
 
   return (
-    <div className="bg-white rounded-lg border border-border overflow-hidden">
+    <div className="bg-surface-raised rounded-card border border-border overflow-hidden">
       {/* Header - Always visible */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full px-4 py-3 flex items-center justify-between bg-gradient-to-r from-green-50 to-orange-50 hover:from-green-100 hover:to-orange-100 transition-colors"
+        className="w-full px-4 py-3 flex items-center justify-between bg-cream-100 hover:from-green-100 hover:to-orange-100 transition-colors"
       >
         <div className="flex items-center gap-2">
           <BarChart3 className="w-5 h-5 text-primary" />
-          <h3 className="font-semibold text-heading">Farm Insights</h3>
+          <h3 className=" text-heading">Farm Insights</h3>
           <span className="text-sm text-text-secondary">
             {insights.totalAcres.toFixed(0)} total acres across {insights.totalFarms} farms
           </span>

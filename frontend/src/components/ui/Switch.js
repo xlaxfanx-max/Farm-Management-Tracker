@@ -40,7 +40,7 @@ export default function Switch({
         />
         <span
           className={`
-            absolute top-[3px] left-[3px] w-[17px] h-[17px] rounded-full bg-white shadow-sm
+            absolute top-[3px] left-[3px] w-[17px] h-[17px] rounded-full bg-surface-raised shadow-sm
             transition-transform duration-fast ease-out
             ${checked ? 'translate-x-[17px]' : 'translate-x-0'}
           `}

@@ -134,12 +134,12 @@ export default function ComplianceOnboarding({ onComplete, onSkip }) {
   const enabledCount = Object.values(selectedRegulations).filter(Boolean).length;
 
   return (
-    <div className="max-w-3xl mx-auto bg-white rounded-xl shadow-lg overflow-hidden">
+    <div className="max-w-3xl mx-auto bg-surface-raised rounded-card shadow-lg overflow-hidden">
       {/* Header */}
-      <div className="bg-gradient-to-r from-orange-600 to-orange-700 text-white p-6">
+      <div className="bg-gradient-to-r from-yellow-500 to-orange-600 text-white p-6">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-bold">Compliance Setup</h2>
+            <h2 className="text-2xl">Compliance Setup</h2>
             <p className="text-orange-100 mt-1">
               Step {currentStep + 1} of {STEPS.length}: {step.title}
             </p>
@@ -158,7 +158,7 @@ export default function ComplianceOnboarding({ onComplete, onSkip }) {
             <div
               key={s.id}
               className={`flex-1 h-2 rounded-full transition-colors ${
-                i <= currentStep ? 'bg-white' : 'bg-orange-400/30'
+                i <= currentStep ? 'bg-surface-raised' : 'bg-orange-400/30'
               }`}
             />
           ))}
@@ -175,7 +175,7 @@ export default function ComplianceOnboarding({ onComplete, onSkip }) {
               {REGULATIONS.map(reg => (
                 <label
                   key={reg.key}
-                  className={`flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all ${
+                  className={`flex items-center gap-3 p-3 rounded-card border-2 cursor-pointer transition-all ${
                     selectedRegulations[reg.key]
                       ? 'border-primary bg-orange-50'
                       : 'border-border hover:border-border-strong'
@@ -215,7 +215,7 @@ export default function ComplianceOnboarding({ onComplete, onSkip }) {
         {currentStep === 1 && (
           <div>
             <p className="text-bark-600 mb-4">{step.description}</p>
-            <div className="bg-yellow-100 border border-yellow-200 rounded-lg p-4 flex gap-3">
+            <div className="bg-yellow-100 border border-yellow-200 rounded-card p-4 flex gap-3">
               <AlertTriangle className="w-5 h-5 text-yellow-500 flex-shrink-0 mt-0.5" />
               <div>
                 <p className="text-sm text-yellow-800">
@@ -235,7 +235,7 @@ export default function ComplianceOnboarding({ onComplete, onSkip }) {
         {currentStep === 2 && (
           <div>
             <p className="text-bark-600 mb-4">{step.description}</p>
-            <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+            <div className="bg-orange-50 border border-orange-200 rounded-card p-4">
               <p className="text-sm text-orange-700">
                 Add WPS training records for your workers in the{' '}
                 <strong>WPS Compliance</strong> section. The system tracks:
@@ -255,7 +255,7 @@ export default function ComplianceOnboarding({ onComplete, onSkip }) {
         {currentStep === 3 && (
           <div>
             <p className="text-bark-600 mb-4">{step.description}</p>
-            <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+            <div className="bg-orange-50 border border-orange-200 rounded-card p-4">
               <p className="text-sm text-orange-700">
                 Your water sources should already be set up in the Water Management section.
                 The compliance system will:
@@ -276,7 +276,7 @@ export default function ComplianceOnboarding({ onComplete, onSkip }) {
             <p className="text-bark-600 mb-4">{step.description}</p>
 
             {deadlinesGenerated ? (
-              <div className="bg-primary-light border border-green-200 rounded-lg p-4 flex gap-3">
+              <div className="bg-primary-light border border-green-200 rounded-card p-4 flex gap-3">
                 <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
                 <div>
                   <p className="font-medium text-green-700">Deadlines generated!</p>

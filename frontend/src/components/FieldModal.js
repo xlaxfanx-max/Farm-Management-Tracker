@@ -212,9 +212,9 @@ function FieldModal({ field, farms, crops = [], rootstocks = [], preselectedFarm
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+      <div className="bg-surface-raised rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto">
         <div className="p-6 border-b flex justify-between items-center">
-          <h2 className="text-2xl font-bold text-heading">{field ? 'Edit Field' : 'Add Field'}</h2>
+          <h2 className="text-2xl text-heading">{field ? 'Edit Field' : 'Add Field'}</h2>
           <button onClick={onClose} className="p-2 hover:bg-cream-100 rounded-lg text-text-secondary"><X size={24} /></button>
         </div>
 
@@ -244,17 +244,17 @@ function FieldModal({ field, farms, crops = [], rootstocks = [], preselectedFarm
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium mb-1 text-heading">Field Name *</label>
-                  <input type="text" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} className="w-full p-2 border rounded-lg bg-white text-heading" placeholder="e.g., North Block A" />
+                  <input type="text" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} className="w-full p-2 border rounded-lg bg-surface-raised text-heading" placeholder="e.g., North Block A" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1 text-heading">Field Number</label>
-                  <input type="text" value={formData.field_number} onChange={(e) => setFormData({...formData, field_number: e.target.value})} className="w-full p-2 border rounded-lg bg-white text-heading" placeholder="e.g., F-001" />
+                  <input type="text" value={formData.field_number} onChange={(e) => setFormData({...formData, field_number: e.target.value})} className="w-full p-2 border rounded-lg bg-surface-raised text-heading" placeholder="e.g., F-001" />
                 </div>
               </div>
 
-              <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+              <div className="bg-orange-50 border border-orange-200 rounded-card p-4">
                 <label className="block text-sm font-medium text-orange-700 mb-1">Farm * <span className="text-xs font-normal">(Required for PUR)</span></label>
-                <select value={formData.farm} onChange={handleFarmChange} className="w-full p-2 border border-orange-300 rounded-lg bg-white text-heading">
+                <select value={formData.farm} onChange={handleFarmChange} className="w-full p-2 border border-orange-300 rounded-card bg-surface-raised text-heading">
                   <option value="">Select farm...</option>
                   {farms && farms.map(farm => (<option key={farm.id} value={farm.id}>{farm.name} ({farm.county})</option>))}
                 </select>
@@ -263,11 +263,11 @@ function FieldModal({ field, farms, crops = [], rootstocks = [], preselectedFarm
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium mb-1 text-heading">Acres *</label>
-                  <input type="number" step="0.01" value={formData.total_acres} onChange={(e) => setFormData({...formData, total_acres: e.target.value})} className="w-full p-2 border rounded-lg bg-white text-heading" placeholder="e.g., 25.5" />
+                  <input type="number" step="0.01" value={formData.total_acres} onChange={(e) => setFormData({...formData, total_acres: e.target.value})} className="w-full p-2 border rounded-lg bg-surface-raised text-heading" placeholder="e.g., 25.5" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1 text-heading">County * <span className="text-xs font-normal text-text-secondary">(Required for PUR)</span></label>
-                  <select value={formData.county} onChange={(e) => setFormData({...formData, county: e.target.value})} className="w-full p-2 border rounded-lg bg-white text-heading">
+                  <select value={formData.county} onChange={(e) => setFormData({...formData, county: e.target.value})} className="w-full p-2 border rounded-lg bg-surface-raised text-heading">
                     <option value="">Select county...</option>
                     {CALIFORNIA_COUNTIES.map(county => (<option key={county} value={county}>{county}</option>))}
                   </select>
@@ -279,7 +279,7 @@ function FieldModal({ field, farms, crops = [], rootstocks = [], preselectedFarm
                 <textarea
                   value={formData.notes}
                   onChange={(e) => setFormData({...formData, notes: e.target.value})}
-                  className="w-full p-2 border rounded-lg bg-white text-heading"
+                  className="w-full p-2 border rounded-lg bg-surface-raised text-heading"
                   rows={3}
                   placeholder="Optional notes about this field..."
                 />
@@ -296,7 +296,7 @@ function FieldModal({ field, farms, crops = [], rootstocks = [], preselectedFarm
                   <select
                     value={formData.crop}
                     onChange={handleCropChange}
-                    className="w-full p-2 border rounded-lg bg-white text-heading"
+                    className="w-full p-2 border rounded-lg bg-surface-raised text-heading"
                   >
                     <option value="">Select crop...</option>
                     {crops.map(crop => (
@@ -314,7 +314,7 @@ function FieldModal({ field, farms, crops = [], rootstocks = [], preselectedFarm
                   <select
                     value={formData.rootstock}
                     onChange={(e) => setFormData({...formData, rootstock: e.target.value})}
-                    className="w-full p-2 border rounded-lg bg-white text-heading"
+                    className="w-full p-2 border rounded-lg bg-surface-raised text-heading"
                     disabled={!formData.crop}
                   >
                     <option value="">Select rootstock...</option>
@@ -338,7 +338,7 @@ function FieldModal({ field, farms, crops = [], rootstocks = [], preselectedFarm
                     type="text"
                     value={formData.current_crop}
                     onChange={(e) => setFormData({...formData, current_crop: e.target.value})}
-                    className="w-full p-2 border rounded-lg bg-white text-heading"
+                    className="w-full p-2 border rounded-lg bg-surface-raised text-heading"
                     placeholder="e.g., Navel Orange"
                   />
                 </div>
@@ -347,7 +347,7 @@ function FieldModal({ field, farms, crops = [], rootstocks = [], preselectedFarm
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium mb-1 text-heading">Planting Date</label>
-                  <input type="date" value={formData.planting_date} onChange={(e) => setFormData({...formData, planting_date: e.target.value})} className="w-full p-2 border rounded-lg bg-white text-heading" />
+                  <input type="date" value={formData.planting_date} onChange={(e) => setFormData({...formData, planting_date: e.target.value})} className="w-full p-2 border rounded-lg bg-surface-raised text-heading" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1 text-heading">Year Planted</label>
@@ -355,7 +355,7 @@ function FieldModal({ field, farms, crops = [], rootstocks = [], preselectedFarm
                     type="number"
                     value={formData.year_planted}
                     onChange={(e) => setFormData({...formData, year_planted: e.target.value})}
-                    className="w-full p-2 border rounded-lg bg-white text-heading"
+                    className="w-full p-2 border rounded-lg bg-surface-raised text-heading"
                     placeholder="e.g., 2015"
                     min="1900"
                     max={new Date().getFullYear()}
@@ -369,7 +369,7 @@ function FieldModal({ field, farms, crops = [], rootstocks = [], preselectedFarm
                   <select
                     value={formData.organic_status}
                     onChange={(e) => setFormData({...formData, organic_status: e.target.value})}
-                    className="w-full p-2 border rounded-lg bg-white text-heading"
+                    className="w-full p-2 border rounded-lg bg-surface-raised text-heading"
                   >
                     {FIELD_CONSTANTS.ORGANIC_STATUSES.map(opt => (
                       <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -383,7 +383,7 @@ function FieldModal({ field, farms, crops = [], rootstocks = [], preselectedFarm
                       type="text"
                       value={formData.organic_certifier}
                       onChange={(e) => setFormData({...formData, organic_certifier: e.target.value})}
-                      className="w-full p-2 border rounded-lg bg-white text-heading"
+                      className="w-full p-2 border rounded-lg bg-surface-raised text-heading"
                       placeholder="e.g., CCOF"
                     />
                   </div>
@@ -398,7 +398,7 @@ function FieldModal({ field, farms, crops = [], rootstocks = [], preselectedFarm
                       type="text"
                       value={formData.organic_cert_number}
                       onChange={(e) => setFormData({...formData, organic_cert_number: e.target.value})}
-                      className="w-full p-2 border rounded-lg bg-white text-heading"
+                      className="w-full p-2 border rounded-lg bg-surface-raised text-heading"
                     />
                   </div>
                   <div>
@@ -407,7 +407,7 @@ function FieldModal({ field, farms, crops = [], rootstocks = [], preselectedFarm
                       type="date"
                       value={formData.organic_cert_expiration}
                       onChange={(e) => setFormData({...formData, organic_cert_expiration: e.target.value})}
-                      className="w-full p-2 border rounded-lg bg-white text-heading"
+                      className="w-full p-2 border rounded-lg bg-surface-raised text-heading"
                     />
                   </div>
                 </div>
@@ -426,7 +426,7 @@ function FieldModal({ field, farms, crops = [], rootstocks = [], preselectedFarm
                     step="0.1"
                     value={formData.row_spacing_ft}
                     onChange={(e) => setFormData({...formData, row_spacing_ft: e.target.value})}
-                    className="w-full p-2 border rounded-lg bg-white text-heading"
+                    className="w-full p-2 border rounded-lg bg-surface-raised text-heading"
                     placeholder="e.g., 22"
                   />
                 </div>
@@ -437,7 +437,7 @@ function FieldModal({ field, farms, crops = [], rootstocks = [], preselectedFarm
                     step="0.1"
                     value={formData.tree_spacing_ft}
                     onChange={(e) => setFormData({...formData, tree_spacing_ft: e.target.value})}
-                    className="w-full p-2 border rounded-lg bg-white text-heading"
+                    className="w-full p-2 border rounded-lg bg-surface-raised text-heading"
                     placeholder="e.g., 18"
                   />
                 </div>
@@ -450,7 +450,7 @@ function FieldModal({ field, farms, crops = [], rootstocks = [], preselectedFarm
                     type="number"
                     value={formData.tree_count}
                     onChange={(e) => setFormData({...formData, tree_count: e.target.value})}
-                    className="w-full p-2 border rounded-lg bg-white text-heading"
+                    className="w-full p-2 border rounded-lg bg-surface-raised text-heading"
                     placeholder="e.g., 2500"
                   />
                 </div>
@@ -461,7 +461,7 @@ function FieldModal({ field, farms, crops = [], rootstocks = [], preselectedFarm
                     step="0.01"
                     value={formData.trees_per_acre}
                     onChange={(e) => setFormData({...formData, trees_per_acre: e.target.value})}
-                    className="w-full p-2 border rounded-lg bg-white text-heading"
+                    className="w-full p-2 border rounded-lg bg-surface-raised text-heading"
                     placeholder="Auto-calculated if spacing provided"
                   />
                   {formData.row_spacing_ft && formData.tree_spacing_ft && (
@@ -479,7 +479,7 @@ function FieldModal({ field, farms, crops = [], rootstocks = [], preselectedFarm
                     <select
                       value={formData.row_orientation}
                       onChange={(e) => setFormData({...formData, row_orientation: e.target.value})}
-                      className="w-full p-2 border rounded-lg bg-white text-heading"
+                      className="w-full p-2 border rounded-lg bg-surface-raised text-heading"
                     >
                       <option value="">Select...</option>
                       {FIELD_CONSTANTS.ROW_ORIENTATIONS.map(opt => (
@@ -492,7 +492,7 @@ function FieldModal({ field, farms, crops = [], rootstocks = [], preselectedFarm
                     <select
                       value={formData.trellis_system}
                       onChange={(e) => setFormData({...formData, trellis_system: e.target.value})}
-                      className="w-full p-2 border rounded-lg bg-white text-heading"
+                      className="w-full p-2 border rounded-lg bg-surface-raised text-heading"
                     >
                       {FIELD_CONSTANTS.TRELLIS_SYSTEMS.map(opt => (
                         <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -509,7 +509,7 @@ function FieldModal({ field, farms, crops = [], rootstocks = [], preselectedFarm
                       step="0.01"
                       value={formData.expected_yield_per_acre}
                       onChange={(e) => setFormData({...formData, expected_yield_per_acre: e.target.value})}
-                      className="w-full p-2 border rounded-lg bg-white text-heading"
+                      className="w-full p-2 border rounded-lg bg-surface-raised text-heading"
                       placeholder="e.g., 15"
                     />
                   </div>
@@ -518,7 +518,7 @@ function FieldModal({ field, farms, crops = [], rootstocks = [], preselectedFarm
                     <select
                       value={formData.yield_unit}
                       onChange={(e) => setFormData({...formData, yield_unit: e.target.value})}
-                      className="w-full p-2 border rounded-lg bg-white text-heading"
+                      className="w-full p-2 border rounded-lg bg-surface-raised text-heading"
                     >
                       <option value="bins">Bins</option>
                       <option value="lbs">Pounds</option>
@@ -541,7 +541,7 @@ function FieldModal({ field, farms, crops = [], rootstocks = [], preselectedFarm
                   <select
                     value={formData.soil_type}
                     onChange={(e) => setFormData({...formData, soil_type: e.target.value})}
-                    className="w-full p-2 border rounded-lg bg-white text-heading"
+                    className="w-full p-2 border rounded-lg bg-surface-raised text-heading"
                   >
                     <option value="">Select...</option>
                     {FIELD_CONSTANTS.SOIL_TYPES.map(opt => (
@@ -554,7 +554,7 @@ function FieldModal({ field, farms, crops = [], rootstocks = [], preselectedFarm
                   <select
                     value={formData.irrigation_type}
                     onChange={(e) => setFormData({...formData, irrigation_type: e.target.value})}
-                    className="w-full p-2 border rounded-lg bg-white text-heading"
+                    className="w-full p-2 border rounded-lg bg-surface-raised text-heading"
                   >
                     <option value="">Select...</option>
                     {FIELD_CONSTANTS.IRRIGATION_TYPES.map(opt => (
@@ -572,26 +572,26 @@ function FieldModal({ field, farms, crops = [], rootstocks = [], preselectedFarm
               <div className="grid grid-cols-3 gap-4">
                 <div>
                   <label className="block text-sm font-medium mb-1 text-heading">Section</label>
-                  <input type="text" value={formData.plss_section} onChange={(e) => setFormData({...formData, plss_section: e.target.value})} className="w-full p-2 border rounded-lg bg-white text-heading" placeholder="e.g., 12" />
+                  <input type="text" value={formData.plss_section} onChange={(e) => setFormData({...formData, plss_section: e.target.value})} className="w-full p-2 border rounded-lg bg-surface-raised text-heading" placeholder="e.g., 12" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1 text-heading">Township</label>
-                  <input type="text" value={formData.plss_township} onChange={(e) => setFormData({...formData, plss_township: e.target.value})} className="w-full p-2 border rounded-lg bg-white text-heading" placeholder="e.g., 15S" />
+                  <input type="text" value={formData.plss_township} onChange={(e) => setFormData({...formData, plss_township: e.target.value})} className="w-full p-2 border rounded-lg bg-surface-raised text-heading" placeholder="e.g., 15S" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1 text-heading">Range</label>
-                  <input type="text" value={formData.plss_range} onChange={(e) => setFormData({...formData, plss_range: e.target.value})} className="w-full p-2 border rounded-lg bg-white text-heading" placeholder="e.g., 18E" />
+                  <input type="text" value={formData.plss_range} onChange={(e) => setFormData({...formData, plss_range: e.target.value})} className="w-full p-2 border rounded-lg bg-surface-raised text-heading" placeholder="e.g., 18E" />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium mb-1 text-heading">GPS Latitude</label>
-                  <input type="text" value={formData.gps_latitude} onChange={(e) => setFormData({...formData, gps_latitude: e.target.value})} className="w-full p-2 border rounded-lg bg-white text-heading" placeholder="e.g., 36.7378" />
+                  <input type="text" value={formData.gps_latitude} onChange={(e) => setFormData({...formData, gps_latitude: e.target.value})} className="w-full p-2 border rounded-lg bg-surface-raised text-heading" placeholder="e.g., 36.7378" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1 text-heading">GPS Longitude</label>
-                  <input type="text" value={formData.gps_longitude} onChange={(e) => setFormData({...formData, gps_longitude: e.target.value})} className="w-full p-2 border rounded-lg bg-white text-heading" placeholder="e.g., -119.7871" />
+                  <input type="text" value={formData.gps_longitude} onChange={(e) => setFormData({...formData, gps_longitude: e.target.value})} className="w-full p-2 border rounded-lg bg-surface-raised text-heading" placeholder="e.g., -119.7871" />
                 </div>
               </div>
             </>

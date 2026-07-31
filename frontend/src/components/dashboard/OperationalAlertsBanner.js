@@ -120,7 +120,7 @@ function OperationalAlertsBanner({
   // If no alerts, show success state
   if (alerts.length === 0) {
     return (
-      <div className="bg-primary-light border border-green-200 rounded-lg p-3 flex items-center gap-3">
+      <div className="bg-primary-light border border-green-200 rounded-card p-3 flex items-center gap-3">
         <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
           <span className="text-primary text-lg">✓</span>
         </div>

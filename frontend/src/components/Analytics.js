@@ -175,7 +175,7 @@ const InsightsPanel = ({ topPerformers, needsAttention }) => {
         {/* Top Performers */}
         {topPerformers && topPerformers.length > 0 && (
           <div className="mb-6">
-            <h4 className="text-sm font-medium text-text-secondary mb-3 flex items-center gap-2">
+            <h4 className="text-sm text-text-secondary mb-3 flex items-center gap-2">
               <Award className="w-4 h-4 text-green-600" />
               Top Performing Fields
             </h4>
@@ -193,7 +193,7 @@ const InsightsPanel = ({ topPerformers, needsAttention }) => {
         {/* Needs Attention */}
         {needsAttention && needsAttention.length > 0 && (
           <div>
-            <h4 className="text-sm font-medium text-text-secondary mb-3 flex items-center gap-2">
+            <h4 className="text-sm text-text-secondary mb-3 flex items-center gap-2">
               <AlertTriangle className="w-4 h-4 text-orange-500" />
               Needs Attention
             </h4>
@@ -282,7 +282,7 @@ export default function Analytics() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-heading flex items-center gap-2">
+          <h1 className="text-2xl text-heading flex items-center gap-2">
             <BarChart3 className="w-7 h-7 text-primary" />
             Analytics {selectedSeason && <span className="text-lg font-normal text-text-secondary">• {selectedSeason} Season</span>}
           </h1>
@@ -294,14 +294,14 @@ export default function Analytics() {
             value={selectedSeason}
             onChange={setSelectedSeason}
             cropCategory="citrus"
-            className="border border-border-strong rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
+            className="border border-border-strong rounded-card px-3 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
             placeholder="Select Season"
           />
 
           <select
             value={selectedFarm}
             onChange={(e) => setSelectedFarm(e.target.value)}
-            className="border border-border-strong rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
+            className="border border-border-strong rounded-card px-3 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
           >
             <option value="all">All Farms</option>
             {farms.map(f => (

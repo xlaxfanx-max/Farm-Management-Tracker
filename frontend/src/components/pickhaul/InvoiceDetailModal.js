@@ -50,7 +50,7 @@ export default function InvoiceDetailModal({ isOpen, onClose, invoice }) {
         <DerivedFieldsPanel invoice={invoice} />
 
         <div>
-          <h4 className="text-sm font-medium text-bark-700 mb-1.5">
+          <h4 className="text-sm text-bark-700 mb-1.5">
             Matched house charge{charges.length === 1 ? '' : 's'}
           </h4>
           {charges.length ? (
@@ -82,7 +82,7 @@ export default function InvoiceDetailModal({ isOpen, onClose, invoice }) {
         </div>
 
         <div>
-          <h4 className="text-sm font-medium text-bark-700 mb-1.5">
+          <h4 className="text-sm text-bark-700 mb-1.5">
             Linked receipts ({receipts.length})
           </h4>
           {receipts.length ? (
@@ -117,7 +117,7 @@ export default function InvoiceDetailModal({ isOpen, onClose, invoice }) {
 
         {invoice.notes && (
           <div>
-            <h4 className="text-sm font-medium text-bark-700 mb-1">Notes</h4>
+            <h4 className="text-sm text-bark-700 mb-1">Notes</h4>
             <p className="text-sm text-bark-600 whitespace-pre-wrap">{invoice.notes}</p>
           </div>
         )}

@@ -126,7 +126,7 @@ const TrainingRow = ({ record, onEdit, onDelete }) => {
           {showMenu && (
             <>
               <div className="fixed inset-0 z-10" onClick={() => setShowMenu(false)} />
-              <div className="absolute right-0 top-full mt-1 w-32 bg-white border border-border rounded-lg shadow-lg z-20 py-1">
+              <div className="absolute right-0 top-full mt-1 w-32 bg-surface-raised border border-border rounded-card shadow-lg z-20 py-1">
                 <button
                   onClick={() => { onEdit(record); setShowMenu(false); }}
                   className="w-full px-3 py-2 text-left text-sm text-bark-700 hover:bg-cream-50 flex items-center gap-2"
@@ -191,9 +191,9 @@ const TrainingModal = ({ record, onClose, onSave }) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative bg-white rounded-lg shadow-xl w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto">
-        <div className="sticky top-0 bg-white flex items-center justify-between px-6 py-4 border-b border-border">
-          <h2 className="text-lg font-semibold text-heading">
+      <div className="relative bg-surface-raised rounded-card shadow-xl w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto">
+        <div className="sticky top-0 bg-surface-raised flex items-center justify-between px-6 py-4 border-b border-border">
+          <h2 className="text-lg text-heading">
             {record ? 'Edit Training Record' : 'Add Training Record'}
           </h2>
           <button onClick={onClose} className="text-text-muted hover:text-bark-600">
@@ -209,7 +209,7 @@ const TrainingModal = ({ record, onClose, onSave }) => {
               required
               value={formData.trainee_name}
               onChange={(e) => setFormData({ ...formData, trainee_name: e.target.value })}
-              className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+              className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-primary"
               placeholder="Full name"
             />
           </div>
@@ -221,7 +221,7 @@ const TrainingModal = ({ record, onClose, onSave }) => {
                 type="text"
                 value={formData.trainee_employee_id}
                 onChange={(e) => setFormData({ ...formData, trainee_employee_id: e.target.value })}
-                className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+                className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-primary"
                 placeholder="Optional"
               />
             </div>
@@ -232,7 +232,7 @@ const TrainingModal = ({ record, onClose, onSave }) => {
                 required
                 value={formData.training_type}
                 onChange={(e) => setFormData({ ...formData, training_type: e.target.value })}
-                className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+                className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-primary"
               >
                 {COMPLIANCE_CONSTANTS.WPS_TRAINING_TYPES.map(type => (
                   <option key={type.value} value={type.value}>{type.label}</option>
@@ -249,7 +249,7 @@ const TrainingModal = ({ record, onClose, onSave }) => {
                 required
                 value={formData.training_date}
                 onChange={(e) => setFormData({ ...formData, training_date: e.target.value })}
-                className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+                className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-primary"
               />
             </div>
 
@@ -260,7 +260,7 @@ const TrainingModal = ({ record, onClose, onSave }) => {
                 required
                 value={formData.expiration_date}
                 onChange={(e) => setFormData({ ...formData, expiration_date: e.target.value })}
-                className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+                className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-primary"
               />
               <p className="text-xs text-text-secondary mt-1">WPS training expires annually</p>
             </div>
@@ -273,7 +273,7 @@ const TrainingModal = ({ record, onClose, onSave }) => {
                 type="text"
                 value={formData.trainer_name}
                 onChange={(e) => setFormData({ ...formData, trainer_name: e.target.value })}
-                className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+                className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-primary"
               />
             </div>
 
@@ -283,7 +283,7 @@ const TrainingModal = ({ record, onClose, onSave }) => {
                 type="text"
                 value={formData.trainer_certification}
                 onChange={(e) => setFormData({ ...formData, trainer_certification: e.target.value })}
-                className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+                className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-primary"
               />
             </div>
           </div>
@@ -330,14 +330,14 @@ const PostingLocationCard = ({ location, onVerify }) => {
     : null;
 
   return (
-    <div className="bg-white border border-border rounded-lg p-4">
+    <div className="bg-surface-raised border border-border rounded-card p-4">
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
             <MapPin className="w-5 h-5 text-primary" />
           </div>
           <div>
-            <h3 className="font-medium text-heading">{location.location_name}</h3>
+            <h3 className=" text-heading">{location.location_name}</h3>
             <p className="text-sm text-text-secondary">{location.farm_name}</p>
           </div>
         </div>
@@ -415,7 +415,7 @@ const REIPostingCard = ({ posting, onMarkPosted, onMarkRemoved }) => {
               <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-cream-100 text-bark-700">REI Ended</span>
             )}
           </div>
-          <h3 className="font-medium text-heading">{posting.application_product || 'Pesticide Application'}</h3>
+          <h3 className=" text-heading">{posting.application_product || 'Pesticide Application'}</h3>
           <p className="text-sm text-text-secondary">{posting.field_name} - {posting.farm_name}</p>
         </div>
         <Clock className={`w-5 h-5 ${isActive ? 'text-yellow-600' : 'text-text-muted'}`} />
@@ -597,7 +597,7 @@ export default function WPSCompliance({ onNavigate }) {
             <span>/</span>
             <span>WPS Compliance</span>
           </div>
-          <h1 className="text-2xl font-bold text-heading">Worker Protection Standard</h1>
+          <h1 className="text-2xl text-heading">Worker Protection Standard</h1>
         </div>
 
         {activeTab === 'training' && (
@@ -652,28 +652,28 @@ export default function WPSCompliance({ onNavigate }) {
         <>
           {/* Stats */}
           <div className="grid grid-cols-4 gap-4 mb-6">
-            <div className="bg-white border border-border rounded-lg p-4">
+            <div className="bg-surface-raised border border-border rounded-card p-4">
               <div className="flex items-center gap-2">
                 <Users className="w-5 h-5 text-bark-600" />
                 <span className="text-2xl font-bold text-heading">{trainingStats.total}</span>
               </div>
               <p className="text-sm text-bark-600 mt-1">Total Records</p>
             </div>
-            <div className="bg-primary-light border border-green-100 rounded-lg p-4">
+            <div className="bg-primary-light border border-green-100 rounded-card p-4">
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="w-5 h-5 text-primary" />
                 <span className="text-2xl font-bold text-primary">{trainingStats.current}</span>
               </div>
               <p className="text-sm text-primary mt-1">Current</p>
             </div>
-            <div className="bg-yellow-100 border border-yellow-200 rounded-lg p-4">
+            <div className="bg-yellow-100 border border-yellow-200 rounded-card p-4">
               <div className="flex items-center gap-2">
                 <Clock className="w-5 h-5 text-yellow-600" />
                 <span className="text-2xl font-bold text-yellow-600">{trainingStats.expiring}</span>
               </div>
               <p className="text-sm text-yellow-700 mt-1">Expiring Soon</p>
             </div>
-            <div className="bg-danger-bg border border-danger/20 rounded-lg p-4">
+            <div className="bg-danger-bg border border-danger/20 rounded-card p-4">
               <div className="flex items-center gap-2">
                 <AlertTriangle className="w-5 h-5 text-danger" />
                 <span className="text-2xl font-bold text-danger">{trainingStats.expired}</span>
@@ -683,7 +683,7 @@ export default function WPSCompliance({ onNavigate }) {
           </div>
 
           {/* Toolbar */}
-          <div className="bg-white border border-border rounded-lg p-4 mb-6">
+          <div className="bg-surface-raised border border-border rounded-card p-4 mb-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2">
@@ -708,7 +708,7 @@ export default function WPSCompliance({ onNavigate }) {
                   placeholder="Search employees..."
                   value={trainingSearch}
                   onChange={(e) => setTrainingSearch(e.target.value)}
-                  className="pl-9 pr-4 py-2 border border-border-strong rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-primary w-64"
+                  className="pl-9 pr-4 py-2 border border-border-strong rounded-card text-sm focus:ring-2 focus:ring-primary focus:border-primary w-64"
                 />
               </div>
             </div>
@@ -720,7 +720,7 @@ export default function WPSCompliance({ onNavigate }) {
               <RefreshCw className="w-6 h-6 text-text-muted animate-spin" />
             </div>
           ) : trainingRecords.length > 0 ? (
-            <div className="bg-white border border-border rounded-lg overflow-hidden">
+            <div className="bg-surface-raised border border-border rounded-card overflow-hidden">
               <table className="w-full">
                 <thead className="bg-cream-50 border-b border-border">
                   <tr>
@@ -746,7 +746,7 @@ export default function WPSCompliance({ onNavigate }) {
               </table>
             </div>
           ) : (
-            <div className="bg-white border border-border rounded-lg p-12 text-center">
+            <div className="bg-surface-raised border border-border rounded-card p-12 text-center">
               <Users className="w-12 h-12 mx-auto mb-3 text-text-muted" />
               <p className="font-medium text-heading">No training records found</p>
               <p className="text-sm text-text-secondary mt-1">Add your first WPS training record</p>
@@ -764,7 +764,7 @@ export default function WPSCompliance({ onNavigate }) {
       {/* Central Posting Tab */}
       {activeTab === 'posting' && (
         <div>
-          <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-6">
+          <div className="bg-orange-50 border border-orange-200 rounded-card p-4 mb-6">
             <div className="flex items-start gap-3">
               <Shield className="w-5 h-5 text-link mt-0.5" />
               <div>
@@ -788,7 +788,7 @@ export default function WPSCompliance({ onNavigate }) {
               ))}
             </div>
           ) : (
-            <div className="bg-white border border-border rounded-lg p-12 text-center">
+            <div className="bg-surface-raised border border-border rounded-card p-12 text-center">
               <MapPin className="w-12 h-12 mx-auto mb-3 text-text-muted" />
               <p className="font-medium text-heading">No posting locations configured</p>
               <p className="text-sm text-text-secondary mt-1">Add central posting locations for your farms</p>
@@ -800,7 +800,7 @@ export default function WPSCompliance({ onNavigate }) {
       {/* REI Tracker Tab */}
       {activeTab === 'rei' && (
         <div>
-          <div className="bg-yellow-100 border border-yellow-200 rounded-lg p-4 mb-6">
+          <div className="bg-yellow-100 border border-yellow-200 rounded-card p-4 mb-6">
             <div className="flex items-start gap-3">
               <Clock className="w-5 h-5 text-yellow-600 mt-0.5" />
               <div>
@@ -825,7 +825,7 @@ export default function WPSCompliance({ onNavigate }) {
               ))}
             </div>
           ) : (
-            <div className="bg-white border border-border rounded-lg p-12 text-center">
+            <div className="bg-surface-raised border border-border rounded-card p-12 text-center">
               <Clock className="w-12 h-12 mx-auto mb-3 text-text-muted" />
               <p className="font-medium text-heading">No active REI postings</p>
               <p className="text-sm text-text-secondary mt-1">REI records are automatically created from pesticide applications</p>

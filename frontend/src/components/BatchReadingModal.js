@@ -228,7 +228,7 @@ const BatchReadingModal = ({ isOpen, onClose, wells, onSave }) => {
           />
         </FormField>
         <div className="flex items-end">
-          <div className="bg-surface border border-border rounded-lg px-4 py-2 w-full">
+          <div className="bg-surface border border-border rounded-card px-4 py-2 w-full">
             <div className="text-sm text-text-secondary">Wells to record</div>
             <div className="text-xl font-bold text-green-600">
               {filledCount} / {wells?.length || 0}
@@ -238,7 +238,7 @@ const BatchReadingModal = ({ isOpen, onClose, wells, onSave }) => {
       </div>
 
       {savedCount > 0 && (
-        <div className="mb-4 p-3 bg-primary-light border border-green-200 rounded-lg flex items-center gap-2 text-primary">
+        <div className="mb-4 p-3 bg-primary-light border border-green-200 rounded-card flex items-center gap-2 text-primary">
           <CheckCircle className="w-5 h-5" />
           Successfully saved {savedCount} reading{savedCount > 1 ? 's' : ''}!
         </div>
@@ -278,7 +278,7 @@ const BatchReadingModal = ({ isOpen, onClose, wells, onSave }) => {
 
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <h3 className="font-medium text-heading truncate">
+                        <h3 className=" text-heading truncate">
                           {well.well_name || well.name}
                         </h3>
                         <span
@@ -393,7 +393,7 @@ const BatchReadingModal = ({ isOpen, onClose, wells, onSave }) => {
                     </div>
 
                     {extraction && well.base_extraction_rate && (
-                      <div className="mt-3 p-3 bg-surface-raised rounded-lg border border-border">
+                      <div className="mt-3 p-3 bg-surface-raised rounded-card border border-border">
                         <div className="text-xs font-medium text-text-secondary mb-2">
                           Estimated Fees
                         </div>

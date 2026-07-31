@@ -149,11 +149,11 @@ const StatementList = ({ packinghouseId = null }) => {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow">
+    <div className="bg-surface-raised rounded-lg shadow">
       {/* Header */}
       <div className="p-4 border-b border-border">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-heading flex items-center">
+          <h2 className="text-lg text-heading flex items-center">
             <FileText className="w-5 h-5 mr-2 text-primary" />
             Uploaded Statements
           </h2>
@@ -176,7 +176,7 @@ const StatementList = ({ packinghouseId = null }) => {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Search files..."
-                className="w-full pl-10 pr-4 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+                className="w-full pl-10 pr-4 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-primary"
               />
             </div>
           </div>
@@ -184,7 +184,7 @@ const StatementList = ({ packinghouseId = null }) => {
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary"
+            className="px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary"
           >
             <option value="">All Statuses</option>
             <option value="uploaded">Uploaded</option>
@@ -197,7 +197,7 @@ const StatementList = ({ packinghouseId = null }) => {
           <select
             value={typeFilter}
             onChange={(e) => setTypeFilter(e.target.value)}
-            className="px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary"
+            className="px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary"
           >
             <option value="">All Types</option>
             <option value="packout">Packout</option>

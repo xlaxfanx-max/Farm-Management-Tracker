@@ -280,10 +280,10 @@ const WaterManagement = () => {
   return (
     <div className="min-h-screen bg-cream-50">
       {/* Header */}
-      <div className="bg-white border-b border-border px-6 py-5">
+      <div className="bg-surface-raised border-b border-border px-6 py-5">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-heading">Water Management</h1>
+            <h1 className="text-2xl text-heading">Water Management</h1>
             <p className="text-text-secondary mt-1">Track water sources, wells, and SGMA compliance</p>
           </div>
           <div className="flex items-center gap-3">
@@ -296,7 +296,7 @@ const WaterManagement = () => {
             </button>
             <button
               onClick={() => openWellSourceModal()}
-              className="flex items-center gap-2 bg-primary text-white px-4 py-2.5 rounded-lg hover:bg-primary-hover shadow-sm"
+              className="flex items-center gap-2 bg-primary text-white px-4 py-2.5 rounded-card hover:bg-primary-hover shadow-sm"
             >
               <Plus className="w-5 h-5" />
               Add Water Source

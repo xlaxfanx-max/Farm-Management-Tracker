@@ -185,7 +185,7 @@ export default function TeamManagement() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-heading">Team Management</h1>
+          <h1 className="text-2xl text-heading">Team Management</h1>
           <p className="text-bark-600 mt-1">
             Manage team members and their access to {currentCompany?.name}
           </p>
@@ -202,7 +202,7 @@ export default function TeamManagement() {
       </div>
 
       {error && (
-        <div className="mb-6 p-4 bg-danger-bg border border-danger/25 rounded-lg flex items-center gap-2 text-danger">
+        <div className="mb-6 p-4 bg-danger-bg border border-danger/25 rounded-card flex items-center gap-2 text-danger">
           <AlertCircle className="w-5 h-5" />
           {error}
         </div>
@@ -210,7 +210,7 @@ export default function TeamManagement() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="bg-white rounded-lg border p-4">
+        <div className="bg-surface-raised rounded-lg border p-4">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-orange-100 rounded-lg">
               <Users className="w-5 h-5 text-link" />
@@ -222,7 +222,7 @@ export default function TeamManagement() {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg border p-4">
+        <div className="bg-surface-raised rounded-lg border p-4">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-yellow-100 rounded-lg">
               <Mail className="w-5 h-5 text-yellow-600" />
@@ -234,7 +234,7 @@ export default function TeamManagement() {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg border p-4">
+        <div className="bg-surface-raised rounded-lg border p-4">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-green-100 rounded-lg">
               <Shield className="w-5 h-5 text-primary" />
@@ -248,9 +248,9 @@ export default function TeamManagement() {
       </div>
 
       {/* Team Members List */}
-      <div className="bg-white rounded-lg border mb-6">
+      <div className="bg-surface-raised rounded-lg border mb-6">
         <div className="px-6 py-4 border-b">
-          <h2 className="text-lg font-semibold text-heading">Team Members</h2>
+          <h2 className="text-lg text-heading">Team Members</h2>
         </div>
 
         <div className="divide-y">
@@ -317,7 +317,7 @@ export default function TeamManagement() {
                       </button>
 
                       {activeDropdown === member.id && (
-                        <div className="absolute right-0 mt-1 w-48 bg-white border rounded-lg shadow-lg z-10 py-1">
+                        <div className="absolute right-0 mt-1 w-48 bg-surface-raised border rounded-card shadow-lg z-10 py-1">
                           <button
                             onClick={() => {
                               setSelectedMember(member);
@@ -362,9 +362,9 @@ export default function TeamManagement() {
 
       {/* Pending Invitations */}
       {pendingInvitations.length > 0 && (
-        <div className="bg-white rounded-lg border">
+        <div className="bg-surface-raised rounded-lg border">
           <div className="px-6 py-4 border-b">
-            <h2 className="text-lg font-semibold text-heading">Pending Invitations</h2>
+            <h2 className="text-lg text-heading">Pending Invitations</h2>
           </div>
 
           <div className="divide-y">
@@ -511,11 +511,11 @@ function InviteModal({ roles, onClose, onSuccess }) {
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl shadow-xl w-full max-w-md">
+      <div className="bg-surface-raised rounded-card shadow-xl w-full max-w-md">
         <div className="flex items-center justify-between px-6 py-4 border-b">
           <div className="flex items-center gap-2">
             <UserPlus className="w-5 h-5 text-primary" />
-            <h2 className="text-lg font-semibold">Invite Team Member</h2>
+            <h2 className="text-lg">Invite Team Member</h2>
           </div>
           <button onClick={onClose} className="text-text-muted hover:text-bark-600">
             <X className="w-5 h-5" />
@@ -524,7 +524,7 @@ function InviteModal({ roles, onClose, onSuccess }) {
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           {error && (
-            <div className="p-3 bg-danger-bg border border-danger/25 rounded-lg flex items-start gap-2">
+            <div className="p-3 bg-danger-bg border border-danger/25 rounded-card flex items-start gap-2">
               <AlertCircle className="w-5 h-5 text-danger flex-shrink-0" />
               <span className="text-danger text-sm">{error}</span>
             </div>
@@ -538,7 +538,7 @@ function InviteModal({ roles, onClose, onSuccess }) {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-2 border border-border-strong rounded-lg bg-white focus:ring-2 focus:ring-primary focus:border-transparent"
+              className="w-full px-4 py-2 border border-border-strong rounded-card bg-surface-raised focus:ring-2 focus:ring-primary focus:border-transparent"
               placeholder="colleague@example.com"
               required
             />
@@ -551,7 +551,7 @@ function InviteModal({ roles, onClose, onSuccess }) {
             <select
               value={roleId}
               onChange={(e) => setRoleId(e.target.value)}
-              className="w-full px-4 py-2 border border-border-strong rounded-lg bg-white focus:ring-2 focus:ring-primary focus:border-transparent"
+              className="w-full px-4 py-2 border border-border-strong rounded-card bg-surface-raised focus:ring-2 focus:ring-primary focus:border-transparent"
               required
             >
               {roles.map((role) => (
@@ -574,7 +574,7 @@ function InviteModal({ roles, onClose, onSuccess }) {
             <textarea
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              className="w-full px-4 py-2 border border-border-strong rounded-lg bg-white focus:ring-2 focus:ring-primary focus:border-transparent"
+              className="w-full px-4 py-2 border border-border-strong rounded-card bg-surface-raised focus:ring-2 focus:ring-primary focus:border-transparent"
               rows={3}
               placeholder="Welcome to the team!"
             />
@@ -584,7 +584,7 @@ function InviteModal({ roles, onClose, onSuccess }) {
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-2 border border-border-strong rounded-lg text-bark-700 hover:bg-cream-50"
+              className="flex-1 px-4 py-2 border border-border-strong rounded-card text-bark-700 hover:bg-cream-50"
             >
               Cancel
             </button>
@@ -620,9 +620,9 @@ function EditRoleModal({ member, roles, onClose, onSave }) {
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl shadow-xl w-full max-w-md">
+      <div className="bg-surface-raised rounded-card shadow-xl w-full max-w-md">
         <div className="flex items-center justify-between px-6 py-4 border-b">
-          <h2 className="text-lg font-semibold">Change Role</h2>
+          <h2 className="text-lg">Change Role</h2>
           <button onClick={onClose} className="text-text-muted hover:text-bark-600">
             <X className="w-5 h-5" />
           </button>
@@ -678,7 +678,7 @@ function EditRoleModal({ member, roles, onClose, onSave }) {
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-2 border border-border-strong rounded-lg text-bark-700 hover:bg-cream-50"
+              className="flex-1 px-4 py-2 border border-border-strong rounded-card text-bark-700 hover:bg-cream-50"
             >
               Cancel
             </button>
@@ -727,14 +727,14 @@ function TransferOwnershipModal({ member, companyName, onClose, onConfirm }) {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl shadow-2xl max-w-md w-full">
+      <div className="bg-surface-raised rounded-card shadow-2xl max-w-md w-full">
         <div className="p-6 border-b border-border">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-orange-100 rounded-lg">
               <AlertTriangle className="w-6 h-6 text-orange-600" />
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-heading">Transfer Ownership</h3>
+              <h3 className="text-lg text-heading">Transfer Ownership</h3>
               <p className="text-sm text-text-secondary">This action cannot be undone</p>
             </div>
           </div>
@@ -743,13 +743,13 @@ function TransferOwnershipModal({ member, companyName, onClose, onConfirm }) {
         <form onSubmit={handleSubmit}>
           <div className="p-6 space-y-4">
             {error && (
-              <div className="p-3 bg-danger-bg border border-danger/25 rounded-lg flex items-start gap-2">
+              <div className="p-3 bg-danger-bg border border-danger/25 rounded-card flex items-start gap-2">
                 <AlertCircle className="w-5 h-5 text-danger flex-shrink-0 mt-0.5" />
                 <span className="text-danger text-sm">{error}</span>
               </div>
             )}
 
-            <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg">
+            <div className="p-4 bg-orange-50 border border-orange-200 rounded-card">
               <p className="text-sm text-orange-800">
                 <strong>Warning:</strong> You are about to transfer ownership of{' '}
                 <strong>{companyName}</strong> to{' '}
@@ -770,7 +770,7 @@ function TransferOwnershipModal({ member, companyName, onClose, onConfirm }) {
                 type="text"
                 value={confirmText}
                 onChange={(e) => setConfirmText(e.target.value.toUpperCase())}
-                className="w-full px-4 py-2 border border-border-strong rounded-lg bg-white focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-border-strong rounded-card bg-surface-raised focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                 placeholder="TRANSFER"
                 autoComplete="off"
               />
@@ -782,7 +782,7 @@ function TransferOwnershipModal({ member, companyName, onClose, onConfirm }) {
               type="button"
               onClick={onClose}
               disabled={loading}
-              className="flex-1 px-4 py-2 border border-border-strong rounded-lg text-bark-700 hover:bg-cream-50 disabled:opacity-50"
+              className="flex-1 px-4 py-2 border border-border-strong rounded-card text-bark-700 hover:bg-cream-50 disabled:opacity-50"
             >
               Cancel
             </button>

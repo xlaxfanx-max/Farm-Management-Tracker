@@ -253,7 +253,7 @@ const LaborContractorModal = ({ isOpen, onClose, onSave, contractor = null }) =>
           </div>
         </div>
 
-        <div className="border border-yellow-200 rounded-lg p-4 bg-yellow-50">
+        <div className="border border-yellow-200 rounded-card p-4 bg-yellow-50">
           <h3 className={sectionHeading}>License & Insurance</h3>
 
           <div className="grid grid-cols-2 gap-4">
@@ -359,7 +359,7 @@ const LaborContractorModal = ({ isOpen, onClose, onSave, contractor = null }) =>
         </div>
 
         <div className="grid grid-cols-2 gap-6">
-          <div className="border border-orange-200 rounded-lg p-4 bg-orange-50">
+          <div className="border border-orange-200 rounded-card p-4 bg-orange-50">
             <h3 className={sectionHeading}>Food Safety Training</h3>
 
             <label className="flex items-center gap-2 mb-4">
@@ -385,7 +385,7 @@ const LaborContractorModal = ({ isOpen, onClose, onSave, contractor = null }) =>
             </FormField>
           </div>
 
-          <div className="border border-green-200 rounded-lg p-4 bg-primary-light">
+          <div className="border border-green-200 rounded-card p-4 bg-primary-light">
             <h3 className={sectionHeading}>Default Rates</h3>
 
             <div className="space-y-4">

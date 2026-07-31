@@ -82,7 +82,7 @@ export default function OverviewTab({ year, onYearsLoaded }) {
 
   if (error) {
     return (
-      <div className="rounded-lg border border-danger/25 bg-danger-bg p-4 text-sm text-danger">
+      <div className="rounded-card border border-danger/25 bg-danger-bg p-4 text-sm text-danger">
         {error}
       </div>
     );
@@ -107,7 +107,7 @@ export default function OverviewTab({ year, onYearsLoaded }) {
   return (
     <div className="space-y-5">
       {totalFlagged > 0 && (
-        <div className="flex items-start gap-2 rounded-lg border border-yellow-200 bg-yellow-100 p-3">
+        <div className="flex items-start gap-2 rounded-card border border-yellow-200 bg-yellow-100 p-3">
           <AlertTriangle className="w-4 h-4 text-yellow-600 mt-0.5 shrink-0" />
           <p className="text-sm text-yellow-800">
             <strong>{totalFlagged}</strong>{' '}
@@ -162,7 +162,7 @@ function BookCard({ icon: Icon, title, subtitle, locationType, stats, properties
             <Icon className="w-5 h-5 text-bark-600" />
           </div>
           <div>
-            <h3 className="font-semibold text-heading">{title}</h3>
+            <h3 className=" text-heading">{title}</h3>
             <p className={mutedText}>{subtitle}</p>
           </div>
         </div>
@@ -227,7 +227,7 @@ function Stat({ label, value, emphasis }) {
 
 function PropertyTable({ properties }) {
   return (
-    <div className="rounded-xl border border-border overflow-hidden">
+    <div className="rounded-card border border-border overflow-hidden">
       <div className="overflow-x-auto">
         <table className="min-w-full text-sm">
           <thead className="bg-cream-50">
@@ -242,7 +242,7 @@ function PropertyTable({ properties }) {
           </thead>
           <tbody className="divide-y divide-border">
             {properties.map((p) => (
-              <tr key={p.id} className="bg-white">
+              <tr key={p.id} className="bg-surface-raised">
                 <td className="px-4 py-2.5 font-medium text-heading">
                   {p.name}
                 </td>

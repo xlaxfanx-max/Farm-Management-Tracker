@@ -13,7 +13,7 @@ function Fields({ fields, applications, onEditField, onDeleteField, onNewField }
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Fields</h2>
+        <h2 className="text-2xl">Fields</h2>
         <button
           onClick={onNewField}
           className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-hover"
@@ -25,10 +25,10 @@ function Fields({ fields, applications, onEditField, onDeleteField, onNewField }
 
       <div className="grid md:grid-cols-3 gap-4">
         {fields.map(field => (
-          <div key={field.id} className="bg-white rounded-lg shadow p-6">
+          <div key={field.id} className="bg-surface-raised rounded-lg shadow p-6">
             <div className="flex justify-between items-start mb-4">
               <div>
-                <h3 className="font-bold text-lg">{field.name}</h3>
+                <h3 className=" text-lg">{field.name}</h3>
                 <p className="text-sm text-text-secondary">{field.field_number}</p>
               </div>
               <MapPin className="text-primary" size={24} />

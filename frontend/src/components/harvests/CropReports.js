@@ -67,7 +67,7 @@ function CropCard({ card }) {
 
   return (
     <div
-      className={`rounded-lg border bg-white ${
+      className={`rounded-lg border bg-surface-raised ${
         showNegative
           ? 'border-danger/40'
           : 'border-border'
@@ -290,7 +290,7 @@ function CropReports() {
       {/* Header */}
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h3 className="text-lg font-semibold text-heading flex items-center gap-2">
+          <h3 className="text-lg text-heading flex items-center gap-2">
             <DollarSign className="w-5 h-5 text-green-600" />
             Ranch × Crop Report
           </h3>

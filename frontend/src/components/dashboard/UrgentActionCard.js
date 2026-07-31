@@ -48,7 +48,7 @@ function UrgentActionCard({ priority = 'medium', label, cta, onClick }) {
         <button
           onClick={onClick}
           className={`
-            inline-flex items-center gap-1 px-3 py-1.5 rounded-md text-xs font-medium
+            inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium
             transition-colors flex-shrink-0
             ${style.ctaBg}
           `}

@@ -68,9 +68,9 @@ const CommitmentModal = ({ season, houses, commitment, onClose, onSave }) => {
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
+      <div className="bg-surface-raised rounded-card shadow-xl w-full max-w-md">
         <div className="flex items-center justify-between px-5 py-4 border-b border-border">
-          <h3 className="text-lg font-semibold text-heading flex items-center">
+          <h3 className="text-lg text-heading flex items-center">
             <Building2 className="w-5 h-5 mr-2 text-primary" />
             {commitment ? 'Edit Commitment' : 'Add Commitment'}
           </h3>
@@ -85,7 +85,7 @@ const CommitmentModal = ({ season, houses, commitment, onClose, onSave }) => {
               <label className="block text-sm font-medium text-bark-700 mb-1">Commodity</label>
               <select
                 name="commodity" value={formData.commodity} onChange={handleChange}
-                className="w-full border border-border-strong rounded-lg px-3 py-2 text-sm"
+                className="w-full border border-border-strong rounded-card px-3 py-2 text-sm"
               >
                 {PACKINGHOUSE_CONSTANTS.commodities.map((c) => (
                   <option key={c.value} value={c.value}>{c.label}</option>
@@ -97,7 +97,7 @@ const CommitmentModal = ({ season, houses, commitment, onClose, onSave }) => {
               <label className="block text-sm font-medium text-bark-700 mb-1">Packinghouse</label>
               <select
                 name="packinghouse" value={formData.packinghouse} onChange={handleChange}
-                className="w-full border border-border-strong rounded-lg px-3 py-2 text-sm"
+                className="w-full border border-border-strong rounded-card px-3 py-2 text-sm"
               >
                 <option value="">Select…</option>
                 {houses.map((h) => (
@@ -112,7 +112,7 @@ const CommitmentModal = ({ season, houses, commitment, onClose, onSave }) => {
             <label className="block text-sm font-medium text-bark-700 mb-1">Block (optional)</label>
             <select
               name="field" value={formData.field} onChange={handleChange}
-              className="w-full border border-border-strong rounded-lg px-3 py-2 text-sm"
+              className="w-full border border-border-strong rounded-card px-3 py-2 text-sm"
             >
               <option value="">Whole commodity (default)</option>
               {fields.map((f) => (
@@ -140,14 +140,14 @@ const CommitmentModal = ({ season, houses, commitment, onClose, onSave }) => {
             <label className="block text-sm font-medium text-bark-700 mb-1">Notes</label>
             <input
               name="notes" value={formData.notes} onChange={handleChange}
-              className="w-full border border-border-strong rounded-lg px-3 py-2 text-sm"
+              className="w-full border border-border-strong rounded-card px-3 py-2 text-sm"
             />
           </div>
 
           <div className="flex justify-end gap-2 pt-2">
             <button
               type="button" onClick={onClose}
-              className="px-4 py-2 border border-border-strong rounded-lg text-sm hover:bg-cream-50"
+              className="px-4 py-2 border border-border-strong rounded-card text-sm hover:bg-cream-50"
             >
               Cancel
             </button>

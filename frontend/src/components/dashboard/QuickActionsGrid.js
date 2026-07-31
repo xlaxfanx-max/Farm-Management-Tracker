@@ -54,7 +54,7 @@ function QuickActionsGrid({ onNavigate }) {
             bg-surface-raised
             border border-border
             hover:border-primary
-            rounded-lg px-4 py-4
+            rounded-card px-4 py-4
             flex flex-col items-center justify-center gap-2.5
             transition-all hover:shadow-md
             min-h-[80px]

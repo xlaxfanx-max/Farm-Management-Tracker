@@ -61,7 +61,7 @@ export function CompanySelector() {
       <button
         onClick={() => setIsOpen(!isOpen)}
         disabled={loading}
-        className="flex items-center gap-2 px-3 py-2 bg-white border border-border rounded-lg hover:bg-cream-50 transition-colors min-w-[200px]"
+        className="flex items-center gap-2 px-3 py-2 bg-surface-raised border border-border rounded-card hover:bg-cream-50 transition-colors min-w-[200px]"
       >
         <Building2 className="w-4 h-4 text-text-secondary" />
         <span className="text-sm font-medium text-bark-700 truncate flex-1 text-left">
@@ -71,7 +71,7 @@ export function CompanySelector() {
       </button>
 
       {isOpen && (
-        <div className="absolute top-full left-0 mt-1 w-full bg-white border border-border rounded-lg shadow-lg z-50 py-1">
+        <div className="absolute top-full left-0 mt-1 w-full bg-surface-raised border border-border rounded-card shadow-lg z-50 py-1">
           {companies.map((company) => (
             <button
               key={company.id}
@@ -146,7 +146,7 @@ export function UserMenu() {
       </button>
 
       {isOpen && (
-        <div className="absolute top-full right-0 mt-2 w-64 bg-white border border-border rounded-lg shadow-lg z-50">
+        <div className="absolute top-full right-0 mt-2 w-64 bg-surface-raised border border-border rounded-card shadow-lg z-50">
           {/* User Info */}
           <div className="px-4 py-3 border-b border-border">
             <div className="font-medium text-heading">
@@ -342,12 +342,12 @@ export function InviteUserModal({ isOpen, onClose, onSuccess }) {
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl shadow-xl w-full max-w-md">
+      <div className="bg-surface-raised rounded-card shadow-xl w-full max-w-md">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b">
           <div className="flex items-center gap-2">
             <UserPlus className="w-5 h-5 text-primary" />
-            <h2 className="text-lg font-semibold">Invite Team Member</h2>
+            <h2 className="text-lg">Invite Team Member</h2>
           </div>
           <button
             onClick={handleClose}
@@ -360,7 +360,7 @@ export function InviteUserModal({ isOpen, onClose, onSuccess }) {
         {/* Form */}
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           {error && (
-            <div className="p-3 bg-danger-bg border border-danger/25 rounded-lg flex items-start gap-2">
+            <div className="p-3 bg-danger-bg border border-danger/25 rounded-card flex items-start gap-2">
               <AlertCircle className="w-5 h-5 text-danger flex-shrink-0" />
               <span className="text-danger text-sm">{error}</span>
             </div>
@@ -374,7 +374,7 @@ export function InviteUserModal({ isOpen, onClose, onSuccess }) {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+              className="w-full px-4 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-transparent"
               placeholder="colleague@example.com"
               required
             />
@@ -387,7 +387,7 @@ export function InviteUserModal({ isOpen, onClose, onSuccess }) {
             <select
               value={role}
               onChange={(e) => setRole(e.target.value)}
-              className="w-full px-4 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+              className="w-full px-4 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-transparent"
             >
               {roles.map((r) => (
                 <option key={r.codename} value={r.codename}>
@@ -404,7 +404,7 @@ export function InviteUserModal({ isOpen, onClose, onSuccess }) {
             <textarea
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              className="w-full px-4 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+              className="w-full px-4 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-transparent"
               rows={3}
               placeholder="Welcome to the team!"
             />
@@ -414,7 +414,7 @@ export function InviteUserModal({ isOpen, onClose, onSuccess }) {
             <button
               type="button"
               onClick={handleClose}
-              className="flex-1 px-4 py-2 border border-border-strong rounded-lg text-bark-700 hover:bg-cream-50"
+              className="flex-1 px-4 py-2 border border-border-strong rounded-card text-bark-700 hover:bg-cream-50"
             >
               Cancel
             </button>

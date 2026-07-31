@@ -20,7 +20,7 @@ export default function PHIStatusBar({ phiBlockedFields = [], onNavigate }) {
   if (!phiBlockedFields || phiBlockedFields.length === 0) return null;
 
   return (
-    <div className="w-full bg-yellow-100 border border-yellow-300 rounded-xl shadow-sm overflow-hidden">
+    <div className="w-full bg-yellow-100 border border-yellow-300 rounded-card shadow-sm overflow-hidden">
       <button
         onClick={() => setExpanded((v) => !v)}
         className="w-full flex items-center justify-between px-4 py-3 hover:bg-yellow-200 transition-colors text-left"

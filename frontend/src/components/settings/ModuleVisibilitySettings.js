@@ -100,7 +100,7 @@ export default function ModuleVisibilitySettings() {
 
       {Object.entries(groups).map(([groupName, modules]) => (
         <div key={groupName}>
-          <h4 className="text-xs font-semibold uppercase tracking-wide text-text-muted mb-2">
+          <h4 className="text-xs uppercase tracking-wide text-text-muted mb-2">
             {groupName}
           </h4>
           <div className="space-y-1">

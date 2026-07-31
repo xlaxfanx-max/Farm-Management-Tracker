@@ -78,7 +78,7 @@ export default function ChecksTab({ season, syncStatus }) {
                 <div
                   key={c.id}
                   onClick={c.invoice ? () => openInvoice(c.invoice) : undefined}
-                  className={`flex flex-wrap items-start gap-x-3 gap-y-1 rounded-lg border px-3 py-2 text-sm bg-white border-border ${
+                  className={`flex flex-wrap items-start gap-x-3 gap-y-1 rounded-card border px-3 py-2 text-sm bg-surface-raised border-border ${
                     c.invoice ? 'cursor-pointer hover:bg-surface-sunken' : ''
                   }`}
                 >
@@ -104,9 +104,9 @@ export default function ChecksTab({ season, syncStatus }) {
       })}
 
       <div>
-        <h3 className="text-sm font-medium text-bark-700 mb-2">Data sources</h3>
+        <h3 className="text-sm text-bark-700 mb-2">Data sources</h3>
         {syncStatus?.sources?.length ? (
-          <div className="overflow-x-auto bg-white rounded-lg border border-border">
+          <div className="overflow-x-auto bg-surface-raised rounded-card border border-border">
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-cream-50 text-left text-xs text-text-secondary uppercase tracking-wider">

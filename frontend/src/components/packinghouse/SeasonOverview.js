@@ -86,7 +86,7 @@ export default function SeasonOverview() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-semibold text-heading">
+          <h2 className="text-lg text-heading">
             Season {season - 1}–{season}
           </h2>
           <p className="text-sm text-text-secondary">
@@ -156,11 +156,11 @@ export default function SeasonOverview() {
             <button
               key={card.commodity}
               onClick={() => card.commodity !== 'UNMAPPED' && setDrillCommodity(card.commodity)}
-              className={`text-left bg-white border-2 rounded-xl p-4 transition-all hover:shadow-md ${CATEGORY_COLORS[card.crop_category] || CATEGORY_COLORS.other}`}
+              className={`text-left bg-surface-raised border-2 rounded-card p-4 transition-all hover:shadow-md ${CATEGORY_COLORS[card.crop_category] || CATEGORY_COLORS.other}`}
             >
               <div className="flex items-center justify-between mb-3">
                 <div>
-                  <h3 className="font-semibold text-heading">{card.commodity}</h3>
+                  <h3 className=" text-heading">{card.commodity}</h3>
                   <p className="text-xs text-text-secondary">Season {card.season_label}</p>
                 </div>
                 {card.commitment_mismatch && (

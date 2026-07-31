@@ -59,7 +59,7 @@ function ModuleStatusCard({
     <div
       onClick={onClick}
       className={`
-        bg-white rounded-lg border border-border p-4
+        bg-surface-raised rounded-card border border-border p-4
         cursor-pointer transition-all
         hover:shadow-md ${colors.hover}
         ${className}
@@ -71,7 +71,7 @@ function ModuleStatusCard({
           <div className={`p-2 rounded-lg ${colors.bg} ${colors.border} border`}>
             <Icon className={`w-4 h-4 ${colors.icon}`} />
           </div>
-          <h3 className="font-semibold text-heading text-sm">{title}</h3>
+          <h3 className=" text-heading text-sm">{title}</h3>
         </div>
         <ArrowRight className="w-4 h-4 text-text-muted" />
       </div>

@@ -68,12 +68,12 @@ function WaterSourceModal({ source, farms, fields, onClose, onSave }) {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
+      <div className="bg-surface-raised rounded-card shadow-xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-border">
           <div className="flex items-center gap-3">
             <Droplet className="text-link" size={24} />
-            <h2 className="text-xl font-bold text-text">
+            <h2 className="text-xl text-text">
               {source ? 'Edit Water Source' : 'Add Water Source'}
             </h2>
           </div>
@@ -96,7 +96,7 @@ function WaterSourceModal({ source, farms, fields, onClose, onSave }) {
               <select
                 value={formData.farm}
                 onChange={(e) => setFormData({ ...formData, farm: e.target.value, fields_served: [] })}
-                className={`w-full px-3 py-2 border rounded-lg focus:border-primary focus:ring-[3px] focus:ring-ring ${
+                className={`w-full px-3 py-2 border rounded-card focus:border-primary focus:ring-[3px] focus:ring-ring ${
                   errors.farm ? 'border-danger' : 'border-border-strong'
                 }`}
               >
@@ -118,7 +118,7 @@ function WaterSourceModal({ source, farms, fields, onClose, onSave }) {
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 placeholder="e.g., Well #1, North Pond"
-                className={`w-full px-3 py-2 border rounded-lg focus:border-primary focus:ring-[3px] focus:ring-ring ${
+                className={`w-full px-3 py-2 border rounded-card focus:border-primary focus:ring-[3px] focus:ring-ring ${
                   errors.name ? 'border-danger' : 'border-border-strong'
                 }`}
               />
@@ -133,7 +133,7 @@ function WaterSourceModal({ source, farms, fields, onClose, onSave }) {
               <select
                 value={formData.source_type}
                 onChange={(e) => setFormData({ ...formData, source_type: e.target.value })}
-                className={`w-full px-3 py-2 border rounded-lg focus:border-primary focus:ring-[3px] focus:ring-ring ${
+                className={`w-full px-3 py-2 border rounded-card focus:border-primary focus:ring-[3px] focus:ring-ring ${
                   errors.source_type ? 'border-danger' : 'border-border-strong'
                 }`}
               >
@@ -155,7 +155,7 @@ function WaterSourceModal({ source, farms, fields, onClose, onSave }) {
                 onChange={(e) => setFormData({ ...formData, location_description: e.target.value })}
                 placeholder="Physical location or GPS coordinates"
                 rows={3}
-                className="w-full px-3 py-2 border border-border-strong rounded-lg focus:border-primary focus:ring-[3px] focus:ring-ring"
+                className="w-full px-3 py-2 border border-border-strong rounded-card focus:border-primary focus:ring-[3px] focus:ring-ring"
               />
             </div>
 
@@ -201,7 +201,7 @@ function WaterSourceModal({ source, farms, fields, onClose, onSave }) {
                 <label className="block text-sm font-medium text-bark-700 mb-2">
                   Fields Served (Optional)
                 </label>
-                <div className="max-h-40 overflow-y-auto border border-border-strong rounded-lg p-3 space-y-2">
+                <div className="max-h-40 overflow-y-auto border border-border-strong rounded-card p-3 space-y-2">
                   {farmFields.map(field => (
                     <label key={field.id} className="flex items-center">
                       <input
@@ -230,7 +230,7 @@ function WaterSourceModal({ source, farms, fields, onClose, onSave }) {
               <select
                 value={formData.test_frequency_days}
                 onChange={(e) => setFormData({ ...formData, test_frequency_days: parseInt(e.target.value) })}
-                className={`w-full px-3 py-2 border rounded-lg focus:border-primary focus:ring-[3px] focus:ring-ring ${
+                className={`w-full px-3 py-2 border rounded-card focus:border-primary focus:ring-[3px] focus:ring-ring ${
                   errors.test_frequency_days ? 'border-danger' : 'border-border-strong'
                 }`}
               >
@@ -267,7 +267,7 @@ function WaterSourceModal({ source, farms, fields, onClose, onSave }) {
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 text-bark-700 border border-border-strong rounded-lg hover:bg-white"
+            className="px-4 py-2 text-bark-700 border border-border-strong rounded-card hover:bg-surface-raised"
           >
             Cancel
           </button>

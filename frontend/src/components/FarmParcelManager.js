@@ -178,7 +178,7 @@ function FarmParcelManager({
     <div className="space-y-3">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h4 className="text-sm font-medium text-bark-700 flex items-center gap-2">
+        <h4 className="text-sm text-bark-700 flex items-center gap-2">
           <MapPin size={16} />
           Assessor Parcel Numbers (APNs)
         </h4>
@@ -306,7 +306,7 @@ function ParcelRow({
               value={editData.apn}
               onChange={(e) => handleChange('apn', e.target.value)}
               placeholder={county?.toLowerCase() === 'ventura' ? '123-0-456-789' : '123-456-789'}
-              className="w-full px-2 py-1.5 text-sm border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-white text-heading"
+              className="w-full px-2 py-1.5 text-sm border rounded-card focus:ring-2 focus:ring-primary focus:border-primary bg-surface-raised text-heading"
               autoFocus
             />
           </div>
@@ -320,7 +320,7 @@ function ParcelRow({
               value={editData.acreage || ''}
               onChange={(e) => handleChange('acreage', e.target.value)}
               placeholder="0.00"
-              className="w-full px-2 py-1.5 text-sm border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-white text-heading"
+              className="w-full px-2 py-1.5 text-sm border rounded-card focus:ring-2 focus:ring-primary focus:border-primary bg-surface-raised text-heading"
             />
           </div>
         </div>
@@ -332,7 +332,7 @@ function ParcelRow({
             <select
               value={editData.ownership_type}
               onChange={(e) => handleChange('ownership_type', e.target.value)}
-              className="w-full px-2 py-1.5 text-sm border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-white text-heading"
+              className="w-full px-2 py-1.5 text-sm border rounded-card focus:ring-2 focus:ring-primary focus:border-primary bg-surface-raised text-heading"
             >
               {OWNERSHIP_TYPES.map(type => (
                 <option key={type.value} value={type.value}>{type.label}</option>
@@ -348,7 +348,7 @@ function ParcelRow({
               value={editData.notes || ''}
               onChange={(e) => handleChange('notes', e.target.value)}
               placeholder="Optional notes"
-              className="w-full px-2 py-1.5 text-sm border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-white text-heading"
+              className="w-full px-2 py-1.5 text-sm border rounded-card focus:ring-2 focus:ring-primary focus:border-primary bg-surface-raised text-heading"
             />
           </div>
         </div>
@@ -373,7 +373,7 @@ function ParcelRow({
   }
 
   return (
-    <div className="flex items-center justify-between py-2 px-3 bg-white border rounded-lg hover:bg-cream-50 group">
+    <div className="flex items-center justify-between py-2 px-3 bg-surface-raised border rounded-lg hover:bg-cream-50 group">
       <div className="flex items-center gap-4">
         <span className="font-mono text-sm font-medium text-text">
           {parcel.apn}

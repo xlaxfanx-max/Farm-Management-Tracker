@@ -198,12 +198,12 @@ const QuickHarvestModal = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
+      <div className="bg-surface-raised rounded-card shadow-xl max-w-md w-full">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b">
           <div className="flex items-center gap-2">
             <Zap size={20} className="text-orange-600" />
-            <h2 className="text-xl font-semibold text-heading">Quick Harvest Entry</h2>
+            <h2 className="text-xl text-heading">Quick Harvest Entry</h2>
           </div>
           <button onClick={onClose} className="p-1 hover:bg-cream-100 rounded text-text-secondary">
             <X size={24} />
@@ -221,7 +221,7 @@ const QuickHarvestModal = ({
               name="field"
               value={formData.field}
               onChange={handleChange}
-              className={`w-full border rounded-lg px-3 py-2 bg-white text-heading ${errors.field ? 'border-danger' : ''}`}
+              className={`w-full border rounded-lg px-3 py-2 bg-surface-raised text-heading ${errors.field ? 'border-danger' : ''}`}
               required
             >
               <option value="">Select a field...</option>
@@ -251,7 +251,7 @@ const QuickHarvestModal = ({
               name="harvest_date"
               value={formData.harvest_date}
               onChange={handleChange}
-              className={`w-full border rounded-lg px-3 py-2 bg-white text-heading ${errors.harvest_date ? 'border-danger' : ''}`}
+              className={`w-full border rounded-lg px-3 py-2 bg-surface-raised text-heading ${errors.harvest_date ? 'border-danger' : ''}`}
               required
             />
             {errors.harvest_date && <p className="text-danger text-sm mt-1">{errors.harvest_date}</p>}
@@ -259,7 +259,7 @@ const QuickHarvestModal = ({
 
           {/* PHI Violation Warning */}
           {phiCheck && phiCheck.is_compliant === false && (
-            <div className="p-3 bg-danger-bg border border-danger/25 rounded-lg">
+            <div className="p-3 bg-danger-bg border border-danger/25 rounded-card">
               <div className="flex items-start gap-2">
                 <AlertTriangle className="text-danger flex-shrink-0 mt-0.5" size={18} />
                 <div>
@@ -292,7 +292,7 @@ const QuickHarvestModal = ({
               value={formData.total_bins}
               onChange={handleChange}
               min="1"
-              className={`w-full border rounded-lg px-3 py-2 bg-white text-heading ${errors.total_bins ? 'border-danger' : ''}`}
+              className={`w-full border rounded-lg px-3 py-2 bg-surface-raised text-heading ${errors.total_bins ? 'border-danger' : ''}`}
               placeholder={`Number of ${unitInfo.labelPlural.toLowerCase()} harvested`}
               required
             />
@@ -308,7 +308,7 @@ const QuickHarvestModal = ({
               name="crop_variety"
               value={formData.crop_variety}
               onChange={handleChange}
-              className="w-full border rounded-lg px-3 py-2 bg-white text-heading"
+              className="w-full border rounded-lg px-3 py-2 bg-surface-raised text-heading"
               required
             >
               {HARVEST_CONSTANTS.CROP_VARIETIES.map(crop => (
@@ -330,13 +330,13 @@ const QuickHarvestModal = ({
               value={formData.notes}
               onChange={handleChange}
               rows={2}
-              className="w-full border rounded-lg px-3 py-2 bg-white text-heading"
+              className="w-full border rounded-lg px-3 py-2 bg-surface-raised text-heading"
               placeholder="Any additional notes..."
             />
           </div>
 
           {/* Auto-filled Info Notice */}
-          <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
+          <div className="bg-orange-50 border border-orange-200 rounded-card p-3">
             <p className="text-xs text-orange-700">
               <strong>Auto-filled:</strong> Acres (from field), bin weight (default for crop), pick number (auto-increment), status (In Progress)
             </p>
@@ -354,7 +354,7 @@ const QuickHarvestModal = ({
             <button
               type="button"
               onClick={handleSwitchToAdvanced}
-              className="w-full px-4 py-2 border border-border-strong text-bark-700 rounded-lg hover:bg-cream-50"
+              className="w-full px-4 py-2 border border-border-strong text-bark-700 rounded-card hover:bg-cream-50"
             >
               Switch to Advanced Mode
             </button>

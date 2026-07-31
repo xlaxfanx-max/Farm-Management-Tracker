@@ -407,10 +407,10 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
   if (!batchResult) {
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-        <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
+        <div className="bg-surface-raised rounded-card shadow-xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b border-border">
-            <h2 className="text-lg font-semibold text-heading flex items-center">
+            <h2 className="text-lg text-heading flex items-center">
               <Upload className="w-5 h-5 mr-2 text-primary" />
               Upload Statement PDFs
             </h2>
@@ -434,7 +434,7 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
                 <select
                   value={selectedPackinghouse}
                   onChange={(e) => setSelectedPackinghouse(e.target.value)}
-                  className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary"
+                  className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary"
                   disabled={uploading}
                 >
                   <option value="">Auto-detect from PDF</option>
@@ -456,7 +456,7 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
                 <select
                   value={formatHint}
                   onChange={(e) => setFormatHint(e.target.value)}
-                  className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary"
+                  className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary"
                   disabled={uploading}
                 >
                   <option value="">Auto-detect</option>
@@ -474,7 +474,7 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
               onDragLeave={handleDrag}
               onDragOver={handleDrag}
               onDrop={handleDrop}
-              className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
+              className={`border-2 border-dashed rounded-card p-6 text-center transition-colors ${
                 dragActive
                   ? 'border-primary bg-green-50'
                   : files.length > 0
@@ -505,7 +505,7 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
 
             {/* File List */}
             {files.length > 0 && (
-              <div className="border border-border rounded-lg divide-y divide-border">
+              <div className="border border-border rounded-card divide-y divide-border">
                 {files.map((file, index) => (
                   <div key={index} className="flex items-center justify-between p-3">
                     <div className="flex items-center space-x-3">
@@ -529,7 +529,7 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
 
             {/* Error Message */}
             {error && (
-              <div className="flex items-center p-3 bg-danger-bg border border-danger/25 rounded-lg text-danger">
+              <div className="flex items-center p-3 bg-danger-bg border border-danger/25 rounded-card text-danger">
                 <AlertCircle className="w-5 h-5 mr-2 flex-shrink-0" />
                 <span className="text-sm">{error}</span>
               </div>
@@ -578,9 +578,9 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
   if (confirmWarnings) {
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-        <div className="bg-white rounded-lg shadow-xl w-full max-w-lg overflow-hidden flex flex-col">
+        <div className="bg-surface-raised rounded-card shadow-xl w-full max-w-lg overflow-hidden flex flex-col">
           <div className="flex items-center justify-between p-4 border-b border-border">
-            <h2 className="text-lg font-semibold text-heading flex items-center">
+            <h2 className="text-lg text-heading flex items-center">
               <AlertCircle className="w-5 h-5 mr-2 text-yellow-500" />
               Statement Saved with Warnings
             </h2>
@@ -593,7 +593,7 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
               The statement was saved successfully, but the following discrepancies were detected between the header totals and the grade line breakdown. The grade line totals were used.
             </p>
             {confirmWarnings.map((warning, idx) => (
-              <div key={idx} className="p-3 bg-yellow-100 border border-yellow-200 rounded-lg">
+              <div key={idx} className="p-3 bg-yellow-100 border border-yellow-200 rounded-card">
                 <div className="flex items-start">
                   <AlertCircle className="w-4 h-4 text-yellow-500 mt-0.5 mr-2 flex-shrink-0" />
                   <span className="text-sm text-yellow-800">{warning}</span>
@@ -623,12 +623,12 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
 
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-        <div className={`bg-white rounded-lg shadow-xl max-h-[95vh] overflow-hidden flex flex-col transition-all duration-300 ${
+        <div className={`bg-surface-raised rounded-card shadow-xl max-h-[95vh] overflow-hidden flex flex-col transition-all duration-300 ${
           showPdfPanel ? 'w-full max-w-[95vw]' : 'w-full max-w-4xl'
         }`}>
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b border-border">
-            <h2 className="text-lg font-semibold text-heading flex items-center">
+            <h2 className="text-lg text-heading flex items-center">
               <Eye className="w-5 h-5 mr-2 text-primary" />
               Review Extracted Data
             </h2>
@@ -721,7 +721,7 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
                       updateOverride(stmt.id, 'farm_id', e.target.value ? parseInt(e.target.value) : null);
                       updateOverride(stmt.id, 'field_id', null);
                     }}
-                    className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary"
+                    className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary"
                   >
                     <option value="">-- Select Farm --</option>
                     {farms.map(f => (
@@ -743,7 +743,7 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
                   <select
                     value={override.field_id || ''}
                     onChange={(e) => updateOverride(stmt.id, 'field_id', e.target.value ? parseInt(e.target.value) : null)}
-                    className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary"
+                    className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary"
                     disabled={!override.farm_id}
                   >
                     <option value="">All Fields (Combined)</option>
@@ -758,7 +758,7 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
                   <select
                     value={override.pool_id || ''}
                     onChange={(e) => updateOverride(stmt.id, 'pool_id', e.target.value ? parseInt(e.target.value) : null)}
-                    className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary"
+                    className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary"
                   >
                     <option value="">Auto-create from PDF</option>
                     {pools.map(p => (
@@ -770,7 +770,7 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
               </div>
 
               {/* Statement Info */}
-              <div className="flex items-center justify-between p-3 bg-primary-light border border-green-200 rounded-lg mb-4">
+              <div className="flex items-center justify-between p-3 bg-primary-light border border-green-200 rounded-card mb-4">
                 <div className="flex items-center">
                   <CheckCircle className="w-5 h-5 text-primary mr-2" />
                   <span className="text-green-700">
@@ -795,7 +795,7 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
 
               {/* Error */}
               {error && (
-                <div className="flex items-center p-3 bg-danger-bg border border-danger/25 rounded-lg text-danger mt-4">
+                <div className="flex items-center p-3 bg-danger-bg border border-danger/25 rounded-card text-danger mt-4">
                   <AlertCircle className="w-5 h-5 mr-2" />
                   <span className="text-sm">{error}</span>
                 </div>
@@ -851,10 +851,10 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
   // =========================================================================
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+      <div className="bg-surface-raised rounded-card shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-border">
-          <h2 className="text-lg font-semibold text-heading flex items-center">
+          <h2 className="text-lg text-heading flex items-center">
             <CheckCircle className="w-5 h-5 mr-2 text-primary" />
             Review Batch Results
           </h2>
@@ -963,7 +963,7 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
 
               {/* Expanded Details */}
               {stmt.id && expandedStatements[stmt.id] && stmt.status === 'extracted' && (
-                <div className="px-4 pb-4 pt-2 border-t border-border bg-white">
+                <div className="px-4 pb-4 pt-2 border-t border-border bg-surface-raised">
                   {/* Detected Packinghouse Info */}
                   {stmt.detected_packinghouse?.auto_detected && (
                     <div className={`text-xs mb-3 p-2 rounded ${
@@ -1075,7 +1075,7 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
           ))}
 
           {error && (
-            <div className="flex items-center p-3 bg-danger-bg border border-danger/25 rounded-lg text-danger">
+            <div className="flex items-center p-3 bg-danger-bg border border-danger/25 rounded-card text-danger">
               <AlertCircle className="w-5 h-5 mr-2" /><span className="text-sm">{error}</span>
             </div>
           )}

@@ -7,7 +7,7 @@ const HarvestStatistics = ({ statistics, unitLabel, openDrillDown }) => {
 
   return (
     <div className="grid grid-cols-6 gap-4">
-      <div className="bg-white rounded-lg shadow p-4 cursor-pointer hover:shadow-md hover:border-green-200 border border-transparent transition-all" onClick={() => openDrillDown('total_harvests')}>
+      <div className="bg-surface-raised rounded-card shadow p-4 cursor-pointer hover:shadow-md hover:border-green-200 border border-transparent transition-all" onClick={() => openDrillDown('total_harvests')}>
         <div className="flex items-center gap-3">
           <div className="p-2 bg-orange-100 rounded-lg">
             <Wheat className="text-orange-600" size={24} />
@@ -19,7 +19,7 @@ const HarvestStatistics = ({ statistics, unitLabel, openDrillDown }) => {
         </div>
         <p className="text-xs text-text-muted mt-2">Click for details</p>
       </div>
-      <div className="bg-white rounded-lg shadow p-4 cursor-pointer hover:shadow-md hover:border-green-200 border border-transparent transition-all" onClick={() => openDrillDown('total_bins')}>
+      <div className="bg-surface-raised rounded-card shadow p-4 cursor-pointer hover:shadow-md hover:border-green-200 border border-transparent transition-all" onClick={() => openDrillDown('total_bins')}>
         <div className="flex items-center gap-3">
           <div className="p-2 bg-orange-100 rounded-lg">
             <Package className="text-link" size={24} />
@@ -31,7 +31,7 @@ const HarvestStatistics = ({ statistics, unitLabel, openDrillDown }) => {
         </div>
         <p className="text-xs text-text-muted mt-2">Click for details</p>
       </div>
-      <div className="bg-white rounded-lg shadow p-4 cursor-pointer hover:shadow-md hover:border-green-200 border border-transparent transition-all" onClick={() => openDrillDown('total_revenue')}>
+      <div className="bg-surface-raised rounded-card shadow p-4 cursor-pointer hover:shadow-md hover:border-green-200 border border-transparent transition-all" onClick={() => openDrillDown('total_revenue')}>
         <div className="flex items-center gap-3">
           <div className="p-2 bg-green-100 rounded-lg">
             <DollarSign className="text-primary" size={24} />
@@ -43,7 +43,7 @@ const HarvestStatistics = ({ statistics, unitLabel, openDrillDown }) => {
         </div>
         <p className="text-xs text-text-muted mt-2">Click for details</p>
       </div>
-      <div className="bg-white rounded-lg shadow p-4 cursor-pointer hover:shadow-md hover:border-green-200 border border-transparent transition-all" onClick={() => openDrillDown('labor_cost')}>
+      <div className="bg-surface-raised rounded-card shadow p-4 cursor-pointer hover:shadow-md hover:border-green-200 border border-transparent transition-all" onClick={() => openDrillDown('labor_cost')}>
         <div className="flex items-center gap-3">
           <div className="p-2 bg-sand-200 rounded-lg">
             <Users className="text-bark-700" size={24} />
@@ -55,7 +55,7 @@ const HarvestStatistics = ({ statistics, unitLabel, openDrillDown }) => {
         </div>
         <p className="text-xs text-text-muted mt-2">Click for details</p>
       </div>
-      <div className="bg-white rounded-lg shadow p-4 cursor-pointer hover:shadow-md hover:border-green-200 border border-transparent transition-all" onClick={() => openDrillDown('pending_payments')}>
+      <div className="bg-surface-raised rounded-card shadow p-4 cursor-pointer hover:shadow-md hover:border-green-200 border border-transparent transition-all" onClick={() => openDrillDown('pending_payments')}>
         <div className="flex items-center gap-3">
           <div className="p-2 bg-yellow-100 rounded-lg">
             <Clock className="text-yellow-600" size={24} />
@@ -67,7 +67,7 @@ const HarvestStatistics = ({ statistics, unitLabel, openDrillDown }) => {
         </div>
         <p className="text-xs text-text-muted mt-2">Click for details</p>
       </div>
-      <div className="bg-white rounded-lg shadow p-4 cursor-pointer hover:shadow-md hover:border-green-200 border border-transparent transition-all" onClick={() => openDrillDown('yield_per_acre')}>
+      <div className="bg-surface-raised rounded-card shadow p-4 cursor-pointer hover:shadow-md hover:border-green-200 border border-transparent transition-all" onClick={() => openDrillDown('yield_per_acre')}>
         <div className="flex items-center gap-3">
           <div className="p-2 bg-green-100 rounded-lg">
             <Wheat className="text-green-600" size={24} />

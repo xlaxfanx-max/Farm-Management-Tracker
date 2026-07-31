@@ -12,8 +12,8 @@ const ReportsTab = ({ sgmaDashboard }) => (
     {sgmaDashboard ? (
       <>
         {/* SGMA Overview */}
-        <div className="bg-white rounded-xl border border-border p-6">
-          <h3 className="text-lg font-semibold text-heading mb-6">SGMA Compliance Overview</h3>
+        <div className="bg-surface-raised rounded-card border border-border p-6">
+          <h3 className="text-lg text-heading mb-6">SGMA Compliance Overview</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             <div className="text-center p-4 bg-cream-50 rounded-xl">
               <p className="text-sm text-text-secondary mb-1">Water Year</p>
@@ -37,9 +37,9 @@ const ReportsTab = ({ sgmaDashboard }) => (
         </div>
 
         {/* Allocation Progress & Cost Estimate */}
-        <div className="bg-white rounded-xl border border-border p-6">
+        <div className="bg-surface-raised rounded-card border border-border p-6">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-heading">Allocation Progress</h3>
+            <h3 className="text-lg text-heading">Allocation Progress</h3>
             {/* Monthly Rate Indicator */}
             {sgmaDashboard.ytd_extraction_af > 0 && (() => {
               const now = new Date();
@@ -128,7 +128,7 @@ const ReportsTab = ({ sgmaDashboard }) => (
 
             return (
               <div className="border-t border-border pt-4">
-                <h4 className="text-sm font-semibold text-bark-700 mb-3">Estimated YTD Fees</h4>
+                <h4 className="text-sm text-bark-700 mb-3">Estimated YTD Fees</h4>
                 <div className="space-y-2">
                   {feesByGSA.map((item, idx) => (
                     <div key={idx} className="flex items-center justify-between text-sm">
@@ -153,8 +153,8 @@ const ReportsTab = ({ sgmaDashboard }) => (
 
         {/* Deadlines */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-white rounded-xl border border-border p-6">
-            <h3 className="font-semibold text-heading mb-4">Upcoming Deadlines</h3>
+          <div className="bg-surface-raised rounded-card border border-border p-6">
+            <h3 className=" text-heading mb-4">Upcoming Deadlines</h3>
             <div className="space-y-4">
               <div className="flex items-center gap-4 p-4 bg-orange-50 rounded-xl">
                 <Calendar className="w-8 h-8 text-link" />
@@ -175,8 +175,8 @@ const ReportsTab = ({ sgmaDashboard }) => (
 
           {/* Wells by GSA */}
           {sgmaDashboard.wells_by_gsa?.length > 0 && (
-            <div className="bg-white rounded-xl border border-border p-6">
-              <h3 className="font-semibold text-heading mb-4">Wells by GSA</h3>
+            <div className="bg-surface-raised rounded-card border border-border p-6">
+              <h3 className=" text-heading mb-4">Wells by GSA</h3>
               <div className="space-y-3">
                 {sgmaDashboard.wells_by_gsa.map((gsa, idx) => (
                   <div key={idx} className="flex items-center justify-between p-3 bg-cream-50 rounded-xl">
@@ -196,9 +196,9 @@ const ReportsTab = ({ sgmaDashboard }) => (
         </div>
       </>
     ) : (
-      <div className="bg-white rounded-xl border border-border p-12 text-center">
+      <div className="bg-surface-raised rounded-card border border-border p-12 text-center">
         <BarChart3 className="w-12 h-12 text-sand-300 mx-auto mb-4" />
-        <h3 className="text-lg font-medium text-heading mb-2">No report data available</h3>
+        <h3 className="text-lg text-heading mb-2">No report data available</h3>
         <p className="text-text-secondary">Add wells and meter readings to see SGMA compliance reports.</p>
       </div>
     )}

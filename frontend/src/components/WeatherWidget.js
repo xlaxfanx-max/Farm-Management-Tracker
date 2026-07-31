@@ -160,9 +160,9 @@ export default function WeatherWidget({ onViewForecast }) {
   // No farms state
   if (farms.length === 0 && !loading) {
     return (
-      <div className="bg-white rounded-xl shadow-sm border border-border p-6">
+      <div className="bg-surface-raised rounded-card shadow-sm border border-border p-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-heading">Weather</h3>
+          <h3 className="text-lg text-heading">Weather</h3>
         </div>
         <div className="text-center py-6 text-text-secondary">
           <MapPin className="w-12 h-12 mx-auto mb-3 text-sand-300" />
@@ -173,10 +173,10 @@ export default function WeatherWidget({ onViewForecast }) {
   }
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-border p-6">
+    <div className="bg-surface-raised rounded-card shadow-sm border border-border p-6">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-heading">Weather</h3>
+        <h3 className="text-lg text-heading">Weather</h3>
         <div className="flex items-center gap-2">
           {farms.length > 1 && (
             <select
@@ -185,7 +185,7 @@ export default function WeatherWidget({ onViewForecast }) {
                 const farm = farms.find(f => f.id === parseInt(e.target.value));
                 setSelectedFarm(farm);
               }}
-              className="text-sm border border-border rounded-lg px-2 py-1 focus:ring-2 focus:ring-primary focus:border-transparent"
+              className="text-sm border border-border rounded-card px-2 py-1 focus:ring-2 focus:ring-primary focus:border-transparent"
             >
               {farms.map(farm => (
                 <option key={farm.id} value={farm.id}>{farm.name}</option>

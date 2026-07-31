@@ -64,7 +64,7 @@ export const GRAIN_BADGE = {
 };
 
 export const cardClasses =
-  'rounded-xl border border-border bg-white p-5';
+  'rounded-card border border-border bg-surface-raised p-5';
 
 export const mutedText = 'text-sm text-text-secondary';
 

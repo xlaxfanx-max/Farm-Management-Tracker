@@ -166,7 +166,7 @@ const Reports = () => {
     <div className="p-6">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-heading mb-2">Reports & Compliance</h1>
+        <h1 className="text-3xl text-heading mb-2">Reports & Compliance</h1>
         <p className="text-bark-600">
           Generate PUR reports for pesticide compliance
         </p>
@@ -179,7 +179,7 @@ const Reports = () => {
               <div className="flex items-start">
                 <AlertTriangle className="w-6 h-6 text-danger mr-3 flex-shrink-0" />
                 <div>
-                  <h3 className="text-lg font-semibold text-danger">Validation Errors Found</h3>
+                  <h3 className="text-lg text-danger">Validation Errors Found</h3>
                   <p className="text-sm text-danger">
                     {validation.errors.length} error(s) and {validation.warnings.length} warning(s) must be addressed.
                   </p>
@@ -189,9 +189,9 @@ const Reports = () => {
           )}
 
           {/* Filters */}
-          <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="bg-surface-raised rounded-card shadow-md p-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-heading flex items-center gap-2">
+              <h2 className="text-lg text-heading flex items-center gap-2">
                 <Filter className="w-5 h-5" />
                 Report Filters
               </h2>
@@ -230,7 +230,7 @@ const Reports = () => {
                   type="date"
                   value={filters.start_date}
                   onChange={(e) => handleFilterChange('start_date', e.target.value)}
-                  className="w-full px-3 py-2 border border-border-strong rounded-lg bg-white focus:ring-2 focus:ring-primary"
+                  className="w-full px-3 py-2 border border-border-strong rounded-card bg-surface-raised focus:ring-2 focus:ring-primary"
                 />
               </div>
               <div>
@@ -239,7 +239,7 @@ const Reports = () => {
                   type="date"
                   value={filters.end_date}
                   onChange={(e) => handleFilterChange('end_date', e.target.value)}
-                  className="w-full px-3 py-2 border border-border-strong rounded-lg bg-white focus:ring-2 focus:ring-primary"
+                  className="w-full px-3 py-2 border border-border-strong rounded-card bg-surface-raised focus:ring-2 focus:ring-primary"
                 />
               </div>
               <div>
@@ -247,7 +247,7 @@ const Reports = () => {
                 <select
                   value={filters.farm_id}
                   onChange={(e) => handleFilterChange('farm_id', e.target.value)}
-                  className="w-full px-3 py-2 border border-border-strong rounded-lg bg-white focus:ring-2 focus:ring-primary"
+                  className="w-full px-3 py-2 border border-border-strong rounded-card bg-surface-raised focus:ring-2 focus:ring-primary"
                 >
                   <option value="">All Farms</option>
                   {farms.map(farm => (
@@ -260,7 +260,7 @@ const Reports = () => {
                 <select
                   value={filters.county}
                   onChange={(e) => handleFilterChange('county', e.target.value)}
-                  className="w-full px-3 py-2 border border-border-strong rounded-lg bg-white focus:ring-2 focus:ring-primary"
+                  className="w-full px-3 py-2 border border-border-strong rounded-card bg-surface-raised focus:ring-2 focus:ring-primary"
                 >
                   <option value="">All Counties</option>
                   {counties.map(county => (
@@ -272,8 +272,8 @@ const Reports = () => {
           </div>
 
           {/* Export Section */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-lg font-semibold text-heading mb-4 flex items-center gap-2">
+          <div className="bg-surface-raised rounded-card shadow-md p-6">
+            <h2 className="text-lg text-heading mb-4 flex items-center gap-2">
               <Download className="w-5 h-5" />
               Export Options
             </h2>
@@ -311,7 +311,7 @@ const Reports = () => {
               <button
                 onClick={handleValidate}
                 disabled={validating}
-                className="px-4 py-2 border border-border-strong rounded-lg hover:bg-cream-50 flex items-center gap-2"
+                className="px-4 py-2 border border-border-strong rounded-card hover:bg-cream-50 flex items-center gap-2"
               >
                 <CheckCircle className="w-4 h-4" />
                 {validating ? 'Validating...' : 'Validate'}
@@ -329,8 +329,8 @@ const Reports = () => {
 
           {/* Statistics */}
           {statistics && (
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-lg font-semibold text-heading mb-4 flex items-center gap-2">
+            <div className="bg-surface-raised rounded-card shadow-md p-6">
+              <h2 className="text-lg text-heading mb-4 flex items-center gap-2">
                 <BarChart3 className="w-5 h-5" />
                 Report Statistics
               </h2>
@@ -357,12 +357,12 @@ const Reports = () => {
 
           {/* Validation Details */}
           {validation && validation.errors && validation.errors.length > 0 && (
-            <div id="validation-section" className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-lg font-semibold text-heading mb-4">Validation Details</h2>
+            <div id="validation-section" className="bg-surface-raised rounded-card shadow-md p-6">
+              <h2 className="text-lg text-heading mb-4">Validation Details</h2>
 
               {validation.errors.length > 0 && (
                 <div className="mb-4">
-                  <h3 className="font-medium text-danger mb-2">Errors ({validation.errors.length})</h3>
+                  <h3 className=" text-danger mb-2">Errors ({validation.errors.length})</h3>
                   <ul className="space-y-1">
                     {validation.errors.map((error, idx) => (
                       <li key={idx} className="text-sm text-danger flex items-start gap-2">
@@ -376,7 +376,7 @@ const Reports = () => {
 
               {validation.warnings && validation.warnings.length > 0 && (
                 <div>
-                  <h3 className="font-medium text-yellow-800 mb-2">Warnings ({validation.warnings.length})</h3>
+                  <h3 className=" text-yellow-800 mb-2">Warnings ({validation.warnings.length})</h3>
                   <ul className="space-y-1">
                     {validation.warnings.map((warning, idx) => (
                       <li key={idx} className="text-sm text-yellow-700 flex items-start gap-2">

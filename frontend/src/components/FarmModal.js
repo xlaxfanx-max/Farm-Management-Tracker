@@ -16,7 +16,7 @@ const CA_COUNTIES = [
   'Tuolumne', 'Ventura', 'Yolo', 'Yuba'
 ];
 
-const inputClasses = 'w-full p-2 border border-border-strong rounded-lg bg-white text-heading placeholder-text-muted focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent';
+const inputClasses = 'w-full p-2 border border-border-strong rounded-card bg-surface-raised text-heading placeholder-text-muted focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent';
 
 function FarmModal({ farm, onClose, onSave }) {
   const isEditing = !!farm?.id;
@@ -110,14 +110,14 @@ function FarmModal({ farm, onClose, onSave }) {
 
       {/* Panel */}
       <div
-        className="relative bg-surface-raised rounded-lg max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col shadow-xl"
+        className="relative bg-surface-raised rounded-card max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col shadow-xl"
         role="dialog"
         aria-modal="true"
         aria-labelledby="farm-modal-title"
       >
         {/* Header */}
         <div className="p-6 border-b border-border flex justify-between items-center flex-shrink-0">
-          <h2 id="farm-modal-title" className="text-2xl font-bold text-heading">{modalTitle}</h2>
+          <h2 id="farm-modal-title" className="text-2xl text-heading">{modalTitle}</h2>
           <button
             onClick={onClose}
             className="p-2 text-text-muted hover:text-bark-600 hover:bg-cream-100 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
@@ -291,7 +291,7 @@ function FarmModal({ farm, onClose, onSave }) {
         <div className="p-6 border-t border-border flex gap-3 justify-end bg-cream-50 flex-shrink-0">
           <button
             onClick={onClose}
-            className="px-6 py-2 border border-border-strong rounded-lg text-bark-700 hover:bg-cream-100 transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+            className="px-6 py-2 border border-border-strong rounded-card text-bark-700 hover:bg-cream-100 transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
             disabled={loading}
           >
             Cancel

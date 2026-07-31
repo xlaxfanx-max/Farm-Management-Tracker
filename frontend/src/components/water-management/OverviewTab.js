@@ -106,7 +106,7 @@ const OverviewTab = ({
 
       {/* Quick Actions */}
       <div>
-        <h3 className="text-sm font-semibold text-text-secondary uppercase tracking-wider mb-4">Quick Actions</h3>
+        <h3 className="text-sm text-text-secondary uppercase tracking-wider mb-4">Quick Actions</h3>
         <div className="flex flex-wrap gap-3">
           <QuickActionButton icon={Plus} label="Add Well" onClick={() => openWellSourceModal()} color="cyan" />
           <QuickActionButton icon={Gauge} label="Batch Readings" onClick={() => {
@@ -127,8 +127,8 @@ const OverviewTab = ({
       {/* Bottom Section: Sources & SGMA */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Source Type Breakdown */}
-        <div className="bg-white rounded-xl border border-border p-5">
-          <h3 className="font-semibold text-heading mb-4">Water Sources by Type</h3>
+        <div className="bg-surface-raised rounded-card border border-border p-5">
+          <h3 className=" text-heading mb-4">Water Sources by Type</h3>
           <div className="space-y-3">
             {Object.entries(SOURCE_TYPE_LABELS).map(([type, label]) => {
               const count = waterSources.filter(s => s.source_type === type).length;
@@ -162,8 +162,8 @@ const OverviewTab = ({
 
         {/* SGMA Compliance */}
         {sgmaDashboard && (
-          <div className="bg-white rounded-xl border border-border p-5">
-            <h3 className="font-semibold text-heading mb-4">SGMA Compliance</h3>
+          <div className="bg-surface-raised rounded-card border border-border p-5">
+            <h3 className=" text-heading mb-4">SGMA Compliance</h3>
             <div className="space-y-4">
               <div>
                 <div className="flex items-center justify-between mb-2">

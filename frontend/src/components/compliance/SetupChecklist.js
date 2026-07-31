@@ -14,7 +14,7 @@ export default function SetupChecklist({ scoreData, onNavigate, onDismiss }) {
   const firstThreeActions = failed.filter((item) => item.action && item.action_key).slice(0, 3);
 
   return (
-    <div className="w-full bg-green-50 border border-green-300 rounded-xl shadow-sm p-4 relative">
+    <div className="w-full bg-green-50 border border-green-300 rounded-card shadow-sm p-4 relative">
       <button
         onClick={onDismiss}
         className="absolute top-3 right-3 p-1 rounded text-green-500 hover:bg-green-100 transition-colors"
@@ -24,7 +24,7 @@ export default function SetupChecklist({ scoreData, onNavigate, onDismiss }) {
       </button>
 
       <div className="pr-6 mb-3">
-        <h3 className="text-sm font-semibold text-green-800">
+        <h3 className="text-sm text-green-800">
           Complete Your Compliance Setup
         </h3>
         <p className="text-xs text-green-700 mt-0.5">
@@ -65,7 +65,7 @@ export default function SetupChecklist({ scoreData, onNavigate, onDismiss }) {
             <button
               key={item.key}
               onClick={() => onNavigate(item.action_key)}
-              className="w-full flex items-center gap-2 px-3 py-2 bg-white border border-green-200 rounded-lg text-sm text-green-800 hover:bg-green-50 transition-colors text-left"
+              className="w-full flex items-center gap-2 px-3 py-2 bg-surface-raised border border-green-200 rounded-card text-sm text-green-800 hover:bg-green-50 transition-colors text-left"
             >
               <ChevronRight className="w-4 h-4 text-green-500 flex-shrink-0" />
               {item.action}

@@ -250,7 +250,7 @@ const Profile = ({ onBack }) => {
         <div className="flex items-center">
           <User className="w-8 h-8 text-primary mr-3" />
           <div>
-            <h1 className="text-2xl font-bold text-heading">Profile</h1>
+            <h1 className="text-2xl text-heading">Profile</h1>
             <p className="text-text-secondary">Manage your personal information and preferences</p>
           </div>
         </div>
@@ -258,7 +258,7 @@ const Profile = ({ onBack }) => {
 
       {/* Alerts */}
       {error && (
-        <div className="mb-4 bg-danger-bg border border-danger/25 rounded-lg p-4">
+        <div className="mb-4 bg-danger-bg border border-danger/25 rounded-card p-4">
           <div className="flex items-center">
             <AlertCircle className="w-5 h-5 text-danger mr-2" />
             <span className="text-danger">{error}</span>
@@ -269,7 +269,7 @@ const Profile = ({ onBack }) => {
         </div>
       )}
       {success && (
-        <div className="mb-4 bg-primary-light border border-green-200 rounded-lg p-4">
+        <div className="mb-4 bg-primary-light border border-green-200 rounded-card p-4">
           <div className="flex items-center">
             <CheckCircle className="w-5 h-5 text-green-600 mr-2" />
             <span className="text-primary">{success}</span>
@@ -279,14 +279,14 @@ const Profile = ({ onBack }) => {
 
       <div className="space-y-6">
         {/* Profile Overview Card */}
-        <div className="bg-white rounded-lg shadow-sm border border-border overflow-hidden">
-          <div className="bg-gradient-to-r from-green-600 to-green-700 px-6 py-8">
+        <div className="bg-surface-raised rounded-card shadow-sm border border-border overflow-hidden">
+          <div className="bg-gradient-to-r from-green-600 to-green-800 px-6 py-8">
             <div className="flex items-center">
-              <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-lg">
+              <div className="w-20 h-20 bg-surface-raised rounded-full flex items-center justify-center shadow-lg">
                 <span className="text-2xl font-bold text-primary">{getUserInitials()}</span>
               </div>
               <div className="ml-6 text-white">
-                <h2 className="text-2xl font-bold">
+                <h2 className="text-2xl">
                   {user?.first_name && user?.last_name
                     ? `${user.first_name} ${user.last_name}`
                     : user?.email}
@@ -307,9 +307,9 @@ const Profile = ({ onBack }) => {
         </div>
 
         {/* Personal Information */}
-        <div className="bg-white rounded-lg shadow-sm border border-border overflow-hidden">
+        <div className="bg-surface-raised rounded-card shadow-sm border border-border overflow-hidden">
           <div className="bg-cream-50 px-6 py-4 border-b border-border flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-heading flex items-center">
+            <h2 className="text-lg text-heading flex items-center">
               <User className="w-5 h-5 mr-2 text-primary" />
               Personal Information
             </h2>
@@ -336,7 +336,7 @@ const Profile = ({ onBack }) => {
                       name="first_name"
                       value={profileData.first_name}
                       onChange={handleProfileChange}
-                      className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+                      className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-primary"
                       placeholder="Enter first name"
                     />
                   </div>
@@ -349,7 +349,7 @@ const Profile = ({ onBack }) => {
                       name="last_name"
                       value={profileData.last_name}
                       onChange={handleProfileChange}
-                      className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+                      className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-primary"
                       placeholder="Enter last name"
                     />
                   </div>
@@ -362,7 +362,7 @@ const Profile = ({ onBack }) => {
                     type="email"
                     value={user?.email || ''}
                     disabled
-                    className="w-full px-3 py-2 border border-border rounded-lg bg-cream-50 text-text-secondary cursor-not-allowed"
+                    className="w-full px-3 py-2 border border-border rounded-card bg-cream-50 text-text-secondary cursor-not-allowed"
                   />
                   <p className="text-xs text-text-secondary mt-1">Contact support to change your email address</p>
                 </div>
@@ -375,14 +375,14 @@ const Profile = ({ onBack }) => {
                     name="phone"
                     value={profileData.phone}
                     onChange={handleProfileChange}
-                    className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+                    className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-primary"
                     placeholder="(555) 555-5555"
                   />
                 </div>
                 <div className="flex gap-2 pt-2">
                   <button
                     onClick={handleCancelProfile}
-                    className="px-4 py-2 border border-border-strong text-bark-700 rounded-lg hover:bg-cream-50 transition-colors"
+                    className="px-4 py-2 border border-border-strong text-bark-700 rounded-card hover:bg-cream-50 transition-colors"
                   >
                     Cancel
                   </button>
@@ -434,16 +434,16 @@ const Profile = ({ onBack }) => {
         </div>
 
         {/* Password & Security */}
-        <div className="bg-white rounded-lg shadow-sm border border-border overflow-hidden">
+        <div className="bg-surface-raised rounded-card shadow-sm border border-border overflow-hidden">
           <div className="bg-cream-50 px-6 py-4 border-b border-border">
-            <h2 className="text-lg font-semibold text-heading flex items-center">
+            <h2 className="text-lg text-heading flex items-center">
               <Lock className="w-5 h-5 mr-2 text-primary" />
               Password & Security
             </h2>
           </div>
           <div className="p-6">
             {passwordSuccess && (
-              <div className="mb-4 bg-primary-light border border-green-200 rounded-lg p-3">
+              <div className="mb-4 bg-primary-light border border-green-200 rounded-card p-3">
                 <div className="flex items-center">
                   <CheckCircle className="w-5 h-5 text-green-600 mr-2" />
                   <span className="text-primary">{passwordSuccess}</span>
@@ -453,7 +453,7 @@ const Profile = ({ onBack }) => {
             {changingPassword ? (
               <div className="space-y-4 max-w-md">
                 {passwordError && (
-                  <div className="bg-danger-bg border border-danger/25 rounded-lg p-3">
+                  <div className="bg-danger-bg border border-danger/25 rounded-card p-3">
                     <div className="flex items-center">
                       <AlertCircle className="w-5 h-5 text-danger mr-2" />
                       <span className="text-danger text-sm">{passwordError}</span>
@@ -470,7 +470,7 @@ const Profile = ({ onBack }) => {
                       name="current_password"
                       value={passwordData.current_password}
                       onChange={handlePasswordChange}
-                      className="w-full px-3 py-2 pr-10 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+                      className="w-full px-3 py-2 pr-10 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-primary"
                       placeholder="Enter current password"
                     />
                     <button
@@ -492,7 +492,7 @@ const Profile = ({ onBack }) => {
                       name="new_password"
                       value={passwordData.new_password}
                       onChange={handlePasswordChange}
-                      className="w-full px-3 py-2 pr-10 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+                      className="w-full px-3 py-2 pr-10 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-primary"
                       placeholder="Enter new password"
                     />
                     <button
@@ -514,14 +514,14 @@ const Profile = ({ onBack }) => {
                     name="confirm_password"
                     value={passwordData.confirm_password}
                     onChange={handlePasswordChange}
-                    className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+                    className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-primary"
                     placeholder="Confirm new password"
                   />
                 </div>
                 <div className="flex gap-2 pt-2">
                   <button
                     onClick={handleCancelPassword}
-                    className="px-4 py-2 border border-border-strong text-bark-700 rounded-lg hover:bg-cream-50 transition-colors"
+                    className="px-4 py-2 border border-border-strong text-bark-700 rounded-card hover:bg-cream-50 transition-colors"
                   >
                     Cancel
                   </button>
@@ -547,7 +547,7 @@ const Profile = ({ onBack }) => {
                 </div>
                 <button
                   onClick={() => setChangingPassword(true)}
-                  className="flex items-center px-4 py-2 border border-border-strong text-bark-700 rounded-lg hover:bg-cream-50 transition-colors"
+                  className="flex items-center px-4 py-2 border border-border-strong text-bark-700 rounded-card hover:bg-cream-50 transition-colors"
                 >
                   <Lock className="w-4 h-4 mr-2" />
                   Change Password
@@ -573,9 +573,9 @@ const Profile = ({ onBack }) => {
         </div>
 
         {/* Notification Preferences */}
-        <div className="bg-white rounded-lg shadow-sm border border-border overflow-hidden">
+        <div className="bg-surface-raised rounded-card shadow-sm border border-border overflow-hidden">
           <div className="bg-cream-50 px-6 py-4 border-b border-border flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-heading flex items-center">
+            <h2 className="text-lg text-heading flex items-center">
               <Bell className="w-5 h-5 mr-2 text-primary" />
               Notification Preferences
             </h2>
@@ -591,7 +591,7 @@ const Profile = ({ onBack }) => {
               <div className="flex gap-2">
                 <button
                   onClick={() => setEditingNotifications(false)}
-                  className="px-3 py-1.5 text-sm border border-border-strong text-bark-700 rounded-lg hover:bg-cream-50"
+                  className="px-3 py-1.5 text-sm border border-border-strong text-bark-700 rounded-card hover:bg-cream-50"
                 >
                   Cancel
                 </button>
@@ -629,7 +629,7 @@ const Profile = ({ onBack }) => {
                   } ${!editingNotifications ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}`}
                 >
                   <span
-                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    className={`inline-block h-4 w-4 transform rounded-full bg-surface-raised transition-transform ${
                       notifications.email_pur_reminders ? 'translate-x-6' : 'translate-x-1'
                     }`}
                   />
@@ -649,7 +649,7 @@ const Profile = ({ onBack }) => {
                   } ${!editingNotifications ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}`}
                 >
                   <span
-                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    className={`inline-block h-4 w-4 transform rounded-full bg-surface-raised transition-transform ${
                       notifications.email_water_test_due ? 'translate-x-6' : 'translate-x-1'
                     }`}
                   />
@@ -669,7 +669,7 @@ const Profile = ({ onBack }) => {
                   } ${!editingNotifications ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}`}
                 >
                   <span
-                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    className={`inline-block h-4 w-4 transform rounded-full bg-surface-raised transition-transform ${
                       notifications.email_phi_warnings ? 'translate-x-6' : 'translate-x-1'
                     }`}
                   />
@@ -689,7 +689,7 @@ const Profile = ({ onBack }) => {
                   } ${!editingNotifications ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}`}
                 >
                   <span
-                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    className={`inline-block h-4 w-4 transform rounded-full bg-surface-raised transition-transform ${
                       notifications.email_weekly_summary ? 'translate-x-6' : 'translate-x-1'
                     }`}
                   />
@@ -709,7 +709,7 @@ const Profile = ({ onBack }) => {
                   } ${!editingNotifications ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}`}
                 >
                   <span
-                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    className={`inline-block h-4 w-4 transform rounded-full bg-surface-raised transition-transform ${
                       notifications.email_team_updates ? 'translate-x-6' : 'translate-x-1'
                     }`}
                   />
@@ -720,9 +720,9 @@ const Profile = ({ onBack }) => {
         </div>
 
         {/* Account Information */}
-        <div className="bg-white rounded-lg shadow-sm border border-border overflow-hidden">
+        <div className="bg-surface-raised rounded-card shadow-sm border border-border overflow-hidden">
           <div className="bg-cream-50 px-6 py-4 border-b border-border">
-            <h2 className="text-lg font-semibold text-heading flex items-center">
+            <h2 className="text-lg text-heading flex items-center">
               <Calendar className="w-5 h-5 mr-2 text-primary" />
               Account Information
             </h2>

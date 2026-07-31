@@ -77,7 +77,7 @@ function FindingCard({ finding, reviewedSet, onToggleReviewed }) {
 
   return (
     <div
-      className={`border-l-4 rounded-md ${style.border} ${style.bg} ${
+      className={`border-l-4 rounded-lg ${style.border} ${style.bg} ${
         reviewed ? 'opacity-60' : ''
       }`}
       data-testid="audit-finding"
@@ -126,7 +126,7 @@ function FindingCard({ finding, reviewedSet, onToggleReviewed }) {
               {Object.entries(finding.details).map(([key, val]) => (
                 <div
                   key={key}
-                  className="bg-white rounded p-2 border border-border"
+                  className="bg-surface-raised rounded p-2 border border-border"
                 >
                   <div className="text-[11px] text-text-secondary">
                     {key.replace(/_/g, ' ')}
@@ -226,7 +226,7 @@ function SettlementAuditReport({ settlementId }) {
   return (
     <div className="space-y-3" data-testid="audit-report">
       {/* Status banner */}
-      <div className={`border-l-4 rounded-md p-4 ${banner.bg}`}>
+      <div className={`border-l-4 rounded-lg p-4 ${banner.bg}`}>
         <div className="flex items-start gap-3">
           <BannerIcon className={`w-6 h-6 ${banner.iconColor} flex-shrink-0`} />
           <div className="flex-1">

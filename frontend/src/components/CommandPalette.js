@@ -175,7 +175,7 @@ function CommandPalette() {
       />
 
       {/* Palette */}
-      <div className="relative w-full max-w-lg mx-4 bg-surface-raised rounded-xl shadow-2xl border border-border overflow-hidden">
+      <div className="relative w-full max-w-lg mx-4 bg-surface-raised rounded-card shadow-2xl border border-border overflow-hidden">
         {/* Search input */}
         <div className="flex items-center gap-3 px-4 py-3 border-b border-border">
           <Search className="w-5 h-5 text-text-muted flex-shrink-0" />

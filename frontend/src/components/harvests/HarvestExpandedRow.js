@@ -23,7 +23,7 @@ const HarvestExpandedRow = ({
     <div className="mt-4 ml-10 space-y-4">
       {/* PHI Warning Banner */}
       {harvest.phi_compliant === false && (
-        <div className="bg-danger-bg border border-danger/25 rounded-lg p-3 flex items-start gap-3">
+        <div className="bg-danger-bg border border-danger/25 rounded-card p-3 flex items-start gap-3">
           <AlertTriangle className="text-danger flex-shrink-0" size={20} />
           <div>
             <p className="font-medium text-danger">PHI Compliance Warning</p>
@@ -78,7 +78,7 @@ const HarvestExpandedRow = ({
         </button>
         <button
           onClick={(e) => { e.stopPropagation(); handleDelete(harvest.id); }}
-          className="flex items-center gap-1 px-3 py-1.5 text-sm text-danger border border-danger/25 rounded-lg hover:bg-danger-bg"
+          className="flex items-center gap-1 px-3 py-1.5 text-sm text-danger border border-danger/25 rounded-card hover:bg-danger-bg"
         >
           <Trash2 size={16} /> Delete
         </button>
@@ -155,7 +155,7 @@ const BinsReconciliation = ({ harvest }) => {
   };
 
   return (
-    <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
+    <div className="bg-orange-50 border border-orange-200 rounded-card p-3">
       <p className="font-medium text-orange-700 mb-2">{harvest.primary_unit_label || 'Bin'} Tracking</p>
       <div className="grid grid-cols-3 gap-4 text-sm">
         <div>

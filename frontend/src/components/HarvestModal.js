@@ -231,10 +231,10 @@ const HarvestModal = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+      <div className="bg-surface-raised rounded-card shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b sticky top-0 bg-white">
-          <h2 className="text-xl font-semibold text-heading">
+        <div className="flex items-center justify-between p-4 border-b sticky top-0 bg-surface-raised">
+          <h2 className="text-xl text-heading">
             {harvest ? 'Edit Harvest' : 'Record New Harvest'}
           </h2>
           <button onClick={onClose} className="p-1 hover:bg-cream-100 rounded text-text-secondary">
@@ -244,7 +244,7 @@ const HarvestModal = ({
 
         {/* PHI Warning Banner */}
         {phiCheck && phiCheck.is_compliant === false && (
-          <div className="mx-4 mt-4 p-4 bg-danger-bg border border-danger/25 rounded-lg">
+          <div className="mx-4 mt-4 p-4 bg-danger-bg border border-danger/25 rounded-card">
             <div className="flex items-start gap-3">
               <AlertTriangle className="text-danger flex-shrink-0 mt-0.5" size={24} />
               <div>
@@ -271,7 +271,7 @@ const HarvestModal = ({
         )}
 
         {phiCheck && phiCheck.is_compliant === true && (
-          <div className="mx-4 mt-4 p-3 bg-primary-light border border-green-200 rounded-lg">
+          <div className="mx-4 mt-4 p-3 bg-primary-light border border-green-200 rounded-card">
             <div className="flex items-center gap-2">
               <CheckCircle className="text-primary" size={20} />
               <span className="text-green-700">{phiCheck.warning_message}</span>
@@ -280,7 +280,7 @@ const HarvestModal = ({
         )}
 
         {phiLoading && (
-          <div className="mx-4 mt-4 p-3 bg-orange-50 border border-orange-200 rounded-lg">
+          <div className="mx-4 mt-4 p-3 bg-orange-50 border border-orange-200 rounded-card">
             <p className="text-orange-700">Checking PHI compliance...</p>
           </div>
         )}
@@ -297,7 +297,7 @@ const HarvestModal = ({
                 name="field"
                 value={formData.field}
                 onChange={handleChange}
-                className={`w-full border rounded-lg px-3 py-2 bg-white text-heading ${errors.field ? 'border-danger' : ''}`}
+                className={`w-full border rounded-lg px-3 py-2 bg-surface-raised text-heading ${errors.field ? 'border-danger' : ''}`}
                 required
               >
                 <option value="">Select a field...</option>
@@ -319,7 +319,7 @@ const HarvestModal = ({
                 name="harvest_date"
                 value={formData.harvest_date}
                 onChange={handleChange}
-                className={`w-full border rounded-lg px-3 py-2 bg-white text-heading ${errors.harvest_date ? 'border-danger' : ''}`}
+                className={`w-full border rounded-lg px-3 py-2 bg-surface-raised text-heading ${errors.harvest_date ? 'border-danger' : ''}`}
                 required
               />
               {errors.harvest_date && <p className="text-danger text-sm mt-1">{errors.harvest_date}</p>}
@@ -336,7 +336,7 @@ const HarvestModal = ({
                 name="crop_variety"
                 value={formData.crop_variety}
                 onChange={handleChange}
-                className="w-full border rounded-lg px-3 py-2 bg-white text-heading"
+                className="w-full border rounded-lg px-3 py-2 bg-surface-raised text-heading"
                 required
               >
                 {HARVEST_CONSTANTS.CROP_VARIETIES.map(crop => (
@@ -355,7 +355,7 @@ const HarvestModal = ({
                 value={formData.harvest_number}
                 onChange={handleChange}
                 min="1"
-                className="w-full border rounded-lg px-3 py-2 bg-white text-heading"
+                className="w-full border rounded-lg px-3 py-2 bg-surface-raised text-heading"
               />
               <p className="text-xs text-text-secondary mt-1">Which pick this season (1st, 2nd, etc.)</p>
             </div>
@@ -368,7 +368,7 @@ const HarvestModal = ({
                 name="status"
                 value={formData.status}
                 onChange={handleChange}
-                className="w-full border rounded-lg px-3 py-2 bg-white text-heading"
+                className="w-full border rounded-lg px-3 py-2 bg-surface-raised text-heading"
               >
                 {HARVEST_CONSTANTS.HARVEST_STATUSES.map(s => (
                   <option key={s.value} value={s.value}>{s.label}</option>
@@ -390,7 +390,7 @@ const HarvestModal = ({
                 onChange={handleChange}
                 step="0.01"
                 min="0.01"
-                className={`w-full border rounded-lg px-3 py-2 bg-white text-heading ${errors.acres_harvested ? 'border-danger' : ''}`}
+                className={`w-full border rounded-lg px-3 py-2 bg-surface-raised text-heading ${errors.acres_harvested ? 'border-danger' : ''}`}
                 required
               />
               {errors.acres_harvested && <p className="text-danger text-sm mt-1">{errors.acres_harvested}</p>}
@@ -411,7 +411,7 @@ const HarvestModal = ({
                 value={formData.total_bins}
                 onChange={handleChange}
                 min="0"
-                className={`w-full border rounded-lg px-3 py-2 bg-white text-heading ${errors.total_bins ? 'border-danger' : ''}`}
+                className={`w-full border rounded-lg px-3 py-2 bg-surface-raised text-heading ${errors.total_bins ? 'border-danger' : ''}`}
                 required
               />
               {errors.total_bins && <p className="text-danger text-sm mt-1">{errors.total_bins}</p>}
@@ -428,7 +428,7 @@ const HarvestModal = ({
                   value={formData.bin_weight_lbs}
                   onChange={handleChange}
                   min="1"
-                  className="w-full border rounded-lg px-3 py-2 bg-white text-heading"
+                  className="w-full border rounded-lg px-3 py-2 bg-surface-raised text-heading"
                 />
                 <p className="text-xs text-text-secondary mt-1">
                   Est. weight: {((formData.total_bins || 0) * formData.bin_weight_lbs).toLocaleString()} lbs
@@ -484,7 +484,7 @@ const HarvestModal = ({
                   name="supervisor_name"
                   value={formData.supervisor_name}
                   onChange={handleChange}
-                  className="w-full border rounded-lg px-3 py-2 bg-white text-heading"
+                  className="w-full border rounded-lg px-3 py-2 bg-surface-raised text-heading"
                   placeholder="Person responsible for this harvest"
                 />
               </div>
@@ -499,7 +499,7 @@ const HarvestModal = ({
                 value={formData.field_conditions}
                 onChange={handleChange}
                 rows={2}
-                className="w-full border rounded-lg px-3 py-2 bg-white text-heading"
+                className="w-full border rounded-lg px-3 py-2 bg-surface-raised text-heading"
                 placeholder="Weather, ground conditions, any observations..."
               />
             </div>
@@ -515,17 +515,17 @@ const HarvestModal = ({
               value={formData.notes}
               onChange={handleChange}
               rows={2}
-              className="w-full border rounded-lg px-3 py-2 bg-white text-heading"
+              className="w-full border rounded-lg px-3 py-2 bg-surface-raised text-heading"
               placeholder="Any additional notes..."
             />
           </div>
 
           {/* Bins Reconciliation Widget - Only show when editing existing harvest */}
           {harvest && reconciliationStatus && (
-            <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+            <div className="bg-orange-50 border border-orange-200 rounded-card p-4">
               <div className="flex items-center gap-2 mb-3">
                 <Info size={18} className="text-link" />
-                <h3 className="font-medium text-orange-700">{unitInfo.labelSingular} Tracking Status</h3>
+                <h3 className=" text-orange-700">{unitInfo.labelSingular} Tracking Status</h3>
               </div>
 
               <div className="grid grid-cols-3 gap-4 text-sm mb-3">

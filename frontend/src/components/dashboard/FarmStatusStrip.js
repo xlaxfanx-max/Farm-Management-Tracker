@@ -40,15 +40,15 @@ function FarmStatusStrip({ farms = [], fields = [], applications = [], applicati
 
   if (farms.length === 0) {
     return (
-      <div className="bg-surface-raised rounded-lg border border-border p-4">
+      <div className="bg-surface-raised rounded-card border border-border p-4">
         <p className="text-sm text-text-muted text-center">No farms yet. Add your first farm to get started.</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-surface-raised rounded-lg border border-border p-4">
-      <h3 className="text-sm font-semibold text-text mb-3 flex items-center gap-2">
+    <div className="bg-surface-raised rounded-card border border-border p-4">
+      <h3 className="text-sm text-text mb-3 flex items-center gap-2">
         <MapPin className="w-4 h-4 text-text-secondary" />
         Farm Overview
       </h3>
@@ -59,7 +59,7 @@ function FarmStatusStrip({ farms = [], fields = [], applications = [], applicati
             key={farm.id}
             onClick={() => onFarmClick?.(farm)}
             className={`
-              flex-shrink-0 min-w-[180px] p-3 rounded-lg border-2 cursor-pointer
+              flex-shrink-0 min-w-[180px] p-3 rounded-card border-2 cursor-pointer
               transition-all hover:shadow-md
               ${health === 'healthy' ? 'border-primary/30 bg-primary-light hover:border-primary/50' : ''}
               ${health === 'attention' ? 'border-yellow-200 bg-yellow-100/50 hover:border-yellow-300' : ''}
@@ -67,7 +67,7 @@ function FarmStatusStrip({ farms = [], fields = [], applications = [], applicati
             `}
           >
             <div className="flex items-center justify-between mb-2">
-              <h4 className="font-medium text-text text-sm truncate flex-1">{farm.name}</h4>
+              <h4 className=" text-text text-sm truncate flex-1">{farm.name}</h4>
               <StatusDot status={health} size="md" className="ml-2 flex-shrink-0" />
             </div>
 

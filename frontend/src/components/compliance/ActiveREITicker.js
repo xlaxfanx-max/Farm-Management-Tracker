@@ -53,7 +53,7 @@ function REIRow({ entry, onMarkCleared }) {
       {expired && (
         <button
           onClick={() => onMarkCleared(entry.id)}
-          className="flex-shrink-0 text-xs font-semibold px-2.5 py-1 bg-primary hover:bg-primary-hover text-white rounded-md transition-colors"
+          className="flex-shrink-0 text-xs font-semibold px-2.5 py-1 bg-primary hover:bg-primary-hover text-white rounded-lg transition-colors"
         >
           Mark Cleared
         </button>
@@ -96,7 +96,7 @@ export default function ActiveREITicker() {
   if (loading || dismissed || entries.length === 0) return null;
 
   return (
-    <div className="w-full bg-yellow-100 border border-yellow-300 rounded-xl shadow-sm overflow-hidden">
+    <div className="w-full bg-yellow-100 border border-yellow-300 rounded-card shadow-sm overflow-hidden">
       <div className="flex items-center justify-between px-4 py-2 bg-yellow-200 border-b border-yellow-200">
         <div className="flex items-center gap-2">
           <AlertTriangle className="w-4 h-4 text-yellow-600 flex-shrink-0" />

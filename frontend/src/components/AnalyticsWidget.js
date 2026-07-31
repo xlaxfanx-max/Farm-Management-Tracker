@@ -114,9 +114,9 @@ export default function AnalyticsWidget({ onViewAnalytics }) {
   // Loading state
   if (loading) {
     return (
-      <div className="bg-white rounded-xl shadow-sm border border-border p-6">
+      <div className="bg-surface-raised rounded-card shadow-sm border border-border p-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-heading flex items-center gap-2">
+          <h3 className="text-lg text-heading flex items-center gap-2">
             <BarChart3 className="w-5 h-5 text-text-muted" />
             Analytics
           </h3>
@@ -131,9 +131,9 @@ export default function AnalyticsWidget({ onViewAnalytics }) {
   // Error state
   if (error) {
     return (
-      <div className="bg-white rounded-xl shadow-sm border border-border p-6">
+      <div className="bg-surface-raised rounded-card shadow-sm border border-border p-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-heading flex items-center gap-2">
+          <h3 className="text-lg text-heading flex items-center gap-2">
             <BarChart3 className="w-5 h-5 text-text-muted" />
             Analytics
           </h3>
@@ -155,9 +155,9 @@ export default function AnalyticsWidget({ onViewAnalytics }) {
   // No data state
   if (!data) {
     return (
-      <div className="bg-white rounded-xl shadow-sm border border-border p-6">
+      <div className="bg-surface-raised rounded-card shadow-sm border border-border p-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-heading flex items-center gap-2">
+          <h3 className="text-lg text-heading flex items-center gap-2">
             <BarChart3 className="w-5 h-5 text-text-muted" />
             Analytics
           </h3>
@@ -173,10 +173,10 @@ export default function AnalyticsWidget({ onViewAnalytics }) {
   const { financial, applications, harvests, water } = data;
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-border p-6">
+    <div className="bg-surface-raised rounded-card shadow-sm border border-border p-6">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-heading flex items-center gap-2">
+        <h3 className="text-lg text-heading flex items-center gap-2">
           <BarChart3 className="w-5 h-5 text-primary" />
           Analytics
         </h3>

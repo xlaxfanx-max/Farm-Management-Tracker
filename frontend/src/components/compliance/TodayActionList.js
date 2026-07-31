@@ -64,7 +64,7 @@ function ActionItem({ item, onNavigate, urgency }) {
 
   return (
     <div
-      className={`flex items-center gap-3 p-3 bg-white rounded-lg border ${borderColor} shadow-sm`}
+      className={`flex items-center gap-3 p-3 bg-surface-raised rounded-card border ${borderColor} shadow-sm`}
     >
       <div className="flex-shrink-0 text-text-secondary">
         <CategoryIcon category={item.category} />
@@ -82,7 +82,7 @@ function ActionItem({ item, onNavigate, urgency }) {
       {item.url_key && (
         <button
           onClick={() => onNavigate(item.url_key)}
-          className={`flex-shrink-0 text-xs font-semibold px-3 py-1.5 rounded-md transition-colors ${buttonColor}`}
+          className={`flex-shrink-0 text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors ${buttonColor}`}
         >
           {urgency === 'overdue' ? 'Fix' : 'View'}
         </button>
@@ -137,7 +137,7 @@ export default function TodayActionList({ onNavigate }) {
 
   if (loading) {
     return (
-      <div className="bg-white rounded-xl border border-border p-4 shadow-sm">
+      <div className="bg-surface-raised rounded-card border border-border p-4 shadow-sm">
         <div className="flex items-center justify-between mb-4">
           <div className="h-5 w-40 bg-sand-200 rounded animate-pulse" />
         </div>
@@ -148,7 +148,7 @@ export default function TodayActionList({ onNavigate }) {
 
   if (error) {
     return (
-      <div className="bg-white rounded-xl border border-danger/25 p-4 shadow-sm">
+      <div className="bg-surface-raised rounded-card border border-danger/25 p-4 shadow-sm">
         <p className="text-sm text-danger">{error}</p>
       </div>
     );
@@ -158,7 +158,7 @@ export default function TodayActionList({ onNavigate }) {
 
   if (data.all_clear) {
     return (
-      <div className="bg-primary-light rounded-xl border border-green-200 p-6 flex items-center gap-4 shadow-sm">
+      <div className="bg-primary-light rounded-card border border-green-200 p-6 flex items-center gap-4 shadow-sm">
         <CheckCircle2 className="w-10 h-10 text-green-600 flex-shrink-0" />
         <div>
           <p className="font-semibold text-green-700 text-lg">
@@ -182,10 +182,10 @@ export default function TodayActionList({ onNavigate }) {
   const hasQuickWins = data.quick_wins && data.quick_wins.length > 0;
 
   return (
-    <div className="bg-white rounded-xl border border-border p-4 shadow-sm space-y-4">
+    <div className="bg-surface-raised rounded-card border border-border p-4 shadow-sm space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-base font-semibold text-heading">
+          <h2 className="text-base text-heading">
             Today's Actions
           </h2>
           <p className="text-xs text-text-secondary">{data.date}</p>
@@ -193,7 +193,7 @@ export default function TodayActionList({ onNavigate }) {
         <button
           onClick={() => fetchData(true)}
           disabled={refreshing}
-          className="p-1.5 rounded-md text-text-muted hover:text-bark-600 hover:bg-cream-100 transition-colors"
+          className="p-1.5 rounded-lg text-text-muted hover:text-bark-600 hover:bg-cream-100 transition-colors"
           title="Refresh"
         >
           <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
@@ -278,7 +278,7 @@ export default function TodayActionList({ onNavigate }) {
       )}
 
       {data.pending_pur_month && (
-        <div className="flex items-center gap-2 px-3 py-2 bg-orange-50 border border-orange-200 rounded-lg">
+        <div className="flex items-center gap-2 px-3 py-2 bg-orange-50 border border-orange-200 rounded-card">
           <FileText className="w-4 h-4 text-orange-500 flex-shrink-0" />
           <p className="text-xs text-orange-700 flex-1">
             <span className="font-semibold">{data.pending_pur_month}</span> PUR report not yet submitted

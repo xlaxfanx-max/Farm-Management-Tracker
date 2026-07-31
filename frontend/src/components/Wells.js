@@ -151,7 +151,7 @@ const Wells = ({ onOpenModal }) => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold text-heading">Wells & SGMA</h2>
+          <h2 className="text-2xl text-heading">Wells & SGMA</h2>
           <p className="text-bark-600">Manage groundwater wells and track SGMA compliance</p>
         </div>
         <button
@@ -165,7 +165,7 @@ const Wells = ({ onOpenModal }) => {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-white rounded-lg shadow p-4">
+        <div className="bg-surface-raised rounded-lg shadow p-4">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-orange-100 rounded-lg">
               <Droplets className="w-6 h-6 text-link" />
@@ -177,7 +177,7 @@ const Wells = ({ onOpenModal }) => {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-4">
+        <div className="bg-surface-raised rounded-lg shadow p-4">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-green-100 rounded-lg">
               <CheckCircle className="w-6 h-6 text-primary" />
@@ -189,7 +189,7 @@ const Wells = ({ onOpenModal }) => {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-4">
+        <div className="bg-surface-raised rounded-lg shadow p-4">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-yellow-100 rounded-lg">
               <AlertTriangle className="w-6 h-6 text-yellow-600" />
@@ -201,7 +201,7 @@ const Wells = ({ onOpenModal }) => {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-4">
+        <div className="bg-surface-raised rounded-lg shadow p-4">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-green-100 rounded-lg">
               <Gauge className="w-6 h-6 text-green-600" />
@@ -215,7 +215,7 @@ const Wells = ({ onOpenModal }) => {
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg shadow p-4">
+      <div className="bg-surface-raised rounded-lg shadow p-4">
         <div className="flex flex-wrap gap-4">
           {/* Search */}
           <div className="flex-1 min-w-[200px]">
@@ -226,7 +226,7 @@ const Wells = ({ onOpenModal }) => {
                 placeholder="Search wells..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-border-strong rounded-lg bg-white focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2 border border-border-strong rounded-card bg-surface-raised focus:ring-2 focus:ring-primary focus:border-transparent"
               />
             </div>
           </div>
@@ -236,7 +236,7 @@ const Wells = ({ onOpenModal }) => {
             <select
               value={filterGSA}
               onChange={(e) => setFilterGSA(e.target.value)}
-              className="w-full px-4 py-2 border border-border-strong rounded-lg bg-white focus:ring-2 focus:ring-primary focus:border-transparent"
+              className="w-full px-4 py-2 border border-border-strong rounded-card bg-surface-raised focus:ring-2 focus:ring-primary focus:border-transparent"
             >
               <option value="">All GSAs</option>
               <option value="obgma">Ojai Basin GMA</option>
@@ -251,7 +251,7 @@ const Wells = ({ onOpenModal }) => {
             <select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
-              className="w-full px-4 py-2 border border-border-strong rounded-lg bg-white focus:ring-2 focus:ring-primary focus:border-transparent"
+              className="w-full px-4 py-2 border border-border-strong rounded-card bg-surface-raised focus:ring-2 focus:ring-primary focus:border-transparent"
             >
               <option value="">All Status</option>
               <option value="active">Active</option>
@@ -263,7 +263,7 @@ const Wells = ({ onOpenModal }) => {
           {/* Refresh Button */}
           <button
             onClick={fetchWells}
-            className="px-4 py-2 border border-border-strong rounded-lg hover:bg-cream-50 transition-colors"
+            className="px-4 py-2 border border-border-strong rounded-card hover:bg-cream-50 transition-colors"
           >
             <RefreshCw className="w-5 h-5 text-bark-600" />
           </button>
@@ -272,7 +272,7 @@ const Wells = ({ onOpenModal }) => {
 
       {/* Error Display */}
       {error && (
-        <div className="bg-danger-bg border border-danger/25 rounded-lg p-4 text-danger">
+        <div className="bg-danger-bg border border-danger/25 rounded-card p-4 text-danger">
           {error}
         </div>
       )}
@@ -280,9 +280,9 @@ const Wells = ({ onOpenModal }) => {
       {/* Wells List */}
       <div className="space-y-4">
         {filteredWells.length === 0 ? (
-          <div className="bg-white rounded-lg shadow p-8 text-center">
+          <div className="bg-surface-raised rounded-lg shadow p-8 text-center">
             <Droplets className="w-12 h-12 text-sand-300 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-heading mb-2">No wells found</h3>
+            <h3 className="text-lg text-heading mb-2">No wells found</h3>
             <p className="text-text-secondary mb-4">
               {searchTerm || filterGSA || filterStatus
                 ? 'Try adjusting your filters'
@@ -300,7 +300,7 @@ const Wells = ({ onOpenModal }) => {
           </div>
         ) : (
           filteredWells.map(well => (
-            <div key={well.id} className="bg-white rounded-lg shadow overflow-hidden">
+            <div key={well.id} className="bg-surface-raised rounded-lg shadow overflow-hidden">
               {/* Well Header */}
               <div
                 className="p-4 cursor-pointer hover:bg-cream-50 transition-colors"
@@ -317,7 +317,7 @@ const Wells = ({ onOpenModal }) => {
                       <Droplets className="w-6 h-6 text-link" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-heading">
+                      <h3 className=" text-heading">
                         {well.well_name || well.water_source_name}
                       </h3>
                       <p className="text-sm text-text-secondary">
@@ -381,7 +381,7 @@ const Wells = ({ onOpenModal }) => {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     {/* Well Info */}
                     <div>
-                      <h4 className="font-medium text-heading mb-3">Well Information</h4>
+                      <h4 className=" text-heading mb-3">Well Information</h4>
                       <dl className="space-y-2 text-sm">
                         <div className="flex justify-between">
                           <dt className="text-text-secondary">GSA Well ID:</dt>
@@ -410,7 +410,7 @@ const Wells = ({ onOpenModal }) => {
 
                     {/* Calibration Info */}
                     <div>
-                      <h4 className="font-medium text-heading mb-3">Calibration Status</h4>
+                      <h4 className=" text-heading mb-3">Calibration Status</h4>
                       <dl className="space-y-2 text-sm">
                         <div className="flex justify-between">
                           <dt className="text-text-secondary">Status:</dt>
@@ -435,7 +435,7 @@ const Wells = ({ onOpenModal }) => {
 
                     {/* Recent Readings */}
                     <div>
-                      <h4 className="font-medium text-heading mb-3">Recent Readings</h4>
+                      <h4 className=" text-heading mb-3">Recent Readings</h4>
                       {wellReadings[well.id] ? (
                         wellReadings[well.id].length > 0 ? (
                           <div className="space-y-2">

@@ -99,7 +99,7 @@ const PURImportPage = () => {
       <div className="mb-6">
         <div className="flex items-center gap-3 mb-2">
           <FileText className="w-7 h-7 text-link" />
-          <h1 className="text-2xl font-bold text-heading">
+          <h1 className="text-2xl text-heading">
             Import PUR Reports
           </h1>
         </div>
@@ -113,9 +113,9 @@ const PURImportPage = () => {
       <div className="flex gap-1 mb-6 bg-cream-100 rounded-lg p-1 w-fit">
         <button
           onClick={() => setActiveTab('import')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
             activeTab === 'import'
-              ? 'bg-white text-heading shadow-sm'
+              ? 'bg-surface-raised text-heading shadow-sm'
               : 'text-text-secondary hover:text-bark-700'
           }`}
         >
@@ -124,9 +124,9 @@ const PURImportPage = () => {
         </button>
         <button
           onClick={() => setActiveTab('history')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
             activeTab === 'history'
-              ? 'bg-white text-heading shadow-sm'
+              ? 'bg-surface-raised text-heading shadow-sm'
               : 'text-text-secondary hover:text-bark-700'
           }`}
         >
@@ -162,7 +162,7 @@ const PURImportPage = () => {
                               ? 'bg-primary border-primary text-white'
                               : isCurrent
                                 ? 'bg-primary border-primary text-white'
-                                : 'bg-white border-border-strong text-text-muted'
+                                : 'bg-surface-raised border-border-strong text-text-muted'
                           }`}
                         >
                           {isComplete ? (
@@ -210,7 +210,7 @@ const PURImportPage = () => {
           )}
 
           {/* Step content */}
-          <div className="bg-white rounded-xl shadow-sm border border-border">
+          <div className="bg-surface-raised rounded-card shadow-sm border border-border">
             {currentStep === 0 && (
               <PURUploadStep onComplete={handleUploadComplete} />
             )}

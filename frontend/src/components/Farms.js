@@ -342,7 +342,7 @@ function Farms() {
 
       {/* Map Hint */}
       {viewMode === 'cards' && farmsWithCoords === 0 && farms.length > 0 && (
-        <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 flex items-start gap-3">
+        <div className="bg-orange-50 border border-orange-200 rounded-card p-4 flex items-start gap-3">
           <MapPin className="w-5 h-5 text-orange-500 mt-0.5 flex-shrink-0" />
           <div>
             <p className="text-sm font-medium text-orange-700">Add GPS coordinates to see farms on the map</p>
@@ -376,7 +376,7 @@ function Farms() {
 
             {/* Tip for fields without boundaries - only show when not drawing */}
             {fieldsWithBoundaries < fields.length && fields.length > 0 && !drawingField && (
-              <div className="mt-3 p-3 bg-yellow-100 border border-yellow-200 rounded-lg text-sm text-yellow-700">
+              <div className="mt-3 p-3 bg-yellow-100 border border-yellow-200 rounded-card text-sm text-yellow-700">
                 <strong>Tip:</strong> {fields.length - fieldsWithBoundaries} of {fields.length} fields need boundaries drawn.
                 Click on a field marker to draw its boundary.
               </div>
@@ -428,9 +428,9 @@ function Farms() {
 
             {/* No farms at all */}
             {safeFarms.length === 0 && (
-              <div className="text-center py-12 bg-white rounded-lg shadow">
+              <div className="text-center py-12 bg-surface-raised rounded-lg shadow">
                 <Home className="mx-auto text-sand-300 mb-4" size={48} />
-                <h3 className="text-lg font-medium text-text mb-2">No farms yet</h3>
+                <h3 className="text-lg text-text mb-2">No farms yet</h3>
                 <p className="text-bark-600 mb-4">Get started by adding your first farm</p>
                 <button
                   onClick={handleNewFarm}
@@ -444,9 +444,9 @@ function Farms() {
 
             {/* No results from filters */}
             {safeFarms.length > 0 && filteredFarms.length === 0 && (
-              <div className="text-center py-12 bg-white rounded-lg shadow">
+              <div className="text-center py-12 bg-surface-raised rounded-lg shadow">
                 <Search className="mx-auto text-sand-300 mb-4" size={48} />
-                <h3 className="text-lg font-medium text-text mb-2">No farms match your filters</h3>
+                <h3 className="text-lg text-text mb-2">No farms match your filters</h3>
                 <p className="text-bark-600 mb-4">Try adjusting your search or filter criteria</p>
                 <button
                   onClick={() => {

@@ -259,14 +259,14 @@ const AuditLogViewer = () => {
     <div className="p-6 max-w-full">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-heading">Activity Log</h1>
+        <h1 className="text-2xl text-heading">Activity Log</h1>
         <p className="text-bark-600 mt-1">
           Track all changes and actions across your grove management system
         </p>
       </div>
 
       {/* Toolbar */}
-      <div className="bg-white rounded-lg shadow-sm border border-border p-4 mb-4">
+      <div className="bg-surface-raised rounded-card shadow-sm border border-border p-4 mb-4">
         <div className="flex flex-col lg:flex-row gap-4 justify-between">
           {/* Search */}
           <div className="flex-1 max-w-md">
@@ -277,7 +277,7 @@ const AuditLogViewer = () => {
                 placeholder="Search descriptions..."
                 value={filters.search}
                 onChange={(e) => handleFilterChange('search', e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+                className="w-full pl-10 pr-4 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-primary"
               />
             </div>
           </div>
@@ -304,7 +304,7 @@ const AuditLogViewer = () => {
             <button
               onClick={fetchLogs}
               disabled={loading}
-              className="inline-flex items-center gap-2 px-4 py-2 border border-border-strong rounded-lg text-bark-700 hover:bg-cream-50 transition-colors disabled:opacity-50"
+              className="inline-flex items-center gap-2 px-4 py-2 border border-border-strong rounded-card text-bark-700 hover:bg-cream-50 transition-colors disabled:opacity-50"
             >
               <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
               Refresh
@@ -335,7 +335,7 @@ const AuditLogViewer = () => {
                   type="date"
                   value={filters.startDate}
                   onChange={(e) => handleFilterChange('startDate', e.target.value)}
-                  className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+                  className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-primary"
                 />
               </div>
 
@@ -348,7 +348,7 @@ const AuditLogViewer = () => {
                   type="date"
                   value={filters.endDate}
                   onChange={(e) => handleFilterChange('endDate', e.target.value)}
-                  className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+                  className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-primary"
                 />
               </div>
 
@@ -361,7 +361,7 @@ const AuditLogViewer = () => {
                 <select
                   value={filters.userId}
                   onChange={(e) => handleFilterChange('userId', e.target.value)}
-                  className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+                  className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-primary"
                 >
                   <option value="">All Users</option>
                   {filterOptions.users.map(user => (
@@ -384,7 +384,7 @@ const AuditLogViewer = () => {
                 <select
                   value={filters.action}
                   onChange={(e) => handleFilterChange('action', e.target.value)}
-                  className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+                  className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-primary"
                 >
                   <option value="">All Actions</option>
                   {filterOptions.actions.map(action => (
@@ -404,7 +404,7 @@ const AuditLogViewer = () => {
                 <select
                   value={filters.modelName}
                   onChange={(e) => handleFilterChange('modelName', e.target.value)}
-                  className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+                  className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-primary"
                 >
                   <option value="">All Types</option>
                   {filterOptions.modelNames.map(model => (
@@ -456,14 +456,14 @@ const AuditLogViewer = () => {
 
       {/* Error state */}
       {error && (
-        <div className="bg-danger-bg border border-danger/25 rounded-lg p-4 mb-4 flex items-center gap-3">
+        <div className="bg-danger-bg border border-danger/25 rounded-card p-4 mb-4 flex items-center gap-3">
           <AlertCircle className="w-5 h-5 text-danger" />
           <span className="text-danger">{error}</span>
         </div>
       )}
 
       {/* Table */}
-      <div className="bg-white rounded-lg shadow-sm border border-border overflow-hidden">
+      <div className="bg-surface-raised rounded-card shadow-sm border border-border overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-cream-50 border-b border-border">
@@ -605,10 +605,10 @@ const AuditLogViewer = () => {
                             <div className="ml-12 space-y-4">
                               {/* Changes section */}
                               <div>
-                                <h4 className="text-sm font-semibold text-bark-700 mb-2">
+                                <h4 className="text-sm text-bark-700 mb-2">
                                   Changes
                                 </h4>
-                                <div className="bg-white rounded-lg p-4 border border-border">
+                                <div className="bg-surface-raised rounded-card p-4 border border-border">
                                   {renderChanges(log.changes)}
                                 </div>
                               </div>

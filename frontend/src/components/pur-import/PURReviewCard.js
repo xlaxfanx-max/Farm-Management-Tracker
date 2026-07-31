@@ -46,7 +46,7 @@ export default function PURReviewCard({ report, index, farms, onChange, onViewPd
     : 'border-border opacity-60';
 
   return (
-    <div className={`border-2 rounded-lg transition-colors ${statusColor}`}>
+    <div className={`border-2 rounded-card transition-colors ${statusColor}`}>
       {/* Header */}
       <div
         className="flex items-center gap-3 p-4 cursor-pointer hover:bg-cream-50"
@@ -57,7 +57,7 @@ export default function PURReviewCard({ report, index, farms, onChange, onViewPd
           className={`flex-shrink-0 w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
             report._selected
               ? 'bg-primary border-primary text-white'
-              : 'border-border-strong bg-white'
+              : 'border-border-strong bg-surface-raised'
           }`}
         >
           {report._selected && <CheckCircle className="w-3.5 h-3.5" />}
@@ -139,7 +139,7 @@ export default function PURReviewCard({ report, index, farms, onChange, onViewPd
               className={`w-full px-3 py-2 border rounded-lg text-sm ${
                 !report._farmId && report._selected
                   ? 'border-yellow-300 bg-yellow-100'
-                  : 'border-border-strong bg-white'
+                  : 'border-border-strong bg-surface-raised'
               }`}
             >
               <option value="">-- Select a farm --</option>
@@ -194,7 +194,7 @@ export default function PURReviewCard({ report, index, farms, onChange, onViewPd
 
           {/* Products table */}
           <div>
-            <h4 className="text-sm font-medium text-bark-700 mb-2">
+            <h4 className="text-sm text-bark-700 mb-2">
               Products ({(report.products || []).length})
             </h4>
             <div className="overflow-x-auto">

@@ -33,7 +33,7 @@ const Toggle = ({ enabled, onChange, label, description }) => (
         ${enabled ? 'bg-primary' : 'bg-sand-200'}`}
     >
       <span
-        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform
+        className={`inline-block h-4 w-4 transform rounded-full bg-surface-raised transition-transform
           ${enabled ? 'translate-x-6' : 'translate-x-1'}`}
       />
     </button>
@@ -47,7 +47,7 @@ const SectionHeader = ({ icon: Icon, title, description }) => (
       <Icon className="w-5 h-5 text-primary" />
     </div>
     <div>
-      <h2 className="text-lg font-semibold text-heading">{title}</h2>
+      <h2 className="text-lg text-heading">{title}</h2>
       {description && <p className="text-sm text-text-secondary mt-0.5">{description}</p>}
     </div>
   </div>
@@ -210,7 +210,7 @@ export default function ComplianceSettings({ onNavigate }) {
             <span>/</span>
             <span>Settings</span>
           </div>
-          <h1 className="text-2xl font-bold text-heading">Compliance Settings</h1>
+          <h1 className="text-2xl text-heading">Compliance Settings</h1>
         </div>
 
         {savedMessage && (
@@ -223,7 +223,7 @@ export default function ComplianceSettings({ onNavigate }) {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Compliance Profile */}
-        <div className="bg-white border border-border rounded-lg p-6">
+        <div className="bg-surface-raised border border-border rounded-card p-6">
           <SectionHeader
             icon={Shield}
             title="Compliance Profile"
@@ -237,7 +237,7 @@ export default function ComplianceSettings({ onNavigate }) {
               <select
                 value={profile.primary_state}
                 onChange={(e) => setProfile({ ...profile, primary_state: e.target.value })}
-                className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+                className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-primary"
               >
                 {usStates.map(state => (
                   <option key={state.value} value={state.value}>{state.label}</option>
@@ -306,7 +306,7 @@ export default function ComplianceSettings({ onNavigate }) {
         </div>
 
         {/* Notification Preferences */}
-        <div className="bg-white border border-border rounded-lg p-6">
+        <div className="bg-surface-raised border border-border rounded-card p-6">
           <SectionHeader
             icon={Bell}
             title="Notification Preferences"
@@ -329,7 +329,7 @@ export default function ComplianceSettings({ onNavigate }) {
                   <select
                     value={preferences.email_digest}
                     onChange={(e) => setPreferences({ ...preferences, email_digest: e.target.value })}
-                    className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+                    className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-primary"
                   >
                     <option value="instant">Instant</option>
                     <option value="daily">Daily Digest</option>
@@ -401,7 +401,7 @@ export default function ComplianceSettings({ onNavigate }) {
                       type="time"
                       value={preferences.quiet_hours_start}
                       onChange={(e) => setPreferences({ ...preferences, quiet_hours_start: e.target.value })}
-                      className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+                      className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-primary"
                     />
                   </div>
                   <div>
@@ -410,7 +410,7 @@ export default function ComplianceSettings({ onNavigate }) {
                       type="time"
                       value={preferences.quiet_hours_end}
                       onChange={(e) => setPreferences({ ...preferences, quiet_hours_end: e.target.value })}
-                      className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+                      className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-primary"
                     />
                   </div>
                 </div>
@@ -432,7 +432,7 @@ export default function ComplianceSettings({ onNavigate }) {
         </div>
 
         {/* Quick Links */}
-        <div className="lg:col-span-2 bg-white border border-border rounded-lg p-6">
+        <div className="lg:col-span-2 bg-surface-raised border border-border rounded-card p-6">
           <SectionHeader
             icon={Settings}
             title="Compliance Modules"
@@ -442,7 +442,7 @@ export default function ComplianceSettings({ onNavigate }) {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
             <button
               onClick={() => onNavigate?.('compliance-deadlines')}
-              className="flex items-center gap-3 p-4 rounded-lg border border-border hover:bg-cream-50 hover:border-green-200 transition-colors text-left"
+              className="flex items-center gap-3 p-4 rounded-card border border-border hover:bg-cream-50 hover:border-green-200 transition-colors text-left"
             >
               <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
                 <Calendar className="w-5 h-5 text-link" />
@@ -455,7 +455,7 @@ export default function ComplianceSettings({ onNavigate }) {
 
             <button
               onClick={() => onNavigate?.('compliance-licenses')}
-              className="flex items-center gap-3 p-4 rounded-lg border border-border hover:bg-cream-50 hover:border-green-200 transition-colors text-left"
+              className="flex items-center gap-3 p-4 rounded-card border border-border hover:bg-cream-50 hover:border-green-200 transition-colors text-left"
             >
               <div className="w-10 h-10 bg-sand-200 rounded-lg flex items-center justify-center">
                 <Award className="w-5 h-5 text-bark-700" />
@@ -468,7 +468,7 @@ export default function ComplianceSettings({ onNavigate }) {
 
             <button
               onClick={() => onNavigate?.('compliance-wps')}
-              className="flex items-center gap-3 p-4 rounded-lg border border-border hover:bg-cream-50 hover:border-green-200 transition-colors text-left"
+              className="flex items-center gap-3 p-4 rounded-card border border-border hover:bg-cream-50 hover:border-green-200 transition-colors text-left"
             >
               <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
                 <Users className="w-5 h-5 text-primary" />
@@ -481,7 +481,7 @@ export default function ComplianceSettings({ onNavigate }) {
 
             <button
               onClick={() => onNavigate?.('compliance-reports')}
-              className="flex items-center gap-3 p-4 rounded-lg border border-border hover:bg-cream-50 hover:border-green-200 transition-colors text-left"
+              className="flex items-center gap-3 p-4 rounded-card border border-border hover:bg-cream-50 hover:border-green-200 transition-colors text-left"
             >
               <div className="w-10 h-10 bg-yellow-200 rounded-lg flex items-center justify-center">
                 <FileText className="w-5 h-5 text-yellow-600" />

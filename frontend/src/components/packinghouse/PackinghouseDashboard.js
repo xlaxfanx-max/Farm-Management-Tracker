@@ -183,7 +183,7 @@ const PackinghouseDashboard = () => {
 
     if (error) {
       return (
-        <div className="bg-danger-bg border border-danger/25 rounded-lg p-4 text-danger">
+        <div className="bg-danger-bg border border-danger/25 rounded-card p-4 text-danger">
           <AlertCircle className="inline w-5 h-5 mr-2" />
           {error}
         </div>
@@ -210,7 +210,7 @@ const PackinghouseDashboard = () => {
             <select
               value={selectedSeason || dashboardData.selected_season}
               onChange={handleSeasonChange}
-              className="px-3 py-1.5 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-text font-medium"
+              className="px-3 py-1.5 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-primary text-text font-medium"
             >
               {dashboardData.available_seasons?.map((season) => (
                 <option key={season} value={season}>
@@ -230,7 +230,7 @@ const PackinghouseDashboard = () => {
 
         {/* Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-white rounded-lg border border-border p-4 cursor-pointer hover:shadow-md hover:border-green-200 transition-all" onClick={() => openDrillDown('total_pools')}>
+          <div className="bg-surface-raised rounded-card border border-border p-4 cursor-pointer hover:shadow-md hover:border-green-200 transition-all" onClick={() => openDrillDown('total_pools')}>
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-text-secondary">Total Pools</p>
@@ -245,7 +245,7 @@ const PackinghouseDashboard = () => {
             <p className="text-xs text-text-muted mt-1">{dashboardData.active_pools || 0} active &middot; Click for details</p>
           </div>
 
-          <div className="bg-white rounded-lg border border-border p-4 cursor-pointer hover:shadow-md hover:border-green-200 transition-all" onClick={() => openDrillDown('bins_delivered')}>
+          <div className="bg-surface-raised rounded-card border border-border p-4 cursor-pointer hover:shadow-md hover:border-green-200 transition-all" onClick={() => openDrillDown('bins_delivered')}>
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-text-secondary">Delivered</p>
@@ -260,7 +260,7 @@ const PackinghouseDashboard = () => {
             <p className="text-xs text-text-muted mt-1">Click for details</p>
           </div>
 
-          <div className="bg-white rounded-lg border border-border p-4 cursor-pointer hover:shadow-md hover:border-green-200 transition-all" onClick={() => openDrillDown('pending_settlement')}>
+          <div className="bg-surface-raised rounded-card border border-border p-4 cursor-pointer hover:shadow-md hover:border-green-200 transition-all" onClick={() => openDrillDown('pending_settlement')}>
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-text-secondary">Pending Settlement</p>
@@ -275,7 +275,7 @@ const PackinghouseDashboard = () => {
             <p className="text-xs text-text-muted mt-1">Closed pools &middot; Click for details</p>
           </div>
 
-          <div className="bg-white rounded-lg border border-border p-4 cursor-pointer hover:shadow-md hover:border-green-200 transition-all" onClick={() => setActiveTab('packinghouses')}>
+          <div className="bg-surface-raised rounded-card border border-border p-4 cursor-pointer hover:shadow-md hover:border-green-200 transition-all" onClick={() => setActiveTab('packinghouses')}>
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-text-secondary">Packinghouses</p>
@@ -292,9 +292,9 @@ const PackinghouseDashboard = () => {
 
         {/* Packinghouse Summary */}
         {dashboardData.packinghouse_summary?.length > 0 && (
-          <div className="bg-white rounded-lg border border-border">
+          <div className="bg-surface-raised rounded-card border border-border">
             <div className="p-4 border-b border-border">
-              <h3 className="font-semibold text-text">Packinghouse Summary</h3>
+              <h3 className=" text-text">Packinghouse Summary</h3>
             </div>
             <div className="divide-y divide-border">
               {dashboardData.packinghouse_summary.map((ph) => (
@@ -329,9 +329,9 @@ const PackinghouseDashboard = () => {
         {/* Recent Activity */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Recent Deliveries */}
-          <div className="bg-white rounded-lg border border-border">
+          <div className="bg-surface-raised rounded-card border border-border">
             <div className="p-4 border-b border-border flex justify-between items-center">
-              <h3 className="font-semibold text-text">Recent Deliveries</h3>
+              <h3 className=" text-text">Recent Deliveries</h3>
               <Truck className="w-5 h-5 text-text-muted" />
             </div>
             <div className="divide-y divide-border max-h-64 overflow-y-auto">
@@ -367,9 +367,9 @@ const PackinghouseDashboard = () => {
           </div>
 
           {/* Recent Packout Reports */}
-          <div className="bg-white rounded-lg border border-border">
+          <div className="bg-surface-raised rounded-card border border-border">
             <div className="p-4 border-b border-border flex justify-between items-center">
-              <h3 className="font-semibold text-text">Recent Packout Reports</h3>
+              <h3 className=" text-text">Recent Packout Reports</h3>
               <FileText className="w-5 h-5 text-text-muted" />
             </div>
             <div className="divide-y divide-border max-h-64 overflow-y-auto">
@@ -438,7 +438,7 @@ const PackinghouseDashboard = () => {
 
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-text flex items-center">
+        <h1 className="text-2xl text-text flex items-center">
           <Building2 className="w-7 h-7 mr-2 text-primary" />
           Packinghouse Pool Tracking
         </h1>

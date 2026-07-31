@@ -72,7 +72,7 @@ export default function PURUploadStep({ onComplete }) {
     <div className="p-8">
       {/* Drop zone */}
       <div
-        className={`border-2 border-dashed rounded-xl p-12 text-center transition-colors ${
+        className={`border-2 border-dashed rounded-card p-12 text-center transition-colors ${
           dragActive ? 'border-orange-400 bg-orange-50' :
           file ? 'border-green-300 bg-green-50' :
           'border-border-strong hover:border-bark-400'
@@ -125,7 +125,7 @@ export default function PURUploadStep({ onComplete }) {
 
       {/* Error */}
       {error && (
-        <div className="mt-4 p-3 bg-danger-bg border border-danger/25 rounded-lg flex items-start gap-2">
+        <div className="mt-4 p-3 bg-danger-bg border border-danger/25 rounded-card flex items-start gap-2">
           <AlertCircle className="w-5 h-5 text-danger flex-shrink-0 mt-0.5" />
           <p className="text-sm text-danger">{error}</p>
         </div>
@@ -156,7 +156,7 @@ export default function PURUploadStep({ onComplete }) {
 
       {/* Info */}
       <div className="mt-6 p-4 bg-cream-50 rounded-lg">
-        <h3 className="text-sm font-medium text-bark-700 mb-2">What to expect</h3>
+        <h3 className="text-sm text-bark-700 mb-2">What to expect</h3>
         <ul className="text-sm text-text-secondary space-y-1">
           <li>- Multi-page PDFs with multiple PUR reports are supported</li>
           <li>- Each report will be parsed into a separate application event</li>

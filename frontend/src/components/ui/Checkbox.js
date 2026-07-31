@@ -42,7 +42,7 @@ export default function Checkbox({
             peer-focus-visible:ring-[3px] peer-focus-visible:ring-ring
             ${checked || indeterminate
               ? 'bg-primary border-primary text-white'
-              : 'bg-white border-border-strong'}
+              : 'bg-surface-raised border-border-strong'}
           `}
         >
           {indeterminate ? (

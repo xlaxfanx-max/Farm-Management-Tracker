@@ -23,8 +23,8 @@ export default function SyncFreshnessBanner({ syncStatus }) {
   const styles = {
     quiet: 'text-text-secondary',
     amber:
-      'bg-yellow-100 border border-yellow-200 text-yellow-800 rounded-lg px-3 py-2',
-    red: 'bg-danger-bg border border-danger/25 text-danger rounded-lg px-3 py-2',
+      'bg-yellow-100 border border-yellow-200 text-yellow-800 rounded-card px-3 py-2',
+    red: 'bg-danger-bg border border-danger/25 text-danger rounded-card px-3 py-2',
   };
 
   const label = last_push_at

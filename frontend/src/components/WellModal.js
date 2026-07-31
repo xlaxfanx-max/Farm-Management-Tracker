@@ -187,7 +187,7 @@ const WellModal = ({ isOpen, onClose, well, waterSources, onSave }) => {
       <form id="well-form" onSubmit={handleSubmit}>
         {errors.general && (
           <div
-            className="mb-4 p-3 bg-danger-bg border border-danger/25 rounded-lg flex items-center gap-2 text-danger"
+            className="mb-4 p-3 bg-danger-bg border border-danger/25 rounded-card flex items-center gap-2 text-danger"
             role="alert"
           >
             <AlertCircle className="w-5 h-5" />
@@ -520,8 +520,8 @@ const WellModal = ({ isOpen, onClose, well, waterSources, onSave }) => {
               </FormField>
             </div>
 
-            <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
-              <h4 className="font-medium text-orange-700 mb-2">
+            <div className="bg-orange-50 border border-orange-200 rounded-card p-4">
+              <h4 className=" text-orange-700 mb-2">
                 SGMA Compliance Notes
               </h4>
               <ul className="text-sm text-orange-700 space-y-1">

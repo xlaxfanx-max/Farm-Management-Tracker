@@ -106,7 +106,7 @@ const PoolDetail = ({ pool, onBack, onEdit, onRefresh }) => {
             <ArrowLeft className="w-5 h-5 text-bark-600" />
           </button>
           <div>
-            <h2 className="text-xl font-bold text-heading flex items-center">
+            <h2 className="text-xl text-heading flex items-center">
               <Boxes className="w-6 h-6 mr-2 text-primary" />
               {pool.name}
             </h2>
@@ -134,7 +134,7 @@ const PoolDetail = ({ pool, onBack, onEdit, onRefresh }) => {
           </button>
           <button
             onClick={onEdit}
-            className="flex items-center px-4 py-2 border border-border-strong rounded-lg hover:bg-cream-50"
+            className="flex items-center px-4 py-2 border border-border-strong rounded-card hover:bg-cream-50"
           >
             <Edit className="w-4 h-4 mr-2" />
             Edit Pool
@@ -145,20 +145,20 @@ const PoolDetail = ({ pool, onBack, onEdit, onRefresh }) => {
       {/* Summary Cards */}
       {summary && (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="bg-white rounded-lg border border-border p-4">
+          <div className="bg-surface-raised rounded-card border border-border p-4">
             <div className="text-sm text-text-secondary">Total Deliveries</div>
             <div className="text-2xl font-bold text-heading">
               {summary.delivery_stats?.total_deliveries || 0}
             </div>
           </div>
-          <div className="bg-white rounded-lg border border-border p-4">
+          <div className="bg-surface-raised rounded-card border border-border p-4">
             <div className="text-sm text-text-secondary">Total Bins</div>
             <div className="text-2xl font-bold text-primary">
               {formatNumber(summary.delivery_stats?.total_bins)}
             </div>
           </div>
           {summary.packout_stats && (
-            <div className="bg-white rounded-lg border border-border p-4">
+            <div className="bg-surface-raised rounded-card border border-border p-4">
               <div className="text-sm text-text-secondary">Pack Percentage</div>
               <div className="text-2xl font-bold text-link">
                 {summary.packout_stats.total_packed_percent}%
@@ -171,7 +171,7 @@ const PoolDetail = ({ pool, onBack, onEdit, onRefresh }) => {
             </div>
           )}
           {summary.settlement_stats && (
-            <div className="bg-white rounded-lg border border-border p-4">
+            <div className="bg-surface-raised rounded-card border border-border p-4">
               <div className="text-sm text-text-secondary">Net Return</div>
               <div className="text-2xl font-bold text-primary">
                 {formatCurrency(summary.settlement_stats.net_return)}
@@ -186,9 +186,9 @@ const PoolDetail = ({ pool, onBack, onEdit, onRefresh }) => {
 
       {/* Fields Breakdown */}
       {summary?.fields_breakdown?.length > 0 && (
-        <div className="bg-white rounded-lg border border-border">
+        <div className="bg-surface-raised rounded-card border border-border">
           <div className="p-4 border-b border-border">
-            <h3 className="font-semibold text-text">Deliveries by Block</h3>
+            <h3 className=" text-text">Deliveries by Block</h3>
           </div>
           <div className="divide-y divide-border">
             {summary.fields_breakdown.map((field, idx) => (
@@ -255,7 +255,7 @@ const PoolDetail = ({ pool, onBack, onEdit, onRefresh }) => {
                   <p className="text-text-secondary">No deliveries recorded yet.</p>
                 </div>
               ) : (
-                <div className="bg-white rounded-lg border border-border overflow-hidden">
+                <div className="bg-surface-raised rounded-card border border-border overflow-hidden">
                   <table className="min-w-full divide-y divide-border">
                     <thead className="bg-cream-50">
                       <tr>
@@ -321,7 +321,7 @@ const PoolDetail = ({ pool, onBack, onEdit, onRefresh }) => {
                   <p className="text-text-secondary">No packout reports recorded yet.</p>
                 </div>
               ) : (
-                <div className="bg-white rounded-lg border border-border overflow-hidden">
+                <div className="bg-surface-raised rounded-card border border-border overflow-hidden">
                   <table className="min-w-full divide-y divide-border">
                     <thead className="bg-cream-50">
                       <tr>
@@ -370,7 +370,7 @@ const PoolDetail = ({ pool, onBack, onEdit, onRefresh }) => {
                   <p className="text-text-secondary">No settlements recorded yet.</p>
                 </div>
               ) : (
-                <div className="bg-white rounded-lg border border-border overflow-hidden">
+                <div className="bg-surface-raised rounded-card border border-border overflow-hidden">
                   <table className="min-w-full divide-y divide-border">
                     <thead className="bg-cream-50">
                       <tr>

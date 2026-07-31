@@ -207,7 +207,7 @@ function UnifiedTaskList({
   const filterBtn = (value, label) => (
     <button
       onClick={() => setFilter(value)}
-      className={`px-2.5 py-1 text-xs rounded-md transition-colors ${
+      className={`px-2.5 py-1 text-xs rounded-lg transition-colors ${
         filter === value
           ? 'bg-primary-light text-primary font-medium'
           : 'text-text-secondary hover:bg-surface-sunken'
@@ -218,10 +218,10 @@ function UnifiedTaskList({
   );
 
   return (
-    <div className="bg-surface-raised rounded-lg border border-border">
+    <div className="bg-surface-raised rounded-card border border-border">
       {/* Header */}
       <div className="px-4 py-3 border-b border-border flex items-center justify-between">
-        <h3 className="font-semibold text-text text-sm flex items-center gap-2">
+        <h3 className=" text-text text-sm flex items-center gap-2">
           <Clock className="w-4 h-4 text-text-secondary" />
           Tasks & Actions
         </h3>
@@ -272,7 +272,7 @@ function UnifiedTaskList({
                     onTaskClick?.(task.module, task);
                   }}
                   className="
-                    inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium
+                    inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium
                     text-primary
                     bg-primary-light
                     hover:bg-primary hover:text-white

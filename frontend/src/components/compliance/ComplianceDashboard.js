@@ -172,7 +172,7 @@ const CategoryCard = ({
   return (
     <button
       onClick={onClick}
-      className={`w-full text-left bg-white border-2 ${c.border} ${c.hover} rounded-xl p-5 transition-all hover:shadow-lg group`}
+      className={`w-full text-left bg-surface-raised border-2 ${c.border} ${c.hover} rounded-card p-5 transition-all hover:shadow-lg group`}
     >
       <div className="flex items-start justify-between mb-4">
         <div className={`w-12 h-12 ${c.icon} rounded-xl flex items-center justify-center`}>
@@ -189,7 +189,7 @@ const CategoryCard = ({
         </div>
       </div>
 
-      <h3 className="text-lg font-semibold text-heading mb-1">{title}</h3>
+      <h3 className="text-lg text-heading mb-1">{title}</h3>
       <p className="text-sm text-text-secondary mb-2">{description}</p>
 
       {certifications.length > 0 && (
@@ -229,11 +229,11 @@ const AlertBanner = ({ alerts, onDismiss }) => {
   if (criticalAlerts.length === 0) return null;
 
   return (
-    <div className="bg-danger-bg border border-danger/25 rounded-lg p-4 mb-6">
+    <div className="bg-danger-bg border border-danger/25 rounded-card p-4 mb-6">
       <div className="flex items-start gap-3">
         <AlertTriangle className="w-5 h-5 text-danger flex-shrink-0 mt-0.5" />
         <div className="flex-1">
-          <h3 className="font-medium text-danger">
+          <h3 className=" text-danger">
             {criticalAlerts.length} urgent compliance {criticalAlerts.length === 1 ? 'alert' : 'alerts'}
           </h3>
           <ul className="mt-2 space-y-1">
@@ -372,7 +372,7 @@ export default function ComplianceDashboard({ onNavigate }) {
   return (
     <div className="min-h-screen bg-cream-50">
       {/* Header */}
-      <div className="bg-white border-b border-border">
+      <div className="bg-surface-raised border-b border-border">
         <div className="max-w-7xl mx-auto px-6 py-5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -380,7 +380,7 @@ export default function ComplianceDashboard({ onNavigate }) {
                 <Shield className="w-6 h-6 text-primary" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-heading">Compliance Hub</h1>
+                <h1 className="text-2xl text-heading">Compliance Hub</h1>
                 <p className="text-text-secondary text-sm">
                   Manage all regulatory and food safety compliance
                 </p>
@@ -453,11 +453,11 @@ export default function ComplianceDashboard({ onNavigate }) {
 
         {/* 7. Quick Actions */}
         <div>
-          <h2 className="text-base font-semibold text-heading mb-3">Quick Actions</h2>
+          <h2 className="text-base text-heading mb-3">Quick Actions</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
             <button
               onClick={() => onNavigate?.('compliance-deadlines')}
-              className="flex flex-col items-center gap-2 p-4 bg-white border border-border rounded-lg hover:border-green-400 hover:shadow transition-all"
+              className="flex flex-col items-center gap-2 p-4 bg-surface-raised border border-border rounded-card hover:border-green-400 hover:shadow transition-all"
             >
               <Calendar className="w-6 h-6 text-primary" />
               <span className="text-sm font-medium text-bark-700">Deadlines</span>
@@ -465,7 +465,7 @@ export default function ComplianceDashboard({ onNavigate }) {
 
             <button
               onClick={() => onNavigate?.('compliance-reports')}
-              className="flex flex-col items-center gap-2 p-4 bg-white border border-border rounded-lg hover:border-green-400 hover:shadow transition-all"
+              className="flex flex-col items-center gap-2 p-4 bg-surface-raised border border-border rounded-card hover:border-green-400 hover:shadow transition-all"
             >
               <FileText className="w-6 h-6 text-bark-700" />
               <span className="text-sm font-medium text-bark-700">Reports</span>
@@ -473,7 +473,7 @@ export default function ComplianceDashboard({ onNavigate }) {
 
             <button
               onClick={() => onNavigate?.('compliance-inspector-checklist')}
-              className="flex flex-col items-center gap-2 p-4 bg-white border border-border rounded-lg hover:border-green-400 hover:shadow transition-all"
+              className="flex flex-col items-center gap-2 p-4 bg-surface-raised border border-border rounded-card hover:border-green-400 hover:shadow transition-all"
             >
               <ClipboardCheck className="w-6 h-6 text-primary" />
               <span className="text-sm font-medium text-bark-700">Inspector</span>
@@ -546,7 +546,7 @@ export default function ComplianceDashboard({ onNavigate }) {
               console.error('Error downloading report:', error);
             }
           }}
-          className="w-full flex items-center gap-4 p-4 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-xl hover:from-green-700 hover:to-green-800 transition-all shadow-sm hover:shadow"
+          className="w-full flex items-center gap-4 p-4 bg-gradient-to-r from-green-600 to-green-800 text-white rounded-card hover:from-green-700 hover:to-green-800 transition-all shadow-sm hover:shadow"
         >
           <Download className="w-6 h-6 flex-shrink-0" />
           <div className="text-left">

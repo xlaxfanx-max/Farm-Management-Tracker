@@ -116,7 +116,7 @@ const PoolLedgerTab = ({ pool }) => {
           </p>
         </div>
       ) : (
-        <div className="bg-white rounded-lg border border-border overflow-hidden">
+        <div className="bg-surface-raised rounded-card border border-border overflow-hidden">
           <table className="min-w-full divide-y divide-border">
             <thead className="bg-cream-50">
               <tr>

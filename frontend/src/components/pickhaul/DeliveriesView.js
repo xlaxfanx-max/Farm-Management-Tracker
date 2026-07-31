@@ -124,7 +124,7 @@ export default function DeliveriesView({ season, refresh }) {
       {/* Chase list, expanded from the Owed tile */}
       {owedOpen && (
         <div className="space-y-2">
-          <h3 className="text-sm font-medium text-bark-700">
+          <h3 className="text-sm text-bark-700">
             Owed by houses — paid &amp; emailed, not yet charged back
           </h3>
           <ChaseList
@@ -163,7 +163,7 @@ export default function DeliveriesView({ season, refresh }) {
         blocks.map((block) => (
           <div
             key={`${block.house_code}-${block.block}`}
-            className="bg-white rounded-lg border border-border overflow-hidden"
+            className="bg-surface-raised rounded-card border border-border overflow-hidden"
           >
             <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-2.5 bg-cream-50">
               <div className="flex items-center gap-2">

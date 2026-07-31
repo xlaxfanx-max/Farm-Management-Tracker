@@ -91,9 +91,9 @@ export const LoadingState = ({ message = 'Loading analytics...' }) => (
 // =============================================================================
 
 export const ErrorState = ({ message = 'Failed to load analytics data', onRetry }) => (
-  <div className="bg-danger-bg border border-danger/25 rounded-xl p-6 text-center">
+  <div className="bg-danger-bg border border-danger/25 rounded-card p-6 text-center">
     <AlertCircle className="w-10 h-10 text-danger mx-auto mb-3" />
-    <h3 className="text-lg font-medium text-danger mb-2">Error Loading Analytics</h3>
+    <h3 className="text-lg text-danger mb-2">Error Loading Analytics</h3>
     <p className="text-danger">{message}</p>
     {onRetry && (
       <button
@@ -152,10 +152,10 @@ export const VarianceIndicator = ({ value, format = 'percent' }) => {
 // =============================================================================
 
 export const SectionCard = ({ title, subtitle, icon: Icon, children, className = '' }) => (
-  <div className={`bg-white rounded-xl border border-border ${className}`}>
+  <div className={`bg-surface-raised rounded-card border border-border ${className}`}>
     {(title || subtitle) && (
       <div className="p-5 border-b border-border">
-        <h3 className="text-lg font-semibold text-heading flex items-center gap-2">
+        <h3 className="text-lg text-heading flex items-center gap-2">
           {Icon && <Icon className="w-5 h-5 text-primary" />}
           {title}
         </h3>

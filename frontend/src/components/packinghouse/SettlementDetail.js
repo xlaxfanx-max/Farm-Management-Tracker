@@ -154,7 +154,7 @@ const SettlementDetail = ({ settlementId, onClose }) => {
   if (loading) {
     return (
       <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-        <div className="bg-white rounded-xl p-8">
+        <div className="bg-surface-raised rounded-xl p-8">
           <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto" />
           <p className="mt-3 text-bark-600">Loading settlement details...</p>
         </div>
@@ -165,7 +165,7 @@ const SettlementDetail = ({ settlementId, onClose }) => {
   if (error) {
     return (
       <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-        <div className="bg-white rounded-xl p-8 max-w-md">
+        <div className="bg-surface-raised rounded-xl p-8 max-w-md">
           <p className="text-danger">{error}</p>
           <button
             onClick={onClose}
@@ -193,15 +193,15 @@ const SettlementDetail = ({ settlementId, onClose }) => {
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className={`bg-white rounded-xl shadow-2xl max-h-[95vh] overflow-hidden flex flex-col transition-all duration-300 ${
+      <div className={`bg-surface-raised rounded-card shadow-2xl max-h-[95vh] overflow-hidden flex flex-col transition-all duration-300 ${
         showPdfPanel ? 'max-w-[95vw] w-full' : 'max-w-4xl w-full'
       }`}>
         {/* Header */}
-        <div className="p-4 border-b border-border bg-gradient-to-r from-green-50 to-orange-50">
+        <div className="p-4 border-b border-border bg-cream-100">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <div>
-                <h2 className="text-lg font-bold text-heading flex items-center">
+                <h2 className="text-lg text-heading flex items-center">
                   <DollarSign className="w-5 h-5 mr-2 text-primary" />
                   Settlement Details
                 </h2>
@@ -250,7 +250,7 @@ const SettlementDetail = ({ settlementId, onClose }) => {
                   href={settlement.source_pdf_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="p-2 text-text-secondary hover:text-bark-700 hover:bg-white/50 rounded-lg"
+                  className="p-2 text-text-secondary hover:text-bark-700 hover:bg-cream-100/60 rounded-lg"
                   title="Open PDF in new tab"
                 >
                   <ExternalLink className="w-4 h-4" />
@@ -258,7 +258,7 @@ const SettlementDetail = ({ settlementId, onClose }) => {
               )}
               <button
                 onClick={onClose}
-                className="p-2 hover:bg-white/50 rounded-lg transition-colors"
+                className="p-2 hover:bg-cream-100/60 rounded-lg transition-colors"
               >
                 <X className="w-5 h-5 text-text-secondary" />
               </button>
@@ -400,8 +400,8 @@ const SettlementDetail = ({ settlementId, onClose }) => {
           )}
 
           {/* Settlement Audit — reconciliation, drift, block variance, house variance, outliers */}
-          <div className="bg-white rounded-lg border border-border p-4">
-            <h4 className="font-medium text-bark-700 mb-3 flex items-center">
+          <div className="bg-surface-raised rounded-card border border-border p-4">
+            <h4 className=" text-bark-700 mb-3 flex items-center">
               <span className="inline-block w-2 h-2 rounded-full bg-bark-500 mr-2" />
               Settlement Audit
             </h4>
@@ -411,7 +411,7 @@ const SettlementDetail = ({ settlementId, onClose }) => {
           {/* Pack Percentages */}
           {(settlement.fresh_fruit_percent || settlement.products_percent) && (
             <div className="bg-cream-50 rounded-lg p-4">
-              <h4 className="font-medium text-bark-700 mb-3">Pack Distribution</h4>
+              <h4 className=" text-bark-700 mb-3">Pack Distribution</h4>
               <div className="flex space-x-6">
                 {settlement.fresh_fruit_percent && (
                   <div>
@@ -435,9 +435,9 @@ const SettlementDetail = ({ settlementId, onClose }) => {
 
           {/* REVENUES - Grade Lines */}
           {settlement.grade_lines?.length > 0 && (
-            <div className="border border-green-200 rounded-lg overflow-hidden">
+            <div className="border border-green-200 rounded-card overflow-hidden">
               <div className="bg-primary-light px-4 py-3 border-b border-green-200">
-                <h3 className="font-semibold text-green-700 flex items-center">
+                <h3 className=" text-green-700 flex items-center">
                   <TrendingUp className="w-5 h-5 mr-2" />
                   Revenues by Grade
                 </h3>
@@ -505,9 +505,9 @@ const SettlementDetail = ({ settlementId, onClose }) => {
 
           {/* CHARGES - Deductions by Category */}
           {settlement.deductions?.length > 0 && (
-            <div className="border border-danger/25 rounded-lg overflow-hidden">
+            <div className="border border-danger/25 rounded-card overflow-hidden">
               <div className="bg-danger-bg px-4 py-3 border-b border-danger/25">
-                <h3 className="font-semibold text-danger flex items-center">
+                <h3 className=" text-danger flex items-center">
                   <TrendingDown className="w-5 h-5 mr-2" />
                   Charges & Deductions
                 </h3>
@@ -610,7 +610,7 @@ const SettlementDetail = ({ settlementId, onClose }) => {
           )}
 
           {/* NET RETURN SUMMARY */}
-          <div className="bg-gradient-to-r from-orange-100 to-green-100 rounded-lg p-6">
+          <div className="bg-cream-100 rounded-lg p-6">
             <div className="grid grid-cols-3 gap-6 text-center">
               <div>
                 <div className="text-sm text-bark-600">Total Credits</div>
@@ -644,7 +644,7 @@ const SettlementDetail = ({ settlementId, onClose }) => {
 
           {/* Amount Due */}
           {settlement.amount_due !== null && settlement.amount_due !== undefined && (
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex items-center justify-between">
+            <div className="bg-yellow-50 border border-yellow-200 rounded-card p-4 flex items-center justify-between">
               <div>
                 <div className="text-sm text-yellow-700">Amount Due (after advances)</div>
                 {settlement.prior_advances && (

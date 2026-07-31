@@ -196,7 +196,7 @@ const WellReadingModal = ({ isOpen, onClose, reading, wellId, wellName, onSave }
       <form id="well-reading-form" onSubmit={handleSubmit} className="space-y-4">
         {errors.general && (
           <div
-            className="p-3 bg-danger-bg border border-danger/25 rounded-lg flex items-center gap-2 text-danger"
+            className="p-3 bg-danger-bg border border-danger/25 rounded-card flex items-center gap-2 text-danger"
             role="alert"
           >
             <AlertCircle className="w-5 h-5" />
@@ -205,7 +205,7 @@ const WellReadingModal = ({ isOpen, onClose, reading, wellId, wellName, onSave }
         )}
 
         {previousReading && (
-          <div className="bg-cream-50 border border-border rounded-lg p-3">
+          <div className="bg-cream-50 border border-border rounded-card p-3">
             <div className="flex items-center gap-2 text-sm text-bark-600 mb-1">
               <Info className="w-4 h-4" />
               Previous Reading
@@ -232,7 +232,7 @@ const WellReadingModal = ({ isOpen, onClose, reading, wellId, wellName, onSave }
         )}
 
         {reading?.total_fee && (
-          <div className="bg-primary-light border border-green-200 rounded-lg p-3">
+          <div className="bg-primary-light border border-green-200 rounded-card p-3">
             <div className="flex items-center gap-2 text-sm text-primary mb-2 font-medium">
               Calculated Fees
             </div>
@@ -315,7 +315,7 @@ const WellReadingModal = ({ isOpen, onClose, reading, wellId, wellName, onSave }
             className={inputClasses}
           />
           {calculatedExtraction && (
-            <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded-lg">
+            <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded-card">
               <div className="flex justify-between text-sm">
                 <span className="text-green-700">Estimated Extraction:</span>
                 <span className="font-medium text-green-800">

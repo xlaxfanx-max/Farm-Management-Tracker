@@ -108,10 +108,10 @@ const PoolModal = ({ pool, packinghouses, onClose, onSave }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+      <div className="bg-surface-raised rounded-card shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-border">
-          <h2 className="text-lg font-semibold text-heading flex items-center">
+          <h2 className="text-lg text-heading flex items-center">
             <Boxes className="w-5 h-5 mr-2 text-primary" />
             {pool ? 'Edit Pool' : 'Add Pool'}
           </h2>
@@ -225,7 +225,7 @@ const PoolModal = ({ pool, packinghouses, onClose, onSave }) => {
                 value={formData.variety}
                 onChange={handleChange}
                 placeholder="e.g., Cara Navels"
-                className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary"
+                className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary"
               />
             </div>
           </div>
@@ -259,7 +259,7 @@ const PoolModal = ({ pool, packinghouses, onClose, onSave }) => {
                 name="pool_type"
                 value={formData.pool_type}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary"
+                className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary"
               >
                 {PACKINGHOUSE_CONSTANTS.poolTypes.map(t => (
                   <option key={t.value} value={t.value}>{t.label}</option>
@@ -275,7 +275,7 @@ const PoolModal = ({ pool, packinghouses, onClose, onSave }) => {
                 name="status"
                 value={formData.status}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary"
+                className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary"
               >
                 {PACKINGHOUSE_CONSTANTS.poolStatuses.map(s => (
                   <option key={s.value} value={s.value}>{s.label}</option>
@@ -295,7 +295,7 @@ const PoolModal = ({ pool, packinghouses, onClose, onSave }) => {
                 name="open_date"
                 value={formData.open_date}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary"
+                className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary"
               />
             </div>
 
@@ -308,7 +308,7 @@ const PoolModal = ({ pool, packinghouses, onClose, onSave }) => {
                 name="close_date"
                 value={formData.close_date}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary"
+                className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary"
               />
             </div>
           </div>
@@ -324,7 +324,7 @@ const PoolModal = ({ pool, packinghouses, onClose, onSave }) => {
               onChange={handleChange}
               rows={3}
               placeholder="Additional notes..."
-              className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary"
+              className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary"
             />
           </div>
 

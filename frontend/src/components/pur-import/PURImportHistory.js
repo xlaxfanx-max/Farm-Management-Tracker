@@ -104,7 +104,7 @@ export default function PURImportHistory() {
 
   if (loading) {
     return (
-      <div className="bg-white rounded-xl shadow-sm border border-border p-12 text-center">
+      <div className="bg-surface-raised rounded-card shadow-sm border border-border p-12 text-center">
         <Loader2 className="w-8 h-8 animate-spin text-orange-500 mx-auto mb-3" />
         <p className="text-sm text-text-secondary">Loading import history...</p>
       </div>
@@ -113,7 +113,7 @@ export default function PURImportHistory() {
 
   if (error) {
     return (
-      <div className="bg-white rounded-xl shadow-sm border border-border p-8">
+      <div className="bg-surface-raised rounded-card shadow-sm border border-border p-8">
         <div className="flex items-center gap-2 text-danger">
           <AlertCircle className="w-5 h-5" />
           <p className="text-sm">{error}</p>
@@ -124,7 +124,7 @@ export default function PURImportHistory() {
 
   if (batches.length === 0) {
     return (
-      <div className="bg-white rounded-xl shadow-sm border border-border p-12 text-center">
+      <div className="bg-surface-raised rounded-card shadow-sm border border-border p-12 text-center">
         <FileText className="w-12 h-12 text-sand-300 mx-auto mb-3" />
         <p className="text-text-secondary">No import history yet.</p>
         <p className="text-sm text-text-muted mt-1">
@@ -135,9 +135,9 @@ export default function PURImportHistory() {
   }
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-border">
+    <div className="bg-surface-raised rounded-card shadow-sm border border-border">
       <div className="p-4 border-b border-border">
-        <h2 className="text-lg font-semibold text-heading">Import History</h2>
+        <h2 className="text-lg text-heading">Import History</h2>
         <p className="text-sm text-text-secondary mt-0.5">
           {batches.length} import{batches.length !== 1 ? 's' : ''}
         </p>

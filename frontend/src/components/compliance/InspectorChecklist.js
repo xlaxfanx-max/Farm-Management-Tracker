@@ -49,7 +49,7 @@ function SectionCard({ section, onNavigate }) {
   const allGood = passed === total;
 
   return (
-    <div className={`bg-white rounded-xl border shadow-sm overflow-hidden ${
+    <div className={`bg-surface-raised rounded-card border shadow-sm overflow-hidden ${
       allGood ? 'border-green-200' : 'border-border'
     }`}>
       <button
@@ -58,7 +58,7 @@ function SectionCard({ section, onNavigate }) {
       >
         <div className="flex items-center gap-3">
           {open ? <ChevronUp className="w-4 h-4 text-text-muted" /> : <ChevronDown className="w-4 h-4 text-text-muted" />}
-          <h3 className="text-sm font-semibold text-heading">{section.label}</h3>
+          <h3 className="text-sm text-heading">{section.label}</h3>
         </div>
         <div className="flex items-center gap-3">
           <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
@@ -151,14 +151,14 @@ export default function InspectorChecklist({ onNavigate }) {
   return (
     <div className="min-h-screen bg-cream-50">
       {/* Header */}
-      <div className="bg-white border-b border-border">
+      <div className="bg-surface-raised border-b border-border">
         <div className="max-w-4xl mx-auto px-6 py-5 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <div className="w-11 h-11 bg-green-100 rounded-xl flex items-center justify-center">
               <Shield className="w-5 h-5 text-primary" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-heading">Inspector Readiness</h1>
+              <h1 className="text-xl text-heading">Inspector Readiness</h1>
               <p className="text-sm text-text-secondary">Review what an inspector would look for</p>
             </div>
           </div>
@@ -182,7 +182,7 @@ export default function InspectorChecklist({ onNavigate }) {
 
       <div className="max-w-4xl mx-auto px-6 py-6 space-y-5">
         {/* Score summary */}
-        <div className="bg-white rounded-xl border border-border p-5 shadow-sm">
+        <div className="bg-surface-raised rounded-card border border-border p-5 shadow-sm">
           <div className="flex items-center gap-6">
             {/* Ring */}
             <div className="relative w-24 h-24 flex-shrink-0">
@@ -200,7 +200,7 @@ export default function InspectorChecklist({ onNavigate }) {
             </div>
 
             <div className="flex-1">
-              <h2 className="text-base font-semibold text-heading mb-1">
+              <h2 className="text-base text-heading mb-1">
                 {readinessPct >= 80 ? 'Ready for Inspection' : readinessPct >= 60 ? 'Mostly Ready' : 'Needs Work Before Inspection'}
               </h2>
               <p className="text-sm text-text-secondary mb-3">

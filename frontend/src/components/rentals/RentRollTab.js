@@ -78,7 +78,7 @@ export default function RentRollTab() {
 
   if (error) {
     return (
-      <div className="rounded-lg border border-danger/25 bg-danger-bg p-4 text-sm text-danger">
+      <div className="rounded-card border border-danger/25 bg-danger-bg p-4 text-sm text-danger">
         {error}
       </div>
     );
@@ -96,7 +96,7 @@ export default function RentRollTab() {
           <select
             value={locationType}
             onChange={(e) => setLocationType(e.target.value)}
-            className="rounded-md border border-border-strong bg-white px-2 py-1.5 text-sm text-heading"
+            className="rounded-lg border border-border-strong bg-surface-raised px-2 py-1.5 text-sm text-heading"
           >
             {LOCATION_FILTERS.map((f) => (
               <option key={f.value} value={f.value}>{f.label}</option>
@@ -132,7 +132,7 @@ export default function RentRollTab() {
             />
           </div>
 
-          <div className="flex items-start gap-2 rounded-lg border border-border bg-cream-50 p-3">
+          <div className="flex items-start gap-2 rounded-card border border-border bg-cream-50 p-3">
             <Info className="w-4 h-4 text-text-muted mt-0.5 shrink-0" />
             <p className={mutedText}>
               Units and occupants are counted separately and deliberately. Rent
@@ -172,7 +172,7 @@ function UnitTable({ units, leaseByUnit }) {
   }
 
   return (
-    <div className="rounded-xl border border-border overflow-hidden">
+    <div className="rounded-card border border-border overflow-hidden">
       <div className="overflow-x-auto">
         <table className="min-w-full text-sm">
           <thead className="bg-cream-50">
@@ -189,7 +189,7 @@ function UnitTable({ units, leaseByUnit }) {
             {units.map((u) => {
               const lease = leaseByUnit.get(u.id);
               return (
-                <tr key={u.id} className="bg-white">
+                <tr key={u.id} className="bg-surface-raised">
                   <td className="px-4 py-2.5 text-bark-600">
                     {u.property_name}
                   </td>

@@ -77,9 +77,9 @@ const LedgerEntryModal = ({ packinghouseId, poolId, entry, onClose, onSave }) =>
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
+      <div className="bg-surface-raised rounded-card shadow-xl w-full max-w-md">
         <div className="flex items-center justify-between px-5 py-4 border-b border-border">
-          <h3 className="text-lg font-semibold text-heading flex items-center">
+          <h3 className="text-lg text-heading flex items-center">
             <DollarSign className="w-5 h-5 mr-2 text-primary" />
             {entry ? 'Edit Entry' : 'Record Advance / Payment'}
           </h3>
@@ -95,7 +95,7 @@ const LedgerEntryModal = ({ packinghouseId, poolId, entry, onClose, onSave }) =>
               <input
                 type="date" name="entry_date" value={formData.entry_date}
                 onChange={handleChange}
-                className="w-full border border-border-strong rounded-lg px-3 py-2 text-sm"
+                className="w-full border border-border-strong rounded-card px-3 py-2 text-sm"
               />
               {errors.entry_date && <p className="text-xs text-danger mt-1">{errors.entry_date}</p>}
             </div>
@@ -103,7 +103,7 @@ const LedgerEntryModal = ({ packinghouseId, poolId, entry, onClose, onSave }) =>
               <label className="block text-sm font-medium text-bark-700 mb-1">Type</label>
               <select
                 name="entry_type" value={formData.entry_type} onChange={handleChange}
-                className="w-full border border-border-strong rounded-lg px-3 py-2 text-sm"
+                className="w-full border border-border-strong rounded-card px-3 py-2 text-sm"
               >
                 {PACKINGHOUSE_CONSTANTS.ledgerEntryTypes.map((t) => (
                   <option key={t.value} value={t.value}>{t.label}</option>
@@ -117,7 +117,7 @@ const LedgerEntryModal = ({ packinghouseId, poolId, entry, onClose, onSave }) =>
             <input
               type="number" step="0.01" min="0" name="amount" value={formData.amount}
               onChange={handleChange} placeholder="0.00"
-              className="w-full border border-border-strong rounded-lg px-3 py-2 text-sm"
+              className="w-full border border-border-strong rounded-card px-3 py-2 text-sm"
             />
             {errors.amount && <p className="text-xs text-danger mt-1">{errors.amount}</p>}
             {errors.credit && <p className="text-xs text-danger mt-1">{errors.credit}</p>}
@@ -131,7 +131,7 @@ const LedgerEntryModal = ({ packinghouseId, poolId, entry, onClose, onSave }) =>
             <input
               name="reference" value={formData.reference} onChange={handleChange}
               placeholder="Check # or statement reference (e.g. APM-SL-09588)"
-              className="w-full border border-border-strong rounded-lg px-3 py-2 text-sm"
+              className="w-full border border-border-strong rounded-card px-3 py-2 text-sm"
             />
           </div>
 
@@ -140,14 +140,14 @@ const LedgerEntryModal = ({ packinghouseId, poolId, entry, onClose, onSave }) =>
             <input
               name="description" value={formData.description} onChange={handleChange}
               placeholder="e.g. First advance on 2025-2026 lemon pool"
-              className="w-full border border-border-strong rounded-lg px-3 py-2 text-sm"
+              className="w-full border border-border-strong rounded-card px-3 py-2 text-sm"
             />
           </div>
 
           <div className="flex justify-end gap-2 pt-2">
             <button
               type="button" onClick={onClose}
-              className="px-4 py-2 border border-border-strong rounded-lg text-sm hover:bg-cream-50"
+              className="px-4 py-2 border border-border-strong rounded-card text-sm hover:bg-cream-50"
             >
               Cancel
             </button>

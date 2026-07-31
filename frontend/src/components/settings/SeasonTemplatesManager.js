@@ -63,7 +63,7 @@ const TemplateCard = ({ template, isSystem, onEdit, onDelete, expanded, onToggle
   };
 
   return (
-    <div className={`border rounded-lg overflow-hidden ${isSystem ? 'border-orange-200 bg-orange-50/50' : 'border-border bg-white'}`}>
+    <div className={`border rounded-lg overflow-hidden ${isSystem ? 'border-orange-200 bg-orange-50/50' : 'border-border bg-surface-raised'}`}>
       <div
         className="px-4 py-3 flex items-center justify-between cursor-pointer hover:bg-cream-50"
         onClick={onToggle}
@@ -71,7 +71,7 @@ const TemplateCard = ({ template, isSystem, onEdit, onDelete, expanded, onToggle
         <div className="flex items-center gap-3">
           <Calendar className={`w-5 h-5 ${isSystem ? 'text-orange-500' : 'text-primary'}`} />
           <div>
-            <h4 className="font-medium text-heading">{template.name}</h4>
+            <h4 className=" text-heading">{template.name}</h4>
             <p className="text-xs text-text-secondary">
               {MONTHS[template.start_month - 1]?.label} {template.start_day} • {template.duration_months} months
               {template.crosses_calendar_year && ' • Crosses year'}
@@ -91,7 +91,7 @@ const TemplateCard = ({ template, isSystem, onEdit, onDelete, expanded, onToggle
       </div>
 
       {expanded && (
-        <div className="px-4 py-3 border-t border-border bg-white">
+        <div className="px-4 py-3 border-t border-border bg-surface-raised">
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
               <span className="text-text-secondary">Season Start:</span>
@@ -195,9 +195,9 @@ const TemplateEditor = ({ template, onSave, onCancel, saving }) => {
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+      <div className="bg-surface-raised rounded-card shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
         <div className="px-6 py-4 border-b border-border flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-heading">
+          <h3 className="text-lg text-heading">
             {isEditing ? 'Edit Season Template' : 'Create Season Template'}
           </h3>
           <button
@@ -219,7 +219,7 @@ const TemplateEditor = ({ template, onSave, onCancel, saving }) => {
               value={formData.name}
               onChange={(e) => handleChange('name', e.target.value)}
               placeholder="e.g., My Citrus Season"
-              className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+              className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-primary"
               required
             />
           </div>
@@ -233,7 +233,7 @@ const TemplateEditor = ({ template, onSave, onCancel, saving }) => {
               <select
                 value={formData.start_month}
                 onChange={(e) => handleChange('start_month', parseInt(e.target.value))}
-                className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+                className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-primary"
               >
                 {MONTHS.map(m => (
                   <option key={m.value} value={m.value}>{m.label}</option>
@@ -250,7 +250,7 @@ const TemplateEditor = ({ template, onSave, onCancel, saving }) => {
                 max="31"
                 value={formData.start_day}
                 onChange={(e) => handleChange('start_day', parseInt(e.target.value))}
-                className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+                className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-primary"
               />
             </div>
           </div>
@@ -266,7 +266,7 @@ const TemplateEditor = ({ template, onSave, onCancel, saving }) => {
               max="24"
               value={formData.duration_months}
               onChange={(e) => handleChange('duration_months', parseInt(e.target.value))}
-              className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+              className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-primary"
             />
           </div>
 
@@ -295,7 +295,7 @@ const TemplateEditor = ({ template, onSave, onCancel, saving }) => {
               value={formData.label_format}
               onChange={(e) => handleChange('label_format', e.target.value)}
               placeholder="{start_year} or {start_year}-{end_year}"
-              className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary focus:border-primary font-mono text-sm"
+              className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-primary font-mono text-sm"
             />
             <p className="text-xs text-text-secondary mt-1">
               Preview: <span className="font-medium">{getPreviewLabel()}</span>
@@ -336,7 +336,7 @@ const TemplateEditor = ({ template, onSave, onCancel, saving }) => {
             <button
               type="button"
               onClick={onCancel}
-              className="flex-1 px-4 py-2 border border-border-strong text-bark-700 rounded-lg hover:bg-cream-50 transition-colors"
+              className="flex-1 px-4 py-2 border border-border-strong text-bark-700 rounded-card hover:bg-cream-50 transition-colors"
             >
               Cancel
             </button>
@@ -468,7 +468,7 @@ const SeasonTemplatesManager = () => {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Calendar className="w-5 h-5 text-primary" />
-          <h3 className="text-lg font-semibold text-heading">Season Templates</h3>
+          <h3 className="text-lg text-heading">Season Templates</h3>
         </div>
         <button
           onClick={handleCreate}
@@ -487,14 +487,14 @@ const SeasonTemplatesManager = () => {
 
       {/* Alerts */}
       {error && (
-        <div className="bg-danger-bg border border-danger/25 rounded-lg p-3 flex items-center gap-2">
+        <div className="bg-danger-bg border border-danger/25 rounded-card p-3 flex items-center gap-2">
           <AlertCircle className="w-5 h-5 text-danger" />
           <span className="text-danger text-sm">{error}</span>
         </div>
       )}
 
       {success && (
-        <div className="bg-primary-light border border-green-200 rounded-lg p-3 flex items-center gap-2">
+        <div className="bg-primary-light border border-green-200 rounded-card p-3 flex items-center gap-2">
           <CheckCircle className="w-5 h-5 text-green-600" />
           <span className="text-primary text-sm">{success}</span>
         </div>
@@ -503,7 +503,7 @@ const SeasonTemplatesManager = () => {
       {/* Custom Templates */}
       {customTemplates.length > 0 && (
         <div>
-          <h4 className="text-sm font-medium text-bark-700 mb-2">Your Custom Templates</h4>
+          <h4 className="text-sm text-bark-700 mb-2">Your Custom Templates</h4>
           <div className="space-y-2">
             {customTemplates.map(template => (
               <TemplateCard
@@ -522,7 +522,7 @@ const SeasonTemplatesManager = () => {
 
       {/* System Templates */}
       <div>
-        <h4 className="text-sm font-medium text-bark-700 mb-2">System Default Templates</h4>
+        <h4 className="text-sm text-bark-700 mb-2">System Default Templates</h4>
         <div className="space-y-2">
           {systemTemplates.map(template => (
             <TemplateCard

@@ -169,7 +169,7 @@ const PackinghouseAnalytics = () => {
           <select
             value={groupBy}
             onChange={(e) => setGroupBy(e.target.value)}
-            className="px-3 py-2 border border-border-strong rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
+            className="px-3 py-2 border border-border-strong rounded-card text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
           >
             <option value="farm">Group by Farm</option>
             <option value="field">Group by Field</option>
@@ -179,7 +179,7 @@ const PackinghouseAnalytics = () => {
           <select
             value={roiGroupBy}
             onChange={(e) => setRoiGroupBy(e.target.value)}
-            className="px-3 py-2 border border-border-strong rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
+            className="px-3 py-2 border border-border-strong rounded-card text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
           >
             <option value="commodity">Group by Commodity</option>
             <option value="variety">Group by Variety</option>
@@ -191,20 +191,20 @@ const PackinghouseAnalytics = () => {
             value={selectedGrade}
             onChange={(e) => setSelectedGrade(e.target.value)}
             placeholder="Filter by grade (e.g., SUNKIST)"
-            className="px-3 py-2 border border-border-strong rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-transparent w-56"
+            className="px-3 py-2 border border-border-strong rounded-card text-sm focus:ring-2 focus:ring-primary focus:border-transparent w-56"
           />
         )}
         <SeasonSelector
           value={selectedSeason}
           onChange={setSelectedSeason}
           cropCategory="citrus"
-          className="px-3 py-2 border border-border-strong rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
+          className="px-3 py-2 border border-border-strong rounded-card text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
           placeholder="Select Season"
         />
         <select
           value={selectedPackinghouse}
           onChange={(e) => setSelectedPackinghouse(e.target.value)}
-          className="px-3 py-2 border border-border-strong rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
+          className="px-3 py-2 border border-border-strong rounded-card text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
         >
           <option value="">All Packinghouses</option>
           {packinghouses.map(ph => (
@@ -214,7 +214,7 @@ const PackinghouseAnalytics = () => {
         <select
           value={selectedCommodity}
           onChange={(e) => setSelectedCommodity(e.target.value)}
-          className="px-3 py-2 border border-border-strong rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
+          className="px-3 py-2 border border-border-strong rounded-card text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
         >
           <option value="">All Commodities</option>
           {PACKINGHOUSE_CONSTANTS.commodities.map(c => (

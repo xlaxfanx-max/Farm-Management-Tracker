@@ -194,7 +194,7 @@ function GeocodePreviewModal({
       ) : error ? (
         <div className="text-center py-8">
           <AlertCircle className="w-12 h-12 text-yellow-500 mx-auto mb-3" />
-          <h4 className="text-lg font-medium text-heading mb-2">
+          <h4 className="text-lg text-heading mb-2">
             Location Not Found
           </h4>
           <p className="text-bark-600 mb-4 max-w-md mx-auto">
@@ -310,7 +310,7 @@ function GeocodePreviewModal({
           </div>
 
           <div
-            className="relative rounded-lg overflow-hidden border border-border"
+            className="relative rounded-card overflow-hidden border border-border"
             style={{ height: '300px' }}
           >
             <MapContainer
@@ -332,7 +332,7 @@ function GeocodePreviewModal({
               )}
             </MapContainer>
 
-            <div className="absolute bottom-2 left-2 right-2 bg-white/90 backdrop-blur-sm rounded-lg px-3 py-2 text-xs text-bark-600">
+            <div className="absolute bottom-2 left-2 right-2 bg-cream-50/90 backdrop-blur-sm rounded-lg px-3 py-2 text-xs text-bark-600">
               <Navigation className="w-3 h-3 inline mr-1" />
               Click or drag the marker to adjust the location
               {alternatives.length > 0 && (

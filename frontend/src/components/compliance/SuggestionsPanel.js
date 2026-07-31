@@ -50,7 +50,7 @@ export default function SuggestionsPanel({ onNavigate }) {
   if (loading || visible.length === 0) return null;
 
   return (
-    <div className="bg-white rounded-xl border border-border shadow-sm overflow-hidden">
+    <div className="bg-surface-raised rounded-card border border-border shadow-sm overflow-hidden">
       <button
         onClick={() => setCollapsed((v) => !v)}
         className="w-full flex items-center justify-between px-4 py-3 hover:bg-cream-50 transition-colors"

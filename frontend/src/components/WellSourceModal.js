@@ -661,7 +661,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
         <div>
             {/* General Error */}
             {errors.general && (
-              <div className="mb-4 p-3 bg-danger-bg border border-danger/25 rounded-lg flex items-center gap-2 text-danger">
+              <div className="mb-4 p-3 bg-danger-bg border border-danger/25 rounded-card flex items-center gap-2 text-danger">
                 <AlertCircle className="w-5 h-5 flex-shrink-0" />
                 <span>{errors.general}</span>
               </div>
@@ -679,7 +679,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
                     name="farm"
                     value={formData.farm}
                     onChange={(e) => handleFarmChange(e.target.value)}
-                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent ${
+                    className={`w-full px-3 py-2 border rounded-card focus:ring-2 focus:ring-green-500 focus:border-transparent ${
                       errors.farm ? 'border-danger' : 'border-border-strong'
                     }`}
                   >
@@ -702,7 +702,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
                     value={formData.name}
                     onChange={handleChange}
                     placeholder="e.g., Well #1, North Well, Main Irrigation Well"
-                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent ${
+                    className={`w-full px-3 py-2 border rounded-card focus:ring-2 focus:ring-green-500 focus:border-transparent ${
                       errors.name ? 'border-danger' : 'border-border-strong'
                     }`}
                   />
@@ -719,7 +719,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
                       name="gsa"
                       value={formData.gsa}
                       onChange={handleChange}
-                      className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent ${
+                      className={`w-full px-3 py-2 border rounded-card focus:ring-2 focus:ring-green-500 focus:border-transparent ${
                         errors.gsa ? 'border-danger' : 'border-border-strong'
                       }`}
                     >
@@ -734,7 +734,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
                       name="basin"
                       value={formData.basin}
                       onChange={handleChange}
-                      className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-green-500"
+                      className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-green-500"
                     >
                       {BASIN_OPTIONS.map(opt => (
                         <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -753,7 +753,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
                       value={formData.gsa_well_id}
                       onChange={handleChange}
                       placeholder="ID assigned by GSA"
-                      className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-green-500"
+                      className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-green-500"
                     />
                   </div>
                   <div>
@@ -764,7 +764,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
                       value={formData.gsa_account_number}
                       onChange={handleChange}
                       placeholder="Your account with GSA"
-                      className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-green-500"
+                      className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-green-500"
                     />
                   </div>
                 </div>
@@ -810,7 +810,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
                 {farmFields.length > 0 && (
                   <div>
                     <label className="block text-sm font-medium text-bark-700 mb-2">Fields Served</label>
-                    <div className="max-h-32 overflow-y-auto border border-border-strong rounded-lg p-3 space-y-2">
+                    <div className="max-h-32 overflow-y-auto border border-border-strong rounded-card p-3 space-y-2">
                       {farmFields.map(field => (
                         <label key={field.id} className="flex items-center gap-2">
                           <input
@@ -839,7 +839,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
                       name="status"
                       value={formData.status}
                       onChange={handleChange}
-                      className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-green-500"
+                      className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-green-500"
                     >
                       {STATUS_OPTIONS.map(opt => (
                         <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -852,7 +852,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
                       name="test_frequency_days"
                       value={formData.test_frequency_days}
                       onChange={handleChange}
-                      className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-green-500"
+                      className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-green-500"
                     >
                       <option value={90}>Quarterly (90 days)</option>
                       <option value={180}>Semi-annually (180 days)</option>
@@ -870,7 +870,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
                       name="well_depth_ft"
                       value={formData.well_depth_ft}
                       onChange={handleChange}
-                      className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-green-500"
+                      className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-green-500"
                     />
                   </div>
                   <div>
@@ -880,7 +880,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
                       name="casing_diameter_inches"
                       value={formData.casing_diameter_inches}
                       onChange={handleChange}
-                      className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-green-500"
+                      className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-green-500"
                     />
                   </div>
                   <div>
@@ -890,7 +890,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
                       name="state_well_number"
                       value={formData.state_well_number}
                       onChange={handleChange}
-                      className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-green-500"
+                      className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-green-500"
                     />
                   </div>
                 </div>
@@ -904,7 +904,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
                     onChange={handleChange}
                     rows={3}
                     placeholder="Any additional notes about this well..."
-                    className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-green-500"
+                    className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-green-500"
                   />
                 </div>
               </div>
@@ -914,7 +914,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
             {activeTab === 'location' && (
               <div className="space-y-6">
                 {/* Location Source Toggle */}
-                <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                <div className="bg-orange-50 border border-orange-200 rounded-card p-4">
                   <div className="flex items-start gap-3">
                     <Info className="w-5 h-5 text-link flex-shrink-0 mt-0.5" />
                     <div className="flex-1">
@@ -945,7 +945,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
                       onChange={(e) => handleCustomLocationToggle(e.target.checked)}
                       className="sr-only peer"
                     />
-                    <div className="w-11 h-6 bg-sand-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-green-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-border-strong after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
+                    <div className="w-11 h-6 bg-sand-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-green-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-surface-raised after:border-border-strong after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
                   </label>
                 </div>
 
@@ -975,7 +975,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
                         step="0.0000001"
                         placeholder="34.4472"
                         disabled={!useCustomLocation}
-                        className={`w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-green-500 ${
+                        className={`w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-green-500 ${
                           !useCustomLocation ? 'bg-cream-100 text-text-secondary' : ''
                         }`}
                       />
@@ -990,7 +990,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
                         step="0.0000001"
                         placeholder="-119.2429"
                         disabled={!useCustomLocation}
-                        className={`w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-green-500 ${
+                        className={`w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-green-500 ${
                           !useCustomLocation ? 'bg-cream-100 text-text-secondary' : ''
                         }`}
                       />
@@ -1011,7 +1011,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
                         onChange={handleChange}
                         placeholder="e.g., T4N"
                         disabled={!useCustomLocation}
-                        className={`w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-green-500 ${
+                        className={`w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-green-500 ${
                           !useCustomLocation ? 'bg-cream-100 text-text-secondary' : ''
                         }`}
                       />
@@ -1025,7 +1025,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
                         onChange={handleChange}
                         placeholder="e.g., R22W"
                         disabled={!useCustomLocation}
-                        className={`w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-green-500 ${
+                        className={`w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-green-500 ${
                           !useCustomLocation ? 'bg-cream-100 text-text-secondary' : ''
                         }`}
                       />
@@ -1039,7 +1039,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
                         onChange={handleChange}
                         placeholder="e.g., 15"
                         disabled={!useCustomLocation}
-                        className={`w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-green-500 ${
+                        className={`w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-green-500 ${
                           !useCustomLocation ? 'bg-cream-100 text-text-secondary' : ''
                         }`}
                       />
@@ -1057,7 +1057,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
                     onChange={handleChange}
                     placeholder="Assessor's Parcel Number"
                     disabled={!useCustomLocation}
-                    className={`w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-green-500 ${
+                    className={`w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-green-500 ${
                       !useCustomLocation ? 'bg-cream-100 text-text-secondary' : ''
                     }`}
                   />
@@ -1072,7 +1072,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
                       name="well_construction_date"
                       value={formData.well_construction_date}
                       onChange={handleChange}
-                      className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-green-500"
+                      className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-green-500"
                     />
                   </div>
                   <div>
@@ -1082,7 +1082,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
                       name="well_permit_number"
                       value={formData.well_permit_number}
                       onChange={handleChange}
-                      className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-green-500"
+                      className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-green-500"
                     />
                   </div>
                 </div>
@@ -1096,7 +1096,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
                     onChange={handleChange}
                     rows={2}
                     placeholder="e.g., Northeast corner of the property, 50 ft from barn"
-                    className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-green-500"
+                    className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-green-500"
                   />
                 </div>
               </div>
@@ -1107,7 +1107,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
               <div className="space-y-6">
                 {/* Pump Information */}
                 <div>
-                  <h3 className="text-sm font-semibold text-heading mb-3">Pump Information</h3>
+                  <h3 className="text-sm text-heading mb-3">Pump Information</h3>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                       <label className="block text-sm text-bark-600 mb-1">Pump Type</label>
@@ -1115,7 +1115,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
                         name="pump_type"
                         value={formData.pump_type}
                         onChange={handleChange}
-                        className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-green-500"
+                        className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-green-500"
                       >
                         {PUMP_TYPE_OPTIONS.map(opt => (
                           <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -1129,7 +1129,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
                         name="pump_horsepower"
                         value={formData.pump_horsepower}
                         onChange={handleChange}
-                        className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-green-500"
+                        className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-green-500"
                       />
                     </div>
                     <div>
@@ -1139,7 +1139,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
                         name="pump_flow_rate_gpm"
                         value={formData.pump_flow_rate_gpm}
                         onChange={handleChange}
-                        className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-green-500"
+                        className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-green-500"
                       />
                     </div>
                   </div>
@@ -1153,7 +1153,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
                       name="power_source"
                       value={formData.power_source}
                       onChange={handleChange}
-                      className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-green-500"
+                      className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-green-500"
                     >
                       {POWER_SOURCE_OPTIONS.map(opt => (
                         <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -1168,7 +1168,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
                       value={formData.utility_meter_number}
                       onChange={handleChange}
                       placeholder="Electric/Gas meter ID"
-                      className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-green-500"
+                      className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-green-500"
                     />
                   </div>
                 </div>
@@ -1176,7 +1176,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
                 {/* Flowmeter */}
                 <div className="border-t pt-6">
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-sm font-semibold text-heading">Flowmeter</h3>
+                    <h3 className="text-sm text-heading">Flowmeter</h3>
                     <label className="flex items-center gap-2">
                       <input
                         type="checkbox"
@@ -1200,7 +1200,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
                             value={formData.flowmeter_make}
                             onChange={handleChange}
                             placeholder="e.g., McCrometer"
-                            className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-green-500"
+                            className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-green-500"
                           />
                         </div>
                         <div>
@@ -1210,7 +1210,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
                             name="flowmeter_model"
                             value={formData.flowmeter_model}
                             onChange={handleChange}
-                            className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-green-500"
+                            className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-green-500"
                           />
                         </div>
                         <div>
@@ -1220,7 +1220,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
                             name="flowmeter_serial_number"
                             value={formData.flowmeter_serial_number}
                             onChange={handleChange}
-                            className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-green-500"
+                            className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-green-500"
                           />
                         </div>
                       </div>
@@ -1232,7 +1232,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
                             name="flowmeter_units"
                             value={formData.flowmeter_units}
                             onChange={handleChange}
-                            className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-green-500"
+                            className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-green-500"
                           >
                             {FLOWMETER_UNIT_OPTIONS.map(opt => (
                               <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -1247,7 +1247,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
                             value={formData.flowmeter_multiplier}
                             onChange={handleChange}
                             step="0.0001"
-                            className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-green-500"
+                            className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-green-500"
                           />
                           <p className="mt-1 text-xs text-text-secondary">Factor to multiply reading by</p>
                         </div>
@@ -1258,7 +1258,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
                             name="flowmeter_installation_date"
                             value={formData.flowmeter_installation_date}
                             onChange={handleChange}
-                            className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-green-500"
+                            className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-green-500"
                           />
                         </div>
                       </div>
@@ -1270,7 +1270,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
                 <div className="border-t pt-6">
                   <div className="flex items-center justify-between mb-4">
                     <div>
-                      <h3 className="text-sm font-semibold text-heading">Automated Meter Reading (AMI)</h3>
+                      <h3 className="text-sm text-heading">Automated Meter Reading (AMI)</h3>
                       <p className="text-xs text-text-secondary">Telemetry for automatic meter readings</p>
                     </div>
                     <label className="flex items-center gap-2">
@@ -1294,7 +1294,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
                           name="ami_vendor"
                           value={formData.ami_vendor}
                           onChange={handleChange}
-                          className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-green-500"
+                          className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-green-500"
                         />
                       </div>
                       <div>
@@ -1304,7 +1304,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
                           name="ami_device_id"
                           value={formData.ami_device_id}
                           onChange={handleChange}
-                          className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-green-500"
+                          className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-green-500"
                         />
                       </div>
                     </div>
@@ -1359,7 +1359,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
                       name="gsa_registration_date"
                       value={formData.gsa_registration_date}
                       onChange={handleChange}
-                      className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-green-500"
+                      className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-green-500"
                     />
                   </div>
                 )}
@@ -1371,7 +1371,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
                     name="basin_priority"
                     value={formData.basin_priority}
                     onChange={handleChange}
-                    className="w-full md:w-64 px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-green-500"
+                    className="w-full md:w-64 px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-green-500"
                   >
                     <option value="critical">Critically Overdrafted</option>
                     <option value="high">High Priority</option>
@@ -1384,7 +1384,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
                 {/* GSA Fee Configuration */}
                 <div className="border-t pt-6">
                   <div className="flex items-center justify-between mb-3">
-                    <h3 className="text-sm font-semibold text-heading">GSA Fee Configuration</h3>
+                    <h3 className="text-sm text-heading">GSA Fee Configuration</h3>
                     {gsaFeeDefaults[formData.gsa] && (
                       <button
                         type="button"
@@ -1424,7 +1424,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
                         onChange={handleChange}
                         step="0.01"
                         placeholder="e.g., 192.34 for UWCD, 25 for OBGMA"
-                        className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-green-500"
+                        className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-green-500"
                       />
                     </div>
                     <div>
@@ -1436,7 +1436,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
                         onChange={handleChange}
                         step="0.01"
                         placeholder="e.g., 100 for OBGMA"
-                        className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-green-500"
+                        className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-green-500"
                       />
                     </div>
                     <div>
@@ -1448,7 +1448,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
                         onChange={handleChange}
                         step="0.01"
                         placeholder="e.g., 214.22 for UWCD"
-                        className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-green-500"
+                        className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-green-500"
                       />
                     </div>
                     <div>
@@ -1460,7 +1460,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
                         onChange={handleChange}
                         step="0.01"
                         placeholder="e.g., 70 for OBGMA"
-                        className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-green-500"
+                        className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-green-500"
                       />
                     </div>
                   </div>
@@ -1473,15 +1473,15 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
                       value={formData.owner_code}
                       onChange={handleChange}
                       placeholder="e.g., JPF, FF, RMLF"
-                      className="w-full md:w-64 px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-green-500"
+                      className="w-full md:w-64 px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-green-500"
                     />
                     <p className="mt-1 text-xs text-text-secondary">Owner identifier code used for GSA reporting</p>
                   </div>
                 </div>
 
                 {/* SGMA Info Box */}
-                <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
-                  <h4 className="font-semibold text-orange-700 mb-2 flex items-center gap-2">
+                <div className="bg-orange-50 border border-orange-200 rounded-card p-4">
+                  <h4 className=" text-orange-700 mb-2 flex items-center gap-2">
                     <Info className="w-5 h-5" />
                     SGMA Compliance Requirements
                   </h4>
@@ -1506,8 +1506,8 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
                 </div>
 
                 {/* Water Year Info */}
-                <div className="bg-cream-50 border border-border rounded-lg p-4">
-                  <h4 className="font-medium text-heading mb-2">California Water Year</h4>
+                <div className="bg-cream-50 border border-border rounded-card p-4">
+                  <h4 className=" text-heading mb-2">California Water Year</h4>
                   <p className="text-sm text-bark-600">
                     The water year runs from <strong>October 1</strong> to <strong>September 30</strong>.
                     For example, Water Year 2025 runs from October 1, 2024 to September 30, 2025.

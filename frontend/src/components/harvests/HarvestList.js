@@ -17,7 +17,7 @@ const HarvestList = ({
 }) => {
   if (loading) {
     return (
-      <div className="bg-white rounded-lg shadow">
+      <div className="bg-surface-raised rounded-lg shadow">
         <div className="p-8 text-center text-text-secondary">Loading harvests...</div>
       </div>
     );
@@ -25,7 +25,7 @@ const HarvestList = ({
 
   if (harvests.length === 0) {
     return (
-      <div className="bg-white rounded-lg shadow">
+      <div className="bg-surface-raised rounded-lg shadow">
         <div className="p-8 text-center text-text-secondary">
           <Wheat size={48} className="mx-auto mb-4 text-sand-300" />
           <p>No harvests found</p>
@@ -41,7 +41,7 @@ const HarvestList = ({
   }
 
   return (
-    <div className="bg-white rounded-lg shadow">
+    <div className="bg-surface-raised rounded-lg shadow">
       <div className="divide-y">
         {harvests.map(harvest => (
           <div key={harvest.id} className="p-4">

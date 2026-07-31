@@ -306,12 +306,12 @@ const PDFUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, existi
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className={`bg-white rounded-lg shadow-xl max-h-[95vh] overflow-hidden flex flex-col transition-all duration-300 ${
+      <div className={`bg-surface-raised rounded-card shadow-xl max-h-[95vh] overflow-hidden flex flex-col transition-all duration-300 ${
         showPdfPanel ? 'w-full max-w-[95vw]' : 'w-full max-w-5xl'
       }`}>
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-border">
-          <h2 className="text-lg font-semibold text-heading flex items-center">
+          <h2 className="text-lg text-heading flex items-center">
             {showPreview ? (
               <>
                 <Eye className="w-5 h-5 mr-2 text-primary" />
@@ -449,7 +449,7 @@ const PDFUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, existi
                   <select
                     value={selectedPackinghouse}
                     onChange={(e) => setSelectedPackinghouse(e.target.value)}
-                    className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary"
+                    className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary"
                     disabled={uploading}
                   >
                     <option value="">Select Packinghouse</option>
@@ -468,7 +468,7 @@ const PDFUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, existi
                   <select
                     value={formatHint}
                     onChange={(e) => setFormatHint(e.target.value)}
-                    className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary"
+                    className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary"
                     disabled={uploading}
                   >
                     <option value="">Auto-detect</option>
@@ -486,7 +486,7 @@ const PDFUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, existi
                 onDragLeave={handleDrag}
                 onDragOver={handleDrag}
                 onDrop={handleDrop}
-                className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
+                className={`border-2 border-dashed rounded-card p-8 text-center transition-colors ${
                   dragActive
                     ? 'border-primary bg-green-50'
                     : file
@@ -534,7 +534,7 @@ const PDFUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, existi
 
               {/* Error Message */}
               {error && (
-                <div className="flex items-center p-3 bg-danger-bg border border-danger/25 rounded-lg text-danger">
+                <div className="flex items-center p-3 bg-danger-bg border border-danger/25 rounded-card text-danger">
                   <AlertCircle className="w-5 h-5 mr-2 flex-shrink-0" />
                   <span className="text-sm">{error}</span>
                 </div>
@@ -542,7 +542,7 @@ const PDFUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, existi
 
               {/* Extraction Status */}
               {statement && statement.status === 'failed' && (
-                <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-card">
                   <div className="flex items-start">
                     <AlertCircle className="w-5 h-5 text-yellow-600 mr-2 mt-0.5" />
                     <div className="flex-1">
@@ -575,7 +575,7 @@ const PDFUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, existi
                   <select
                     value={selectedPool}
                     onChange={(e) => setSelectedPool(e.target.value)}
-                    className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary"
+                    className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary"
                   >
                     <option value="">Auto-create from PDF</option>
                     {pools.map(p => (
@@ -598,7 +598,7 @@ const PDFUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, existi
                   <select
                     value={selectedField}
                     onChange={(e) => setSelectedField(e.target.value)}
-                    className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary"
+                    className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary"
                   >
                     <option value="">
                       {statement?.statement_type === 'settlement' || statement?.statement_type === 'grower_statement'
@@ -613,7 +613,7 @@ const PDFUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, existi
               </div>
 
               {/* Statement Info */}
-              <div className="flex items-center justify-between p-3 bg-primary-light border border-green-200 rounded-lg">
+              <div className="flex items-center justify-between p-3 bg-primary-light border border-green-200 rounded-card">
                 <div className="flex items-center">
                   <CheckCircle className="w-5 h-5 text-primary mr-2" />
                   <span className="text-green-700">
@@ -638,7 +638,7 @@ const PDFUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, existi
 
               {/* Error Message */}
               {error && (
-                <div className="flex items-center p-3 bg-danger-bg border border-danger/25 rounded-lg text-danger">
+                <div className="flex items-center p-3 bg-danger-bg border border-danger/25 rounded-card text-danger">
                   <AlertCircle className="w-5 h-5 mr-2 flex-shrink-0" />
                   <span className="text-sm">{error}</span>
                 </div>

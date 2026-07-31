@@ -43,7 +43,7 @@ export default function ChaseList({ invoices, agingDays = 45, onSelect, onMarkRe
   return (
     <div className="space-y-4">
       {houseGroups.map((group) => (
-        <div key={group.key} className="bg-white rounded-lg border border-border overflow-hidden">
+        <div key={group.key} className="bg-surface-raised rounded-card border border-border overflow-hidden">
           <div className="flex items-center justify-between px-4 py-2.5 bg-cream-50">
             <div className="flex items-center gap-2">
               <span className="font-medium text-heading">{group.house}</span>

@@ -72,19 +72,19 @@ function FarmCard({
 
   return (
     <div
-      className={`bg-white rounded-lg shadow-md border-2 overflow-hidden transition-all ${
+      className={`bg-surface-raised rounded-card shadow-md border-2 overflow-hidden transition-all ${
         isSelected ? 'border-primary shadow-lg' : 'border-border'
       }`}
     >
       {/* Farm Header */}
-      <div className="bg-gradient-to-r from-green-50 to-orange-50 border-b border-border">
+      <div className="bg-cream-100 border-b border-border">
         <div className="p-6">
           <div className="flex items-start justify-between">
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-3">
                 <button
                   onClick={() => onToggleExpand(farm.id)}
-                  className="p-1 hover:bg-white rounded transition-colors focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="p-1 hover:bg-surface-raised rounded transition-colors focus:outline-none focus:ring-2 focus:ring-primary"
                   aria-expanded={isExpanded}
                   aria-label={isExpanded ? `Collapse ${farm.name} fields` : `Expand ${farm.name} fields`}
                 >
@@ -92,7 +92,7 @@ function FarmCard({
                 </button>
                 <Home className="text-primary flex-shrink-0" size={32} />
                 <div>
-                  <h3 className="font-bold text-2xl text-heading">{farm.name}</h3>
+                  <h3 className=" text-2xl text-heading">{farm.name}</h3>
                   {farm.farm_number && (
                     <p className="text-sm text-bark-600 font-mono mt-1">{farm.farm_number}</p>
                   )}
@@ -135,11 +135,11 @@ function FarmCard({
               {fields.length > 0 && (
                 <div className="mt-4 ml-10 pt-3 border-t border-border/50">
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    <div className="bg-white/60 rounded-lg px-3 py-2">
+                    <div className="bg-cream-50/70 rounded-lg px-3 py-2">
                       <p className="text-xs text-text-secondary">Total Acres</p>
                       <p className="text-lg font-bold text-heading">{stats.totalAcres.toFixed(1)}</p>
                     </div>
-                    <div className="bg-white/60 rounded-lg px-3 py-2">
+                    <div className="bg-cream-50/70 rounded-lg px-3 py-2">
                       <p className="text-xs text-text-secondary">Mapped Fields</p>
                       <p className="text-lg font-bold text-heading">
                         <span className={stats.mappedFields === stats.fieldCount ? 'text-primary' : 'text-yellow-600'}>
@@ -148,12 +148,12 @@ function FarmCard({
                         <span className="text-text-muted text-sm">/{stats.fieldCount}</span>
                       </p>
                     </div>
-                    <div className="bg-white/60 rounded-lg px-3 py-2">
+                    <div className="bg-cream-50/70 rounded-lg px-3 py-2">
                       <p className="text-xs text-text-secondary">Applications</p>
                       <p className="text-lg font-bold text-link">{stats.totalApplications}</p>
                     </div>
                     {stats.topCrop && (
-                      <div className="bg-white/60 rounded-lg px-3 py-2">
+                      <div className="bg-cream-50/70 rounded-lg px-3 py-2">
                         <p className="text-xs text-text-secondary">Top Crop</p>
                         <p className="text-sm font-medium text-heading truncate">{stats.topCrop}</p>
                       </div>
@@ -170,10 +170,10 @@ function FarmCard({
                 <button
                   onClick={() => onGeocode(farm)}
                   disabled={isGeocoding}
-                  className={`flex items-center gap-2 px-3 py-2 border border-border-strong rounded-lg transition-colors ${
+                  className={`flex items-center gap-2 px-3 py-2 border border-border-strong rounded-card transition-colors ${
                     isGeocoding
                       ? 'bg-cream-100 text-text-muted'
-                      : 'bg-white text-bark-700 hover:bg-cream-50'
+                      : 'bg-surface-raised text-bark-700 hover:bg-cream-50'
                   }`}
                   title="Get GPS from address"
                 >
@@ -184,7 +184,7 @@ function FarmCard({
 
               <button
                 onClick={() => onUploadImagery(farm.id)}
-                className="flex items-center gap-2 px-3 py-2 bg-bark-600 text-white rounded-lg hover:bg-bark-700 transition-colors shadow-sm"
+                className="flex items-center gap-2 px-3 py-2 bg-bark-600 text-white rounded-card hover:bg-bark-700 transition-colors shadow-sm"
                 title="Upload Satellite Imagery"
               >
                 <Satellite size={18} />
@@ -192,7 +192,7 @@ function FarmCard({
               </button>
               <button
                 onClick={() => onAddField(farm.id)}
-                className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors shadow-sm"
+                className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-card hover:bg-primary-hover transition-colors shadow-sm"
                 title="Add Field to this Farm"
               >
                 <Plus size={18} />
@@ -200,7 +200,7 @@ function FarmCard({
               </button>
               <button
                 onClick={() => onEdit(farm)}
-                className="p-2 bg-white border border-border-strong text-bark-700 rounded-lg hover:bg-cream-50 transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                className="p-2 bg-surface-raised border border-border-strong text-bark-700 rounded-card hover:bg-cream-50 transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
                 title="Edit Farm"
                 aria-label={`Edit ${farm.name}`}
               >
@@ -208,7 +208,7 @@ function FarmCard({
               </button>
               <button
                 onClick={() => onDelete(farm.id)}
-                className="p-2 bg-white border border-border-strong text-danger rounded-lg hover:bg-danger-bg transition-colors focus:outline-none focus:ring-2 focus:ring-danger focus:ring-offset-2"
+                className="p-2 bg-surface-raised border border-border-strong text-danger rounded-card hover:bg-danger-bg transition-colors focus:outline-none focus:ring-2 focus:ring-danger focus:ring-offset-2"
                 title="Delete Farm"
                 aria-label={`Delete ${farm.name}`}
               >
@@ -221,7 +221,7 @@ function FarmCard({
               {/* Primary action: Add Field */}
               <button
                 onClick={() => onAddField(farm.id)}
-                className="flex items-center gap-2 px-3 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors shadow-sm"
+                className="flex items-center gap-2 px-3 py-2 bg-primary text-white rounded-card hover:bg-primary-hover transition-colors shadow-sm"
                 title="Add Field to this Farm"
               >
                 <Plus size={18} />
@@ -232,7 +232,7 @@ function FarmCard({
               <div className="relative" ref={mobileMenuRef}>
                 <button
                   onClick={() => setShowMobileMenu(!showMobileMenu)}
-                  className="p-2 bg-white border border-border-strong text-bark-700 rounded-lg hover:bg-cream-50 transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                  className="p-2 bg-surface-raised border border-border-strong text-bark-700 rounded-card hover:bg-cream-50 transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
                   title="More actions"
                   aria-label={`More actions for ${farm.name}`}
                   aria-expanded={showMobileMenu}
@@ -242,7 +242,7 @@ function FarmCard({
 
                 {/* Dropdown Menu */}
                 {showMobileMenu && (
-                  <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-lg shadow-lg border border-border py-1 z-50">
+                  <div className="absolute right-0 top-full mt-1 w-48 bg-surface-raised rounded-card shadow-lg border border-border py-1 z-50">
                     {!hasCoords && (
                       <button
                         onClick={() => {
@@ -299,7 +299,7 @@ function FarmCard({
       {isExpanded && (
         <div className="p-6 bg-cream-50">
           <div className="flex items-center justify-between mb-4">
-            <h4 className="text-lg font-semibold text-heading flex items-center gap-2">
+            <h4 className="text-lg text-heading flex items-center gap-2">
               <MapPin className="w-5 h-5 text-link" />
               Fields ({fields.length})
             </h4>
@@ -313,7 +313,7 @@ function FarmCard({
           </div>
 
           {fields.length === 0 ? (
-            <div className="text-center py-8 bg-white rounded-lg border-2 border-dashed border-border-strong">
+            <div className="text-center py-8 bg-surface-raised rounded-card border-2 border-dashed border-border-strong">
               <MapPin className="w-12 h-12 text-sand-300 mx-auto mb-3" />
               <p className="text-bark-600 mb-3">No fields yet for this farm</p>
               <button

@@ -140,7 +140,7 @@ function PURReports({ farms }) {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-heading">PUR Report Generator</h1>
+          <h1 className="text-2xl text-heading">PUR Report Generator</h1>
           <p className="text-bark-600 mt-1">
             Generate California Pesticide Use Report (PUR) compliant exports
           </p>
@@ -149,8 +149,8 @@ function PURReports({ farms }) {
       </div>
 
       {/* Instructions Card */}
-      <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
-        <h3 className="font-semibold text-orange-700 flex items-center gap-2">
+      <div className="bg-orange-50 border border-orange-200 rounded-card p-4">
+        <h3 className=" text-orange-700 flex items-center gap-2">
           <FileSpreadsheet className="w-5 h-5" />
           How to Use This Tool
         </h3>
@@ -165,8 +165,8 @@ function PURReports({ farms }) {
       </div>
 
       {/* Filter Panel */}
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <h2 className="text-lg font-semibold text-heading mb-4">Report Parameters</h2>
+      <div className="bg-surface-raised rounded-card shadow-md p-6">
+        <h2 className="text-lg text-heading mb-4">Report Parameters</h2>
         {/* Quick Range Buttons */}
         <div className="mb-4">
           <label className="block text-sm font-medium text-bark-700 mb-2">
@@ -210,7 +210,7 @@ function PURReports({ farms }) {
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              className="w-full px-3 py-2 border border-border-strong rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full px-3 py-2 border border-border-strong rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
               required
             />
           </div>
@@ -224,7 +224,7 @@ function PURReports({ farms }) {
               type="date"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
-              className="w-full px-3 py-2 border border-border-strong rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full px-3 py-2 border border-border-strong rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
               required
             />
           </div>
@@ -237,7 +237,7 @@ function PURReports({ farms }) {
             <select
               value={selectedFarm}
               onChange={(e) => setSelectedFarm(e.target.value)}
-              className="w-full px-3 py-2 border border-border-strong rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full px-3 py-2 border border-border-strong rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
             >
               <option value="">All Farms</option>
               {farms && farms.map((farm) => (
@@ -254,7 +254,7 @@ function PURReports({ farms }) {
           <button
             onClick={handleValidate}
             disabled={loading}
-            className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-hover disabled:bg-bark-400"
+            className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover disabled:bg-bark-400"
           >
             <CheckCircle className="w-4 h-4" />
             {loading ? 'Validating...' : 'Validate for PUR'}
@@ -263,7 +263,7 @@ function PURReports({ farms }) {
           <button
             onClick={handleExport}
             disabled={loading || !validation || !validation.valid}
-            className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-hover disabled:bg-bark-400"
+            className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover disabled:bg-bark-400"
           >
             <Download className="w-4 h-4" />
             Export CSV
@@ -273,8 +273,8 @@ function PURReports({ farms }) {
 
       {/* Validation Results */}
       {showResults && validation && (
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-lg font-semibold text-heading mb-4">Validation Results</h2>
+        <div className="bg-surface-raised rounded-card shadow-md p-6">
+          <h2 className="text-lg text-heading mb-4">Validation Results</h2>
           {/* Status Summary */}
           <div className={`p-4 rounded-lg mb-4 ${
             validation.valid
@@ -286,7 +286,7 @@ function PURReports({ farms }) {
                 <>
                   <CheckCircle className="w-6 h-6 text-primary" />
                   <div>
-                    <h3 className="font-semibold text-green-800">Ready for Export</h3>
+                    <h3 className=" text-green-800">Ready for Export</h3>
                     <p className="text-sm text-primary">
                       {validation.applications_count} application(s) validated successfully
                     </p>
@@ -296,7 +296,7 @@ function PURReports({ farms }) {
                 <>
                   <AlertTriangle className="w-6 h-6 text-danger" />
                   <div>
-                    <h3 className="font-semibold text-danger">Validation Failed</h3>
+                    <h3 className=" text-danger">Validation Failed</h3>
                     <p className="text-sm text-danger">
                       Please fix errors before exporting
                     </p>
@@ -309,7 +309,7 @@ function PURReports({ farms }) {
           {/* Errors */}
           {validation.errors && validation.errors.length > 0 && (
             <div className="mb-4">
-              <h3 className="font-semibold text-danger mb-2 flex items-center gap-2">
+              <h3 className=" text-danger mb-2 flex items-center gap-2">
                 <AlertTriangle className="w-5 h-5" />
                 Errors ({validation.errors.length})
               </h3>
@@ -327,7 +327,7 @@ function PURReports({ farms }) {
           {/* Warnings */}
           {validation.warnings && validation.warnings.length > 0 && (
             <div>
-              <h3 className="font-semibold text-yellow-800 mb-2 flex items-center gap-2">
+              <h3 className=" text-yellow-800 mb-2 flex items-center gap-2">
                 <AlertTriangle className="w-5 h-5" />
                 Warnings ({validation.warnings.length})
               </h3>
@@ -349,8 +349,8 @@ function PURReports({ farms }) {
 
       {/* Summary Statistics */}
       {showResults && summary && (
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-lg font-semibold text-heading mb-4">Report Summary</h2>
+        <div className="bg-surface-raised rounded-card shadow-md p-6">
+          <h2 className="text-lg text-heading mb-4">Report Summary</h2>
           {/* Overview Stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
             <div className="bg-orange-50 p-4 rounded-lg">
@@ -382,7 +382,7 @@ function PURReports({ farms }) {
           {/* By County */}
           {summary.by_county && summary.by_county.length > 0 && (
             <div className="mb-6">
-              <h3 className="font-semibold text-heading mb-3">Applications by County</h3>
+              <h3 className=" text-heading mb-3">Applications by County</h3>
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-border">
                   <thead className="bg-cream-50">
@@ -392,7 +392,7 @@ function PURReports({ farms }) {
                       <th className="px-4 py-2 text-left text-xs font-medium text-text-secondary uppercase">Acres</th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-border">
+                  <tbody className="bg-surface-raised divide-y divide-border">
                     {summary.by_county.map((county, index) => (
                       <tr key={index}>
                         <td className="px-4 py-2 text-sm text-heading">{county.county}</td>
@@ -409,7 +409,7 @@ function PURReports({ farms }) {
           {/* Top Products */}
           {summary.by_product && summary.by_product.length > 0 && (
             <div>
-              <h3 className="font-semibold text-heading mb-3">Top Products Used</h3>
+              <h3 className=" text-heading mb-3">Top Products Used</h3>
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-border">
                   <thead className="bg-cream-50">
@@ -420,7 +420,7 @@ function PURReports({ farms }) {
                       <th className="px-4 py-2 text-left text-xs font-medium text-text-secondary uppercase">Total Amount</th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-border">
+                  <tbody className="bg-surface-raised divide-y divide-border">
                     {summary.by_product.map((product, index) => (
                       <tr key={index}>
                         <td className="px-4 py-2 text-sm text-heading">{product.product_name}</td>

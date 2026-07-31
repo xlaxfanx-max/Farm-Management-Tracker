@@ -95,7 +95,7 @@ class ErrorBoundary extends React.Component {
         <div className="flex items-start gap-3">
           <AlertTriangle className="w-6 h-6 text-danger flex-shrink-0 mt-0.5" />
           <div className="flex-1">
-            <h3 className="text-sm font-semibold text-danger">
+            <h3 className="text-sm text-danger">
               {name} encountered an error
             </h3>
             <p className="text-sm text-bark-700 mt-1">
