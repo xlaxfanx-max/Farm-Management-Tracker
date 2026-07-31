@@ -117,12 +117,12 @@ const PoolList = () => {
 
   const getStatusBadge = (status) => {
     const colors = {
-      active: 'bg-green-100 text-green-800',
+      active: 'bg-green-100 text-green-700',
       closed: 'bg-yellow-100 text-yellow-800',
-      settled: 'bg-blue-100 text-blue-800',
+      settled: 'bg-orange-100 text-orange-700',
     };
     return (
-      <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${colors[status] || 'bg-gray-100 text-gray-800'}`}>
+      <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${colors[status] || 'bg-cream-100 text-text'}`}>
         {status.charAt(0).toUpperCase() + status.slice(1)}
       </span>
     );
@@ -163,7 +163,7 @@ const PoolList = () => {
           <button
             onClick={() => setShowFilters(!showFilters)}
             className={`flex items-center px-3 py-2 border rounded-lg transition-colors ${
-              showFilters ? 'border-primary bg-primary-light text-primary' : 'border-gray-300 hover:bg-gray-50'
+              showFilters ? 'border-primary bg-primary-light text-primary' : 'border-border-strong hover:bg-cream-50'
             }`}
           >
             <Filter className="w-4 h-4 mr-2" />
@@ -171,7 +171,7 @@ const PoolList = () => {
           </button>
           <button
             onClick={fetchPools}
-            className="p-2 text-gray-400 hover:text-gray-600"
+            className="p-2 text-text-muted hover:text-bark-600"
             title="Refresh"
           >
             <RefreshCw className="w-4 h-4" />
@@ -188,15 +188,15 @@ const PoolList = () => {
 
       {/* Filters */}
       {showFilters && (
-        <div className="bg-gray-50 rounded-lg p-4 grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="bg-cream-50 rounded-lg p-4 grid grid-cols-2 md:grid-cols-4 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-bark-700 mb-1">
               Packinghouse
             </label>
             <select
               value={filters.packinghouse}
               onChange={(e) => setFilters(prev => ({ ...prev, packinghouse: e.target.value }))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
+              className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary"
             >
               <option value="">All Packinghouses</option>
               {packinghouses.map(ph => (
@@ -206,7 +206,7 @@ const PoolList = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-bark-700 mb-1">
               Season
             </label>
             <input
@@ -214,18 +214,18 @@ const PoolList = () => {
               value={filters.season}
               onChange={(e) => setFilters(prev => ({ ...prev, season: e.target.value }))}
               placeholder="e.g., 2024-2025"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
+              className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-bark-700 mb-1">
               Status
             </label>
             <select
               value={filters.status}
               onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value }))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
+              className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary"
             >
               <option value="">All Statuses</option>
               {PACKINGHOUSE_CONSTANTS.poolStatuses.map(s => (
@@ -235,13 +235,13 @@ const PoolList = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-bark-700 mb-1">
               Commodity
             </label>
             <select
               value={filters.commodity}
               onChange={(e) => setFilters(prev => ({ ...prev, commodity: e.target.value }))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
+              className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary"
             >
               <option value="">All Commodities</option>
               {PACKINGHOUSE_CONSTANTS.commodities.map(c => (
@@ -254,10 +254,10 @@ const PoolList = () => {
 
       {/* List */}
       {pools.length === 0 ? (
-        <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
-          <Boxes className="w-12 h-12 mx-auto text-gray-300 mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-1">No Pools Found</h3>
-          <p className="text-gray-500 mb-4">
+        <div className="text-center py-12 bg-white rounded-lg border border-border">
+          <Boxes className="w-12 h-12 mx-auto text-sand-300 mb-4" />
+          <h3 className="text-lg font-medium text-heading mb-1">No Pools Found</h3>
+          <p className="text-text-secondary mb-4">
             No pools match your current filters.
           </p>
           <button
@@ -269,64 +269,64 @@ const PoolList = () => {
           </button>
         </div>
       ) : (
-        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+        <div className="bg-white rounded-lg border border-border overflow-hidden">
+          <table className="min-w-full divide-y divide-border">
+            <thead className="bg-cream-50">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">
                   Pool
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">
                   Packinghouse
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">
                   Commodity
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">
                   Season
                 </th>
-                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-center text-xs font-medium text-text-secondary uppercase tracking-wider">
                   Bins
                 </th>
-                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-center text-xs font-medium text-text-secondary uppercase tracking-wider">
                   Status
                 </th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-right text-xs font-medium text-text-secondary uppercase tracking-wider">
                   Actions
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white divide-y divide-border">
               {pools.map((pool) => (
                 <tr
                   key={pool.id}
-                  className="hover:bg-gray-50 cursor-pointer"
+                  className="hover:bg-cream-50 cursor-pointer"
                   onClick={() => handleView(pool)}
                 >
                   <td className="px-4 py-3">
                     <div>
-                      <p className="font-medium text-gray-900 text-primary hover:text-green-800">{pool.name}</p>
-                      <p className="text-xs text-gray-500">{pool.pool_id}</p>
+                      <p className="font-medium text-heading text-primary hover:text-green-700">{pool.name}</p>
+                      <p className="text-xs text-text-secondary">{pool.pool_id}</p>
                     </div>
                   </td>
                   <td className="px-4 py-3">
-                    <p className="text-sm text-gray-900">{pool.packinghouse_name}</p>
+                    <p className="text-sm text-heading">{pool.packinghouse_name}</p>
                     {pool.packinghouse_short_code && (
-                      <span className="text-xs text-gray-500">{pool.packinghouse_short_code}</span>
+                      <span className="text-xs text-text-secondary">{pool.packinghouse_short_code}</span>
                     )}
                   </td>
                   <td className="px-4 py-3">
-                    <p className="text-sm text-gray-900">{pool.commodity}</p>
+                    <p className="text-sm text-heading">{pool.commodity}</p>
                     {pool.variety && (
-                      <p className="text-xs text-gray-500">{pool.variety}</p>
+                      <p className="text-xs text-text-secondary">{pool.variety}</p>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-sm text-gray-600">
+                  <td className="px-4 py-3 text-sm text-bark-600">
                     {pool.season}
                   </td>
                   <td className="px-4 py-3 text-center">
-                    <span className="font-semibold text-gray-900">{pool.total_bins || 0}</span>
-                    <span className="text-xs text-gray-500 ml-1">
+                    <span className="font-semibold text-heading">{pool.total_bins || 0}</span>
+                    <span className="text-xs text-text-secondary ml-1">
                       ({pool.delivery_count || 0})
                     </span>
                   </td>
@@ -337,21 +337,21 @@ const PoolList = () => {
                     <div className="flex justify-end space-x-1">
                       <button
                         onClick={() => handleView(pool)}
-                        className="p-2 text-gray-400 hover:text-primary hover:bg-primary-light rounded-lg"
+                        className="p-2 text-text-muted hover:text-primary hover:bg-primary-light rounded-lg"
                         title="View Details"
                       >
                         <Eye className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => handleEdit(pool)}
-                        className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg"
+                        className="p-2 text-text-muted hover:text-link hover:bg-orange-50 rounded-lg"
                         title="Edit"
                       >
                         <Edit className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => handleDelete(pool.id, pool.name)}
-                        className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg"
+                        className="p-2 text-text-muted hover:text-danger hover:bg-danger-bg rounded-lg"
                         title="Delete"
                       >
                         <Trash2 className="w-4 h-4" />

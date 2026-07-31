@@ -154,24 +154,24 @@ const BatchReadingModal = ({ isOpen, onClose, wells, onSave }) => {
   const filledCount = Object.values(readings).filter((r) => r?.meter_reading).length;
 
   const statusColorClasses = {
-    red: 'bg-red-500',
+    red: 'bg-danger',
     yellow: 'bg-yellow-500',
     green: 'bg-green-500',
-    gray: 'bg-gray-400',
+    gray: 'bg-bark-400',
   };
 
   const statusBadgeClasses = {
-    red: 'bg-red-100 text-red-700',
+    red: 'bg-danger-bg text-danger',
     yellow: 'bg-yellow-100 text-yellow-700',
     green: 'bg-green-100 text-primary',
-    gray: 'bg-gray-100 text-gray-600',
+    gray: 'bg-cream-100 text-bark-600',
   };
 
   const footer = (
     <>
-      <div className="flex-1 text-sm text-gray-500">
+      <div className="flex-1 text-sm text-text-secondary">
         {filledCount > 0 ? (
-          <span className="text-cyan-600 font-medium">
+          <span className="text-green-600 font-medium">
             {filledCount} reading{filledCount > 1 ? 's' : ''} ready to save
           </span>
         ) : (
@@ -181,7 +181,7 @@ const BatchReadingModal = ({ isOpen, onClose, wells, onSave }) => {
       <button
         type="button"
         onClick={onClose}
-        className="px-4 py-2 rounded-button border border-gray-300 text-gray-700 hover:bg-gray-50"
+        className="px-4 py-2 rounded-button border border-border-strong text-bark-700 hover:bg-cream-50"
       >
         Cancel
       </button>
@@ -189,7 +189,7 @@ const BatchReadingModal = ({ isOpen, onClose, wells, onSave }) => {
         type="button"
         onClick={handleSaveAll}
         disabled={saving || filledCount === 0}
-        className="flex items-center gap-2 px-6 py-2 rounded-button bg-cyan-600 text-white hover:bg-cyan-700 disabled:opacity-50 disabled:cursor-not-allowed"
+        className="flex items-center gap-2 px-6 py-2 rounded-button bg-green-600 text-white hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
       >
         <Save className="w-5 h-5" />
         {saving ? 'Saving…' : `Save ${filledCount} Reading${filledCount !== 1 ? 's' : ''}`}
@@ -207,7 +207,7 @@ const BatchReadingModal = ({ isOpen, onClose, wells, onSave }) => {
       size="xl"
       footer={footer}
     >
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pb-4 mb-4 border-b border-gray-200">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pb-4 mb-4 border-b border-border">
         <FormField label="Reading Date" htmlFor="br-date" required>
           <input
             id="br-date"
@@ -228,9 +228,9 @@ const BatchReadingModal = ({ isOpen, onClose, wells, onSave }) => {
           />
         </FormField>
         <div className="flex items-end">
-          <div className="bg-surface border border-gray-200 rounded-lg px-4 py-2 w-full">
-            <div className="text-sm text-gray-500">Wells to record</div>
-            <div className="text-xl font-bold text-cyan-600">
+          <div className="bg-surface border border-border rounded-lg px-4 py-2 w-full">
+            <div className="text-sm text-text-secondary">Wells to record</div>
+            <div className="text-xl font-bold text-green-600">
               {filledCount} / {wells?.length || 0}
             </div>
           </div>
@@ -246,8 +246,8 @@ const BatchReadingModal = ({ isOpen, onClose, wells, onSave }) => {
 
       {loading ? (
         <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-cyan-600"></div>
-          <span className="ml-3 text-gray-500">Loading well data…</span>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+          <span className="ml-3 text-text-secondary">Loading well data…</span>
         </div>
       ) : (
         <div className="space-y-3">
@@ -264,10 +264,10 @@ const BatchReadingModal = ({ isOpen, onClose, wells, onSave }) => {
                 key={well.id}
                 className={`border rounded-xl overflow-hidden transition-all ${
                   error
-                    ? 'border-red-300 bg-red-50'
+                    ? 'border-danger/40 bg-danger-bg'
                     : reading.meter_reading
                     ? 'border-green-300 bg-green-50'
-                    : 'border-gray-200 bg-surface-raised'
+                    : 'border-border bg-surface-raised'
                 }`}
               >
                 <div className="p-4">
@@ -278,7 +278,7 @@ const BatchReadingModal = ({ isOpen, onClose, wells, onSave }) => {
 
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <h3 className="font-medium text-gray-900 truncate">
+                        <h3 className="font-medium text-heading truncate">
                           {well.well_name || well.name}
                         </h3>
                         <span
@@ -287,14 +287,14 @@ const BatchReadingModal = ({ isOpen, onClose, wells, onSave }) => {
                           {status.label}
                         </span>
                       </div>
-                      <p className="text-sm text-gray-500 truncate">
+                      <p className="text-sm text-text-secondary truncate">
                         {well.farm_name} {well.gsa && `• ${well.gsa.toUpperCase()}`}
                       </p>
                     </div>
 
                     <div className="text-right flex-shrink-0 w-32">
-                      <div className="text-xs text-gray-500">Previous</div>
-                      <div className="font-medium text-gray-700">
+                      <div className="text-xs text-text-secondary">Previous</div>
+                      <div className="font-medium text-bark-700">
                         {prev ? parseFloat(prev.meter_reading).toLocaleString() : '-'}
                       </div>
                     </div>
@@ -309,18 +309,18 @@ const BatchReadingModal = ({ isOpen, onClose, wells, onSave }) => {
                         placeholder="New reading"
                         step="0.01"
                         className={`${inputClasses} text-right font-mono ${
-                          error ? 'border-red-500' : ''
+                          error ? 'border-danger' : ''
                         }`}
                       />
                     </div>
 
                     <div className="text-right flex-shrink-0 w-24">
-                      <div className="text-xs text-gray-500">Extraction</div>
+                      <div className="text-xs text-text-secondary">Extraction</div>
                       <div
                         className={`font-medium ${
                           extraction
-                            ? 'text-cyan-600'
-                            : 'text-gray-400'
+                            ? 'text-green-600'
+                            : 'text-text-muted'
                         }`}
                       >
                         {extraction ? `${extraction} AF` : '-'}
@@ -330,7 +330,7 @@ const BatchReadingModal = ({ isOpen, onClose, wells, onSave }) => {
                     <button
                       type="button"
                       onClick={() => setExpandedWell(isExpanded ? null : well.id)}
-                      className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg"
+                      className="p-2 text-text-muted hover:text-bark-600 hover:bg-cream-100 rounded-lg"
                       aria-label={isExpanded ? 'Collapse details' : 'Expand details'}
                     >
                       {isExpanded ? (
@@ -342,7 +342,7 @@ const BatchReadingModal = ({ isOpen, onClose, wells, onSave }) => {
                   </div>
 
                   {error && (
-                    <div className="mt-2 flex items-center gap-2 text-red-600 text-sm">
+                    <div className="mt-2 flex items-center gap-2 text-danger text-sm">
                       <AlertCircle className="w-4 h-4" />
                       {error}
                     </div>
@@ -350,7 +350,7 @@ const BatchReadingModal = ({ isOpen, onClose, wells, onSave }) => {
                 </div>
 
                 {isExpanded && (
-                  <div className="px-4 pb-4 pt-0 border-t border-gray-200 bg-gray-50">
+                  <div className="px-4 pb-4 pt-0 border-t border-border bg-cream-50">
                     <div className="grid grid-cols-3 gap-4 mt-4">
                       <FormField label="Pump Hours" htmlFor={`br-pump-${well.id}`}>
                         <input
@@ -393,15 +393,15 @@ const BatchReadingModal = ({ isOpen, onClose, wells, onSave }) => {
                     </div>
 
                     {extraction && well.base_extraction_rate && (
-                      <div className="mt-3 p-3 bg-surface-raised rounded-lg border border-gray-200">
-                        <div className="text-xs font-medium text-gray-500 mb-2">
+                      <div className="mt-3 p-3 bg-surface-raised rounded-lg border border-border">
+                        <div className="text-xs font-medium text-text-secondary mb-2">
                           Estimated Fees
                         </div>
                         <div className="flex gap-4 text-sm">
                           {well.base_extraction_rate && (
                             <div>
-                              <span className="text-gray-500">Base: </span>
-                              <span className="font-medium text-gray-900">
+                              <span className="text-text-secondary">Base: </span>
+                              <span className="font-medium text-heading">
                                 ${(
                                   parseFloat(extraction) *
                                   parseFloat(well.base_extraction_rate)
@@ -411,8 +411,8 @@ const BatchReadingModal = ({ isOpen, onClose, wells, onSave }) => {
                           )}
                           {well.gsp_rate && (
                             <div>
-                              <span className="text-gray-500">GSP: </span>
-                              <span className="font-medium text-gray-900">
+                              <span className="text-text-secondary">GSP: </span>
+                              <span className="font-medium text-heading">
                                 ${(
                                   parseFloat(extraction) * parseFloat(well.gsp_rate)
                                 ).toFixed(2)}

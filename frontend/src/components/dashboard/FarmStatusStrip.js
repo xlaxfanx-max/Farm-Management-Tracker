@@ -62,8 +62,8 @@ function FarmStatusStrip({ farms = [], fields = [], applications = [], applicati
               flex-shrink-0 min-w-[180px] p-3 rounded-lg border-2 cursor-pointer
               transition-all hover:shadow-md
               ${health === 'healthy' ? 'border-primary/30 bg-primary-light hover:border-primary/50' : ''}
-              ${health === 'attention' ? 'border-amber-200 bg-amber-50/50 hover:border-amber-300' : ''}
-              ${health === 'critical' ? 'border-red-200 bg-red-50/50 hover:border-red-300' : ''}
+              ${health === 'attention' ? 'border-yellow-200 bg-yellow-100/50 hover:border-yellow-300' : ''}
+              ${health === 'critical' ? 'border-danger/25 bg-danger-bg/50 hover:border-danger/40' : ''}
             `}
           >
             <div className="flex items-center justify-between mb-2">
@@ -80,7 +80,7 @@ function FarmStatusStrip({ farms = [], fields = [], applications = [], applicati
               </div>
               {waterSourceCount > 0 && (
                 <div className="flex items-center gap-1.5">
-                  <Droplets className="w-3 h-3 text-blue-500" />
+                  <Droplets className="w-3 h-3 text-orange-500" />
                   <span>{waterSourceCount} water source{waterSourceCount !== 1 ? 's' : ''}</span>
                 </div>
               )}
@@ -89,7 +89,7 @@ function FarmStatusStrip({ farms = [], fields = [], applications = [], applicati
             {alerts.length > 0 && (
               <div className="mt-2 pt-2 border-t border-border">
                 {alerts.map((alert, idx) => (
-                  <div key={idx} className="flex items-center gap-1 text-xs text-amber-600">
+                  <div key={idx} className="flex items-center gap-1 text-xs text-yellow-600">
                     <AlertTriangle className="w-3 h-3" />
                     <span>{alert}</span>
                   </div>

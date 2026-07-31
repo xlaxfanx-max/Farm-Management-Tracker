@@ -178,8 +178,8 @@ function ProductManagement() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Pesticide Product Catalog</h1>
-          <p className="text-gray-600 mt-1">
+          <h1 className="text-2xl font-bold text-heading">Pesticide Product Catalog</h1>
+          <p className="text-bark-600 mt-1">
             Manage your pesticide product database for PUR compliance
           </p>
         </div>
@@ -202,7 +202,7 @@ function ProductManagement() {
 
           <button
             onClick={() => setShowImportModal(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-hover"
           >
             <Upload className="w-4 h-4" />
             Import CSV
@@ -210,7 +210,7 @@ function ProductManagement() {
 
           <button
             onClick={handleDownloadTemplate}
-            className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700"
+            className="flex items-center gap-2 px-4 py-2 bg-bark-600 text-white rounded-md hover:bg-bark-700"
           >
             <FileText className="w-4 h-4" />
             Download Template
@@ -218,7 +218,7 @@ function ProductManagement() {
 
           <button
             onClick={handleExportProducts}
-            className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700"
+            className="flex items-center gap-2 px-4 py-2 bg-bark-600 text-white rounded-md hover:bg-bark-700"
           >
             <Download className="w-4 h-4" />
             Export All
@@ -231,7 +231,7 @@ function ProductManagement() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Search */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-bark-700 mb-2">
               <Search className="w-4 h-4 inline mr-1" />
               Search
             </label>
@@ -240,19 +240,19 @@ function ProductManagement() {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Product name, EPA number, manufacturer..."
-              className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full px-3 py-2 border border-border-strong rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
 
           {/* Product Type Filter */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-bark-700 mb-2">
               Product Type
             </label>
             <select
               value={filterType}
               onChange={(e) => setFilterType(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full px-3 py-2 border border-border-strong rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-primary"
             >
               <option value="all">All Types</option>
               <option value="insecticide">Insecticide</option>
@@ -267,13 +267,13 @@ function ProductManagement() {
 
           {/* Restricted Use Filter */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-bark-700 mb-2">
               Restricted Use
             </label>
             <select
               value={filterRestrictedUse}
               onChange={(e) => setFilterRestrictedUse(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full px-3 py-2 border border-border-strong rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-primary"
             >
               <option value="all">All Products</option>
               <option value="restricted">Restricted Use Only</option>
@@ -282,7 +282,7 @@ function ProductManagement() {
           </div>
         </div>
 
-        <div className="mt-2 text-sm text-gray-600">
+        <div className="mt-2 text-sm text-bark-600">
           Showing {filteredProducts.length} of {products.length} products
         </div>
       </div>
@@ -290,12 +290,12 @@ function ProductManagement() {
       {/* Products Table */}
       <div className="bg-white rounded-lg shadow-md overflow-hidden">
         {loading ? (
-          <div className="p-8 text-center text-gray-500">Loading products...</div>
+          <div className="p-8 text-center text-text-secondary">Loading products...</div>
         ) : filteredProducts.length === 0 ? (
-          <div className="p-8 text-center text-gray-500">
+          <div className="p-8 text-center text-text-secondary">
             {products.length === 0 ? (
               <>
-                <Package className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+                <Package className="w-12 h-12 mx-auto mb-4 text-text-muted" />
                 <p>No products in catalog yet.</p>
                 <p className="text-sm mt-2">
                   Click "Import CSV" to load products or "Add Product" to add manually.
@@ -307,51 +307,51 @@ function ProductManagement() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+            <table className="min-w-full divide-y divide-border">
+              <thead className="bg-cream-50">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">EPA Reg No</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Product Name</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Active Ingredient</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">REI</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">PHI</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-text-secondary uppercase">EPA Reg No</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-text-secondary uppercase">Product Name</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-text-secondary uppercase">Type</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-text-secondary uppercase">Active Ingredient</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-text-secondary uppercase">REI</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-text-secondary uppercase">PHI</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-text-secondary uppercase">Status</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-text-secondary uppercase">Actions</th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="bg-white divide-y divide-border">
                 {filteredProducts.map((product) => (
-                  <tr key={product.id} className="hover:bg-gray-50">
-                    <td className="px-4 py-3 text-sm font-mono text-gray-900">
+                  <tr key={product.id} className="hover:bg-cream-50">
+                    <td className="px-4 py-3 text-sm font-mono text-heading">
                       {product.epa_registration_number}
                     </td>
                     <td className="px-4 py-3 text-sm">
-                      <div className="font-medium text-gray-900">{product.product_name}</div>
-                      <div className="text-xs text-gray-500">{product.manufacturer}</div>
+                      <div className="font-medium text-heading">{product.product_name}</div>
+                      <div className="text-xs text-text-secondary">{product.manufacturer}</div>
                     </td>
                     <td className="px-4 py-3 text-sm">
                       <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${
-                        product.product_type === 'insecticide' ? 'bg-red-100 text-red-800' :
-                        product.product_type === 'herbicide' ? 'bg-green-100 text-green-800' :
-                        product.product_type === 'fungicide' ? 'bg-blue-100 text-blue-800' :
-                        'bg-gray-100 text-gray-800'
+                        product.product_type === 'insecticide' ? 'bg-danger-bg text-danger' :
+                        product.product_type === 'herbicide' ? 'bg-green-100 text-green-700' :
+                        product.product_type === 'fungicide' ? 'bg-orange-100 text-orange-700' :
+                        'bg-cream-100 text-text'
                       }`}>
                         {product.product_type || 'N/A'}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-600">
+                    <td className="px-4 py-3 text-sm text-bark-600">
                       {product.active_ingredients ? (
                         product.active_ingredients.length > 40 ?
                           product.active_ingredients.substring(0, 40) + '...' :
                           product.active_ingredients
                       ) : 'N/A'}
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-600">
+                    <td className="px-4 py-3 text-sm text-bark-600">
                       {product.rei_hours ? `${product.rei_hours}h` :
                        product.rei_days ? `${product.rei_days}d` : 'N/A'}
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-600">
+                    <td className="px-4 py-3 text-sm text-bark-600">
                       {product.phi_days ? `${product.phi_days}d` : 'N/A'}
                     </td>
                     <td className="px-4 py-3 text-sm">
@@ -363,12 +363,12 @@ function ProductManagement() {
                           </span>
                         )}
                         {product.is_fumigant && (
-                          <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-red-100 text-red-800">
+                          <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-danger-bg text-danger">
                             Fumigant
                           </span>
                         )}
                         {!product.active && (
-                          <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-600">
+                          <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-cream-100 text-bark-600">
                             Inactive
                           </span>
                         )}
@@ -381,14 +381,14 @@ function ProductManagement() {
                             setEditingProduct(product);
                             setShowProductModal(true);
                           }}
-                          className="text-blue-600 hover:text-blue-800"
+                          className="text-link hover:text-orange-700"
                           title="Edit"
                         >
                           <Edit2 className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => handleDeleteProduct(product.id)}
-                          className="text-red-600 hover:text-red-800"
+                          className="text-danger hover:text-danger"
                           title="Delete"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -445,8 +445,8 @@ function ImportModal({ onClose, importFile, setImportFile, handleImport, importR
       <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         <div className="p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-gray-900">Import Products from CSV</h2>
-            <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
+            <h2 className="text-xl font-bold text-heading">Import Products from CSV</h2>
+            <button onClick={onClose} className="text-text-secondary hover:text-bark-700">
               <X className="w-6 h-6" />
             </button>
           </div>
@@ -454,12 +454,12 @@ function ImportModal({ onClose, importFile, setImportFile, handleImport, importR
           {!importResult ? (
             <>
               <div className="mb-4">
-                <p className="text-sm text-gray-600 mb-4">
+                <p className="text-sm text-bark-600 mb-4">
                   Upload a CSV file with pesticide product information. The file should include
                   EPA registration numbers, product names, and other details.
                 </p>
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                  <Upload className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+                <div className="border-2 border-dashed border-border-strong rounded-lg p-6 text-center">
+                  <Upload className="w-12 h-12 mx-auto mb-4 text-text-muted" />
                   <input
                     type="file"
                     accept=".csv"
@@ -469,12 +469,12 @@ function ImportModal({ onClose, importFile, setImportFile, handleImport, importR
                   />
                   <label
                     htmlFor="csv-upload"
-                    className="cursor-pointer text-blue-600 hover:text-blue-800"
+                    className="cursor-pointer text-link hover:text-orange-700"
                   >
                     Click to select CSV file
                   </label>
                   {importFile && (
-                    <div className="mt-2 text-sm text-gray-600">
+                    <div className="mt-2 text-sm text-bark-600">
                       Selected: {importFile.name}
                     </div>
                   )}
@@ -485,13 +485,13 @@ function ImportModal({ onClose, importFile, setImportFile, handleImport, importR
                 <button
                   onClick={handleImport}
                   disabled={!importFile || loading}
-                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400"
+                  className="flex-1 px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-hover disabled:bg-bark-400"
                 >
                   {loading ? 'Importing...' : 'Import'}
                 </button>
                 <button
                   onClick={onClose}
-                  className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
+                  className="px-4 py-2 border border-border-strong rounded-md hover:bg-cream-50"
                 >
                   Cancel
                 </button>
@@ -500,16 +500,16 @@ function ImportModal({ onClose, importFile, setImportFile, handleImport, importR
           ) : (
             <>
               <div className={`p-4 rounded-lg mb-4 ${
-                importResult.success ? 'bg-primary-light border border-green-200' : 'bg-red-50 border border-red-200'
+                importResult.success ? 'bg-primary-light border border-green-200' : 'bg-danger-bg border border-danger/25'
               }`}>
                 <div className="flex items-center gap-2 mb-2">
                   {importResult.success ? (
                     <CheckCircle className="w-6 h-6 text-primary" />
                   ) : (
-                    <AlertTriangle className="w-6 h-6 text-red-600" />
+                    <AlertTriangle className="w-6 h-6 text-danger" />
                   )}
                   <h3 className={`font-semibold ${
-                    importResult.success ? 'text-green-900' : 'text-red-900'
+                    importResult.success ? 'text-green-800' : 'text-danger'
                   }`}>
                     {importResult.message}
                   </h3>
@@ -522,11 +522,11 @@ function ImportModal({ onClose, importFile, setImportFile, handleImport, importR
                         <span className="font-semibold">{importResult.statistics.created}</span>
                       </div>
                       <div>
-                        <span className="text-blue-700">Updated: </span>
+                        <span className="text-orange-700">Updated: </span>
                         <span className="font-semibold">{importResult.statistics.updated}</span>
                       </div>
                       <div>
-                        <span className="text-red-700">Errors: </span>
+                        <span className="text-danger">Errors: </span>
                         <span className="font-semibold">{importResult.statistics.errors}</span>
                       </div>
                     </div>
@@ -536,8 +536,8 @@ function ImportModal({ onClose, importFile, setImportFile, handleImport, importR
 
               {importResult.statistics?.error_details?.length > 0 && (
                 <div className="mb-4">
-                  <h4 className="font-semibold text-red-900 mb-2">Errors:</h4>
-                  <ul className="text-sm text-red-700 bg-red-50 p-3 rounded max-h-40 overflow-y-auto">
+                  <h4 className="font-semibold text-danger mb-2">Errors:</h4>
+                  <ul className="text-sm text-danger bg-danger-bg p-3 rounded max-h-40 overflow-y-auto">
                     {importResult.statistics.error_details.map((error, index) => (
                       <li key={index} className="mb-1">• {error}</li>
                     ))}
@@ -547,7 +547,7 @@ function ImportModal({ onClose, importFile, setImportFile, handleImport, importR
 
               <button
                 onClick={onClose}
-                className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                className="w-full px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-hover"
               >
                 Close
               </button>
@@ -596,10 +596,10 @@ function ProductModal({ product, onClose, onSave }) {
       <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         <form onSubmit={handleSubmit} className="p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-gray-900">
+            <h2 className="text-xl font-bold text-heading">
               {product ? 'Edit Product' : 'Add Product'}
             </h2>
-            <button type="button" onClick={onClose} className="text-gray-500 hover:text-gray-700">
+            <button type="button" onClick={onClose} className="text-text-secondary hover:text-bark-700">
               <X className="w-6 h-6" />
             </button>
           </div>
@@ -607,7 +607,7 @@ function ProductModal({ product, onClose, onSave }) {
           <div className="space-y-4">
             {/* EPA Registration Number */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-bark-700 mb-1">
                 EPA Registration Number *
               </label>
               <input
@@ -615,14 +615,14 @@ function ProductModal({ product, onClose, onSave }) {
                 required
                 value={formData.epa_registration_number}
                 onChange={(e) => setFormData({...formData, epa_registration_number: e.target.value})}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white"
+                className="w-full px-3 py-2 border border-border-strong rounded-md bg-white"
                 placeholder="e.g., 12345-678"
               />
             </div>
 
             {/* Product Name */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-bark-700 mb-1">
                 Product Name *
               </label>
               <input
@@ -630,7 +630,7 @@ function ProductModal({ product, onClose, onSave }) {
                 required
                 value={formData.product_name}
                 onChange={(e) => setFormData({...formData, product_name: e.target.value})}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white"
+                className="w-full px-3 py-2 border border-border-strong rounded-md bg-white"
               />
             </div>
 
@@ -645,7 +645,7 @@ function ProductModal({ product, onClose, onSave }) {
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
+                className="px-4 py-2 border border-border-strong rounded-md hover:bg-cream-50"
               >
                 Cancel
               </button>

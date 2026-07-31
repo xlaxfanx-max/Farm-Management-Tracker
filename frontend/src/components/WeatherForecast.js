@@ -24,7 +24,7 @@ const FactorStatus = ({ status, value, message }) => {
   const config = {
     good: { icon: <CheckCircle className="w-4 h-4" />, color: 'text-primary', bg: 'bg-green-50' },
     fair: { icon: <AlertTriangle className="w-4 h-4" />, color: 'text-yellow-600', bg: 'bg-yellow-50' },
-    poor: { icon: <XCircle className="w-4 h-4" />, color: 'text-red-600', bg: 'bg-red-50' },
+    poor: { icon: <XCircle className="w-4 h-4" />, color: 'text-danger', bg: 'bg-danger-bg' },
   };
 
   const { icon, color, bg } = config[status] || config.fair;
@@ -34,7 +34,7 @@ const FactorStatus = ({ status, value, message }) => {
       <div className={color}>{icon}</div>
       <div className="flex-1">
         <div className={`font-medium ${color}`}>{message}</div>
-        <div className="text-sm text-gray-600">Current: {value}</div>
+        <div className="text-sm text-bark-600">Current: {value}</div>
       </div>
     </div>
   );
@@ -47,21 +47,21 @@ const DayForecastCard = ({ day, isToday }) => {
   const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 
   return (
-    <div className={`bg-white rounded-lg border ${isToday ? 'border-green-200 ring-2 ring-green-100' : 'border-gray-200'} p-4 text-center`}>
-      <div className="font-medium text-gray-900">{dayName}</div>
-      <div className="text-xs text-gray-500 mb-2">{dateStr}</div>
+    <div className={`bg-white rounded-lg border ${isToday ? 'border-green-200 ring-2 ring-green-100' : 'border-border'} p-4 text-center`}>
+      <div className="font-medium text-heading">{dayName}</div>
+      <div className="text-xs text-text-secondary mb-2">{dateStr}</div>
 
       <div className="flex justify-center my-3">
         {getWeatherIcon(day.icon, 'w-10 h-10')}
       </div>
 
-      <div className="text-lg font-bold text-gray-900">{day.high}°</div>
-      <div className="text-sm text-gray-500">{day.low}°</div>
+      <div className="text-lg font-bold text-heading">{day.high}°</div>
+      <div className="text-sm text-text-secondary">{day.low}°</div>
 
-      <div className="mt-3 pt-3 border-t border-gray-100">
-        <div className="text-xs text-gray-600 mb-2">{day.conditions}</div>
+      <div className="mt-3 pt-3 border-t border-border">
+        <div className="text-xs text-bark-600 mb-2">{day.conditions}</div>
 
-        <div className="flex justify-center gap-3 text-xs text-gray-500">
+        <div className="flex justify-center gap-3 text-xs text-text-secondary">
           <span className="flex items-center gap-1">
             <Wind className="w-3 h-3" />
             {day.wind_speed}
@@ -73,7 +73,7 @@ const DayForecastCard = ({ day, isToday }) => {
         </div>
 
         {day.rain_chance > 0 && (
-          <div className="mt-2 text-xs text-blue-600">
+          <div className="mt-2 text-xs text-link">
             {day.rain_chance}% rain
           </div>
         )}
@@ -183,8 +183,8 @@ export default function WeatherForecast() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Weather & Spray Forecast</h1>
-          <p className="text-gray-600">Real-time weather and spray condition assessment</p>
+          <h1 className="text-2xl font-bold text-heading">Weather & Spray Forecast</h1>
+          <p className="text-bark-600">Real-time weather and spray condition assessment</p>
         </div>
 
         <div className="flex items-center gap-3">
@@ -196,7 +196,7 @@ export default function WeatherForecast() {
                 const farm = farms.find(f => f.id === parseInt(e.target.value));
                 setSelectedFarm(farm);
               }}
-              className="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary focus:border-transparent"
+              className="border border-border-strong rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary focus:border-transparent"
             >
               {farms.map(farm => (
                 <option key={farm.id} value={farm.id}>
@@ -223,26 +223,26 @@ export default function WeatherForecast() {
         <div className="flex items-center justify-center py-16">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-            <p className="mt-4 text-gray-600">Loading weather data...</p>
+            <p className="mt-4 text-bark-600">Loading weather data...</p>
           </div>
         </div>
       )}
 
       {/* Error state */}
       {error && !loading && (
-        <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
-          <AlertCircle className="w-12 h-12 text-red-400 mx-auto mb-3" />
-          <h3 className="text-lg font-medium text-red-800 mb-2">Unable to Load Weather</h3>
-          <p className="text-red-600">{error}</p>
+        <div className="bg-danger-bg border border-danger/25 rounded-xl p-6 text-center">
+          <AlertCircle className="w-12 h-12 text-danger mx-auto mb-3" />
+          <h3 className="text-lg font-medium text-danger mb-2">Unable to Load Weather</h3>
+          <p className="text-danger">{error}</p>
         </div>
       )}
 
       {/* No farms state */}
       {farms.length === 0 && !loading && !error && (
-        <div className="bg-gray-50 border border-gray-200 rounded-xl p-8 text-center">
-          <MapPin className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No Farms Found</h3>
-          <p className="text-gray-600">Add a farm with GPS coordinates to view weather data.</p>
+        <div className="bg-cream-50 border border-border rounded-xl p-8 text-center">
+          <MapPin className="w-16 h-16 text-sand-300 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-heading mb-2">No Farms Found</h3>
+          <p className="text-bark-600">Add a farm with GPS coordinates to view weather data.</p>
         </div>
       )}
 
@@ -252,9 +252,9 @@ export default function WeatherForecast() {
           {/* Current conditions and spray assessment */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Current Weather Card */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                <Sun className="w-5 h-5 text-yellow-500" />
+            <div className="bg-white rounded-xl shadow-sm border border-border p-6">
+              <h2 className="text-lg font-semibold text-heading mb-4 flex items-center gap-2">
+                <Sun className="w-5 h-5 text-yellow-600" />
                 Current Conditions
               </h2>
 
@@ -263,41 +263,41 @@ export default function WeatherForecast() {
                   {getWeatherIcon(weather.icon, 'w-20 h-20')}
                 </div>
                 <div>
-                  <div className="text-5xl font-bold text-gray-900">
+                  <div className="text-5xl font-bold text-heading">
                     {weather.temperature}°F
                   </div>
-                  <div className="text-xl text-gray-600">{weather.conditions}</div>
+                  <div className="text-xl text-bark-600">{weather.conditions}</div>
                   {weather.feels_like !== weather.temperature && (
-                    <div className="text-gray-500">Feels like {weather.feels_like}°F</div>
+                    <div className="text-text-secondary">Feels like {weather.feels_like}°F</div>
                   )}
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-4 border-t border-gray-100">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-4 border-t border-border">
                 <div className="text-center">
-                  <Wind className="w-5 h-5 mx-auto text-gray-400 mb-1" />
-                  <div className="text-lg font-medium text-gray-900">{weather.wind_speed} mph</div>
-                  <div className="text-xs text-gray-500">{weather.wind_direction} Wind</div>
+                  <Wind className="w-5 h-5 mx-auto text-text-muted mb-1" />
+                  <div className="text-lg font-medium text-heading">{weather.wind_speed} mph</div>
+                  <div className="text-xs text-text-secondary">{weather.wind_direction} Wind</div>
                 </div>
                 <div className="text-center">
-                  <Droplets className="w-5 h-5 mx-auto text-gray-400 mb-1" />
-                  <div className="text-lg font-medium text-gray-900">{weather.humidity}%</div>
-                  <div className="text-xs text-gray-500">Humidity</div>
+                  <Droplets className="w-5 h-5 mx-auto text-text-muted mb-1" />
+                  <div className="text-lg font-medium text-heading">{weather.humidity}%</div>
+                  <div className="text-xs text-text-secondary">Humidity</div>
                 </div>
                 <div className="text-center">
-                  <Thermometer className="w-5 h-5 mx-auto text-gray-400 mb-1" />
-                  <div className="text-lg font-medium text-gray-900">{weather.dewpoint}°F</div>
-                  <div className="text-xs text-gray-500">Dewpoint</div>
+                  <Thermometer className="w-5 h-5 mx-auto text-text-muted mb-1" />
+                  <div className="text-lg font-medium text-heading">{weather.dewpoint}°F</div>
+                  <div className="text-xs text-text-secondary">Dewpoint</div>
                 </div>
                 <div className="text-center">
-                  <Cloud className="w-5 h-5 mx-auto text-gray-400 mb-1" />
-                  <div className="text-lg font-medium text-gray-900">{weather.clouds}%</div>
-                  <div className="text-xs text-gray-500">Cloud Cover</div>
+                  <Cloud className="w-5 h-5 mx-auto text-text-muted mb-1" />
+                  <div className="text-lg font-medium text-heading">{weather.clouds}%</div>
+                  <div className="text-xs text-text-secondary">Cloud Cover</div>
                 </div>
               </div>
 
               {weather.cached && (
-                <div className="mt-4 text-xs text-gray-400 text-center">
+                <div className="mt-4 text-xs text-text-muted text-center">
                   {weather.stale ? 'Cached data (API unavailable)' : 'Cached'}
                 </div>
               )}
@@ -305,19 +305,19 @@ export default function WeatherForecast() {
 
             {/* Spray Conditions Card */}
             {weather.spray_conditions && (
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                  <AlertCircle className="w-5 h-5 text-gray-400" />
+              <div className="bg-white rounded-xl shadow-sm border border-border p-6">
+                <h2 className="text-lg font-semibold text-heading mb-4 flex items-center gap-2">
+                  <AlertCircle className="w-5 h-5 text-text-muted" />
                   Spray Conditions Assessment
                 </h2>
 
                 <div className="flex items-center justify-between mb-6">
                   <SprayRatingBadge rating={weather.spray_conditions.rating} />
                   <div className="text-right">
-                    <div className="text-3xl font-bold text-gray-900">
+                    <div className="text-3xl font-bold text-heading">
                       {weather.spray_conditions.score}
                     </div>
-                    <div className="text-sm text-gray-500">out of 100</div>
+                    <div className="text-sm text-text-secondary">out of 100</div>
                   </div>
                 </div>
 
@@ -336,9 +336,9 @@ export default function WeatherForecast() {
           </div>
 
           {/* 7-Day Forecast */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-              <Calendar className="w-5 h-5 text-gray-400" />
+          <div className="bg-white rounded-xl shadow-sm border border-border p-6">
+            <h2 className="text-lg font-semibold text-heading mb-4 flex items-center gap-2">
+              <Calendar className="w-5 h-5 text-text-muted" />
               7-Day Forecast
             </h2>
 
@@ -349,7 +349,7 @@ export default function WeatherForecast() {
             </div>
 
             {forecast.cached && (
-              <div className="mt-4 text-xs text-gray-400 text-center">
+              <div className="mt-4 text-xs text-text-muted text-center">
                 {forecast.stale ? 'Cached forecast (API unavailable)' : 'Cached'}
               </div>
             )}
@@ -357,31 +357,31 @@ export default function WeatherForecast() {
 
           {/* Threshold Reference */}
           {thresholds && (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200">
+            <div className="bg-white rounded-xl shadow-sm border border-border">
               <button
                 onClick={() => setShowThresholds(!showThresholds)}
                 className="w-full flex items-center justify-between p-4 text-left"
               >
                 <div className="flex items-center gap-2">
-                  <Info className="w-5 h-5 text-gray-400" />
-                  <span className="font-medium text-gray-900">Spray Condition Thresholds</span>
+                  <Info className="w-5 h-5 text-text-muted" />
+                  <span className="font-medium text-heading">Spray Condition Thresholds</span>
                 </div>
                 {showThresholds ? (
-                  <ChevronDown className="w-5 h-5 text-gray-400" />
+                  <ChevronDown className="w-5 h-5 text-text-muted" />
                 ) : (
-                  <ChevronRight className="w-5 h-5 text-gray-400" />
+                  <ChevronRight className="w-5 h-5 text-text-muted" />
                 )}
               </button>
 
               {showThresholds && (
-                <div className="px-4 pb-4 border-t border-gray-100">
+                <div className="px-4 pb-4 border-t border-border">
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
                     {thresholds.descriptions && Object.entries(thresholds.descriptions).map(([key, desc]) => (
-                      <div key={key} className="bg-gray-50 rounded-lg p-4">
-                        <h4 className="font-medium text-gray-900 capitalize mb-2">{key}</h4>
+                      <div key={key} className="bg-cream-50 rounded-lg p-4">
+                        <h4 className="font-medium text-heading capitalize mb-2">{key}</h4>
                         <div className="space-y-1 text-sm">
                           {Object.entries(desc).map(([level, text]) => (
-                            <div key={level} className="text-gray-600">
+                            <div key={level} className="text-bark-600">
                               <span className="font-medium capitalize">{level}:</span> {text}
                             </div>
                           ))}

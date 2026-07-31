@@ -49,29 +49,29 @@ export default function Login() {
             </svg>
           </div>
           <h1 className="text-2xl font-bold text-bark-brown">Finch Farms Dashboard</h1>
-          <p className="text-gray-600 mt-1">Sign in to your account</p>
+          <p className="text-bark-600 mt-1">Sign in to your account</p>
         </div>
 
         {/* Login Form */}
         <div className="bg-white rounded-xl shadow-lg p-8">
           {displayError && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
-              <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-              <span className="text-red-700 text-sm">{displayError}</span>
+            <div className="mb-4 p-3 bg-danger-bg border border-danger/25 rounded-lg flex items-start gap-2">
+              <AlertCircle className="w-5 h-5 text-danger flex-shrink-0 mt-0.5" />
+              <span className="text-danger text-sm">{displayError}</span>
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-5">
             {/* Email */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-bark-700 mb-1">
                 Email Address
               </label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                className="w-full px-4 py-2.5 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                 placeholder="you@example.com"
                 required
                 autoComplete="email"
@@ -80,7 +80,7 @@ export default function Login() {
 
             {/* Password */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-bark-700 mb-1">
                 Password
               </label>
               <div className="relative">
@@ -88,7 +88,7 @@ export default function Login() {
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all pr-10"
+                  className="w-full px-4 py-2.5 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all pr-10"
                   placeholder="••••••••"
                   required
                   autoComplete="current-password"
@@ -96,7 +96,7 @@ export default function Login() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary hover:text-bark-700"
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
@@ -106,8 +106,8 @@ export default function Login() {
             {/* Remember Me & Forgot Password */}
             <div className="flex items-center justify-between">
               <label className="flex items-center">
-                <input type="checkbox" className="rounded border-gray-300 text-primary focus:ring-primary" />
-                <span className="ml-2 text-sm text-gray-600">Remember me</span>
+                <input type="checkbox" className="rounded border-border-strong text-primary focus:ring-primary" />
+                <span className="ml-2 text-sm text-bark-600">Remember me</span>
               </label>
               <a
                 href="/forgot-password"
@@ -138,13 +138,13 @@ export default function Login() {
           </form>
 
           {/* Invitation-only notice */}
-          <p className="mt-6 text-center text-sm text-gray-600">
+          <p className="mt-6 text-center text-sm text-bark-600">
             Need an account? Contact your administrator to receive an invitation.
           </p>
         </div>
 
         {/* Footer */}
-        <p className="mt-6 text-center text-xs text-gray-500">
+        <p className="mt-6 text-center text-xs text-text-secondary">
           Master your grove. Master your compliance.
         </p>
       </div>
@@ -234,36 +234,36 @@ export function Register({ onSwitchToLogin }) {
             </svg>
           </div>
           <h1 className="text-2xl font-bold text-bark-brown">Create Account</h1>
-          <p className="text-gray-600 mt-1">Start managing your grove operations</p>
+          <p className="text-bark-600 mt-1">Start managing your grove operations</p>
         </div>
 
         {/* Progress Steps */}
         <div className="flex items-center justify-center mb-6">
           <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-            step >= 1 ? 'bg-primary text-white' : 'bg-gray-200 text-gray-600'
+            step >= 1 ? 'bg-primary text-white' : 'bg-sand-200 text-bark-600'
           }`}>1</div>
-          <div className={`w-16 h-1 ${step >= 2 ? 'bg-primary' : 'bg-gray-200'}`} />
+          <div className={`w-16 h-1 ${step >= 2 ? 'bg-primary' : 'bg-sand-200'}`} />
           <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-            step >= 2 ? 'bg-primary text-white' : 'bg-gray-200 text-gray-600'
+            step >= 2 ? 'bg-primary text-white' : 'bg-sand-200 text-bark-600'
           }`}>2</div>
         </div>
 
         {/* Register Form */}
         <div className="bg-white rounded-xl shadow-lg p-8">
           {displayError && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
-              <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-              <span className="text-red-700 text-sm">{displayError}</span>
+            <div className="mb-4 p-3 bg-danger-bg border border-danger/25 rounded-lg flex items-start gap-2">
+              <AlertCircle className="w-5 h-5 text-danger flex-shrink-0 mt-0.5" />
+              <span className="text-danger text-sm">{displayError}</span>
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-5">
             {step === 1 ? (
               <>
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Company Information</h3>
+                <h3 className="text-lg font-medium text-heading mb-4">Company Information</h3>
                 {/* Company Name */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-bark-700 mb-1">
                     Company/Farm Name *
                   </label>
                   <input
@@ -271,7 +271,7 @@ export function Register({ onSwitchToLogin }) {
                     name="companyName"
                     value={formData.companyName}
                     onChange={handleChange}
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                    className="w-full px-4 py-2.5 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                     placeholder="Smith Family Farms"
                     required
                   />
@@ -279,7 +279,7 @@ export function Register({ onSwitchToLogin }) {
 
                 {/* Phone */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-bark-700 mb-1">
                     Phone Number
                   </label>
                   <input
@@ -287,7 +287,7 @@ export function Register({ onSwitchToLogin }) {
                     name="phone"
                     value={formData.phone}
                     onChange={handleChange}
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                    className="w-full px-4 py-2.5 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                     placeholder="(555) 123-4567"
                   />
                 </div>
@@ -303,11 +303,11 @@ export function Register({ onSwitchToLogin }) {
               </>
             ) : (
               <>
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Your Information</h3>
+                <h3 className="text-lg font-medium text-heading mb-4">Your Information</h3>
                 {/* Name Row */}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-bark-700 mb-1">
                       First Name
                     </label>
                     <input
@@ -315,12 +315,12 @@ export function Register({ onSwitchToLogin }) {
                       name="firstName"
                       value={formData.firstName}
                       onChange={handleChange}
-                      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                      className="w-full px-4 py-2.5 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                       placeholder="John"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-bark-700 mb-1">
                       Last Name
                     </label>
                     <input
@@ -328,7 +328,7 @@ export function Register({ onSwitchToLogin }) {
                       name="lastName"
                       value={formData.lastName}
                       onChange={handleChange}
-                      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                      className="w-full px-4 py-2.5 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                       placeholder="Smith"
                     />
                   </div>
@@ -336,7 +336,7 @@ export function Register({ onSwitchToLogin }) {
 
                 {/* Email */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-bark-700 mb-1">
                     Email Address *
                   </label>
                   <input
@@ -344,7 +344,7 @@ export function Register({ onSwitchToLogin }) {
                     name="email"
                     value={formData.email}
                     onChange={handleChange}
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                    className="w-full px-4 py-2.5 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                     placeholder="you@example.com"
                     required
                   />
@@ -352,7 +352,7 @@ export function Register({ onSwitchToLogin }) {
 
                 {/* Password */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-bark-700 mb-1">
                     Password *
                   </label>
                   <div className="relative">
@@ -361,7 +361,7 @@ export function Register({ onSwitchToLogin }) {
                       name="password"
                       value={formData.password}
                       onChange={handleChange}
-                      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent pr-10"
+                      className="w-full px-4 py-2.5 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent pr-10"
                       placeholder="••••••••"
                       required
                       minLength={8}
@@ -369,17 +369,17 @@ export function Register({ onSwitchToLogin }) {
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary hover:text-bark-700"
                     >
                       {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                     </button>
                   </div>
-                  <p className="mt-1 text-xs text-gray-500">Must be at least 8 characters</p>
+                  <p className="mt-1 text-xs text-text-secondary">Must be at least 8 characters</p>
                 </div>
 
                 {/* Confirm Password */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-bark-700 mb-1">
                     Confirm Password *
                   </label>
                   <input
@@ -387,7 +387,7 @@ export function Register({ onSwitchToLogin }) {
                     name="confirmPassword"
                     value={formData.confirmPassword}
                     onChange={handleChange}
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                    className="w-full px-4 py-2.5 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                     placeholder="••••••••"
                     required
                   />
@@ -397,7 +397,7 @@ export function Register({ onSwitchToLogin }) {
                   <button
                     type="button"
                     onClick={() => setStep(1)}
-                    className="flex-1 bg-gray-100 text-gray-700 py-2.5 px-4 rounded-lg font-medium hover:bg-gray-200 transition-all"
+                    className="flex-1 bg-cream-100 text-bark-700 py-2.5 px-4 rounded-lg font-medium hover:bg-sand-200 transition-all"
                   >
                     Back
                   </button>
@@ -415,7 +415,7 @@ export function Register({ onSwitchToLogin }) {
 
           {/* Login Link */}
           {onSwitchToLogin && (
-            <p className="mt-6 text-center text-sm text-gray-600">
+            <p className="mt-6 text-center text-sm text-bark-600">
               Already have an account?{' '}
               <button
                 onClick={onSwitchToLogin}

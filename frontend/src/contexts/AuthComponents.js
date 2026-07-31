@@ -47,9 +47,9 @@ export function CompanySelector() {
   // Don't show if user only has one company
   if (companies.length <= 1) {
     return (
-      <div className="flex items-center gap-2 px-3 py-2 bg-gray-50 rounded-lg">
-        <Building2 className="w-4 h-4 text-gray-500" />
-        <span className="text-sm font-medium text-gray-700 truncate max-w-[180px]">
+      <div className="flex items-center gap-2 px-3 py-2 bg-cream-50 rounded-lg">
+        <Building2 className="w-4 h-4 text-text-secondary" />
+        <span className="text-sm font-medium text-bark-700 truncate max-w-[180px]">
           {currentCompany?.name || 'No Company'}
         </span>
       </div>
@@ -61,28 +61,28 @@ export function CompanySelector() {
       <button
         onClick={() => setIsOpen(!isOpen)}
         disabled={loading}
-        className="flex items-center gap-2 px-3 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors min-w-[200px]"
+        className="flex items-center gap-2 px-3 py-2 bg-white border border-border rounded-lg hover:bg-cream-50 transition-colors min-w-[200px]"
       >
-        <Building2 className="w-4 h-4 text-gray-500" />
-        <span className="text-sm font-medium text-gray-700 truncate flex-1 text-left">
+        <Building2 className="w-4 h-4 text-text-secondary" />
+        <span className="text-sm font-medium text-bark-700 truncate flex-1 text-left">
           {loading ? 'Switching...' : currentCompany?.name || 'Select Company'}
         </span>
-        <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        <ChevronDown className={`w-4 h-4 text-text-muted transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
       {isOpen && (
-        <div className="absolute top-full left-0 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg z-50 py-1">
+        <div className="absolute top-full left-0 mt-1 w-full bg-white border border-border rounded-lg shadow-lg z-50 py-1">
           {companies.map((company) => (
             <button
               key={company.id}
               onClick={() => handleSwitch(company.id)}
-              className="w-full flex items-center gap-2 px-3 py-2 hover:bg-gray-50 transition-colors"
+              className="w-full flex items-center gap-2 px-3 py-2 hover:bg-cream-50 transition-colors"
             >
               <div className="flex-1 text-left">
-                <div className="text-sm font-medium text-gray-700 truncate">
+                <div className="text-sm font-medium text-bark-700 truncate">
                   {company.name}
                 </div>
-                <div className="text-xs text-gray-500">
+                <div className="text-xs text-text-secondary">
                   {company.role}
                 </div>
               </div>
@@ -138,7 +138,7 @@ export function UserMenu() {
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 p-1 rounded-full hover:bg-gray-100 transition-colors"
+        className="flex items-center gap-2 p-1 rounded-full hover:bg-cream-100 transition-colors"
       >
         <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
           <span className="text-sm font-medium text-white">{initials}</span>
@@ -146,13 +146,13 @@ export function UserMenu() {
       </button>
 
       {isOpen && (
-        <div className="absolute top-full right-0 mt-2 w-64 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+        <div className="absolute top-full right-0 mt-2 w-64 bg-white border border-border rounded-lg shadow-lg z-50">
           {/* User Info */}
-          <div className="px-4 py-3 border-b border-gray-100">
-            <div className="font-medium text-gray-900">
+          <div className="px-4 py-3 border-b border-border">
+            <div className="font-medium text-heading">
               {user?.first_name} {user?.last_name}
             </div>
-            <div className="text-sm text-gray-500 truncate">
+            <div className="text-sm text-text-secondary truncate">
               {user?.email}
             </div>
             {currentCompany && (
@@ -166,14 +166,14 @@ export function UserMenu() {
           <div className="py-1">
             <a
               href="/profile"
-              className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+              className="block px-4 py-2 text-sm text-bark-700 hover:bg-cream-50"
               onClick={() => setIsOpen(false)}
             >
               Your Profile
             </a>
             <a
               href="/settings"
-              className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+              className="block px-4 py-2 text-sm text-bark-700 hover:bg-cream-50"
               onClick={() => setIsOpen(false)}
             >
               Settings
@@ -181,7 +181,7 @@ export function UserMenu() {
             {currentCompany?.role_codename === 'owner' && (
               <a
                 href="/company-settings"
-                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                className="block px-4 py-2 text-sm text-bark-700 hover:bg-cream-50"
                 onClick={() => setIsOpen(false)}
               >
                 Company Settings
@@ -190,10 +190,10 @@ export function UserMenu() {
           </div>
 
           {/* Logout */}
-          <div className="border-t border-gray-100 py-1">
+          <div className="border-t border-border py-1">
             <button
               onClick={handleLogout}
-              className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+              className="w-full text-left px-4 py-2 text-sm text-danger hover:bg-danger-bg"
             >
               Sign Out
             </button>
@@ -253,13 +253,13 @@ export function PermissionGate({
 
 export function RoleBadge({ role, size = 'sm' }) {
   const roleColors = {
-    owner: 'bg-purple-100 text-purple-800',
-    admin: 'bg-blue-100 text-blue-800',
-    manager: 'bg-green-100 text-green-800',
+    owner: 'bg-sand-200 text-bark-800',
+    admin: 'bg-orange-100 text-orange-700',
+    manager: 'bg-green-100 text-green-700',
     applicator: 'bg-orange-100 text-orange-800',
-    worker: 'bg-gray-100 text-gray-800',
-    viewer: 'bg-gray-100 text-gray-600',
-    pca: 'bg-teal-100 text-teal-800',
+    worker: 'bg-cream-100 text-text',
+    viewer: 'bg-cream-100 text-bark-600',
+    pca: 'bg-green-100 text-green-800',
     accountant: 'bg-yellow-100 text-yellow-800',
   };
 
@@ -269,7 +269,7 @@ export function RoleBadge({ role, size = 'sm' }) {
     md: 'text-sm px-2.5 py-1',
   };
 
-  const colorClass = roleColors[role?.toLowerCase()] || 'bg-gray-100 text-gray-800';
+  const colorClass = roleColors[role?.toLowerCase()] || 'bg-cream-100 text-text';
   const sizeClass = sizeClasses[size] || sizeClasses.sm;
 
   return (
@@ -351,7 +351,7 @@ export function InviteUserModal({ isOpen, onClose, onSuccess }) {
           </div>
           <button
             onClick={handleClose}
-            className="text-gray-400 hover:text-gray-600"
+            className="text-text-muted hover:text-bark-600"
           >
             <X className="w-5 h-5" />
           </button>
@@ -360,34 +360,34 @@ export function InviteUserModal({ isOpen, onClose, onSuccess }) {
         {/* Form */}
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           {error && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
-              <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
-              <span className="text-red-700 text-sm">{error}</span>
+            <div className="p-3 bg-danger-bg border border-danger/25 rounded-lg flex items-start gap-2">
+              <AlertCircle className="w-5 h-5 text-danger flex-shrink-0" />
+              <span className="text-danger text-sm">{error}</span>
             </div>
           )}
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-bark-700 mb-1">
               Email Address *
             </label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+              className="w-full px-4 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
               placeholder="colleague@example.com"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-bark-700 mb-1">
               Role *
             </label>
             <select
               value={role}
               onChange={(e) => setRole(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+              className="w-full px-4 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
             >
               {roles.map((r) => (
                 <option key={r.codename} value={r.codename}>
@@ -398,13 +398,13 @@ export function InviteUserModal({ isOpen, onClose, onSuccess }) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-bark-700 mb-1">
               Personal Message (optional)
             </label>
             <textarea
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+              className="w-full px-4 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
               rows={3}
               placeholder="Welcome to the team!"
             />
@@ -414,7 +414,7 @@ export function InviteUserModal({ isOpen, onClose, onSuccess }) {
             <button
               type="button"
               onClick={handleClose}
-              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+              className="flex-1 px-4 py-2 border border-border-strong rounded-lg text-bark-700 hover:bg-cream-50"
             >
               Cancel
             </button>

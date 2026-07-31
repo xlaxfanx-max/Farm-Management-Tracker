@@ -21,26 +21,26 @@ import { weatherAPI, farmsAPI } from '../services/api';
 // Weather icon mapping from OpenWeatherMap codes
 const getWeatherIcon = (iconCode, size = 'w-8 h-8') => {
   const iconMap = {
-    '01d': <Sun className={`${size} text-yellow-500`} />,
-    '01n': <Sun className={`${size} text-yellow-400`} />,
-    '02d': <Cloud className={`${size} text-gray-400`} />,
-    '02n': <Cloud className={`${size} text-gray-400`} />,
-    '03d': <Cloud className={`${size} text-gray-500`} />,
-    '03n': <Cloud className={`${size} text-gray-500`} />,
-    '04d': <Cloud className={`${size} text-gray-600`} />,
-    '04n': <Cloud className={`${size} text-gray-600`} />,
-    '09d': <CloudRain className={`${size} text-blue-500`} />,
-    '09n': <CloudRain className={`${size} text-blue-500`} />,
-    '10d': <CloudRain className={`${size} text-blue-400`} />,
-    '10n': <CloudRain className={`${size} text-blue-400`} />,
+    '01d': <Sun className={`${size} text-yellow-600`} />,
+    '01n': <Sun className={`${size} text-yellow-600`} />,
+    '02d': <Cloud className={`${size} text-text-muted`} />,
+    '02n': <Cloud className={`${size} text-text-muted`} />,
+    '03d': <Cloud className={`${size} text-text-secondary`} />,
+    '03n': <Cloud className={`${size} text-text-secondary`} />,
+    '04d': <Cloud className={`${size} text-bark-600`} />,
+    '04n': <Cloud className={`${size} text-bark-600`} />,
+    '09d': <CloudRain className={`${size} text-orange-500`} />,
+    '09n': <CloudRain className={`${size} text-orange-500`} />,
+    '10d': <CloudRain className={`${size} text-orange-400`} />,
+    '10n': <CloudRain className={`${size} text-orange-400`} />,
     '11d': <CloudLightning className={`${size} text-yellow-600`} />,
     '11n': <CloudLightning className={`${size} text-yellow-600`} />,
-    '13d': <CloudSnow className={`${size} text-blue-200`} />,
-    '13n': <CloudSnow className={`${size} text-blue-200`} />,
-    '50d': <CloudFog className={`${size} text-gray-400`} />,
-    '50n': <CloudFog className={`${size} text-gray-400`} />,
+    '13d': <CloudSnow className={`${size} text-orange-200`} />,
+    '13n': <CloudSnow className={`${size} text-orange-200`} />,
+    '50d': <CloudFog className={`${size} text-text-muted`} />,
+    '50n': <CloudFog className={`${size} text-text-muted`} />,
   };
-  return iconMap[iconCode] || <Cloud className={`${size} text-gray-400`} />;
+  return iconMap[iconCode] || <Cloud className={`${size} text-text-muted`} />;
 };
 
 // Spray rating badge component
@@ -62,9 +62,9 @@ const SprayRatingBadge = ({ rating, showLabel = true }) => {
     },
     poor: {
       icon: <XCircle className="w-4 h-4" />,
-      bg: 'bg-red-100',
-      text: 'text-red-700',
-      border: 'border-red-200',
+      bg: 'bg-danger-bg',
+      text: 'text-danger',
+      border: 'border-danger/25',
       label: 'Poor Spray Conditions',
     },
   };
@@ -160,12 +160,12 @@ export default function WeatherWidget({ onViewForecast }) {
   // No farms state
   if (farms.length === 0 && !loading) {
     return (
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+      <div className="bg-white rounded-xl shadow-sm border border-border p-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-900">Weather</h3>
+          <h3 className="text-lg font-semibold text-heading">Weather</h3>
         </div>
-        <div className="text-center py-6 text-gray-500">
-          <MapPin className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+        <div className="text-center py-6 text-text-secondary">
+          <MapPin className="w-12 h-12 mx-auto mb-3 text-sand-300" />
           <p>Add a farm to see weather data</p>
         </div>
       </div>
@@ -173,10 +173,10 @@ export default function WeatherWidget({ onViewForecast }) {
   }
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+    <div className="bg-white rounded-xl shadow-sm border border-border p-6">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-gray-900">Weather</h3>
+        <h3 className="text-lg font-semibold text-heading">Weather</h3>
         <div className="flex items-center gap-2">
           {farms.length > 1 && (
             <select
@@ -185,7 +185,7 @@ export default function WeatherWidget({ onViewForecast }) {
                 const farm = farms.find(f => f.id === parseInt(e.target.value));
                 setSelectedFarm(farm);
               }}
-              className="text-sm border border-gray-200 rounded-lg px-2 py-1 focus:ring-2 focus:ring-primary focus:border-transparent"
+              className="text-sm border border-border rounded-lg px-2 py-1 focus:ring-2 focus:ring-primary focus:border-transparent"
             >
               {farms.map(farm => (
                 <option key={farm.id} value={farm.id}>{farm.name}</option>
@@ -195,7 +195,7 @@ export default function WeatherWidget({ onViewForecast }) {
           <button
             onClick={handleRefresh}
             disabled={refreshing || loading}
-            className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
+            className="p-1.5 text-text-muted hover:text-bark-600 hover:bg-cream-100 rounded-lg transition-colors disabled:opacity-50"
             title="Refresh weather"
           >
             <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
@@ -212,8 +212,8 @@ export default function WeatherWidget({ onViewForecast }) {
 
       {/* Error state */}
       {error && !loading && (
-        <div className="flex flex-col items-center justify-center py-6 text-gray-500">
-          <AlertCircle className="w-10 h-10 mb-2 text-gray-300" />
+        <div className="flex flex-col items-center justify-center py-6 text-text-secondary">
+          <AlertCircle className="w-10 h-10 mb-2 text-sand-300" />
           <p className="text-sm">{error}</p>
           {error === 'Farm needs GPS coordinates' && (
             <p className="text-xs mt-1">Set coordinates in farm settings</p>
@@ -230,12 +230,12 @@ export default function WeatherWidget({ onViewForecast }) {
               {getWeatherIcon(weather.icon, 'w-16 h-16')}
             </div>
             <div className="flex-1">
-              <div className="text-4xl font-bold text-gray-900">
+              <div className="text-4xl font-bold text-heading">
                 {weather.temperature}°F
               </div>
-              <div className="text-gray-600">{weather.conditions}</div>
+              <div className="text-bark-600">{weather.conditions}</div>
               {weather.feels_like !== weather.temperature && (
-                <div className="text-sm text-gray-500">
+                <div className="text-sm text-text-secondary">
                   Feels like {weather.feels_like}°F
                 </div>
               )}
@@ -243,33 +243,33 @@ export default function WeatherWidget({ onViewForecast }) {
           </div>
 
           {/* Weather details */}
-          <div className="grid grid-cols-3 gap-3 py-3 border-t border-b border-gray-100">
+          <div className="grid grid-cols-3 gap-3 py-3 border-t border-b border-border">
             <div className="text-center">
-              <div className="flex items-center justify-center gap-1 text-gray-500 mb-1">
+              <div className="flex items-center justify-center gap-1 text-text-secondary mb-1">
                 <Wind className="w-4 h-4" />
               </div>
-              <div className="text-sm font-medium text-gray-900">
+              <div className="text-sm font-medium text-heading">
                 {weather.wind_speed} mph
               </div>
-              <div className="text-xs text-gray-500">{weather.wind_direction}</div>
+              <div className="text-xs text-text-secondary">{weather.wind_direction}</div>
             </div>
             <div className="text-center">
-              <div className="flex items-center justify-center gap-1 text-gray-500 mb-1">
+              <div className="flex items-center justify-center gap-1 text-text-secondary mb-1">
                 <Droplets className="w-4 h-4" />
               </div>
-              <div className="text-sm font-medium text-gray-900">
+              <div className="text-sm font-medium text-heading">
                 {weather.humidity}%
               </div>
-              <div className="text-xs text-gray-500">Humidity</div>
+              <div className="text-xs text-text-secondary">Humidity</div>
             </div>
             <div className="text-center">
-              <div className="flex items-center justify-center gap-1 text-gray-500 mb-1">
+              <div className="flex items-center justify-center gap-1 text-text-secondary mb-1">
                 <Thermometer className="w-4 h-4" />
               </div>
-              <div className="text-sm font-medium text-gray-900">
+              <div className="text-sm font-medium text-heading">
                 {weather.dewpoint}°F
               </div>
-              <div className="text-xs text-gray-500">Dewpoint</div>
+              <div className="text-xs text-text-secondary">Dewpoint</div>
             </div>
           </div>
 
@@ -277,7 +277,7 @@ export default function WeatherWidget({ onViewForecast }) {
           {weather.spray_conditions && (
             <div className="pt-2">
               <SprayRatingBadge rating={weather.spray_conditions.rating} />
-              <div className="mt-2 text-sm text-gray-600">
+              <div className="mt-2 text-sm text-bark-600">
                 Score: {weather.spray_conditions.score}/100
               </div>
             </div>
@@ -295,7 +295,7 @@ export default function WeatherWidget({ onViewForecast }) {
 
           {/* Cache indicator */}
           {weather.cached && (
-            <div className="text-xs text-gray-400 text-center">
+            <div className="text-xs text-text-muted text-center">
               {weather.stale ? 'Cached (offline)' : 'Cached'}
             </div>
           )}

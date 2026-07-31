@@ -80,10 +80,10 @@ const PoolDetail = ({ pool, onBack, onEdit, onRefresh }) => {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'active': return 'bg-green-100 text-green-800';
+      case 'active': return 'bg-green-100 text-green-700';
       case 'closed': return 'bg-yellow-100 text-yellow-800';
-      case 'settled': return 'bg-blue-100 text-blue-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'settled': return 'bg-orange-100 text-orange-700';
+      default: return 'bg-cream-100 text-text';
     }
   };
 
@@ -101,22 +101,22 @@ const PoolDetail = ({ pool, onBack, onEdit, onRefresh }) => {
         <div className="flex items-center space-x-4">
           <button
             onClick={onBack}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-2 hover:bg-cream-100 rounded-lg transition-colors"
           >
-            <ArrowLeft className="w-5 h-5 text-gray-600" />
+            <ArrowLeft className="w-5 h-5 text-bark-600" />
           </button>
           <div>
-            <h2 className="text-xl font-bold text-gray-900 flex items-center">
+            <h2 className="text-xl font-bold text-heading flex items-center">
               <Boxes className="w-6 h-6 mr-2 text-primary" />
               {pool.name}
             </h2>
-            <div className="flex items-center space-x-3 text-sm text-gray-500 mt-1">
+            <div className="flex items-center space-x-3 text-sm text-text-secondary mt-1">
               <span className="flex items-center">
                 <Building2 className="w-4 h-4 mr-1" />
                 {pool.packinghouse_name}
               </span>
               <span>{pool.commodity}</span>
-              {pool.variety && <span className="text-gray-400">• {pool.variety}</span>}
+              {pool.variety && <span className="text-text-muted">• {pool.variety}</span>}
               <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${getStatusColor(pool.status)}`}>
                 {pool.status}
               </span>
@@ -127,14 +127,14 @@ const PoolDetail = ({ pool, onBack, onEdit, onRefresh }) => {
         <div className="flex items-center space-x-2">
           <button
             onClick={fetchPoolData}
-            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg"
+            className="p-2 text-text-muted hover:text-bark-600 hover:bg-cream-100 rounded-lg"
             title="Refresh"
           >
             <RefreshCw className="w-5 h-5" />
           </button>
           <button
             onClick={onEdit}
-            className="flex items-center px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+            className="flex items-center px-4 py-2 border border-border-strong rounded-lg hover:bg-cream-50"
           >
             <Edit className="w-4 h-4 mr-2" />
             Edit Pool
@@ -145,38 +145,38 @@ const PoolDetail = ({ pool, onBack, onEdit, onRefresh }) => {
       {/* Summary Cards */}
       {summary && (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="bg-white rounded-lg border border-gray-200 p-4">
-            <div className="text-sm text-gray-500">Total Deliveries</div>
-            <div className="text-2xl font-bold text-gray-900">
+          <div className="bg-white rounded-lg border border-border p-4">
+            <div className="text-sm text-text-secondary">Total Deliveries</div>
+            <div className="text-2xl font-bold text-heading">
               {summary.delivery_stats?.total_deliveries || 0}
             </div>
           </div>
-          <div className="bg-white rounded-lg border border-gray-200 p-4">
-            <div className="text-sm text-gray-500">Total Bins</div>
+          <div className="bg-white rounded-lg border border-border p-4">
+            <div className="text-sm text-text-secondary">Total Bins</div>
             <div className="text-2xl font-bold text-primary">
               {formatNumber(summary.delivery_stats?.total_bins)}
             </div>
           </div>
           {summary.packout_stats && (
-            <div className="bg-white rounded-lg border border-gray-200 p-4">
-              <div className="text-sm text-gray-500">Pack Percentage</div>
-              <div className="text-2xl font-bold text-blue-600">
+            <div className="bg-white rounded-lg border border-border p-4">
+              <div className="text-sm text-text-secondary">Pack Percentage</div>
+              <div className="text-2xl font-bold text-link">
                 {summary.packout_stats.total_packed_percent}%
               </div>
               {summary.packout_stats.house_avg_packed_percent && (
-                <div className="text-xs text-gray-500 mt-1">
+                <div className="text-xs text-text-secondary mt-1">
                   House Avg: {summary.packout_stats.house_avg_packed_percent}%
                 </div>
               )}
             </div>
           )}
           {summary.settlement_stats && (
-            <div className="bg-white rounded-lg border border-gray-200 p-4">
-              <div className="text-sm text-gray-500">Net Return</div>
+            <div className="bg-white rounded-lg border border-border p-4">
+              <div className="text-sm text-text-secondary">Net Return</div>
               <div className="text-2xl font-bold text-primary">
                 {formatCurrency(summary.settlement_stats.net_return)}
               </div>
-              <div className="text-xs text-gray-500 mt-1">
+              <div className="text-xs text-text-secondary mt-1">
                 {formatCurrency(summary.settlement_stats.net_per_bin)}/bin
               </div>
             </div>
@@ -186,16 +186,16 @@ const PoolDetail = ({ pool, onBack, onEdit, onRefresh }) => {
 
       {/* Fields Breakdown */}
       {summary?.fields_breakdown?.length > 0 && (
-        <div className="bg-white rounded-lg border border-gray-200">
-          <div className="p-4 border-b border-gray-200">
-            <h3 className="font-semibold text-gray-800">Deliveries by Block</h3>
+        <div className="bg-white rounded-lg border border-border">
+          <div className="p-4 border-b border-border">
+            <h3 className="font-semibold text-text">Deliveries by Block</h3>
           </div>
-          <div className="divide-y divide-gray-100">
+          <div className="divide-y divide-border">
             {summary.fields_breakdown.map((field, idx) => (
               <div key={idx} className="p-3 flex justify-between items-center">
-                <span className="text-gray-900">{field.field__name}</span>
+                <span className="text-heading">{field.field__name}</span>
                 <div className="flex items-center space-x-4 text-sm">
-                  <span className="text-gray-500">{field.deliveries} deliveries</span>
+                  <span className="text-text-secondary">{field.deliveries} deliveries</span>
                   <span className="font-semibold text-primary">{formatNumber(field.bins)} bins</span>
                 </div>
               </div>
@@ -205,7 +205,7 @@ const PoolDetail = ({ pool, onBack, onEdit, onRefresh }) => {
       )}
 
       {/* Tab Navigation */}
-      <div className="border-b border-gray-200">
+      <div className="border-b border-border">
         <nav className="flex space-x-8">
           {tabs.map(({ id, label, icon: Icon, count }) => (
             <button
@@ -214,13 +214,13 @@ const PoolDetail = ({ pool, onBack, onEdit, onRefresh }) => {
               className={`flex items-center py-3 border-b-2 font-medium text-sm transition-colors ${
                 activeTab === id
                   ? 'border-primary text-primary'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
+                  : 'border-transparent text-text-secondary hover:text-bark-700'
               }`}
             >
               <Icon className="w-4 h-4 mr-2" />
               {label}
               {count !== undefined && (
-                <span className="ml-2 px-2 py-0.5 bg-gray-100 text-gray-600 rounded-full text-xs">
+                <span className="ml-2 px-2 py-0.5 bg-cream-100 text-bark-600 rounded-full text-xs">
                   {count}
                 </span>
               )}
@@ -250,26 +250,26 @@ const PoolDetail = ({ pool, onBack, onEdit, onRefresh }) => {
               </div>
 
               {deliveries.length === 0 ? (
-                <div className="text-center py-8 bg-gray-50 rounded-lg">
-                  <Truck className="w-12 h-12 mx-auto text-gray-300 mb-3" />
-                  <p className="text-gray-500">No deliveries recorded yet.</p>
+                <div className="text-center py-8 bg-cream-50 rounded-lg">
+                  <Truck className="w-12 h-12 mx-auto text-sand-300 mb-3" />
+                  <p className="text-text-secondary">No deliveries recorded yet.</p>
                 </div>
               ) : (
-                <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
+                <div className="bg-white rounded-lg border border-border overflow-hidden">
+                  <table className="min-w-full divide-y divide-border">
+                    <thead className="bg-cream-50">
                       <tr>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ticket #</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Field</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Harvest</th>
-                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Bins</th>
-                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Weight</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-text-secondary uppercase">Date</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-text-secondary uppercase">Ticket #</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-text-secondary uppercase">Field</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-text-secondary uppercase">Harvest</th>
+                        <th className="px-4 py-3 text-right text-xs font-medium text-text-secondary uppercase">Bins</th>
+                        <th className="px-4 py-3 text-right text-xs font-medium text-text-secondary uppercase">Weight</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-200">
+                    <tbody className="divide-y divide-border">
                       {deliveries.map((d) => (
-                        <tr key={d.id} className="hover:bg-gray-50">
+                        <tr key={d.id} className="hover:bg-cream-50">
                           <td className="px-4 py-3 text-sm">
                             {new Date(d.delivery_date).toLocaleDateString()}
                           </td>
@@ -284,13 +284,13 @@ const PoolDetail = ({ pool, onBack, onEdit, onRefresh }) => {
                                 {d.harvest_lot || d.harvest_date}
                               </span>
                             ) : (
-                              <span className="text-gray-400 text-xs">Not linked</span>
+                              <span className="text-text-muted text-xs">Not linked</span>
                             )}
                           </td>
                           <td className="px-4 py-3 text-sm text-right font-semibold">
                             {formatNumber(d.bins, 2)}
                           </td>
-                          <td className="px-4 py-3 text-sm text-right text-gray-500">
+                          <td className="px-4 py-3 text-sm text-right text-text-secondary">
                             {d.weight_lbs ? `${formatNumber(d.weight_lbs)} lbs` : '-'}
                           </td>
                         </tr>
@@ -316,40 +316,40 @@ const PoolDetail = ({ pool, onBack, onEdit, onRefresh }) => {
               </div>
 
               {packoutReports.length === 0 ? (
-                <div className="text-center py-8 bg-gray-50 rounded-lg">
-                  <FileText className="w-12 h-12 mx-auto text-gray-300 mb-3" />
-                  <p className="text-gray-500">No packout reports recorded yet.</p>
+                <div className="text-center py-8 bg-cream-50 rounded-lg">
+                  <FileText className="w-12 h-12 mx-auto text-sand-300 mb-3" />
+                  <p className="text-text-secondary">No packout reports recorded yet.</p>
                 </div>
               ) : (
-                <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
+                <div className="bg-white rounded-lg border border-border overflow-hidden">
+                  <table className="min-w-full divide-y divide-border">
+                    <thead className="bg-cream-50">
                       <tr>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Report Date</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Period</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Field</th>
-                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Bins</th>
-                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Pack %</th>
-                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">House Avg</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-text-secondary uppercase">Report Date</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-text-secondary uppercase">Period</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-text-secondary uppercase">Field</th>
+                        <th className="px-4 py-3 text-right text-xs font-medium text-text-secondary uppercase">Bins</th>
+                        <th className="px-4 py-3 text-right text-xs font-medium text-text-secondary uppercase">Pack %</th>
+                        <th className="px-4 py-3 text-right text-xs font-medium text-text-secondary uppercase">House Avg</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-200">
+                    <tbody className="divide-y divide-border">
                       {packoutReports.map((r) => (
-                        <tr key={r.id} className="hover:bg-gray-50">
+                        <tr key={r.id} className="hover:bg-cream-50">
                           <td className="px-4 py-3 text-sm">
                             {new Date(r.report_date).toLocaleDateString()}
                           </td>
-                          <td className="px-4 py-3 text-sm text-gray-500">
+                          <td className="px-4 py-3 text-sm text-text-secondary">
                             {new Date(r.period_start).toLocaleDateString()} - {new Date(r.period_end).toLocaleDateString()}
                           </td>
                           <td className="px-4 py-3 text-sm">{r.field_name}</td>
                           <td className="px-4 py-3 text-sm text-right">
                             {formatNumber(r.bins_this_period, 2)}
                           </td>
-                          <td className="px-4 py-3 text-sm text-right font-semibold text-blue-600">
+                          <td className="px-4 py-3 text-sm text-right font-semibold text-link">
                             {r.total_packed_percent}%
                           </td>
-                          <td className="px-4 py-3 text-sm text-right text-gray-500">
+                          <td className="px-4 py-3 text-sm text-right text-text-secondary">
                             {r.house_avg_packed_percent ? `${r.house_avg_packed_percent}%` : '-'}
                           </td>
                         </tr>
@@ -365,25 +365,25 @@ const PoolDetail = ({ pool, onBack, onEdit, onRefresh }) => {
           {activeTab === 'settlements' && (
             <div className="space-y-4">
               {settlements.length === 0 ? (
-                <div className="text-center py-8 bg-gray-50 rounded-lg">
-                  <DollarSign className="w-12 h-12 mx-auto text-gray-300 mb-3" />
-                  <p className="text-gray-500">No settlements recorded yet.</p>
+                <div className="text-center py-8 bg-cream-50 rounded-lg">
+                  <DollarSign className="w-12 h-12 mx-auto text-sand-300 mb-3" />
+                  <p className="text-text-secondary">No settlements recorded yet.</p>
                 </div>
               ) : (
-                <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
+                <div className="bg-white rounded-lg border border-border overflow-hidden">
+                  <table className="min-w-full divide-y divide-border">
+                    <thead className="bg-cream-50">
                       <tr>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Field</th>
-                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Bins</th>
-                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Net Return</th>
-                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">$/Bin</th>
-                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Amount Due</th>
-                        <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Details</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-text-secondary uppercase">Date</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-text-secondary uppercase">Field</th>
+                        <th className="px-4 py-3 text-right text-xs font-medium text-text-secondary uppercase">Bins</th>
+                        <th className="px-4 py-3 text-right text-xs font-medium text-text-secondary uppercase">Net Return</th>
+                        <th className="px-4 py-3 text-right text-xs font-medium text-text-secondary uppercase">$/Bin</th>
+                        <th className="px-4 py-3 text-right text-xs font-medium text-text-secondary uppercase">Amount Due</th>
+                        <th className="px-4 py-3 text-center text-xs font-medium text-text-secondary uppercase">Details</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-200">
+                    <tbody className="divide-y divide-border">
                       {settlements.map((s) => (
                         <tr
                           key={s.id}
@@ -394,7 +394,7 @@ const PoolDetail = ({ pool, onBack, onEdit, onRefresh }) => {
                             {new Date(s.statement_date).toLocaleDateString()}
                           </td>
                           <td className="px-4 py-3 text-sm">
-                            {s.field_name || <span className="text-gray-400">All Blocks</span>}
+                            {s.field_name || <span className="text-text-muted">All Blocks</span>}
                           </td>
                           <td className="px-4 py-3 text-sm text-right">
                             {formatNumber(s.total_bins, 2)}
@@ -406,7 +406,7 @@ const PoolDetail = ({ pool, onBack, onEdit, onRefresh }) => {
                             {formatCurrency(s.net_per_bin)}
                             {s.variance_vs_house_per_bin !== null && (
                               <span className={`ml-1 text-xs ${
-                                s.variance_vs_house_per_bin >= 0 ? 'text-primary' : 'text-red-600'
+                                s.variance_vs_house_per_bin >= 0 ? 'text-primary' : 'text-danger'
                               }`}>
                                 ({s.variance_vs_house_per_bin >= 0 ? '+' : ''}{formatCurrency(s.variance_vs_house_per_bin)})
                               </span>

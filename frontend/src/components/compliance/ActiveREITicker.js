@@ -15,8 +15,8 @@ function formatCountdown(seconds) {
 
 function timerColor(seconds) {
   if (seconds > 4 * 3600) return 'text-primary';
-  if (seconds > 3600) return 'text-amber-600';
-  return 'text-red-600';
+  if (seconds > 3600) return 'text-yellow-600';
+  return 'text-danger';
 }
 
 function REIRow({ entry, onMarkCleared }) {
@@ -40,12 +40,12 @@ function REIRow({ entry, onMarkCleared }) {
   const expired = remaining <= 0;
 
   return (
-    <div className="flex items-center gap-3 py-2 border-b border-amber-200 last:border-0">
+    <div className="flex items-center gap-3 py-2 border-b border-yellow-200 last:border-0">
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-gray-900 truncate">
+        <p className="text-sm font-medium text-heading truncate">
           {entry.field_name}
         </p>
-        <p className="text-xs text-gray-600">{entry.product_name}</p>
+        <p className="text-xs text-bark-600">{entry.product_name}</p>
       </div>
       <div className={`text-sm font-mono font-semibold flex-shrink-0 ${timerColor(remaining)}`}>
         {formatCountdown(remaining)}
@@ -96,26 +96,26 @@ export default function ActiveREITicker() {
   if (loading || dismissed || entries.length === 0) return null;
 
   return (
-    <div className="w-full bg-amber-50 border border-amber-300 rounded-xl shadow-sm overflow-hidden">
-      <div className="flex items-center justify-between px-4 py-2 bg-amber-100 border-b border-amber-200">
+    <div className="w-full bg-yellow-100 border border-yellow-300 rounded-xl shadow-sm overflow-hidden">
+      <div className="flex items-center justify-between px-4 py-2 bg-yellow-200 border-b border-yellow-200">
         <div className="flex items-center gap-2">
-          <AlertTriangle className="w-4 h-4 text-amber-600 flex-shrink-0" />
-          <span className="text-sm font-semibold text-amber-800">
+          <AlertTriangle className="w-4 h-4 text-yellow-600 flex-shrink-0" />
+          <span className="text-sm font-semibold text-yellow-800">
             Active REI Intervals — Keep workers out of treated areas
           </span>
-          <span className="ml-1 inline-flex items-center justify-center w-5 h-5 rounded-full bg-amber-600 text-white text-xs font-bold">
+          <span className="ml-1 inline-flex items-center justify-center w-5 h-5 rounded-full bg-yellow-600 text-white text-xs font-bold">
             {entries.length}
           </span>
         </div>
         <button
           onClick={() => setDismissed(true)}
-          className="p-1 rounded text-amber-600 hover:bg-amber-200 transition-colors"
+          className="p-1 rounded text-yellow-600 hover:bg-yellow-200 transition-colors"
           title="Dismiss banner"
         >
           <X className="w-4 h-4" />
         </button>
       </div>
-      <div className="px-4 divide-y divide-amber-100">
+      <div className="px-4 divide-y divide-yellow-200">
         {entries.map((entry) => (
           <REIRow key={entry.id} entry={entry} onMarkCleared={handleMarkCleared} />
         ))}

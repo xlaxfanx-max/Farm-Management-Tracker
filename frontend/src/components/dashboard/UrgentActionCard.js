@@ -3,28 +3,28 @@ import { AlertTriangle, AlertCircle, Info, ArrowRight } from 'lucide-react';
 
 const PRIORITY_STYLES = {
   high: {
-    bg: 'bg-amber-50',
-    border: 'border-amber-200',
+    bg: 'bg-yellow-100',
+    border: 'border-yellow-200',
     icon: AlertTriangle,
-    iconColor: 'text-amber-600',
-    dot: 'bg-amber-500',
-    ctaBg: 'bg-amber-600 hover:bg-amber-700 text-white',
+    iconColor: 'text-yellow-600',
+    dot: 'bg-yellow-500',
+    ctaBg: 'bg-yellow-600 hover:bg-yellow-700 text-white',
   },
   medium: {
-    bg: 'bg-blue-50',
-    border: 'border-blue-200',
+    bg: 'bg-orange-50',
+    border: 'border-orange-200',
     icon: AlertCircle,
-    iconColor: 'text-blue-600',
-    dot: 'bg-blue-500',
-    ctaBg: 'bg-blue-600 hover:bg-blue-700 text-white',
+    iconColor: 'text-link',
+    dot: 'bg-primary',
+    ctaBg: 'bg-primary hover:bg-primary-hover text-white',
   },
   low: {
     bg: 'bg-surface-sunken',
     border: 'border-border',
     icon: Info,
     iconColor: 'text-text-muted',
-    dot: 'bg-gray-400',
-    ctaBg: 'bg-gray-600 hover:bg-gray-700 text-white',
+    dot: 'bg-bark-400',
+    ctaBg: 'bg-bark-600 hover:bg-bark-700 text-white',
   },
 };
 

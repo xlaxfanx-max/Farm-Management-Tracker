@@ -119,25 +119,25 @@ const AnnualBarChart = ({ readings }) => {
   return (
     <div className="flex items-end gap-3" style={{ height: `${barHeight + 30}px` }}>
       <div className="flex flex-col justify-between text-right pr-1" style={{ height: `${barHeight}px`, minWidth: '45px' }}>
-        <span className="text-xs text-gray-400">{formatAF(maxVal)}</span>
-        <span className="text-xs text-gray-400">{formatAF(maxVal / 2)}</span>
-        <span className="text-xs text-gray-400">0</span>
+        <span className="text-xs text-text-muted">{formatAF(maxVal)}</span>
+        <span className="text-xs text-text-muted">{formatAF(maxVal / 2)}</span>
+        <span className="text-xs text-text-muted">0</span>
       </div>
       <div className="flex-1 flex items-end gap-2 relative" style={{ height: `${barHeight + 24}px` }}>
-        <div className="absolute left-0 right-0 top-0 border-t border-dashed border-gray-200" style={{ height: '1px' }} />
-        <div className="absolute left-0 right-0 border-t border-dashed border-gray-200" style={{ top: `${barHeight / 2}px`, height: '1px' }} />
-        <div className="absolute left-0 right-0 border-t border-gray-200" style={{ top: `${barHeight}px`, height: '1px' }} />
+        <div className="absolute left-0 right-0 top-0 border-t border-dashed border-border" style={{ height: '1px' }} />
+        <div className="absolute left-0 right-0 border-t border-dashed border-border" style={{ top: `${barHeight / 2}px`, height: '1px' }} />
+        <div className="absolute left-0 right-0 border-t border-border" style={{ top: `${barHeight}px`, height: '1px' }} />
         {yearData.map((item) => {
           const pct = (item.total / maxVal) * barHeight;
           return (
             <div key={item.year} className="flex-1 flex flex-col items-center justify-end" style={{ height: `${barHeight + 24}px`, maxWidth: '80px' }}>
-              <span className="text-xs text-cyan-700 font-medium mb-1">{formatAF(item.total)}</span>
+              <span className="text-xs text-green-700 font-medium mb-1">{formatAF(item.total)}</span>
               <div
-                className="w-full bg-cyan-500 rounded-t-md hover:bg-cyan-400 transition-colors cursor-pointer"
+                className="w-full bg-green-500 rounded-t-md hover:bg-green-400 transition-colors cursor-pointer"
                 style={{ height: `${Math.max(pct, 3)}px` }}
                 title={`${item.year}: ${formatAF(item.total)} AF`}
               />
-              <span className="text-xs text-gray-500 mt-1.5 font-medium">{item.year}</span>
+              <span className="text-xs text-text-secondary mt-1.5 font-medium">{item.year}</span>
             </div>
           );
         })}
@@ -162,17 +162,17 @@ const WellUsageChart = ({ readings }) => {
   return (
     <div className="mt-6 mb-2">
       <div className="flex items-center justify-between mb-3">
-        <h4 className="text-sm font-semibold text-gray-700 uppercase tracking-wider flex items-center gap-2">
-          <BarChart3 className="w-4 h-4 text-cyan-600" />
+        <h4 className="text-sm font-semibold text-bark-700 uppercase tracking-wider flex items-center gap-2">
+          <BarChart3 className="w-4 h-4 text-green-600" />
           Extraction History
         </h4>
-        <div className="flex bg-gray-200 rounded-lg p-0.5">
+        <div className="flex bg-sand-200 rounded-lg p-0.5">
           <button
             onClick={() => setChartMode('line')}
             className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
               chartMode === 'line'
-                ? 'bg-white text-cyan-700 shadow-sm'
-                : 'text-gray-500 hover:text-gray-700'
+                ? 'bg-white text-green-700 shadow-sm'
+                : 'text-text-secondary hover:text-bark-700'
             }`}
           >
             Per Reading
@@ -181,15 +181,15 @@ const WellUsageChart = ({ readings }) => {
             onClick={() => setChartMode('bar')}
             className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
               chartMode === 'bar'
-                ? 'bg-white text-cyan-700 shadow-sm'
-                : 'text-gray-500 hover:text-gray-700'
+                ? 'bg-white text-green-700 shadow-sm'
+                : 'text-text-secondary hover:text-bark-700'
             }`}
           >
             Annual Total
           </button>
         </div>
       </div>
-      <div className="bg-white rounded-lg border border-gray-200 p-4">
+      <div className="bg-white rounded-lg border border-border p-4">
         {chartMode === 'line' ? (
           <ExtractionLineChart readings={validReadings} />
         ) : (

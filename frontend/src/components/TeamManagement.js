@@ -27,13 +27,13 @@ import { useToast } from '../contexts/ToastContext';
 
 // Role badge colors
 const ROLE_COLORS = {
-  owner: 'bg-purple-100 text-purple-800',
-  admin: 'bg-blue-100 text-blue-800',
-  manager: 'bg-green-100 text-green-800',
+  owner: 'bg-sand-200 text-bark-800',
+  admin: 'bg-orange-100 text-orange-700',
+  manager: 'bg-green-100 text-green-700',
   applicator: 'bg-orange-100 text-orange-800',
-  worker: 'bg-gray-100 text-gray-800',
-  viewer: 'bg-gray-100 text-gray-600',
-  pca: 'bg-teal-100 text-teal-800',
+  worker: 'bg-cream-100 text-text',
+  viewer: 'bg-cream-100 text-bark-600',
+  pca: 'bg-green-100 text-green-800',
   accountant: 'bg-yellow-100 text-yellow-800',
 };
 
@@ -185,8 +185,8 @@ export default function TeamManagement() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Team Management</h1>
-          <p className="text-gray-600 mt-1">
+          <h1 className="text-2xl font-bold text-heading">Team Management</h1>
+          <p className="text-bark-600 mt-1">
             Manage team members and their access to {currentCompany?.name}
           </p>
         </div>
@@ -202,7 +202,7 @@ export default function TeamManagement() {
       </div>
 
       {error && (
-        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-red-700">
+        <div className="mb-6 p-4 bg-danger-bg border border-danger/25 rounded-lg flex items-center gap-2 text-danger">
           <AlertCircle className="w-5 h-5" />
           {error}
         </div>
@@ -212,12 +212,12 @@ export default function TeamManagement() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div className="bg-white rounded-lg border p-4">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <Users className="w-5 h-5 text-blue-600" />
+            <div className="p-2 bg-orange-100 rounded-lg">
+              <Users className="w-5 h-5 text-link" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-gray-900">{members.length}</p>
-              <p className="text-sm text-gray-600">Team Members</p>
+              <p className="text-2xl font-bold text-heading">{members.length}</p>
+              <p className="text-sm text-bark-600">Team Members</p>
             </div>
           </div>
         </div>
@@ -228,8 +228,8 @@ export default function TeamManagement() {
               <Mail className="w-5 h-5 text-yellow-600" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-gray-900">{pendingInvitations.length}</p>
-              <p className="text-sm text-gray-600">Pending Invitations</p>
+              <p className="text-2xl font-bold text-heading">{pendingInvitations.length}</p>
+              <p className="text-sm text-bark-600">Pending Invitations</p>
             </div>
           </div>
         </div>
@@ -240,8 +240,8 @@ export default function TeamManagement() {
               <Shield className="w-5 h-5 text-primary" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-gray-900">{roles.length}</p>
-              <p className="text-sm text-gray-600">Available Roles</p>
+              <p className="text-2xl font-bold text-heading">{roles.length}</p>
+              <p className="text-sm text-bark-600">Available Roles</p>
             </div>
           </div>
         </div>
@@ -250,17 +250,17 @@ export default function TeamManagement() {
       {/* Team Members List */}
       <div className="bg-white rounded-lg border mb-6">
         <div className="px-6 py-4 border-b">
-          <h2 className="text-lg font-semibold text-gray-900">Team Members</h2>
+          <h2 className="text-lg font-semibold text-heading">Team Members</h2>
         </div>
 
         <div className="divide-y">
           {members.length === 0 ? (
-            <div className="px-6 py-8 text-center text-gray-500">
+            <div className="px-6 py-8 text-center text-text-secondary">
               No team members yet. Invite someone to get started!
             </div>
           ) : (
             members.map((member) => (
-              <div key={member.id} className="px-6 py-4 flex items-center justify-between hover:bg-gray-50">
+              <div key={member.id} className="px-6 py-4 flex items-center justify-between hover:bg-cream-50">
                 <div className="flex items-center gap-4">
                   {/* Avatar */}
                   <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
@@ -272,23 +272,23 @@ export default function TeamManagement() {
                   {/* Info */}
                   <div>
                     <div className="flex items-center gap-2">
-                      <p className="font-medium text-gray-900">
+                      <p className="font-medium text-heading">
                         {member.user?.first_name} {member.user?.last_name}
                         {member.user?.id === user?.id && (
-                          <span className="text-gray-500 text-sm ml-2">(You)</span>
+                          <span className="text-text-secondary text-sm ml-2">(You)</span>
                         )}
                       </p>
                       {member.role?.codename === 'owner' && (
-                        <Crown className="w-4 h-4 text-yellow-500" />
+                        <Crown className="w-4 h-4 text-yellow-600" />
                       )}
                     </div>
-                    <p className="text-sm text-gray-500">{member.user?.email}</p>
+                    <p className="text-sm text-text-secondary">{member.user?.email}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
                   {/* Role Badge */}
                   <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                    ROLE_COLORS[member.role?.codename] || 'bg-gray-100 text-gray-800'
+                    ROLE_COLORS[member.role?.codename] || 'bg-cream-100 text-text'
                   }`}>
                     {member.role?.name}
                   </span>
@@ -299,7 +299,7 @@ export default function TeamManagement() {
                         setSelectedMember(member);
                         setShowTransferModal(true);
                       }}
-                      className="p-2 hover:bg-purple-100 rounded-lg text-gray-500 hover:text-purple-600"
+                      className="p-2 hover:bg-sand-200 rounded-lg text-text-secondary hover:text-bark-700"
                       title="Transfer ownership to this member"
                     >
                       <ArrowRightLeft className="w-4 h-4" />
@@ -311,9 +311,9 @@ export default function TeamManagement() {
                     <div className="relative">
                       <button
                         onClick={() => setActiveDropdown(activeDropdown === member.id ? null : member.id)}
-                        className="p-2 hover:bg-gray-100 rounded-lg"
+                        className="p-2 hover:bg-cream-100 rounded-lg"
                       >
-                        <MoreVertical className="w-5 h-5 text-gray-500" />
+                        <MoreVertical className="w-5 h-5 text-text-secondary" />
                       </button>
 
                       {activeDropdown === member.id && (
@@ -324,7 +324,7 @@ export default function TeamManagement() {
                               setShowEditRoleModal(true);
                               setActiveDropdown(null);
                             }}
-                            className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                            className="w-full flex items-center gap-2 px-4 py-2 text-sm text-bark-700 hover:bg-cream-50"
                           >
                             <Edit className="w-4 h-4" />
                             Change Role
@@ -336,7 +336,7 @@ export default function TeamManagement() {
                                 setShowTransferModal(true);
                                 setActiveDropdown(null);
                               }}
-                              className="w-full flex items-center gap-2 px-4 py-2 text-sm text-purple-600 hover:bg-purple-50"
+                              className="w-full flex items-center gap-2 px-4 py-2 text-sm text-bark-700 hover:bg-cream-100"
                             >
                               <ArrowRightLeft className="w-4 h-4" />
                               Transfer Ownership
@@ -344,7 +344,7 @@ export default function TeamManagement() {
                           )}
                           <button
                             onClick={() => handleRemoveMember(member.id)}
-                            className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                            className="w-full flex items-center gap-2 px-4 py-2 text-sm text-danger hover:bg-danger-bg"
                           >
                             <Trash2 className="w-4 h-4" />
                             Remove
@@ -364,20 +364,20 @@ export default function TeamManagement() {
       {pendingInvitations.length > 0 && (
         <div className="bg-white rounded-lg border">
           <div className="px-6 py-4 border-b">
-            <h2 className="text-lg font-semibold text-gray-900">Pending Invitations</h2>
+            <h2 className="text-lg font-semibold text-heading">Pending Invitations</h2>
           </div>
 
           <div className="divide-y">
             {pendingInvitations.map((invitation) => (
-              <div key={invitation.id} className="px-6 py-4 flex items-center justify-between hover:bg-gray-50">
+              <div key={invitation.id} className="px-6 py-4 flex items-center justify-between hover:bg-cream-50">
                 <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
-                    <Mail className="w-5 h-5 text-gray-500" />
+                  <div className="w-10 h-10 bg-sand-200 rounded-full flex items-center justify-center">
+                    <Mail className="w-5 h-5 text-text-secondary" />
                   </div>
 
                   <div>
-                    <p className="font-medium text-gray-900">{invitation.email}</p>
-                    <div className="flex items-center gap-2 text-sm text-gray-500">
+                    <p className="font-medium text-heading">{invitation.email}</p>
+                    <div className="flex items-center gap-2 text-sm text-text-secondary">
                       <Clock className="w-4 h-4" />
                       Expires {new Date(invitation.expires_at).toLocaleDateString()}
                     </div>
@@ -385,7 +385,7 @@ export default function TeamManagement() {
                 </div>
                 <div className="flex items-center gap-3">
                   <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                    ROLE_COLORS[invitation.role?.codename] || 'bg-gray-100 text-gray-800'
+                    ROLE_COLORS[invitation.role?.codename] || 'bg-cream-100 text-text'
                   }`}>
                     {invitation.role?.name}
                   </span>
@@ -397,21 +397,21 @@ export default function TeamManagement() {
                           navigator.clipboard.writeText(link);
                           toast.success('Invite link copied to clipboard!');
                         }}
-                        className="p-2 hover:bg-blue-100 rounded-lg text-gray-500 hover:text-blue-600"
+                        className="p-2 hover:bg-orange-100 rounded-lg text-text-secondary hover:text-link"
                         title="Copy invite link"
                       >
                         <Link className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => handleResendInvitation(invitation.id)}
-                        className="p-2 hover:bg-gray-100 rounded-lg text-gray-500 hover:text-gray-700"
+                        className="p-2 hover:bg-cream-100 rounded-lg text-text-secondary hover:text-bark-700"
                         title="Resend invitation"
                       >
                         <RefreshCw className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => handleRevokeInvitation(invitation.id)}
-                        className="p-2 hover:bg-red-100 rounded-lg text-gray-500 hover:text-red-600"
+                        className="p-2 hover:bg-danger-bg rounded-lg text-text-secondary hover:text-danger"
                         title="Revoke invitation"
                       >
                         <XCircle className="w-4 h-4" />
@@ -517,41 +517,41 @@ function InviteModal({ roles, onClose, onSuccess }) {
             <UserPlus className="w-5 h-5 text-primary" />
             <h2 className="text-lg font-semibold">Invite Team Member</h2>
           </div>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+          <button onClick={onClose} className="text-text-muted hover:text-bark-600">
             <X className="w-5 h-5" />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           {error && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
-              <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
-              <span className="text-red-700 text-sm">{error}</span>
+            <div className="p-3 bg-danger-bg border border-danger/25 rounded-lg flex items-start gap-2">
+              <AlertCircle className="w-5 h-5 text-danger flex-shrink-0" />
+              <span className="text-danger text-sm">{error}</span>
             </div>
           )}
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-bark-700 mb-1">
               Email Address *
             </label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-primary focus:border-transparent"
+              className="w-full px-4 py-2 border border-border-strong rounded-lg bg-white focus:ring-2 focus:ring-primary focus:border-transparent"
               placeholder="colleague@example.com"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-bark-700 mb-1">
               Role *
             </label>
             <select
               value={roleId}
               onChange={(e) => setRoleId(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-primary focus:border-transparent"
+              className="w-full px-4 py-2 border border-border-strong rounded-lg bg-white focus:ring-2 focus:ring-primary focus:border-transparent"
               required
             >
               {roles.map((role) => (
@@ -561,20 +561,20 @@ function InviteModal({ roles, onClose, onSuccess }) {
               ))}
             </select>
             {roleId && (
-              <p className="mt-1 text-xs text-gray-500">
+              <p className="mt-1 text-xs text-text-secondary">
                 {ROLE_DESCRIPTIONS[roles.find(r => r.id === parseInt(roleId))?.codename] || ''}
               </p>
             )}
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-bark-700 mb-1">
               Personal Message (optional)
             </label>
             <textarea
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-primary focus:border-transparent"
+              className="w-full px-4 py-2 border border-border-strong rounded-lg bg-white focus:ring-2 focus:ring-primary focus:border-transparent"
               rows={3}
               placeholder="Welcome to the team!"
             />
@@ -584,7 +584,7 @@ function InviteModal({ roles, onClose, onSuccess }) {
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+              className="flex-1 px-4 py-2 border border-border-strong rounded-lg text-bark-700 hover:bg-cream-50"
             >
               Cancel
             </button>
@@ -623,13 +623,13 @@ function EditRoleModal({ member, roles, onClose, onSave }) {
       <div className="bg-white rounded-xl shadow-xl w-full max-w-md">
         <div className="flex items-center justify-between px-6 py-4 border-b">
           <h2 className="text-lg font-semibold">Change Role</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+          <button onClick={onClose} className="text-text-muted hover:text-bark-600">
             <X className="w-5 h-5" />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+          <div className="flex items-center gap-3 p-3 bg-cream-50 rounded-lg">
             <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
               <span className="text-white font-medium">
                 {member.user?.first_name?.[0] || member.user?.email?.[0]?.toUpperCase()}
@@ -637,12 +637,12 @@ function EditRoleModal({ member, roles, onClose, onSave }) {
             </div>
             <div>
               <p className="font-medium">{member.user?.first_name} {member.user?.last_name}</p>
-              <p className="text-sm text-gray-500">{member.user?.email}</p>
+              <p className="text-sm text-text-secondary">{member.user?.email}</p>
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-bark-700 mb-2">
               Select New Role
             </label>
             <div className="space-y-2">
@@ -652,7 +652,7 @@ function EditRoleModal({ member, roles, onClose, onSave }) {
                   className={`flex items-start gap-3 p-3 border rounded-lg cursor-pointer transition-colors ${
                     selectedRoleId === role.id
                       ? 'border-primary bg-primary-light'
-                      : 'border-gray-200 hover:bg-gray-50'
+                      : 'border-border hover:bg-cream-50'
                   }`}
                 >
                   <input
@@ -664,8 +664,8 @@ function EditRoleModal({ member, roles, onClose, onSave }) {
                     className="mt-1 text-primary focus:ring-primary"
                   />
                   <div>
-                    <p className="font-medium text-gray-900">{role.name}</p>
-                    <p className="text-sm text-gray-500">
+                    <p className="font-medium text-heading">{role.name}</p>
+                    <p className="text-sm text-text-secondary">
                       {ROLE_DESCRIPTIONS[role.codename] || ''}
                     </p>
                   </div>
@@ -678,7 +678,7 @@ function EditRoleModal({ member, roles, onClose, onSave }) {
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+              className="flex-1 px-4 py-2 border border-border-strong rounded-lg text-bark-700 hover:bg-cream-50"
             >
               Cancel
             </button>
@@ -728,14 +728,14 @@ function TransferOwnershipModal({ member, companyName, onClose, onConfirm }) {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-xl shadow-2xl max-w-md w-full">
-        <div className="p-6 border-b border-gray-200">
+        <div className="p-6 border-b border-border">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-orange-100 rounded-lg">
               <AlertTriangle className="w-6 h-6 text-orange-600" />
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-gray-900">Transfer Ownership</h3>
-              <p className="text-sm text-gray-500">This action cannot be undone</p>
+              <h3 className="text-lg font-semibold text-heading">Transfer Ownership</h3>
+              <p className="text-sm text-text-secondary">This action cannot be undone</p>
             </div>
           </div>
         </div>
@@ -743,9 +743,9 @@ function TransferOwnershipModal({ member, companyName, onClose, onConfirm }) {
         <form onSubmit={handleSubmit}>
           <div className="p-6 space-y-4">
             {error && (
-              <div className="p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
-                <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-                <span className="text-red-700 text-sm">{error}</span>
+              <div className="p-3 bg-danger-bg border border-danger/25 rounded-lg flex items-start gap-2">
+                <AlertCircle className="w-5 h-5 text-danger flex-shrink-0 mt-0.5" />
+                <span className="text-danger text-sm">{error}</span>
               </div>
             )}
 
@@ -763,26 +763,26 @@ function TransferOwnershipModal({ member, companyName, onClose, onConfirm }) {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-bark-700 mb-2">
                 Type <strong>TRANSFER</strong> to confirm
               </label>
               <input
                 type="text"
                 value={confirmText}
                 onChange={(e) => setConfirmText(e.target.value.toUpperCase())}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-border-strong rounded-lg bg-white focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                 placeholder="TRANSFER"
                 autoComplete="off"
               />
             </div>
           </div>
 
-          <div className="p-6 border-t border-gray-200 flex gap-3">
+          <div className="p-6 border-t border-border flex gap-3">
             <button
               type="button"
               onClick={onClose}
               disabled={loading}
-              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+              className="flex-1 px-4 py-2 border border-border-strong rounded-lg text-bark-700 hover:bg-cream-50 disabled:opacity-50"
             >
               Cancel
             </button>

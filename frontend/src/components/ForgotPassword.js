@@ -26,17 +26,17 @@ export default function ForgotPassword() {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+      <div className="min-h-screen bg-cream-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
         <div className="sm:mx-auto sm:w-full sm:max-w-md">
           <div className="flex justify-center">
             <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center">
               <CheckCircle className="w-10 h-10 text-white" />
             </div>
           </div>
-          <h2 className="mt-6 text-center text-3xl font-bold text-gray-900">
+          <h2 className="mt-6 text-center text-3xl font-bold text-heading">
             Check your email
           </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
+          <p className="mt-2 text-center text-sm text-bark-600">
             If an account exists for <strong>{email}</strong>, you will receive a password reset link shortly.
           </p>
         </div>
@@ -48,7 +48,7 @@ export default function ForgotPassword() {
                 <div className="flex">
                   <CheckCircle className="h-5 w-5 text-primary mt-0.5" />
                   <div className="ml-3">
-                    <h3 className="text-sm font-medium text-green-800">Email sent</h3>
+                    <h3 className="text-sm font-medium text-green-700">Email sent</h3>
                     <p className="mt-1 text-sm text-primary">
                       The reset link will expire in 24 hours. Check your spam folder if you don't see it.
                     </p>
@@ -61,7 +61,7 @@ export default function ForgotPassword() {
                   setSuccess(false);
                   setEmail('');
                 }}
-                className="w-full flex justify-center items-center gap-2 py-2 px-4 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                className="w-full flex justify-center items-center gap-2 py-2 px-4 border border-border-strong rounded-lg text-sm font-medium text-bark-700 hover:bg-cream-50 transition-colors"
               >
                 Try a different email
               </button>
@@ -81,17 +81,17 @@ export default function ForgotPassword() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-cream-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="flex justify-center">
           <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center">
             <Mail className="w-10 h-10 text-white" />
           </div>
         </div>
-        <h2 className="mt-6 text-center text-3xl font-bold text-gray-900">
+        <h2 className="mt-6 text-center text-3xl font-bold text-heading">
           Forgot your password?
         </h2>
-        <p className="mt-2 text-center text-sm text-gray-600">
+        <p className="mt-2 text-center text-sm text-bark-600">
           Enter your email address and we'll send you a link to reset your password.
         </p>
       </div>
@@ -100,23 +100,23 @@ export default function ForgotPassword() {
         <div className="bg-white py-8 px-4 shadow-lg sm:rounded-xl sm:px-10">
           <form onSubmit={handleSubmit} className="space-y-6">
             {error && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+              <div className="bg-danger-bg border border-danger/25 rounded-lg p-4">
                 <div className="flex">
-                  <AlertCircle className="h-5 w-5 text-red-600" />
+                  <AlertCircle className="h-5 w-5 text-danger" />
                   <div className="ml-3">
-                    <p className="text-sm text-red-700">{error}</p>
+                    <p className="text-sm text-danger">{error}</p>
                   </div>
                 </div>
               </div>
             )}
 
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="email" className="block text-sm font-medium text-bark-700">
                 Email address
               </label>
               <div className="mt-1 relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Mail className="h-5 w-5 text-gray-400" />
+                  <Mail className="h-5 w-5 text-text-muted" />
                 </div>
                 <input
                   id="email"
@@ -126,7 +126,7 @@ export default function ForgotPassword() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="appearance-none block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent sm:text-sm"
+                  className="appearance-none block w-full pl-10 pr-3 py-2 border border-border-strong rounded-lg placeholder-text-muted focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent sm:text-sm"
                   placeholder="you@example.com"
                 />
               </div>

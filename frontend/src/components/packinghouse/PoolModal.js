@@ -110,16 +110,16 @@ const PoolModal = ({ pool, packinghouses, onClose, onSave }) => {
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900 flex items-center">
+        <div className="flex items-center justify-between p-4 border-b border-border">
+          <h2 className="text-lg font-semibold text-heading flex items-center">
             <Boxes className="w-5 h-5 mr-2 text-primary" />
             {pool ? 'Edit Pool' : 'Add Pool'}
           </h2>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-2 hover:bg-cream-100 rounded-lg transition-colors"
           >
-            <X className="w-5 h-5 text-gray-500" />
+            <X className="w-5 h-5 text-text-secondary" />
           </button>
         </div>
 
@@ -127,7 +127,7 @@ const PoolModal = ({ pool, packinghouses, onClose, onSave }) => {
         <form onSubmit={handleSubmit} className="p-4 space-y-4">
           {/* Packinghouse */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-bark-700 mb-1">
               Packinghouse *
             </label>
             <select
@@ -135,7 +135,7 @@ const PoolModal = ({ pool, packinghouses, onClose, onSave }) => {
               value={formData.packinghouse}
               onChange={handleChange}
               className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary ${
-                errors.packinghouse ? 'border-red-500' : 'border-gray-300'
+                errors.packinghouse ? 'border-danger' : 'border-border-strong'
               }`}
             >
               <option value="">Select Packinghouse</option>
@@ -146,14 +146,14 @@ const PoolModal = ({ pool, packinghouses, onClose, onSave }) => {
               ))}
             </select>
             {errors.packinghouse && (
-              <p className="text-red-500 text-xs mt-1">{errors.packinghouse}</p>
+              <p className="text-danger text-xs mt-1">{errors.packinghouse}</p>
             )}
           </div>
 
           {/* Pool ID and Name */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-bark-700 mb-1">
                 Pool ID *
               </label>
               <input
@@ -163,16 +163,16 @@ const PoolModal = ({ pool, packinghouses, onClose, onSave }) => {
                 onChange={handleChange}
                 placeholder="e.g., 2520000 D2 POOL"
                 className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary ${
-                  errors.pool_id ? 'border-red-500' : 'border-gray-300'
+                  errors.pool_id ? 'border-danger' : 'border-border-strong'
                 }`}
               />
               {errors.pool_id && (
-                <p className="text-red-500 text-xs mt-1">{errors.pool_id}</p>
+                <p className="text-danger text-xs mt-1">{errors.pool_id}</p>
               )}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-bark-700 mb-1">
                 Pool Name *
               </label>
               <input
@@ -182,11 +182,11 @@ const PoolModal = ({ pool, packinghouses, onClose, onSave }) => {
                 onChange={handleChange}
                 placeholder="Friendly name"
                 className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary ${
-                  errors.name ? 'border-red-500' : 'border-gray-300'
+                  errors.name ? 'border-danger' : 'border-border-strong'
                 }`}
               />
               {errors.name && (
-                <p className="text-red-500 text-xs mt-1">{errors.name}</p>
+                <p className="text-danger text-xs mt-1">{errors.name}</p>
               )}
             </div>
           </div>
@@ -194,7 +194,7 @@ const PoolModal = ({ pool, packinghouses, onClose, onSave }) => {
           {/* Commodity and Variety */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-bark-700 mb-1">
                 Commodity *
               </label>
               <select
@@ -202,7 +202,7 @@ const PoolModal = ({ pool, packinghouses, onClose, onSave }) => {
                 value={formData.commodity}
                 onChange={handleChange}
                 className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary ${
-                  errors.commodity ? 'border-red-500' : 'border-gray-300'
+                  errors.commodity ? 'border-danger' : 'border-border-strong'
                 }`}
               >
                 <option value="">Select Commodity</option>
@@ -211,12 +211,12 @@ const PoolModal = ({ pool, packinghouses, onClose, onSave }) => {
                 ))}
               </select>
               {errors.commodity && (
-                <p className="text-red-500 text-xs mt-1">{errors.commodity}</p>
+                <p className="text-danger text-xs mt-1">{errors.commodity}</p>
               )}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-bark-700 mb-1">
                 Variety
               </label>
               <input
@@ -225,7 +225,7 @@ const PoolModal = ({ pool, packinghouses, onClose, onSave }) => {
                 value={formData.variety}
                 onChange={handleChange}
                 placeholder="e.g., Cara Navels"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
+                className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary"
               />
             </div>
           </div>
@@ -233,7 +233,7 @@ const PoolModal = ({ pool, packinghouses, onClose, onSave }) => {
           {/* Season, Type, Status */}
           <div className="grid grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-bark-700 mb-1">
                 Season *
               </label>
               <input
@@ -243,23 +243,23 @@ const PoolModal = ({ pool, packinghouses, onClose, onSave }) => {
                 onChange={handleChange}
                 placeholder="e.g., 2024-2025"
                 className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary ${
-                  errors.season ? 'border-red-500' : 'border-gray-300'
+                  errors.season ? 'border-danger' : 'border-border-strong'
                 }`}
               />
               {errors.season && (
-                <p className="text-red-500 text-xs mt-1">{errors.season}</p>
+                <p className="text-danger text-xs mt-1">{errors.season}</p>
               )}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-bark-700 mb-1">
                 Pool Type
               </label>
               <select
                 name="pool_type"
                 value={formData.pool_type}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
+                className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary"
               >
                 {PACKINGHOUSE_CONSTANTS.poolTypes.map(t => (
                   <option key={t.value} value={t.value}>{t.label}</option>
@@ -268,14 +268,14 @@ const PoolModal = ({ pool, packinghouses, onClose, onSave }) => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-bark-700 mb-1">
                 Status
               </label>
               <select
                 name="status"
                 value={formData.status}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
+                className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary"
               >
                 {PACKINGHOUSE_CONSTANTS.poolStatuses.map(s => (
                   <option key={s.value} value={s.value}>{s.label}</option>
@@ -287,7 +287,7 @@ const PoolModal = ({ pool, packinghouses, onClose, onSave }) => {
           {/* Date Range */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-bark-700 mb-1">
                 Open Date
               </label>
               <input
@@ -295,12 +295,12 @@ const PoolModal = ({ pool, packinghouses, onClose, onSave }) => {
                 name="open_date"
                 value={formData.open_date}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
+                className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-bark-700 mb-1">
                 Close Date
               </label>
               <input
@@ -308,14 +308,14 @@ const PoolModal = ({ pool, packinghouses, onClose, onSave }) => {
                 name="close_date"
                 value={formData.close_date}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
+                className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary"
               />
             </div>
           </div>
 
           {/* Notes */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-bark-700 mb-1">
               Notes
             </label>
             <textarea
@@ -324,16 +324,16 @@ const PoolModal = ({ pool, packinghouses, onClose, onSave }) => {
               onChange={handleChange}
               rows={3}
               placeholder="Additional notes..."
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
+              className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary"
             />
           </div>
 
           {/* Actions */}
-          <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+          <div className="flex justify-end space-x-3 pt-4 border-t border-border">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+              className="px-4 py-2 text-bark-700 hover:bg-cream-100 rounded-lg transition-colors"
             >
               Cancel
             </button>

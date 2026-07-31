@@ -35,7 +35,7 @@ function LoadingSkeleton() {
   return (
     <div className="space-y-3 animate-pulse">
       {[1, 2, 3].map((i) => (
-        <div key={i} className="h-14 bg-gray-200 rounded-lg" />
+        <div key={i} className="h-14 bg-sand-200 rounded-lg" />
       ))}
     </div>
   );
@@ -52,28 +52,28 @@ function SectionHeader({ label, colorClass }) {
 function ActionItem({ item, onNavigate, urgency }) {
   const borderColor =
     urgency === 'overdue'
-      ? 'border-red-300'
+      ? 'border-danger/40'
       : urgency === 'today'
-      ? 'border-amber-300'
-      : 'border-blue-200';
+      ? 'border-yellow-300'
+      : 'border-orange-200';
 
   const buttonColor =
     urgency === 'overdue'
-      ? 'bg-red-600 hover:bg-red-700 text-white'
+      ? 'bg-danger hover:bg-danger-hover text-white'
       : 'bg-orange-500 hover:bg-orange-600 text-white';
 
   return (
     <div
       className={`flex items-center gap-3 p-3 bg-white rounded-lg border ${borderColor} shadow-sm`}
     >
-      <div className="flex-shrink-0 text-gray-500">
+      <div className="flex-shrink-0 text-text-secondary">
         <CategoryIcon category={item.category} />
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-gray-900 truncate">
+        <p className="text-sm font-medium text-heading truncate">
           {item.title}
         </p>
-        <p className="text-xs text-gray-500">
+        <p className="text-xs text-text-secondary">
           {urgency === 'overdue'
             ? `${item.days_overdue} day${item.days_overdue !== 1 ? 's' : ''} overdue`
             : `Due ${item.due_date}`}
@@ -95,8 +95,8 @@ function QuickWinChip({ win, onNavigate }) {
   const IconComponent = ICON_MAP[win.icon] || FileText;
   const chipColor =
     win.priority === 'high'
-      ? 'bg-red-50 border-red-200 text-red-700 hover:bg-red-100'
-      : 'bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100';
+      ? 'bg-danger-bg border-danger/25 text-danger hover:bg-danger-bg'
+      : 'bg-yellow-100 border-yellow-200 text-yellow-700 hover:bg-yellow-200';
 
   return (
     <button
@@ -137,9 +137,9 @@ export default function TodayActionList({ onNavigate }) {
 
   if (loading) {
     return (
-      <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
+      <div className="bg-white rounded-xl border border-border p-4 shadow-sm">
         <div className="flex items-center justify-between mb-4">
-          <div className="h-5 w-40 bg-gray-200 rounded animate-pulse" />
+          <div className="h-5 w-40 bg-sand-200 rounded animate-pulse" />
         </div>
         <LoadingSkeleton />
       </div>
@@ -148,8 +148,8 @@ export default function TodayActionList({ onNavigate }) {
 
   if (error) {
     return (
-      <div className="bg-white rounded-xl border border-red-200 p-4 shadow-sm">
-        <p className="text-sm text-red-600">{error}</p>
+      <div className="bg-white rounded-xl border border-danger/25 p-4 shadow-sm">
+        <p className="text-sm text-danger">{error}</p>
       </div>
     );
   }
@@ -159,9 +159,9 @@ export default function TodayActionList({ onNavigate }) {
   if (data.all_clear) {
     return (
       <div className="bg-primary-light rounded-xl border border-green-200 p-6 flex items-center gap-4 shadow-sm">
-        <CheckCircle2 className="w-10 h-10 text-green-500 flex-shrink-0" />
+        <CheckCircle2 className="w-10 h-10 text-green-600 flex-shrink-0" />
         <div>
-          <p className="font-semibold text-green-800 text-lg">
+          <p className="font-semibold text-green-700 text-lg">
             All caught up for today!
           </p>
           <p className="text-sm text-primary">
@@ -182,18 +182,18 @@ export default function TodayActionList({ onNavigate }) {
   const hasQuickWins = data.quick_wins && data.quick_wins.length > 0;
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm space-y-4">
+    <div className="bg-white rounded-xl border border-border p-4 shadow-sm space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-base font-semibold text-gray-900">
+          <h2 className="text-base font-semibold text-heading">
             Today's Actions
           </h2>
-          <p className="text-xs text-gray-500">{data.date}</p>
+          <p className="text-xs text-text-secondary">{data.date}</p>
         </div>
         <button
           onClick={() => fetchData(true)}
           disabled={refreshing}
-          className="p-1.5 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+          className="p-1.5 rounded-md text-text-muted hover:text-bark-600 hover:bg-cream-100 transition-colors"
           title="Refresh"
         >
           <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
@@ -202,7 +202,7 @@ export default function TodayActionList({ onNavigate }) {
 
       {hasOverdue && (
         <div>
-          <SectionHeader label="Overdue" colorClass="text-red-600" />
+          <SectionHeader label="Overdue" colorClass="text-danger" />
           <div className="space-y-2">
             {(data.overdue_deadlines || []).map((item) => (
               <ActionItem key={`od-${item.id}`} item={item} onNavigate={onNavigate} urgency="overdue" />
@@ -230,7 +230,7 @@ export default function TodayActionList({ onNavigate }) {
 
       {hasToday && (
         <div>
-          <SectionHeader label="Today" colorClass="text-amber-600" />
+          <SectionHeader label="Today" colorClass="text-yellow-600" />
           <div className="space-y-2">
             {data.due_today.map((item) => (
               <ActionItem key={`dt-${item.id}`} item={item} onNavigate={onNavigate} urgency="today" />
@@ -241,7 +241,7 @@ export default function TodayActionList({ onNavigate }) {
 
       {hasThisWeek && (
         <div>
-          <SectionHeader label="This Week" colorClass="text-blue-600" />
+          <SectionHeader label="This Week" colorClass="text-link" />
           <div className="space-y-2">
             {(data.due_this_week || []).map((item) => (
               <ActionItem key={`dw-${item.id}`} item={item} onNavigate={onNavigate} urgency="week" />
@@ -266,7 +266,7 @@ export default function TodayActionList({ onNavigate }) {
 
       {hasQuickWins && (
         <div>
-          <p className="text-xs font-bold tracking-widest uppercase text-gray-400 px-1 mb-2">
+          <p className="text-xs font-bold tracking-widest uppercase text-text-muted px-1 mb-2">
             Quick Actions
           </p>
           <div className="flex flex-wrap gap-2">

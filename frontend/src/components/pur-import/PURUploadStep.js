@@ -73,9 +73,9 @@ export default function PURUploadStep({ onComplete }) {
       {/* Drop zone */}
       <div
         className={`border-2 border-dashed rounded-xl p-12 text-center transition-colors ${
-          dragActive ? 'border-blue-400 bg-blue-50' :
+          dragActive ? 'border-orange-400 bg-orange-50' :
           file ? 'border-green-300 bg-green-50' :
-          'border-gray-300 hover:border-gray-400'
+          'border-border-strong hover:border-bark-400'
         }`}
         onDragOver={(e) => { e.preventDefault(); setDragActive(true); }}
         onDragLeave={() => setDragActive(false)}
@@ -83,16 +83,16 @@ export default function PURUploadStep({ onComplete }) {
       >
         {!file ? (
           <>
-            <Upload className={`w-12 h-12 mx-auto mb-4 ${dragActive ? 'text-blue-500' : 'text-gray-400'}`} />
-            <p className="text-lg font-medium text-gray-700 mb-1">
+            <Upload className={`w-12 h-12 mx-auto mb-4 ${dragActive ? 'text-orange-500' : 'text-text-muted'}`} />
+            <p className="text-lg font-medium text-bark-700 mb-1">
               Drop a PUR PDF here
             </p>
-            <p className="text-sm text-gray-500 mb-4">
+            <p className="text-sm text-text-secondary mb-4">
               TELUS Agronomy Product Use Report PDFs (single or multi-page)
             </p>
             <button
               onClick={() => fileInputRef.current?.click()}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium"
+              className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover text-sm font-medium"
             >
               Browse Files
             </button>
@@ -108,14 +108,14 @@ export default function PURUploadStep({ onComplete }) {
           <div className="flex items-center justify-center gap-4">
             <FileText className="w-10 h-10 text-primary" />
             <div className="text-left">
-              <p className="font-medium text-gray-900">{file.name}</p>
-              <p className="text-sm text-gray-500">
+              <p className="font-medium text-heading">{file.name}</p>
+              <p className="text-sm text-text-secondary">
                 {(file.size / 1024).toFixed(1)} KB
               </p>
             </div>
             <button
               onClick={handleRemoveFile}
-              className="p-1.5 text-gray-400 hover:text-red-500 rounded-full hover:bg-red-50"
+              className="p-1.5 text-text-muted hover:text-danger rounded-full hover:bg-danger-bg"
             >
               <X className="w-5 h-5" />
             </button>
@@ -125,9 +125,9 @@ export default function PURUploadStep({ onComplete }) {
 
       {/* Error */}
       {error && (
-        <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
-          <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
-          <p className="text-sm text-red-700">{error}</p>
+        <div className="mt-4 p-3 bg-danger-bg border border-danger/25 rounded-lg flex items-start gap-2">
+          <AlertCircle className="w-5 h-5 text-danger flex-shrink-0 mt-0.5" />
+          <p className="text-sm text-danger">{error}</p>
         </div>
       )}
 
@@ -137,7 +137,7 @@ export default function PURUploadStep({ onComplete }) {
           <button
             onClick={handleUpload}
             disabled={uploading}
-            className="flex items-center gap-2 px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+            className="flex items-center gap-2 px-6 py-2.5 bg-primary text-white rounded-lg hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed font-medium"
           >
             {uploading ? (
               <>
@@ -155,9 +155,9 @@ export default function PURUploadStep({ onComplete }) {
       )}
 
       {/* Info */}
-      <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-        <h3 className="text-sm font-medium text-gray-700 mb-2">What to expect</h3>
-        <ul className="text-sm text-gray-500 space-y-1">
+      <div className="mt-6 p-4 bg-cream-50 rounded-lg">
+        <h3 className="text-sm font-medium text-bark-700 mb-2">What to expect</h3>
+        <ul className="text-sm text-text-secondary space-y-1">
           <li>- Multi-page PDFs with multiple PUR reports are supported</li>
           <li>- Each report will be parsed into a separate application event</li>
           <li>- Products are matched to your existing inventory by EPA reg #</li>

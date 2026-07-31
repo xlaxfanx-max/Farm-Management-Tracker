@@ -119,7 +119,7 @@ const LaborContractorModal = ({ isOpen, onClose, onSave, contractor = null }) =>
   };
 
   const dateInputClass = (dateStr) => {
-    if (isExpired(dateStr)) return `${inputClasses} border-red-500 bg-red-50`;
+    if (isExpired(dateStr)) return `${inputClasses} border-danger bg-danger-bg`;
     if (isExpiringSoon(dateStr)) return `${inputClasses} border-yellow-500 bg-yellow-50`;
     return inputClasses;
   };
@@ -129,7 +129,7 @@ const LaborContractorModal = ({ isOpen, onClose, onSave, contractor = null }) =>
       <button
         type="button"
         onClick={onClose}
-        className="px-4 py-2 rounded-button border border-gray-300 text-gray-700 hover:bg-gray-50"
+        className="px-4 py-2 rounded-button border border-border-strong text-bark-700 hover:bg-cream-50"
       >
         Cancel
       </button>
@@ -137,14 +137,14 @@ const LaborContractorModal = ({ isOpen, onClose, onSave, contractor = null }) =>
         type="submit"
         form="labor-contractor-form"
         disabled={saving}
-        className="px-4 py-2 rounded-button bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-50"
+        className="px-4 py-2 rounded-button bg-bark-600 text-white hover:bg-bark-700 disabled:opacity-50"
       >
         {saving ? 'Saving…' : contractor ? 'Update Contractor' : 'Add Contractor'}
       </button>
     </>
   );
 
-  const sectionHeading = 'text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3';
+  const sectionHeading = 'text-sm font-semibold text-bark-700 uppercase tracking-wide mb-3';
 
   return (
     <Modal
@@ -279,7 +279,7 @@ const LaborContractorModal = ({ isOpen, onClose, onSave, contractor = null }) =>
                 className={dateInputClass(formData.license_expiration)}
               />
               {isExpired(formData.license_expiration) && (
-                <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
+                <p className="text-danger text-xs mt-1 flex items-center gap-1">
                   <AlertTriangle size={12} /> Expired
                 </p>
               )}
@@ -359,7 +359,7 @@ const LaborContractorModal = ({ isOpen, onClose, onSave, contractor = null }) =>
         </div>
 
         <div className="grid grid-cols-2 gap-6">
-          <div className="border border-blue-200 rounded-lg p-4 bg-blue-50">
+          <div className="border border-orange-200 rounded-lg p-4 bg-orange-50">
             <h3 className={sectionHeading}>Food Safety Training</h3>
 
             <label className="flex items-center gap-2 mb-4">
@@ -368,9 +368,9 @@ const LaborContractorModal = ({ isOpen, onClose, onSave, contractor = null }) =>
                 name="food_safety_training_current"
                 checked={formData.food_safety_training_current}
                 onChange={handleChange}
-                className="rounded border-gray-300 text-primary focus:ring-primary"
+                className="rounded border-border-strong text-primary focus:ring-primary"
               />
-              <span className="text-sm text-gray-700">Training is current</span>
+              <span className="text-sm text-bark-700">Training is current</span>
             </label>
 
             <FormField label="Training Expiration" htmlFor="lc-training-exp">
@@ -434,9 +434,9 @@ const LaborContractorModal = ({ isOpen, onClose, onSave, contractor = null }) =>
             name="active"
             checked={formData.active}
             onChange={handleChange}
-            className="rounded border-gray-300 text-primary focus:ring-primary"
+            className="rounded border-border-strong text-primary focus:ring-primary"
           />
-          <span className="text-sm text-gray-700">Active contractor</span>
+          <span className="text-sm text-bark-700">Active contractor</span>
         </label>
       </form>
     </Modal>

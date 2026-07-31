@@ -10,7 +10,7 @@ const typeConfig = {
   },
   error: {
     icon: XCircle,
-    bg: 'bg-danger-bg border-red-200',
+    bg: 'bg-danger-bg border-danger/25',
     text: 'text-danger',
     iconColor: 'text-danger',
   },

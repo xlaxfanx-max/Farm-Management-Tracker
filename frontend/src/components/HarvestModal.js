@@ -234,32 +234,32 @@ const HarvestModal = ({
       <div className="bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b sticky top-0 bg-white">
-          <h2 className="text-xl font-semibold text-gray-900">
+          <h2 className="text-xl font-semibold text-heading">
             {harvest ? 'Edit Harvest' : 'Record New Harvest'}
           </h2>
-          <button onClick={onClose} className="p-1 hover:bg-gray-100 rounded text-gray-500">
+          <button onClick={onClose} className="p-1 hover:bg-cream-100 rounded text-text-secondary">
             <X size={24} />
           </button>
         </div>
 
         {/* PHI Warning Banner */}
         {phiCheck && phiCheck.is_compliant === false && (
-          <div className="mx-4 mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+          <div className="mx-4 mt-4 p-4 bg-danger-bg border border-danger/25 rounded-lg">
             <div className="flex items-start gap-3">
-              <AlertTriangle className="text-red-600 flex-shrink-0 mt-0.5" size={24} />
+              <AlertTriangle className="text-danger flex-shrink-0 mt-0.5" size={24} />
               <div>
-                <p className="font-semibold text-red-800">PHI Violation Warning</p>
-                <p className="text-sm text-red-700 mt-1">{phiCheck.warning_message}</p>
-                <p className="text-sm text-red-600 mt-2">
+                <p className="font-semibold text-danger">PHI Violation Warning</p>
+                <p className="text-sm text-danger mt-1">{phiCheck.warning_message}</p>
+                <p className="text-sm text-danger mt-2">
                   Proceeding may violate Pre-Harvest Interval requirements.
                   Consider selecting a later harvest date.
                 </p>
-                <label className="mt-3 flex items-start gap-2 text-sm font-medium text-red-800 cursor-pointer">
+                <label className="mt-3 flex items-start gap-2 text-sm font-medium text-danger cursor-pointer">
                   <input
                     type="checkbox"
                     checked={phiOverride}
                     onChange={(e) => setPhiOverride(e.target.checked)}
-                    className="mt-0.5 rounded border-red-400 text-red-600 focus:ring-red-500"
+                    className="mt-0.5 rounded border-danger/60 text-danger focus:ring-danger"
                   />
                   <span>
                     I understand this harvest may violate the PHI and want to record it anyway
@@ -274,14 +274,14 @@ const HarvestModal = ({
           <div className="mx-4 mt-4 p-3 bg-primary-light border border-green-200 rounded-lg">
             <div className="flex items-center gap-2">
               <CheckCircle className="text-primary" size={20} />
-              <span className="text-green-800">{phiCheck.warning_message}</span>
+              <span className="text-green-700">{phiCheck.warning_message}</span>
             </div>
           </div>
         )}
 
         {phiLoading && (
-          <div className="mx-4 mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-            <p className="text-blue-700">Checking PHI compliance...</p>
+          <div className="mx-4 mt-4 p-3 bg-orange-50 border border-orange-200 rounded-lg">
+            <p className="text-orange-700">Checking PHI compliance...</p>
           </div>
         )}
 
@@ -290,14 +290,14 @@ const HarvestModal = ({
           {/* Field Selection & Date */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Field <span className="text-red-500">*</span>
+              <label className="block text-sm font-medium text-bark-700 mb-1">
+                Field <span className="text-danger">*</span>
               </label>
               <select
                 name="field"
                 value={formData.field}
                 onChange={handleChange}
-                className={`w-full border rounded-lg px-3 py-2 bg-white text-gray-900 ${errors.field ? 'border-red-500' : ''}`}
+                className={`w-full border rounded-lg px-3 py-2 bg-white text-heading ${errors.field ? 'border-danger' : ''}`}
                 required
               >
                 <option value="">Select a field...</option>
@@ -307,36 +307,36 @@ const HarvestModal = ({
                   </option>
                 ))}
               </select>
-              {errors.field && <p className="text-red-500 text-sm mt-1">{errors.field}</p>}
+              {errors.field && <p className="text-danger text-sm mt-1">{errors.field}</p>}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Harvest Date <span className="text-red-500">*</span>
+              <label className="block text-sm font-medium text-bark-700 mb-1">
+                Harvest Date <span className="text-danger">*</span>
               </label>
               <input
                 type="date"
                 name="harvest_date"
                 value={formData.harvest_date}
                 onChange={handleChange}
-                className={`w-full border rounded-lg px-3 py-2 bg-white text-gray-900 ${errors.harvest_date ? 'border-red-500' : ''}`}
+                className={`w-full border rounded-lg px-3 py-2 bg-white text-heading ${errors.harvest_date ? 'border-danger' : ''}`}
                 required
               />
-              {errors.harvest_date && <p className="text-red-500 text-sm mt-1">{errors.harvest_date}</p>}
+              {errors.harvest_date && <p className="text-danger text-sm mt-1">{errors.harvest_date}</p>}
             </div>
           </div>
 
           {/* Crop & Pick Number */}
           <div className="grid grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Crop Variety <span className="text-red-500">*</span>
+              <label className="block text-sm font-medium text-bark-700 mb-1">
+                Crop Variety <span className="text-danger">*</span>
               </label>
               <select
                 name="crop_variety"
                 value={formData.crop_variety}
                 onChange={handleChange}
-                className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900"
+                className="w-full border rounded-lg px-3 py-2 bg-white text-heading"
                 required
               >
                 {HARVEST_CONSTANTS.CROP_VARIETIES.map(crop => (
@@ -346,7 +346,7 @@ const HarvestModal = ({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-bark-700 mb-1">
                 Pick Number
               </label>
               <input
@@ -355,20 +355,20 @@ const HarvestModal = ({
                 value={formData.harvest_number}
                 onChange={handleChange}
                 min="1"
-                className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900"
+                className="w-full border rounded-lg px-3 py-2 bg-white text-heading"
               />
-              <p className="text-xs text-gray-500 mt-1">Which pick this season (1st, 2nd, etc.)</p>
+              <p className="text-xs text-text-secondary mt-1">Which pick this season (1st, 2nd, etc.)</p>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-bark-700 mb-1">
                 Status
               </label>
               <select
                 name="status"
                 value={formData.status}
                 onChange={handleChange}
-                className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900"
+                className="w-full border rounded-lg px-3 py-2 bg-white text-heading"
               >
                 {HARVEST_CONSTANTS.HARVEST_STATUSES.map(s => (
                   <option key={s.value} value={s.value}>{s.label}</option>
@@ -380,8 +380,8 @@ const HarvestModal = ({
           {/* Quantity */}
           <div className="grid grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Acres Harvested <span className="text-red-500">*</span>
+              <label className="block text-sm font-medium text-bark-700 mb-1">
+                Acres Harvested <span className="text-danger">*</span>
               </label>
               <input
                 type="number"
@@ -390,20 +390,20 @@ const HarvestModal = ({
                 onChange={handleChange}
                 step="0.01"
                 min="0.01"
-                className={`w-full border rounded-lg px-3 py-2 bg-white text-gray-900 ${errors.acres_harvested ? 'border-red-500' : ''}`}
+                className={`w-full border rounded-lg px-3 py-2 bg-white text-heading ${errors.acres_harvested ? 'border-danger' : ''}`}
                 required
               />
-              {errors.acres_harvested && <p className="text-red-500 text-sm mt-1">{errors.acres_harvested}</p>}
+              {errors.acres_harvested && <p className="text-danger text-sm mt-1">{errors.acres_harvested}</p>}
               {getSelectedField() && (
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-text-secondary mt-1">
                   Field total: {getSelectedField().total_acres} acres
                 </p>
               )}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Total {unitInfo.labelPlural} <span className="text-red-500">*</span>
+              <label className="block text-sm font-medium text-bark-700 mb-1">
+                Total {unitInfo.labelPlural} <span className="text-danger">*</span>
               </label>
               <input
                 type="number"
@@ -411,15 +411,15 @@ const HarvestModal = ({
                 value={formData.total_bins}
                 onChange={handleChange}
                 min="0"
-                className={`w-full border rounded-lg px-3 py-2 bg-white text-gray-900 ${errors.total_bins ? 'border-red-500' : ''}`}
+                className={`w-full border rounded-lg px-3 py-2 bg-white text-heading ${errors.total_bins ? 'border-danger' : ''}`}
                 required
               />
-              {errors.total_bins && <p className="text-red-500 text-sm mt-1">{errors.total_bins}</p>}
+              {errors.total_bins && <p className="text-danger text-sm mt-1">{errors.total_bins}</p>}
             </div>
 
             {!isWeightBased && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-bark-700 mb-1">
                   Bin Weight (lbs)
                 </label>
                 <input
@@ -428,9 +428,9 @@ const HarvestModal = ({
                   value={formData.bin_weight_lbs}
                   onChange={handleChange}
                   min="1"
-                  className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900"
+                  className="w-full border rounded-lg px-3 py-2 bg-white text-heading"
                 />
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-text-secondary mt-1">
                   Est. weight: {((formData.total_bins || 0) * formData.bin_weight_lbs).toLocaleString()} lbs
                 </p>
               </div>
@@ -447,9 +447,9 @@ const HarvestModal = ({
                     name="phi_verified"
                     checked={formData.phi_verified}
                     onChange={handleChange}
-                    className="rounded border-gray-300"
+                    className="rounded border-border-strong"
                   />
-                  <span className="text-sm text-gray-700">PHI compliance verified</span>
+                  <span className="text-sm text-bark-700">PHI compliance verified</span>
                 </label>
 
                 <label className="flex items-center gap-2">
@@ -458,9 +458,9 @@ const HarvestModal = ({
                     name="equipment_cleaned"
                     checked={formData.equipment_cleaned}
                     onChange={handleChange}
-                    className="rounded border-gray-300"
+                    className="rounded border-border-strong"
                   />
-                  <span className="text-sm text-gray-700">Harvest equipment cleaned/sanitized</span>
+                  <span className="text-sm text-bark-700">Harvest equipment cleaned/sanitized</span>
                 </label>
 
                 <label className="flex items-center gap-2">
@@ -469,14 +469,14 @@ const HarvestModal = ({
                     name="no_contamination_observed"
                     checked={formData.no_contamination_observed}
                     onChange={handleChange}
-                    className="rounded border-gray-300"
+                    className="rounded border-border-strong"
                   />
-                  <span className="text-sm text-gray-700">No contamination observed (glass, metal, animals)</span>
+                  <span className="text-sm text-bark-700">No contamination observed (glass, metal, animals)</span>
                 </label>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-bark-700 mb-1">
                   Supervisor Name
                 </label>
                 <input
@@ -484,14 +484,14 @@ const HarvestModal = ({
                   name="supervisor_name"
                   value={formData.supervisor_name}
                   onChange={handleChange}
-                  className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900"
+                  className="w-full border rounded-lg px-3 py-2 bg-white text-heading"
                   placeholder="Person responsible for this harvest"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-bark-700 mb-1">
                 Field Conditions
               </label>
               <textarea
@@ -499,7 +499,7 @@ const HarvestModal = ({
                 value={formData.field_conditions}
                 onChange={handleChange}
                 rows={2}
-                className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900"
+                className="w-full border rounded-lg px-3 py-2 bg-white text-heading"
                 placeholder="Weather, ground conditions, any observations..."
               />
             </div>
@@ -507,7 +507,7 @@ const HarvestModal = ({
 
           {/* Notes */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-bark-700 mb-1">
               Notes
             </label>
             <textarea
@@ -515,24 +515,24 @@ const HarvestModal = ({
               value={formData.notes}
               onChange={handleChange}
               rows={2}
-              className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900"
+              className="w-full border rounded-lg px-3 py-2 bg-white text-heading"
               placeholder="Any additional notes..."
             />
           </div>
 
           {/* Bins Reconciliation Widget - Only show when editing existing harvest */}
           {harvest && reconciliationStatus && (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
               <div className="flex items-center gap-2 mb-3">
-                <Info size={18} className="text-blue-600" />
-                <h3 className="font-medium text-blue-800">{unitInfo.labelSingular} Tracking Status</h3>
+                <Info size={18} className="text-link" />
+                <h3 className="font-medium text-orange-700">{unitInfo.labelSingular} Tracking Status</h3>
               </div>
 
               <div className="grid grid-cols-3 gap-4 text-sm mb-3">
                 {/* Total Harvest */}
                 <div>
-                  <p className="text-gray-600">Total Harvest</p>
-                  <p className="text-lg font-semibold text-gray-900">
+                  <p className="text-bark-600">Total Harvest</p>
+                  <p className="text-lg font-semibold text-heading">
                     {reconciliationStatus.total_harvest_bins} {unitInfo.labelPlural.toLowerCase()}
                   </p>
                 </div>
@@ -540,9 +540,9 @@ const HarvestModal = ({
                 {/* Loads Status */}
                 <div>
                   <div className="flex items-center gap-2 mb-1">
-                    <p className="text-gray-600">In Loads</p>
+                    <p className="text-bark-600">In Loads</p>
                     {reconciliationStatus.loads_status === 'match' && (
-                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-700">
                         ✓ Complete
                       </span>
                     )}
@@ -552,25 +552,25 @@ const HarvestModal = ({
                       </span>
                     )}
                     {reconciliationStatus.loads_status === 'over' && (
-                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-danger-bg text-danger">
                         ✗ Over
                       </span>
                     )}
                   </div>
-                  <p className="text-lg font-semibold text-gray-900">
+                  <p className="text-lg font-semibold text-heading">
                     {reconciliationStatus.total_load_bins} {unitInfo.labelPlural.toLowerCase()}
                   </p>
                   {reconciliationStatus.loads_message && (
-                    <p className="text-xs text-gray-600 mt-1">{reconciliationStatus.loads_message}</p>
+                    <p className="text-xs text-bark-600 mt-1">{reconciliationStatus.loads_message}</p>
                   )}
                 </div>
 
                 {/* Labor Status */}
                 <div>
                   <div className="flex items-center gap-2 mb-1">
-                    <p className="text-gray-600">By Labor</p>
+                    <p className="text-bark-600">By Labor</p>
                     {reconciliationStatus.labor_status === 'match' && (
-                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-700">
                         ✓ Complete
                       </span>
                     )}
@@ -580,16 +580,16 @@ const HarvestModal = ({
                       </span>
                     )}
                     {reconciliationStatus.labor_status === 'over' && (
-                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-danger-bg text-danger">
                         ✗ Over
                       </span>
                     )}
                   </div>
-                  <p className="text-lg font-semibold text-gray-900">
+                  <p className="text-lg font-semibold text-heading">
                     {reconciliationStatus.total_labor_bins} {unitInfo.labelPlural.toLowerCase()}
                   </p>
                   {reconciliationStatus.labor_message && (
-                    <p className="text-xs text-gray-600 mt-1">{reconciliationStatus.labor_message}</p>
+                    <p className="text-xs text-bark-600 mt-1">{reconciliationStatus.labor_message}</p>
                   )}
                 </div>
               </div>
@@ -598,15 +598,15 @@ const HarvestModal = ({
               <div className="space-y-2">
                 {/* Loads Progress */}
                 <div>
-                  <div className="flex justify-between text-xs text-gray-600 mb-1">
+                  <div className="flex justify-between text-xs text-bark-600 mb-1">
                     <span>Loads Progress</span>
                     <span>{Math.round((reconciliationStatus.total_load_bins / reconciliationStatus.total_harvest_bins) * 100)}%</span>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div className="w-full bg-sand-200 rounded-full h-2">
                     <div
                       className={`h-2 rounded-full transition-all ${
                         reconciliationStatus.loads_status === 'match' ? 'bg-green-500' :
-                        reconciliationStatus.loads_status === 'over' ? 'bg-red-500' :
+                        reconciliationStatus.loads_status === 'over' ? 'bg-danger' :
                         'bg-yellow-500'
                       }`}
                       style={{width: `${Math.min((reconciliationStatus.total_load_bins / reconciliationStatus.total_harvest_bins) * 100, 100)}%`}}
@@ -616,15 +616,15 @@ const HarvestModal = ({
 
                 {/* Labor Progress */}
                 <div>
-                  <div className="flex justify-between text-xs text-gray-600 mb-1">
+                  <div className="flex justify-between text-xs text-bark-600 mb-1">
                     <span>Labor Progress</span>
                     <span>{Math.round((reconciliationStatus.total_labor_bins / reconciliationStatus.total_harvest_bins) * 100)}%</span>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div className="w-full bg-sand-200 rounded-full h-2">
                     <div
                       className={`h-2 rounded-full transition-all ${
                         reconciliationStatus.labor_status === 'match' ? 'bg-green-500' :
-                        reconciliationStatus.labor_status === 'over' ? 'bg-red-500' :
+                        reconciliationStatus.labor_status === 'over' ? 'bg-danger' :
                         'bg-yellow-500'
                       }`}
                       style={{width: `${Math.min((reconciliationStatus.total_labor_bins / reconciliationStatus.total_harvest_bins) * 100, 100)}%`}}
@@ -640,7 +640,7 @@ const HarvestModal = ({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 border rounded-lg hover:bg-gray-50 text-gray-700"
+              className="px-4 py-2 border rounded-lg hover:bg-cream-50 text-bark-700"
             >
               Cancel
             </button>

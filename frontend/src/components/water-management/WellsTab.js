@@ -84,17 +84,17 @@ const WellsTab = ({
     )}
 
     {/* Quick Actions Bar */}
-    <div className="bg-white rounded-xl border border-gray-200 p-4">
+    <div className="bg-white rounded-xl border border-border p-4">
       <div className="flex flex-wrap items-center gap-4">
         {/* Search */}
         <div className="flex-1 min-w-[200px] relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-text-muted w-5 h-5" />
           <input
             type="text"
             placeholder="Search wells..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg bg-white focus:ring-2 focus:ring-cyan-500"
+            className="w-full pl-10 pr-4 py-2.5 border border-border rounded-lg bg-white focus:ring-2 focus:ring-green-500"
           />
         </div>
 
@@ -102,7 +102,7 @@ const WellsTab = ({
         <select
           value={filterGSA}
           onChange={(e) => setFilterGSA(e.target.value)}
-          className="px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-cyan-500 bg-white"
+          className="px-4 py-2.5 border border-border rounded-lg focus:ring-2 focus:ring-green-500 bg-white"
         >
           <option value="">All GSAs</option>
           {Object.entries(GSA_NAMES).map(([value, label]) => (
@@ -116,15 +116,15 @@ const WellsTab = ({
             if (filteredWells.length > 0) openBatchReadingModal(filteredWells);
             else toast.info('No wells available for batch reading');
           }}
-          className="flex items-center gap-2 px-4 py-2.5 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 font-medium"
+          className="flex items-center gap-2 px-4 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium"
         >
           <Gauge className="w-5 h-5" />
           Batch Readings
         </button>
 
         {/* Refresh */}
-        <button onClick={handleRefresh} className="p-2.5 border border-gray-200 rounded-lg hover:bg-gray-50">
-          <RefreshCw className={`w-5 h-5 text-gray-600 ${loading ? 'animate-spin' : ''}`} />
+        <button onClick={handleRefresh} className="p-2.5 border border-border rounded-lg hover:bg-cream-50">
+          <RefreshCw className={`w-5 h-5 text-bark-600 ${loading ? 'animate-spin' : ''}`} />
         </button>
       </div>
     </div>
@@ -149,18 +149,18 @@ const WellsTab = ({
 
       return (
         <div className={`rounded-xl p-4 flex items-center justify-between ${
-          wellsOverdue.length > 0 ? 'bg-red-50 border border-red-200' : 'bg-amber-50 border border-amber-200'
+          wellsOverdue.length > 0 ? 'bg-danger-bg border border-danger/25' : 'bg-yellow-100 border border-yellow-200'
         }`}>
           <div className="flex items-center gap-3">
-            <Clock className={`w-5 h-5 ${wellsOverdue.length > 0 ? 'text-red-500' : 'text-amber-500'}`} />
+            <Clock className={`w-5 h-5 ${wellsOverdue.length > 0 ? 'text-danger' : 'text-yellow-500'}`} />
             <div>
-              <p className={`font-medium ${wellsOverdue.length > 0 ? 'text-red-800' : 'text-amber-800'}`}>
+              <p className={`font-medium ${wellsOverdue.length > 0 ? 'text-danger' : 'text-yellow-800'}`}>
                 {wellsOverdue.length > 0
                   ? `${wellsOverdue.length} well${wellsOverdue.length > 1 ? 's' : ''} overdue for reading (90+ days)`
                   : `${wellsNeedingReading.length} well${wellsNeedingReading.length > 1 ? 's' : ''} due for reading (30+ days)`
                 }
               </p>
-              <p className={`text-sm ${wellsOverdue.length > 0 ? 'text-red-600' : 'text-amber-600'}`}>
+              <p className={`text-sm ${wellsOverdue.length > 0 ? 'text-danger' : 'text-yellow-600'}`}>
                 {wellsNeedingReading.map(w => w.well_name || w.name).slice(0, 3).join(', ')}
                 {wellsNeedingReading.length > 3 && ` +${wellsNeedingReading.length - 3} more`}
               </p>
@@ -170,8 +170,8 @@ const WellsTab = ({
             onClick={() => openBatchReadingModal(wellsNeedingReading)}
             className={`px-4 py-2 rounded-lg font-medium ${
               wellsOverdue.length > 0
-                ? 'bg-red-600 text-white hover:bg-red-700'
-                : 'bg-amber-600 text-white hover:bg-amber-700'
+                ? 'bg-danger text-white hover:bg-danger-hover'
+                : 'bg-yellow-600 text-white hover:bg-yellow-700'
             }`}
           >
             Record Readings
@@ -182,13 +182,13 @@ const WellsTab = ({
 
     {/* Wells List */}
     {filteredWells.length === 0 ? (
-      <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
-        <Droplets className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-        <h3 className="text-lg font-medium text-gray-900 mb-2">No wells found</h3>
-        <p className="text-gray-500 mb-6">Add a well to track groundwater extraction and SGMA compliance.</p>
+      <div className="bg-white rounded-xl border border-border p-12 text-center">
+        <Droplets className="w-12 h-12 text-sand-300 mx-auto mb-4" />
+        <h3 className="text-lg font-medium text-heading mb-2">No wells found</h3>
+        <p className="text-text-secondary mb-6">Add a well to track groundwater extraction and SGMA compliance.</p>
         <button
           onClick={() => openWellSourceModal()}
-          className="inline-flex items-center gap-2 bg-cyan-600 text-white px-4 py-2 rounded-lg hover:bg-cyan-700"
+          className="inline-flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
         >
           <Plus className="w-5 h-5" />
           Add Well
@@ -197,7 +197,7 @@ const WellsTab = ({
     ) : (
       <div className="space-y-4">
         {filteredWells.map(well => (
-          <div key={well.id} className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:border-gray-300 hover:shadow-sm transition-all">
+          <div key={well.id} className="bg-white rounded-xl border border-border overflow-hidden hover:border-border-strong hover:shadow-sm transition-all">
             {/* Well Header */}
             <div
               className="p-4 cursor-pointer"
@@ -205,12 +205,12 @@ const WellsTab = ({
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                  <div className={`p-3 rounded-xl ${well.calibration_due_soon || !well.meter_calibration_current ? 'bg-amber-100' : 'bg-cyan-100'}`}>
-                    <Droplets className={`w-6 h-6 ${well.calibration_due_soon || !well.meter_calibration_current ? 'text-amber-600' : 'text-cyan-600'}`} />
+                  <div className={`p-3 rounded-xl ${well.calibration_due_soon || !well.meter_calibration_current ? 'bg-yellow-200' : 'bg-green-100'}`}>
+                    <Droplets className={`w-6 h-6 ${well.calibration_due_soon || !well.meter_calibration_current ? 'text-yellow-600' : 'text-green-600'}`} />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-gray-900">{well.well_name || well.water_source_name}</h3>
-                    <p className="text-sm text-gray-500">{well.farm_name} • {GSA_NAMES[well.gsa] || well.gsa}</p>
+                    <h3 className="font-semibold text-heading">{well.well_name || well.water_source_name}</h3>
+                    <p className="text-sm text-text-secondary">{well.farm_name} • {GSA_NAMES[well.gsa] || well.gsa}</p>
                   </div>
                 </div>
 
@@ -219,7 +219,7 @@ const WellsTab = ({
                   {(() => {
                     if (!well.latest_reading?.date) {
                       return (
-                        <span className="flex items-center gap-1.5 text-gray-600 text-xs bg-gray-100 px-2.5 py-1 rounded-full">
+                        <span className="flex items-center gap-1.5 text-bark-600 text-xs bg-cream-100 px-2.5 py-1 rounded-full">
                           <AlertCircle className="w-3.5 h-3.5" />
                           No readings
                         </span>
@@ -229,7 +229,7 @@ const WellsTab = ({
                     const daysSince = Math.ceil((new Date() - lastDate) / (1000 * 60 * 60 * 24));
                     if (daysSince > 90) {
                       return (
-                        <span className="flex items-center gap-1.5 text-red-600 text-xs bg-red-50 px-2.5 py-1 rounded-full">
+                        <span className="flex items-center gap-1.5 text-danger text-xs bg-danger-bg px-2.5 py-1 rounded-full">
                           <AlertTriangle className="w-3.5 h-3.5" />
                           {daysSince}d ago
                         </span>
@@ -237,7 +237,7 @@ const WellsTab = ({
                     }
                     if (daysSince > 30) {
                       return (
-                        <span className="flex items-center gap-1.5 text-amber-600 text-xs bg-amber-50 px-2.5 py-1 rounded-full">
+                        <span className="flex items-center gap-1.5 text-yellow-600 text-xs bg-yellow-100 px-2.5 py-1 rounded-full">
                           <Clock className="w-3.5 h-3.5" />
                           {daysSince}d ago
                         </span>
@@ -252,38 +252,38 @@ const WellsTab = ({
                   })()}
 
                   {well.calibration_due_soon && (
-                    <span className="flex items-center gap-1.5 text-amber-600 text-xs bg-amber-50 px-2.5 py-1 rounded-full">
+                    <span className="flex items-center gap-1.5 text-yellow-600 text-xs bg-yellow-100 px-2.5 py-1 rounded-full">
                       <Zap className="w-3.5 h-3.5" />
                       Cal. Due
                     </span>
                   )}
                   <div className="text-right">
-                    <p className="text-xs text-gray-500">YTD Extraction</p>
-                    <p className="font-semibold text-cyan-600">{formatNumber(well.ytd_extraction_af, 2)} AF</p>
+                    <p className="text-xs text-text-secondary">YTD Extraction</p>
+                    <p className="font-semibold text-green-600">{formatNumber(well.ytd_extraction_af, 2)} AF</p>
                   </div>
-                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${STATUS_COLORS[well.status] || 'bg-gray-100'}`}>
+                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${STATUS_COLORS[well.status] || 'bg-cream-100'}`}>
                     {well.status}
                   </span>
                   <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
                     <button
                       onClick={() => openWellReadingModal(well.id, well.well_name)}
-                      className="p-2 text-cyan-600 hover:bg-cyan-50 rounded-lg"
+                      className="p-2 text-green-600 hover:bg-green-50 rounded-lg"
                       title="Add Reading"
                     >
                       <Gauge className="w-5 h-5" />
                     </button>
                     <button
                       onClick={() => openWellSourceModal(well)}
-                      className="p-2 text-gray-500 hover:bg-gray-100 rounded-lg"
+                      className="p-2 text-text-secondary hover:bg-cream-100 rounded-lg"
                       title="Edit"
                     >
                       <Edit className="w-5 h-5" />
                     </button>
                   </div>
                   {expandedItems[well.id] ? (
-                    <ChevronDown className="w-5 h-5 text-gray-400" />
+                    <ChevronDown className="w-5 h-5 text-text-muted" />
                   ) : (
-                    <ChevronRight className="w-5 h-5 text-gray-400" />
+                    <ChevronRight className="w-5 h-5 text-text-muted" />
                   )}
                 </div>
               </div>
@@ -291,64 +291,64 @@ const WellsTab = ({
 
             {/* Expanded Details */}
             {expandedItems[well.id] && (
-              <div className="border-t border-gray-100 bg-gray-50 p-5">
+              <div className="border-t border-border bg-cream-50 p-5">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                   <div>
-                    <h4 className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wider">Well Info</h4>
+                    <h4 className="text-sm font-semibold text-bark-700 mb-3 uppercase tracking-wider">Well Info</h4>
                     <dl className="space-y-2 text-sm">
                       <div className="flex justify-between">
-                        <dt className="text-gray-500">State Well #:</dt>
-                        <dd className="text-gray-900 font-medium text-xs">{well.state_well_number || '-'}</dd>
+                        <dt className="text-text-secondary">State Well #:</dt>
+                        <dd className="text-heading font-medium text-xs">{well.state_well_number || '-'}</dd>
                       </div>
                       <div className="flex justify-between">
-                        <dt className="text-gray-500">Basin:</dt>
-                        <dd className="text-gray-900 font-medium">{BASIN_NAMES[well.basin] || well.basin || '-'}</dd>
+                        <dt className="text-text-secondary">Basin:</dt>
+                        <dd className="text-heading font-medium">{BASIN_NAMES[well.basin] || well.basin || '-'}</dd>
                       </div>
                       <div className="flex justify-between">
-                        <dt className="text-gray-500">Meter Units:</dt>
-                        <dd className="text-gray-900 font-medium">{well.flowmeter_units || '-'}</dd>
+                        <dt className="text-text-secondary">Meter Units:</dt>
+                        <dd className="text-heading font-medium">{well.flowmeter_units || '-'}</dd>
                       </div>
                     </dl>
                   </div>
                   <div>
-                    <h4 className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wider">Fee Rates</h4>
+                    <h4 className="text-sm font-semibold text-bark-700 mb-3 uppercase tracking-wider">Fee Rates</h4>
                     <dl className="space-y-2 text-sm">
                       {well.base_extraction_rate && (
                         <div className="flex justify-between">
-                          <dt className="text-gray-500">Base Rate:</dt>
-                          <dd className="text-gray-900 font-medium">${parseFloat(well.base_extraction_rate).toFixed(2)}/AF</dd>
+                          <dt className="text-text-secondary">Base Rate:</dt>
+                          <dd className="text-heading font-medium">${parseFloat(well.base_extraction_rate).toFixed(2)}/AF</dd>
                         </div>
                       )}
                       {well.gsp_rate && (
                         <div className="flex justify-between">
-                          <dt className="text-gray-500">GSP Rate:</dt>
-                          <dd className="text-gray-900 font-medium">${parseFloat(well.gsp_rate).toFixed(2)}/AF</dd>
+                          <dt className="text-text-secondary">GSP Rate:</dt>
+                          <dd className="text-heading font-medium">${parseFloat(well.gsp_rate).toFixed(2)}/AF</dd>
                         </div>
                       )}
                       {well.domestic_rate && (
                         <div className="flex justify-between">
-                          <dt className="text-gray-500">Domestic:</dt>
-                          <dd className="text-gray-900 font-medium">${parseFloat(well.domestic_rate).toFixed(2)}/AF</dd>
+                          <dt className="text-text-secondary">Domestic:</dt>
+                          <dd className="text-heading font-medium">${parseFloat(well.domestic_rate).toFixed(2)}/AF</dd>
                         </div>
                       )}
                       {well.fixed_quarterly_fee && (
                         <div className="flex justify-between">
-                          <dt className="text-gray-500">Fixed/Qtr:</dt>
-                          <dd className="text-gray-900 font-medium">${parseFloat(well.fixed_quarterly_fee).toFixed(2)}</dd>
+                          <dt className="text-text-secondary">Fixed/Qtr:</dt>
+                          <dd className="text-heading font-medium">${parseFloat(well.fixed_quarterly_fee).toFixed(2)}</dd>
                         </div>
                       )}
                       {!well.base_extraction_rate && !well.gsp_rate && !well.domestic_rate && (
-                        <p className="text-gray-400 italic">No rates configured</p>
+                        <p className="text-text-muted italic">No rates configured</p>
                       )}
                     </dl>
                   </div>
                   <div>
-                    <h4 className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wider">YTD Costs</h4>
+                    <h4 className="text-sm font-semibold text-bark-700 mb-3 uppercase tracking-wider">YTD Costs</h4>
                     {well.ytd_extraction_af > 0 && (well.base_extraction_rate || well.gsp_rate) ? (
                       <dl className="space-y-2 text-sm">
                         {well.base_extraction_rate && (
                           <div className="flex justify-between">
-                            <dt className="text-gray-500">Base Fee:</dt>
+                            <dt className="text-text-secondary">Base Fee:</dt>
                             <dd className="text-primary font-medium">
                               ${(parseFloat(well.ytd_extraction_af || 0) * parseFloat(well.base_extraction_rate)).toFixed(2)}
                             </dd>
@@ -356,14 +356,14 @@ const WellsTab = ({
                         )}
                         {well.gsp_rate && (
                           <div className="flex justify-between">
-                            <dt className="text-gray-500">GSP Fee:</dt>
+                            <dt className="text-text-secondary">GSP Fee:</dt>
                             <dd className="text-primary font-medium">
                               ${(parseFloat(well.ytd_extraction_af || 0) * parseFloat(well.gsp_rate)).toFixed(2)}
                             </dd>
                           </div>
                         )}
-                        <div className="flex justify-between pt-1 border-t border-gray-200">
-                          <dt className="text-gray-700 font-medium">Est. Total:</dt>
+                        <div className="flex justify-between pt-1 border-t border-border">
+                          <dt className="text-bark-700 font-medium">Est. Total:</dt>
                           <dd className="text-primary font-bold">
                             ${(
                               (parseFloat(well.ytd_extraction_af || 0) * parseFloat(well.base_extraction_rate || 0)) +
@@ -373,24 +373,24 @@ const WellsTab = ({
                         </div>
                       </dl>
                     ) : (
-                      <p className="text-sm text-gray-400 italic">No extraction or rates</p>
+                      <p className="text-sm text-text-muted italic">No extraction or rates</p>
                     )}
                   </div>
                   <div>
-                    <h4 className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wider">Latest Reading</h4>
+                    <h4 className="text-sm font-semibold text-bark-700 mb-3 uppercase tracking-wider">Latest Reading</h4>
                     {well.latest_reading ? (
                       <dl className="space-y-2 text-sm">
                         <div className="flex justify-between">
-                          <dt className="text-gray-500">Date:</dt>
-                          <dd className="text-gray-900 font-medium">{formatDate(well.latest_reading.date)}</dd>
+                          <dt className="text-text-secondary">Date:</dt>
+                          <dd className="text-heading font-medium">{formatDate(well.latest_reading.date)}</dd>
                         </div>
                         <div className="flex justify-between">
-                          <dt className="text-gray-500">Reading:</dt>
-                          <dd className="text-gray-900 font-medium">{well.latest_reading.meter_reading}</dd>
+                          <dt className="text-text-secondary">Reading:</dt>
+                          <dd className="text-heading font-medium">{well.latest_reading.meter_reading}</dd>
                         </div>
                       </dl>
                     ) : (
-                      <p className="text-sm text-gray-500 italic">No readings recorded</p>
+                      <p className="text-sm text-text-secondary italic">No readings recorded</p>
                     )}
                   </div>
                 </div>
@@ -403,10 +403,10 @@ const WellsTab = ({
                 {/* Reading History */}
                 <div className="mt-6">
                   <div className="flex items-center justify-between mb-3">
-                    <h4 className="text-sm font-semibold text-gray-700 uppercase tracking-wider">Reading History</h4>
+                    <h4 className="text-sm font-semibold text-bark-700 uppercase tracking-wider">Reading History</h4>
                     <button
                       onClick={() => openWellReadingModal(well.id, well.well_name)}
-                      className="flex items-center gap-1.5 text-sm text-cyan-600 hover:text-cyan-700 font-medium"
+                      className="flex items-center gap-1.5 text-sm text-green-600 hover:text-green-700 font-medium"
                     >
                       <Plus className="w-4 h-4" />
                       Add Reading
@@ -414,15 +414,15 @@ const WellsTab = ({
                   </div>
 
                   {loadingReadings[well.id] ? (
-                    <div className="flex items-center justify-center py-6 text-gray-400">
+                    <div className="flex items-center justify-center py-6 text-text-muted">
                       <RefreshCw className="w-5 h-5 animate-spin mr-2" />
                       Loading readings...
                     </div>
                   ) : wellReadings[well.id]?.length > 0 ? (
-                    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                    <div className="bg-white rounded-lg border border-border overflow-hidden">
                       <table className="w-full text-sm">
                         <thead>
-                          <tr className="bg-gray-100 text-gray-600 text-xs uppercase tracking-wider">
+                          <tr className="bg-cream-100 text-bark-600 text-xs uppercase tracking-wider">
                             <th className="px-4 py-2.5 text-left font-semibold">Date</th>
                             <th className="px-4 py-2.5 text-right font-semibold">Meter Reading</th>
                             <th className="px-4 py-2.5 text-right font-semibold">Extraction (AF)</th>
@@ -431,21 +431,21 @@ const WellsTab = ({
                             <th className="px-4 py-2.5 text-center font-semibold">Actions</th>
                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-100">
+                        <tbody className="divide-y divide-border">
                           {wellReadings[well.id].map((reading) => (
-                            <tr key={reading.id} className="hover:bg-gray-50 transition-colors">
-                              <td className="px-4 py-2.5 text-gray-900">{formatDate(reading.reading_date)}</td>
-                              <td className="px-4 py-2.5 text-right font-mono text-gray-900">{Number(reading.meter_reading).toLocaleString()}</td>
-                              <td className="px-4 py-2.5 text-right text-cyan-700 font-medium">
+                            <tr key={reading.id} className="hover:bg-cream-50 transition-colors">
+                              <td className="px-4 py-2.5 text-heading">{formatDate(reading.reading_date)}</td>
+                              <td className="px-4 py-2.5 text-right font-mono text-heading">{Number(reading.meter_reading).toLocaleString()}</td>
+                              <td className="px-4 py-2.5 text-right text-green-700 font-medium">
                                 {reading.extraction_acre_feet != null ? formatNumber(reading.extraction_acre_feet, 4) : '-'}
                               </td>
-                              <td className="px-4 py-2.5 text-gray-600">{reading.reading_type_display || reading.reading_type}</td>
-                              <td className="px-4 py-2.5 text-gray-600">{reading.recorded_by || '-'}</td>
+                              <td className="px-4 py-2.5 text-bark-600">{reading.reading_type_display || reading.reading_type}</td>
+                              <td className="px-4 py-2.5 text-bark-600">{reading.recorded_by || '-'}</td>
                               <td className="px-4 py-2.5 text-center">
                                 <div className="flex items-center justify-center gap-1">
                                   <button
                                     onClick={() => openWellReadingModal(well.id, well.well_name, reading)}
-                                    className="p-1.5 text-gray-400 hover:text-cyan-600 hover:bg-cyan-50 rounded-lg transition-colors"
+                                    className="p-1.5 text-text-muted hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
                                     title="Edit Reading"
                                   >
                                     <Edit className="w-4 h-4" />
@@ -454,13 +454,13 @@ const WellsTab = ({
                                     <div className="flex items-center gap-1">
                                       <button
                                         onClick={() => deleteWellReading(reading.id, well.id)}
-                                        className="px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700"
+                                        className="px-2 py-1 text-xs bg-danger text-white rounded hover:bg-danger-hover"
                                       >
                                         Confirm
                                       </button>
                                       <button
                                         onClick={() => setDeletingReading(null)}
-                                        className="px-2 py-1 text-xs bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
+                                        className="px-2 py-1 text-xs bg-sand-200 text-bark-700 rounded hover:bg-sand-300"
                                       >
                                         Cancel
                                       </button>
@@ -468,7 +468,7 @@ const WellsTab = ({
                                   ) : (
                                     <button
                                       onClick={() => setDeletingReading(reading.id)}
-                                      className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                      className="p-1.5 text-text-muted hover:text-danger hover:bg-danger-bg rounded-lg transition-colors"
                                       title="Delete Reading"
                                     >
                                       <Trash2 className="w-4 h-4" />
@@ -482,7 +482,7 @@ const WellsTab = ({
                       </table>
                     </div>
                   ) : (
-                    <div className="text-center py-6 text-gray-400">
+                    <div className="text-center py-6 text-text-muted">
                       <Gauge className="w-8 h-8 mx-auto mb-2 opacity-50" />
                       <p className="text-sm">No readings recorded for this well</p>
                     </div>

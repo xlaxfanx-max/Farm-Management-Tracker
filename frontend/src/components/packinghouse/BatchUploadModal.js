@@ -389,7 +389,7 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
   const getConfidenceColor = (confidence) => {
     if (confidence >= 0.85) return 'text-primary bg-green-100';
     if (confidence >= 0.5) return 'text-yellow-600 bg-yellow-100';
-    return 'text-red-600 bg-red-100';
+    return 'text-danger bg-danger-bg';
   };
 
   const getFieldsForFarm = (farmId) => {
@@ -409,16 +409,16 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
         <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
           {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900 flex items-center">
+          <div className="flex items-center justify-between p-4 border-b border-border">
+            <h2 className="text-lg font-semibold text-heading flex items-center">
               <Upload className="w-5 h-5 mr-2 text-primary" />
               Upload Statement PDFs
             </h2>
             <button
               onClick={onClose}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              className="p-2 hover:bg-cream-100 rounded-lg transition-colors"
             >
-              <X className="w-5 h-5 text-gray-500" />
+              <X className="w-5 h-5 text-text-secondary" />
             </button>
           </div>
 
@@ -427,14 +427,14 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
             {/* Packinghouse Selection - Now Optional */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-bark-700 mb-1">
                   Packinghouse
-                  <span className="text-gray-400 font-normal ml-1">(optional)</span>
+                  <span className="text-text-muted font-normal ml-1">(optional)</span>
                 </label>
                 <select
                   value={selectedPackinghouse}
                   onChange={(e) => setSelectedPackinghouse(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
+                  className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary"
                   disabled={uploading}
                 >
                   <option value="">Auto-detect from PDF</option>
@@ -444,19 +444,19 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
                     </option>
                   ))}
                 </select>
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-text-secondary mt-1">
                   Leave empty to auto-detect from each PDF
                 </p>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-bark-700 mb-1">
                   Format Hint (Optional)
                 </label>
                 <select
                   value={formatHint}
                   onChange={(e) => setFormatHint(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
+                  className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary"
                   disabled={uploading}
                 >
                   <option value="">Auto-detect</option>
@@ -479,11 +479,11 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
                   ? 'border-primary bg-green-50'
                   : files.length > 0
                   ? 'border-green-300 bg-green-50'
-                  : 'border-gray-300 hover:border-gray-400'
+                  : 'border-border-strong hover:border-bark-400'
               }`}
             >
-              <Upload className="w-10 h-10 mx-auto text-gray-400 mb-2" />
-              <p className="text-gray-600 mb-2">
+              <Upload className="w-10 h-10 mx-auto text-text-muted mb-2" />
+              <p className="text-bark-600 mb-2">
                 Drag and drop PDF{files.length === 0 ? '(s)' : ''} here, or
               </p>
               <label className="inline-block">
@@ -498,26 +498,26 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
                   className="hidden"
                 />
               </label>
-              <p className="text-sm text-gray-500 mt-2">
+              <p className="text-sm text-text-secondary mt-2">
                 Upload 1-20 PDFs (max 50MB each)
               </p>
             </div>
 
             {/* File List */}
             {files.length > 0 && (
-              <div className="border border-gray-200 rounded-lg divide-y divide-gray-200">
+              <div className="border border-border rounded-lg divide-y divide-border">
                 {files.map((file, index) => (
                   <div key={index} className="flex items-center justify-between p-3">
                     <div className="flex items-center space-x-3">
-                      <FileText className="w-8 h-8 text-red-500" />
+                      <FileText className="w-8 h-8 text-danger" />
                       <div>
-                        <p className="font-medium text-gray-900 text-sm">{file.name}</p>
-                        <p className="text-xs text-gray-500">{formatFileSize(file.size)}</p>
+                        <p className="font-medium text-heading text-sm">{file.name}</p>
+                        <p className="text-xs text-text-secondary">{formatFileSize(file.size)}</p>
                       </div>
                     </div>
                     <button
                       onClick={() => removeFile(index)}
-                      className="p-1 text-gray-400 hover:text-red-500"
+                      className="p-1 text-text-muted hover:text-danger"
                       disabled={uploading}
                     >
                       <Trash2 className="w-4 h-4" />
@@ -529,7 +529,7 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
 
             {/* Error Message */}
             {error && (
-              <div className="flex items-center p-3 bg-red-50 border border-red-200 rounded-lg text-red-700">
+              <div className="flex items-center p-3 bg-danger-bg border border-danger/25 rounded-lg text-danger">
                 <AlertCircle className="w-5 h-5 mr-2 flex-shrink-0" />
                 <span className="text-sm">{error}</span>
               </div>
@@ -537,14 +537,14 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
           </div>
 
           {/* Footer */}
-          <div className="flex justify-between items-center p-4 border-t border-gray-200 bg-gray-50">
-            <div className="text-sm text-gray-500">
+          <div className="flex justify-between items-center p-4 border-t border-border bg-cream-50">
+            <div className="text-sm text-text-secondary">
               {files.length} file{files.length !== 1 ? 's' : ''} selected
             </div>
             <div className="flex space-x-3">
               <button
                 onClick={onClose}
-                className="px-4 py-2 text-gray-700 hover:bg-gray-200 rounded-lg transition-colors"
+                className="px-4 py-2 text-bark-700 hover:bg-sand-200 rounded-lg transition-colors"
               >
                 Cancel
               </button>
@@ -579,29 +579,29 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
         <div className="bg-white rounded-lg shadow-xl w-full max-w-lg overflow-hidden flex flex-col">
-          <div className="flex items-center justify-between p-4 border-b border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900 flex items-center">
-              <AlertCircle className="w-5 h-5 mr-2 text-amber-500" />
+          <div className="flex items-center justify-between p-4 border-b border-border">
+            <h2 className="text-lg font-semibold text-heading flex items-center">
+              <AlertCircle className="w-5 h-5 mr-2 text-yellow-500" />
               Statement Saved with Warnings
             </h2>
-            <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+            <button onClick={onClose} className="text-text-muted hover:text-bark-600">
               <X className="w-5 h-5" />
             </button>
           </div>
           <div className="p-4 space-y-3">
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-bark-600">
               The statement was saved successfully, but the following discrepancies were detected between the header totals and the grade line breakdown. The grade line totals were used.
             </p>
             {confirmWarnings.map((warning, idx) => (
-              <div key={idx} className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
+              <div key={idx} className="p-3 bg-yellow-100 border border-yellow-200 rounded-lg">
                 <div className="flex items-start">
-                  <AlertCircle className="w-4 h-4 text-amber-500 mt-0.5 mr-2 flex-shrink-0" />
-                  <span className="text-sm text-amber-800">{warning}</span>
+                  <AlertCircle className="w-4 h-4 text-yellow-500 mt-0.5 mr-2 flex-shrink-0" />
+                  <span className="text-sm text-yellow-800">{warning}</span>
                 </div>
               </div>
             ))}
           </div>
-          <div className="flex justify-end p-4 border-t border-gray-200">
+          <div className="flex justify-end p-4 border-t border-border">
             <button
               onClick={onClose}
               className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover text-sm font-medium"
@@ -627,8 +627,8 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
           showPdfPanel ? 'w-full max-w-[95vw]' : 'w-full max-w-4xl'
         }`}>
           {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900 flex items-center">
+          <div className="flex items-center justify-between p-4 border-b border-border">
+            <h2 className="text-lg font-semibold text-heading flex items-center">
               <Eye className="w-5 h-5 mr-2 text-primary" />
               Review Extracted Data
             </h2>
@@ -639,8 +639,8 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
                     onClick={() => setShowPdf(!showPdf)}
                     className={`flex items-center px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
                       showPdf
-                        ? 'bg-blue-100 text-blue-700 hover:bg-blue-200'
-                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                        ? 'bg-orange-100 text-orange-700 hover:bg-orange-200'
+                        : 'bg-cream-100 text-bark-600 hover:bg-sand-200'
                     }`}
                   >
                     {showPdf ? (
@@ -653,14 +653,14 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
                     href={stmt.pdf_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg"
+                    className="p-2 text-text-secondary hover:text-bark-700 hover:bg-cream-100 rounded-lg"
                   >
                     <ExternalLink className="w-4 h-4" />
                   </a>
                 </>
               )}
-              <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg">
-                <X className="w-5 h-5 text-gray-500" />
+              <button onClick={onClose} className="p-2 hover:bg-cream-100 rounded-lg">
+                <X className="w-5 h-5 text-text-secondary" />
               </button>
             </div>
           </div>
@@ -669,38 +669,38 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
           <div className="flex-1 flex overflow-hidden">
             {/* PDF Panel */}
             {showPdfPanel && (
-              <div className="w-1/2 border-r border-gray-200 bg-gray-100 flex flex-col">
-                <div className="p-2 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
-                  <div className="flex items-center text-sm text-gray-600">
-                    <FileIcon className="w-4 h-4 mr-2 text-red-500" />
+              <div className="w-1/2 border-r border-border bg-cream-100 flex flex-col">
+                <div className="p-2 bg-cream-50 border-b border-border flex items-center justify-between">
+                  <div className="flex items-center text-sm text-bark-600">
+                    <FileIcon className="w-4 h-4 mr-2 text-danger" />
                     <span className="truncate max-w-xs">{stmt.filename}</span>
                   </div>
-                  <a href={stmt.pdf_url} download className="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded">
+                  <a href={stmt.pdf_url} download className="p-1.5 text-text-secondary hover:text-bark-700 hover:bg-sand-200 rounded">
                     <Download className="w-4 h-4" />
                   </a>
                 </div>
-                <div className="flex-1 bg-gray-200">
+                <div className="flex-1 bg-sand-200">
                   {pdfLoading ? (
                     <div className="flex flex-col items-center justify-center h-full">
-                      <Loader2 className="w-8 h-8 animate-spin text-gray-500 mb-3" />
-                      <p className="text-gray-500">Loading PDF...</p>
+                      <Loader2 className="w-8 h-8 animate-spin text-text-secondary mb-3" />
+                      <p className="text-text-secondary">Loading PDF...</p>
                     </div>
                   ) : pdfBlobUrl ? (
                     <object data={pdfBlobUrl} type="application/pdf" className="w-full h-full">
                       <div className="flex flex-col items-center justify-center h-full p-8 text-center">
-                        <FileIcon className="w-16 h-16 text-gray-400 mb-4" />
-                        <p className="text-gray-600 mb-4">PDF preview not available.</p>
+                        <FileIcon className="w-16 h-16 text-text-muted mb-4" />
+                        <p className="text-bark-600 mb-4">PDF preview not available.</p>
                         <a href={stmt.pdf_url} target="_blank" rel="noopener noreferrer"
-                          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center">
+                          className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover flex items-center">
                           <ExternalLink className="w-4 h-4 mr-2" />Open in New Tab
                         </a>
                       </div>
                     </object>
                   ) : (
                     <div className="flex flex-col items-center justify-center h-full p-8 text-center">
-                      <FileIcon className="w-16 h-16 text-gray-400 mb-4" />
+                      <FileIcon className="w-16 h-16 text-text-muted mb-4" />
                       <a href={stmt.pdf_url} target="_blank" rel="noopener noreferrer"
-                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center">
+                        className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover flex items-center">
                         <ExternalLink className="w-4 h-4 mr-2" />Open in New Tab
                       </a>
                     </div>
@@ -712,16 +712,16 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
             {/* Main Content */}
             <div className={`flex-1 overflow-y-auto p-4 ${showPdfPanel ? 'w-1/2' : 'w-full'}`}>
               {/* Farm/Field/Pool Selection */}
-              <div className="grid grid-cols-3 gap-4 p-4 bg-gray-50 rounded-lg mb-4">
+              <div className="grid grid-cols-3 gap-4 p-4 bg-cream-50 rounded-lg mb-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Farm</label>
+                  <label className="block text-sm font-medium text-bark-700 mb-1">Farm</label>
                   <select
                     value={override.farm_id || ''}
                     onChange={(e) => {
                       updateOverride(stmt.id, 'farm_id', e.target.value ? parseInt(e.target.value) : null);
                       updateOverride(stmt.id, 'field_id', null);
                     }}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
+                    className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary"
                   >
                     <option value="">-- Select Farm --</option>
                     {farms.map(f => (
@@ -729,21 +729,21 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
                     ))}
                   </select>
                   {stmt.auto_match?.farm && (
-                    <p className="text-xs text-gray-500 mt-1">
+                    <p className="text-xs text-text-secondary mt-1">
                       Suggested: {stmt.auto_match.farm.name} ({(stmt.auto_match.confidence * 100).toFixed(0)}%)
                     </p>
                   )}
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-bark-700 mb-1">
                     Field/Block
-                    <span className="text-gray-400 font-normal ml-1">(optional)</span>
+                    <span className="text-text-muted font-normal ml-1">(optional)</span>
                   </label>
                   <select
                     value={override.field_id || ''}
                     onChange={(e) => updateOverride(stmt.id, 'field_id', e.target.value ? parseInt(e.target.value) : null)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
+                    className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary"
                     disabled={!override.farm_id}
                   >
                     <option value="">All Fields (Combined)</option>
@@ -754,18 +754,18 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Pool</label>
+                  <label className="block text-sm font-medium text-bark-700 mb-1">Pool</label>
                   <select
                     value={override.pool_id || ''}
                     onChange={(e) => updateOverride(stmt.id, 'pool_id', e.target.value ? parseInt(e.target.value) : null)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
+                    className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary"
                   >
                     <option value="">Auto-create from PDF</option>
                     {pools.map(p => (
                       <option key={p.id} value={p.id}>{p.name} ({p.commodity})</option>
                     ))}
                   </select>
-                  <p className="text-xs text-gray-500 mt-1">Leave empty to auto-create</p>
+                  <p className="text-xs text-text-secondary mt-1">Leave empty to auto-create</p>
                 </div>
               </div>
 
@@ -773,7 +773,7 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
               <div className="flex items-center justify-between p-3 bg-primary-light border border-green-200 rounded-lg mb-4">
                 <div className="flex items-center">
                   <CheckCircle className="w-5 h-5 text-primary mr-2" />
-                  <span className="text-green-800">
+                  <span className="text-green-700">
                     Detected: <strong>{stmt.statement_type}</strong>
                   </span>
                 </div>
@@ -795,7 +795,7 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
 
               {/* Error */}
               {error && (
-                <div className="flex items-center p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 mt-4">
+                <div className="flex items-center p-3 bg-danger-bg border border-danger/25 rounded-lg text-danger mt-4">
                   <AlertCircle className="w-5 h-5 mr-2" />
                   <span className="text-sm">{error}</span>
                 </div>
@@ -804,26 +804,26 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
           </div>
 
           {/* Footer */}
-          <div className="flex justify-between items-center p-4 border-t border-gray-200 bg-gray-50">
+          <div className="flex justify-between items-center p-4 border-t border-border bg-cream-50">
             {!existingStatement ? (
               <button
                 onClick={() => { setBatchResult(null); setEditedData(null); setPdfBlobUrl(null); }}
-                className="px-4 py-2 text-gray-700 hover:bg-gray-200 rounded-lg"
+                className="px-4 py-2 text-bark-700 hover:bg-sand-200 rounded-lg"
               >
                 Back
               </button>
             ) : <div />}
             <div className="flex items-center space-x-3">
-              <label className="flex items-center text-sm text-gray-600">
+              <label className="flex items-center text-sm text-bark-600">
                 <input
                   type="checkbox"
                   checked={saveMappings}
                   onChange={(e) => setSaveMappings(e.target.checked)}
-                  className="mr-2 rounded border-gray-300 text-primary focus:ring-primary"
+                  className="mr-2 rounded border-border-strong text-primary focus:ring-primary"
                 />
                 Remember this match
               </label>
-              <button onClick={onClose} className="px-4 py-2 text-gray-700 hover:bg-gray-200 rounded-lg">
+              <button onClick={onClose} className="px-4 py-2 text-bark-700 hover:bg-sand-200 rounded-lg">
                 Cancel
               </button>
               <button
@@ -853,30 +853,30 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900 flex items-center">
+        <div className="flex items-center justify-between p-4 border-b border-border">
+          <h2 className="text-lg font-semibold text-heading flex items-center">
             <CheckCircle className="w-5 h-5 mr-2 text-primary" />
             Review Batch Results
           </h2>
-          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg">
-            <X className="w-5 h-5 text-gray-500" />
+          <button onClick={onClose} className="p-2 hover:bg-cream-100 rounded-lg">
+            <X className="w-5 h-5 text-text-secondary" />
           </button>
         </div>
 
         {/* Summary */}
-        <div className="px-4 py-3 bg-gray-50 border-b border-gray-200">
+        <div className="px-4 py-3 bg-cream-50 border-b border-border">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-6 text-sm">
-              <span className="text-gray-600">Total: <strong>{batchResult.total}</strong></span>
+              <span className="text-bark-600">Total: <strong>{batchResult.total}</strong></span>
               <span className="text-primary">Extracted: <strong>{batchResult.success_count}</strong></span>
-              <span className="text-red-600">Failed: <strong>{batchResult.failed_count}</strong></span>
+              <span className="text-danger">Failed: <strong>{batchResult.failed_count}</strong></span>
             </div>
-            <label className="flex items-center text-sm text-gray-600">
+            <label className="flex items-center text-sm text-bark-600">
               <input
                 type="checkbox"
                 checked={saveMappings}
                 onChange={(e) => setSaveMappings(e.target.checked)}
-                className="mr-2 rounded border-gray-300 text-primary focus:ring-primary"
+                className="mr-2 rounded border-border-strong text-primary focus:ring-primary"
               />
               Learn from confirmations
             </label>
@@ -890,32 +890,32 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
               key={stmt.id || index}
               className={`border rounded-lg overflow-hidden ${
                 stmt.status === 'failed'
-                  ? 'border-red-200 bg-red-50'
+                  ? 'border-danger/25 bg-danger-bg'
                   : statementOverrides[stmt.id]?.skip
-                  ? 'border-gray-200 bg-gray-50 opacity-60'
-                  : 'border-gray-200'
+                  ? 'border-border bg-cream-50 opacity-60'
+                  : 'border-border'
               }`}
             >
               {/* Statement Header */}
               <div
-                className="flex items-center justify-between p-3 cursor-pointer hover:bg-gray-50"
+                className="flex items-center justify-between p-3 cursor-pointer hover:bg-cream-50"
                 onClick={() => stmt.id && toggleExpanded(stmt.id)}
               >
                 <div className="flex items-center space-x-3">
                   {stmt.id ? (
-                    expandedStatements[stmt.id] ? <ChevronDown className="w-4 h-4 text-gray-400" /> : <ChevronRight className="w-4 h-4 text-gray-400" />
+                    expandedStatements[stmt.id] ? <ChevronDown className="w-4 h-4 text-text-muted" /> : <ChevronRight className="w-4 h-4 text-text-muted" />
                   ) : (
-                    <AlertCircle className="w-4 h-4 text-red-500" />
+                    <AlertCircle className="w-4 h-4 text-danger" />
                   )}
-                  <FileText className="w-5 h-5 text-red-500" />
+                  <FileText className="w-5 h-5 text-danger" />
                   <div>
-                    <p className="font-medium text-gray-900 text-sm">{stmt.filename}</p>
-                    <div className="flex items-center space-x-2 text-xs text-gray-500">
+                    <p className="font-medium text-heading text-sm">{stmt.filename}</p>
+                    <div className="flex items-center space-x-2 text-xs text-text-secondary">
                       <span>{stmt.statement_type || 'Unknown type'}</span>
                       {stmt.detected_packinghouse && (
                         <span className={`px-1.5 py-0.5 rounded ${
                           stmt.detected_packinghouse.auto_detected && stmt.detected_packinghouse.confidence > 0
-                            ? 'bg-blue-100 text-blue-700'
+                            ? 'bg-orange-100 text-orange-700'
                             : 'bg-yellow-100 text-yellow-700'
                         }`}>
                           {stmt.detected_packinghouse.short_code || stmt.detected_packinghouse.name}
@@ -930,12 +930,12 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
                   {stmt.status === 'extracted' && stmt.auto_match && (
                     <div className="flex items-center space-x-2">
                       {stmt.auto_match.farm && (
-                        <span className="flex items-center text-xs text-gray-600 bg-gray-100 px-2 py-1 rounded">
+                        <span className="flex items-center text-xs text-bark-600 bg-cream-100 px-2 py-1 rounded">
                           <Building className="w-3 h-3 mr-1" />{stmt.auto_match.farm.name}
                         </span>
                       )}
                       {stmt.auto_match.field && (
-                        <span className="flex items-center text-xs text-gray-600 bg-gray-100 px-2 py-1 rounded">
+                        <span className="flex items-center text-xs text-bark-600 bg-cream-100 px-2 py-1 rounded">
                           <MapPin className="w-3 h-3 mr-1" />{stmt.auto_match.field.name}
                         </span>
                       )}
@@ -944,16 +944,16 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
                       </span>
                     </div>
                   )}
-                  {stmt.status === 'failed' && <span className="text-xs text-red-600 bg-red-100 px-2 py-1 rounded">Failed</span>}
+                  {stmt.status === 'failed' && <span className="text-xs text-danger bg-danger-bg px-2 py-1 rounded">Failed</span>}
                   {stmt.needs_review && stmt.status !== 'failed' && <span className="text-xs text-yellow-600 bg-yellow-100 px-2 py-1 rounded">Review</span>}
                   {!stmt.packinghouse_id && stmt.status === 'extracted' && <span className="text-xs text-orange-600 bg-orange-100 px-2 py-1 rounded">No Packinghouse</span>}
                   {stmt.id && stmt.status === 'extracted' && (
-                    <label className="flex items-center text-xs text-gray-500" onClick={(e) => e.stopPropagation()}>
+                    <label className="flex items-center text-xs text-text-secondary" onClick={(e) => e.stopPropagation()}>
                       <input
                         type="checkbox"
                         checked={statementOverrides[stmt.id]?.skip || false}
                         onChange={(e) => updateOverride(stmt.id, 'skip', e.target.checked)}
-                        className="mr-1 rounded border-gray-300"
+                        className="mr-1 rounded border-border-strong"
                       />
                       Skip
                     </label>
@@ -963,12 +963,12 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
 
               {/* Expanded Details */}
               {stmt.id && expandedStatements[stmt.id] && stmt.status === 'extracted' && (
-                <div className="px-4 pb-4 pt-2 border-t border-gray-200 bg-white">
+                <div className="px-4 pb-4 pt-2 border-t border-border bg-white">
                   {/* Detected Packinghouse Info */}
                   {stmt.detected_packinghouse?.auto_detected && (
                     <div className={`text-xs mb-3 p-2 rounded ${
                       stmt.detected_packinghouse.confidence > 0
-                        ? 'bg-blue-50 text-blue-700'
+                        ? 'bg-orange-50 text-orange-700'
                         : 'bg-yellow-50 text-yellow-700'
                     }`}>
                       {stmt.detected_packinghouse.confidence > 0 ? (
@@ -979,14 +979,14 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
                     </div>
                   )}
                   {stmt.auto_match?.match_reason && (
-                    <p className="text-xs text-gray-500 mb-3">Match reason: {stmt.auto_match.match_reason}</p>
+                    <p className="text-xs text-text-secondary mb-3">Match reason: {stmt.auto_match.match_reason}</p>
                   )}
                   <div className="grid grid-cols-3 gap-4">
                     {/* Packinghouse Selection (for override or when not detected) */}
                     <div>
-                      <label className="block text-xs font-medium text-gray-700 mb-1">
+                      <label className="block text-xs font-medium text-bark-700 mb-1">
                         Packinghouse
-                        {!stmt.packinghouse_id && <span className="text-red-500 ml-1">*</span>}
+                        {!stmt.packinghouse_id && <span className="text-danger ml-1">*</span>}
                       </label>
                       <select
                         value={statementOverrides[stmt.id]?.packinghouse_id || stmt.packinghouse_id || ''}
@@ -994,7 +994,7 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
                         className={`w-full px-2 py-1.5 text-sm border rounded focus:ring-2 focus:ring-primary ${
                           !stmt.packinghouse_id && !statementOverrides[stmt.id]?.packinghouse_id
                             ? 'border-orange-300 bg-orange-50'
-                            : 'border-gray-300'
+                            : 'border-border-strong'
                         }`}
                         disabled={statementOverrides[stmt.id]?.skip}
                       >
@@ -1011,7 +1011,7 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
                             <button
                               key={i}
                               onClick={() => updateOverride(stmt.id, 'packinghouse_id', s.id)}
-                              className="text-xs px-1.5 py-0.5 bg-gray-100 hover:bg-gray-200 rounded"
+                              className="text-xs px-1.5 py-0.5 bg-cream-100 hover:bg-sand-200 rounded"
                             >
                               {s.short_code || s.name}
                             </button>
@@ -1020,14 +1020,14 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
                       )}
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-gray-700 mb-1">Farm</label>
+                      <label className="block text-xs font-medium text-bark-700 mb-1">Farm</label>
                       <select
                         value={statementOverrides[stmt.id]?.farm_id || ''}
                         onChange={(e) => {
                           updateOverride(stmt.id, 'farm_id', e.target.value ? parseInt(e.target.value) : null);
                           updateOverride(stmt.id, 'field_id', null);
                         }}
-                        className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-primary"
+                        className="w-full px-2 py-1.5 text-sm border border-border-strong rounded focus:ring-2 focus:ring-primary"
                         disabled={statementOverrides[stmt.id]?.skip}
                       >
                         <option value="">-- Select Farm --</option>
@@ -1035,11 +1035,11 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
                       </select>
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-gray-700 mb-1">Field/Block (optional)</label>
+                      <label className="block text-xs font-medium text-bark-700 mb-1">Field/Block (optional)</label>
                       <select
                         value={statementOverrides[stmt.id]?.field_id || ''}
                         onChange={(e) => updateOverride(stmt.id, 'field_id', e.target.value ? parseInt(e.target.value) : null)}
-                        className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-primary"
+                        className="w-full px-2 py-1.5 text-sm border border-border-strong rounded focus:ring-2 focus:ring-primary"
                         disabled={statementOverrides[stmt.id]?.skip || !statementOverrides[stmt.id]?.farm_id}
                       >
                         <option value="">All Fields (Combined)</option>
@@ -1051,13 +1051,13 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
                   </div>
                   {stmt.auto_match?.suggestions && stmt.auto_match.suggestions.length > 1 && (
                     <div className="mt-3">
-                      <p className="text-xs font-medium text-gray-700 mb-1">Other suggestions:</p>
+                      <p className="text-xs font-medium text-bark-700 mb-1">Other suggestions:</p>
                       <div className="flex flex-wrap gap-2">
                         {stmt.auto_match.suggestions.slice(1, 4).map((s, i) => (
                           <button
                             key={i}
                             onClick={() => updateOverride(stmt.id, 'farm_id', s.farm_id)}
-                            className="text-xs px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded"
+                            className="text-xs px-2 py-1 bg-cream-100 hover:bg-sand-200 rounded"
                           >
                             {s.farm_name} ({(s.score * 100).toFixed(0)}%)
                           </button>
@@ -1069,28 +1069,28 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
               )}
 
               {stmt.status === 'failed' && stmt.extraction_error && (
-                <div className="px-4 pb-3 text-xs text-red-600">{stmt.extraction_error}</div>
+                <div className="px-4 pb-3 text-xs text-danger">{stmt.extraction_error}</div>
               )}
             </div>
           ))}
 
           {error && (
-            <div className="flex items-center p-3 bg-red-50 border border-red-200 rounded-lg text-red-700">
+            <div className="flex items-center p-3 bg-danger-bg border border-danger/25 rounded-lg text-danger">
               <AlertCircle className="w-5 h-5 mr-2" /><span className="text-sm">{error}</span>
             </div>
           )}
         </div>
 
         {/* Footer */}
-        <div className="flex justify-between items-center p-4 border-t border-gray-200 bg-gray-50">
+        <div className="flex justify-between items-center p-4 border-t border-border bg-cream-50">
           <button
             onClick={() => { setBatchResult(null); setStatementOverrides({}); setExpandedStatements({}); }}
-            className="px-4 py-2 text-gray-700 hover:bg-gray-200 rounded-lg"
+            className="px-4 py-2 text-bark-700 hover:bg-sand-200 rounded-lg"
           >
             Back
           </button>
           <div className="flex space-x-3">
-            <button onClick={onClose} className="px-4 py-2 text-gray-700 hover:bg-gray-200 rounded-lg">Cancel</button>
+            <button onClick={onClose} className="px-4 py-2 text-bark-700 hover:bg-sand-200 rounded-lg">Cancel</button>
             <button
               onClick={handleConfirmAll}
               disabled={confirming || batchResult.success_count === 0}

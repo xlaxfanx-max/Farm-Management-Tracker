@@ -98,16 +98,16 @@ const PackinghouseModal = ({ packinghouse, onClose, onSave }) => {
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900 flex items-center">
+        <div className="flex items-center justify-between p-4 border-b border-border">
+          <h2 className="text-lg font-semibold text-heading flex items-center">
             <Building2 className="w-5 h-5 mr-2 text-primary" />
             {packinghouse ? 'Edit Packinghouse' : 'Add Packinghouse'}
           </h2>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-2 hover:bg-cream-100 rounded-lg transition-colors"
           >
-            <X className="w-5 h-5 text-gray-500" />
+            <X className="w-5 h-5 text-text-secondary" />
           </button>
         </div>
 
@@ -116,7 +116,7 @@ const PackinghouseModal = ({ packinghouse, onClose, onSave }) => {
           {/* Basic Info */}
           <div className="grid grid-cols-2 gap-4">
             <div className="col-span-2 sm:col-span-1">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-bark-700 mb-1">
                 Packinghouse Name *
               </label>
               <input
@@ -126,16 +126,16 @@ const PackinghouseModal = ({ packinghouse, onClose, onSave }) => {
                 onChange={handleChange}
                 placeholder="e.g., Saticoy Lemon Association"
                 className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent ${
-                  errors.name ? 'border-red-500' : 'border-gray-300'
+                  errors.name ? 'border-danger' : 'border-border-strong'
                 }`}
               />
               {errors.name && (
-                <p className="text-red-500 text-xs mt-1">{errors.name}</p>
+                <p className="text-danger text-xs mt-1">{errors.name}</p>
               )}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-bark-700 mb-1">
                 Short Code
               </label>
               <input
@@ -145,13 +145,13 @@ const PackinghouseModal = ({ packinghouse, onClose, onSave }) => {
                 onChange={handleChange}
                 placeholder="e.g., SLA"
                 maxLength={20}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-bark-700 mb-1">
               Your Grower ID
             </label>
             <input
@@ -160,16 +160,16 @@ const PackinghouseModal = ({ packinghouse, onClose, onSave }) => {
               value={formData.grower_id}
               onChange={handleChange}
               placeholder="e.g., THACR641"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+              className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
             />
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-text-secondary mt-1">
               Your grower identification number with this packinghouse
             </p>
           </div>
 
           {/* Address */}
-          <div className="border-t border-gray-200 pt-4">
-            <h3 className="text-sm font-medium text-gray-700 mb-3">Address</h3>
+          <div className="border-t border-border pt-4">
+            <h3 className="text-sm font-medium text-bark-700 mb-3">Address</h3>
             <div className="space-y-3">
               <input
                 type="text"
@@ -177,7 +177,7 @@ const PackinghouseModal = ({ packinghouse, onClose, onSave }) => {
                 value={formData.address}
                 onChange={handleChange}
                 placeholder="Street Address"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
               />
               <div className="grid grid-cols-3 gap-3">
                 <input
@@ -186,7 +186,7 @@ const PackinghouseModal = ({ packinghouse, onClose, onSave }) => {
                   value={formData.city}
                   onChange={handleChange}
                   placeholder="City"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                  className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                 />
                 <input
                   type="text"
@@ -195,7 +195,7 @@ const PackinghouseModal = ({ packinghouse, onClose, onSave }) => {
                   onChange={handleChange}
                   placeholder="State"
                   maxLength={2}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                  className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                 />
                 <input
                   type="text"
@@ -203,15 +203,15 @@ const PackinghouseModal = ({ packinghouse, onClose, onSave }) => {
                   value={formData.zip_code}
                   onChange={handleChange}
                   placeholder="ZIP"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                  className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                 />
               </div>
             </div>
           </div>
 
           {/* Contact Info */}
-          <div className="border-t border-gray-200 pt-4">
-            <h3 className="text-sm font-medium text-gray-700 mb-3">Contact Information</h3>
+          <div className="border-t border-border pt-4">
+            <h3 className="text-sm font-medium text-bark-700 mb-3">Contact Information</h3>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <input
                 type="text"
@@ -219,7 +219,7 @@ const PackinghouseModal = ({ packinghouse, onClose, onSave }) => {
                 value={formData.contact_name}
                 onChange={handleChange}
                 placeholder="Contact Name"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
               />
               <input
                 type="tel"
@@ -227,7 +227,7 @@ const PackinghouseModal = ({ packinghouse, onClose, onSave }) => {
                 value={formData.contact_phone}
                 onChange={handleChange}
                 placeholder="Phone"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
               />
               <div>
                 <input
@@ -237,11 +237,11 @@ const PackinghouseModal = ({ packinghouse, onClose, onSave }) => {
                   onChange={handleChange}
                   placeholder="Email"
                   className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent ${
-                    errors.contact_email ? 'border-red-500' : 'border-gray-300'
+                    errors.contact_email ? 'border-danger' : 'border-border-strong'
                   }`}
                 />
                 {errors.contact_email && (
-                  <p className="text-red-500 text-xs mt-1">{errors.contact_email}</p>
+                  <p className="text-danger text-xs mt-1">{errors.contact_email}</p>
                 )}
               </div>
             </div>
@@ -249,7 +249,7 @@ const PackinghouseModal = ({ packinghouse, onClose, onSave }) => {
 
           {/* Notes */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-bark-700 mb-1">
               Notes
             </label>
             <textarea
@@ -258,7 +258,7 @@ const PackinghouseModal = ({ packinghouse, onClose, onSave }) => {
               onChange={handleChange}
               rows={3}
               placeholder="Additional notes..."
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+              className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
             />
           </div>
 
@@ -270,19 +270,19 @@ const PackinghouseModal = ({ packinghouse, onClose, onSave }) => {
               id="is_active"
               checked={formData.is_active}
               onChange={handleChange}
-              className="rounded border-gray-300 text-primary focus:ring-primary"
+              className="rounded border-border-strong text-primary focus:ring-primary"
             />
-            <label htmlFor="is_active" className="ml-2 text-sm text-gray-700">
+            <label htmlFor="is_active" className="ml-2 text-sm text-bark-700">
               Active (show in lists and dropdowns)
             </label>
           </div>
 
           {/* Actions */}
-          <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+          <div className="flex justify-end space-x-3 pt-4 border-t border-border">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+              className="px-4 py-2 text-bark-700 hover:bg-cream-100 rounded-lg transition-colors"
             >
               Cancel
             </button>

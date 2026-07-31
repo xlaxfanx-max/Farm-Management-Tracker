@@ -116,7 +116,7 @@ export default function ModuleVisibilitySettings() {
                     type="checkbox"
                     checked={isVisible}
                     onChange={() => toggle(mod.id)}
-                    className="rounded border-gray-300 text-primary focus:ring-primary"
+                    className="rounded border-border-strong text-primary focus:ring-primary"
                   />
                   <Icon className="w-4 h-4 text-text-secondary" />
                   <span className={`text-sm ${isVisible ? 'text-text' : 'text-text-muted'}`}>

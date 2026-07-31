@@ -6,7 +6,7 @@ const chipColors = {
   orange: 'bg-orange-50 text-orange-600 border-orange-100',
   green: 'bg-green-50 text-green-600 border-green-100',
   warning: 'bg-warning-bg text-yellow-600 border-yellow-300',
-  danger: 'bg-danger-bg text-danger border-red-200',
+  danger: 'bg-danger-bg text-danger border-danger/25',
   neutral: 'bg-surface-sunken text-bark-500 border-border',
 };
 

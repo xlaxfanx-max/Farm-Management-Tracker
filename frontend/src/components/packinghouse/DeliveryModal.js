@@ -181,16 +181,16 @@ const DeliveryModal = ({ poolId, delivery, onClose, onSave }) => {
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-lg">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900 flex items-center">
+        <div className="flex items-center justify-between p-4 border-b border-border">
+          <h2 className="text-lg font-semibold text-heading flex items-center">
             <Truck className="w-5 h-5 mr-2 text-primary" />
             {delivery ? 'Edit Delivery' : 'Record Delivery'}
           </h2>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-2 hover:bg-cream-100 rounded-lg transition-colors"
           >
-            <X className="w-5 h-5 text-gray-500" />
+            <X className="w-5 h-5 text-text-secondary" />
           </button>
         </div>
 
@@ -198,7 +198,7 @@ const DeliveryModal = ({ poolId, delivery, onClose, onSave }) => {
         <form onSubmit={handleSubmit} className="p-4 space-y-4">
           {/* Field Selection */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-bark-700 mb-1">
               Field/Block *
             </label>
             <select
@@ -206,7 +206,7 @@ const DeliveryModal = ({ poolId, delivery, onClose, onSave }) => {
               value={formData.field}
               onChange={handleChange}
               className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary ${
-                errors.field ? 'border-red-500' : 'border-gray-300'
+                errors.field ? 'border-danger' : 'border-border-strong'
               }`}
             >
               <option value="">Select Field</option>
@@ -217,24 +217,24 @@ const DeliveryModal = ({ poolId, delivery, onClose, onSave }) => {
               ))}
             </select>
             {errors.field && (
-              <p className="text-red-500 text-xs mt-1">{errors.field}</p>
+              <p className="text-danger text-xs mt-1">{errors.field}</p>
             )}
           </div>
 
           {/* Harvest Linking */}
           {formData.field && (
             <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
-              <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
+              <label className="block text-sm font-medium text-bark-700 mb-1 flex items-center gap-2">
                 <Link2 className="w-4 h-4 text-orange-600" />
                 Link to Harvest Record
               </label>
               {loadingHarvests ? (
-                <div className="flex items-center gap-2 text-gray-500 text-sm py-2">
+                <div className="flex items-center gap-2 text-text-secondary text-sm py-2">
                   <Loader2 className="w-4 h-4 animate-spin" />
                   Loading harvests...
                 </div>
               ) : harvests.length === 0 ? (
-                <p className="text-sm text-gray-500 py-2">
+                <p className="text-sm text-text-secondary py-2">
                   No harvest records found for this field.
                 </p>
               ) : (
@@ -243,7 +243,7 @@ const DeliveryModal = ({ poolId, delivery, onClose, onSave }) => {
                     name="harvest"
                     value={formData.harvest}
                     onChange={handleHarvestChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+                    className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-orange-500"
                   >
                     <option value="">-- No harvest link (optional) --</option>
                     {harvests.map(h => (
@@ -252,7 +252,7 @@ const DeliveryModal = ({ poolId, delivery, onClose, onSave }) => {
                       </option>
                     ))}
                   </select>
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-text-secondary mt-1">
                     Linking connects this delivery to a harvest for complete traceability
                   </p>
                 </>
@@ -263,7 +263,7 @@ const DeliveryModal = ({ poolId, delivery, onClose, onSave }) => {
           {/* Ticket Number and Date */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-bark-700 mb-1">
                 Ticket Number *
               </label>
               <input
@@ -273,16 +273,16 @@ const DeliveryModal = ({ poolId, delivery, onClose, onSave }) => {
                 onChange={handleChange}
                 placeholder="e.g., 182622"
                 className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary ${
-                  errors.ticket_number ? 'border-red-500' : 'border-gray-300'
+                  errors.ticket_number ? 'border-danger' : 'border-border-strong'
                 }`}
               />
               {errors.ticket_number && (
-                <p className="text-red-500 text-xs mt-1">{errors.ticket_number}</p>
+                <p className="text-danger text-xs mt-1">{errors.ticket_number}</p>
               )}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-bark-700 mb-1">
                 Delivery Date *
               </label>
               <input
@@ -291,11 +291,11 @@ const DeliveryModal = ({ poolId, delivery, onClose, onSave }) => {
                 value={formData.delivery_date}
                 onChange={handleChange}
                 className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary ${
-                  errors.delivery_date ? 'border-red-500' : 'border-gray-300'
+                  errors.delivery_date ? 'border-danger' : 'border-border-strong'
                 }`}
               />
               {errors.delivery_date && (
-                <p className="text-red-500 text-xs mt-1">{errors.delivery_date}</p>
+                <p className="text-danger text-xs mt-1">{errors.delivery_date}</p>
               )}
             </div>
           </div>
@@ -303,7 +303,7 @@ const DeliveryModal = ({ poolId, delivery, onClose, onSave }) => {
           {/* Quantity */}
           <div className="grid grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-bark-700 mb-1">
                 Bins *
               </label>
               <input
@@ -315,16 +315,16 @@ const DeliveryModal = ({ poolId, delivery, onClose, onSave }) => {
                 min="0"
                 placeholder="0.00"
                 className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary ${
-                  errors.bins ? 'border-red-500' : 'border-gray-300'
+                  errors.bins ? 'border-danger' : 'border-border-strong'
                 }`}
               />
               {errors.bins && (
-                <p className="text-red-500 text-xs mt-1">{errors.bins}</p>
+                <p className="text-danger text-xs mt-1">{errors.bins}</p>
               )}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-bark-700 mb-1">
                 Field Boxes
               </label>
               <input
@@ -335,12 +335,12 @@ const DeliveryModal = ({ poolId, delivery, onClose, onSave }) => {
                 step="0.01"
                 min="0"
                 placeholder="Optional"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
+                className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-bark-700 mb-1">
                 Weight (lbs)
               </label>
               <input
@@ -351,14 +351,14 @@ const DeliveryModal = ({ poolId, delivery, onClose, onSave }) => {
                 step="0.01"
                 min="0"
                 placeholder="Optional"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
+                className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary"
               />
             </div>
           </div>
 
           {/* Notes */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-bark-700 mb-1">
               Notes
             </label>
             <textarea
@@ -367,16 +367,16 @@ const DeliveryModal = ({ poolId, delivery, onClose, onSave }) => {
               onChange={handleChange}
               rows={2}
               placeholder="Optional notes..."
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
+              className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary"
             />
           </div>
 
           {/* Actions */}
-          <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+          <div className="flex justify-end space-x-3 pt-4 border-t border-border">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+              className="px-4 py-2 text-bark-700 hover:bg-cream-100 rounded-lg transition-colors"
             >
               Cancel
             </button>

@@ -69,12 +69,12 @@ const CommitmentModal = ({ season, houses, commitment, onClose, onSave }) => {
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
-        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900 flex items-center">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+          <h3 className="text-lg font-semibold text-heading flex items-center">
             <Building2 className="w-5 h-5 mr-2 text-primary" />
             {commitment ? 'Edit Commitment' : 'Add Commitment'}
           </h3>
-          <button onClick={onClose} className="p-1 text-gray-400 hover:text-gray-600 rounded">
+          <button onClick={onClose} className="p-1 text-text-muted hover:text-bark-600 rounded">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -82,53 +82,53 @@ const CommitmentModal = ({ season, houses, commitment, onClose, onSave }) => {
         <form onSubmit={handleSubmit} className="p-5 space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Commodity</label>
+              <label className="block text-sm font-medium text-bark-700 mb-1">Commodity</label>
               <select
                 name="commodity" value={formData.commodity} onChange={handleChange}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                className="w-full border border-border-strong rounded-lg px-3 py-2 text-sm"
               >
                 {PACKINGHOUSE_CONSTANTS.commodities.map((c) => (
                   <option key={c.value} value={c.value}>{c.label}</option>
                 ))}
               </select>
-              {errors.commodity && <p className="text-xs text-red-600 mt-1">{errors.commodity}</p>}
+              {errors.commodity && <p className="text-xs text-danger mt-1">{errors.commodity}</p>}
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Packinghouse</label>
+              <label className="block text-sm font-medium text-bark-700 mb-1">Packinghouse</label>
               <select
                 name="packinghouse" value={formData.packinghouse} onChange={handleChange}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                className="w-full border border-border-strong rounded-lg px-3 py-2 text-sm"
               >
                 <option value="">Select…</option>
                 {houses.map((h) => (
                   <option key={h.id} value={h.id}>{h.short_code || h.name}</option>
                 ))}
               </select>
-              {errors.packinghouse && <p className="text-xs text-red-600 mt-1">{errors.packinghouse}</p>}
+              {errors.packinghouse && <p className="text-xs text-danger mt-1">{errors.packinghouse}</p>}
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Block (optional)</label>
+            <label className="block text-sm font-medium text-bark-700 mb-1">Block (optional)</label>
             <select
               name="field" value={formData.field} onChange={handleChange}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+              className="w-full border border-border-strong rounded-lg px-3 py-2 text-sm"
             >
               <option value="">Whole commodity (default)</option>
               {fields.map((f) => (
                 <option key={f.id} value={f.id}>{f.farm_name ? `${f.farm_name} · ` : ''}{f.name}</option>
               ))}
             </select>
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-text-secondary mt-1">
               Leave blank for the commodity default; pick a block to override it.
             </p>
-            {errors.field && <p className="text-xs text-red-600 mt-1">{errors.field}</p>}
+            {errors.field && <p className="text-xs text-danger mt-1">{errors.field}</p>}
           </div>
 
-          <label className="flex items-start gap-2 text-sm text-gray-700">
+          <label className="flex items-start gap-2 text-sm text-bark-700">
             <input
               type="checkbox" name="flex" checked={formData.flex} onChange={handleChange}
-              className="mt-0.5 rounded border-gray-300 text-primary focus:ring-primary"
+              className="mt-0.5 rounded border-border-strong text-primary focus:ring-primary"
             />
             <span>
               <span className="font-medium">Flex</span> — destination decided pick
@@ -137,17 +137,17 @@ const CommitmentModal = ({ season, houses, commitment, onClose, onSave }) => {
           </label>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+            <label className="block text-sm font-medium text-bark-700 mb-1">Notes</label>
             <input
               name="notes" value={formData.notes} onChange={handleChange}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+              className="w-full border border-border-strong rounded-lg px-3 py-2 text-sm"
             />
           </div>
 
           <div className="flex justify-end gap-2 pt-2">
             <button
               type="button" onClick={onClose}
-              className="px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50"
+              className="px-4 py-2 border border-border-strong rounded-lg text-sm hover:bg-cream-50"
             >
               Cancel
             </button>

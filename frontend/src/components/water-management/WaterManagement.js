@@ -278,25 +278,25 @@ const WaterManagement = () => {
   // =============================================================================
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-cream-50">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-6 py-5">
+      <div className="bg-white border-b border-border px-6 py-5">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Water Management</h1>
-            <p className="text-gray-500 mt-1">Track water sources, wells, and SGMA compliance</p>
+            <h1 className="text-2xl font-bold text-heading">Water Management</h1>
+            <p className="text-text-secondary mt-1">Track water sources, wells, and SGMA compliance</p>
           </div>
           <div className="flex items-center gap-3">
             <button
               onClick={handleRefresh}
               disabled={loading}
-              className="p-2.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+              className="p-2.5 text-text-secondary hover:text-bark-700 hover:bg-cream-100 rounded-lg transition-colors"
             >
               <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
             </button>
             <button
               onClick={() => openWellSourceModal()}
-              className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2.5 rounded-lg hover:bg-blue-700 shadow-sm"
+              className="flex items-center gap-2 bg-primary text-white px-4 py-2.5 rounded-lg hover:bg-primary-hover shadow-sm"
             >
               <Plus className="w-5 h-5" />
               Add Water Source
@@ -316,15 +316,15 @@ const WaterManagement = () => {
               }}
               className={`flex items-center gap-2 px-4 py-3 rounded-t-lg text-sm font-medium transition-colors whitespace-nowrap ${
                 activeTab === tab.id
-                  ? 'bg-gray-50 text-blue-600 border-t border-l border-r border-gray-200'
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                  ? 'bg-cream-50 text-link border-t border-l border-r border-border'
+                  : 'text-bark-600 hover:text-heading hover:bg-cream-50'
               }`}
             >
               <tab.icon className="w-4 h-4" />
               {tab.label}
               {tab.count !== undefined && (
                 <span className={`ml-1 px-2 py-0.5 rounded-full text-xs ${
-                  activeTab === tab.id ? 'bg-blue-100 text-blue-600' : 'bg-gray-200 text-gray-600'
+                  activeTab === tab.id ? 'bg-orange-100 text-link' : 'bg-sand-200 text-bark-600'
                 }`}>
                   {tab.count}
                 </span>
@@ -339,7 +339,7 @@ const WaterManagement = () => {
         {/* Loading State */}
         {loading && (
           <div className="flex items-center justify-center py-12">
-            <RefreshCw className="w-8 h-8 animate-spin text-blue-600" />
+            <RefreshCw className="w-8 h-8 animate-spin text-link" />
           </div>
         )}
 

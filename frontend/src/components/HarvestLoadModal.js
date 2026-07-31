@@ -304,12 +304,12 @@ const HarvestLoadModal = ({
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b sticky top-0 bg-white">
           <div className="flex items-center gap-2">
-            <Truck className="text-blue-600" size={24} />
-            <h2 className="text-xl font-semibold text-gray-900">
+            <Truck className="text-link" size={24} />
+            <h2 className="text-xl font-semibold text-heading">
               {load ? 'Edit Load' : 'Add Load to Harvest'}
             </h2>
           </div>
-          <button onClick={onClose} className="p-1 hover:bg-gray-100 rounded text-gray-500">
+          <button onClick={onClose} className="p-1 hover:bg-cream-100 rounded text-text-secondary">
             <X size={24} />
           </button>
         </div>
@@ -318,13 +318,13 @@ const HarvestLoadModal = ({
         <form onSubmit={handleSubmit} className="p-4 space-y-6">
           {/* Quantity Section */}
           <div>
-            <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">
+            <h3 className="text-sm font-semibold text-bark-700 uppercase tracking-wide mb-3">
               Quantity
             </h3>
             <div className="grid grid-cols-3 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Bins <span className="text-red-500">*</span>
+                <label className="block text-sm font-medium text-bark-700 mb-1">
+                  Bins <span className="text-danger">*</span>
                 </label>
                 <input
                   type="number"
@@ -332,14 +332,14 @@ const HarvestLoadModal = ({
                   value={formData.bins}
                   onChange={handleChange}
                   min="0"
-                  className={`w-full border rounded-lg px-3 py-2 bg-white text-gray-900 ${errors.bins ? 'border-red-500' : ''}`}
+                  className={`w-full border rounded-lg px-3 py-2 bg-white text-heading ${errors.bins ? 'border-danger' : ''}`}
                   required
                 />
-                {errors.bins && <p className="text-red-500 text-sm mt-1">{errors.bins}</p>}
+                {errors.bins && <p className="text-danger text-sm mt-1">{errors.bins}</p>}
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-bark-700 mb-1">
                   Weight (lbs)
                 </label>
                 <input
@@ -348,13 +348,13 @@ const HarvestLoadModal = ({
                   value={formData.weight_lbs}
                   onChange={handleChange}
                   step="0.01"
-                  className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900"
+                  className="w-full border rounded-lg px-3 py-2 bg-white text-heading"
                   placeholder="Scale weight"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-bark-700 mb-1">
                   Weight Ticket #
                 </label>
                 <input
@@ -362,7 +362,7 @@ const HarvestLoadModal = ({
                   name="weight_ticket_number"
                   value={formData.weight_ticket_number}
                   onChange={handleChange}
-                  className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900"
+                  className="w-full border rounded-lg px-3 py-2 bg-white text-heading"
                   placeholder="Scale ticket reference"
                 />
               </div>
@@ -371,12 +371,12 @@ const HarvestLoadModal = ({
 
           {/* Destination Section */}
           <div>
-            <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">
+            <h3 className="text-sm font-semibold text-bark-700 uppercase tracking-wide mb-3">
               Destination
             </h3>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-bark-700 mb-1">
                   Buyer
                 </label>
                 <div className="flex gap-2">
@@ -384,7 +384,7 @@ const HarvestLoadModal = ({
                     name="buyer"
                     value={formData.buyer}
                     onChange={handleBuyerChange}
-                    className="flex-1 border rounded-lg px-3 py-2 bg-white text-gray-900"
+                    className="flex-1 border rounded-lg px-3 py-2 bg-white text-heading"
                   >
                     <option value="">Select buyer...</option>
                     {buyers.map(buyer => (
@@ -397,7 +397,7 @@ const HarvestLoadModal = ({
                     <button
                       type="button"
                       onClick={onAddBuyer}
-                      className="px-3 py-2 border rounded-lg hover:bg-gray-50 text-gray-700"
+                      className="px-3 py-2 border rounded-lg hover:bg-cream-50 text-bark-700"
                       title="Add new buyer"
                     >
                       <Plus size={18} />
@@ -407,7 +407,7 @@ const HarvestLoadModal = ({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-bark-700 mb-1">
                   Destination Address
                 </label>
                 <input
@@ -415,7 +415,7 @@ const HarvestLoadModal = ({
                   name="destination_address"
                   value={formData.destination_address}
                   onChange={handleChange}
-                  className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900"
+                  className="w-full border rounded-lg px-3 py-2 bg-white text-heading"
                   placeholder="Override buyer address if different"
                 />
               </div>
@@ -424,19 +424,19 @@ const HarvestLoadModal = ({
 
           {/* Grade & Quality Section */}
           <div>
-            <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">
+            <h3 className="text-sm font-semibold text-bark-700 uppercase tracking-wide mb-3">
               Grade & Quality
             </h3>
             <div className="grid grid-cols-3 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-bark-700 mb-1">
                   Grade
                 </label>
                 <select
                   name="grade"
                   value={formData.grade}
                   onChange={handleChange}
-                  className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900"
+                  className="w-full border rounded-lg px-3 py-2 bg-white text-heading"
                 >
                   {HARVEST_CONSTANTS.GRADES.map(g => (
                     <option key={g.value} value={g.value}>{g.label}</option>
@@ -445,14 +445,14 @@ const HarvestLoadModal = ({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-bark-700 mb-1">
                   Size Grade
                 </label>
                 <select
                   name="size_grade"
                   value={formData.size_grade}
                   onChange={handleChange}
-                  className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900"
+                  className="w-full border rounded-lg px-3 py-2 bg-white text-heading"
                 >
                   <option value="">Select size...</option>
                   {HARVEST_CONSTANTS.SIZE_GRADES.map(s => (
@@ -462,7 +462,7 @@ const HarvestLoadModal = ({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-bark-700 mb-1">
                   Quality Notes
                 </label>
                 <input
@@ -470,7 +470,7 @@ const HarvestLoadModal = ({
                   name="quality_notes"
                   value={formData.quality_notes}
                   onChange={handleChange}
-                  className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900"
+                  className="w-full border rounded-lg px-3 py-2 bg-white text-heading"
                   placeholder="Brix, color, defects..."
                 />
               </div>
@@ -479,12 +479,12 @@ const HarvestLoadModal = ({
 
           {/* Revenue Section */}
           <div className="border rounded-lg p-4 bg-primary-light">
-            <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">
+            <h3 className="text-sm font-semibold text-bark-700 uppercase tracking-wide mb-3">
               Revenue
             </h3>
             <div className="grid grid-cols-4 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-bark-700 mb-1">
                   Price
                 </label>
                 <input
@@ -494,13 +494,13 @@ const HarvestLoadModal = ({
                   onChange={handleChange}
                   step="0.01"
                   min="0"
-                  className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900"
+                  className="w-full border rounded-lg px-3 py-2 bg-white text-heading"
                   placeholder="0.00"
                 />
                 {lastLoadForBuyer && formData.price_per_unit && !load && (
-                  <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded text-xs">
-                    <p className="font-medium text-blue-800 mb-1">Historical Pricing</p>
-                    <div className="space-y-1 text-blue-700">
+                  <div className="mt-2 p-2 bg-orange-50 border border-orange-200 rounded text-xs">
+                    <p className="font-medium text-orange-700 mb-1">Historical Pricing</p>
+                    <div className="space-y-1 text-orange-700">
                       <p>Last paid: ${lastLoadForBuyer.price_per_unit.toFixed(2)} {lastLoadForBuyer.price_unit_display}</p>
                       {pricingStats && (
                         <>
@@ -510,14 +510,14 @@ const HarvestLoadModal = ({
                               <span className={`ml-2 font-medium ${
                                 parseFloat(formData.price_per_unit) >= pricingStats.avgPrice
                                   ? 'text-primary'
-                                  : 'text-red-600'
+                                  : 'text-danger'
                               }`}>
                                 {parseFloat(formData.price_per_unit) >= pricingStats.avgPrice ? '↑ Above avg' : '↓ Below avg'}
                               </span>
                             )}
                           </p>
                           <p>Price range: ${pricingStats.minPrice.toFixed(2)} - ${pricingStats.maxPrice.toFixed(2)}</p>
-                          <p className="text-gray-600">Based on {pricingStats.sampleSize} loads this season</p>
+                          <p className="text-bark-600">Based on {pricingStats.sampleSize} loads this season</p>
                         </>
                       )}
                     </div>
@@ -526,14 +526,14 @@ const HarvestLoadModal = ({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-bark-700 mb-1">
                   Price Unit
                 </label>
                 <select
                   name="price_unit"
                   value={formData.price_unit}
                   onChange={handleChange}
-                  className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900"
+                  className="w-full border rounded-lg px-3 py-2 bg-white text-heading"
                 >
                   {HARVEST_CONSTANTS.PRICE_UNITS.map(u => (
                     <option key={u.value} value={u.value}>{u.label}</option>
@@ -542,7 +542,7 @@ const HarvestLoadModal = ({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-bark-700 mb-1">
                   Total Revenue
                 </label>
                 <input
@@ -552,23 +552,23 @@ const HarvestLoadModal = ({
                   onChange={handleChange}
                   step="0.01"
                   min="0"
-                  className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900"
+                  className="w-full border rounded-lg px-3 py-2 bg-white text-heading"
                   placeholder={formatCurrency(calculatedRevenue)}
                 />
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-text-secondary mt-1">
                   Calculated: {formatCurrency(calculatedRevenue)}
                 </p>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-bark-700 mb-1">
                   Payment Status
                 </label>
                 <select
                   name="payment_status"
                   value={formData.payment_status}
                   onChange={handleChange}
-                  className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900"
+                  className="w-full border rounded-lg px-3 py-2 bg-white text-heading"
                 >
                   {HARVEST_CONSTANTS.PAYMENT_STATUSES.map(s => (
                     <option key={s.value} value={s.value}>{s.label}</option>
@@ -579,7 +579,7 @@ const HarvestLoadModal = ({
 
             <div className="grid grid-cols-2 gap-4 mt-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-bark-700 mb-1">
                   Invoice Number
                 </label>
                 <input
@@ -587,12 +587,12 @@ const HarvestLoadModal = ({
                   name="invoice_number"
                   value={formData.invoice_number}
                   onChange={handleChange}
-                  className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900"
+                  className="w-full border rounded-lg px-3 py-2 bg-white text-heading"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-bark-700 mb-1">
                   Payment Date
                 </label>
                 <input
@@ -600,11 +600,11 @@ const HarvestLoadModal = ({
                   name="payment_date"
                   value={formData.payment_date}
                   onChange={handleChange}
-                  className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900"
+                  className="w-full border rounded-lg px-3 py-2 bg-white text-heading"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-bark-700 mb-1">
                   Payment Due Date
                 </label>
                 <input
@@ -612,22 +612,22 @@ const HarvestLoadModal = ({
                   name="payment_due_date"
                   value={formData.payment_due_date}
                   onChange={handleChange}
-                  className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900"
+                  className="w-full border rounded-lg px-3 py-2 bg-white text-heading"
                   placeholder="Expected payment date"
                 />
-                <p className="text-xs text-gray-500 mt-1">Based on buyer payment terms</p>
+                <p className="text-xs text-text-secondary mt-1">Based on buyer payment terms</p>
               </div>
             </div>
           </div>
 
           {/* Transportation (GAP/GHP) Section */}
           <div>
-            <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">
+            <h3 className="text-sm font-semibold text-bark-700 uppercase tracking-wide mb-3">
               Transportation (GAP/GHP Traceability)
             </h3>
             <div className="grid grid-cols-4 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-bark-700 mb-1">
                   Truck ID
                 </label>
                 <input
@@ -635,13 +635,13 @@ const HarvestLoadModal = ({
                   name="truck_id"
                   value={formData.truck_id}
                   onChange={handleChange}
-                  className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900"
+                  className="w-full border rounded-lg px-3 py-2 bg-white text-heading"
                   placeholder="License plate"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-bark-700 mb-1">
                   Trailer ID
                 </label>
                 <input
@@ -649,12 +649,12 @@ const HarvestLoadModal = ({
                   name="trailer_id"
                   value={formData.trailer_id}
                   onChange={handleChange}
-                  className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900"
+                  className="w-full border rounded-lg px-3 py-2 bg-white text-heading"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-bark-700 mb-1">
                   Driver Name
                 </label>
                 <input
@@ -662,12 +662,12 @@ const HarvestLoadModal = ({
                   name="driver_name"
                   value={formData.driver_name}
                   onChange={handleChange}
-                  className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900"
+                  className="w-full border rounded-lg px-3 py-2 bg-white text-heading"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-bark-700 mb-1">
                   Seal Number
                 </label>
                 <input
@@ -675,14 +675,14 @@ const HarvestLoadModal = ({
                   name="seal_number"
                   value={formData.seal_number}
                   onChange={handleChange}
-                  className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900"
+                  className="w-full border rounded-lg px-3 py-2 bg-white text-heading"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-3 gap-4 mt-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-bark-700 mb-1">
                   Departure Time
                 </label>
                 <input
@@ -690,12 +690,12 @@ const HarvestLoadModal = ({
                   name="departure_time"
                   value={formData.departure_time}
                   onChange={handleChange}
-                  className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900"
+                  className="w-full border rounded-lg px-3 py-2 bg-white text-heading"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-bark-700 mb-1">
                   Arrival Time
                 </label>
                 <input
@@ -703,12 +703,12 @@ const HarvestLoadModal = ({
                   name="arrival_time"
                   value={formData.arrival_time}
                   onChange={handleChange}
-                  className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900"
+                  className="w-full border rounded-lg px-3 py-2 bg-white text-heading"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-bark-700 mb-1">
                   Temp at Loading (°F)
                 </label>
                 <input
@@ -717,7 +717,7 @@ const HarvestLoadModal = ({
                   value={formData.temperature_at_loading}
                   onChange={handleChange}
                   step="0.1"
-                  className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900"
+                  className="w-full border rounded-lg px-3 py-2 bg-white text-heading"
                 />
               </div>
             </div>
@@ -725,7 +725,7 @@ const HarvestLoadModal = ({
 
           {/* Notes */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-bark-700 mb-1">
               Notes
             </label>
             <textarea
@@ -733,7 +733,7 @@ const HarvestLoadModal = ({
               value={formData.notes}
               onChange={handleChange}
               rows={2}
-              className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900"
+              className="w-full border rounded-lg px-3 py-2 bg-white text-heading"
               placeholder="Any additional notes..."
             />
           </div>
@@ -743,14 +743,14 @@ const HarvestLoadModal = ({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 border rounded-lg hover:bg-gray-50 text-gray-700"
+              className="px-4 py-2 border rounded-lg hover:bg-cream-50 text-bark-700"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={saving}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+              className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover disabled:opacity-50"
             >
               {saving ? 'Saving...' : (load ? 'Update Load' : 'Add Load')}
             </button>

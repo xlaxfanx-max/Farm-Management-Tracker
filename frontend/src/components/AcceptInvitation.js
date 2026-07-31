@@ -132,10 +132,10 @@ export default function AcceptInvitation({ token, onComplete }) {
   // Loading state
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-green-50 to-orange-50 flex items-center justify-center p-4">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-gray-600">Validating invitation...</p>
+          <p className="mt-4 text-bark-600">Validating invitation...</p>
         </div>
       </div>
     );
@@ -144,14 +144,14 @@ export default function AcceptInvitation({ token, onComplete }) {
   // Error state (invalid/expired invitation)
   if (error && !invitation) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-green-50 to-orange-50 flex items-center justify-center p-4">
         <div className="w-full max-w-md">
           <div className="bg-white rounded-xl shadow-lg p-8 text-center">
-            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <XCircle className="w-8 h-8 text-red-600" />
+            <div className="w-16 h-16 bg-danger-bg rounded-full flex items-center justify-center mx-auto mb-4">
+              <XCircle className="w-8 h-8 text-danger" />
             </div>
-            <h1 className="text-xl font-bold text-gray-900 mb-2">Invalid Invitation</h1>
-            <p className="text-gray-600 mb-6">{error}</p>
+            <h1 className="text-xl font-bold text-heading mb-2">Invalid Invitation</h1>
+            <p className="text-bark-600 mb-6">{error}</p>
             <button
               onClick={() => window.location.href = '/'}
               className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover"
@@ -167,15 +167,15 @@ export default function AcceptInvitation({ token, onComplete }) {
   // Success state
   if (success) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-green-50 to-orange-50 flex items-center justify-center p-4">
         <div className="w-full max-w-md">
           <div className="bg-white rounded-xl shadow-lg p-8 text-center">
             <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <CheckCircle className="w-8 h-8 text-primary" />
             </div>
-            <h1 className="text-xl font-bold text-gray-900 mb-2">Welcome to the Team!</h1>
-            <p className="text-gray-600 mb-2">Your account has been created successfully.</p>
-            <p className="text-sm text-gray-500">Logging you in...</p>
+            <h1 className="text-xl font-bold text-heading mb-2">Welcome to the Team!</h1>
+            <p className="text-bark-600 mb-2">Your account has been created successfully.</p>
+            <p className="text-sm text-text-secondary">Logging you in...</p>
           </div>
         </div>
       </div>
@@ -188,31 +188,31 @@ export default function AcceptInvitation({ token, onComplete }) {
     const isInvitedUser = isAuthenticated && invitedEmail && invitedEmail === currentEmail;
 
     return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-green-50 to-orange-50 flex items-center justify-center p-4">
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center w-16 h-16 bg-primary rounded-xl mb-4">
               <Leaf className="w-8 h-8 text-white" />
             </div>
-            <h1 className="text-2xl font-bold text-gray-900">Join {invitation.company_name}</h1>
-            <p className="text-gray-600 mt-1">
+            <h1 className="text-2xl font-bold text-heading">Join {invitation.company_name}</h1>
+            <p className="text-bark-600 mt-1">
               You've been invited to join as <strong>{invitation.role_name || invitation.role}</strong>
             </p>
           </div>
 
           <div className="bg-white rounded-xl shadow-lg p-8">
             {error && (
-              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
-                <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-                <span className="text-red-700 text-sm">{error}</span>
+              <div className="mb-4 p-3 bg-danger-bg border border-danger/25 rounded-lg flex items-start gap-2">
+                <AlertCircle className="w-5 h-5 text-danger flex-shrink-0 mt-0.5" />
+                <span className="text-danger text-sm">{error}</span>
               </div>
             )}
 
-            <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-              <p className="text-sm text-gray-600">
+            <div className="mb-6 p-4 bg-cream-50 rounded-lg">
+              <p className="text-sm text-bark-600">
                 <strong>Email:</strong> {invitation.email}
               </p>
-              <p className="text-sm text-gray-600 mt-1">
+              <p className="text-sm text-bark-600 mt-1">
                 <strong>Invited by:</strong> {invitation.invited_by}
               </p>
             </div>
@@ -220,7 +220,7 @@ export default function AcceptInvitation({ token, onComplete }) {
             {!isAuthenticated && (
               <form onSubmit={handleExistingLogin} className="space-y-5">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-bark-700 mb-1">
                     Password
                   </label>
                   <input
@@ -228,7 +228,7 @@ export default function AcceptInvitation({ token, onComplete }) {
                     name="existingPassword"
                     value={existingPassword}
                     onChange={(e) => setExistingPassword(e.target.value)}
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                    className="w-full px-4 py-2.5 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                     placeholder="********"
                     required
                   />
@@ -246,13 +246,13 @@ export default function AcceptInvitation({ token, onComplete }) {
 
             {isAuthenticated && !isInvitedUser && (
               <div className="space-y-4">
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-bark-600">
                   You're signed in as {user?.email}. Please sign in with {invitation.email} to accept.
                 </p>
                 <button
                   type="button"
                   onClick={logout}
-                  className="w-full bg-gray-100 text-gray-700 py-2.5 px-4 rounded-lg font-medium hover:bg-gray-200"
+                  className="w-full bg-cream-100 text-bark-700 py-2.5 px-4 rounded-lg font-medium hover:bg-sand-200"
                 >
                   Sign Out
                 </button>
@@ -270,7 +270,7 @@ export default function AcceptInvitation({ token, onComplete }) {
               </button>
             )}
 
-            <p className="mt-6 text-center text-sm text-gray-600">
+            <p className="mt-6 text-center text-sm text-bark-600">
               Need to create a new account instead?{' '}
               <button
                 onClick={() => window.location.href = '/'}
@@ -287,15 +287,15 @@ export default function AcceptInvitation({ token, onComplete }) {
 
   // Invitation form
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 to-orange-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Logo/Header */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-primary rounded-xl mb-4">
             <Leaf className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">Join {invitation.company_name}</h1>
-          <p className="text-gray-600 mt-1">
+          <h1 className="text-2xl font-bold text-heading">Join {invitation.company_name}</h1>
+          <p className="text-bark-600 mt-1">
             You've been invited to join as <strong>{invitation.role_name || invitation.role}</strong>
           </p>
         </div>
@@ -303,17 +303,17 @@ export default function AcceptInvitation({ token, onComplete }) {
         {/* Form */}
         <div className="bg-white rounded-xl shadow-lg p-8">
           {error && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
-              <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-              <span className="text-red-700 text-sm">{error}</span>
+            <div className="mb-4 p-3 bg-danger-bg border border-danger/25 rounded-lg flex items-start gap-2">
+              <AlertCircle className="w-5 h-5 text-danger flex-shrink-0 mt-0.5" />
+              <span className="text-danger text-sm">{error}</span>
             </div>
           )}
 
-          <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-            <p className="text-sm text-gray-600">
+          <div className="mb-6 p-4 bg-cream-50 rounded-lg">
+            <p className="text-sm text-bark-600">
               <strong>Email:</strong> {invitation.email}
             </p>
-            <p className="text-sm text-gray-600 mt-1">
+            <p className="text-sm text-bark-600 mt-1">
               <strong>Invited by:</strong> {invitation.invited_by}
             </p>
           </div>
@@ -322,7 +322,7 @@ export default function AcceptInvitation({ token, onComplete }) {
             {/* Name Row */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-bark-700 mb-1">
                   First Name
                 </label>
                 <input
@@ -330,12 +330,12 @@ export default function AcceptInvitation({ token, onComplete }) {
                   name="firstName"
                   value={formData.firstName}
                   onChange={handleChange}
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                  className="w-full px-4 py-2.5 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                   placeholder="John"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-bark-700 mb-1">
                   Last Name
                 </label>
                 <input
@@ -343,7 +343,7 @@ export default function AcceptInvitation({ token, onComplete }) {
                   name="lastName"
                   value={formData.lastName}
                   onChange={handleChange}
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                  className="w-full px-4 py-2.5 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                   placeholder="Smith"
                 />
               </div>
@@ -351,7 +351,7 @@ export default function AcceptInvitation({ token, onComplete }) {
 
             {/* Password */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-bark-700 mb-1">
                 Create Password *
               </label>
               <div className="relative">
@@ -360,7 +360,7 @@ export default function AcceptInvitation({ token, onComplete }) {
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent pr-10"
+                  className="w-full px-4 py-2.5 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent pr-10"
                   placeholder="••••••••"
                   required
                   minLength={8}
@@ -368,17 +368,17 @@ export default function AcceptInvitation({ token, onComplete }) {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary hover:text-bark-700"
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
-              <p className="mt-1 text-xs text-gray-500">Must be at least 8 characters</p>
+              <p className="mt-1 text-xs text-text-secondary">Must be at least 8 characters</p>
             </div>
 
             {/* Confirm Password */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-bark-700 mb-1">
                 Confirm Password *
               </label>
               <input
@@ -386,7 +386,7 @@ export default function AcceptInvitation({ token, onComplete }) {
                 name="confirmPassword"
                 value={formData.confirmPassword}
                 onChange={handleChange}
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="w-full px-4 py-2.5 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                 placeholder="••••••••"
                 required
               />
@@ -412,7 +412,7 @@ export default function AcceptInvitation({ token, onComplete }) {
             </button>
           </form>
 
-          <p className="mt-6 text-center text-sm text-gray-600">
+          <p className="mt-6 text-center text-sm text-bark-600">
             Already have an account?{' '}
             <button
               onClick={() => window.location.href = '/'}

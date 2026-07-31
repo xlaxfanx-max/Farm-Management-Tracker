@@ -9,7 +9,7 @@ const HarvestAnalyticsTab = () => {
     <div className="space-y-6">
       {/* Profitability Dashboard - Primary Analytics */}
       <div className="bg-white rounded-lg shadow p-6">
-        <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+        <h3 className="text-lg font-semibold text-text mb-4 flex items-center gap-2">
           <DollarSign className="text-primary" size={20} />
           Profitability Analysis
         </h3>
@@ -18,7 +18,7 @@ const HarvestAnalyticsTab = () => {
 
       {/* Cost Analysis */}
       <div className="bg-white rounded-lg shadow p-6">
-        <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+        <h3 className="text-lg font-semibold text-text mb-4 flex items-center gap-2">
           <Wheat className="text-orange-600" size={20} />
           Harvest Cost Analysis
         </h3>
@@ -27,7 +27,7 @@ const HarvestAnalyticsTab = () => {
 
       {/* Packinghouse Analytics */}
       <div className="bg-white rounded-lg shadow p-6">
-        <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+        <h3 className="text-lg font-semibold text-text mb-4 flex items-center gap-2">
           <Boxes className="text-primary" size={20} />
           Packinghouse Analytics
         </h3>

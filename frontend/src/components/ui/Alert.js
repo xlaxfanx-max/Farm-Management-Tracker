@@ -5,7 +5,7 @@ const tones = {
   info:    { wrap: 'bg-green-50 border-green-200', icon: 'text-info', title: 'text-green-700', defaultIcon: Info },
   success: { wrap: 'bg-success-bg border-green-200', icon: 'text-success', title: 'text-green-700', defaultIcon: CheckCircle2 },
   warning: { wrap: 'bg-warning-bg border-yellow-300', icon: 'text-yellow-600', title: 'text-yellow-700', defaultIcon: AlertTriangle },
-  danger:  { wrap: 'bg-danger-bg border-red-200', icon: 'text-danger', title: 'text-danger', defaultIcon: AlertOctagon },
+  danger:  { wrap: 'bg-danger-bg border-danger/25', icon: 'text-danger', title: 'text-danger', defaultIcon: AlertOctagon },
 };
 
 /** Inline banner. Replaces the ad-hoc coloured wash notices across the app. */

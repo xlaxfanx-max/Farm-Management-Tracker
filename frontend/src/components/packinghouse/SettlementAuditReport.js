@@ -13,47 +13,47 @@ import { poolSettlementsAPI } from '../../services/api';
 
 const SEVERITY_STYLES = {
   critical: {
-    bg: 'bg-red-50',
-    border: 'border-red-500',
-    text: 'text-red-800',
-    icon: 'text-red-600',
-    badge: 'bg-red-600',
+    bg: 'bg-danger-bg',
+    border: 'border-danger',
+    text: 'text-danger',
+    icon: 'text-danger',
+    badge: 'bg-danger',
   },
   warning: {
-    bg: 'bg-amber-50',
-    border: 'border-amber-500',
-    text: 'text-amber-800',
-    icon: 'text-amber-600',
-    badge: 'bg-amber-500',
+    bg: 'bg-yellow-100',
+    border: 'border-yellow-500',
+    text: 'text-yellow-800',
+    icon: 'text-yellow-600',
+    badge: 'bg-yellow-500',
   },
   info: {
-    bg: 'bg-sky-50',
-    border: 'border-sky-500',
-    text: 'text-sky-800',
-    icon: 'text-sky-600',
-    badge: 'bg-sky-500',
+    bg: 'bg-green-50',
+    border: 'border-green-500',
+    text: 'text-green-800',
+    icon: 'text-green-600',
+    badge: 'bg-green-500',
   },
 };
 
 const STATUS_BANNER = {
   clean: {
-    bg: 'bg-emerald-50 border-emerald-500',
+    bg: 'bg-green-50 border-green-500',
     icon: CheckCircle2,
-    iconColor: 'text-emerald-600',
+    iconColor: 'text-green-600',
     title: 'Clean',
     message: 'No anomalies detected on this settlement.',
   },
   review: {
-    bg: 'bg-amber-50 border-amber-500',
+    bg: 'bg-yellow-100 border-yellow-500',
     icon: AlertTriangle,
-    iconColor: 'text-amber-600',
+    iconColor: 'text-yellow-600',
     title: 'Needs review',
     message: null,
   },
   critical: {
-    bg: 'bg-red-50 border-red-500',
+    bg: 'bg-danger-bg border-danger',
     icon: ShieldAlert,
-    iconColor: 'text-red-600',
+    iconColor: 'text-danger',
     title: 'Critical variance',
     message: null,
   },
@@ -93,7 +93,7 @@ function FindingCard({ finding, reviewedSet, onToggleReviewed }) {
             {finding.title}
           </div>
           {!expanded && (
-            <div className="text-xs mt-0.5 text-gray-600 line-clamp-2">
+            <div className="text-xs mt-0.5 text-bark-600 line-clamp-2">
               {finding.message}
             </div>
           )}
@@ -110,15 +110,15 @@ function FindingCard({ finding, reviewedSet, onToggleReviewed }) {
             {finding.severity}
           </span>
           {expanded ? (
-            <ChevronUp className="w-4 h-4 text-gray-400" />
+            <ChevronUp className="w-4 h-4 text-text-muted" />
           ) : (
-            <ChevronDown className="w-4 h-4 text-gray-400" />
+            <ChevronDown className="w-4 h-4 text-text-muted" />
           )}
         </div>
       </button>
 
       {expanded && (
-        <div className="px-4 pb-4 pt-1 border-t border-gray-200">
+        <div className="px-4 pb-4 pt-1 border-t border-border">
           <p className={`text-sm ${style.text} mb-3`}>{finding.message}</p>
 
           {finding.details && Object.keys(finding.details).length > 0 && (
@@ -126,12 +126,12 @@ function FindingCard({ finding, reviewedSet, onToggleReviewed }) {
               {Object.entries(finding.details).map(([key, val]) => (
                 <div
                   key={key}
-                  className="bg-white rounded p-2 border border-gray-200"
+                  className="bg-white rounded p-2 border border-border"
                 >
-                  <div className="text-[11px] text-gray-500">
+                  <div className="text-[11px] text-text-secondary">
                     {key.replace(/_/g, ' ')}
                   </div>
-                  <div className="text-sm font-medium text-gray-800">
+                  <div className="text-sm font-medium text-text">
                     {typeof val === 'number'
                       ? Math.abs(val) < 1 && Math.abs(val) > 0
                         ? val.toFixed(4)
@@ -143,7 +143,7 @@ function FindingCard({ finding, reviewedSet, onToggleReviewed }) {
             </div>
           )}
 
-          <div className="flex items-center justify-between text-xs text-gray-500">
+          <div className="flex items-center justify-between text-xs text-text-secondary">
             <span>Source: {finding.source_ref || 'settlement'}</span>
             <button
               type="button"
@@ -151,7 +151,7 @@ function FindingCard({ finding, reviewedSet, onToggleReviewed }) {
                 e.stopPropagation();
                 onToggleReviewed(finding.code);
               }}
-              className="px-2 py-1 rounded border border-gray-300 hover:bg-gray-100"
+              className="px-2 py-1 rounded border border-border-strong hover:bg-cream-100"
             >
               {reviewed ? 'Unmark reviewed' : 'Mark reviewed'}
             </button>
@@ -197,7 +197,7 @@ function SettlementAuditReport({ settlementId }) {
 
   if (loading) {
     return (
-      <div className="flex items-center gap-2 text-sm text-gray-500 p-4">
+      <div className="flex items-center gap-2 text-sm text-text-secondary p-4">
         <RefreshCw className="w-4 h-4 animate-spin" />
         Running audit…
       </div>
@@ -205,7 +205,7 @@ function SettlementAuditReport({ settlementId }) {
   }
   if (error) {
     return (
-      <div className="bg-red-50 border border-red-200 rounded p-3 text-sm text-red-700">
+      <div className="bg-danger-bg border border-danger/25 rounded p-3 text-sm text-danger">
         {error}
       </div>
     );
@@ -230,15 +230,15 @@ function SettlementAuditReport({ settlementId }) {
         <div className="flex items-start gap-3">
           <BannerIcon className={`w-6 h-6 ${banner.iconColor} flex-shrink-0`} />
           <div className="flex-1">
-            <div className="font-semibold text-gray-900">
+            <div className="font-semibold text-heading">
               {banner.title}
             </div>
-            <div className="text-sm text-gray-700 mt-0.5">
+            <div className="text-sm text-bark-700 mt-0.5">
               {bannerMessage}
             </div>
           </div>
           {totalImpact > 0 && (
-            <div className="flex items-center gap-1 text-sm font-medium text-gray-700">
+            <div className="flex items-center gap-1 text-sm font-medium text-bark-700">
               <DollarSign className="w-4 h-4" />
               <span>
                 {totalImpact.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
@@ -249,7 +249,7 @@ function SettlementAuditReport({ settlementId }) {
           <button
             type="button"
             onClick={load}
-            className="p-2 text-gray-500 hover:text-gray-700 rounded hover:bg-gray-100"
+            className="p-2 text-text-secondary hover:text-bark-700 rounded hover:bg-cream-100"
             title="Re-run audit"
           >
             <RefreshCw className="w-4 h-4" />
@@ -259,7 +259,7 @@ function SettlementAuditReport({ settlementId }) {
 
       {/* Findings */}
       {report.findings.length === 0 ? (
-        <div className="text-sm text-gray-500 text-center py-4 flex items-center justify-center gap-2">
+        <div className="text-sm text-text-secondary text-center py-4 flex items-center justify-center gap-2">
           <Info className="w-4 h-4" />
           No findings. The settlement reconciles cleanly against your history
           and the packinghouse average.

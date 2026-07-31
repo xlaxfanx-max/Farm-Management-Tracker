@@ -35,7 +35,7 @@ export const WATER_SOURCE_TYPE_BADGE = {
 export const TEST_RESULT_BADGE = {
   pending: 'bg-warning-bg text-yellow-600 border-yellow-300',
   pass:    'bg-success-bg text-green-700 border-green-200',
-  fail:    'bg-danger-bg text-danger border-red-200',
+  fail:    'bg-danger-bg text-danger border-danger/25',
 };
 
 // Harvest status colors

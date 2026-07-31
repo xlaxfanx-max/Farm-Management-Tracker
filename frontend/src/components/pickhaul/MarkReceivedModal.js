@@ -55,7 +55,7 @@ export default function MarkReceivedModal({ isOpen, onClose, onSave, invoice }) 
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 rounded-button border border-gray-300 text-gray-700 hover:bg-gray-50"
+            className="px-4 py-2 rounded-button border border-border-strong text-bark-700 hover:bg-cream-50"
           >
             Cancel
           </button>
@@ -81,7 +81,7 @@ export default function MarkReceivedModal({ isOpen, onClose, onSave, invoice }) 
             autoFocus
           />
         </FormField>
-        <p className="text-xs text-gray-500">
+        <p className="text-xs text-text-secondary">
           This is your record only. The row stays on the chase list until the
           house's posted charge is matched — those are different events.
         </p>

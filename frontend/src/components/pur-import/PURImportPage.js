@@ -98,25 +98,25 @@ const PURImportPage = () => {
       {/* Header */}
       <div className="mb-6">
         <div className="flex items-center gap-3 mb-2">
-          <FileText className="w-7 h-7 text-blue-600" />
-          <h1 className="text-2xl font-bold text-gray-900">
+          <FileText className="w-7 h-7 text-link" />
+          <h1 className="text-2xl font-bold text-heading">
             Import PUR Reports
           </h1>
         </div>
-        <p className="text-gray-500 text-sm">
+        <p className="text-text-secondary text-sm">
           Upload a Pesticide Use Report PDF to extract and import application
           events into your records.
         </p>
       </div>
 
       {/* Tab toggle */}
-      <div className="flex gap-1 mb-6 bg-gray-100 rounded-lg p-1 w-fit">
+      <div className="flex gap-1 mb-6 bg-cream-100 rounded-lg p-1 w-fit">
         <button
           onClick={() => setActiveTab('import')}
           className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
             activeTab === 'import'
-              ? 'bg-white text-gray-900 shadow-sm'
-              : 'text-gray-500 hover:text-gray-700'
+              ? 'bg-white text-heading shadow-sm'
+              : 'text-text-secondary hover:text-bark-700'
           }`}
         >
           <Upload className="w-4 h-4" />
@@ -126,8 +126,8 @@ const PURImportPage = () => {
           onClick={() => setActiveTab('history')}
           className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
             activeTab === 'history'
-              ? 'bg-white text-gray-900 shadow-sm'
-              : 'text-gray-500 hover:text-gray-700'
+              ? 'bg-white text-heading shadow-sm'
+              : 'text-text-secondary hover:text-bark-700'
           }`}
         >
           <History className="w-4 h-4" />
@@ -161,8 +161,8 @@ const PURImportPage = () => {
                             isComplete
                               ? 'bg-primary border-primary text-white'
                               : isCurrent
-                                ? 'bg-blue-600 border-blue-600 text-white'
-                                : 'bg-white border-gray-300 text-gray-400'
+                                ? 'bg-primary border-primary text-white'
+                                : 'bg-white border-border-strong text-text-muted'
                           }`}
                         >
                           {isComplete ? (
@@ -174,10 +174,10 @@ const PURImportPage = () => {
                         <span
                           className={`ml-3 text-sm font-medium ${
                             isCurrent
-                              ? 'text-blue-600'
+                              ? 'text-link'
                               : isComplete
                                 ? 'text-primary'
-                                : 'text-gray-400'
+                                : 'text-text-muted'
                           }`}
                         >
                           {step.label}
@@ -185,7 +185,7 @@ const PURImportPage = () => {
                         {idx < STEPS.length - 1 && (
                           <div
                             className={`hidden sm:block absolute top-5 left-full w-full h-0.5 -translate-y-1/2 ${
-                              isComplete ? 'bg-primary' : 'bg-gray-200'
+                              isComplete ? 'bg-primary' : 'bg-sand-200'
                             }`}
                             style={{ width: 'calc(100% - 5rem)' }}
                           />
@@ -202,7 +202,7 @@ const PURImportPage = () => {
           {currentStep > 0 && !importResults && (
             <button
               onClick={handleBack}
-              className="mb-4 inline-flex items-center gap-1.5 text-sm text-gray-600 hover:text-gray-900 transition-colors"
+              className="mb-4 inline-flex items-center gap-1.5 text-sm text-bark-600 hover:text-heading transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />
               Back to {STEPS[currentStep - 1].label}
@@ -210,7 +210,7 @@ const PURImportPage = () => {
           )}
 
           {/* Step content */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200">
+          <div className="bg-white rounded-xl shadow-sm border border-border">
             {currentStep === 0 && (
               <PURUploadStep onComplete={handleUploadComplete} />
             )}

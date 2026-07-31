@@ -73,11 +73,11 @@ function FarmCard({
   return (
     <div
       className={`bg-white rounded-lg shadow-md border-2 overflow-hidden transition-all ${
-        isSelected ? 'border-primary shadow-lg' : 'border-gray-200'
+        isSelected ? 'border-primary shadow-lg' : 'border-border'
       }`}
     >
       {/* Farm Header */}
-      <div className="bg-gradient-to-r from-green-50 to-blue-50 border-b border-gray-200">
+      <div className="bg-gradient-to-r from-green-50 to-orange-50 border-b border-border">
         <div className="p-6">
           <div className="flex items-start justify-between">
             <div className="flex-1">
@@ -88,13 +88,13 @@ function FarmCard({
                   aria-expanded={isExpanded}
                   aria-label={isExpanded ? `Collapse ${farm.name} fields` : `Expand ${farm.name} fields`}
                 >
-                  <ExpandIcon className="w-6 h-6 text-gray-700" />
+                  <ExpandIcon className="w-6 h-6 text-bark-700" />
                 </button>
                 <Home className="text-primary flex-shrink-0" size={32} />
                 <div>
-                  <h3 className="font-bold text-2xl text-gray-900">{farm.name}</h3>
+                  <h3 className="font-bold text-2xl text-heading">{farm.name}</h3>
                   {farm.farm_number && (
-                    <p className="text-sm text-gray-600 font-mono mt-1">{farm.farm_number}</p>
+                    <p className="text-sm text-bark-600 font-mono mt-1">{farm.farm_number}</p>
                   )}
                 </div>
 
@@ -111,51 +111,51 @@ function FarmCard({
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 ml-10">
                 {farm.owner_name && (
                   <div>
-                    <p className="text-xs text-gray-500 uppercase tracking-wide">Owner</p>
-                    <p className="font-medium text-gray-900">{farm.owner_name}</p>
+                    <p className="text-xs text-text-secondary uppercase tracking-wide">Owner</p>
+                    <p className="font-medium text-heading">{farm.owner_name}</p>
                   </div>
                 )}
                 <div>
-                  <p className="text-xs text-gray-500 uppercase tracking-wide">County</p>
-                  <p className="font-medium text-gray-900">{farm.county}</p>
+                  <p className="text-xs text-text-secondary uppercase tracking-wide">County</p>
+                  <p className="font-medium text-heading">{farm.county}</p>
                 </div>
                 {farm.phone && (
                   <div>
-                    <p className="text-xs text-gray-500 uppercase tracking-wide">Phone</p>
-                    <p className="font-medium text-gray-900">{farm.phone}</p>
+                    <p className="text-xs text-text-secondary uppercase tracking-wide">Phone</p>
+                    <p className="font-medium text-heading">{farm.phone}</p>
                   </div>
                 )}
                 <div>
-                  <p className="text-xs text-gray-500 uppercase tracking-wide">Fields</p>
-                  <p className="font-medium text-gray-900">{fields.length} field{fields.length !== 1 ? 's' : ''}</p>
+                  <p className="text-xs text-text-secondary uppercase tracking-wide">Fields</p>
+                  <p className="font-medium text-heading">{fields.length} field{fields.length !== 1 ? 's' : ''}</p>
                 </div>
               </div>
 
               {/* Farm Stats Strip */}
               {fields.length > 0 && (
-                <div className="mt-4 ml-10 pt-3 border-t border-gray-200/50">
+                <div className="mt-4 ml-10 pt-3 border-t border-border/50">
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     <div className="bg-white/60 rounded-lg px-3 py-2">
-                      <p className="text-xs text-gray-500">Total Acres</p>
-                      <p className="text-lg font-bold text-gray-900">{stats.totalAcres.toFixed(1)}</p>
+                      <p className="text-xs text-text-secondary">Total Acres</p>
+                      <p className="text-lg font-bold text-heading">{stats.totalAcres.toFixed(1)}</p>
                     </div>
                     <div className="bg-white/60 rounded-lg px-3 py-2">
-                      <p className="text-xs text-gray-500">Mapped Fields</p>
-                      <p className="text-lg font-bold text-gray-900">
-                        <span className={stats.mappedFields === stats.fieldCount ? 'text-primary' : 'text-amber-600'}>
+                      <p className="text-xs text-text-secondary">Mapped Fields</p>
+                      <p className="text-lg font-bold text-heading">
+                        <span className={stats.mappedFields === stats.fieldCount ? 'text-primary' : 'text-yellow-600'}>
                           {stats.mappedFields}
                         </span>
-                        <span className="text-gray-400 text-sm">/{stats.fieldCount}</span>
+                        <span className="text-text-muted text-sm">/{stats.fieldCount}</span>
                       </p>
                     </div>
                     <div className="bg-white/60 rounded-lg px-3 py-2">
-                      <p className="text-xs text-gray-500">Applications</p>
-                      <p className="text-lg font-bold text-blue-600">{stats.totalApplications}</p>
+                      <p className="text-xs text-text-secondary">Applications</p>
+                      <p className="text-lg font-bold text-link">{stats.totalApplications}</p>
                     </div>
                     {stats.topCrop && (
                       <div className="bg-white/60 rounded-lg px-3 py-2">
-                        <p className="text-xs text-gray-500">Top Crop</p>
-                        <p className="text-sm font-medium text-gray-900 truncate">{stats.topCrop}</p>
+                        <p className="text-xs text-text-secondary">Top Crop</p>
+                        <p className="text-sm font-medium text-heading truncate">{stats.topCrop}</p>
                       </div>
                     )}
                   </div>
@@ -170,10 +170,10 @@ function FarmCard({
                 <button
                   onClick={() => onGeocode(farm)}
                   disabled={isGeocoding}
-                  className={`flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-lg transition-colors ${
+                  className={`flex items-center gap-2 px-3 py-2 border border-border-strong rounded-lg transition-colors ${
                     isGeocoding
-                      ? 'bg-gray-100 text-gray-400'
-                      : 'bg-white text-gray-700 hover:bg-gray-50'
+                      ? 'bg-cream-100 text-text-muted'
+                      : 'bg-white text-bark-700 hover:bg-cream-50'
                   }`}
                   title="Get GPS from address"
                 >
@@ -184,7 +184,7 @@ function FarmCard({
 
               <button
                 onClick={() => onUploadImagery(farm.id)}
-                className="flex items-center gap-2 px-3 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors shadow-sm"
+                className="flex items-center gap-2 px-3 py-2 bg-bark-600 text-white rounded-lg hover:bg-bark-700 transition-colors shadow-sm"
                 title="Upload Satellite Imagery"
               >
                 <Satellite size={18} />
@@ -192,7 +192,7 @@ function FarmCard({
               </button>
               <button
                 onClick={() => onAddField(farm.id)}
-                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
+                className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors shadow-sm"
                 title="Add Field to this Farm"
               >
                 <Plus size={18} />
@@ -200,7 +200,7 @@ function FarmCard({
               </button>
               <button
                 onClick={() => onEdit(farm)}
-                className="p-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                className="p-2 bg-white border border-border-strong text-bark-700 rounded-lg hover:bg-cream-50 transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
                 title="Edit Farm"
                 aria-label={`Edit ${farm.name}`}
               >
@@ -208,7 +208,7 @@ function FarmCard({
               </button>
               <button
                 onClick={() => onDelete(farm.id)}
-                className="p-2 bg-white border border-gray-300 text-red-600 rounded-lg hover:bg-red-50 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+                className="p-2 bg-white border border-border-strong text-danger rounded-lg hover:bg-danger-bg transition-colors focus:outline-none focus:ring-2 focus:ring-danger focus:ring-offset-2"
                 title="Delete Farm"
                 aria-label={`Delete ${farm.name}`}
               >
@@ -221,7 +221,7 @@ function FarmCard({
               {/* Primary action: Add Field */}
               <button
                 onClick={() => onAddField(farm.id)}
-                className="flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
+                className="flex items-center gap-2 px-3 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors shadow-sm"
                 title="Add Field to this Farm"
               >
                 <Plus size={18} />
@@ -232,7 +232,7 @@ function FarmCard({
               <div className="relative" ref={mobileMenuRef}>
                 <button
                   onClick={() => setShowMobileMenu(!showMobileMenu)}
-                  className="p-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                  className="p-2 bg-white border border-border-strong text-bark-700 rounded-lg hover:bg-cream-50 transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
                   title="More actions"
                   aria-label={`More actions for ${farm.name}`}
                   aria-expanded={showMobileMenu}
@@ -242,7 +242,7 @@ function FarmCard({
 
                 {/* Dropdown Menu */}
                 {showMobileMenu && (
-                  <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
+                  <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-lg shadow-lg border border-border py-1 z-50">
                     {!hasCoords && (
                       <button
                         onClick={() => {
@@ -250,7 +250,7 @@ function FarmCard({
                           setShowMobileMenu(false);
                         }}
                         disabled={isGeocoding}
-                        className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-gray-700 hover:bg-gray-50 transition-colors"
+                        className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-bark-700 hover:bg-cream-50 transition-colors"
                       >
                         <Locate size={16} className={isGeocoding ? 'animate-pulse' : ''} />
                         <span>{isGeocoding ? 'Finding GPS...' : 'Get GPS'}</span>
@@ -261,9 +261,9 @@ function FarmCard({
                         onUploadImagery(farm.id);
                         setShowMobileMenu(false);
                       }}
-                      className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-gray-700 hover:bg-gray-50 transition-colors"
+                      className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-bark-700 hover:bg-cream-50 transition-colors"
                     >
-                      <Satellite size={16} className="text-purple-600" />
+                      <Satellite size={16} className="text-bark-700" />
                       <span>Upload Imagery</span>
                     </button>
                     <button
@@ -271,18 +271,18 @@ function FarmCard({
                         onEdit(farm);
                         setShowMobileMenu(false);
                       }}
-                      className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-gray-700 hover:bg-gray-50 transition-colors"
+                      className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-bark-700 hover:bg-cream-50 transition-colors"
                     >
                       <Edit size={16} />
                       <span>Edit Farm</span>
                     </button>
-                    <div className="border-t border-gray-100 my-1" />
+                    <div className="border-t border-border my-1" />
                     <button
                       onClick={() => {
                         onDelete(farm.id);
                         setShowMobileMenu(false);
                       }}
-                      className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-red-600 hover:bg-red-50 transition-colors"
+                      className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-danger hover:bg-danger-bg transition-colors"
                     >
                       <Trash2 size={16} />
                       <span>Delete Farm</span>
@@ -297,15 +297,15 @@ function FarmCard({
 
       {/* Fields Section (Expandable) */}
       {isExpanded && (
-        <div className="p-6 bg-gray-50">
+        <div className="p-6 bg-cream-50">
           <div className="flex items-center justify-between mb-4">
-            <h4 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-              <MapPin className="w-5 h-5 text-blue-600" />
+            <h4 className="text-lg font-semibold text-heading flex items-center gap-2">
+              <MapPin className="w-5 h-5 text-link" />
               Fields ({fields.length})
             </h4>
             <button
               onClick={() => onAddField(farm.id)}
-              className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-sm transition-colors"
+              className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-hover text-sm transition-colors"
             >
               <Plus size={16} />
               Add Field to {farm.name}
@@ -313,12 +313,12 @@ function FarmCard({
           </div>
 
           {fields.length === 0 ? (
-            <div className="text-center py-8 bg-white rounded-lg border-2 border-dashed border-gray-300">
-              <MapPin className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-              <p className="text-gray-600 mb-3">No fields yet for this farm</p>
+            <div className="text-center py-8 bg-white rounded-lg border-2 border-dashed border-border-strong">
+              <MapPin className="w-12 h-12 text-sand-300 mx-auto mb-3" />
+              <p className="text-bark-600 mb-3">No fields yet for this farm</p>
               <button
                 onClick={() => onAddField(farm.id)}
-                className="text-blue-600 hover:text-blue-700 font-medium text-sm"
+                className="text-link hover:text-orange-700 font-medium text-sm"
               >
                 Add your first field →
               </button>

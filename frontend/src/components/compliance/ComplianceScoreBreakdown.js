@@ -15,8 +15,8 @@ function ScoreRing({ score }) {
 
   let textColor;
   if (score >= 75) textColor = 'text-primary';
-  else if (score >= 50) textColor = 'text-amber-600';
-  else textColor = 'text-red-600';
+  else if (score >= 50) textColor = 'text-yellow-600';
+  else textColor = 'text-danger';
 
   return (
     <div className="flex flex-col items-center gap-1">
@@ -27,7 +27,7 @@ function ScoreRing({ score }) {
             fill="none"
             stroke="currentColor"
             strokeWidth="8"
-            className="text-gray-200"
+            className="text-sand-200"
           />
           <circle
             cx="50" cy="50" r={radius}
@@ -44,33 +44,33 @@ function ScoreRing({ score }) {
           <span className={`text-2xl font-bold leading-none ${textColor}`}>{score}</span>
         </div>
       </div>
-      <span className="text-xs font-medium text-gray-500">Setup Score</span>
+      <span className="text-xs font-medium text-text-secondary">Setup Score</span>
     </div>
   );
 }
 
 function BreakdownRow({ item, onNavigate }) {
   return (
-    <div className="flex items-start gap-2 py-2 border-b border-gray-100 last:border-0">
+    <div className="flex items-start gap-2 py-2 border-b border-border last:border-0">
       <div className="flex-shrink-0 mt-0.5">
         {item.passed ? (
-          <CheckCircle2 className="w-4 h-4 text-green-500" />
+          <CheckCircle2 className="w-4 h-4 text-green-600" />
         ) : (
-          <XCircle className="w-4 h-4 text-red-500" />
+          <XCircle className="w-4 h-4 text-danger" />
         )}
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-sm text-gray-800">{item.label}</p>
+        <p className="text-sm text-text">{item.label}</p>
         {!item.passed && item.action && (
           <button
             onClick={() => item.action_key && onNavigate(item.action_key)}
-            className="text-xs text-blue-600 hover:underline mt-0.5"
+            className="text-xs text-link hover:underline mt-0.5"
           >
             {item.action}
           </button>
         )}
       </div>
-      <div className="flex-shrink-0 text-xs font-mono text-gray-500 whitespace-nowrap">
+      <div className="flex-shrink-0 text-xs font-mono text-text-secondary whitespace-nowrap">
         {item.earned}/{item.possible} pts
       </div>
     </div>
@@ -81,7 +81,7 @@ function GapPill({ item, onNavigate }) {
   return (
     <button
       onClick={() => item.action_key && onNavigate(item.action_key)}
-      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 border border-amber-200 text-amber-800 rounded-full text-xs font-medium hover:bg-amber-100 transition-colors"
+      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-yellow-100 border border-yellow-200 text-yellow-800 rounded-full text-xs font-medium hover:bg-yellow-200 transition-colors"
     >
       <span className="font-bold text-primary">+{item.points} pts</span>
       {item.action}
@@ -114,12 +114,12 @@ export default function ComplianceScoreBreakdown({ onNavigate }) {
 
   if (loading) {
     return (
-      <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm animate-pulse">
+      <div className="bg-white rounded-xl border border-border p-4 shadow-sm animate-pulse">
         <div className="flex items-center gap-4">
-          <div className="w-24 h-24 rounded-full bg-gray-200" />
+          <div className="w-24 h-24 rounded-full bg-sand-200" />
           <div className="flex-1 space-y-2">
-            <div className="h-4 w-32 bg-gray-200 rounded" />
-            <div className="h-3 w-48 bg-gray-200 rounded" />
+            <div className="h-4 w-32 bg-sand-200 rounded" />
+            <div className="h-3 w-48 bg-sand-200 rounded" />
           </div>
         </div>
       </div>
@@ -128,8 +128,8 @@ export default function ComplianceScoreBreakdown({ onNavigate }) {
 
   if (error) {
     return (
-      <div className="bg-white rounded-xl border border-red-200 p-4 shadow-sm">
-        <p className="text-sm text-red-600">{error}</p>
+      <div className="bg-white rounded-xl border border-danger/25 p-4 shadow-sm">
+        <p className="text-sm text-danger">{error}</p>
       </div>
     );
   }
@@ -139,15 +139,15 @@ export default function ComplianceScoreBreakdown({ onNavigate }) {
   const { score, score_breakdown = [], gap_items = [] } = data;
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm space-y-4">
+    <div className="bg-white rounded-xl border border-border p-4 shadow-sm space-y-4">
       <div className="flex items-center gap-5">
         <ScoreRing score={score} />
         <div className="flex-1 min-w-0">
-          <h2 className="text-base font-semibold text-gray-900 mb-1">
+          <h2 className="text-base font-semibold text-heading mb-1">
             Compliance Score
           </h2>
           {gap_items.length > 0 ? (
-            <p className="text-xs text-gray-500 mb-2">
+            <p className="text-xs text-text-secondary mb-2">
               {gap_items.length} area{gap_items.length !== 1 ? 's' : ''} to improve
             </p>
           ) : (
@@ -157,7 +157,7 @@ export default function ComplianceScoreBreakdown({ onNavigate }) {
           )}
           <button
             onClick={() => setExpanded((v) => !v)}
-            className="inline-flex items-center gap-1 text-xs font-medium text-blue-600 hover:underline"
+            className="inline-flex items-center gap-1 text-xs font-medium text-link hover:underline"
           >
             {expanded ? 'Hide breakdown' : 'Show breakdown'}
             {expanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
@@ -165,7 +165,7 @@ export default function ComplianceScoreBreakdown({ onNavigate }) {
         </div>
         <button
           onClick={fetchData}
-          className="p-1.5 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors flex-shrink-0"
+          className="p-1.5 rounded-md text-text-muted hover:text-bark-600 hover:bg-cream-100 transition-colors flex-shrink-0"
           title="Refresh score"
         >
           <RefreshCw className="w-4 h-4" />
@@ -173,7 +173,7 @@ export default function ComplianceScoreBreakdown({ onNavigate }) {
       </div>
 
       {expanded && (
-        <div className="border-t border-gray-100 pt-3">
+        <div className="border-t border-border pt-3">
           {score_breakdown.map((item) => (
             <BreakdownRow key={item.key} item={item} onNavigate={onNavigate} />
           ))}
@@ -182,7 +182,7 @@ export default function ComplianceScoreBreakdown({ onNavigate }) {
 
       {gap_items.length > 0 && (
         <div>
-          <p className="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wide">
+          <p className="text-xs font-semibold text-text-secondary mb-2 uppercase tracking-wide">
             Quick Wins
           </p>
           <div className="flex flex-wrap gap-2">

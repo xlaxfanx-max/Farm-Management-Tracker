@@ -178,7 +178,7 @@ function FarmParcelManager({
     <div className="space-y-3">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h4 className="text-sm font-medium text-gray-700 flex items-center gap-2">
+        <h4 className="text-sm font-medium text-bark-700 flex items-center gap-2">
           <MapPin size={16} />
           Assessor Parcel Numbers (APNs)
         </h4>
@@ -197,7 +197,7 @@ function FarmParcelManager({
 
       {/* Error */}
       {error && (
-        <div className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">
+        <div className="text-sm text-danger bg-danger-bg px-3 py-2 rounded-lg">
           {error}
         </div>
       )}
@@ -236,7 +236,7 @@ function FarmParcelManager({
 
         {/* Empty state */}
         {parcels.length === 0 && !newParcel && (
-          <div className="text-sm text-gray-500 italic py-2 text-center">
+          <div className="text-sm text-text-secondary italic py-2 text-center">
             No parcels added yet
           </div>
         )}
@@ -244,7 +244,7 @@ function FarmParcelManager({
 
       {/* Summary */}
       {parcels.length > 0 && (
-        <div className="text-sm text-gray-600 pt-2 border-t flex justify-between">
+        <div className="text-sm text-bark-600 pt-2 border-t flex justify-between">
           <span>
             <strong>{parcels.length}</strong> parcel{parcels.length !== 1 ? 's' : ''}
           </span>
@@ -295,10 +295,10 @@ function ParcelRow({
 
   if (isEditing) {
     return (
-      <div className="bg-slate-50 rounded-lg p-3 space-y-3 border">
+      <div className="bg-cream-50 rounded-lg p-3 space-y-3 border">
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">
+            <label className="block text-xs font-medium text-bark-600 mb-1">
               APN *
             </label>
             <input
@@ -306,12 +306,12 @@ function ParcelRow({
               value={editData.apn}
               onChange={(e) => handleChange('apn', e.target.value)}
               placeholder={county?.toLowerCase() === 'ventura' ? '123-0-456-789' : '123-456-789'}
-              className="w-full px-2 py-1.5 text-sm border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-white text-gray-900"
+              className="w-full px-2 py-1.5 text-sm border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-white text-heading"
               autoFocus
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">
+            <label className="block text-xs font-medium text-bark-600 mb-1">
               Acreage
             </label>
             <input
@@ -320,19 +320,19 @@ function ParcelRow({
               value={editData.acreage || ''}
               onChange={(e) => handleChange('acreage', e.target.value)}
               placeholder="0.00"
-              className="w-full px-2 py-1.5 text-sm border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-white text-gray-900"
+              className="w-full px-2 py-1.5 text-sm border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-white text-heading"
             />
           </div>
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">
+            <label className="block text-xs font-medium text-bark-600 mb-1">
               Ownership
             </label>
             <select
               value={editData.ownership_type}
               onChange={(e) => handleChange('ownership_type', e.target.value)}
-              className="w-full px-2 py-1.5 text-sm border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-white text-gray-900"
+              className="w-full px-2 py-1.5 text-sm border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-white text-heading"
             >
               {OWNERSHIP_TYPES.map(type => (
                 <option key={type.value} value={type.value}>{type.label}</option>
@@ -340,7 +340,7 @@ function ParcelRow({
             </select>
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">
+            <label className="block text-xs font-medium text-bark-600 mb-1">
               Notes
             </label>
             <input
@@ -348,7 +348,7 @@ function ParcelRow({
               value={editData.notes || ''}
               onChange={(e) => handleChange('notes', e.target.value)}
               placeholder="Optional notes"
-              className="w-full px-2 py-1.5 text-sm border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-white text-gray-900"
+              className="w-full px-2 py-1.5 text-sm border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-white text-heading"
             />
           </div>
         </div>
@@ -356,7 +356,7 @@ function ParcelRow({
           <button
             type="button"
             onClick={onCancel}
-            className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-800 border rounded-lg"
+            className="px-3 py-1.5 text-sm text-bark-600 hover:text-text border rounded-lg"
           >
             Cancel
           </button>
@@ -373,22 +373,22 @@ function ParcelRow({
   }
 
   return (
-    <div className="flex items-center justify-between py-2 px-3 bg-white border rounded-lg hover:bg-slate-50 group">
+    <div className="flex items-center justify-between py-2 px-3 bg-white border rounded-lg hover:bg-cream-50 group">
       <div className="flex items-center gap-4">
-        <span className="font-mono text-sm font-medium text-gray-800">
+        <span className="font-mono text-sm font-medium text-text">
           {parcel.apn}
         </span>
         {parcel.ownership_type !== 'owned' && (
           <span className={`text-xs px-2 py-0.5 rounded-full ${
             parcel.ownership_type === 'leased'
               ? 'bg-yellow-100 text-yellow-700'
-              : 'bg-blue-100 text-blue-700'
+              : 'bg-orange-100 text-orange-700'
           }`}>
             {parcel.ownership_type}
           </span>
         )}
         {parcel.acreage && (
-          <span className="text-sm text-gray-500">
+          <span className="text-sm text-text-secondary">
             {parseFloat(parcel.acreage).toFixed(2)} ac
           </span>
         )}
@@ -398,7 +398,7 @@ function ParcelRow({
           <button
             type="button"
             onClick={onEdit}
-            className="p-1.5 text-gray-400 hover:text-blue-600 rounded"
+            className="p-1.5 text-text-muted hover:text-link rounded"
             title="Edit"
           >
             <Edit2 size={16} />
@@ -406,7 +406,7 @@ function ParcelRow({
           <button
             type="button"
             onClick={onDelete}
-            className="p-1.5 text-gray-400 hover:text-red-600 rounded"
+            className="p-1.5 text-text-muted hover:text-danger rounded"
             title="Remove"
           >
             <Trash2 size={16} />

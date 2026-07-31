@@ -11,14 +11,14 @@ module.exports = {
         // now resolve to the Finch palette (see src/index.css :root).
         // ---------------------------------------------------------------
         primary: {
-          DEFAULT: 'var(--primary)',
-          hover: 'var(--primary-hover)',
-          active: 'var(--primary-active)',
-          light: 'var(--orange-50)',
+          DEFAULT: '#E2721B',
+          hover: '#C85A17',
+          active: '#A8480F',
+          light: '#FEF5EB',
         },
         accent: {
-          DEFAULT: 'var(--accent-yellow)',
-          light: 'var(--yellow-100)',
+          DEFAULT: '#F2B705',
+          light: '#FEF7DF',
         },
         surface: {
           DEFAULT: 'var(--surface-page)',
@@ -47,10 +47,12 @@ module.exports = {
         },
         ring: 'var(--ring)',
 
-        success: { DEFAULT: 'var(--success)', bg: 'var(--success-bg)' },
-        warning: { DEFAULT: 'var(--warning)', bg: 'var(--warning-bg)' },
-        danger: { DEFAULT: 'var(--danger)', bg: 'var(--danger-bg)', hover: '#A93120' },
-        info: { DEFAULT: 'var(--info)', bg: 'var(--info-bg)' },
+        // Literal hexes, not var(), so the /opacity modifier works on them —
+        // soft banner borders are written `border-danger/25` and friends.
+        success: { DEFAULT: '#4A7C43', bg: '#E4EED8' },
+        warning: { DEFAULT: '#F2B705', bg: '#FCEDBE' },
+        danger: { DEFAULT: '#C23A22', bg: '#FBE2DB', hover: '#A93120' },
+        info: { DEFAULT: '#35633A', bg: '#E4EED8' },
 
         // ---------------------------------------------------------------
         // Finch palette scales — available as ordinary utilities.

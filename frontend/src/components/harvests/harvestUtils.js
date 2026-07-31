@@ -16,22 +16,22 @@ export const formatNumber = (value) => {
 export const getStatusBadge = (status, phiCompliant) => {
   const statusColors = {
     'in_progress': 'bg-yellow-100 text-yellow-800',
-    'complete': 'bg-blue-100 text-blue-800',
-    'verified': 'bg-green-100 text-green-800'
+    'complete': 'bg-orange-100 text-orange-700',
+    'verified': 'bg-green-100 text-green-700'
   };
 
   return (
     <div className="flex items-center gap-2">
-      <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusColors[status] || 'bg-gray-100'}`}>
+      <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusColors[status] || 'bg-cream-100'}`}>
         {status === 'in_progress' ? 'In Progress' : status.charAt(0).toUpperCase() + status.slice(1)}
       </span>
       {phiCompliant === false && (
-        <span className="px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 flex items-center gap-1">
+        <span className="px-2 py-1 rounded-full text-xs font-medium bg-danger-bg text-danger flex items-center gap-1">
           <AlertTriangle size={12} /> PHI Warning
         </span>
       )}
       {phiCompliant === true && (
-        <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 flex items-center gap-1">
+        <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700 flex items-center gap-1">
           <CheckCircle size={12} /> PHI OK
         </span>
       )}

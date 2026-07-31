@@ -91,7 +91,7 @@ class ErrorBoundary extends React.Component {
 
     // Section-level error (inline within page)
     return (
-      <div className="bg-danger-bg border border-red-200 rounded-card p-6 m-4">
+      <div className="bg-danger-bg border border-danger/25 rounded-card p-6 m-4">
         <div className="flex items-start gap-3">
           <AlertTriangle className="w-6 h-6 text-danger flex-shrink-0 mt-0.5" />
           <div className="flex-1">
@@ -103,10 +103,10 @@ class ErrorBoundary extends React.Component {
             </p>
             {process.env.NODE_ENV === 'development' && this.state.error && (
               <details className="mt-3">
-                <summary className="text-xs text-danger cursor-pointer hover:text-red-700">
+                <summary className="text-xs text-danger cursor-pointer hover:text-danger">
                   Error details
                 </summary>
-                <pre className="mt-1 p-2 bg-red-100 rounded-button font-mono text-xs text-red-700 overflow-auto max-h-32">
+                <pre className="mt-1 p-2 bg-danger-bg rounded-button font-mono text-xs text-danger overflow-auto max-h-32">
                   {this.state.error.toString()}
                 </pre>
               </details>

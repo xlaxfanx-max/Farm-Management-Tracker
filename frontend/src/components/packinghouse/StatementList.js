@@ -15,12 +15,12 @@ import { useToast } from '../../contexts/ToastContext';
 import UnifiedUploadModal from './BatchUploadModal';
 
 const STATUS_BADGES = {
-  uploaded: { bg: 'bg-gray-100', text: 'text-gray-700', label: 'Uploaded' },
-  extracting: { bg: 'bg-blue-100', text: 'text-blue-700', label: 'Extracting' },
+  uploaded: { bg: 'bg-cream-100', text: 'text-bark-700', label: 'Uploaded' },
+  extracting: { bg: 'bg-orange-100', text: 'text-orange-700', label: 'Extracting' },
   extracted: { bg: 'bg-yellow-100', text: 'text-yellow-700', label: 'Ready for Review' },
   review: { bg: 'bg-yellow-100', text: 'text-yellow-700', label: 'In Review' },
   completed: { bg: 'bg-green-100', text: 'text-primary', label: 'Completed' },
-  failed: { bg: 'bg-red-100', text: 'text-red-700', label: 'Failed' },
+  failed: { bg: 'bg-danger-bg', text: 'text-danger', label: 'Failed' },
 };
 
 const TYPE_LABELS = {
@@ -151,9 +151,9 @@ const StatementList = ({ packinghouseId = null }) => {
   return (
     <div className="bg-white rounded-lg shadow">
       {/* Header */}
-      <div className="p-4 border-b border-gray-200">
+      <div className="p-4 border-b border-border">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-gray-900 flex items-center">
+          <h2 className="text-lg font-semibold text-heading flex items-center">
             <FileText className="w-5 h-5 mr-2 text-primary" />
             Uploaded Statements
           </h2>
@@ -170,13 +170,13 @@ const StatementList = ({ packinghouseId = null }) => {
         <div className="flex flex-wrap gap-3">
           <div className="flex-1 min-w-48">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-text-muted" />
               <input
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Search files..."
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+                className="w-full pl-10 pr-4 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
               />
             </div>
           </div>
@@ -184,7 +184,7 @@ const StatementList = ({ packinghouseId = null }) => {
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
+            className="px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary"
           >
             <option value="">All Statuses</option>
             <option value="uploaded">Uploaded</option>
@@ -197,7 +197,7 @@ const StatementList = ({ packinghouseId = null }) => {
           <select
             value={typeFilter}
             onChange={(e) => setTypeFilter(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
+            className="px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary"
           >
             <option value="">All Types</option>
             <option value="packout">Packout</option>
@@ -208,7 +208,7 @@ const StatementList = ({ packinghouseId = null }) => {
 
           <button
             onClick={fetchStatements}
-            className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg"
+            className="p-2 text-bark-600 hover:bg-cream-100 rounded-lg"
             title="Refresh"
           >
             <RefreshCw className="w-5 h-5" />
@@ -221,17 +221,17 @@ const StatementList = ({ packinghouseId = null }) => {
         {loading ? (
           <div className="flex items-center justify-center py-8">
             <Loader2 className="w-6 h-6 animate-spin text-primary" />
-            <span className="ml-2 text-gray-600">Loading statements...</span>
+            <span className="ml-2 text-bark-600">Loading statements...</span>
           </div>
         ) : error ? (
-          <div className="flex items-center justify-center py-8 text-red-600">
+          <div className="flex items-center justify-center py-8 text-danger">
             <AlertCircle className="w-5 h-5 mr-2" />
             {error}
           </div>
         ) : filteredStatements.length === 0 ? (
           <div className="text-center py-8">
-            <FileText className="w-12 h-12 mx-auto text-gray-300 mb-3" />
-            <p className="text-gray-500">No statements found</p>
+            <FileText className="w-12 h-12 mx-auto text-sand-300 mb-3" />
+            <p className="text-text-secondary">No statements found</p>
             <button
               onClick={() => setShowUploadModal(true)}
               className="mt-3 text-primary hover:text-primary-hover text-sm"
@@ -243,7 +243,7 @@ const StatementList = ({ packinghouseId = null }) => {
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="text-left text-sm text-gray-500 border-b">
+                <tr className="text-left text-sm text-text-secondary border-b">
                   <th className="pb-3 font-medium">File</th>
                   <th className="pb-3 font-medium">Packinghouse</th>
                   <th className="pb-3 font-medium">Farm</th>
@@ -257,37 +257,37 @@ const StatementList = ({ packinghouseId = null }) => {
               </thead>
               <tbody>
                 {filteredStatements.map((statement) => (
-                  <tr key={statement.id} className="border-b border-gray-100 hover:bg-gray-50">
+                  <tr key={statement.id} className="border-b border-border hover:bg-cream-50">
                     <td className="py-3">
                       <div className="flex items-center">
-                        <FileText className="w-5 h-5 text-red-500 mr-2 flex-shrink-0" />
+                        <FileText className="w-5 h-5 text-danger mr-2 flex-shrink-0" />
                         <div>
-                          <p className="font-medium text-gray-900 truncate max-w-48" title={statement.original_filename}>
+                          <p className="font-medium text-heading truncate max-w-48" title={statement.original_filename}>
                             {statement.original_filename}
                           </p>
-                          <p className="text-xs text-gray-500">
+                          <p className="text-xs text-text-secondary">
                             {formatFileSize(statement.file_size_bytes)}
                           </p>
                         </div>
                       </div>
                     </td>
                     <td className="py-3">
-                      <span className="text-sm text-gray-900">
+                      <span className="text-sm text-heading">
                         {statement.packinghouse_short_code || statement.packinghouse_name}
                       </span>
                     </td>
                     <td className="py-3">
-                      <span className="text-sm text-gray-700">
+                      <span className="text-sm text-bark-700">
                         {statement.farm_name || '-'}
                       </span>
                     </td>
                     <td className="py-3">
-                      <span className="text-sm text-gray-700">
+                      <span className="text-sm text-bark-700">
                         {TYPE_LABELS[statement.statement_type] || statement.statement_type || '-'}
                       </span>
                     </td>
                     <td className="py-3">
-                      <span className="text-sm text-gray-700">
+                      <span className="text-sm text-bark-700">
                         {statement.commodity || '-'}
                       </span>
                     </td>
@@ -295,16 +295,16 @@ const StatementList = ({ packinghouseId = null }) => {
                       <StatusBadge status={statement.status} />
                     </td>
                     <td className="py-3">
-                      <span className="text-sm text-gray-600">
+                      <span className="text-sm text-bark-600">
                         {statement.pool_name || '-'}
                       </span>
                     </td>
                     <td className="py-3">
-                      <div className="text-sm text-gray-600">
+                      <div className="text-sm text-bark-600">
                         {formatDate(statement.created_at)}
                       </div>
                       {statement.uploaded_by_name && (
-                        <div className="text-xs text-gray-400">
+                        <div className="text-xs text-text-muted">
                           by {statement.uploaded_by_name}
                         </div>
                       )}
@@ -316,7 +316,7 @@ const StatementList = ({ packinghouseId = null }) => {
                             href={statement.pdf_url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded"
+                            className="p-1.5 text-text-muted hover:text-bark-600 hover:bg-cream-100 rounded"
                             title="View PDF"
                           >
                             <ExternalLink className="w-4 h-4" />
@@ -328,7 +328,7 @@ const StatementList = ({ packinghouseId = null }) => {
                             disabled={loadingStatement === statement.id}
                             className={`p-1.5 rounded disabled:opacity-50 ${
                               statement.status === 'completed'
-                                ? 'text-blue-600 hover:text-blue-700 hover:bg-blue-50'
+                                ? 'text-link hover:text-orange-700 hover:bg-orange-50'
                                 : 'text-primary hover:text-primary-hover hover:bg-primary-light'
                             }`}
                             title={statement.status === 'completed' ? "Edit Statement" : "Review & Confirm"}
@@ -351,7 +351,7 @@ const StatementList = ({ packinghouseId = null }) => {
                         )}
                         <button
                           onClick={() => handleDelete(statement)}
-                          className="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded"
+                          className="p-1.5 text-danger hover:text-danger hover:bg-danger-bg rounded"
                           title={statement.status === 'completed' ? "Delete (includes settlement/packout data)" : "Delete"}
                         >
                           <Trash2 className="w-4 h-4" />

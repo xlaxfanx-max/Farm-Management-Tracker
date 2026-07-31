@@ -40,14 +40,14 @@ const categoryIcons = {
 // Category colors
 const categoryColors = {
   citrus: { bg: 'from-orange-400 to-yellow-500', light: 'bg-orange-50', text: 'text-orange-600' },
-  subtropical: { bg: 'from-green-500 to-emerald-600', light: 'bg-green-50', text: 'text-primary' },
-  deciduous_fruit: { bg: 'from-pink-400 to-rose-500', light: 'bg-pink-50', text: 'text-pink-600' },
-  vine: { bg: 'from-purple-400 to-violet-500', light: 'bg-purple-50', text: 'text-purple-600' },
-  nut: { bg: 'from-amber-500 to-yellow-600', light: 'bg-amber-50', text: 'text-amber-600' },
-  berry: { bg: 'from-red-400 to-rose-500', light: 'bg-red-50', text: 'text-red-600' },
-  row_crop: { bg: 'from-lime-500 to-green-600', light: 'bg-lime-50', text: 'text-lime-600' },
-  vegetable: { bg: 'from-emerald-400 to-teal-500', light: 'bg-emerald-50', text: 'text-emerald-600' },
-  other: { bg: 'from-gray-400 to-slate-500', light: 'bg-gray-50', text: 'text-gray-600' },
+  subtropical: { bg: 'from-green-500 to-green-600', light: 'bg-green-50', text: 'text-primary' },
+  deciduous_fruit: { bg: 'from-sand-400 to-bark-500', light: 'bg-cream-100', text: 'text-bark-700' },
+  vine: { bg: 'from-sand-400 to-bark-500', light: 'bg-cream-100', text: 'text-bark-700' },
+  nut: { bg: 'from-yellow-500 to-yellow-600', light: 'bg-yellow-100', text: 'text-yellow-600' },
+  berry: { bg: 'from-danger to-bark-500', light: 'bg-danger-bg', text: 'text-danger' },
+  row_crop: { bg: 'from-green-500 to-green-600', light: 'bg-green-50', text: 'text-green-600' },
+  vegetable: { bg: 'from-green-400 to-green-500', light: 'bg-green-50', text: 'text-green-600' },
+  other: { bg: 'from-bark-400 to-bark-500', light: 'bg-cream-50', text: 'text-bark-600' },
 };
 
 // Single crop category mini-card
@@ -91,7 +91,7 @@ const CropSeasonMiniCard = ({ data, onNavigate }) => {
   };
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
+    <div className="bg-white rounded-xl border border-border overflow-hidden hover:shadow-md transition-shadow">
       {/* Header */}
       <div className={`px-4 py-3 ${colors.light}`}>
         <div className="flex items-center gap-2">
@@ -99,10 +99,10 @@ const CropSeasonMiniCard = ({ data, onNavigate }) => {
             <Icon className="w-4 h-4 text-white" />
           </div>
           <div className="flex-1 min-w-0">
-            <h4 className="font-semibold text-gray-900 text-sm truncate">
+            <h4 className="font-semibold text-heading text-sm truncate">
               {data.category_display}
             </h4>
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-text-secondary">
               {season.label} • {data.field_count} field{data.field_count !== 1 ? 's' : ''}
             </p>
           </div>
@@ -110,12 +110,12 @@ const CropSeasonMiniCard = ({ data, onNavigate }) => {
       </div>
 
       {/* Progress Bar */}
-      <div className="px-4 py-2 border-b border-gray-100">
-        <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
+      <div className="px-4 py-2 border-b border-border">
+        <div className="flex items-center justify-between text-xs text-text-secondary mb-1">
           <span>{formatDateRange()}</span>
           <span>{season.progress_percent}%</span>
         </div>
-        <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+        <div className="h-2 bg-sand-200 rounded-full overflow-hidden">
           <div
             className={`h-full bg-gradient-to-r ${colors.bg} rounded-full transition-all duration-500`}
             style={{ width: `${season.progress_percent}%` }}
@@ -130,13 +130,13 @@ const CropSeasonMiniCard = ({ data, onNavigate }) => {
           <div className="flex items-center justify-center gap-1 mb-0.5">
             <Package className="w-3 h-3 text-orange-500" />
           </div>
-          <p className="text-lg font-bold text-gray-900">
+          <p className="text-lg font-bold text-heading">
             {formatNumber(current.harvest_bins)}
           </p>
           {binsComparison !== null && (
             <div
               className={`flex items-center justify-center gap-0.5 text-xs ${
-                binsComparison >= 0 ? 'text-primary' : 'text-red-500'
+                binsComparison >= 0 ? 'text-primary' : 'text-danger'
               }`}
             >
               {binsComparison >= 0 ? (
@@ -148,30 +148,30 @@ const CropSeasonMiniCard = ({ data, onNavigate }) => {
             </div>
           )}
           {binsComparison === null && (
-            <p className="text-xs text-gray-400">bins</p>
+            <p className="text-xs text-text-muted">bins</p>
           )}
         </div>
 
         {/* Apps */}
         <div className="text-center">
           <div className="flex items-center justify-center gap-1 mb-0.5">
-            <FileText className="w-3 h-3 text-blue-500" />
+            <FileText className="w-3 h-3 text-orange-500" />
           </div>
-          <p className="text-lg font-bold text-gray-900">
+          <p className="text-lg font-bold text-heading">
             {formatNumber(current.applications)}
           </p>
-          <p className="text-xs text-gray-400">apps</p>
+          <p className="text-xs text-text-muted">apps</p>
         </div>
 
         {/* Revenue */}
         <div className="text-center">
           <div className="flex items-center justify-center gap-1 mb-0.5">
-            <DollarSign className="w-3 h-3 text-green-500" />
+            <DollarSign className="w-3 h-3 text-green-600" />
           </div>
-          <p className="text-lg font-bold text-gray-900">
+          <p className="text-lg font-bold text-heading">
             {formatCurrency(current.revenue)}
           </p>
-          <p className="text-xs text-gray-400">revenue</p>
+          <p className="text-xs text-text-muted">revenue</p>
         </div>
       </div>
     </div>
@@ -209,24 +209,24 @@ const SeasonProgressCard = ({ onNavigate }) => {
     return (
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-gray-700">Season Progress</h2>
+          <h2 className="text-sm font-semibold text-bark-700">Season Progress</h2>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {[1, 2].map((i) => (
-            <div key={i} className="bg-white rounded-xl border border-gray-200 p-4">
+            <div key={i} className="bg-white rounded-xl border border-border p-4">
               <div className="animate-pulse space-y-3">
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 bg-gray-200 rounded-full"></div>
+                  <div className="w-8 h-8 bg-sand-200 rounded-full"></div>
                   <div className="flex-1">
-                    <div className="h-4 bg-gray-200 rounded w-20"></div>
-                    <div className="h-3 bg-gray-200 rounded w-32 mt-1"></div>
+                    <div className="h-4 bg-sand-200 rounded w-20"></div>
+                    <div className="h-3 bg-sand-200 rounded w-32 mt-1"></div>
                   </div>
                 </div>
-                <div className="h-2 bg-gray-200 rounded-full"></div>
+                <div className="h-2 bg-sand-200 rounded-full"></div>
                 <div className="grid grid-cols-3 gap-2">
-                  <div className="h-12 bg-gray-200 rounded"></div>
-                  <div className="h-12 bg-gray-200 rounded"></div>
-                  <div className="h-12 bg-gray-200 rounded"></div>
+                  <div className="h-12 bg-sand-200 rounded"></div>
+                  <div className="h-12 bg-sand-200 rounded"></div>
+                  <div className="h-12 bg-sand-200 rounded"></div>
                 </div>
               </div>
             </div>
@@ -238,8 +238,8 @@ const SeasonProgressCard = ({ onNavigate }) => {
 
   if (error) {
     return (
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
-        <div className="text-center text-red-500">
+      <div className="bg-white rounded-xl border border-border p-6">
+        <div className="text-center text-danger">
           <AlertTriangle className="w-8 h-8 mx-auto mb-2" />
           <p className="text-sm mb-3">{error}</p>
           <button
@@ -254,7 +254,7 @@ const SeasonProgressCard = ({ onNavigate }) => {
                 })
                 .finally(() => setLoading(false));
             }}
-            className="text-xs text-blue-600 hover:text-blue-700 underline"
+            className="text-xs text-link hover:text-orange-700 underline"
           >
             Retry
           </button>
@@ -268,8 +268,8 @@ const SeasonProgressCard = ({ onNavigate }) => {
 
   if (categories.length === 0) {
     return (
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
-        <div className="text-center text-gray-500">
+      <div className="bg-white rounded-xl border border-border p-6">
+        <div className="text-center text-text-secondary">
           <Calendar className="w-8 h-8 mx-auto mb-2" />
           <p>No crop data available. Add crops to your fields to see season progress.</p>
         </div>
@@ -282,11 +282,11 @@ const SeasonProgressCard = ({ onNavigate }) => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <h2 className="text-sm font-semibold text-gray-700">Season Progress</h2>
+          <h2 className="text-sm font-semibold text-bark-700">Season Progress</h2>
           {(tasks.overdue > 0 || tasks.due_this_week > 0) && (
             <div className="flex items-center gap-3 text-xs">
               {tasks.overdue > 0 && (
-                <span className="flex items-center gap-1 text-red-600">
+                <span className="flex items-center gap-1 text-danger">
                   <AlertTriangle className="w-3 h-3" />
                   {tasks.overdue} overdue
                 </span>

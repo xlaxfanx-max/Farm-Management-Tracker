@@ -16,10 +16,10 @@ function ModuleStatusCard({
 }) {
   const colorClasses = {
     blue: {
-      bg: 'bg-blue-50',
-      border: 'border-blue-100',
-      icon: 'text-blue-600',
-      hover: 'hover:border-blue-200'
+      bg: 'bg-orange-50',
+      border: 'border-orange-200',
+      icon: 'text-link',
+      hover: 'hover:border-orange-200'
     },
     green: {
       bg: 'bg-primary-light',
@@ -28,10 +28,10 @@ function ModuleStatusCard({
       hover: 'hover:border-green-200'
     },
     amber: {
-      bg: 'bg-amber-50',
-      border: 'border-amber-100',
-      icon: 'text-amber-600',
-      hover: 'hover:border-amber-200'
+      bg: 'bg-yellow-100',
+      border: 'border-yellow-200',
+      icon: 'text-yellow-600',
+      hover: 'hover:border-yellow-200'
     },
     orange: {
       bg: 'bg-orange-50',
@@ -40,16 +40,16 @@ function ModuleStatusCard({
       hover: 'hover:border-orange-200'
     },
     purple: {
-      bg: 'bg-purple-50',
-      border: 'border-purple-100',
-      icon: 'text-purple-600',
-      hover: 'hover:border-purple-200'
+      bg: 'bg-cream-100',
+      border: 'border-sand-200',
+      icon: 'text-bark-700',
+      hover: 'hover:border-sand-200'
     },
     cyan: {
-      bg: 'bg-cyan-50',
-      border: 'border-cyan-100',
-      icon: 'text-cyan-600',
-      hover: 'hover:border-cyan-200'
+      bg: 'bg-green-50',
+      border: 'border-green-100',
+      icon: 'text-green-600',
+      hover: 'hover:border-green-200'
     }
   };
 
@@ -59,7 +59,7 @@ function ModuleStatusCard({
     <div
       onClick={onClick}
       className={`
-        bg-white rounded-lg border border-gray-200 p-4
+        bg-white rounded-lg border border-border p-4
         cursor-pointer transition-all
         hover:shadow-md ${colors.hover}
         ${className}
@@ -71,18 +71,18 @@ function ModuleStatusCard({
           <div className={`p-2 rounded-lg ${colors.bg} ${colors.border} border`}>
             <Icon className={`w-4 h-4 ${colors.icon}`} />
           </div>
-          <h3 className="font-semibold text-gray-900 text-sm">{title}</h3>
+          <h3 className="font-semibold text-heading text-sm">{title}</h3>
         </div>
-        <ArrowRight className="w-4 h-4 text-gray-400" />
+        <ArrowRight className="w-4 h-4 text-text-muted" />
       </div>
 
       {/* Alert banner if present */}
       {alert && (
         <div className={`
           mb-3 px-2 py-1.5 rounded text-xs font-medium
-          ${alert.type === 'warning' ? 'bg-amber-50 text-amber-700' : ''}
-          ${alert.type === 'critical' ? 'bg-red-50 text-red-700' : ''}
-          ${alert.type === 'info' ? 'bg-blue-50 text-blue-700' : ''}
+          ${alert.type === 'warning' ? 'bg-yellow-100 text-yellow-700' : ''}
+          ${alert.type === 'critical' ? 'bg-danger-bg text-danger' : ''}
+          ${alert.type === 'info' ? 'bg-orange-50 text-orange-700' : ''}
         `}>
           {alert.message}
         </div>

@@ -23,14 +23,14 @@ import { complianceProfileAPI, notificationPreferencesAPI, COMPLIANCE_CONSTANTS 
 const Toggle = ({ enabled, onChange, label, description }) => (
   <div className="flex items-center justify-between py-3">
     <div>
-      <p className="font-medium text-gray-900">{label}</p>
-      {description && <p className="text-sm text-gray-500">{description}</p>}
+      <p className="font-medium text-heading">{label}</p>
+      {description && <p className="text-sm text-text-secondary">{description}</p>}
     </div>
     <button
       type="button"
       onClick={() => onChange(!enabled)}
       className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors
-        ${enabled ? 'bg-primary' : 'bg-gray-200'}`}
+        ${enabled ? 'bg-primary' : 'bg-sand-200'}`}
     >
       <span
         className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform
@@ -47,8 +47,8 @@ const SectionHeader = ({ icon: Icon, title, description }) => (
       <Icon className="w-5 h-5 text-primary" />
     </div>
     <div>
-      <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
-      {description && <p className="text-sm text-gray-500 mt-0.5">{description}</p>}
+      <h2 className="text-lg font-semibold text-heading">{title}</h2>
+      {description && <p className="text-sm text-text-secondary mt-0.5">{description}</p>}
     </div>
   </div>
 );
@@ -59,7 +59,7 @@ const CheckboxGroup = ({ options, selected, onChange, columns = 2 }) => (
     {options.map(option => (
       <label
         key={option.value}
-        className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-50 cursor-pointer"
+        className="flex items-center gap-2 p-2 rounded-lg hover:bg-cream-50 cursor-pointer"
       >
         <input
           type="checkbox"
@@ -71,9 +71,9 @@ const CheckboxGroup = ({ options, selected, onChange, columns = 2 }) => (
               onChange(selected.filter(v => v !== option.value));
             }
           }}
-          className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
+          className="w-4 h-4 text-primary border-border-strong rounded focus:ring-primary"
         />
-        <span className="text-sm text-gray-700">{option.label}</span>
+        <span className="text-sm text-bark-700">{option.label}</span>
       </label>
     ))}
   </div>
@@ -193,7 +193,7 @@ export default function ComplianceSettings({ onNavigate }) {
   if (loading) {
     return (
       <div className="p-6 flex items-center justify-center min-h-[400px]">
-        <RefreshCw className="w-6 h-6 text-gray-400 animate-spin" />
+        <RefreshCw className="w-6 h-6 text-text-muted animate-spin" />
       </div>
     );
   }
@@ -203,14 +203,14 @@ export default function ComplianceSettings({ onNavigate }) {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <div className="flex items-center gap-2 text-sm text-gray-500 mb-1">
+          <div className="flex items-center gap-2 text-sm text-text-secondary mb-1">
             <button onClick={() => onNavigate?.('compliance')} className="hover:text-primary">
               Compliance
             </button>
             <span>/</span>
             <span>Settings</span>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">Compliance Settings</h1>
+          <h1 className="text-2xl font-bold text-heading">Compliance Settings</h1>
         </div>
 
         {savedMessage && (
@@ -223,7 +223,7 @@ export default function ComplianceSettings({ onNavigate }) {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Compliance Profile */}
-        <div className="bg-white border border-gray-200 rounded-lg p-6">
+        <div className="bg-white border border-border rounded-lg p-6">
           <SectionHeader
             icon={Shield}
             title="Compliance Profile"
@@ -233,22 +233,22 @@ export default function ComplianceSettings({ onNavigate }) {
           <div className="space-y-4">
             {/* Primary State */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Primary State</label>
+              <label className="block text-sm font-medium text-bark-700 mb-1">Primary State</label>
               <select
                 value={profile.primary_state}
                 onChange={(e) => setProfile({ ...profile, primary_state: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+                className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
               >
                 {usStates.map(state => (
                   <option key={state.value} value={state.value}>{state.label}</option>
                 ))}
               </select>
-              <p className="text-xs text-gray-500 mt-1">Your primary state determines default regulatory requirements</p>
+              <p className="text-xs text-text-secondary mt-1">Your primary state determines default regulatory requirements</p>
             </div>
 
             {/* Regulatory Requirements */}
-            <div className="pt-4 border-t border-gray-200">
-              <p className="text-sm font-medium text-gray-700 mb-3">Regulatory Requirements</p>
+            <div className="pt-4 border-t border-border">
+              <p className="text-sm font-medium text-bark-700 mb-3">Regulatory Requirements</p>
 
               <Toggle
                 enabled={profile.requires_pur_reporting}
@@ -273,8 +273,8 @@ export default function ComplianceSettings({ onNavigate }) {
             </div>
 
             {/* Certifications */}
-            <div className="pt-4 border-t border-gray-200">
-              <p className="text-sm font-medium text-gray-700 mb-3">Certifications</p>
+            <div className="pt-4 border-t border-border">
+              <p className="text-sm font-medium text-bark-700 mb-3">Certifications</p>
 
               <Toggle
                 enabled={profile.organic_certified}
@@ -292,7 +292,7 @@ export default function ComplianceSettings({ onNavigate }) {
             </div>
 
             {/* Save Button */}
-            <div className="pt-4 border-t border-gray-200">
+            <div className="pt-4 border-t border-border">
               <button
                 onClick={saveProfile}
                 disabled={saving}
@@ -306,7 +306,7 @@ export default function ComplianceSettings({ onNavigate }) {
         </div>
 
         {/* Notification Preferences */}
-        <div className="bg-white border border-gray-200 rounded-lg p-6">
+        <div className="bg-white border border-border rounded-lg p-6">
           <SectionHeader
             icon={Bell}
             title="Notification Preferences"
@@ -324,12 +324,12 @@ export default function ComplianceSettings({ onNavigate }) {
               />
 
               {preferences.email_enabled && (
-                <div className="mt-3 ml-4 pl-4 border-l-2 border-gray-200">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Email Frequency</label>
+                <div className="mt-3 ml-4 pl-4 border-l-2 border-border">
+                  <label className="block text-sm font-medium text-bark-700 mb-1">Email Frequency</label>
                   <select
                     value={preferences.email_digest}
                     onChange={(e) => setPreferences({ ...preferences, email_digest: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+                    className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
                   >
                     <option value="instant">Instant</option>
                     <option value="daily">Daily Digest</option>
@@ -340,8 +340,8 @@ export default function ComplianceSettings({ onNavigate }) {
             </div>
 
             {/* Notification Types */}
-            <div className="pt-4 border-t border-gray-200">
-              <p className="text-sm font-medium text-gray-700 mb-3">Notify Me About</p>
+            <div className="pt-4 border-t border-border">
+              <p className="text-sm font-medium text-bark-700 mb-3">Notify Me About</p>
 
               <Toggle
                 enabled={preferences.notify_deadlines}
@@ -373,9 +373,9 @@ export default function ComplianceSettings({ onNavigate }) {
             </div>
 
             {/* Reminder Days */}
-            <div className="pt-4 border-t border-gray-200">
-              <p className="text-sm font-medium text-gray-700 mb-2">Reminder Days</p>
-              <p className="text-xs text-gray-500 mb-3">Select when to receive deadline reminders</p>
+            <div className="pt-4 border-t border-border">
+              <p className="text-sm font-medium text-bark-700 mb-2">Reminder Days</p>
+              <p className="text-xs text-text-secondary mb-3">Select when to receive deadline reminders</p>
               <CheckboxGroup
                 options={reminderDayOptions}
                 selected={preferences.deadline_reminder_days}
@@ -385,7 +385,7 @@ export default function ComplianceSettings({ onNavigate }) {
             </div>
 
             {/* Quiet Hours */}
-            <div className="pt-4 border-t border-gray-200">
+            <div className="pt-4 border-t border-border">
               <Toggle
                 enabled={preferences.quiet_hours_enabled}
                 onChange={(v) => setPreferences({ ...preferences, quiet_hours_enabled: v })}
@@ -394,23 +394,23 @@ export default function ComplianceSettings({ onNavigate }) {
               />
 
               {preferences.quiet_hours_enabled && (
-                <div className="mt-3 ml-4 pl-4 border-l-2 border-gray-200 grid grid-cols-2 gap-4">
+                <div className="mt-3 ml-4 pl-4 border-l-2 border-border grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Start Time</label>
+                    <label className="block text-sm font-medium text-bark-700 mb-1">Start Time</label>
                     <input
                       type="time"
                       value={preferences.quiet_hours_start}
                       onChange={(e) => setPreferences({ ...preferences, quiet_hours_start: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+                      className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">End Time</label>
+                    <label className="block text-sm font-medium text-bark-700 mb-1">End Time</label>
                     <input
                       type="time"
                       value={preferences.quiet_hours_end}
                       onChange={(e) => setPreferences({ ...preferences, quiet_hours_end: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+                      className="w-full px-3 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
                     />
                   </div>
                 </div>
@@ -418,7 +418,7 @@ export default function ComplianceSettings({ onNavigate }) {
             </div>
 
             {/* Save Button */}
-            <div className="pt-4 border-t border-gray-200">
+            <div className="pt-4 border-t border-border">
               <button
                 onClick={savePreferences}
                 disabled={saving}
@@ -432,7 +432,7 @@ export default function ComplianceSettings({ onNavigate }) {
         </div>
 
         {/* Quick Links */}
-        <div className="lg:col-span-2 bg-white border border-gray-200 rounded-lg p-6">
+        <div className="lg:col-span-2 bg-white border border-border rounded-lg p-6">
           <SectionHeader
             icon={Settings}
             title="Compliance Modules"
@@ -442,53 +442,53 @@ export default function ComplianceSettings({ onNavigate }) {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
             <button
               onClick={() => onNavigate?.('compliance-deadlines')}
-              className="flex items-center gap-3 p-4 rounded-lg border border-gray-200 hover:bg-gray-50 hover:border-green-200 transition-colors text-left"
+              className="flex items-center gap-3 p-4 rounded-lg border border-border hover:bg-cream-50 hover:border-green-200 transition-colors text-left"
             >
-              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                <Calendar className="w-5 h-5 text-blue-600" />
+              <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
+                <Calendar className="w-5 h-5 text-link" />
               </div>
               <div>
-                <p className="font-medium text-gray-900">Deadlines</p>
-                <p className="text-xs text-gray-500">Manage deadlines</p>
+                <p className="font-medium text-heading">Deadlines</p>
+                <p className="text-xs text-text-secondary">Manage deadlines</p>
               </div>
             </button>
 
             <button
               onClick={() => onNavigate?.('compliance-licenses')}
-              className="flex items-center gap-3 p-4 rounded-lg border border-gray-200 hover:bg-gray-50 hover:border-green-200 transition-colors text-left"
+              className="flex items-center gap-3 p-4 rounded-lg border border-border hover:bg-cream-50 hover:border-green-200 transition-colors text-left"
             >
-              <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                <Award className="w-5 h-5 text-purple-600" />
+              <div className="w-10 h-10 bg-sand-200 rounded-lg flex items-center justify-center">
+                <Award className="w-5 h-5 text-bark-700" />
               </div>
               <div>
-                <p className="font-medium text-gray-900">Licenses</p>
-                <p className="text-xs text-gray-500">Certifications</p>
+                <p className="font-medium text-heading">Licenses</p>
+                <p className="text-xs text-text-secondary">Certifications</p>
               </div>
             </button>
 
             <button
               onClick={() => onNavigate?.('compliance-wps')}
-              className="flex items-center gap-3 p-4 rounded-lg border border-gray-200 hover:bg-gray-50 hover:border-green-200 transition-colors text-left"
+              className="flex items-center gap-3 p-4 rounded-lg border border-border hover:bg-cream-50 hover:border-green-200 transition-colors text-left"
             >
               <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
                 <Users className="w-5 h-5 text-primary" />
               </div>
               <div>
-                <p className="font-medium text-gray-900">WPS</p>
-                <p className="text-xs text-gray-500">Training & REI</p>
+                <p className="font-medium text-heading">WPS</p>
+                <p className="text-xs text-text-secondary">Training & REI</p>
               </div>
             </button>
 
             <button
               onClick={() => onNavigate?.('compliance-reports')}
-              className="flex items-center gap-3 p-4 rounded-lg border border-gray-200 hover:bg-gray-50 hover:border-green-200 transition-colors text-left"
+              className="flex items-center gap-3 p-4 rounded-lg border border-border hover:bg-cream-50 hover:border-green-200 transition-colors text-left"
             >
-              <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center">
-                <FileText className="w-5 h-5 text-amber-600" />
+              <div className="w-10 h-10 bg-yellow-200 rounded-lg flex items-center justify-center">
+                <FileText className="w-5 h-5 text-yellow-600" />
               </div>
               <div>
-                <p className="font-medium text-gray-900">Reports</p>
-                <p className="text-xs text-gray-500">PUR, SGMA, etc.</p>
+                <p className="font-medium text-heading">Reports</p>
+                <p className="text-xs text-text-secondary">PUR, SGMA, etc.</p>
               </div>
             </button>
           </div>

@@ -6,7 +6,7 @@ const HarvestFilters = ({ filters, setFilters, farms, getFilteredFields }) => {
     <div className="bg-white rounded-lg shadow p-4">
       <div className="grid grid-cols-5 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Season</label>
+          <label className="block text-sm font-medium text-bark-700 mb-1">Season</label>
           <select
             value={filters.season}
             onChange={(e) => setFilters({ ...filters, season: e.target.value })}
@@ -20,7 +20,7 @@ const HarvestFilters = ({ filters, setFilters, farms, getFilteredFields }) => {
           </select>
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Farm</label>
+          <label className="block text-sm font-medium text-bark-700 mb-1">Farm</label>
           <select
             value={filters.farm}
             onChange={(e) => setFilters({ ...filters, farm: e.target.value, field: '' })}
@@ -33,7 +33,7 @@ const HarvestFilters = ({ filters, setFilters, farms, getFilteredFields }) => {
           </select>
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Field</label>
+          <label className="block text-sm font-medium text-bark-700 mb-1">Field</label>
           <select
             value={filters.field}
             onChange={(e) => setFilters({ ...filters, field: e.target.value })}
@@ -46,7 +46,7 @@ const HarvestFilters = ({ filters, setFilters, farms, getFilteredFields }) => {
           </select>
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Crop</label>
+          <label className="block text-sm font-medium text-bark-700 mb-1">Crop</label>
           <select
             value={filters.crop_variety}
             onChange={(e) => setFilters({ ...filters, crop_variety: e.target.value })}
@@ -59,7 +59,7 @@ const HarvestFilters = ({ filters, setFilters, farms, getFilteredFields }) => {
           </select>
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+          <label className="block text-sm font-medium text-bark-700 mb-1">Status</label>
           <select
             value={filters.status}
             onChange={(e) => setFilters({ ...filters, status: e.target.value })}

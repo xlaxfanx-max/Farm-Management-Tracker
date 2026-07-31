@@ -52,21 +52,21 @@ export const rows = (res) => {
 
 export const LOCATION_BADGE = {
   on_ranch:
-    'bg-emerald-100 text-emerald-700',
+    'bg-green-100 text-green-700',
   off_ranch:
-    'bg-sky-100 text-sky-700',
+    'bg-green-100 text-green-700',
 };
 
 export const GRAIN_BADGE = {
-  annual: 'bg-gray-200 text-gray-600',
-  monthly: 'bg-gray-200 text-gray-600',
-  mixed: 'bg-amber-100 text-amber-700',
+  annual: 'bg-sand-200 text-bark-600',
+  monthly: 'bg-sand-200 text-bark-600',
+  mixed: 'bg-yellow-200 text-yellow-700',
 };
 
 export const cardClasses =
-  'rounded-xl border border-gray-200 bg-white p-5';
+  'rounded-xl border border-border bg-white p-5';
 
-export const mutedText = 'text-sm text-gray-500';
+export const mutedText = 'text-sm text-text-secondary';
 
 /**
  * Split ledger rows by the location rule.

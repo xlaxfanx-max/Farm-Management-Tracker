@@ -278,12 +278,12 @@ const HarvestLaborModal = ({
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b sticky top-0 bg-white">
           <div className="flex items-center gap-2">
-            <Users className="text-purple-600" size={24} />
-            <h2 className="text-xl font-semibold text-gray-900">
+            <Users className="text-bark-700" size={24} />
+            <h2 className="text-xl font-semibold text-heading">
               {labor ? 'Edit Labor Record' : 'Add Labor to Harvest'}
             </h2>
           </div>
-          <button onClick={onClose} className="p-1 hover:bg-gray-100 rounded text-gray-500">
+          <button onClick={onClose} className="p-1 hover:bg-cream-100 rounded text-text-secondary">
             <X size={24} />
           </button>
         </div>
@@ -309,12 +309,12 @@ const HarvestLaborModal = ({
         <form onSubmit={handleSubmit} className="p-4 space-y-6">
           {/* Crew Information */}
           <div>
-            <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">
+            <h3 className="text-sm font-semibold text-bark-700 uppercase tracking-wide mb-3">
               Crew Information
             </h3>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-bark-700 mb-1">
                   Labor Contractor
                 </label>
                 <div className="flex gap-2">
@@ -322,7 +322,7 @@ const HarvestLaborModal = ({
                     name="contractor"
                     value={formData.contractor}
                     onChange={handleContractorChange}
-                    className={`flex-1 border rounded-lg px-3 py-2 ${errors.contractor ? 'border-red-500' : ''}`}
+                    className={`flex-1 border rounded-lg px-3 py-2 ${errors.contractor ? 'border-danger' : ''}`}
                   >
                     <option value="">Select contractor...</option>
                     {contractors.map(c => (
@@ -335,18 +335,18 @@ const HarvestLaborModal = ({
                     <button
                       type="button"
                       onClick={onAddContractor}
-                      className="px-3 py-2 border rounded-lg hover:bg-gray-50 text-gray-700"
+                      className="px-3 py-2 border rounded-lg hover:bg-cream-50 text-bark-700"
                       title="Add new contractor"
                     >
                       <Plus size={18} />
                     </button>
                   )}
                 </div>
-                {errors.contractor && <p className="text-red-500 text-sm mt-1">{errors.contractor}</p>}
+                {errors.contractor && <p className="text-danger text-sm mt-1">{errors.contractor}</p>}
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-bark-700 mb-1">
                   Crew Name (if no contractor)
                 </label>
                 <input
@@ -354,7 +354,7 @@ const HarvestLaborModal = ({
                   name="crew_name"
                   value={formData.crew_name}
                   onChange={handleChange}
-                  className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900"
+                  className="w-full border rounded-lg px-3 py-2 bg-white text-heading"
                   placeholder="e.g., Morning Crew A"
                 />
               </div>
@@ -362,7 +362,7 @@ const HarvestLaborModal = ({
 
             <div className="grid grid-cols-2 gap-4 mt-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-bark-700 mb-1">
                   Foreman Name
                 </label>
                 <input
@@ -370,13 +370,13 @@ const HarvestLaborModal = ({
                   name="foreman_name"
                   value={formData.foreman_name}
                   onChange={handleChange}
-                  className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900"
+                  className="w-full border rounded-lg px-3 py-2 bg-white text-heading"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Worker Count <span className="text-red-500">*</span>
+                <label className="block text-sm font-medium text-bark-700 mb-1">
+                  Worker Count <span className="text-danger">*</span>
                 </label>
                 <input
                   type="number"
@@ -384,22 +384,22 @@ const HarvestLaborModal = ({
                   value={formData.worker_count}
                   onChange={handleChange}
                   min="1"
-                  className={`w-full border rounded-lg px-3 py-2 bg-white text-gray-900 ${errors.worker_count ? 'border-red-500' : ''}`}
+                  className={`w-full border rounded-lg px-3 py-2 bg-white text-heading ${errors.worker_count ? 'border-danger' : ''}`}
                   required
                 />
-                {errors.worker_count && <p className="text-red-500 text-sm mt-1">{errors.worker_count}</p>}
+                {errors.worker_count && <p className="text-danger text-sm mt-1">{errors.worker_count}</p>}
               </div>
             </div>
           </div>
 
           {/* Time Tracking */}
           <div>
-            <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">
+            <h3 className="text-sm font-semibold text-bark-700 uppercase tracking-wide mb-3">
               Time Tracking
             </h3>
             <div className="grid grid-cols-3 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-bark-700 mb-1">
                   Start Time
                 </label>
                 <input
@@ -407,12 +407,12 @@ const HarvestLaborModal = ({
                   name="start_time"
                   value={formData.start_time}
                   onChange={handleChange}
-                  className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900"
+                  className="w-full border rounded-lg px-3 py-2 bg-white text-heading"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-bark-700 mb-1">
                   End Time
                 </label>
                 <input
@@ -420,12 +420,12 @@ const HarvestLaborModal = ({
                   name="end_time"
                   value={formData.end_time}
                   onChange={handleChange}
-                  className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900"
+                  className="w-full border rounded-lg px-3 py-2 bg-white text-heading"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-bark-700 mb-1">
                   Total Hours
                 </label>
                 <input
@@ -435,11 +435,11 @@ const HarvestLaborModal = ({
                   onChange={handleChange}
                   step="0.25"
                   min="0"
-                  className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900"
+                  className="w-full border rounded-lg px-3 py-2 bg-white text-heading"
                   placeholder={calculatedHours ? calculatedHours.toString() : ''}
                 />
                 {calculatedHours > 0 && !formData.total_hours && (
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-text-secondary mt-1">
                     Calculated: {calculatedHours} hours
                   </p>
                 )}
@@ -448,20 +448,20 @@ const HarvestLaborModal = ({
           </div>
 
           {/* Cost Tracking */}
-          <div className="border rounded-lg p-4 bg-purple-50">
-            <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">
+          <div className="border rounded-lg p-4 bg-cream-100">
+            <h3 className="text-sm font-semibold text-bark-700 uppercase tracking-wide mb-3">
               Cost Tracking
             </h3>
             <div className="grid grid-cols-4 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-bark-700 mb-1">
                   Pay Type
                 </label>
                 <select
                   name="pay_type"
                   value={formData.pay_type}
                   onChange={handleChange}
-                  className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900"
+                  className="w-full border rounded-lg px-3 py-2 bg-white text-heading"
                 >
                   {HARVEST_CONSTANTS.PAY_TYPES.map(p => (
                     <option key={p.value} value={p.value}>{p.label}</option>
@@ -470,7 +470,7 @@ const HarvestLaborModal = ({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-bark-700 mb-1">
                   Rate
                 </label>
                 <input
@@ -480,18 +480,18 @@ const HarvestLaborModal = ({
                   onChange={handleChange}
                   step="0.01"
                   min="0"
-                  className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900"
+                  className="w-full border rounded-lg px-3 py-2 bg-white text-heading"
                   placeholder={formData.pay_type === 'hourly' ? '$/hour' : '$/bin'}
                 />
                 {lastLaborForContractor && formData.rate && !labor && (
-                  <p className="text-xs text-blue-600 mt-1">
+                  <p className="text-xs text-link mt-1">
                     💡 Last rate: ${lastLaborForContractor.rate} ({lastLaborForContractor.pay_type_display || lastLaborForContractor.pay_type})
                   </p>
                 )}
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-bark-700 mb-1">
                   Bins Picked
                 </label>
                 <input
@@ -500,13 +500,13 @@ const HarvestLaborModal = ({
                   value={formData.bins_picked}
                   onChange={handleChange}
                   min="0"
-                  className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900"
+                  className="w-full border rounded-lg px-3 py-2 bg-white text-heading"
                   placeholder="For piece rate"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-bark-700 mb-1">
                   Total Cost
                 </label>
                 <input
@@ -516,10 +516,10 @@ const HarvestLaborModal = ({
                   onChange={handleChange}
                   step="0.01"
                   min="0"
-                  className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900"
+                  className="w-full border rounded-lg px-3 py-2 bg-white text-heading"
                   placeholder={formatCurrency(calculatedCost)}
                 />
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-text-secondary mt-1">
                   Calculated: {formatCurrency(calculatedCost)}
                 </p>
               </div>
@@ -527,50 +527,50 @@ const HarvestLaborModal = ({
           </div>
 
           {/* GAP/GHP Compliance */}
-          <div className="border rounded-lg p-4 bg-blue-50">
-            <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">
+          <div className="border rounded-lg p-4 bg-orange-50">
+            <h3 className="text-sm font-semibold text-bark-700 uppercase tracking-wide mb-3">
               GAP/GHP Worker Compliance
             </h3>
             <div className="grid grid-cols-3 gap-4">
-              <label className="flex items-center gap-2 p-3 bg-white rounded-lg border cursor-pointer hover:bg-gray-50">
+              <label className="flex items-center gap-2 p-3 bg-white rounded-lg border cursor-pointer hover:bg-cream-50">
                 <input
                   type="checkbox"
                   name="training_verified"
                   checked={formData.training_verified}
                   onChange={handleChange}
-                  className="rounded border-gray-300"
+                  className="rounded border-border-strong"
                 />
                 <div>
-                  <span className="text-sm font-medium text-gray-900">Training Verified</span>
-                  <p className="text-xs text-gray-500">Workers have food safety training</p>
+                  <span className="text-sm font-medium text-heading">Training Verified</span>
+                  <p className="text-xs text-text-secondary">Workers have food safety training</p>
                 </div>
               </label>
 
-              <label className="flex items-center gap-2 p-3 bg-white rounded-lg border cursor-pointer hover:bg-gray-50">
+              <label className="flex items-center gap-2 p-3 bg-white rounded-lg border cursor-pointer hover:bg-cream-50">
                 <input
                   type="checkbox"
                   name="hygiene_facilities_available"
                   checked={formData.hygiene_facilities_available}
                   onChange={handleChange}
-                  className="rounded border-gray-300"
+                  className="rounded border-border-strong"
                 />
                 <div>
-                  <span className="text-sm font-medium text-gray-900">Hygiene Facilities</span>
-                  <p className="text-xs text-gray-500">Handwashing & toilets available</p>
+                  <span className="text-sm font-medium text-heading">Hygiene Facilities</span>
+                  <p className="text-xs text-text-secondary">Handwashing & toilets available</p>
                 </div>
               </label>
 
-              <label className="flex items-center gap-2 p-3 bg-white rounded-lg border cursor-pointer hover:bg-gray-50">
+              <label className="flex items-center gap-2 p-3 bg-white rounded-lg border cursor-pointer hover:bg-cream-50">
                 <input
                   type="checkbox"
                   name="illness_check_performed"
                   checked={formData.illness_check_performed}
                   onChange={handleChange}
-                  className="rounded border-gray-300"
+                  className="rounded border-border-strong"
                 />
                 <div>
-                  <span className="text-sm font-medium text-gray-900">Illness Check</span>
-                  <p className="text-xs text-gray-500">No sick workers present</p>
+                  <span className="text-sm font-medium text-heading">Illness Check</span>
+                  <p className="text-xs text-text-secondary">No sick workers present</p>
                 </div>
               </label>
             </div>
@@ -578,7 +578,7 @@ const HarvestLaborModal = ({
 
           {/* Notes */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-bark-700 mb-1">
               Notes
             </label>
             <textarea
@@ -586,7 +586,7 @@ const HarvestLaborModal = ({
               value={formData.notes}
               onChange={handleChange}
               rows={2}
-              className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900"
+              className="w-full border rounded-lg px-3 py-2 bg-white text-heading"
               placeholder="Any additional notes..."
             />
           </div>
@@ -596,14 +596,14 @@ const HarvestLaborModal = ({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 border rounded-lg hover:bg-gray-50 text-gray-700"
+              className="px-4 py-2 border rounded-lg hover:bg-cream-50 text-bark-700"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={saving}
-              className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50"
+              className="px-4 py-2 bg-bark-600 text-white rounded-lg hover:bg-bark-700 disabled:opacity-50"
             >
               {saving ? 'Saving...' : (labor ? 'Update Labor' : 'Add Labor')}
             </button>

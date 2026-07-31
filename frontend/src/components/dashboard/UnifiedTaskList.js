@@ -197,10 +197,10 @@ function UnifiedTaskList({
 
   const getPriorityDot = (priority) => {
     switch (priority) {
-      case 'high': return 'bg-red-500';
-      case 'medium': return 'bg-amber-500';
-      case 'low': return 'bg-blue-400';
-      default: return 'bg-gray-400';
+      case 'high': return 'bg-danger';
+      case 'medium': return 'bg-yellow-500';
+      case 'low': return 'bg-orange-400';
+      default: return 'bg-bark-400';
     }
   };
 

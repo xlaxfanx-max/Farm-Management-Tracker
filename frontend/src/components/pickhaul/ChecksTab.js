@@ -71,14 +71,14 @@ export default function ChecksTab({ season, syncStatus }) {
               <StatusBadge status={severity} label={SEVERITY_LABELS[severity]} colorScheme={{
                 error: 'red', warn: 'amber', info: 'blue',
               }[severity]} />
-              <span className="text-sm text-gray-500">{list.length}</span>
+              <span className="text-sm text-text-secondary">{list.length}</span>
             </div>
             <div className="space-y-1.5">
               {list.map((c) => (
                 <div
                   key={c.id}
                   onClick={c.invoice ? () => openInvoice(c.invoice) : undefined}
-                  className={`flex flex-wrap items-start gap-x-3 gap-y-1 rounded-lg border px-3 py-2 text-sm bg-white border-gray-200 ${
+                  className={`flex flex-wrap items-start gap-x-3 gap-y-1 rounded-lg border px-3 py-2 text-sm bg-white border-border ${
                     c.invoice ? 'cursor-pointer hover:bg-surface-sunken' : ''
                   }`}
                 >
@@ -89,11 +89,11 @@ export default function ChecksTab({ season, syncStatus }) {
                     {c.origin}
                   </Badge>
                   {(c.house_code || c.entity_code) && (
-                    <span className="text-xs text-gray-500">
+                    <span className="text-xs text-text-secondary">
                       {c.house_code || '—'}/{c.entity_code || '—'}
                     </span>
                   )}
-                  <span className="flex-1 text-gray-700 basis-full md:basis-auto">
+                  <span className="flex-1 text-bark-700 basis-full md:basis-auto">
                     {c.detail}
                   </span>
                 </div>
@@ -104,12 +104,12 @@ export default function ChecksTab({ season, syncStatus }) {
       })}
 
       <div>
-        <h3 className="text-sm font-medium text-gray-700 mb-2">Data sources</h3>
+        <h3 className="text-sm font-medium text-bark-700 mb-2">Data sources</h3>
         {syncStatus?.sources?.length ? (
-          <div className="overflow-x-auto bg-white rounded-lg border border-gray-200">
+          <div className="overflow-x-auto bg-white rounded-lg border border-border">
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-gray-50 text-left text-xs text-gray-500 uppercase tracking-wider">
+                <tr className="bg-cream-50 text-left text-xs text-text-secondary uppercase tracking-wider">
                   <th className="px-4 py-2">Account</th>
                   <th className="px-4 py-2">File</th>
                   <th className="px-4 py-2">Pulled</th>
@@ -118,7 +118,7 @@ export default function ChecksTab({ season, syncStatus }) {
                   <th className="px-4 py-2">Status</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-border">
                 {syncStatus.sources.map((s) => (
                   <tr key={`${s.house_code}-${s.entity_code}`}>
                     <td className="px-4 py-2 whitespace-nowrap">{s.house_code}/{s.entity_code}</td>
@@ -133,7 +133,7 @@ export default function ChecksTab({ season, syncStatus }) {
             </table>
           </div>
         ) : (
-          <p className="text-sm text-gray-500 italic">
+          <p className="text-sm text-text-secondary italic">
             No portal pulls recorded yet for this season.
           </p>
         )}

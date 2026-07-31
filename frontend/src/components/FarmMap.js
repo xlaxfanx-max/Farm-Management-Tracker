@@ -308,7 +308,7 @@ const FarmMap = ({
 
   return (
     <div
-      className={`relative rounded-xl overflow-hidden shadow-lg border border-gray-200 ${
+      className={`relative rounded-xl overflow-hidden shadow-lg border border-border ${
         isExpanded ? 'fixed inset-0 z-50' : ''
       }`}
       style={{ height: mapHeight }}
@@ -317,33 +317,33 @@ const FarmMap = ({
       <div className="absolute top-4 right-4 z-[1000] flex flex-col gap-2">
         <button
           onClick={() => setIsExpanded(!isExpanded)}
-          className="bg-white p-2.5 rounded-lg shadow-md hover:bg-gray-50 transition-colors"
+          className="bg-white p-2.5 rounded-lg shadow-md hover:bg-cream-50 transition-colors"
           title={isExpanded ? 'Collapse map' : 'Expand map'}
         >
-          {isExpanded ? <Minimize2 className="w-5 h-5 text-gray-700" /> : <Maximize2 className="w-5 h-5 text-gray-700" />}
+          {isExpanded ? <Minimize2 className="w-5 h-5 text-bark-700" /> : <Maximize2 className="w-5 h-5 text-bark-700" />}
         </button>
 
         <div className="relative">
           <button
             onClick={() => setShowLayerMenu(!showLayerMenu)}
-            className="bg-white p-2.5 rounded-lg shadow-md hover:bg-gray-50 transition-colors"
+            className="bg-white p-2.5 rounded-lg shadow-md hover:bg-cream-50 transition-colors"
             title="Map layers"
           >
-            <Layers className="w-5 h-5 text-gray-700" />
+            <Layers className="w-5 h-5 text-bark-700" />
           </button>
           {showLayerMenu && (
-            <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 py-2">
-              <div className="px-3 py-1 text-xs font-semibold text-gray-400 uppercase">Base Map</div>
+            <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-border py-2">
+              <div className="px-3 py-1 text-xs font-semibold text-text-muted uppercase">Base Map</div>
               {Object.keys(tileLayers).map((type) => (
                 <button
                   key={type}
                   onClick={() => { setMapType(type); }}
-                  className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-50 flex items-center justify-between ${
-                    mapType === type ? 'text-primary font-medium' : 'text-gray-700'
+                  className={`w-full px-3 py-2 text-left text-sm hover:bg-cream-50 flex items-center justify-between ${
+                    mapType === type ? 'text-primary font-medium' : 'text-bark-700'
                   }`}
                 >
                   {type.charAt(0).toUpperCase() + type.slice(1)}
-                  {mapType === type && <span className="text-green-500">✓</span>}
+                  {mapType === type && <span className="text-green-600">✓</span>}
                 </button>
               ))}
             </div>
@@ -353,13 +353,13 @@ const FarmMap = ({
 
       {/* Drawing Controls - positioned at bottom-left to avoid Leaflet controls */}
       {isDrawing && (
-        <div className="absolute bottom-4 left-4 z-[1000] bg-white rounded-lg shadow-xl border-2 border-blue-400 p-4 max-w-sm">
+        <div className="absolute bottom-4 left-4 z-[1000] bg-white rounded-lg shadow-xl border-2 border-orange-400 p-4 max-w-sm">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <div className="p-1.5 bg-blue-100 rounded-lg">
-                <Pencil className="w-5 h-5 text-blue-600" />
+              <div className="p-1.5 bg-orange-100 rounded-lg">
+                <Pencil className="w-5 h-5 text-link" />
               </div>
-              <span className="font-semibold text-gray-800">
+              <span className="font-semibold text-text">
                 {drawingType === 'farm'
                   ? `Drawing boundary for Farm: ${drawingTargetName}`
                   : `Drawing boundary for Field: ${drawingTargetName}`}
@@ -367,24 +367,24 @@ const FarmMap = ({
             </div>
             <button
               onClick={cancelDrawing}
-              className="p-1 hover:bg-gray-100 rounded"
+              className="p-1 hover:bg-cream-100 rounded"
             >
-              <X className="w-4 h-4 text-gray-500" />
+              <X className="w-4 h-4 text-text-secondary" />
             </button>
           </div>
 
           {!pendingBoundary && (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-3">
-              <p className="text-sm text-blue-800 font-medium mb-1">
-                <span className="inline-block w-5 h-5 bg-blue-600 text-white text-xs rounded mr-2 text-center leading-5">1</span>
+            <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 mb-3">
+              <p className="text-sm text-orange-700 font-medium mb-1">
+                <span className="inline-block w-5 h-5 bg-primary text-white text-xs rounded mr-2 text-center leading-5">1</span>
                 Click the polygon tool in the top-left corner
               </p>
-              <p className="text-sm text-blue-800 font-medium mb-1">
-                <span className="inline-block w-5 h-5 bg-blue-600 text-white text-xs rounded mr-2 text-center leading-5">2</span>
+              <p className="text-sm text-orange-700 font-medium mb-1">
+                <span className="inline-block w-5 h-5 bg-primary text-white text-xs rounded mr-2 text-center leading-5">2</span>
                 Click on the map to place boundary points
               </p>
-              <p className="text-sm text-blue-800 font-medium">
-                <span className="inline-block w-5 h-5 bg-blue-600 text-white text-xs rounded mr-2 text-center leading-5">3</span>
+              <p className="text-sm text-orange-700 font-medium">
+                <span className="inline-block w-5 h-5 bg-primary text-white text-xs rounded mr-2 text-center leading-5">3</span>
                 Click the first point to close the polygon
               </p>
             </div>
@@ -392,7 +392,7 @@ const FarmMap = ({
 
           {pendingBoundary && (
             <div className="bg-primary-light border border-green-200 rounded-lg p-3 mb-3">
-              <div className="text-sm font-medium text-green-800">Boundary Drawn!</div>
+              <div className="text-sm font-medium text-green-700">Boundary Drawn!</div>
               <div className="text-sm text-primary">
                 Calculated area: <strong>{pendingBoundary.acres} acres</strong>
               </div>
@@ -411,7 +411,7 @@ const FarmMap = ({
             )}
             <button
               onClick={cancelDrawing}
-              className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2.5 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 text-sm font-medium border border-red-200"
+              className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2.5 bg-danger-bg text-danger rounded-lg hover:bg-danger-bg text-sm font-medium border border-danger/25"
             >
               <X className="w-4 h-4" />
               Cancel
@@ -422,8 +422,8 @@ const FarmMap = ({
 
       {/* Legend */}
       {!isDrawing && (
-        <div className="absolute bottom-4 right-4 z-[1000] bg-white/95 backdrop-blur rounded-lg shadow-lg border border-gray-200 p-3">
-          <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Legend</div>
+        <div className="absolute bottom-4 right-4 z-[1000] bg-white/95 backdrop-blur rounded-lg shadow-lg border border-border p-3">
+          <div className="text-xs font-semibold text-text-secondary uppercase tracking-wide mb-2">Legend</div>
           <div className="space-y-1.5">
             <div className="flex items-center gap-2 text-xs">
               <div className="w-3 h-3 rounded-full bg-primary"></div>
@@ -478,8 +478,8 @@ const FarmMap = ({
             >
               <Popup>
                 <div className="min-w-[250px] max-h-[300px] overflow-y-auto">
-                  <h3 className="font-bold text-lg text-gray-800">{farm.name}</h3>
-                  <p className="text-sm text-gray-600">{farm.county} County</p>
+                  <h3 className="font-bold text-lg text-text">{farm.name}</h3>
+                  <p className="text-sm text-bark-600">{farm.county} County</p>
 
                   <div className="mt-3 flex flex-wrap gap-2">
                     <button
@@ -490,8 +490,8 @@ const FarmMap = ({
                       }}
                       className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap flex items-center gap-1.5 transition-all ${
                         farm.boundary_geojson
-                          ? 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-300'
-                          : 'bg-blue-600 text-white hover:bg-blue-700 shadow-md hover:shadow-lg animate-pulse hover:animate-none'
+                          ? 'bg-cream-100 text-bark-700 hover:bg-sand-200 border border-border-strong'
+                          : 'bg-primary text-white hover:bg-primary-hover shadow-md hover:shadow-lg animate-pulse hover:animate-none'
                       }`}
                     >
                       <Pencil className="w-3 h-3" />
@@ -508,8 +508,8 @@ const FarmMap = ({
                       disabled={!farmFields.some(f => f.boundary_geojson) || !onAutoFarmBoundary}
                       className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap flex items-center gap-1.5 transition-all ${
                         !farmFields.some(f => f.boundary_geojson) || !onAutoFarmBoundary
-                          ? 'bg-gray-100 text-gray-400 border border-gray-200 cursor-not-allowed'
-                          : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200 border border-indigo-200'
+                          ? 'bg-cream-100 text-text-muted border border-border cursor-not-allowed'
+                          : 'bg-sand-200 text-bark-700 hover:bg-sand-200 border border-sand-200'
                       }`}
                       title={farmFields.some(f => f.boundary_geojson) ? 'Auto-derive farm boundary from field boundaries' : 'Add field boundaries to enable auto-boundary'}
                     >
@@ -518,13 +518,13 @@ const FarmMap = ({
                   </div>
                   {farmFields.length > 0 ? (
                     <div className="mt-3 border-t pt-3">
-                      <p className="text-xs font-semibold text-gray-500 uppercase mb-2">Fields ({farmFields.length})</p>
+                      <p className="text-xs font-semibold text-text-secondary uppercase mb-2">Fields ({farmFields.length})</p>
                       <div className="space-y-2">
                         {farmFields.map(field => (
-                          <div key={field.id} className="flex items-center justify-between bg-gray-50 rounded p-2">
+                          <div key={field.id} className="flex items-center justify-between bg-cream-50 rounded p-2">
                             <div className="flex-1 min-w-0">
-                              <p className="font-medium text-sm text-gray-800 truncate">{field.name}</p>
-                              <p className="text-xs text-gray-500">{field.total_acres} acres · {field.current_crop || 'No crop'}</p>
+                              <p className="font-medium text-sm text-text truncate">{field.name}</p>
+                              <p className="text-xs text-text-secondary">{field.total_acres} acres · {field.current_crop || 'No crop'}</p>
                             </div>
                             <button
                               onClick={(e) => {
@@ -534,8 +534,8 @@ const FarmMap = ({
                               }}
                               className={`ml-2 px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap flex items-center gap-1.5 transition-all ${
                                 field.boundary_geojson
-                                  ? 'bg-amber-100 text-amber-700 hover:bg-amber-200 border border-amber-300'
-                                  : 'bg-blue-600 text-white hover:bg-blue-700 shadow-md hover:shadow-lg animate-pulse hover:animate-none'
+                                  ? 'bg-yellow-200 text-yellow-700 hover:bg-yellow-200 border border-yellow-300'
+                                  : 'bg-primary text-white hover:bg-primary-hover shadow-md hover:shadow-lg animate-pulse hover:animate-none'
                               }`}
                             >
                               <Pencil className="w-3 h-3" />
@@ -546,7 +546,7 @@ const FarmMap = ({
                       </div>
                     </div>
                   ) : (
-                    <p className="text-xs text-gray-500 mt-2 italic">No fields added yet</p>
+                    <p className="text-xs text-text-secondary mt-2 italic">No fields added yet</p>
                   )}
                 </div>
               </Popup>
@@ -575,12 +575,12 @@ const FarmMap = ({
             >
               <Popup>
                 <div className="min-w-[220px]">
-                  <h3 className="font-bold text-lg text-gray-800">{field.name}</h3>
-                  <p className="text-sm text-gray-600">{field.current_crop || 'No crop'}</p>
-                  <p className="text-sm text-gray-500">{field.total_acres} acres</p>
+                  <h3 className="font-bold text-lg text-text">{field.name}</h3>
+                  <p className="text-sm text-bark-600">{field.current_crop || 'No crop'}</p>
+                  <p className="text-sm text-text-secondary">{field.total_acres} acres</p>
                   <button
                     onClick={() => startDrawing('field', field.id, field.name)}
-                    className="mt-3 w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-amber-500 text-white rounded-lg hover:bg-amber-600 text-sm font-semibold shadow-md hover:shadow-lg transition-all border border-amber-600"
+                    className="mt-3 w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 text-sm font-semibold shadow-md hover:shadow-lg transition-all border border-yellow-600"
                   >
                     <Pencil className="w-4 h-4" />
                     Redraw Boundary
@@ -614,14 +614,14 @@ const FarmMap = ({
               >
                 <Popup>
                   <div className="min-w-[220px]">
-                    <h3 className="font-bold text-lg text-gray-800">{farm.name}</h3>
-                    <p className="text-sm text-gray-600">{farm.county} County</p>
+                    <h3 className="font-bold text-lg text-text">{farm.name}</h3>
+                    <p className="text-sm text-bark-600">{farm.county} County</p>
                     {farm.calculated_acres && (
-                      <p className="text-sm text-gray-500">{farm.calculated_acres} acres</p>
+                      <p className="text-sm text-text-secondary">{farm.calculated_acres} acres</p>
                     )}
                     <button
                       onClick={() => startDrawing('farm', farm.id, farm.name)}
-                      className="mt-3 w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-semibold shadow-md hover:shadow-lg transition-all"
+                      className="mt-3 w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-white rounded-lg hover:bg-primary-hover text-sm font-semibold shadow-md hover:shadow-lg transition-all"
                     >
                       <Pencil className="w-4 h-4" />
                       Redraw Farm Boundary
@@ -648,12 +648,12 @@ const FarmMap = ({
             >
               <Popup>
                 <div className="min-w-[220px]">
-                  <h3 className="font-bold text-lg text-gray-800">{field.name}</h3>
-                  <p className="text-sm text-gray-600">{field.current_crop || 'No crop'}</p>
-                  <p className="text-sm text-gray-500">{field.total_acres} acres</p>
+                  <h3 className="font-bold text-lg text-text">{field.name}</h3>
+                  <p className="text-sm text-bark-600">{field.current_crop || 'No crop'}</p>
+                  <p className="text-sm text-text-secondary">{field.total_acres} acres</p>
                   <button
                     onClick={() => startDrawing('field', field.id, field.name)}
-                    className="mt-3 w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-semibold shadow-md hover:shadow-lg transition-all animate-pulse hover:animate-none"
+                    className="mt-3 w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-white rounded-lg hover:bg-primary-hover text-sm font-semibold shadow-md hover:shadow-lg transition-all animate-pulse hover:animate-none"
                   >
                     <Pencil className="w-4 h-4" />
                     Draw Boundary
