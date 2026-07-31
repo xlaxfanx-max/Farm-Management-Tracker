@@ -257,7 +257,6 @@ class PesticideComplianceService:
         applicator_name: Optional[str] = None,
         applicator_license: Optional[str] = None,
         check_weather: bool = True,
-        check_quarantine: bool = True,
     ) -> ApplicationValidationResult:
         """
         Comprehensive validation of a proposed pesticide application.
@@ -270,7 +269,6 @@ class PesticideComplianceService:
         - Weather suitability (wind, rain)
         - California restricted material status
         - NOI requirements and deadlines
-        - Quarantine zone restrictions
 
         Args:
             field_id: ID of the field to apply to
@@ -282,7 +280,6 @@ class PesticideComplianceService:
             applicator_name: Name of applicator (required for restricted products)
             applicator_license: Applicator license number
             check_weather: Whether to check weather conditions
-            check_quarantine: Whether to check quarantine zone status
 
         Returns:
             ApplicationValidationResult with validation status and any issues
@@ -372,14 +369,6 @@ class PesticideComplianceService:
                 field, application_date, application_method
             )
             warnings.extend(weather_issues)  # Weather is always advisory
-
-        # Check quarantine zone restrictions (optional)
-        if check_quarantine and field.has_coordinates:
-            quarantine_issues = self._check_quarantine_restrictions(
-                product, field
-            )
-            issues.extend([i for i in quarantine_issues if i.blocking])
-            warnings.extend([i for i in quarantine_issues if not i.blocking])
 
         # Check maximum applications per season
         season_issues = self._check_season_limits(product, field, application_date)
@@ -825,10 +814,6 @@ class PesticideComplianceService:
 
         # Check season limits
         issues.extend(self._check_season_limits(product, field, application_date))
-
-        # Check quarantine restrictions
-        if field.has_coordinates:
-            issues.extend(self._check_quarantine_restrictions(product, field))
 
         return issues
 

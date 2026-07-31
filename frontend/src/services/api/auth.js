@@ -173,34 +173,3 @@ export const auditAPI = {
   getStatistics: (params = {}) => api.get('/audit-logs/statistics/', { params }),
 };
 
-// =============================================================================
-// ONBOARDING API
-// =============================================================================
-
-export const onboardingAPI = {
-  /**
-   * Get onboarding status for current company
-   */
-  getStatus: () => api.get('/onboarding/status/'),
-
-  /**
-   * Update current onboarding step
-   * @param {string} step - One of: company_info, boundary, fields, water, complete
-   */
-  updateStep: (step) => api.post('/onboarding/step/', { step }),
-
-  /**
-   * Mark onboarding as complete
-   */
-  complete: () => api.post('/onboarding/complete/'),
-
-  /**
-   * Skip onboarding
-   */
-  skip: () => api.post('/onboarding/skip/'),
-
-  /**
-   * Reset onboarding (for testing)
-   */
-  reset: () => api.post('/onboarding/reset/'),
-};

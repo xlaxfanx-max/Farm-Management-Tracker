@@ -1,7 +1,6 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './contexts/AuthContext';
-import LandingPage from './pages/LandingPage';
 import Login from './components/Login';
 import ForgotPassword from './components/ForgotPassword';
 import ResetPassword from './components/ResetPassword';
@@ -34,7 +33,7 @@ const PublicRoute = ({ children }) => {
 function Main() {
   return (
     <Routes>
-      <Route path="/" element={<LandingPage />} />
+      <Route path="/" element={<Navigate to="/dashboard" replace />} />
       <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
@@ -47,8 +46,8 @@ function Main() {
           </ProtectedRoute>
         }
       />
-      {/* Redirect any unknown routes to landing */}
-      <Route path="*" element={<Navigate to="/" />} />
+      {/* Redirect any unknown routes to the dashboard */}
+      <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>
   );
 }

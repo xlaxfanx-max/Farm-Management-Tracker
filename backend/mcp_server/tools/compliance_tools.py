@@ -104,7 +104,6 @@ async def validate_application(
     applicator_name: Optional[str] = None,
     applicator_license: Optional[str] = None,
     check_weather: bool = True,
-    check_quarantine: bool = True
 ) -> dict:
     """
     Validate a proposed pesticide application for compliance.
@@ -117,7 +116,6 @@ async def validate_application(
     - California restricted material requirements
     - NOI requirements and deadlines
     - Weather suitability (optional)
-    - Quarantine zone restrictions (optional)
     - Maximum applications per season
 
     Args:
@@ -130,7 +128,6 @@ async def validate_application(
         applicator_name: Name of applicator (required for restricted products).
         applicator_license: Applicator license number.
         check_weather: Whether to check weather conditions (default True).
-        check_quarantine: Whether to check quarantine zones (default True).
 
     Returns:
     - is_valid: Whether application can proceed (no blocking issues)
@@ -172,7 +169,6 @@ async def validate_application(
         applicator_name=applicator_name,
         applicator_license=applicator_license,
         check_weather=check_weather,
-        check_quarantine=check_quarantine,
     )
 
     return result.to_dict()
@@ -188,7 +184,6 @@ async def check_product_restrictions(
 
     Includes:
     - Label restrictions
-    - Quarantine zone restrictions
     - Buffer zone requirements
     - Seasonal restrictions
     - Maximum applications per season
@@ -313,7 +308,7 @@ TOOLS = [
     {
         'function': check_product_restrictions,
         'name': 'check_product_restrictions',
-        'description': 'Check all restrictions for a product on a field (quarantine, buffer zones, season limits).',
+        'description': 'Check all restrictions for a product on a field (buffer zones, season limits).',
     },
     {
         'function': get_noi_requirements,

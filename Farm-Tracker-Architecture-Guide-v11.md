@@ -3,6 +3,34 @@
 
 ---
 
+> ## ⚠️ JULY 2026 STRIP-DOWN (branch `simplify-core-bones`)
+>
+> The platform was cut back to its core bones on 2026-07-31. The following
+> modules described in this document **no longer exist**:
+>
+> - **Tree detection** (Claude Vision/NDVI), **disease prevention/HLB**,
+>   **quarantine checking**, and **yield forecasting**
+> - **PrimusGFS** (all ~40 models + 25k-line frontend), **FSMA** (water
+>   assessments, facility/visitor/cleaning/safety logs, audit binders),
+>   **Rule 204 traceability**, and the **facility** module
+> - **Irrigation scheduling** (zones, Kc profiles, CIMIS, recommendations,
+>   soil moisture) and **nutrient management** (fertilizer products,
+>   applications, plans, nitrogen/ILRP reports)
+> - The **marketing landing page** and **onboarding wizard** (single-tenant
+>   internal tool now)
+>
+> What remains: farm/field/parcel, pesticide + PUR + pesticide compliance
+> (deadlines, licenses, WPS, REI, NOI, **PHI** — relocated into the
+> compliance module), water/wells/SGMA + water cost, harvest + pick & haul,
+> packinghouse settlements, rentals, block scoring, weather, analytics,
+> auth/team. `IrrigationEvent` survives as a plain water-use record, and
+> `WeatherCache` moved to `models/weather.py`. Migrations 0090–0092 drop
+> the removed tables — **take a database backup before deploying them**.
+>
+> Sections below describing removed modules are retained for history only.
+
+---
+
 ## DOCUMENT PURPOSE
 
 This document provides comprehensive architecture documentation for the **Farm Management Tracker** (also known as **Finch Farms Dashboard**) application. It is specifically designed to:

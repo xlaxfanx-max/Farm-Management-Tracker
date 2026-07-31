@@ -847,7 +847,6 @@ class PesticideApplicationViewSet(AuditLogMixin, viewsets.ModelViewSet):
             "applicator_name": "John Smith",  // optional but needed for restricted
             "applicator_license": "12345",    // optional
             "check_weather": true,            // optional, default true
-            "check_quarantine": true          // optional, default true
         }
 
         Returns comprehensive validation result with issues, warnings,
@@ -866,7 +865,6 @@ class PesticideApplicationViewSet(AuditLogMixin, viewsets.ModelViewSet):
         applicator_name = request.data.get('applicator_name')
         applicator_license = request.data.get('applicator_license')
         check_weather = request.data.get('check_weather', True)
-        check_quarantine = request.data.get('check_quarantine', True)
 
         # Validate required fields
         if not all([field_id, product_id, application_date_str, rate_per_acre,
@@ -901,7 +899,6 @@ class PesticideApplicationViewSet(AuditLogMixin, viewsets.ModelViewSet):
             applicator_name=applicator_name,
             applicator_license=applicator_license,
             check_weather=check_weather,
-            check_quarantine=check_quarantine,
         )
 
         return Response(result.to_dict())

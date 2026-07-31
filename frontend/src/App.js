@@ -16,13 +16,10 @@ import { VIEW_TO_PATH, PATH_TO_VIEW } from './routes';
 // Eagerly loaded (always needed)
 import AppLayout from './components/layout/AppLayout';
 import Dashboard from './components/Dashboard';
-import OnboardingWizard from './components/OnboardingWizard';
 import GlobalModals from './components/GlobalModals';
 import CommandPalette from './components/CommandPalette';
 import ErrorBoundary from './components/ui/ErrorBoundary';
 import Breadcrumbs from './components/navigation/Breadcrumbs';
-import { onboardingAPI } from './services/api';
-import './components/OnboardingWizard.css';
 
 // Lazy-loaded components (code-split per route)
 const CompanySettings = lazy(() => import('./components/CompanySettings'));
@@ -88,60 +85,6 @@ function AppContent() {
     }
   };
 
-  // Onboarding state
-  const [onboardingStatus, setOnboardingStatus] = useState(null);
-  const [checkingOnboarding, setCheckingOnboarding] = useState(true);
-
-  // ============================================================================
-  // CHECK ONBOARDING STATUS
-  // ============================================================================
-  useEffect(() => {
-    const checkOnboarding = async () => {
-      if (!isAuthenticated || !currentCompany) {
-        setCheckingOnboarding(false);
-        return;
-      }
-
-      try {
-        const response = await onboardingAPI.getStatus();
-        setOnboardingStatus(response.data);
-      } catch (error) {
-        console.error('Error checking onboarding status:', error);
-        setOnboardingStatus({ onboarding_completed: true });
-      } finally {
-        setCheckingOnboarding(false);
-      }
-    };
-
-    if (isAuthenticated && currentCompany) {
-      setCheckingOnboarding(true);
-      checkOnboarding();
-    } else {
-      setCheckingOnboarding(false);
-    }
-  }, [isAuthenticated, currentCompany]);
-
-  // ============================================================================
-  // ONBOARDING HANDLERS
-  // ============================================================================
-  const handleOnboardingComplete = async () => {
-    try {
-      await onboardingAPI.complete();
-    } catch (error) {
-      console.error('Error completing onboarding:', error);
-    }
-    setOnboardingStatus({ onboarding_completed: true });
-  };
-
-  const handleOnboardingSkip = async () => {
-    try {
-      await onboardingAPI.skip();
-    } catch (error) {
-      console.error('Error skipping onboarding:', error);
-    }
-    setOnboardingStatus({ onboarding_completed: true, skipped: true });
-  };
-
   // ============================================================================
   // AUTH HANDLERS
   // ============================================================================
@@ -151,14 +94,12 @@ function AppContent() {
 
   const handleSwitchCompany = async (companyId) => {
     await switchCompany(companyId);
-    setCheckingOnboarding(true);
-    setOnboardingStatus(null);
   };
 
   // ============================================================================
   // LOADING STATE
   // ============================================================================
-  if (authLoading || checkingOnboarding) {
+  if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-surface dark:bg-gray-900">
         <div className="text-center">
@@ -174,18 +115,6 @@ function AppContent() {
   // ============================================================================
   if (!isAuthenticated) {
     return null; // Main.jsx handles unauthenticated routing
-  }
-
-  // ============================================================================
-  // ONBOARDING WIZARD
-  // ============================================================================
-  if (onboardingStatus && !onboardingStatus.onboarding_completed) {
-    return (
-      <OnboardingWizard
-        onComplete={handleOnboardingComplete}
-        onSkip={handleOnboardingSkip}
-      />
-    );
   }
 
   // ============================================================================

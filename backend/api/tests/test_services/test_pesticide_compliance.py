@@ -121,7 +121,6 @@ class ValidateProposedApplicationTests(PesticideComplianceServiceTestCase):
             acres_treated=10.0,
             applicator_name='John Smith',
             check_weather=False,
-            check_quarantine=False,
         )
 
         self.assertTrue(result.is_valid)
@@ -137,7 +136,6 @@ class ValidateProposedApplicationTests(PesticideComplianceServiceTestCase):
             application_method='Ground Spray',
             acres_treated=10.0,
             check_weather=False,
-            check_quarantine=False,
         )
 
         self.assertFalse(result.is_valid)
@@ -153,7 +151,6 @@ class ValidateProposedApplicationTests(PesticideComplianceServiceTestCase):
             application_method='Ground Spray',
             acres_treated=10.0,
             check_weather=False,
-            check_quarantine=False,
         )
 
         self.assertFalse(result.is_valid)
@@ -168,7 +165,6 @@ class ValidateProposedApplicationTests(PesticideComplianceServiceTestCase):
             application_method='Ground Spray',
             acres_treated=10.0,
             check_weather=False,
-            check_quarantine=False,
         )
 
         self.assertFalse(result.is_valid)
@@ -186,7 +182,6 @@ class ValidateProposedApplicationTests(PesticideComplianceServiceTestCase):
             acres_treated=10.0,
             applicator_name=None,  # Missing applicator
             check_weather=False,
-            check_quarantine=False,
         )
 
         self.assertFalse(result.is_valid)
@@ -205,7 +200,6 @@ class ValidateProposedApplicationTests(PesticideComplianceServiceTestCase):
             applicator_name='Licensed Applicator',
             applicator_license='CA-12345',
             check_weather=False,
-            check_quarantine=False,
         )
 
         self.assertTrue(result.noi_required)
@@ -240,7 +234,6 @@ class ValidateProposedApplicationTests(PesticideComplianceServiceTestCase):
             application_method='Ground Spray',
             acres_treated=10.0,
             check_weather=False,
-            check_quarantine=False,
         )
 
         self.assertFalse(result.is_valid)
