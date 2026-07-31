@@ -1,5 +1,5 @@
 """
-Email Service for Grove Master
+Email Service for Finch Farms Dashboard
 Handles all transactional email sending with template rendering.
 """
 

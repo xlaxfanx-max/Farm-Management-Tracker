@@ -18,7 +18,7 @@ export default function MobileHeader({ onOpenSidebar, isDarkMode, onToggleTheme 
           <ellipse cx="24" cy="24" rx="8" ry="10" fill="#F4A934"/>
           <path d="M24 4C24 4 28 10 28 14C28 18 26 20 24 20C22 20 20 18 20 14C20 10 24 4 24 4Z" fill="#4A7A2A"/>
         </svg>
-        <span className="font-semibold text-gray-900 dark:text-white text-sm">Grove Master</span>
+        <span className="font-semibold text-gray-900 dark:text-white text-sm">Finch Farms</span>
       </div>
       <button
         onClick={onToggleTheme}

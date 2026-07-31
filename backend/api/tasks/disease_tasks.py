@@ -385,7 +385,7 @@ def send_disease_alert_digest():
 
                 message_lines.extend([
                     "-" * 40,
-                    "Log in to Grove Master to view details and take action.",
+                    "Log in to Finch Farms Dashboard to view details and take action.",
                 ])
 
                 message = "\n".join(message_lines)

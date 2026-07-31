@@ -1,5 +1,5 @@
 """
-N+1 Query Detection Tests for Farm Pesticide Tracker
+N+1 Query Detection Tests for Finch Farms Dashboard
 
 Verifies that list endpoints maintain bounded query counts regardless of
 record count. Uses Django's CaptureQueriesContext to assert that queries

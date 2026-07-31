@@ -5,7 +5,7 @@
 
 ## DOCUMENT PURPOSE
 
-This document provides comprehensive architecture documentation for the **Farm Management Tracker** (also known as **Grove Master**) application. It is specifically designed to:
+This document provides comprehensive architecture documentation for the **Farm Management Tracker** (also known as **Finch Farms Dashboard**) application. It is specifically designed to:
 
 1. **Onboard AI assistants** (Claude, etc.) to understand the codebase quickly
 2. **Guide developers** on project structure, patterns, and conventions
@@ -396,7 +396,7 @@ Farm-Management-Tracker/
 |   +-- .env                              # Database credentials (git-ignored)
 |   +-- requirements.txt                  # Python dependencies
 |   |
-|   +-- pesticide_tracker/                # Django Project Config
+|   +-- finch_dashboard/                  # Django Project Config
 |   |   +-- settings.py                   # PostgreSQL + RLS + Celery config
 |   |   +-- urls.py                       # Root URL routing
 |   |   +-- wsgi.py
@@ -1245,12 +1245,12 @@ Organized by domain:
 
 ### Configuration
 
-Location: `backend/pesticide_tracker/celery.py`
+Location: `backend/finch_dashboard/celery.py`
 
 ```python
 from celery import Celery
 
-app = Celery('pesticide_tracker')
+app = Celery('finch_dashboard')
 app.config_from_object('django.conf:settings', namespace='CELERY')
 app.autodiscover_tasks()
 ```
@@ -1360,10 +1360,10 @@ CELERY_BEAT_SCHEDULE = {
 
 ```bash
 # Start worker
-celery -A pesticide_tracker worker --loglevel=info
+celery -A finch_dashboard worker --loglevel=info
 
 # Start beat (for scheduled tasks)
-celery -A pesticide_tracker beat --loglevel=info
+celery -A finch_dashboard beat --loglevel=info
 ```
 
 ---
@@ -1607,7 +1607,7 @@ CELERY_BROKER_URL=redis://localhost:6379/0
 
 | Purpose | Path |
 |---------|------|
-| Django settings | `backend/pesticide_tracker/settings.py` |
+| Django settings | `backend/finch_dashboard/settings.py` |
 | Environment variables | `backend/.env` |
 | **Models (package)** | **`backend/api/models/`** (17 domain files + `__init__.py` re-export hub) |
 | **Views (hub)** | **`backend/api/views.py`** (re-exports from 28 `*_views.py` files) |
@@ -1689,8 +1689,8 @@ cd frontend && npm start
 npm run build
 
 # Celery
-celery -A pesticide_tracker worker --loglevel=info
-celery -A pesticide_tracker beat --loglevel=info
+celery -A finch_dashboard worker --loglevel=info
+celery -A finch_dashboard beat --loglevel=info
 ```
 
 ---

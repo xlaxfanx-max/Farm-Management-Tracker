@@ -58,7 +58,7 @@ backend/
         test_pdf_extraction.py
         test_pesticide_compliance.py
         test_water_compliance.py
-  pesticide_tracker/
+  finch_dashboard/
     settings.py          # Django settings (Celery, R2, JWT config)
     celery.py            # Celery app with Redis broker
     test_settings.py     # Test-specific settings

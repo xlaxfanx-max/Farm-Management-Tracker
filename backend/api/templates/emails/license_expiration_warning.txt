@@ -24,4 +24,4 @@ This license has expired. Please renew immediately. Operating with an expired li
 View license details: {{ license_url }}
 
 Best regards,
-Grove Master Team
+Finch Farms Dashboard Team

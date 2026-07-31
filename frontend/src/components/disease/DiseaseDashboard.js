@@ -378,7 +378,7 @@ function DiseaseDashboard() {
             About Disease Prevention
           </h3>
           <p className="text-sm text-blue-700 dark:text-blue-300 mb-4">
-            Grove Master monitors disease threats in your region using data from CDFA, satellite imagery,
+            Finch Farms Dashboard monitors disease threats in your region using data from CDFA, satellite imagery,
             and crowdsourced scouting reports. Get alerts when diseases like HLB (Citrus Greening) or
             Asian Citrus Psyllid are detected near your farms.
           </p>

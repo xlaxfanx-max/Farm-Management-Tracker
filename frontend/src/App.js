@@ -392,7 +392,7 @@ function AppContent() {
 
 function App() {
   return (
-    <ErrorBoundary level="app" name="Grove Master">
+    <ErrorBoundary level="app" name="Finch Farms Dashboard">
       <ThemeProvider>
         <SeasonProvider>
           <DataProvider>

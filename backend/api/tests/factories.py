@@ -1,5 +1,5 @@
 """
-Test Factories for Grove Master
+Test Factories for Finch Farms Dashboard
 
 Provides reusable factory functions for creating test data.
 Each factory creates the minimum required related objects

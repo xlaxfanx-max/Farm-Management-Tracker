@@ -6,7 +6,7 @@
 
 ## 1. Where this actually stands
 
-The platform at **ojaifarmingco.com** is already a Finch instance, not a demo. `backend/pesticide_tracker/settings.py` hardcodes CORS/CSRF for the domain. Real Finch well data is in production. The pesticide-compliance origin was already pivoted toward operations. What's left is finishing the aim.
+The platform at **ojaifarmingco.com** is already a Finch instance, not a demo. `backend/finch_dashboard/settings.py` hardcodes CORS/CSRF for the domain. Real Finch well data is in production. The pesticide-compliance origin was already pivoted toward operations. What's left is finishing the aim.
 
 | Module | Verified state | Verdict for Finch |
 |---|---|---|

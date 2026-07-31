@@ -19,7 +19,7 @@ _DB_PATH = os.path.join(_BASE_DIR, 'dev_local.sqlite3').replace('\\', '/')
 os.environ.setdefault('DATABASE_URL', f'sqlite:///{_DB_PATH}')
 os.environ.setdefault('SKIP_MIGRATIONS', '1')
 os.environ.setdefault('DEBUG', 'True')
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'pesticide_tracker.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'finch_dashboard.settings')
 
 from django.core.management import execute_from_command_line  # noqa: E402
 

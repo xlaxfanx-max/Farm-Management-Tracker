@@ -1,5 +1,5 @@
 """
-Grove Master (pesticide_tracker) Django project initialization.
+Finch Farms Dashboard (finch_dashboard) Django project initialization.
 
 This module ensures the Celery app is loaded when Django starts.
 """

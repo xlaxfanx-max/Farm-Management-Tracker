@@ -1,11 +1,11 @@
 /* ==========================================================================
-   Grove Master - Onboarding Wizard Styles
+   Finch Farms Dashboard - Onboarding Wizard Styles
    A refined, professional design with citrus grove warmth
    ========================================================================== */
 
 /* Design Tokens */
 :root {
-  /* Color Palette - Grove Master Brand Colors */
+  /* Color Palette - Finch Farms Dashboard Brand Colors */
   --onboard-primary: #2D5016;
   --onboard-primary-light: #4A7A2A;
   --onboard-primary-dark: #1E3610;
@@ -14,7 +14,7 @@
   --onboard-success: #4A7A2A;
   --onboard-error: #dc2626;
 
-  /* Neutrals - Grove Master Brand */
+  /* Neutrals - Finch Farms Dashboard Brand */
   --onboard-bg: #FFFEF7;
   --onboard-surface: #FDFCF8;
   --onboard-sidebar-bg: linear-gradient(180deg, #2D5016 0%, #1E3610 100%);
@@ -30,7 +30,7 @@
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
   --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 
-  /* Typography - Grove Master Brand */
+  /* Typography - Finch Farms Dashboard Brand */
   --font-display: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-body: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
 

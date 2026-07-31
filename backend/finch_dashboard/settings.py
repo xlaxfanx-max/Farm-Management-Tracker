@@ -79,7 +79,7 @@ MIDDLEWARE = [
     'api.permissions.CompanyMiddleware',
 ]
 
-ROOT_URLCONF = 'pesticide_tracker.urls'
+ROOT_URLCONF = 'finch_dashboard.urls'
 
 TEMPLATES = [
     {
@@ -99,7 +99,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'pesticide_tracker.wsgi.application'
+WSGI_APPLICATION = 'finch_dashboard.wsgi.application'
 
 # =============================================================================
 # DATABASE CONFIGURATION
@@ -378,8 +378,8 @@ else:
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 # Common email settings
-DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'Grove Master <noreply@grovemaster.com>')
-EMAIL_SUBJECT_PREFIX = '[Grove Master] '
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'Finch Farms Dashboard <noreply@finchfarms.com>')
+EMAIL_SUBJECT_PREFIX = '[Finch Farms Dashboard] '
 
 # Frontend URL for email links
 _raw_frontend_url = os.environ.get('FRONTEND_URL', 'http://localhost:3000')

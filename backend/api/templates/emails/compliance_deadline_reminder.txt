@@ -17,4 +17,4 @@ View this deadline: {{ deadline_url }}
 Visit your compliance dashboard to see all upcoming deadlines and take action.
 
 Best regards,
-Grove Master Team
+Finch Farms Dashboard Team

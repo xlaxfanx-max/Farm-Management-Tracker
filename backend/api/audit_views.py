@@ -1,5 +1,5 @@
 """
-Audit Log Views for Grove Master
+Audit Log Views for Finch Farms Dashboard
 
 Add this file to: backend/api/audit_views.py
 

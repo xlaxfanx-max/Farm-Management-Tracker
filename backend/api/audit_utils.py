@@ -1,5 +1,5 @@
 """
-Audit Logging Utilities for Grove Master
+Audit Logging Utilities for Finch Farms Dashboard
 
 Add this file to: backend/api/audit_utils.py
 

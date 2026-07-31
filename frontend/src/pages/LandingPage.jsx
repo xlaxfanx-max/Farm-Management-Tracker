@@ -199,7 +199,7 @@ const LandingPage = () => {
                   WebkitTextFillColor: 'transparent',
                   fontFamily: "'Space Grotesk', sans-serif"
                 }}>
-                  Grove Master
+                  Finch Farms Dashboard
                 </h1>
                 <p style={{ fontSize: '0.75rem', color: '#475569', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
                   Compliance Management System
@@ -745,7 +745,7 @@ const LandingPage = () => {
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
                   <Droplet style={{ color: '#ea580c' }} size={28} />
-                  <span style={{ fontSize: '1.25rem', fontWeight: 900, color: '#0f172a' }}>Grove Master</span>
+                  <span style={{ fontSize: '1.25rem', fontWeight: 900, color: '#0f172a' }}>Finch Farms Dashboard</span>
                 </div>
                 <p style={{ color: '#475569', fontSize: '0.875rem' }}>
                   Professional compliance management for California citrus operations.
@@ -795,7 +795,7 @@ const LandingPage = () => {
               </div>
             </div>
             <div style={{ paddingTop: '2rem', borderTop: '1px solid #e2e8f0', textAlign: 'center', color: '#64748b', fontSize: '0.875rem' }}>
-              © 2026 Grove Master. Professional compliance management for California citrus growers.
+              © 2026 Finch Farms Dashboard. Professional compliance management for California citrus growers.
             </div>
           </div>
         </footer>

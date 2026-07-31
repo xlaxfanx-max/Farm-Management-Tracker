@@ -9,7 +9,7 @@ silently for fsma_tasks and disease_tasks — this test blocks the regression.
 from django.conf import settings
 from django.test import SimpleTestCase
 
-from pesticide_tracker.celery import app as celery_app
+from finch_dashboard.celery import app as celery_app
 
 
 class CeleryTaskRegistrationTests(SimpleTestCase):

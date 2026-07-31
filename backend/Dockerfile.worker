@@ -44,4 +44,4 @@ COPY --chown=appuser:appuser . .
 USER appuser
 
 # Celery worker with beat scheduler for periodic tasks
-CMD ["celery", "-A", "pesticide_tracker", "worker", "-l", "info", "-B"]
+CMD ["celery", "-A", "finch_dashboard", "worker", "-l", "info", "-B"]

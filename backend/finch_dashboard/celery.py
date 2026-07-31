@@ -1,25 +1,25 @@
 """
-Celery configuration for Grove Master (pesticide_tracker) project.
+Celery configuration for Finch Farms Dashboard (finch_dashboard) project.
 
 This module initializes the Celery application and configures it to work
 with Django. Tasks are auto-discovered from the 'api' app.
 
 Usage:
     # Start the worker (from backend directory):
-    celery -A pesticide_tracker worker --loglevel=info
+    celery -A finch_dashboard worker --loglevel=info
 
     # On Windows, use:
-    celery -A pesticide_tracker worker --loglevel=info --pool=solo
+    celery -A finch_dashboard worker --loglevel=info --pool=solo
 """
 
 import os
 from celery import Celery
 
 # Set the default Django settings module for the 'celery' program.
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'pesticide_tracker.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'finch_dashboard.settings')
 
 # Create the Celery app
-app = Celery('pesticide_tracker')
+app = Celery('finch_dashboard')
 
 # Load config from Django settings, using the CELERY namespace.
 # This means all celery-related settings in Django should be prefixed with CELERY_

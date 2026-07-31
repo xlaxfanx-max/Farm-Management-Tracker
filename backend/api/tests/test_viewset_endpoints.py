@@ -1,5 +1,5 @@
 """
-Comprehensive ViewSet endpoint tests for the Farm Pesticide Tracker.
+Comprehensive ViewSet endpoint tests for Finch Farms Dashboard.
 
 Tests CRUD operations, authentication, company scoping, and response shapes
 for all critical ViewSets: Farm, Field, Harvest, Packinghouse, Pool,

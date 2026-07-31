@@ -48,7 +48,7 @@ export default function Login() {
               <path d="M24 4C24 4 20 8 18 10" stroke="#2D5016" strokeWidth="1.5" strokeLinecap="round"/>
             </svg>
           </div>
-          <h1 className="text-2xl font-bold text-bark-brown">Grove Master</h1>
+          <h1 className="text-2xl font-bold text-bark-brown">Finch Farms Dashboard</h1>
           <p className="text-gray-600 mt-1">Sign in to your account</p>
         </div>
 

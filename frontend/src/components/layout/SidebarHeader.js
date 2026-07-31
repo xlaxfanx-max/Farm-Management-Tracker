@@ -14,7 +14,7 @@ export default function SidebarHeader({ collapsed, onToggleCollapse, isDarkMode,
               <path d="M24 4C24 4 28 10 28 14C28 18 26 20 24 20C22 20 20 18 20 14C20 10 24 4 24 4Z" fill="#4A7A2A"/>
               <path d="M24 4C24 4 20 8 18 10" stroke="#2D5016" strokeWidth="1.5" strokeLinecap="round"/>
             </svg>
-            <span className="font-semibold text-white text-sm tracking-tight">Grove Master</span>
+            <span className="font-semibold text-white text-sm tracking-tight">Finch Farms</span>
           </div>
         )}
         <div className="flex items-center gap-1">

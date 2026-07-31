@@ -23,7 +23,7 @@ def setup_django():
         sys.path.insert(0, str(backend_dir))
 
     # Set the Django settings module
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'pesticide_tracker.settings')
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'finch_dashboard.settings')
 
     # Initialize Django
     import django

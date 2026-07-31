@@ -25,4 +25,4 @@ Please schedule refresher training for {{ trainee_name }} before the expiration 
 View training records: {{ training_url }}
 
 Best regards,
-Grove Master Team
+Finch Farms Dashboard Team
