@@ -61,7 +61,7 @@ export function CompanySelector() {
       <button
         onClick={() => setIsOpen(!isOpen)}
         disabled={loading}
-        className="flex items-center gap-2 px-3 py-2 bg-surface-raised border border-border rounded-card hover:bg-cream-50 transition-colors min-w-[200px]"
+        className="flex items-center gap-2 px-3 py-2 bg-surface-raised border border-border rounded-button hover:bg-cream-50 transition-colors min-w-[200px]"
       >
         <Building2 className="w-4 h-4 text-text-secondary" />
         <span className="text-sm font-medium text-bark-700 truncate flex-1 text-left">
@@ -374,7 +374,7 @@ export function InviteUserModal({ isOpen, onClose, onSuccess }) {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-transparent"
+              className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
               placeholder="colleague@example.com"
               required
             />
@@ -387,7 +387,7 @@ export function InviteUserModal({ isOpen, onClose, onSuccess }) {
             <select
               value={role}
               onChange={(e) => setRole(e.target.value)}
-              className="w-full px-4 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-transparent"
+              className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
             >
               {roles.map((r) => (
                 <option key={r.codename} value={r.codename}>
@@ -404,7 +404,7 @@ export function InviteUserModal({ isOpen, onClose, onSuccess }) {
             <textarea
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              className="w-full px-4 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-transparent"
+              className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
               rows={3}
               placeholder="Welcome to the team!"
             />
@@ -414,7 +414,7 @@ export function InviteUserModal({ isOpen, onClose, onSuccess }) {
             <button
               type="button"
               onClick={handleClose}
-              className="flex-1 px-4 py-2 border border-border-strong rounded-card text-bark-700 hover:bg-cream-50"
+              className="flex-1 px-4 py-2 border border-border-strong rounded-button text-bark-700 hover:bg-cream-50"
             >
               Cancel
             </button>

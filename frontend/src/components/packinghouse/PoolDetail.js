@@ -134,7 +134,7 @@ const PoolDetail = ({ pool, onBack, onEdit, onRefresh }) => {
           </button>
           <button
             onClick={onEdit}
-            className="flex items-center px-4 py-2 border border-border-strong rounded-card hover:bg-cream-50"
+            className="flex items-center px-4 py-2 border border-border-strong rounded-button hover:bg-cream-50"
           >
             <Edit className="w-4 h-4 mr-2" />
             Edit Pool
@@ -257,14 +257,14 @@ const PoolDetail = ({ pool, onBack, onEdit, onRefresh }) => {
               ) : (
                 <div className="bg-surface-raised rounded-card border border-border overflow-hidden">
                   <table className="min-w-full divide-y divide-border">
-                    <thead className="bg-cream-50">
+                    <thead className="bg-cream-50 bg-surface-sunken">
                       <tr>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-text-secondary uppercase">Date</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-text-secondary uppercase">Ticket #</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-text-secondary uppercase">Field</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-text-secondary uppercase">Harvest</th>
-                        <th className="px-4 py-3 text-right text-xs font-medium text-text-secondary uppercase">Bins</th>
-                        <th className="px-4 py-3 text-right text-xs font-medium text-text-secondary uppercase">Weight</th>
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-caps">Date</th>
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-caps">Ticket #</th>
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-caps">Field</th>
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-caps">Harvest</th>
+                        <th className="px-4 py-3 text-right text-xs font-semibold text-text-secondary uppercase tracking-caps">Bins</th>
+                        <th className="px-4 py-3 text-right text-xs font-semibold text-text-secondary uppercase tracking-caps">Weight</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-border">
@@ -323,14 +323,14 @@ const PoolDetail = ({ pool, onBack, onEdit, onRefresh }) => {
               ) : (
                 <div className="bg-surface-raised rounded-card border border-border overflow-hidden">
                   <table className="min-w-full divide-y divide-border">
-                    <thead className="bg-cream-50">
+                    <thead className="bg-cream-50 bg-surface-sunken">
                       <tr>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-text-secondary uppercase">Report Date</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-text-secondary uppercase">Period</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-text-secondary uppercase">Field</th>
-                        <th className="px-4 py-3 text-right text-xs font-medium text-text-secondary uppercase">Bins</th>
-                        <th className="px-4 py-3 text-right text-xs font-medium text-text-secondary uppercase">Pack %</th>
-                        <th className="px-4 py-3 text-right text-xs font-medium text-text-secondary uppercase">House Avg</th>
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-caps">Report Date</th>
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-caps">Period</th>
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-caps">Field</th>
+                        <th className="px-4 py-3 text-right text-xs font-semibold text-text-secondary uppercase tracking-caps">Bins</th>
+                        <th className="px-4 py-3 text-right text-xs font-semibold text-text-secondary uppercase tracking-caps">Pack %</th>
+                        <th className="px-4 py-3 text-right text-xs font-semibold text-text-secondary uppercase tracking-caps">House Avg</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-border">
@@ -372,15 +372,15 @@ const PoolDetail = ({ pool, onBack, onEdit, onRefresh }) => {
               ) : (
                 <div className="bg-surface-raised rounded-card border border-border overflow-hidden">
                   <table className="min-w-full divide-y divide-border">
-                    <thead className="bg-cream-50">
+                    <thead className="bg-cream-50 bg-surface-sunken">
                       <tr>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-text-secondary uppercase">Date</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-text-secondary uppercase">Field</th>
-                        <th className="px-4 py-3 text-right text-xs font-medium text-text-secondary uppercase">Bins</th>
-                        <th className="px-4 py-3 text-right text-xs font-medium text-text-secondary uppercase">Net Return</th>
-                        <th className="px-4 py-3 text-right text-xs font-medium text-text-secondary uppercase">$/Bin</th>
-                        <th className="px-4 py-3 text-right text-xs font-medium text-text-secondary uppercase">Amount Due</th>
-                        <th className="px-4 py-3 text-center text-xs font-medium text-text-secondary uppercase">Details</th>
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-caps">Date</th>
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-caps">Field</th>
+                        <th className="px-4 py-3 text-right text-xs font-semibold text-text-secondary uppercase tracking-caps">Bins</th>
+                        <th className="px-4 py-3 text-right text-xs font-semibold text-text-secondary uppercase tracking-caps">Net Return</th>
+                        <th className="px-4 py-3 text-right text-xs font-semibold text-text-secondary uppercase tracking-caps">$/Bin</th>
+                        <th className="px-4 py-3 text-right text-xs font-semibold text-text-secondary uppercase tracking-caps">Amount Due</th>
+                        <th className="px-4 py-3 text-center text-xs font-semibold text-text-secondary uppercase tracking-caps">Details</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-border">

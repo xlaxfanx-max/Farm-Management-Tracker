@@ -303,7 +303,7 @@ const AuditLogViewer = () => {
             <button
               onClick={fetchLogs}
               disabled={loading}
-              className="inline-flex items-center gap-2 px-4 py-2 border border-border-strong rounded-card text-bark-700 hover:bg-cream-50 transition-colors disabled:opacity-50"
+              className="inline-flex items-center gap-2 px-4 py-2 border border-border-strong rounded-button text-bark-700 hover:bg-cream-50 transition-colors disabled:opacity-50"
             >
               <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
               Refresh
@@ -334,7 +334,7 @@ const AuditLogViewer = () => {
                   type="date"
                   value={filters.startDate}
                   onChange={(e) => handleFilterChange('startDate', e.target.value)}
-                  className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-primary"
+                  className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                 />
               </div>
 
@@ -347,7 +347,7 @@ const AuditLogViewer = () => {
                   type="date"
                   value={filters.endDate}
                   onChange={(e) => handleFilterChange('endDate', e.target.value)}
-                  className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-primary"
+                  className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                 />
               </div>
 
@@ -360,7 +360,7 @@ const AuditLogViewer = () => {
                 <select
                   value={filters.userId}
                   onChange={(e) => handleFilterChange('userId', e.target.value)}
-                  className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-primary"
+                  className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                 >
                   <option value="">All Users</option>
                   {filterOptions.users.map(user => (
@@ -383,7 +383,7 @@ const AuditLogViewer = () => {
                 <select
                   value={filters.action}
                   onChange={(e) => handleFilterChange('action', e.target.value)}
-                  className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-primary"
+                  className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                 >
                   <option value="">All Actions</option>
                   {filterOptions.actions.map(action => (
@@ -403,7 +403,7 @@ const AuditLogViewer = () => {
                 <select
                   value={filters.modelName}
                   onChange={(e) => handleFilterChange('modelName', e.target.value)}
-                  className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-primary"
+                  className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                 >
                   <option value="">All Types</option>
                   {filterOptions.modelNames.map(model => (
@@ -443,7 +443,7 @@ const AuditLogViewer = () => {
               setPageSize(Number(e.target.value));
               setPage(1);
             }}
-            className="border border-border-strong rounded px-2 py-1"
+            className="px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
           >
             <option value={10}>10</option>
             <option value={25}>25</option>
@@ -465,11 +465,11 @@ const AuditLogViewer = () => {
       <div className="bg-surface-raised rounded-card shadow-sm border border-border overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-cream-50 border-b border-border">
+            <thead className="bg-cream-50 border-b border-border bg-surface-sunken">
               <tr>
                 <th className="w-12 px-4 py-3"></th>
                 <th
-                  className="px-4 py-3 text-left text-sm font-medium text-bark-700 cursor-pointer hover:bg-cream-100"
+                  className="px-4 py-3 text-left text-sm font-semibold text-bark-700 cursor-pointer hover:bg-cream-100"
                   onClick={() => handleSort('timestamp')}
                 >
                   <div className="flex items-center gap-1">
@@ -479,7 +479,7 @@ const AuditLogViewer = () => {
                   </div>
                 </th>
                 <th
-                  className="px-4 py-3 text-left text-sm font-medium text-bark-700 cursor-pointer hover:bg-cream-100"
+                  className="px-4 py-3 text-left text-sm font-semibold text-bark-700 cursor-pointer hover:bg-cream-100"
                   onClick={() => handleSort('user__email')}
                 >
                   <div className="flex items-center gap-1">
@@ -489,7 +489,7 @@ const AuditLogViewer = () => {
                   </div>
                 </th>
                 <th
-                  className="px-4 py-3 text-left text-sm font-medium text-bark-700 cursor-pointer hover:bg-cream-100"
+                  className="px-4 py-3 text-left text-sm font-semibold text-bark-700 cursor-pointer hover:bg-cream-100"
                   onClick={() => handleSort('action')}
                 >
                   <div className="flex items-center gap-1">
@@ -498,7 +498,7 @@ const AuditLogViewer = () => {
                   </div>
                 </th>
                 <th
-                  className="px-4 py-3 text-left text-sm font-medium text-bark-700 cursor-pointer hover:bg-cream-100"
+                  className="px-4 py-3 text-left text-sm font-semibold text-bark-700 cursor-pointer hover:bg-cream-100"
                   onClick={() => handleSort('model_name')}
                 >
                   <div className="flex items-center gap-1">
@@ -506,7 +506,7 @@ const AuditLogViewer = () => {
                     {getSortIcon('model_name')}
                   </div>
                 </th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-bark-700">
+                <th className="px-4 py-3 text-left text-sm font-semibold text-bark-700">
                   Description
                 </th>
               </tr>

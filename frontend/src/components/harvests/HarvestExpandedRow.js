@@ -78,7 +78,7 @@ const HarvestExpandedRow = ({
         </button>
         <button
           onClick={(e) => { e.stopPropagation(); handleDelete(harvest.id); }}
-          className="flex items-center gap-1 px-3 py-1.5 text-sm text-danger border border-danger/25 rounded-card hover:bg-danger-bg"
+          className="flex items-center gap-1 px-3 py-1.5 text-sm text-danger border border-danger/25 rounded-button hover:bg-danger-bg"
         >
           <Trash2 size={16} /> Delete
         </button>
@@ -226,16 +226,16 @@ const LoadsTable = ({ harvest, openHarvestLoadModal }) => (
     <p className="text-sm font-medium text-bark-700 mb-2">Loads ({harvest.loads.length})</p>
     <div className="border rounded-lg overflow-hidden">
       <table className="min-w-full divide-y divide-border">
-        <thead className="bg-cream-50">
+        <thead className="bg-cream-50 bg-surface-sunken">
           <tr>
-            <th className="px-3 py-2 text-left text-xs font-medium text-text-secondary">#</th>
-            <th className="px-3 py-2 text-left text-xs font-medium text-text-secondary">Buyer</th>
-            <th className="px-3 py-2 text-left text-xs font-medium text-text-secondary">Bins</th>
-            <th className="px-3 py-2 text-left text-xs font-medium text-text-secondary">Grade</th>
-            <th className="px-3 py-2 text-left text-xs font-medium text-text-secondary">Revenue</th>
-            <th className="px-3 py-2 text-left text-xs font-medium text-text-secondary">Payment</th>
-            <th className="px-3 py-2 text-left text-xs font-medium text-text-secondary">Truck</th>
-            <th className="px-3 py-2 text-left text-xs font-medium text-text-secondary">Actions</th>
+            <th className="px-3 py-2 text-left text-xs font-semibold text-text-secondary">#</th>
+            <th className="px-3 py-2 text-left text-xs font-semibold text-text-secondary">Buyer</th>
+            <th className="px-3 py-2 text-left text-xs font-semibold text-text-secondary">Bins</th>
+            <th className="px-3 py-2 text-left text-xs font-semibold text-text-secondary">Grade</th>
+            <th className="px-3 py-2 text-left text-xs font-semibold text-text-secondary">Revenue</th>
+            <th className="px-3 py-2 text-left text-xs font-semibold text-text-secondary">Payment</th>
+            <th className="px-3 py-2 text-left text-xs font-semibold text-text-secondary">Truck</th>
+            <th className="px-3 py-2 text-left text-xs font-semibold text-text-secondary">Actions</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-border">
@@ -278,15 +278,15 @@ const LaborTable = ({ harvest, openHarvestLaborModal }) => (
     <p className="text-sm font-medium text-bark-700 mb-2">Labor Records ({harvest.labor_records.length})</p>
     <div className="border rounded-lg overflow-hidden">
       <table className="min-w-full divide-y divide-border">
-        <thead className="bg-cream-50">
+        <thead className="bg-cream-50 bg-surface-sunken">
           <tr>
-            <th className="px-3 py-2 text-left text-xs font-medium text-text-secondary">Contractor</th>
-            <th className="px-3 py-2 text-left text-xs font-medium text-text-secondary">Workers</th>
-            <th className="px-3 py-2 text-left text-xs font-medium text-text-secondary">Hours</th>
-            <th className="px-3 py-2 text-left text-xs font-medium text-text-secondary">Bins Picked</th>
-            <th className="px-3 py-2 text-left text-xs font-medium text-text-secondary">Cost</th>
-            <th className="px-3 py-2 text-left text-xs font-medium text-text-secondary">Training</th>
-            <th className="px-3 py-2 text-left text-xs font-medium text-text-secondary">Actions</th>
+            <th className="px-3 py-2 text-left text-xs font-semibold text-text-secondary">Contractor</th>
+            <th className="px-3 py-2 text-left text-xs font-semibold text-text-secondary">Workers</th>
+            <th className="px-3 py-2 text-left text-xs font-semibold text-text-secondary">Hours</th>
+            <th className="px-3 py-2 text-left text-xs font-semibold text-text-secondary">Bins Picked</th>
+            <th className="px-3 py-2 text-left text-xs font-semibold text-text-secondary">Cost</th>
+            <th className="px-3 py-2 text-left text-xs font-semibold text-text-secondary">Training</th>
+            <th className="px-3 py-2 text-left text-xs font-semibold text-text-secondary">Actions</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-border">

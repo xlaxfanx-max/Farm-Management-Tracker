@@ -194,7 +194,7 @@ function WaterTestModal({ test, waterSource, onClose, onSave }) {
                     value={formData.lab_name}
                     onChange={(e) => setFormData({ ...formData, lab_name: e.target.value })}
                     placeholder="Testing laboratory"
-                    className="w-full px-3 py-2 border border-border-strong rounded-card focus:border-primary focus:ring-[3px] focus:ring-ring"
+                    className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                   />
                 </div>
 
@@ -207,7 +207,7 @@ function WaterTestModal({ test, waterSource, onClose, onSave }) {
                     value={formData.lab_certification_number}
                     onChange={(e) => setFormData({ ...formData, lab_certification_number: e.target.value })}
                     placeholder="Optional"
-                    className="w-full px-3 py-2 border border-border-strong rounded-card focus:border-primary focus:ring-[3px] focus:ring-ring"
+                    className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                   />
                 </div>
               </div>
@@ -236,7 +236,7 @@ function WaterTestModal({ test, waterSource, onClose, onSave }) {
                       value={formData.ecoli_result}
                       onChange={(e) => setFormData({ ...formData, ecoli_result: e.target.value })}
                       placeholder="E. coli count"
-                      className="w-full px-3 py-2 border border-border-strong rounded-card focus:border-primary focus:ring-[3px] focus:ring-ring"
+                      className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                     />
                     {autoStatus && formData.ecoli_result && (
                       <p className={`mt-1 text-sm ${
@@ -257,7 +257,7 @@ function WaterTestModal({ test, waterSource, onClose, onSave }) {
                       value={formData.total_coliform_result}
                       onChange={(e) => setFormData({ ...formData, total_coliform_result: e.target.value })}
                       placeholder="Coliform count"
-                      className="w-full px-3 py-2 border border-border-strong rounded-card focus:border-primary focus:ring-[3px] focus:ring-ring"
+                      className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                     />
                   </div>
                 </div>
@@ -286,7 +286,7 @@ function WaterTestModal({ test, waterSource, onClose, onSave }) {
                       value={formData.ph_level}
                       onChange={(e) => setFormData({ ...formData, ph_level: e.target.value })}
                       placeholder="0-14"
-                      className="w-full px-3 py-2 border border-border-strong rounded-card focus:border-primary focus:ring-[3px] focus:ring-ring"
+                      className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                     />
                   </div>
 
@@ -300,7 +300,7 @@ function WaterTestModal({ test, waterSource, onClose, onSave }) {
                       value={formData.nitrate_level}
                       onChange={(e) => setFormData({ ...formData, nitrate_level: e.target.value })}
                       placeholder="mg/L"
-                      className="w-full px-3 py-2 border border-border-strong rounded-card focus:border-primary focus:ring-[3px] focus:ring-ring"
+                      className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                     />
                   </div>
                 </div>
@@ -315,7 +315,7 @@ function WaterTestModal({ test, waterSource, onClose, onSave }) {
               <select
                 value={formData.status}
                 onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                className="w-full px-3 py-2 border border-border-strong rounded-card focus:border-primary focus:ring-[3px] focus:ring-ring"
+                className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
               >
                 <option value="pending">Pending Results</option>
                 <option value="pass">Pass</option>
@@ -360,7 +360,7 @@ function WaterTestModal({ test, waterSource, onClose, onSave }) {
                       type="date"
                       value={formData.retest_date}
                       onChange={(e) => setFormData({ ...formData, retest_date: e.target.value })}
-                      className="w-full px-3 py-2 border border-danger/40 rounded-card focus:border-primary focus:ring-[3px] focus:ring-ring"
+                      className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                     />
                   </div>
                 </div>
@@ -377,7 +377,7 @@ function WaterTestModal({ test, waterSource, onClose, onSave }) {
                 onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                 placeholder="Any additional observations or comments"
                 rows={3}
-                className="w-full px-3 py-2 border border-border-strong rounded-card focus:border-primary focus:ring-[3px] focus:ring-ring"
+                className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
               />
             </div>
 
@@ -391,7 +391,7 @@ function WaterTestModal({ test, waterSource, onClose, onSave }) {
                 value={formData.recorded_by}
                 onChange={(e) => setFormData({ ...formData, recorded_by: e.target.value })}
                 placeholder="Person recording this test"
-                className="w-full px-3 py-2 border border-border-strong rounded-card focus:border-primary focus:ring-[3px] focus:ring-ring"
+                className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
               />
             </div>
           </div>
@@ -402,7 +402,7 @@ function WaterTestModal({ test, waterSource, onClose, onSave }) {
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 text-bark-700 border border-border-strong rounded-card hover:bg-surface-raised"
+            className="px-4 py-2 text-bark-700 border border-border-strong rounded-button hover:bg-surface-raised"
           >
             Cancel
           </button>

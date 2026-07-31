@@ -192,7 +192,7 @@ const CompanySettings = ({ onBack }) => {
             <div className="flex gap-2">
               <button
                 onClick={handleCancel}
-                className="flex items-center px-4 py-2 border border-border-strong text-bark-700 rounded-card hover:bg-cream-50 transition-colors"
+                className="flex items-center px-4 py-2 border border-border-strong text-bark-700 rounded-button hover:bg-cream-50 transition-colors"
               >
                 <X className="w-4 h-4 mr-2" />
                 Cancel
@@ -264,7 +264,7 @@ const CompanySettings = ({ onBack }) => {
                   name="name"
                   value={formData.name || ''}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-primary"
+                  className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                   required
                 />
               ) : (
@@ -282,7 +282,7 @@ const CompanySettings = ({ onBack }) => {
                   value={formData.legal_name || ''}
                   onChange={handleInputChange}
                   placeholder="Official registered business name"
-                  className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-primary"
+                  className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                 />
               ) : (
                 <p className="text-heading py-2">{company.legal_name || '—'}</p>
@@ -298,7 +298,7 @@ const CompanySettings = ({ onBack }) => {
                   name="primary_crop"
                   value={formData.primary_crop || ''}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-primary"
+                  className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                 >
                   <option value="">Select primary crop...</option>
                   {cropOptions.map(crop => (
@@ -321,7 +321,7 @@ const CompanySettings = ({ onBack }) => {
                   value={formData.estimated_total_acres || ''}
                   onChange={handleInputChange}
                   placeholder="Total farmed acres"
-                  className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-primary"
+                  className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                 />
               ) : (
                 <p className="text-heading py-2">
@@ -351,7 +351,7 @@ const CompanySettings = ({ onBack }) => {
                   name="primary_contact_name"
                   value={formData.primary_contact_name || ''}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-primary"
+                  className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                 />
               ) : (
                 <p className="text-heading py-2">{company.primary_contact_name || '—'}</p>
@@ -369,7 +369,7 @@ const CompanySettings = ({ onBack }) => {
                   value={formData.phone || ''}
                   onChange={handleInputChange}
                   placeholder="(555) 555-5555"
-                  className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-primary"
+                  className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                 />
               ) : (
                 <p className="text-heading py-2 flex items-center">
@@ -394,7 +394,7 @@ const CompanySettings = ({ onBack }) => {
                   value={formData.email || ''}
                   onChange={handleInputChange}
                   placeholder="company@example.com"
-                  className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-primary"
+                  className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                 />
               ) : (
                 <p className="text-heading py-2 flex items-center">
@@ -430,7 +430,7 @@ const CompanySettings = ({ onBack }) => {
                   value={formData.address || ''}
                   onChange={handleInputChange}
                   placeholder="123 Farm Road"
-                  className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-primary"
+                  className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                 />
               ) : (
                 <p className="text-heading py-2">{company.address || '—'}</p>
@@ -447,7 +447,7 @@ const CompanySettings = ({ onBack }) => {
                   name="city"
                   value={formData.city || ''}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-primary"
+                  className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                 />
               ) : (
                 <p className="text-heading py-2">{company.city || '—'}</p>
@@ -463,7 +463,7 @@ const CompanySettings = ({ onBack }) => {
                   name="county"
                   value={formData.county || ''}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-primary"
+                  className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                 >
                   <option value="">Select county...</option>
                   {californiaCounties.map(county => (
@@ -494,7 +494,7 @@ const CompanySettings = ({ onBack }) => {
                   onChange={handleInputChange}
                   placeholder="93001"
                   maxLength="10"
-                  className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-primary"
+                  className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                 />
               ) : (
                 <p className="text-heading py-2">{company.zip_code || '—'}</p>
@@ -524,7 +524,7 @@ const CompanySettings = ({ onBack }) => {
                   value={formData.operator_id || ''}
                   onChange={handleInputChange}
                   placeholder="County Agricultural Commissioner ID"
-                  className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-primary"
+                  className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                 />
               ) : (
                 <p className="text-heading py-2">{company.operator_id || '—'}</p>
@@ -541,7 +541,7 @@ const CompanySettings = ({ onBack }) => {
                   name="business_license"
                   value={formData.business_license || ''}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-primary"
+                  className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                 />
               ) : (
                 <p className="text-heading py-2">{company.business_license || '—'}</p>
@@ -559,7 +559,7 @@ const CompanySettings = ({ onBack }) => {
                   value={formData.pca_license || ''}
                   onChange={handleInputChange}
                   placeholder="PCA license number if applicable"
-                  className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-primary"
+                  className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                 />
               ) : (
                 <p className="text-heading py-2">{company.pca_license || '—'}</p>
@@ -577,7 +577,7 @@ const CompanySettings = ({ onBack }) => {
                   value={formData.qal_license || ''}
                   onChange={handleInputChange}
                   placeholder="QAL number if applicable"
-                  className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-primary"
+                  className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                 />
               ) : (
                 <p className="text-heading py-2">{company.qal_license || '—'}</p>

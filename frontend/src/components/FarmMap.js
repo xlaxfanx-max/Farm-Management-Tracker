@@ -309,7 +309,7 @@ const FarmMap = ({
       <div className="absolute top-4 right-4 z-[1000] flex flex-col gap-2">
         <button
           onClick={() => setIsExpanded(!isExpanded)}
-          className="bg-surface-raised p-2.5 rounded-card shadow-md hover:bg-cream-50 transition-colors"
+          className="bg-surface-raised p-2.5 rounded-button shadow-md hover:bg-cream-50 transition-colors"
           title={isExpanded ? 'Collapse map' : 'Expand map'}
         >
           {isExpanded ? <Minimize2 className="w-5 h-5 text-bark-700" /> : <Maximize2 className="w-5 h-5 text-bark-700" />}
@@ -318,7 +318,7 @@ const FarmMap = ({
         <div className="relative">
           <button
             onClick={() => setShowLayerMenu(!showLayerMenu)}
-            className="bg-surface-raised p-2.5 rounded-card shadow-md hover:bg-cream-50 transition-colors"
+            className="bg-surface-raised p-2.5 rounded-button shadow-md hover:bg-cream-50 transition-colors"
             title="Map layers"
           >
             <Layers className="w-5 h-5 text-bark-700" />
@@ -395,7 +395,7 @@ const FarmMap = ({
             {pendingBoundary && (
               <button
                 onClick={saveBoundary}
-                className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2.5 bg-primary text-white rounded-card hover:bg-primary-hover text-sm font-semibold shadow-md"
+                className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2.5 bg-primary text-white rounded-button hover:bg-primary-hover text-sm font-semibold shadow-md"
               >
                 <Save className="w-4 h-4" />
                 Save Boundary
@@ -403,7 +403,7 @@ const FarmMap = ({
             )}
             <button
               onClick={cancelDrawing}
-              className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2.5 bg-danger-bg text-danger rounded-card hover:bg-danger-bg text-sm font-medium border border-danger/25"
+              className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2.5 bg-danger-bg text-danger rounded-button hover:bg-danger-bg text-sm font-medium border border-danger/25"
             >
               <X className="w-4 h-4" />
               Cancel
@@ -572,7 +572,7 @@ const FarmMap = ({
                   <p className="text-sm text-text-secondary">{field.total_acres} acres</p>
                   <button
                     onClick={() => startDrawing('field', field.id, field.name)}
-                    className="mt-3 w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-yellow-500 text-white rounded-card hover:bg-yellow-600 text-sm font-semibold shadow-md hover:shadow-lg transition-all border border-yellow-600"
+                    className="mt-3 w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-yellow-500 text-white rounded-button hover:bg-yellow-600 text-sm font-semibold shadow-md hover:shadow-lg transition-all border border-yellow-600"
                   >
                     <Pencil className="w-4 h-4" />
                     Redraw Boundary
@@ -613,7 +613,7 @@ const FarmMap = ({
                     )}
                     <button
                       onClick={() => startDrawing('farm', farm.id, farm.name)}
-                      className="mt-3 w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-white rounded-card hover:bg-primary-hover text-sm font-semibold shadow-md hover:shadow-lg transition-all"
+                      className="mt-3 w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-white rounded-button hover:bg-primary-hover text-sm font-semibold shadow-md hover:shadow-lg transition-all"
                     >
                       <Pencil className="w-4 h-4" />
                       Redraw Farm Boundary
@@ -645,7 +645,7 @@ const FarmMap = ({
                   <p className="text-sm text-text-secondary">{field.total_acres} acres</p>
                   <button
                     onClick={() => startDrawing('field', field.id, field.name)}
-                    className="mt-3 w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-white rounded-card hover:bg-primary-hover text-sm font-semibold shadow-md hover:shadow-lg transition-all animate-pulse hover:animate-none"
+                    className="mt-3 w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-white rounded-button hover:bg-primary-hover text-sm font-semibold shadow-md hover:shadow-lg transition-all animate-pulse hover:animate-none"
                   >
                     <Pencil className="w-4 h-4" />
                     Draw Boundary

@@ -118,14 +118,14 @@ const PoolLedgerTab = ({ pool }) => {
       ) : (
         <div className="bg-surface-raised rounded-card border border-border overflow-hidden">
           <table className="min-w-full divide-y divide-border">
-            <thead className="bg-cream-50">
+            <thead className="bg-cream-50 bg-surface-sunken">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-text-secondary uppercase">Date</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-text-secondary uppercase">Type</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-text-secondary uppercase">Reference</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-text-secondary uppercase">Description</th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-text-secondary uppercase">Amount</th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-text-secondary uppercase">Running Total</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-caps">Date</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-caps">Type</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-caps">Reference</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-caps">Description</th>
+                <th className="px-4 py-3 text-right text-xs font-semibold text-text-secondary uppercase tracking-caps">Amount</th>
+                <th className="px-4 py-3 text-right text-xs font-semibold text-text-secondary uppercase tracking-caps">Running Total</th>
                 <th className="px-4 py-3" />
               </tr>
             </thead>

@@ -65,7 +65,7 @@ export default function SetupChecklist({ scoreData, onNavigate, onDismiss }) {
             <button
               key={item.key}
               onClick={() => onNavigate(item.action_key)}
-              className="w-full flex items-center gap-2 px-3 py-2 bg-surface-raised border border-green-200 rounded-card text-sm text-green-800 hover:bg-green-50 transition-colors text-left"
+              className="w-full flex items-center gap-2 px-3 py-2 bg-surface-raised border border-green-200 rounded-button text-sm text-green-800 hover:bg-green-50 transition-colors text-left"
             >
               <ChevronRight className="w-4 h-4 text-green-500 flex-shrink-0" />
               {item.action}

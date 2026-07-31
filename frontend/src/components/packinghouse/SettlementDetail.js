@@ -444,7 +444,7 @@ const SettlementDetail = ({ settlementId, onClose }) => {
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full">
-                  <thead className="bg-green-50/50">
+                  <thead className="bg-green-50/50 bg-surface-sunken">
                     <tr className="text-xs text-primary uppercase">
                       <th className="px-4 py-2 text-left">Grade</th>
                       <th className="px-4 py-2 text-left">Size</th>
@@ -458,7 +458,7 @@ const SettlementDetail = ({ settlementId, onClose }) => {
                   <tbody className="divide-y divide-green-100">
                     {settlement.grade_lines.map((line, idx) => (
                       <tr key={idx} className="hover:bg-primary-light/30">
-                        <td className="px-4 py-2 font-medium text-heading">
+                        <td className="px-4 py-2 font-medium text-bark-700">
                           {line.grade}
                         </td>
                         <td className="px-4 py-2 text-bark-600">

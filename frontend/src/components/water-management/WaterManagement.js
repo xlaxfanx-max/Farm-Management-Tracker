@@ -295,7 +295,7 @@ const WaterManagement = () => {
             </button>
             <button
               onClick={() => openWellSourceModal()}
-              className="flex items-center gap-2 bg-primary text-white px-4 py-2.5 rounded-card hover:bg-primary-hover shadow-sm"
+              className="flex items-center gap-2 bg-primary text-white px-4 py-2.5 rounded-button hover:bg-primary-hover shadow-sm"
             >
               <Plus className="w-5 h-5" />
               Add Water Source

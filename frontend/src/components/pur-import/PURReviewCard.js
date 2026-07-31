@@ -214,7 +214,7 @@ export default function PURReviewCard({ report, index, farms, onChange, onViewPd
                     const pm = productMatches[pIdx] || {};
                     return (
                       <tr key={pIdx} className="border-b border-border">
-                        <td className="py-2 pr-3 font-medium text-heading">
+                        <td className="py-2 pr-3 font-medium text-bark-700">
                           {prod.product_name}
                         </td>
                         <td className="py-2 pr-3 text-bark-600 font-mono text-xs">

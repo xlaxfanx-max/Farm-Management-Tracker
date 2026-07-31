@@ -53,7 +53,7 @@ const WaterTestsTab = ({
             <button
               key={source.id}
               onClick={() => setSelectedSource(source)}
-              className="flex items-center gap-3 p-3 border border-border rounded-card hover:border-orange-300 hover:bg-orange-50 transition-all text-left"
+              className="flex items-center gap-3 p-3 border border-border rounded-button hover:border-orange-300 hover:bg-orange-50 transition-all text-left"
             >
               <div className={`p-2 rounded-lg ${source.source_type === 'well' ? 'bg-green-100' : 'bg-orange-100'}`}>
                 <Droplet className={`w-4 h-4 ${source.source_type === 'well' ? 'text-green-600' : 'text-link'}`} />

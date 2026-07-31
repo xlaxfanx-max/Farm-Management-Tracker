@@ -196,7 +196,7 @@ const PoolList = () => {
             <select
               value={filters.packinghouse}
               onChange={(e) => setFilters(prev => ({ ...prev, packinghouse: e.target.value }))}
-              className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary"
+              className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
             >
               <option value="">All Packinghouses</option>
               {packinghouses.map(ph => (
@@ -214,7 +214,7 @@ const PoolList = () => {
               value={filters.season}
               onChange={(e) => setFilters(prev => ({ ...prev, season: e.target.value }))}
               placeholder="e.g., 2024-2025"
-              className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary"
+              className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
             />
           </div>
 
@@ -225,7 +225,7 @@ const PoolList = () => {
             <select
               value={filters.status}
               onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value }))}
-              className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary"
+              className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
             >
               <option value="">All Statuses</option>
               {PACKINGHOUSE_CONSTANTS.poolStatuses.map(s => (
@@ -241,7 +241,7 @@ const PoolList = () => {
             <select
               value={filters.commodity}
               onChange={(e) => setFilters(prev => ({ ...prev, commodity: e.target.value }))}
-              className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary"
+              className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
             >
               <option value="">All Commodities</option>
               {PACKINGHOUSE_CONSTANTS.commodities.map(c => (
@@ -271,27 +271,27 @@ const PoolList = () => {
       ) : (
         <div className="bg-surface-raised rounded-card border border-border overflow-hidden">
           <table className="min-w-full divide-y divide-border">
-            <thead className="bg-cream-50">
+            <thead className="bg-cream-50 bg-surface-sunken">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-caps">
                   Pool
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-caps">
                   Packinghouse
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-caps">
                   Commodity
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-caps">
                   Season
                 </th>
-                <th className="px-4 py-3 text-center text-xs font-medium text-text-secondary uppercase tracking-wider">
+                <th className="px-4 py-3 text-center text-xs font-semibold text-text-secondary uppercase tracking-caps">
                   Bins
                 </th>
-                <th className="px-4 py-3 text-center text-xs font-medium text-text-secondary uppercase tracking-wider">
+                <th className="px-4 py-3 text-center text-xs font-semibold text-text-secondary uppercase tracking-caps">
                   Status
                 </th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-text-secondary uppercase tracking-wider">
+                <th className="px-4 py-3 text-right text-xs font-semibold text-text-secondary uppercase tracking-caps">
                   Actions
                 </th>
               </tr>

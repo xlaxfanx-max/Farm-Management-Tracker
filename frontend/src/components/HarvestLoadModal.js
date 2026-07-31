@@ -348,7 +348,7 @@ const HarvestLoadModal = ({
                   value={formData.weight_lbs}
                   onChange={handleChange}
                   step="0.01"
-                  className="w-full border rounded-lg px-3 py-2 bg-surface-raised text-heading"
+                  className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                   placeholder="Scale weight"
                 />
               </div>
@@ -362,7 +362,7 @@ const HarvestLoadModal = ({
                   name="weight_ticket_number"
                   value={formData.weight_ticket_number}
                   onChange={handleChange}
-                  className="w-full border rounded-lg px-3 py-2 bg-surface-raised text-heading"
+                  className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                   placeholder="Scale ticket reference"
                 />
               </div>
@@ -384,7 +384,7 @@ const HarvestLoadModal = ({
                     name="buyer"
                     value={formData.buyer}
                     onChange={handleBuyerChange}
-                    className="flex-1 border rounded-lg px-3 py-2 bg-surface-raised text-heading"
+                    className="flex-1 px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                   >
                     <option value="">Select buyer...</option>
                     {buyers.map(buyer => (
@@ -415,7 +415,7 @@ const HarvestLoadModal = ({
                   name="destination_address"
                   value={formData.destination_address}
                   onChange={handleChange}
-                  className="w-full border rounded-lg px-3 py-2 bg-surface-raised text-heading"
+                  className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                   placeholder="Override buyer address if different"
                 />
               </div>
@@ -436,7 +436,7 @@ const HarvestLoadModal = ({
                   name="grade"
                   value={formData.grade}
                   onChange={handleChange}
-                  className="w-full border rounded-lg px-3 py-2 bg-surface-raised text-heading"
+                  className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                 >
                   {HARVEST_CONSTANTS.GRADES.map(g => (
                     <option key={g.value} value={g.value}>{g.label}</option>
@@ -452,7 +452,7 @@ const HarvestLoadModal = ({
                   name="size_grade"
                   value={formData.size_grade}
                   onChange={handleChange}
-                  className="w-full border rounded-lg px-3 py-2 bg-surface-raised text-heading"
+                  className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                 >
                   <option value="">Select size...</option>
                   {HARVEST_CONSTANTS.SIZE_GRADES.map(s => (
@@ -470,7 +470,7 @@ const HarvestLoadModal = ({
                   name="quality_notes"
                   value={formData.quality_notes}
                   onChange={handleChange}
-                  className="w-full border rounded-lg px-3 py-2 bg-surface-raised text-heading"
+                  className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                   placeholder="Brix, color, defects..."
                 />
               </div>
@@ -494,7 +494,7 @@ const HarvestLoadModal = ({
                   onChange={handleChange}
                   step="0.01"
                   min="0"
-                  className="w-full border rounded-lg px-3 py-2 bg-surface-raised text-heading"
+                  className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                   placeholder="0.00"
                 />
                 {lastLoadForBuyer && formData.price_per_unit && !load && (
@@ -533,7 +533,7 @@ const HarvestLoadModal = ({
                   name="price_unit"
                   value={formData.price_unit}
                   onChange={handleChange}
-                  className="w-full border rounded-lg px-3 py-2 bg-surface-raised text-heading"
+                  className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                 >
                   {HARVEST_CONSTANTS.PRICE_UNITS.map(u => (
                     <option key={u.value} value={u.value}>{u.label}</option>
@@ -552,7 +552,7 @@ const HarvestLoadModal = ({
                   onChange={handleChange}
                   step="0.01"
                   min="0"
-                  className="w-full border rounded-lg px-3 py-2 bg-surface-raised text-heading"
+                  className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                   placeholder={formatCurrency(calculatedRevenue)}
                 />
                 <p className="text-xs text-text-secondary mt-1">
@@ -568,7 +568,7 @@ const HarvestLoadModal = ({
                   name="payment_status"
                   value={formData.payment_status}
                   onChange={handleChange}
-                  className="w-full border rounded-lg px-3 py-2 bg-surface-raised text-heading"
+                  className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                 >
                   {HARVEST_CONSTANTS.PAYMENT_STATUSES.map(s => (
                     <option key={s.value} value={s.value}>{s.label}</option>
@@ -587,7 +587,7 @@ const HarvestLoadModal = ({
                   name="invoice_number"
                   value={formData.invoice_number}
                   onChange={handleChange}
-                  className="w-full border rounded-lg px-3 py-2 bg-surface-raised text-heading"
+                  className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                 />
               </div>
 
@@ -600,7 +600,7 @@ const HarvestLoadModal = ({
                   name="payment_date"
                   value={formData.payment_date}
                   onChange={handleChange}
-                  className="w-full border rounded-lg px-3 py-2 bg-surface-raised text-heading"
+                  className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                 />
               </div>
               <div>
@@ -612,7 +612,7 @@ const HarvestLoadModal = ({
                   name="payment_due_date"
                   value={formData.payment_due_date}
                   onChange={handleChange}
-                  className="w-full border rounded-lg px-3 py-2 bg-surface-raised text-heading"
+                  className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                   placeholder="Expected payment date"
                 />
                 <p className="text-xs text-text-secondary mt-1">Based on buyer payment terms</p>
@@ -635,7 +635,7 @@ const HarvestLoadModal = ({
                   name="truck_id"
                   value={formData.truck_id}
                   onChange={handleChange}
-                  className="w-full border rounded-lg px-3 py-2 bg-surface-raised text-heading"
+                  className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                   placeholder="License plate"
                 />
               </div>
@@ -649,7 +649,7 @@ const HarvestLoadModal = ({
                   name="trailer_id"
                   value={formData.trailer_id}
                   onChange={handleChange}
-                  className="w-full border rounded-lg px-3 py-2 bg-surface-raised text-heading"
+                  className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                 />
               </div>
 
@@ -662,7 +662,7 @@ const HarvestLoadModal = ({
                   name="driver_name"
                   value={formData.driver_name}
                   onChange={handleChange}
-                  className="w-full border rounded-lg px-3 py-2 bg-surface-raised text-heading"
+                  className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                 />
               </div>
 
@@ -675,7 +675,7 @@ const HarvestLoadModal = ({
                   name="seal_number"
                   value={formData.seal_number}
                   onChange={handleChange}
-                  className="w-full border rounded-lg px-3 py-2 bg-surface-raised text-heading"
+                  className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                 />
               </div>
             </div>
@@ -690,7 +690,7 @@ const HarvestLoadModal = ({
                   name="departure_time"
                   value={formData.departure_time}
                   onChange={handleChange}
-                  className="w-full border rounded-lg px-3 py-2 bg-surface-raised text-heading"
+                  className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                 />
               </div>
 
@@ -703,7 +703,7 @@ const HarvestLoadModal = ({
                   name="arrival_time"
                   value={formData.arrival_time}
                   onChange={handleChange}
-                  className="w-full border rounded-lg px-3 py-2 bg-surface-raised text-heading"
+                  className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                 />
               </div>
 
@@ -717,7 +717,7 @@ const HarvestLoadModal = ({
                   value={formData.temperature_at_loading}
                   onChange={handleChange}
                   step="0.1"
-                  className="w-full border rounded-lg px-3 py-2 bg-surface-raised text-heading"
+                  className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                 />
               </div>
             </div>
@@ -733,7 +733,7 @@ const HarvestLoadModal = ({
               value={formData.notes}
               onChange={handleChange}
               rows={2}
-              className="w-full border rounded-lg px-3 py-2 bg-surface-raised text-heading"
+              className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
               placeholder="Any additional notes..."
             />
           </div>

@@ -155,7 +155,7 @@ function WaterSourceModal({ source, farms, fields, onClose, onSave }) {
                 onChange={(e) => setFormData({ ...formData, location_description: e.target.value })}
                 placeholder="Physical location or GPS coordinates"
                 rows={3}
-                className="w-full px-3 py-2 border border-border-strong rounded-card focus:border-primary focus:ring-[3px] focus:ring-ring"
+                className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
               />
             </div>
 
@@ -267,7 +267,7 @@ function WaterSourceModal({ source, farms, fields, onClose, onSave }) {
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 text-bark-700 border border-border-strong rounded-card hover:bg-surface-raised"
+            className="px-4 py-2 text-bark-700 border border-border-strong rounded-button hover:bg-surface-raised"
           >
             Cancel
           </button>

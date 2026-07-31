@@ -42,7 +42,7 @@ const WaterSourcesTab = ({
         <select
           value={filterFarm}
           onChange={(e) => setFilterFarm(e.target.value)}
-          className="px-4 py-2.5 border border-border rounded-card focus:ring-[3px] focus:ring-ring bg-surface-raised"
+          className="px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
         >
           <option value="">All Farms</option>
           {farms.map(farm => (
@@ -52,7 +52,7 @@ const WaterSourcesTab = ({
         <select
           value={filterSourceType}
           onChange={(e) => setFilterSourceType(e.target.value)}
-          className="px-4 py-2.5 border border-border rounded-card focus:ring-[3px] focus:ring-ring bg-surface-raised"
+          className="px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
         >
           <option value="">All Types</option>
           {Object.entries(SOURCE_TYPE_LABELS).map(([value, label]) => (
@@ -61,7 +61,7 @@ const WaterSourcesTab = ({
         </select>
         <button
           onClick={handleRefresh}
-          className="p-2.5 border border-border rounded-card hover:bg-cream-50 text-bark-600"
+          className="p-2.5 border border-border rounded-button hover:bg-cream-50 text-bark-600"
         >
           <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
         </button>

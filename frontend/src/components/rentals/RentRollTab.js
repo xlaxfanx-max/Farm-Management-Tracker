@@ -96,7 +96,7 @@ export default function RentRollTab() {
           <select
             value={locationType}
             onChange={(e) => setLocationType(e.target.value)}
-            className="rounded-lg border border-border-strong bg-surface-raised px-2 py-1.5 text-sm text-heading"
+            className="px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
           >
             {LOCATION_FILTERS.map((f) => (
               <option key={f.value} value={f.value}>{f.label}</option>
@@ -175,14 +175,14 @@ function UnitTable({ units, leaseByUnit }) {
     <div className="rounded-card border border-border overflow-hidden">
       <div className="overflow-x-auto">
         <table className="min-w-full text-sm">
-          <thead className="bg-cream-50">
+          <thead className="bg-cream-50 bg-surface-sunken">
             <tr className="text-left text-text-secondary">
-              <th className="px-4 py-2.5 font-medium">Property</th>
-              <th className="px-4 py-2.5 font-medium">Unit</th>
-              <th className="px-4 py-2.5 font-medium">Occupant</th>
-              <th className="px-4 py-2.5 font-medium text-right">Monthly rent</th>
-              <th className="px-4 py-2.5 font-medium">Lease start</th>
-              <th className="px-4 py-2.5 font-medium">Controls</th>
+              <th className="px-4 py-2.5 font-semibold">Property</th>
+              <th className="px-4 py-2.5 font-semibold">Unit</th>
+              <th className="px-4 py-2.5 font-semibold">Occupant</th>
+              <th className="px-4 py-2.5 font-semibold text-right">Monthly rent</th>
+              <th className="px-4 py-2.5 font-semibold">Lease start</th>
+              <th className="px-4 py-2.5 font-semibold">Controls</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
@@ -193,7 +193,7 @@ function UnitTable({ units, leaseByUnit }) {
                   <td className="px-4 py-2.5 text-bark-600">
                     {u.property_name}
                   </td>
-                  <td className="px-4 py-2.5 font-medium text-heading">
+                  <td className="px-4 py-2.5 font-medium text-bark-700">
                     {u.unit_label}
                   </td>
                   <td className="px-4 py-2.5 text-bark-600">
@@ -201,7 +201,7 @@ function UnitTable({ units, leaseByUnit }) {
                       <span className="text-text-muted">vacant</span>
                     )}
                   </td>
-                  <td className="px-4 py-2.5 text-right font-medium text-heading">
+                  <td className="px-4 py-2.5 text-right font-medium text-bark-700">
                     {formatCurrency(lease?.monthly_rent ?? u.current_rent)}
                   </td>
                   {/* Nullable on purpose: not one lease date exists in any

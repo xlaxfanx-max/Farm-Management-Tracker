@@ -219,7 +219,7 @@ const TemplateEditor = ({ template, onSave, onCancel, saving }) => {
               value={formData.name}
               onChange={(e) => handleChange('name', e.target.value)}
               placeholder="e.g., My Citrus Season"
-              className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-primary"
+              className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
               required
             />
           </div>
@@ -233,7 +233,7 @@ const TemplateEditor = ({ template, onSave, onCancel, saving }) => {
               <select
                 value={formData.start_month}
                 onChange={(e) => handleChange('start_month', parseInt(e.target.value))}
-                className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-primary"
+                className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
               >
                 {MONTHS.map(m => (
                   <option key={m.value} value={m.value}>{m.label}</option>
@@ -250,7 +250,7 @@ const TemplateEditor = ({ template, onSave, onCancel, saving }) => {
                 max="31"
                 value={formData.start_day}
                 onChange={(e) => handleChange('start_day', parseInt(e.target.value))}
-                className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-primary"
+                className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
               />
             </div>
           </div>
@@ -266,7 +266,7 @@ const TemplateEditor = ({ template, onSave, onCancel, saving }) => {
               max="24"
               value={formData.duration_months}
               onChange={(e) => handleChange('duration_months', parseInt(e.target.value))}
-              className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-primary"
+              className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
             />
           </div>
 
@@ -295,7 +295,7 @@ const TemplateEditor = ({ template, onSave, onCancel, saving }) => {
               value={formData.label_format}
               onChange={(e) => handleChange('label_format', e.target.value)}
               placeholder="{start_year} or {start_year}-{end_year}"
-              className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-primary font-mono text-sm"
+              className="w-full font-mono px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
             />
             <p className="text-xs text-text-secondary mt-1">
               Preview: <span className="font-medium">{getPreviewLabel()}</span>
@@ -336,7 +336,7 @@ const TemplateEditor = ({ template, onSave, onCancel, saving }) => {
             <button
               type="button"
               onClick={onCancel}
-              className="flex-1 px-4 py-2 border border-border-strong text-bark-700 rounded-card hover:bg-cream-50 transition-colors"
+              className="flex-1 px-4 py-2 border border-border-strong text-bark-700 rounded-button hover:bg-cream-50 transition-colors"
             >
               Cancel
             </button>

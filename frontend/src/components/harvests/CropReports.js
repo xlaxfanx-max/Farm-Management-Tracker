@@ -208,7 +208,7 @@ function CropCard({ card }) {
             <tbody>
               {card.fields.map(f => (
                 <tr key={f.field_id} className="border-t border-border">
-                  <td className="px-4 py-2 text-heading">
+                  <td className="px-4 py-2 text-bark-700">
                     {f.field_name}
                     {!f.has_harvest && !f.has_applications && (
                       <span className="ml-2 text-[10px] text-text-muted">no data</span>

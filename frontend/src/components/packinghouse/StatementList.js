@@ -184,7 +184,7 @@ const StatementList = ({ packinghouseId = null }) => {
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary"
+            className="px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
           >
             <option value="">All Statuses</option>
             <option value="uploaded">Uploaded</option>
@@ -197,7 +197,7 @@ const StatementList = ({ packinghouseId = null }) => {
           <select
             value={typeFilter}
             onChange={(e) => setTypeFilter(e.target.value)}
-            className="px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary"
+            className="px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
           >
             <option value="">All Types</option>
             <option value="packout">Packout</option>
@@ -244,15 +244,15 @@ const StatementList = ({ packinghouseId = null }) => {
             <table className="w-full">
               <thead>
                 <tr className="text-left text-sm text-text-secondary border-b">
-                  <th className="pb-3 font-medium">File</th>
-                  <th className="pb-3 font-medium">Packinghouse</th>
-                  <th className="pb-3 font-medium">Farm</th>
-                  <th className="pb-3 font-medium">Type</th>
-                  <th className="pb-3 font-medium">Commodity</th>
-                  <th className="pb-3 font-medium">Status</th>
-                  <th className="pb-3 font-medium">Pool</th>
-                  <th className="pb-3 font-medium">Uploaded</th>
-                  <th className="pb-3 font-medium text-right">Actions</th>
+                  <th className="pb-3 font-semibold">File</th>
+                  <th className="pb-3 font-semibold">Packinghouse</th>
+                  <th className="pb-3 font-semibold">Farm</th>
+                  <th className="pb-3 font-semibold">Type</th>
+                  <th className="pb-3 font-semibold">Commodity</th>
+                  <th className="pb-3 font-semibold">Status</th>
+                  <th className="pb-3 font-semibold">Pool</th>
+                  <th className="pb-3 font-semibold">Uploaded</th>
+                  <th className="pb-3 font-semibold text-right">Actions</th>
                 </tr>
               </thead>
               <tbody>

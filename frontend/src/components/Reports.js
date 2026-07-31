@@ -229,7 +229,7 @@ const Reports = () => {
                   type="date"
                   value={filters.start_date}
                   onChange={(e) => handleFilterChange('start_date', e.target.value)}
-                  className="w-full px-3 py-2 border border-border-strong rounded-card bg-surface-raised focus:ring-2 focus:ring-primary"
+                  className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                 />
               </div>
               <div>
@@ -238,7 +238,7 @@ const Reports = () => {
                   type="date"
                   value={filters.end_date}
                   onChange={(e) => handleFilterChange('end_date', e.target.value)}
-                  className="w-full px-3 py-2 border border-border-strong rounded-card bg-surface-raised focus:ring-2 focus:ring-primary"
+                  className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                 />
               </div>
               <div>
@@ -246,7 +246,7 @@ const Reports = () => {
                 <select
                   value={filters.farm_id}
                   onChange={(e) => handleFilterChange('farm_id', e.target.value)}
-                  className="w-full px-3 py-2 border border-border-strong rounded-card bg-surface-raised focus:ring-2 focus:ring-primary"
+                  className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                 >
                   <option value="">All Farms</option>
                   {farms.map(farm => (
@@ -259,7 +259,7 @@ const Reports = () => {
                 <select
                   value={filters.county}
                   onChange={(e) => handleFilterChange('county', e.target.value)}
-                  className="w-full px-3 py-2 border border-border-strong rounded-card bg-surface-raised focus:ring-2 focus:ring-primary"
+                  className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                 >
                   <option value="">All Counties</option>
                   {counties.map(county => (
@@ -310,7 +310,7 @@ const Reports = () => {
               <button
                 onClick={handleValidate}
                 disabled={validating}
-                className="px-4 py-2 border border-border-strong rounded-card hover:bg-cream-50 flex items-center gap-2"
+                className="px-4 py-2 border border-border-strong rounded-button hover:bg-cream-50 flex items-center gap-2"
               >
                 <CheckCircle className="w-4 h-4" />
                 {validating ? 'Validating...' : 'Validate'}

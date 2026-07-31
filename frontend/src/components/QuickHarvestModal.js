@@ -308,7 +308,7 @@ const QuickHarvestModal = ({
               name="crop_variety"
               value={formData.crop_variety}
               onChange={handleChange}
-              className="w-full border rounded-lg px-3 py-2 bg-surface-raised text-heading"
+              className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
               required
             >
               {HARVEST_CONSTANTS.CROP_VARIETIES.map(crop => (
@@ -330,7 +330,7 @@ const QuickHarvestModal = ({
               value={formData.notes}
               onChange={handleChange}
               rows={2}
-              className="w-full border rounded-lg px-3 py-2 bg-surface-raised text-heading"
+              className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
               placeholder="Any additional notes..."
             />
           </div>
@@ -354,7 +354,7 @@ const QuickHarvestModal = ({
             <button
               type="button"
               onClick={handleSwitchToAdvanced}
-              className="w-full px-4 py-2 border border-border-strong text-bark-700 rounded-card hover:bg-cream-50"
+              className="w-full px-4 py-2 border border-border-strong text-bark-700 rounded-button hover:bg-cream-50"
             >
               Switch to Advanced Mode
             </button>

@@ -336,7 +336,7 @@ const HarvestModal = ({
                 name="crop_variety"
                 value={formData.crop_variety}
                 onChange={handleChange}
-                className="w-full border rounded-lg px-3 py-2 bg-surface-raised text-heading"
+                className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                 required
               >
                 {HARVEST_CONSTANTS.CROP_VARIETIES.map(crop => (
@@ -355,7 +355,7 @@ const HarvestModal = ({
                 value={formData.harvest_number}
                 onChange={handleChange}
                 min="1"
-                className="w-full border rounded-lg px-3 py-2 bg-surface-raised text-heading"
+                className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
               />
               <p className="text-xs text-text-secondary mt-1">Which pick this season (1st, 2nd, etc.)</p>
             </div>
@@ -368,7 +368,7 @@ const HarvestModal = ({
                 name="status"
                 value={formData.status}
                 onChange={handleChange}
-                className="w-full border rounded-lg px-3 py-2 bg-surface-raised text-heading"
+                className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
               >
                 {HARVEST_CONSTANTS.HARVEST_STATUSES.map(s => (
                   <option key={s.value} value={s.value}>{s.label}</option>
@@ -428,7 +428,7 @@ const HarvestModal = ({
                   value={formData.bin_weight_lbs}
                   onChange={handleChange}
                   min="1"
-                  className="w-full border rounded-lg px-3 py-2 bg-surface-raised text-heading"
+                  className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                 />
                 <p className="text-xs text-text-secondary mt-1">
                   Est. weight: {((formData.total_bins || 0) * formData.bin_weight_lbs).toLocaleString()} lbs
@@ -484,7 +484,7 @@ const HarvestModal = ({
                   name="supervisor_name"
                   value={formData.supervisor_name}
                   onChange={handleChange}
-                  className="w-full border rounded-lg px-3 py-2 bg-surface-raised text-heading"
+                  className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                   placeholder="Person responsible for this harvest"
                 />
               </div>
@@ -499,7 +499,7 @@ const HarvestModal = ({
                 value={formData.field_conditions}
                 onChange={handleChange}
                 rows={2}
-                className="w-full border rounded-lg px-3 py-2 bg-surface-raised text-heading"
+                className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                 placeholder="Weather, ground conditions, any observations..."
               />
             </div>
@@ -515,7 +515,7 @@ const HarvestModal = ({
               value={formData.notes}
               onChange={handleChange}
               rows={2}
-              className="w-full border rounded-lg px-3 py-2 bg-surface-raised text-heading"
+              className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
               placeholder="Any additional notes..."
             />
           </div>

@@ -78,7 +78,7 @@ export default function PURReportPreview({ data, reportId, onMarkSubmitted }) {
       {/* Table */}
       <div className="overflow-x-auto rounded-card border border-border">
         <table className="w-full text-sm">
-          <thead className="bg-cream-50 text-xs text-text-secondary uppercase tracking-wide">
+          <thead className="bg-cream-50 text-xs text-text-secondary uppercase tracking-wide bg-surface-sunken">
             <tr>
               <th className="px-3 py-2 text-left">Date</th>
               <th className="px-3 py-2 text-left">Field</th>
@@ -102,7 +102,7 @@ export default function PURReportPreview({ data, reportId, onMarkSubmitted }) {
                       : 'bg-surface-raised hover:bg-cream-50'
                   }
                 >
-                  <td className="px-3 py-2 text-heading whitespace-nowrap">{row.date}</td>
+                  <td className="px-3 py-2 text-bark-700 whitespace-nowrap">{row.date}</td>
                   <td className="px-3 py-2 text-bark-700 max-w-[110px] truncate">{row.field_name}</td>
                   <td className="px-3 py-2 text-bark-700 max-w-[140px] truncate">{row.product_name}</td>
                   <td className="px-3 py-2">
@@ -161,7 +161,7 @@ export default function PURReportPreview({ data, reportId, onMarkSubmitted }) {
         <div className="flex gap-2">
           <button
             onClick={handleExportCSV}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm bg-surface-raised border border-border-strong rounded-card hover:bg-cream-50 transition-colors text-bark-700"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm bg-surface-raised border border-border-strong rounded-button hover:bg-cream-50 transition-colors text-bark-700"
           >
             <Download className="w-4 h-4" />
             Export CSV

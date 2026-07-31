@@ -184,7 +184,7 @@ function FarmCard({
 
               <button
                 onClick={() => onUploadImagery(farm.id)}
-                className="flex items-center gap-2 px-3 py-2 bg-bark-600 text-white rounded-card hover:bg-bark-700 transition-colors shadow-sm"
+                className="flex items-center gap-2 px-3 py-2 bg-bark-600 text-white rounded-button hover:bg-bark-700 transition-colors shadow-sm"
                 title="Upload Satellite Imagery"
               >
                 <Satellite size={18} />
@@ -192,7 +192,7 @@ function FarmCard({
               </button>
               <button
                 onClick={() => onAddField(farm.id)}
-                className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-card hover:bg-primary-hover transition-colors shadow-sm"
+                className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-button hover:bg-primary-hover transition-colors shadow-sm"
                 title="Add Field to this Farm"
               >
                 <Plus size={18} />
@@ -200,7 +200,7 @@ function FarmCard({
               </button>
               <button
                 onClick={() => onEdit(farm)}
-                className="p-2 bg-surface-raised border border-border-strong text-bark-700 rounded-card hover:bg-cream-50 transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                className="p-2 bg-surface-raised border border-border-strong text-bark-700 rounded-button hover:bg-cream-50 transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
                 title="Edit Farm"
                 aria-label={`Edit ${farm.name}`}
               >
@@ -208,7 +208,7 @@ function FarmCard({
               </button>
               <button
                 onClick={() => onDelete(farm.id)}
-                className="p-2 bg-surface-raised border border-border-strong text-danger rounded-card hover:bg-danger-bg transition-colors focus:outline-none focus:ring-2 focus:ring-danger focus:ring-offset-2"
+                className="p-2 bg-surface-raised border border-border-strong text-danger rounded-button hover:bg-danger-bg transition-colors focus:outline-none focus:ring-2 focus:ring-danger focus:ring-offset-2"
                 title="Delete Farm"
                 aria-label={`Delete ${farm.name}`}
               >
@@ -221,7 +221,7 @@ function FarmCard({
               {/* Primary action: Add Field */}
               <button
                 onClick={() => onAddField(farm.id)}
-                className="flex items-center gap-2 px-3 py-2 bg-primary text-white rounded-card hover:bg-primary-hover transition-colors shadow-sm"
+                className="flex items-center gap-2 px-3 py-2 bg-primary text-white rounded-button hover:bg-primary-hover transition-colors shadow-sm"
                 title="Add Field to this Farm"
               >
                 <Plus size={18} />
@@ -232,7 +232,7 @@ function FarmCard({
               <div className="relative" ref={mobileMenuRef}>
                 <button
                   onClick={() => setShowMobileMenu(!showMobileMenu)}
-                  className="p-2 bg-surface-raised border border-border-strong text-bark-700 rounded-card hover:bg-cream-50 transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                  className="p-2 bg-surface-raised border border-border-strong text-bark-700 rounded-button hover:bg-cream-50 transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
                   title="More actions"
                   aria-label={`More actions for ${farm.name}`}
                   aria-expanded={showMobileMenu}

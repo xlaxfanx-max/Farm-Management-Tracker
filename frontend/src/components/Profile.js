@@ -335,7 +335,7 @@ const Profile = ({ onBack }) => {
                       name="first_name"
                       value={profileData.first_name}
                       onChange={handleProfileChange}
-                      className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-primary"
+                      className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                       placeholder="Enter first name"
                     />
                   </div>
@@ -348,7 +348,7 @@ const Profile = ({ onBack }) => {
                       name="last_name"
                       value={profileData.last_name}
                       onChange={handleProfileChange}
-                      className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-primary"
+                      className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                       placeholder="Enter last name"
                     />
                   </div>
@@ -361,7 +361,7 @@ const Profile = ({ onBack }) => {
                     type="email"
                     value={user?.email || ''}
                     disabled
-                    className="w-full px-3 py-2 border border-border rounded-card bg-cream-50 text-text-secondary cursor-not-allowed"
+                    className="w-full cursor-not-allowed px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                   />
                   <p className="text-xs text-text-secondary mt-1">Contact support to change your email address</p>
                 </div>
@@ -374,14 +374,14 @@ const Profile = ({ onBack }) => {
                     name="phone"
                     value={profileData.phone}
                     onChange={handleProfileChange}
-                    className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-primary"
+                    className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                     placeholder="(555) 555-5555"
                   />
                 </div>
                 <div className="flex gap-2 pt-2">
                   <button
                     onClick={handleCancelProfile}
-                    className="px-4 py-2 border border-border-strong text-bark-700 rounded-card hover:bg-cream-50 transition-colors"
+                    className="px-4 py-2 border border-border-strong text-bark-700 rounded-button hover:bg-cream-50 transition-colors"
                   >
                     Cancel
                   </button>
@@ -469,7 +469,7 @@ const Profile = ({ onBack }) => {
                       name="current_password"
                       value={passwordData.current_password}
                       onChange={handlePasswordChange}
-                      className="w-full px-3 py-2 pr-10 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-primary"
+                      className="w-full pr-10 px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                       placeholder="Enter current password"
                     />
                     <button
@@ -491,7 +491,7 @@ const Profile = ({ onBack }) => {
                       name="new_password"
                       value={passwordData.new_password}
                       onChange={handlePasswordChange}
-                      className="w-full px-3 py-2 pr-10 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-primary"
+                      className="w-full pr-10 px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                       placeholder="Enter new password"
                     />
                     <button
@@ -513,14 +513,14 @@ const Profile = ({ onBack }) => {
                     name="confirm_password"
                     value={passwordData.confirm_password}
                     onChange={handlePasswordChange}
-                    className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-primary"
+                    className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                     placeholder="Confirm new password"
                   />
                 </div>
                 <div className="flex gap-2 pt-2">
                   <button
                     onClick={handleCancelPassword}
-                    className="px-4 py-2 border border-border-strong text-bark-700 rounded-card hover:bg-cream-50 transition-colors"
+                    className="px-4 py-2 border border-border-strong text-bark-700 rounded-button hover:bg-cream-50 transition-colors"
                   >
                     Cancel
                   </button>
@@ -546,7 +546,7 @@ const Profile = ({ onBack }) => {
                 </div>
                 <button
                   onClick={() => setChangingPassword(true)}
-                  className="flex items-center px-4 py-2 border border-border-strong text-bark-700 rounded-card hover:bg-cream-50 transition-colors"
+                  className="flex items-center px-4 py-2 border border-border-strong text-bark-700 rounded-button hover:bg-cream-50 transition-colors"
                 >
                   <Lock className="w-4 h-4 mr-2" />
                   Change Password
@@ -590,7 +590,7 @@ const Profile = ({ onBack }) => {
               <div className="flex gap-2">
                 <button
                   onClick={() => setEditingNotifications(false)}
-                  className="px-3 py-1.5 text-sm border border-border-strong text-bark-700 rounded-card hover:bg-cream-50"
+                  className="px-3 py-1.5 text-sm border border-border-strong text-bark-700 rounded-button hover:bg-cream-50"
                 >
                   Cancel
                 </button>

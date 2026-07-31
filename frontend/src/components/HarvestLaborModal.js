@@ -354,7 +354,7 @@ const HarvestLaborModal = ({
                   name="crew_name"
                   value={formData.crew_name}
                   onChange={handleChange}
-                  className="w-full border rounded-lg px-3 py-2 bg-surface-raised text-heading"
+                  className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                   placeholder="e.g., Morning Crew A"
                 />
               </div>
@@ -370,7 +370,7 @@ const HarvestLaborModal = ({
                   name="foreman_name"
                   value={formData.foreman_name}
                   onChange={handleChange}
-                  className="w-full border rounded-lg px-3 py-2 bg-surface-raised text-heading"
+                  className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                 />
               </div>
 
@@ -407,7 +407,7 @@ const HarvestLaborModal = ({
                   name="start_time"
                   value={formData.start_time}
                   onChange={handleChange}
-                  className="w-full border rounded-lg px-3 py-2 bg-surface-raised text-heading"
+                  className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                 />
               </div>
 
@@ -420,7 +420,7 @@ const HarvestLaborModal = ({
                   name="end_time"
                   value={formData.end_time}
                   onChange={handleChange}
-                  className="w-full border rounded-lg px-3 py-2 bg-surface-raised text-heading"
+                  className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                 />
               </div>
 
@@ -435,7 +435,7 @@ const HarvestLaborModal = ({
                   onChange={handleChange}
                   step="0.25"
                   min="0"
-                  className="w-full border rounded-lg px-3 py-2 bg-surface-raised text-heading"
+                  className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                   placeholder={calculatedHours ? calculatedHours.toString() : ''}
                 />
                 {calculatedHours > 0 && !formData.total_hours && (
@@ -461,7 +461,7 @@ const HarvestLaborModal = ({
                   name="pay_type"
                   value={formData.pay_type}
                   onChange={handleChange}
-                  className="w-full border rounded-lg px-3 py-2 bg-surface-raised text-heading"
+                  className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                 >
                   {HARVEST_CONSTANTS.PAY_TYPES.map(p => (
                     <option key={p.value} value={p.value}>{p.label}</option>
@@ -480,7 +480,7 @@ const HarvestLaborModal = ({
                   onChange={handleChange}
                   step="0.01"
                   min="0"
-                  className="w-full border rounded-lg px-3 py-2 bg-surface-raised text-heading"
+                  className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                   placeholder={formData.pay_type === 'hourly' ? '$/hour' : '$/bin'}
                 />
                 {lastLaborForContractor && formData.rate && !labor && (
@@ -500,7 +500,7 @@ const HarvestLaborModal = ({
                   value={formData.bins_picked}
                   onChange={handleChange}
                   min="0"
-                  className="w-full border rounded-lg px-3 py-2 bg-surface-raised text-heading"
+                  className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                   placeholder="For piece rate"
                 />
               </div>
@@ -516,7 +516,7 @@ const HarvestLaborModal = ({
                   onChange={handleChange}
                   step="0.01"
                   min="0"
-                  className="w-full border rounded-lg px-3 py-2 bg-surface-raised text-heading"
+                  className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                   placeholder={formatCurrency(calculatedCost)}
                 />
                 <p className="text-xs text-text-secondary mt-1">
@@ -586,7 +586,7 @@ const HarvestLaborModal = ({
               value={formData.notes}
               onChange={handleChange}
               rows={2}
-              className="w-full border rounded-lg px-3 py-2 bg-surface-raised text-heading"
+              className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
               placeholder="Any additional notes..."
             />
           </div>

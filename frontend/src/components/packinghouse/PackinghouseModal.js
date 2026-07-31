@@ -145,7 +145,7 @@ const PackinghouseModal = ({ packinghouse, onClose, onSave }) => {
                 onChange={handleChange}
                 placeholder="e.g., SLA"
                 maxLength={20}
-                className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
               />
             </div>
           </div>
@@ -160,7 +160,7 @@ const PackinghouseModal = ({ packinghouse, onClose, onSave }) => {
               value={formData.grower_id}
               onChange={handleChange}
               placeholder="e.g., THACR641"
-              className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-transparent"
+              className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
             />
             <p className="text-xs text-text-secondary mt-1">
               Your grower identification number with this packinghouse
@@ -177,7 +177,7 @@ const PackinghouseModal = ({ packinghouse, onClose, onSave }) => {
                 value={formData.address}
                 onChange={handleChange}
                 placeholder="Street Address"
-                className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
               />
               <div className="grid grid-cols-3 gap-3">
                 <input
@@ -186,7 +186,7 @@ const PackinghouseModal = ({ packinghouse, onClose, onSave }) => {
                   value={formData.city}
                   onChange={handleChange}
                   placeholder="City"
-                  className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-transparent"
+                  className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                 />
                 <input
                   type="text"
@@ -195,7 +195,7 @@ const PackinghouseModal = ({ packinghouse, onClose, onSave }) => {
                   onChange={handleChange}
                   placeholder="State"
                   maxLength={2}
-                  className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-transparent"
+                  className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                 />
                 <input
                   type="text"
@@ -203,7 +203,7 @@ const PackinghouseModal = ({ packinghouse, onClose, onSave }) => {
                   value={formData.zip_code}
                   onChange={handleChange}
                   placeholder="ZIP"
-                  className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-transparent"
+                  className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                 />
               </div>
             </div>
@@ -219,7 +219,7 @@ const PackinghouseModal = ({ packinghouse, onClose, onSave }) => {
                 value={formData.contact_name}
                 onChange={handleChange}
                 placeholder="Contact Name"
-                className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
               />
               <input
                 type="tel"
@@ -227,7 +227,7 @@ const PackinghouseModal = ({ packinghouse, onClose, onSave }) => {
                 value={formData.contact_phone}
                 onChange={handleChange}
                 placeholder="Phone"
-                className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
               />
               <div>
                 <input
@@ -258,7 +258,7 @@ const PackinghouseModal = ({ packinghouse, onClose, onSave }) => {
               onChange={handleChange}
               rows={3}
               placeholder="Additional notes..."
-              className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-transparent"
+              className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
             />
           </div>
 

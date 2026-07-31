@@ -272,7 +272,7 @@ const ProfitabilityDashboard = () => {
         <select
           value={selectedPackinghouse}
           onChange={(e) => setSelectedPackinghouse(e.target.value)}
-          className="w-full border border-border-strong rounded-card px-3 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
+          className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
         >
           <option value="">All Packinghouses</option>
           {packinghouses.map(ph => (
@@ -366,7 +366,7 @@ const ProfitabilityDashboard = () => {
           <SectionCard title="Returns by Field">
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-cream-50">
+                <thead className="bg-cream-50 bg-surface-sunken">
                   <tr>
                     <th className={`${tableHeaderClass} text-left`}>Field</th>
                     <th className={`${tableHeaderClass} text-right`}>{unitLabel}</th>
@@ -457,7 +457,7 @@ const ProfitabilityDashboard = () => {
           <SectionCard title="Returns by Pool">
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-cream-50">
+                <thead className="bg-cream-50 bg-surface-sunken">
                   <tr>
                     <th className={`${tableHeaderClass} text-left`}>Pool</th>
                     <th className={`${tableHeaderClass} text-right`}>{unitLabel}</th>
@@ -692,7 +692,7 @@ const ProfitabilityDashboard = () => {
         <SectionCard title={`Per-${unitSingular} Metrics Trend`}>
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-cream-50">
+              <thead className="bg-cream-50 bg-surface-sunken">
                 <tr>
                   <th className={`${tableHeaderClass} text-left`}>Season</th>
                   <th className={`${tableHeaderClass} text-right`}>{unitLabel}</th>

@@ -434,7 +434,7 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
                 <select
                   value={selectedPackinghouse}
                   onChange={(e) => setSelectedPackinghouse(e.target.value)}
-                  className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary"
+                  className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                   disabled={uploading}
                 >
                   <option value="">Auto-detect from PDF</option>
@@ -456,7 +456,7 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
                 <select
                   value={formatHint}
                   onChange={(e) => setFormatHint(e.target.value)}
-                  className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary"
+                  className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                   disabled={uploading}
                 >
                   <option value="">Auto-detect</option>
@@ -721,7 +721,7 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
                       updateOverride(stmt.id, 'farm_id', e.target.value ? parseInt(e.target.value) : null);
                       updateOverride(stmt.id, 'field_id', null);
                     }}
-                    className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary"
+                    className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                   >
                     <option value="">-- Select Farm --</option>
                     {farms.map(f => (
@@ -743,7 +743,7 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
                   <select
                     value={override.field_id || ''}
                     onChange={(e) => updateOverride(stmt.id, 'field_id', e.target.value ? parseInt(e.target.value) : null)}
-                    className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary"
+                    className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                     disabled={!override.farm_id}
                   >
                     <option value="">All Fields (Combined)</option>
@@ -758,7 +758,7 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
                   <select
                     value={override.pool_id || ''}
                     onChange={(e) => updateOverride(stmt.id, 'pool_id', e.target.value ? parseInt(e.target.value) : null)}
-                    className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary"
+                    className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                   >
                     <option value="">Auto-create from PDF</option>
                     {pools.map(p => (
@@ -1027,7 +1027,7 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
                           updateOverride(stmt.id, 'farm_id', e.target.value ? parseInt(e.target.value) : null);
                           updateOverride(stmt.id, 'field_id', null);
                         }}
-                        className="w-full px-2 py-1.5 text-sm border border-border-strong rounded focus:ring-2 focus:ring-primary"
+                        className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                         disabled={statementOverrides[stmt.id]?.skip}
                       >
                         <option value="">-- Select Farm --</option>
@@ -1039,7 +1039,7 @@ const UnifiedUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, ex
                       <select
                         value={statementOverrides[stmt.id]?.field_id || ''}
                         onChange={(e) => updateOverride(stmt.id, 'field_id', e.target.value ? parseInt(e.target.value) : null)}
-                        className="w-full px-2 py-1.5 text-sm border border-border-strong rounded focus:ring-2 focus:ring-primary"
+                        className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                         disabled={statementOverrides[stmt.id]?.skip || !statementOverrides[stmt.id]?.farm_id}
                       >
                         <option value="">All Fields (Combined)</option>

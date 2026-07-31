@@ -230,20 +230,20 @@ function PropertyTable({ properties }) {
     <div className="rounded-card border border-border overflow-hidden">
       <div className="overflow-x-auto">
         <table className="min-w-full text-sm">
-          <thead className="bg-cream-50">
+          <thead className="bg-cream-50 bg-surface-sunken">
             <tr className="text-left text-text-secondary">
-              <th className="px-4 py-2.5 font-medium">Property</th>
-              <th className="px-4 py-2.5 font-medium">Location</th>
-              <th className="px-4 py-2.5 font-medium">Ranch</th>
-              <th className="px-4 py-2.5 font-medium">Entity</th>
-              <th className="px-4 py-2.5 font-medium">Type</th>
-              <th className="px-4 py-2.5 font-medium text-right">Units</th>
+              <th className="px-4 py-2.5 font-semibold">Property</th>
+              <th className="px-4 py-2.5 font-semibold">Location</th>
+              <th className="px-4 py-2.5 font-semibold">Ranch</th>
+              <th className="px-4 py-2.5 font-semibold">Entity</th>
+              <th className="px-4 py-2.5 font-semibold">Type</th>
+              <th className="px-4 py-2.5 font-semibold text-right">Units</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
             {properties.map((p) => (
               <tr key={p.id} className="bg-surface-raised">
-                <td className="px-4 py-2.5 font-medium text-heading">
+                <td className="px-4 py-2.5 font-medium text-bark-700">
                   {p.name}
                 </td>
                 <td className="px-4 py-2.5">

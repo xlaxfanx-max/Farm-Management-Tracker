@@ -291,7 +291,7 @@ function FarmModal({ farm, onClose, onSave }) {
         <div className="p-6 border-t border-border flex gap-3 justify-end bg-cream-50 flex-shrink-0">
           <button
             onClick={onClose}
-            className="px-6 py-2 border border-border-strong rounded-card text-bark-700 hover:bg-cream-100 transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+            className="px-6 py-2 border border-border-strong rounded-button text-bark-700 hover:bg-cream-100 transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
             disabled={loading}
           >
             Cancel

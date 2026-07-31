@@ -306,7 +306,7 @@ function ParcelRow({
               value={editData.apn}
               onChange={(e) => handleChange('apn', e.target.value)}
               placeholder={county?.toLowerCase() === 'ventura' ? '123-0-456-789' : '123-456-789'}
-              className="w-full px-2 py-1.5 text-sm border rounded-card focus:ring-2 focus:ring-primary focus:border-primary bg-surface-raised text-heading"
+              className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
               autoFocus
             />
           </div>
@@ -320,7 +320,7 @@ function ParcelRow({
               value={editData.acreage || ''}
               onChange={(e) => handleChange('acreage', e.target.value)}
               placeholder="0.00"
-              className="w-full px-2 py-1.5 text-sm border rounded-card focus:ring-2 focus:ring-primary focus:border-primary bg-surface-raised text-heading"
+              className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
             />
           </div>
         </div>
@@ -332,7 +332,7 @@ function ParcelRow({
             <select
               value={editData.ownership_type}
               onChange={(e) => handleChange('ownership_type', e.target.value)}
-              className="w-full px-2 py-1.5 text-sm border rounded-card focus:ring-2 focus:ring-primary focus:border-primary bg-surface-raised text-heading"
+              className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
             >
               {OWNERSHIP_TYPES.map(type => (
                 <option key={type.value} value={type.value}>{type.label}</option>
@@ -348,7 +348,7 @@ function ParcelRow({
               value={editData.notes || ''}
               onChange={(e) => handleChange('notes', e.target.value)}
               placeholder="Optional notes"
-              className="w-full px-2 py-1.5 text-sm border rounded-card focus:ring-2 focus:ring-primary focus:border-primary bg-surface-raised text-heading"
+              className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
             />
           </div>
         </div>

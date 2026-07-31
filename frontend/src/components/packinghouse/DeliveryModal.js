@@ -243,7 +243,7 @@ const DeliveryModal = ({ poolId, delivery, onClose, onSave }) => {
                     name="harvest"
                     value={formData.harvest}
                     onChange={handleHarvestChange}
-                    className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-orange-500"
+                    className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                   >
                     <option value="">-- No harvest link (optional) --</option>
                     {harvests.map(h => (
@@ -335,7 +335,7 @@ const DeliveryModal = ({ poolId, delivery, onClose, onSave }) => {
                 step="0.01"
                 min="0"
                 placeholder="Optional"
-                className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary"
+                className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
               />
             </div>
 
@@ -351,7 +351,7 @@ const DeliveryModal = ({ poolId, delivery, onClose, onSave }) => {
                 step="0.01"
                 min="0"
                 placeholder="Optional"
-                className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary"
+                className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
               />
             </div>
           </div>
@@ -367,7 +367,7 @@ const DeliveryModal = ({ poolId, delivery, onClose, onSave }) => {
               onChange={handleChange}
               rows={2}
               placeholder="Optional notes..."
-              className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary"
+              className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
             />
           </div>
 

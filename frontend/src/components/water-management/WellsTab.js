@@ -102,7 +102,7 @@ const WellsTab = ({
         <select
           value={filterGSA}
           onChange={(e) => setFilterGSA(e.target.value)}
-          className="px-4 py-2.5 border border-border rounded-card focus:ring-2 focus:ring-green-500 bg-surface-raised"
+          className="px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
         >
           <option value="">All GSAs</option>
           {Object.entries(GSA_NAMES).map(([value, label]) => (
@@ -123,7 +123,7 @@ const WellsTab = ({
         </button>
 
         {/* Refresh */}
-        <button onClick={handleRefresh} className="p-2.5 border border-border rounded-card hover:bg-cream-50">
+        <button onClick={handleRefresh} className="p-2.5 border border-border rounded-button hover:bg-cream-50">
           <RefreshCw className={`w-5 h-5 text-bark-600 ${loading ? 'animate-spin' : ''}`} />
         </button>
       </div>
@@ -434,8 +434,8 @@ const WellsTab = ({
                         <tbody className="divide-y divide-border">
                           {wellReadings[well.id].map((reading) => (
                             <tr key={reading.id} className="hover:bg-cream-50 transition-colors">
-                              <td className="px-4 py-2.5 text-heading">{formatDate(reading.reading_date)}</td>
-                              <td className="px-4 py-2.5 text-right font-mono text-heading">{Number(reading.meter_reading).toLocaleString()}</td>
+                              <td className="px-4 py-2.5 text-bark-700">{formatDate(reading.reading_date)}</td>
+                              <td className="px-4 py-2.5 text-right font-mono text-bark-700">{Number(reading.meter_reading).toLocaleString()}</td>
                               <td className="px-4 py-2.5 text-right text-green-700 font-medium">
                                 {reading.extraction_acre_feet != null ? formatNumber(reading.extraction_acre_feet, 4) : '-'}
                               </td>

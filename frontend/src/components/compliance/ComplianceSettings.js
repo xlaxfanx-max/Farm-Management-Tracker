@@ -236,7 +236,7 @@ export default function ComplianceSettings({ onNavigate }) {
               <select
                 value={profile.primary_state}
                 onChange={(e) => setProfile({ ...profile, primary_state: e.target.value })}
-                className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-primary"
+                className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
               >
                 {usStates.map(state => (
                   <option key={state.value} value={state.value}>{state.label}</option>
@@ -328,7 +328,7 @@ export default function ComplianceSettings({ onNavigate }) {
                   <select
                     value={preferences.email_digest}
                     onChange={(e) => setPreferences({ ...preferences, email_digest: e.target.value })}
-                    className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-primary"
+                    className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                   >
                     <option value="instant">Instant</option>
                     <option value="daily">Daily Digest</option>
@@ -400,7 +400,7 @@ export default function ComplianceSettings({ onNavigate }) {
                       type="time"
                       value={preferences.quiet_hours_start}
                       onChange={(e) => setPreferences({ ...preferences, quiet_hours_start: e.target.value })}
-                      className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-primary"
+                      className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                     />
                   </div>
                   <div>
@@ -409,7 +409,7 @@ export default function ComplianceSettings({ onNavigate }) {
                       type="time"
                       value={preferences.quiet_hours_end}
                       onChange={(e) => setPreferences({ ...preferences, quiet_hours_end: e.target.value })}
-                      className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-primary"
+                      className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                     />
                   </div>
                 </div>
@@ -441,7 +441,7 @@ export default function ComplianceSettings({ onNavigate }) {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
             <button
               onClick={() => onNavigate?.('compliance-deadlines')}
-              className="flex items-center gap-3 p-4 rounded-card border border-border hover:bg-cream-50 hover:border-green-200 transition-colors text-left"
+              className="flex items-center gap-3 p-4 rounded-button border border-border hover:bg-cream-50 hover:border-green-200 transition-colors text-left"
             >
               <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
                 <Calendar className="w-5 h-5 text-link" />
@@ -454,7 +454,7 @@ export default function ComplianceSettings({ onNavigate }) {
 
             <button
               onClick={() => onNavigate?.('compliance-licenses')}
-              className="flex items-center gap-3 p-4 rounded-card border border-border hover:bg-cream-50 hover:border-green-200 transition-colors text-left"
+              className="flex items-center gap-3 p-4 rounded-button border border-border hover:bg-cream-50 hover:border-green-200 transition-colors text-left"
             >
               <div className="w-10 h-10 bg-sand-200 rounded-lg flex items-center justify-center">
                 <Award className="w-5 h-5 text-bark-700" />
@@ -467,7 +467,7 @@ export default function ComplianceSettings({ onNavigate }) {
 
             <button
               onClick={() => onNavigate?.('compliance-wps')}
-              className="flex items-center gap-3 p-4 rounded-card border border-border hover:bg-cream-50 hover:border-green-200 transition-colors text-left"
+              className="flex items-center gap-3 p-4 rounded-button border border-border hover:bg-cream-50 hover:border-green-200 transition-colors text-left"
             >
               <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
                 <Users className="w-5 h-5 text-primary" />
@@ -480,7 +480,7 @@ export default function ComplianceSettings({ onNavigate }) {
 
             <button
               onClick={() => onNavigate?.('compliance-reports')}
-              className="flex items-center gap-3 p-4 rounded-card border border-border hover:bg-cream-50 hover:border-green-200 transition-colors text-left"
+              className="flex items-center gap-3 p-4 rounded-button border border-border hover:bg-cream-50 hover:border-green-200 transition-colors text-left"
             >
               <div className="w-10 h-10 bg-yellow-200 rounded-lg flex items-center justify-center">
                 <FileText className="w-5 h-5 text-yellow-600" />

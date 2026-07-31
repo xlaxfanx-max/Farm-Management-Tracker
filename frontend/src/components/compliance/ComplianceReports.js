@@ -221,7 +221,7 @@ const ReportCard = ({ report, onView, onDownload, onSubmit, onDelete }) => {
       <div className="mt-4 pt-3 border-t border-border flex gap-2">
         <button
           onClick={() => onView(report)}
-          className="flex-1 px-3 py-1.5 text-sm border border-border-strong text-bark-700 rounded-card hover:bg-cream-50"
+          className="flex-1 px-3 py-1.5 text-sm border border-border-strong text-bark-700 rounded-button hover:bg-cream-50"
         >
           View
         </button>
@@ -362,7 +362,7 @@ const ReportDetailModal = ({ report, onClose, onValidate, onSubmit }) => {
               <button
                 onClick={handleValidate}
                 disabled={validating}
-                className="px-4 py-2 border border-border-strong text-bark-700 rounded-card hover:bg-cream-50 transition-colors flex items-center gap-2"
+                className="px-4 py-2 border border-border-strong text-bark-700 rounded-button hover:bg-cream-50 transition-colors flex items-center gap-2"
               >
                 <FileCheck className="w-4 h-4" />
                 {validating ? 'Validating...' : 'Validate'}
@@ -474,7 +474,7 @@ const GenerateReportModal = ({ onClose, onGenerate }) => {
               required
               value={formData.report_type}
               onChange={(e) => setFormData({ ...formData, report_type: e.target.value })}
-              className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary bg-surface-raised text-heading"
+              className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
             >
               {COMPLIANCE_CONSTANTS.REPORT_TYPES.map(type => (
                 <option key={type.value} value={type.value}>{type.label}</option>
@@ -490,7 +490,7 @@ const GenerateReportModal = ({ onClose, onGenerate }) => {
                 required
                 value={formData.reporting_period_start}
                 onChange={(e) => setFormData({ ...formData, reporting_period_start: e.target.value })}
-                className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary bg-surface-raised text-heading"
+                className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
               />
             </div>
             <div>
@@ -500,7 +500,7 @@ const GenerateReportModal = ({ onClose, onGenerate }) => {
                 required
                 value={formData.reporting_period_end}
                 onChange={(e) => setFormData({ ...formData, reporting_period_end: e.target.value })}
-                className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary bg-surface-raised text-heading"
+                className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
               />
             </div>
           </div>
@@ -734,7 +734,7 @@ export default function ComplianceReports({ onNavigate }) {
             <select
               value={typeFilter}
               onChange={(e) => setTypeFilter(e.target.value)}
-              className="border border-border-strong rounded-card px-3 py-1.5 text-sm focus:ring-2 focus:ring-primary focus:border-primary"
+              className="px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
             >
               <option value="all">All Types</option>
               {COMPLIANCE_CONSTANTS.REPORT_TYPES.map(type => (

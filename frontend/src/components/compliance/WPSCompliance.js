@@ -209,7 +209,7 @@ const TrainingModal = ({ record, onClose, onSave }) => {
               required
               value={formData.trainee_name}
               onChange={(e) => setFormData({ ...formData, trainee_name: e.target.value })}
-              className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-primary"
+              className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
               placeholder="Full name"
             />
           </div>
@@ -221,7 +221,7 @@ const TrainingModal = ({ record, onClose, onSave }) => {
                 type="text"
                 value={formData.trainee_employee_id}
                 onChange={(e) => setFormData({ ...formData, trainee_employee_id: e.target.value })}
-                className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-primary"
+                className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                 placeholder="Optional"
               />
             </div>
@@ -232,7 +232,7 @@ const TrainingModal = ({ record, onClose, onSave }) => {
                 required
                 value={formData.training_type}
                 onChange={(e) => setFormData({ ...formData, training_type: e.target.value })}
-                className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-primary"
+                className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
               >
                 {COMPLIANCE_CONSTANTS.WPS_TRAINING_TYPES.map(type => (
                   <option key={type.value} value={type.value}>{type.label}</option>
@@ -249,7 +249,7 @@ const TrainingModal = ({ record, onClose, onSave }) => {
                 required
                 value={formData.training_date}
                 onChange={(e) => setFormData({ ...formData, training_date: e.target.value })}
-                className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-primary"
+                className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
               />
             </div>
 
@@ -260,7 +260,7 @@ const TrainingModal = ({ record, onClose, onSave }) => {
                 required
                 value={formData.expiration_date}
                 onChange={(e) => setFormData({ ...formData, expiration_date: e.target.value })}
-                className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-primary"
+                className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
               />
               <p className="text-xs text-text-secondary mt-1">WPS training expires annually</p>
             </div>
@@ -273,7 +273,7 @@ const TrainingModal = ({ record, onClose, onSave }) => {
                 type="text"
                 value={formData.trainer_name}
                 onChange={(e) => setFormData({ ...formData, trainer_name: e.target.value })}
-                className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-primary"
+                className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
               />
             </div>
 
@@ -283,7 +283,7 @@ const TrainingModal = ({ record, onClose, onSave }) => {
                 type="text"
                 value={formData.trainer_certification}
                 onChange={(e) => setFormData({ ...formData, trainer_certification: e.target.value })}
-                className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-primary"
+                className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
               />
             </div>
           </div>
@@ -721,15 +721,15 @@ export default function WPSCompliance({ onNavigate }) {
           ) : trainingRecords.length > 0 ? (
             <div className="bg-surface-raised border border-border rounded-card overflow-hidden">
               <table className="w-full">
-                <thead className="bg-cream-50 border-b border-border">
+                <thead className="bg-cream-50 border-b border-border bg-surface-sunken">
                   <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-text-secondary uppercase">Employee</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-text-secondary uppercase">Type</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-text-secondary uppercase">Training Date</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-text-secondary uppercase">Expiration</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-text-secondary uppercase">Status</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-text-secondary uppercase">Trainer</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-text-secondary uppercase"></th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-caps">Employee</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-caps">Type</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-caps">Training Date</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-caps">Expiration</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-caps">Status</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-caps">Trainer</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-caps"></th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">

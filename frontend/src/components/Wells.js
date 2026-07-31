@@ -236,7 +236,7 @@ const Wells = ({ onOpenModal }) => {
             <select
               value={filterGSA}
               onChange={(e) => setFilterGSA(e.target.value)}
-              className="w-full px-4 py-2 border border-border-strong rounded-card bg-surface-raised focus:ring-2 focus:ring-primary focus:border-transparent"
+              className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
             >
               <option value="">All GSAs</option>
               <option value="obgma">Ojai Basin GMA</option>
@@ -251,7 +251,7 @@ const Wells = ({ onOpenModal }) => {
             <select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
-              className="w-full px-4 py-2 border border-border-strong rounded-card bg-surface-raised focus:ring-2 focus:ring-primary focus:border-transparent"
+              className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
             >
               <option value="">All Status</option>
               <option value="active">Active</option>
@@ -263,7 +263,7 @@ const Wells = ({ onOpenModal }) => {
           {/* Refresh Button */}
           <button
             onClick={fetchWells}
-            className="px-4 py-2 border border-border-strong rounded-card hover:bg-cream-50 transition-colors"
+            className="px-4 py-2 border border-border-strong rounded-button hover:bg-cream-50 transition-colors"
           >
             <RefreshCw className="w-5 h-5 text-bark-600" />
           </button>

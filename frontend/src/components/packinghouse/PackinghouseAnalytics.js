@@ -169,7 +169,7 @@ const PackinghouseAnalytics = () => {
           <select
             value={groupBy}
             onChange={(e) => setGroupBy(e.target.value)}
-            className="px-3 py-2 border border-border-strong rounded-card text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
+            className="px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
           >
             <option value="farm">Group by Farm</option>
             <option value="field">Group by Field</option>
@@ -179,7 +179,7 @@ const PackinghouseAnalytics = () => {
           <select
             value={roiGroupBy}
             onChange={(e) => setRoiGroupBy(e.target.value)}
-            className="px-3 py-2 border border-border-strong rounded-card text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
+            className="px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
           >
             <option value="commodity">Group by Commodity</option>
             <option value="variety">Group by Variety</option>
@@ -191,7 +191,7 @@ const PackinghouseAnalytics = () => {
             value={selectedGrade}
             onChange={(e) => setSelectedGrade(e.target.value)}
             placeholder="Filter by grade (e.g., SUNKIST)"
-            className="px-3 py-2 border border-border-strong rounded-card text-sm focus:ring-2 focus:ring-primary focus:border-transparent w-56"
+            className="w-56 px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
           />
         )}
         <SeasonSelector
@@ -204,7 +204,7 @@ const PackinghouseAnalytics = () => {
         <select
           value={selectedPackinghouse}
           onChange={(e) => setSelectedPackinghouse(e.target.value)}
-          className="px-3 py-2 border border-border-strong rounded-card text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
+          className="px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
         >
           <option value="">All Packinghouses</option>
           {packinghouses.map(ph => (
@@ -214,7 +214,7 @@ const PackinghouseAnalytics = () => {
         <select
           value={selectedCommodity}
           onChange={(e) => setSelectedCommodity(e.target.value)}
-          className="px-3 py-2 border border-border-strong rounded-card text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
+          className="px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
         >
           <option value="">All Commodities</option>
           {PACKINGHOUSE_CONSTANTS.commodities.map(c => (
@@ -247,7 +247,7 @@ const PackinghouseAnalytics = () => {
               ) : (
                 <div className="overflow-x-auto">
                   <table className="min-w-full divide-y divide-border">
-                    <thead className="bg-cream-50">
+                    <thead className="bg-cream-50 bg-surface-sunken">
                       <tr>
                         <th className={`${tableHeaderClass} text-left`}>Block</th>
                         <th className={`${tableHeaderClass} text-left`}>Pool</th>
@@ -301,7 +301,7 @@ const PackinghouseAnalytics = () => {
               ) : (
                 <div className="overflow-x-auto">
                   <table className="min-w-full divide-y divide-border">
-                    <thead className="bg-cream-50">
+                    <thead className="bg-cream-50 bg-surface-sunken">
                       <tr>
                         <th className={`${tableHeaderClass} text-left`}>Date</th>
                         <th className={`${tableHeaderClass} text-left`}>Field</th>
@@ -354,7 +354,7 @@ const PackinghouseAnalytics = () => {
               ) : (
                 <div className="overflow-x-auto">
                   <table className="min-w-full divide-y divide-border">
-                    <thead className="bg-cream-50">
+                    <thead className="bg-cream-50 bg-surface-sunken">
                       <tr>
                         <th className={`${tableHeaderClass} text-left`}>Packinghouse</th>
                         <th className={`${tableHeaderClass} text-left`}>Commodity</th>
@@ -453,7 +453,7 @@ const PackinghouseAnalytics = () => {
                     <div className="border-t border-border">
                       <div className="overflow-x-auto">
                         <table className="min-w-full divide-y divide-border">
-                          <thead className="bg-cream-50">
+                          <thead className="bg-cream-50 bg-surface-sunken">
                             <tr>
                               <th className={`${tableHeaderClass} text-left`}>
                                 {groupBy === 'farm' ? 'Farm' : 'Field'}
@@ -583,7 +583,7 @@ const PackinghouseAnalytics = () => {
                     {/* Detail Table */}
                     <div className="border-t border-border overflow-x-auto">
                       <table className="min-w-full divide-y divide-border">
-                        <thead className="bg-cream-50">
+                        <thead className="bg-cream-50 bg-surface-sunken">
                           <tr>
                             <th className={`${tableHeaderClass} text-left`}>Size</th>
                             <th className={`${tableHeaderClass} text-right`}>Quantity</th>
@@ -653,7 +653,7 @@ const PackinghouseAnalytics = () => {
               ) : (
                 <div className="overflow-x-auto">
                   <table className="min-w-full divide-y divide-border">
-                    <thead className="bg-cream-50">
+                    <thead className="bg-cream-50 bg-surface-sunken">
                       <tr>
                         <th className={`${tableHeaderClass} text-center w-12`}>#</th>
                         <th className={`${tableHeaderClass} text-left`}>{roiGroupBy === 'variety' ? 'Variety' : 'Commodity'}</th>
@@ -716,7 +716,7 @@ const PackinghouseAnalytics = () => {
               ) : (
                 <div className="overflow-x-auto">
                   <table className="min-w-full divide-y divide-border">
-                    <thead className="bg-cream-50">
+                    <thead className="bg-cream-50 bg-surface-sunken">
                       <tr>
                         <th className={`${tableHeaderClass} text-left`}>Category</th>
                         {deductionCreep.seasons.map(season => (
@@ -791,7 +791,7 @@ const PackinghouseAnalytics = () => {
               ) : (
                 <div className="overflow-x-auto">
                   <table className="min-w-full divide-y divide-border">
-                    <thead className="bg-cream-50">
+                    <thead className="bg-cream-50 bg-surface-sunken">
                       <tr>
                         <th className={`${tableHeaderClass} text-left`}>Grade</th>
                         <th className={`${tableHeaderClass} text-left`}>Size</th>
@@ -981,7 +981,7 @@ const PackinghouseAnalytics = () => {
                 ) : (
                   <div className="overflow-x-auto">
                     <table className="min-w-full divide-y divide-border">
-                      <thead className="bg-cream-50">
+                      <thead className="bg-cream-50 bg-surface-sunken">
                         <tr>
                           <th className={`${tableHeaderClass} text-left`}>Field</th>
                           <th className={`${tableHeaderClass} text-left`}>Season</th>

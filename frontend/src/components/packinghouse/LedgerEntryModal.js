@@ -95,7 +95,7 @@ const LedgerEntryModal = ({ packinghouseId, poolId, entry, onClose, onSave }) =>
               <input
                 type="date" name="entry_date" value={formData.entry_date}
                 onChange={handleChange}
-                className="w-full border border-border-strong rounded-card px-3 py-2 text-sm"
+                className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
               />
               {errors.entry_date && <p className="text-xs text-danger mt-1">{errors.entry_date}</p>}
             </div>
@@ -103,7 +103,7 @@ const LedgerEntryModal = ({ packinghouseId, poolId, entry, onClose, onSave }) =>
               <label className="block text-sm font-medium text-bark-700 mb-1">Type</label>
               <select
                 name="entry_type" value={formData.entry_type} onChange={handleChange}
-                className="w-full border border-border-strong rounded-card px-3 py-2 text-sm"
+                className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
               >
                 {PACKINGHOUSE_CONSTANTS.ledgerEntryTypes.map((t) => (
                   <option key={t.value} value={t.value}>{t.label}</option>
@@ -117,7 +117,7 @@ const LedgerEntryModal = ({ packinghouseId, poolId, entry, onClose, onSave }) =>
             <input
               type="number" step="0.01" min="0" name="amount" value={formData.amount}
               onChange={handleChange} placeholder="0.00"
-              className="w-full border border-border-strong rounded-card px-3 py-2 text-sm"
+              className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
             />
             {errors.amount && <p className="text-xs text-danger mt-1">{errors.amount}</p>}
             {errors.credit && <p className="text-xs text-danger mt-1">{errors.credit}</p>}
@@ -131,7 +131,7 @@ const LedgerEntryModal = ({ packinghouseId, poolId, entry, onClose, onSave }) =>
             <input
               name="reference" value={formData.reference} onChange={handleChange}
               placeholder="Check # or statement reference (e.g. APM-SL-09588)"
-              className="w-full border border-border-strong rounded-card px-3 py-2 text-sm"
+              className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
             />
           </div>
 
@@ -140,14 +140,14 @@ const LedgerEntryModal = ({ packinghouseId, poolId, entry, onClose, onSave }) =>
             <input
               name="description" value={formData.description} onChange={handleChange}
               placeholder="e.g. First advance on 2025-2026 lemon pool"
-              className="w-full border border-border-strong rounded-card px-3 py-2 text-sm"
+              className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
             />
           </div>
 
           <div className="flex justify-end gap-2 pt-2">
             <button
               type="button" onClick={onClose}
-              className="px-4 py-2 border border-border-strong rounded-card text-sm hover:bg-cream-50"
+              className="px-4 py-2 border border-border-strong rounded-button text-sm hover:bg-cream-50"
             >
               Cancel
             </button>

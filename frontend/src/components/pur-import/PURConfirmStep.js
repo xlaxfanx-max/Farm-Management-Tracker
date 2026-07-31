@@ -83,7 +83,7 @@ export default function PURConfirmStep({ reports, farms, filename, batchId, onCo
         <div className="flex items-center justify-center gap-3 pt-4">
           <button
             onClick={onReset}
-            className="flex items-center gap-2 px-4 py-2 text-sm text-bark-600 border border-border-strong rounded-card hover:bg-cream-50"
+            className="flex items-center gap-2 px-4 py-2 text-sm text-bark-600 border border-border-strong rounded-button hover:bg-cream-50"
           >
             <RotateCcw className="w-4 h-4" />
             Import Another
@@ -113,7 +113,7 @@ export default function PURConfirmStep({ reports, farms, filename, batchId, onCo
 
         <button
           onClick={onReset}
-          className="flex items-center gap-2 px-4 py-2 text-sm text-bark-600 border border-border-strong rounded-card hover:bg-cream-50 mx-auto"
+          className="flex items-center gap-2 px-4 py-2 text-sm text-bark-600 border border-border-strong rounded-button hover:bg-cream-50 mx-auto"
         >
           <RotateCcw className="w-4 h-4" />
           Start Over

@@ -449,7 +449,7 @@ const PDFUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, existi
                   <select
                     value={selectedPackinghouse}
                     onChange={(e) => setSelectedPackinghouse(e.target.value)}
-                    className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary"
+                    className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                     disabled={uploading}
                   >
                     <option value="">Select Packinghouse</option>
@@ -468,7 +468,7 @@ const PDFUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, existi
                   <select
                     value={formatHint}
                     onChange={(e) => setFormatHint(e.target.value)}
-                    className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary"
+                    className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                     disabled={uploading}
                   >
                     <option value="">Auto-detect</option>
@@ -575,7 +575,7 @@ const PDFUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, existi
                   <select
                     value={selectedPool}
                     onChange={(e) => setSelectedPool(e.target.value)}
-                    className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary"
+                    className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                   >
                     <option value="">Auto-create from PDF</option>
                     {pools.map(p => (
@@ -598,7 +598,7 @@ const PDFUploadModal = ({ onClose, onSuccess, defaultPackinghouse = null, existi
                   <select
                     value={selectedField}
                     onChange={(e) => setSelectedField(e.target.value)}
-                    className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary"
+                    className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                   >
                     <option value="">
                       {statement?.statement_type === 'settlement' || statement?.statement_type === 'grower_statement'

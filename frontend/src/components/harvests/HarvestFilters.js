@@ -10,7 +10,7 @@ const HarvestFilters = ({ filters, setFilters, farms, getFilteredFields }) => {
           <select
             value={filters.season}
             onChange={(e) => setFilters({ ...filters, season: e.target.value })}
-            className="w-full border rounded-lg px-3 py-2 bg-surface-raised"
+            className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
           >
             <option value="">All Seasons</option>
             {[...Array(5)].map((_, i) => {
@@ -24,7 +24,7 @@ const HarvestFilters = ({ filters, setFilters, farms, getFilteredFields }) => {
           <select
             value={filters.farm}
             onChange={(e) => setFilters({ ...filters, farm: e.target.value, field: '' })}
-            className="w-full border rounded-lg px-3 py-2 bg-surface-raised"
+            className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
           >
             <option value="">All Farms</option>
             {farms.map(farm => (
@@ -37,7 +37,7 @@ const HarvestFilters = ({ filters, setFilters, farms, getFilteredFields }) => {
           <select
             value={filters.field}
             onChange={(e) => setFilters({ ...filters, field: e.target.value })}
-            className="w-full border rounded-lg px-3 py-2 bg-surface-raised"
+            className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
           >
             <option value="">All Fields</option>
             {getFilteredFields().map(field => (
@@ -50,7 +50,7 @@ const HarvestFilters = ({ filters, setFilters, farms, getFilteredFields }) => {
           <select
             value={filters.crop_variety}
             onChange={(e) => setFilters({ ...filters, crop_variety: e.target.value })}
-            className="w-full border rounded-lg px-3 py-2 bg-surface-raised"
+            className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
           >
             <option value="">All Crops</option>
             {HARVEST_CONSTANTS.CROP_VARIETIES.map(crop => (
@@ -63,7 +63,7 @@ const HarvestFilters = ({ filters, setFilters, farms, getFilteredFields }) => {
           <select
             value={filters.status}
             onChange={(e) => setFilters({ ...filters, status: e.target.value })}
-            className="w-full border rounded-lg px-3 py-2 bg-surface-raised"
+            className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
           >
             <option value="">All Statuses</option>
             {HARVEST_CONSTANTS.HARVEST_STATUSES.map(s => (

@@ -21,6 +21,7 @@ import {
   Loader2
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { Alert, Button, Card, CardHeader, StatCard } from './ui';
 import { companyAPI, rolesAPI, invitationsAPI, authAPI } from '../services/api';
 import { useConfirm } from '../contexts/ConfirmContext';
 import { useToast } from '../contexts/ToastContext';
@@ -190,67 +191,26 @@ export default function TeamManagement() {
           </p>
         </div>
         {isOwnerOrAdmin() && (
-          <button
-            onClick={() => setShowInviteModal(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors"
-          >
-            <UserPlus className="w-5 h-5" />
-            Invite Member
-          </button>
+          <Button variant="primary" icon={UserPlus} onClick={() => setShowInviteModal(true)}>
+            Invite member
+          </Button>
         )}
       </div>
 
       {error && (
-        <div className="mb-6 p-4 bg-danger-bg border border-danger/25 rounded-card flex items-center gap-2 text-danger">
-          <AlertCircle className="w-5 h-5" />
-          {error}
-        </div>
+        <Alert tone="danger" className="mb-6">{error}</Alert>
       )}
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="bg-surface-raised rounded-lg border p-4">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-orange-100 rounded-lg">
-              <Users className="w-5 h-5 text-link" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-heading">{members.length}</p>
-              <p className="text-sm text-bark-600">Team Members</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-surface-raised rounded-lg border p-4">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-yellow-100 rounded-lg">
-              <Mail className="w-5 h-5 text-yellow-600" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-heading">{pendingInvitations.length}</p>
-              <p className="text-sm text-bark-600">Pending Invitations</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-surface-raised rounded-lg border p-4">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-green-100 rounded-lg">
-              <Shield className="w-5 h-5 text-primary" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-heading">{roles.length}</p>
-              <p className="text-sm text-bark-600">Available Roles</p>
-            </div>
-          </div>
-        </div>
+        <StatCard label="Team members" value={members.length} icon={Users} color="orange" />
+        <StatCard label="Pending invitations" value={pendingInvitations.length} icon={Mail} color="warning" />
+        <StatCard label="Available roles" value={roles.length} icon={Shield} color="green" />
       </div>
 
       {/* Team Members List */}
-      <div className="bg-surface-raised rounded-lg border mb-6">
-        <div className="px-6 py-4 border-b">
-          <h2 className="text-lg text-heading">Team Members</h2>
-        </div>
+      <Card padding="none" className="mb-6">
+        <CardHeader flush border title="Team members" />
 
         <div className="divide-y">
           {members.length === 0 ? (
@@ -357,14 +317,12 @@ export default function TeamManagement() {
             ))
           )}
         </div>
-      </div>
+      </Card>
 
       {/* Pending Invitations */}
       {pendingInvitations.length > 0 && (
-        <div className="bg-surface-raised rounded-lg border">
-          <div className="px-6 py-4 border-b">
-            <h2 className="text-lg text-heading">Pending Invitations</h2>
-          </div>
+        <Card padding="none">
+          <CardHeader flush border title="Pending invitations" />
 
           <div className="divide-y">
             {pendingInvitations.map((invitation) => (
@@ -421,7 +379,7 @@ export default function TeamManagement() {
               </div>
             ))}
           </div>
-        </div>
+        </Card>
       )}
 
       {/* Invite Modal */}
@@ -537,7 +495,7 @@ function InviteModal({ roles, onClose, onSuccess }) {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-2 border border-border-strong rounded-card bg-surface-raised focus:ring-2 focus:ring-primary focus:border-transparent"
+              className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
               placeholder="colleague@example.com"
               required
             />
@@ -550,7 +508,7 @@ function InviteModal({ roles, onClose, onSuccess }) {
             <select
               value={roleId}
               onChange={(e) => setRoleId(e.target.value)}
-              className="w-full px-4 py-2 border border-border-strong rounded-card bg-surface-raised focus:ring-2 focus:ring-primary focus:border-transparent"
+              className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
               required
             >
               {roles.map((role) => (
@@ -573,7 +531,7 @@ function InviteModal({ roles, onClose, onSuccess }) {
             <textarea
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              className="w-full px-4 py-2 border border-border-strong rounded-card bg-surface-raised focus:ring-2 focus:ring-primary focus:border-transparent"
+              className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
               rows={3}
               placeholder="Welcome to the team!"
             />
@@ -583,7 +541,7 @@ function InviteModal({ roles, onClose, onSuccess }) {
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-2 border border-border-strong rounded-card text-bark-700 hover:bg-cream-50"
+              className="flex-1 px-4 py-2 border border-border-strong rounded-button text-bark-700 hover:bg-cream-50"
             >
               Cancel
             </button>
@@ -677,7 +635,7 @@ function EditRoleModal({ member, roles, onClose, onSave }) {
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-2 border border-border-strong rounded-card text-bark-700 hover:bg-cream-50"
+              className="flex-1 px-4 py-2 border border-border-strong rounded-button text-bark-700 hover:bg-cream-50"
             >
               Cancel
             </button>
@@ -769,7 +727,7 @@ function TransferOwnershipModal({ member, companyName, onClose, onConfirm }) {
                 type="text"
                 value={confirmText}
                 onChange={(e) => setConfirmText(e.target.value.toUpperCase())}
-                className="w-full px-4 py-2 border border-border-strong rounded-card bg-surface-raised focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                 placeholder="TRANSFER"
                 autoComplete="off"
               />
@@ -781,7 +739,7 @@ function TransferOwnershipModal({ member, companyName, onClose, onConfirm }) {
               type="button"
               onClick={onClose}
               disabled={loading}
-              className="flex-1 px-4 py-2 border border-border-strong rounded-card text-bark-700 hover:bg-cream-50 disabled:opacity-50"
+              className="flex-1 px-4 py-2 border border-border-strong rounded-button text-bark-700 hover:bg-cream-50 disabled:opacity-50"
             >
               Cancel
             </button>

@@ -185,7 +185,7 @@ export default function WeatherWidget({ onViewForecast }) {
                 const farm = farms.find(f => f.id === parseInt(e.target.value));
                 setSelectedFarm(farm);
               }}
-              className="text-sm border border-border rounded-card px-2 py-1 focus:ring-2 focus:ring-primary focus:border-transparent"
+              className="px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
             >
               {farms.map(farm => (
                 <option key={farm.id} value={farm.id}>{farm.name}</option>

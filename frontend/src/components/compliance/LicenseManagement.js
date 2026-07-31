@@ -272,7 +272,7 @@ const LicenseModal = ({ license, onClose, onSave }) => {
                 required
                 value={formData.license_type}
                 onChange={(e) => setFormData({ ...formData, license_type: e.target.value })}
-                className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-primary"
+                className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
               >
                 {COMPLIANCE_CONSTANTS.LICENSE_TYPES.map(type => (
                   <option key={type.value} value={type.value}>{type.label}</option>
@@ -285,7 +285,7 @@ const LicenseModal = ({ license, onClose, onSave }) => {
               <select
                 value={formData.status}
                 onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-primary"
+                className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
               >
                 {COMPLIANCE_CONSTANTS.LICENSE_STATUSES.map(status => (
                   <option key={status.value} value={status.value}>{status.label}</option>
@@ -301,7 +301,7 @@ const LicenseModal = ({ license, onClose, onSave }) => {
               required
               value={formData.license_number}
               onChange={(e) => setFormData({ ...formData, license_number: e.target.value })}
-              className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-primary"
+              className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
               placeholder="e.g., QAL-12345"
             />
           </div>
@@ -312,7 +312,7 @@ const LicenseModal = ({ license, onClose, onSave }) => {
               type="text"
               value={formData.issuing_authority}
               onChange={(e) => setFormData({ ...formData, issuing_authority: e.target.value })}
-              className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-primary"
+              className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
               placeholder="e.g., California DPR"
             />
           </div>
@@ -325,7 +325,7 @@ const LicenseModal = ({ license, onClose, onSave }) => {
                 required
                 value={formData.issue_date}
                 onChange={(e) => setFormData({ ...formData, issue_date: e.target.value })}
-                className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-primary"
+                className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
               />
             </div>
 
@@ -336,7 +336,7 @@ const LicenseModal = ({ license, onClose, onSave }) => {
                 required
                 value={formData.expiration_date}
                 onChange={(e) => setFormData({ ...formData, expiration_date: e.target.value })}
-                className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-primary"
+                className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
               />
             </div>
           </div>
@@ -349,7 +349,7 @@ const LicenseModal = ({ license, onClose, onSave }) => {
               max={365}
               value={formData.renewal_reminder_days}
               onChange={(e) => setFormData({ ...formData, renewal_reminder_days: parseInt(e.target.value) || 90 })}
-              className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-primary"
+              className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
             />
             <p className="text-xs text-text-secondary mt-1">You'll receive reminders this many days before expiration</p>
           </div>
@@ -567,7 +567,7 @@ export default function LicenseManagement({ onNavigate }) {
             <select
               value={typeFilter}
               onChange={(e) => setTypeFilter(e.target.value)}
-              className="border border-border-strong rounded-card px-3 py-1.5 text-sm focus:ring-2 focus:ring-primary focus:border-primary"
+              className="px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
             >
               <option value="all">All Types</option>
               {COMPLIANCE_CONSTANTS.LICENSE_TYPES.map(type => (

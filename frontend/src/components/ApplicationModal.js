@@ -409,14 +409,14 @@ function EnhancedApplicationModal({
                   required
                   value={formData.date_started}
                   onChange={(e) => setFormData(prev => ({ ...prev, date_started: e.target.value }))}
-                  className="flex-1 min-w-0 px-3 py-2 border border-border-strong rounded-lg text-sm"
+                  className="flex-1 min-w-0 px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                 />
                 <input
                   type="time"
                   required
                   value={formData.start_time}
                   onChange={(e) => setFormData(prev => ({ ...prev, start_time: e.target.value }))}
-                  className="w-28 px-2 py-2 border border-border-strong rounded-lg text-sm"
+                  className="w-28 px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                   title="When the application started — the REI clock runs from this time"
                 />
               </div>
@@ -428,7 +428,7 @@ function EnhancedApplicationModal({
                 required
                 value={formData.farm}
                 onChange={(e) => setFormData(prev => ({ ...prev, farm: e.target.value, field: '' }))}
-                className="w-full px-3 py-2 border border-border-strong rounded-lg text-sm"
+                className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
               >
                 <option value="">Select farm...</option>
                 {(farms || []).map(f => (
@@ -445,7 +445,7 @@ function EnhancedApplicationModal({
                 value={formData.field}
                 onChange={handleFieldChange}
                 disabled={!formData.farm}
-                className="w-full px-3 py-2 border border-border-strong rounded-lg text-sm disabled:bg-cream-100 disabled:text-text-secondary"
+                className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
               >
                 <option value="">
                   {formData.farm ? 'Whole farm (no block)' : 'Select farm first'}
@@ -468,7 +468,7 @@ function EnhancedApplicationModal({
                 step="0.01"
                 value={formData.treated_area_acres}
                 onChange={(e) => setFormData(prev => ({ ...prev, treated_area_acres: e.target.value }))}
-                className="w-full px-3 py-2 border border-border-strong rounded-lg text-sm"
+                className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                 placeholder="Acres"
               />
             </div>
@@ -478,7 +478,7 @@ function EnhancedApplicationModal({
               <select
                 value={formData.application_method}
                 onChange={(e) => setFormData(prev => ({ ...prev, application_method: e.target.value }))}
-                className="w-full px-3 py-2 border border-border-strong rounded-lg text-sm"
+                className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
               >
                 {APPLICATION_METHODS.map(m => (
                   <option key={m.value} value={m.value}>{m.label}</option>
@@ -520,7 +520,7 @@ function EnhancedApplicationModal({
                   type="text"
                   value={formData.applied_by}
                   onChange={(e) => setFormData(prev => ({ ...prev, applied_by: e.target.value }))}
-                  className="w-full px-3 py-2 border border-border-strong rounded-lg text-sm"
+                  className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                   placeholder="Applicator name"
                 />
               </div>
@@ -531,7 +531,7 @@ function EnhancedApplicationModal({
                   type="number"
                   value={formData.temperature_start_f}
                   onChange={(e) => setFormData(prev => ({ ...prev, temperature_start_f: e.target.value }))}
-                  className="w-full px-3 py-2 border border-border-strong rounded-lg text-sm"
+                  className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                 />
               </div>
 
@@ -542,7 +542,7 @@ function EnhancedApplicationModal({
                   step="0.1"
                   value={formData.wind_velocity_mph}
                   onChange={(e) => setFormData(prev => ({ ...prev, wind_velocity_mph: e.target.value }))}
-                  className="w-full px-3 py-2 border border-border-strong rounded-lg text-sm"
+                  className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                 />
               </div>
 
@@ -552,7 +552,7 @@ function EnhancedApplicationModal({
                   type="text"
                   value={formData.comments}
                   onChange={(e) => setFormData(prev => ({ ...prev, comments: e.target.value }))}
-                  className="w-full px-3 py-2 border border-border-strong rounded-lg text-sm"
+                  className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                   placeholder="Optional notes"
                 />
               </div>
@@ -671,14 +671,14 @@ function EnhancedApplicationModal({
                           value={item.total_amount}
                           onChange={(e) => handleItemChange(idx, 'total_amount', e.target.value)}
                           placeholder="Amount"
-                          className="w-full px-2 py-2 border border-border-strong rounded-lg text-sm"
+                          className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                         />
                       </div>
                       <div className="w-28">
                         <select
                           value={item.amount_unit}
                           onChange={(e) => handleItemChange(idx, 'amount_unit', e.target.value)}
-                          className="w-full px-2 py-2 border border-border-strong rounded-lg text-sm"
+                          className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                         >
                           {AMOUNT_UNITS.map(u => (
                             <option key={u.value} value={u.value}>{u.label}</option>
@@ -694,14 +694,14 @@ function EnhancedApplicationModal({
                           value={item.rate}
                           onChange={(e) => handleItemChange(idx, 'rate', e.target.value)}
                           placeholder="Rate"
-                          className="w-full px-2 py-2 border border-border-strong rounded-lg text-sm"
+                          className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                         />
                       </div>
                       <div className="w-28">
                         <select
                           value={item.rate_unit}
                           onChange={(e) => handleItemChange(idx, 'rate_unit', e.target.value)}
-                          className="w-full px-2 py-2 border border-border-strong rounded-lg text-sm"
+                          className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                         >
                           {RATE_UNITS.map(u => (
                             <option key={u.value} value={u.value}>{u.label}</option>

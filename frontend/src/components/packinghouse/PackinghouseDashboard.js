@@ -210,7 +210,7 @@ const PackinghouseDashboard = () => {
             <select
               value={selectedSeason || dashboardData.selected_season}
               onChange={handleSeasonChange}
-              className="px-3 py-1.5 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-primary text-text font-medium"
+              className="px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
             >
               {dashboardData.available_seasons?.map((season) => (
                 <option key={season} value={season}>

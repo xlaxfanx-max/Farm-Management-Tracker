@@ -734,7 +734,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
                       name="basin"
                       value={formData.basin}
                       onChange={handleChange}
-                      className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-green-500"
+                      className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                     >
                       {BASIN_OPTIONS.map(opt => (
                         <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -753,7 +753,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
                       value={formData.gsa_well_id}
                       onChange={handleChange}
                       placeholder="ID assigned by GSA"
-                      className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-green-500"
+                      className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                     />
                   </div>
                   <div>
@@ -764,7 +764,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
                       value={formData.gsa_account_number}
                       onChange={handleChange}
                       placeholder="Your account with GSA"
-                      className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-green-500"
+                      className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                     />
                   </div>
                 </div>
@@ -839,7 +839,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
                       name="status"
                       value={formData.status}
                       onChange={handleChange}
-                      className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-green-500"
+                      className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                     >
                       {STATUS_OPTIONS.map(opt => (
                         <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -852,7 +852,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
                       name="test_frequency_days"
                       value={formData.test_frequency_days}
                       onChange={handleChange}
-                      className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-green-500"
+                      className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                     >
                       <option value={90}>Quarterly (90 days)</option>
                       <option value={180}>Semi-annually (180 days)</option>
@@ -870,7 +870,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
                       name="well_depth_ft"
                       value={formData.well_depth_ft}
                       onChange={handleChange}
-                      className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-green-500"
+                      className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                     />
                   </div>
                   <div>
@@ -880,7 +880,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
                       name="casing_diameter_inches"
                       value={formData.casing_diameter_inches}
                       onChange={handleChange}
-                      className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-green-500"
+                      className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                     />
                   </div>
                   <div>
@@ -890,7 +890,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
                       name="state_well_number"
                       value={formData.state_well_number}
                       onChange={handleChange}
-                      className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-green-500"
+                      className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                     />
                   </div>
                 </div>
@@ -904,7 +904,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
                     onChange={handleChange}
                     rows={3}
                     placeholder="Any additional notes about this well..."
-                    className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-green-500"
+                    className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                   />
                 </div>
               </div>
@@ -1072,7 +1072,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
                       name="well_construction_date"
                       value={formData.well_construction_date}
                       onChange={handleChange}
-                      className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-green-500"
+                      className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                     />
                   </div>
                   <div>
@@ -1082,7 +1082,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
                       name="well_permit_number"
                       value={formData.well_permit_number}
                       onChange={handleChange}
-                      className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-green-500"
+                      className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                     />
                   </div>
                 </div>
@@ -1096,7 +1096,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
                     onChange={handleChange}
                     rows={2}
                     placeholder="e.g., Northeast corner of the property, 50 ft from barn"
-                    className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-green-500"
+                    className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                   />
                 </div>
               </div>
@@ -1115,7 +1115,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
                         name="pump_type"
                         value={formData.pump_type}
                         onChange={handleChange}
-                        className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-green-500"
+                        className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                       >
                         {PUMP_TYPE_OPTIONS.map(opt => (
                           <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -1129,7 +1129,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
                         name="pump_horsepower"
                         value={formData.pump_horsepower}
                         onChange={handleChange}
-                        className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-green-500"
+                        className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                       />
                     </div>
                     <div>
@@ -1139,7 +1139,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
                         name="pump_flow_rate_gpm"
                         value={formData.pump_flow_rate_gpm}
                         onChange={handleChange}
-                        className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-green-500"
+                        className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                       />
                     </div>
                   </div>
@@ -1153,7 +1153,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
                       name="power_source"
                       value={formData.power_source}
                       onChange={handleChange}
-                      className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-green-500"
+                      className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                     >
                       {POWER_SOURCE_OPTIONS.map(opt => (
                         <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -1168,7 +1168,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
                       value={formData.utility_meter_number}
                       onChange={handleChange}
                       placeholder="Electric/Gas meter ID"
-                      className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-green-500"
+                      className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                     />
                   </div>
                 </div>
@@ -1200,7 +1200,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
                             value={formData.flowmeter_make}
                             onChange={handleChange}
                             placeholder="e.g., McCrometer"
-                            className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-green-500"
+                            className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                           />
                         </div>
                         <div>
@@ -1210,7 +1210,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
                             name="flowmeter_model"
                             value={formData.flowmeter_model}
                             onChange={handleChange}
-                            className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-green-500"
+                            className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                           />
                         </div>
                         <div>
@@ -1220,7 +1220,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
                             name="flowmeter_serial_number"
                             value={formData.flowmeter_serial_number}
                             onChange={handleChange}
-                            className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-green-500"
+                            className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                           />
                         </div>
                       </div>
@@ -1232,7 +1232,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
                             name="flowmeter_units"
                             value={formData.flowmeter_units}
                             onChange={handleChange}
-                            className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-green-500"
+                            className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                           >
                             {FLOWMETER_UNIT_OPTIONS.map(opt => (
                               <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -1247,7 +1247,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
                             value={formData.flowmeter_multiplier}
                             onChange={handleChange}
                             step="0.0001"
-                            className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-green-500"
+                            className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                           />
                           <p className="mt-1 text-xs text-text-secondary">Factor to multiply reading by</p>
                         </div>
@@ -1258,7 +1258,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
                             name="flowmeter_installation_date"
                             value={formData.flowmeter_installation_date}
                             onChange={handleChange}
-                            className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-green-500"
+                            className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                           />
                         </div>
                       </div>
@@ -1294,7 +1294,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
                           name="ami_vendor"
                           value={formData.ami_vendor}
                           onChange={handleChange}
-                          className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-green-500"
+                          className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                         />
                       </div>
                       <div>
@@ -1304,7 +1304,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
                           name="ami_device_id"
                           value={formData.ami_device_id}
                           onChange={handleChange}
-                          className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-green-500"
+                          className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                         />
                       </div>
                     </div>
@@ -1359,7 +1359,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
                       name="gsa_registration_date"
                       value={formData.gsa_registration_date}
                       onChange={handleChange}
-                      className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-green-500"
+                      className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                     />
                   </div>
                 )}
@@ -1371,7 +1371,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
                     name="basin_priority"
                     value={formData.basin_priority}
                     onChange={handleChange}
-                    className="w-full md:w-64 px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-green-500"
+                    className="w-full md:w-64 px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                   >
                     <option value="critical">Critically Overdrafted</option>
                     <option value="high">High Priority</option>
@@ -1424,7 +1424,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
                         onChange={handleChange}
                         step="0.01"
                         placeholder="e.g., 192.34 for UWCD, 25 for OBGMA"
-                        className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-green-500"
+                        className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                       />
                     </div>
                     <div>
@@ -1436,7 +1436,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
                         onChange={handleChange}
                         step="0.01"
                         placeholder="e.g., 100 for OBGMA"
-                        className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-green-500"
+                        className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                       />
                     </div>
                     <div>
@@ -1448,7 +1448,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
                         onChange={handleChange}
                         step="0.01"
                         placeholder="e.g., 214.22 for UWCD"
-                        className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-green-500"
+                        className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                       />
                     </div>
                     <div>
@@ -1460,7 +1460,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
                         onChange={handleChange}
                         step="0.01"
                         placeholder="e.g., 70 for OBGMA"
-                        className="w-full px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-green-500"
+                        className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                       />
                     </div>
                   </div>
@@ -1473,7 +1473,7 @@ const WellSourceModal = ({ isOpen, onClose, wellSource, farms, fields, onSave })
                       value={formData.owner_code}
                       onChange={handleChange}
                       placeholder="e.g., JPF, FF, RMLF"
-                      className="w-full md:w-64 px-3 py-2 border border-border-strong rounded-card focus:ring-2 focus:ring-green-500"
+                      className="w-full md:w-64 px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                     />
                     <p className="mt-1 text-xs text-text-secondary">Owner identifier code used for GSA reporting</p>
                   </div>

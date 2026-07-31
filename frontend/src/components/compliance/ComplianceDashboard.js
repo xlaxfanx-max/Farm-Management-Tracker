@@ -456,7 +456,7 @@ export default function ComplianceDashboard({ onNavigate }) {
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
             <button
               onClick={() => onNavigate?.('compliance-deadlines')}
-              className="flex flex-col items-center gap-2 p-4 bg-surface-raised border border-border rounded-card hover:border-green-400 hover:shadow transition-all"
+              className="flex flex-col items-center gap-2 p-4 bg-surface-raised border border-border rounded-button hover:border-green-400 hover:shadow transition-all"
             >
               <Calendar className="w-6 h-6 text-primary" />
               <span className="text-sm font-medium text-bark-700">Deadlines</span>
@@ -464,7 +464,7 @@ export default function ComplianceDashboard({ onNavigate }) {
 
             <button
               onClick={() => onNavigate?.('compliance-reports')}
-              className="flex flex-col items-center gap-2 p-4 bg-surface-raised border border-border rounded-card hover:border-green-400 hover:shadow transition-all"
+              className="flex flex-col items-center gap-2 p-4 bg-surface-raised border border-border rounded-button hover:border-green-400 hover:shadow transition-all"
             >
               <FileText className="w-6 h-6 text-bark-700" />
               <span className="text-sm font-medium text-bark-700">Reports</span>
@@ -472,7 +472,7 @@ export default function ComplianceDashboard({ onNavigate }) {
 
             <button
               onClick={() => onNavigate?.('compliance-inspector-checklist')}
-              className="flex flex-col items-center gap-2 p-4 bg-surface-raised border border-border rounded-card hover:border-green-400 hover:shadow transition-all"
+              className="flex flex-col items-center gap-2 p-4 bg-surface-raised border border-border rounded-button hover:border-green-400 hover:shadow transition-all"
             >
               <ClipboardCheck className="w-6 h-6 text-primary" />
               <span className="text-sm font-medium text-bark-700">Inspector</span>
@@ -545,7 +545,7 @@ export default function ComplianceDashboard({ onNavigate }) {
               console.error('Error downloading report:', error);
             }
           }}
-          className="w-full flex items-center gap-4 p-4 bg-gradient-to-r from-green-600 to-green-800 text-white rounded-card hover:from-green-700 hover:to-green-800 transition-all shadow-sm hover:shadow"
+          className="w-full flex items-center gap-4 p-4 bg-gradient-to-r from-green-600 to-green-800 text-white rounded-button hover:from-green-700 hover:to-green-800 transition-all shadow-sm hover:shadow"
         >
           <Download className="w-6 h-6 flex-shrink-0" />
           <div className="text-left">

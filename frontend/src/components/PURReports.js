@@ -209,7 +209,7 @@ function PURReports({ farms }) {
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              className="w-full px-3 py-2 border border-border-strong rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
               required
             />
           </div>
@@ -223,7 +223,7 @@ function PURReports({ farms }) {
               type="date"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
-              className="w-full px-3 py-2 border border-border-strong rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
               required
             />
           </div>
@@ -236,7 +236,7 @@ function PURReports({ farms }) {
             <select
               value={selectedFarm}
               onChange={(e) => setSelectedFarm(e.target.value)}
-              className="w-full px-3 py-2 border border-border-strong rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
             >
               <option value="">All Farms</option>
               {farms && farms.map((farm) => (
@@ -384,17 +384,17 @@ function PURReports({ farms }) {
               <h3 className=" text-heading mb-3">Applications by County</h3>
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-border">
-                  <thead className="bg-cream-50">
+                  <thead className="bg-cream-50 bg-surface-sunken">
                     <tr>
-                      <th className="px-4 py-2 text-left text-xs font-medium text-text-secondary uppercase">County</th>
-                      <th className="px-4 py-2 text-left text-xs font-medium text-text-secondary uppercase">Applications</th>
-                      <th className="px-4 py-2 text-left text-xs font-medium text-text-secondary uppercase">Acres</th>
+                      <th className="px-4 py-2 text-left text-xs font-semibold text-text-secondary uppercase tracking-caps">County</th>
+                      <th className="px-4 py-2 text-left text-xs font-semibold text-text-secondary uppercase tracking-caps">Applications</th>
+                      <th className="px-4 py-2 text-left text-xs font-semibold text-text-secondary uppercase tracking-caps">Acres</th>
                     </tr>
                   </thead>
                   <tbody className="bg-surface-raised divide-y divide-border">
                     {summary.by_county.map((county, index) => (
                       <tr key={index}>
-                        <td className="px-4 py-2 text-sm text-heading">{county.county}</td>
+                        <td className="px-4 py-2 text-sm text-bark-700">{county.county}</td>
                         <td className="px-4 py-2 text-sm text-bark-600">{county.applications}</td>
                         <td className="px-4 py-2 text-sm text-bark-600">{county.acres.toFixed(1)}</td>
                       </tr>
@@ -411,18 +411,18 @@ function PURReports({ farms }) {
               <h3 className=" text-heading mb-3">Top Products Used</h3>
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-border">
-                  <thead className="bg-cream-50">
+                  <thead className="bg-cream-50 bg-surface-sunken">
                     <tr>
-                      <th className="px-4 py-2 text-left text-xs font-medium text-text-secondary uppercase">Product</th>
-                      <th className="px-4 py-2 text-left text-xs font-medium text-text-secondary uppercase">EPA Reg No</th>
-                      <th className="px-4 py-2 text-left text-xs font-medium text-text-secondary uppercase">Applications</th>
-                      <th className="px-4 py-2 text-left text-xs font-medium text-text-secondary uppercase">Total Amount</th>
+                      <th className="px-4 py-2 text-left text-xs font-semibold text-text-secondary uppercase tracking-caps">Product</th>
+                      <th className="px-4 py-2 text-left text-xs font-semibold text-text-secondary uppercase tracking-caps">EPA Reg No</th>
+                      <th className="px-4 py-2 text-left text-xs font-semibold text-text-secondary uppercase tracking-caps">Applications</th>
+                      <th className="px-4 py-2 text-left text-xs font-semibold text-text-secondary uppercase tracking-caps">Total Amount</th>
                     </tr>
                   </thead>
                   <tbody className="bg-surface-raised divide-y divide-border">
                     {summary.by_product.map((product, index) => (
                       <tr key={index}>
-                        <td className="px-4 py-2 text-sm text-heading">{product.product_name}</td>
+                        <td className="px-4 py-2 text-sm text-bark-700">{product.product_name}</td>
                         <td className="px-4 py-2 text-sm text-bark-600">{product.epa_reg_no}</td>
                         <td className="px-4 py-2 text-sm text-bark-600">{product.applications}</td>
                         <td className="px-4 py-2 text-sm text-bark-600">{product.total_amount.toFixed(2)}</td>

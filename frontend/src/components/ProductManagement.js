@@ -239,7 +239,7 @@ function ProductManagement() {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Product name, EPA number, manufacturer..."
-              className="w-full px-3 py-2 border border-border-strong rounded-lg bg-surface-raised focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
             />
           </div>
 
@@ -251,7 +251,7 @@ function ProductManagement() {
             <select
               value={filterType}
               onChange={(e) => setFilterType(e.target.value)}
-              className="w-full px-3 py-2 border border-border-strong rounded-lg bg-surface-raised focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
             >
               <option value="all">All Types</option>
               <option value="insecticide">Insecticide</option>
@@ -272,7 +272,7 @@ function ProductManagement() {
             <select
               value={filterRestrictedUse}
               onChange={(e) => setFilterRestrictedUse(e.target.value)}
-              className="w-full px-3 py-2 border border-border-strong rounded-lg bg-surface-raised focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
             >
               <option value="all">All Products</option>
               <option value="restricted">Restricted Use Only</option>
@@ -307,22 +307,22 @@ function ProductManagement() {
         ) : (
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-border">
-              <thead className="bg-cream-50">
+              <thead className="bg-cream-50 bg-surface-sunken">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-text-secondary uppercase">EPA Reg No</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-text-secondary uppercase">Product Name</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-text-secondary uppercase">Type</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-text-secondary uppercase">Active Ingredient</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-text-secondary uppercase">REI</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-text-secondary uppercase">PHI</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-text-secondary uppercase">Status</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-text-secondary uppercase">Actions</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-caps">EPA Reg No</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-caps">Product Name</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-caps">Type</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-caps">Active Ingredient</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-caps">REI</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-caps">PHI</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-caps">Status</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-caps">Actions</th>
                 </tr>
               </thead>
               <tbody className="bg-surface-raised divide-y divide-border">
                 {filteredProducts.map((product) => (
                   <tr key={product.id} className="hover:bg-cream-50">
-                    <td className="px-4 py-3 text-sm font-mono text-heading">
+                    <td className="px-4 py-3 text-sm font-mono text-bark-700">
                       {product.epa_registration_number}
                     </td>
                     <td className="px-4 py-3 text-sm">
@@ -614,7 +614,7 @@ function ProductModal({ product, onClose, onSave }) {
                 required
                 value={formData.epa_registration_number}
                 onChange={(e) => setFormData({...formData, epa_registration_number: e.target.value})}
-                className="w-full px-3 py-2 border border-border-strong rounded-lg bg-surface-raised"
+                className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
                 placeholder="e.g., 12345-678"
               />
             </div>
@@ -629,7 +629,7 @@ function ProductModal({ product, onClose, onSave }) {
                 required
                 value={formData.product_name}
                 onChange={(e) => setFormData({...formData, product_name: e.target.value})}
-                className="w-full px-3 py-2 border border-border-strong rounded-lg bg-surface-raised"
+                className="w-full px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
               />
             </div>
 

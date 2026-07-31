@@ -123,7 +123,7 @@ function FarmToolbar({
 
           <button
             onClick={onAddFarm}
-            className="flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-card hover:bg-primary-hover shadow-lg transition-colors"
+            className="flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-button hover:bg-primary-hover shadow-lg transition-colors"
           >
             <Plus size={20} />
             Add Farm
@@ -159,7 +159,7 @@ function FarmToolbar({
             <select
               value={filterCounty}
               onChange={(e) => onCountyChange(e.target.value)}
-              className="px-4 py-2.5 border border-border rounded-card focus:outline-none focus:ring-2 focus:ring-primary bg-surface-raised min-w-[160px]"
+              className="min-w-[160px] px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
             >
               <option value="">All Counties</option>
               {counties.map(county => (
@@ -171,7 +171,7 @@ function FarmToolbar({
             <select
               value={filterMapped}
               onChange={(e) => onMappedChange(e.target.value)}
-              className="px-4 py-2.5 border border-border rounded-card focus:outline-none focus:ring-2 focus:ring-primary bg-surface-raised min-w-[160px]"
+              className="min-w-[160px] px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
             >
               <option value="all">All Status</option>
               <option value="mapped">Mapped Only</option>

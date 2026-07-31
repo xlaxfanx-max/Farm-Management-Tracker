@@ -63,7 +63,7 @@ export default function RentalsDashboard({ initialTab = 'overview', onNavigate }
             <select
               value={year ?? ''}
               onChange={(e) => setYear(Number(e.target.value))}
-              className="rounded-lg border border-border-strong bg-surface-raised px-2 py-1.5 text-sm text-heading"
+              className="px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
             >
               {yearOptions.map((y) => (
                 <option key={y} value={y}>{y}</option>

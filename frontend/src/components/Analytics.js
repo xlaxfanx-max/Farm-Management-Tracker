@@ -139,20 +139,20 @@ const ContractorTable = ({ contractors }) => {
           <table className="w-full text-sm">
             <thead>
               <tr className="text-left border-b border-border">
-                <th className="px-4 py-3 text-xs font-medium text-text-secondary uppercase">Contractor</th>
-                <th className="px-4 py-3 text-xs font-medium text-text-secondary uppercase text-right">Bins</th>
-                <th className="px-4 py-3 text-xs font-medium text-text-secondary uppercase text-right">Cost</th>
-                <th className="px-4 py-3 text-xs font-medium text-text-secondary uppercase text-right">$/Bin</th>
-                <th className="px-4 py-3 text-xs font-medium text-text-secondary uppercase text-right">Bins/Hr</th>
+                <th className="px-4 py-3 text-xs font-semibold text-text-secondary uppercase tracking-caps">Contractor</th>
+                <th className="px-4 py-3 text-xs font-semibold text-text-secondary uppercase text-right tracking-caps">Bins</th>
+                <th className="px-4 py-3 text-xs font-semibold text-text-secondary uppercase text-right tracking-caps">Cost</th>
+                <th className="px-4 py-3 text-xs font-semibold text-text-secondary uppercase text-right tracking-caps">$/Bin</th>
+                <th className="px-4 py-3 text-xs font-semibold text-text-secondary uppercase text-right tracking-caps">Bins/Hr</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
               {contractors.map((c, index) => (
                 <tr key={index} className="hover:bg-cream-50">
-                  <td className="px-4 py-3 font-medium text-heading">{c.name}</td>
+                  <td className="px-4 py-3 font-medium text-bark-700">{c.name}</td>
                   <td className="px-4 py-3 text-right text-bark-600">{formatNumber(c.bins)}</td>
                   <td className="px-4 py-3 text-right text-bark-600">{formatCurrency(c.cost)}</td>
-                  <td className="px-4 py-3 text-right font-medium text-heading">{formatCurrency(c.cost_per_bin)}</td>
+                  <td className="px-4 py-3 text-right font-medium text-bark-700">{formatCurrency(c.cost_per_bin)}</td>
                   <td className="px-4 py-3 text-right text-bark-600">{formatNumber(c.bins_per_hour, 1)}</td>
                 </tr>
               ))}
@@ -300,7 +300,7 @@ export default function Analytics() {
           <select
             value={selectedFarm}
             onChange={(e) => setSelectedFarm(e.target.value)}
-            className="border border-border-strong rounded-card px-3 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
+            className="px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
           >
             <option value="all">All Farms</option>
             {farms.map(f => (

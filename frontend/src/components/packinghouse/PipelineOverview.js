@@ -536,7 +536,7 @@ const PipelineOverview = ({ initialCommodity = null, onBack = null }) => {
               <select
                 value={selectedSeason || data?.selected_season || ''}
                 onChange={handleSeasonChange}
-                className="px-3 py-1 border border-border-strong rounded-card focus:ring-2 focus:ring-primary focus:border-primary text-text text-sm font-medium"
+                className="px-3 py-2 text-sm rounded-button border border-border-strong bg-surface-raised text-text shadow-inset placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-ring disabled:bg-surface-sunken disabled:cursor-not-allowed transition-all duration-fast ease-out"
               >
                 {data?.available_seasons?.map((season) => (
                   <option key={season} value={season}>
@@ -728,7 +728,7 @@ const PipelineOverview = ({ initialCommodity = null, onBack = null }) => {
                       key={row.label || idx}
                       className="border-b hover:bg-cream-50"
                     >
-                      <td className="py-3 px-3 font-medium text-heading">
+                      <td className="py-3 px-3 font-medium text-bark-700">
                         {row.label}
                       </td>
                       <td className="py-3 px-3 text-right text-bark-700 font-semibold">
@@ -765,7 +765,7 @@ const PipelineOverview = ({ initialCommodity = null, onBack = null }) => {
                   ))}
                   {/* Totals row */}
                   <tr className="bg-cream-50 font-semibold">
-                    <td className="py-3 px-3 text-heading">Total</td>
+                    <td className="py-3 px-3 text-bark-700">Total</td>
                     <td className="py-3 px-3 text-right text-bark-700">
                       {formatNumber(data.breakdowns.reduce((sum, r) => sum + (r.bins_packed || 0), 0))}
                     </td>

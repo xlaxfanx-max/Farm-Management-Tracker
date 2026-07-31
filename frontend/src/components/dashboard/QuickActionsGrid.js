@@ -50,17 +50,7 @@ function QuickActionsGrid({ onNavigate }) {
         <button
           key={action.id}
           onClick={action.onClick}
-          className="
-            bg-surface-raised
-            border border-border
-            hover:border-primary
-            rounded-card px-4 py-4
-            flex flex-col items-center justify-center gap-2.5
-            transition-all hover:shadow-md
-            min-h-[80px]
-            focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1
-            group
-          "
+          className="bg-surface-raised border border-border hover:border-primary rounded-button px-4 py-4 flex flex-col items-center justify-center gap-2.5 transition-all hover:shadow-md min-h-[80px] focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1 group"
         >
           <action.icon className="w-5 h-5 text-text-secondary group-hover:text-primary transition-colors" />
           <span className="text-sm font-medium text-text group-hover:text-primary transition-colors">
